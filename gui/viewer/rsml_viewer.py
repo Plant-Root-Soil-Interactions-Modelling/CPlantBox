@@ -107,7 +107,7 @@ class App:
         self.canvas2.get_tk_widget().pack(side = tkinter.TOP, fill = tkinter.BOTH, expand = 1)
         # hydraulic properties
         tab_suf_frame = tkinter.Frame(tab_suf)
-        self.combo3 = ttk.Combobox(tab_suf_frame, values = [ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2"])
+        self.combo3 = ttk.Combobox(tab_suf_frame, values = [ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2", "Wine"])
         self.combo3.pack(side = tkinter.LEFT, pady = 5, padx = 10)
         self.combo3.current(0)
         self.combo3.bind("<<ComboboxSelected>>", self.update_hydraulics)
@@ -120,7 +120,7 @@ class App:
         self.canvas3.get_tk_widget().pack(side = tkinter.BOTTOM, fill = tkinter.BOTH, expand = 1)
         # hydraulic development
         tab_krs_frame = tkinter.Frame(tab_krs)
-        self.combo4 = ttk.Combobox(tab_krs_frame, values = [ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2"])
+        self.combo4 = ttk.Combobox(tab_krs_frame, values = [ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2", "Wine"])
         self.combo4.pack(side = tkinter.LEFT, pady = 5, padx = 10)
         self.combo4.current(0)
         self.combo4.bind("<<ComboboxSelected>>", self.update_krs)
@@ -251,6 +251,9 @@ class App:
                 viewer_conductivities.init_dynamic_scenario1(r)
             elif j == 3:
                 viewer_conductivities.init_dynamic_scenario2(r)
+            elif j == 4:
+                viewer_conductivities.init_constant_scenario_wine(r)
+
             fig = r.plot_conductivities(monocot = False, plot_now = False, axes_ind = [0], lateral_ind = [1, 2, 3])
             canvas = FigureCanvasTkAgg(fig, master = root)  # A tk.DrawingArea.
             canvas.draw()

@@ -4,6 +4,7 @@ from visualisation.vtk_tools import *
 import time
 import numpy as np
 import vtk
+from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank(); max_rank = comm.Get_size()
 # from IPython.display import Image, display
 
 """
@@ -46,7 +47,6 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
         setLeafColor = True
     else:
         ana = plant
-
     pd = segs_to_polydata(ana, 1., ["radius", "organType", "creationTime", p_name])  # poly data
     tube_plot_actor, color_bar, lut = plot_roots(pd, p_name, "", render = False, returnLut = True)
 
@@ -55,7 +55,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
 
     globalIdx_y = []
-    leaves = plant.getOrgans(ot = pb.leaf)
+    leaves = plant.getOrgans(ot = pb.leaf)  # <--------- TODO DL: will only work for Plant, not for MappedSegments (with no plant attached)
     for l in leaves:
         globalIdx_y = globalIdx_y + create_leaf_(l, leaf_points, leaf_polys)
     globalIdx_y = np.array(globalIdx_y)
@@ -342,7 +342,12 @@ def keypress_callback_(obj, ev, bounds):
     if key == 'g':
         renWin = obj.GetRenderWindow()
         file_name = renWin.GetWindowName()
-        write_jpg(renWin, file_name, magnification=5)
+        write_jpg(renWin, file_name, magnification = 5)
+        print("saved", file_name + ".jpg")
+    if key == 's':  # for small
+        renWin = obj.GetRenderWindow()
+        file_name = renWin.GetWindowName()
+        write_jpg(renWin, file_name, magnification = 1)
         print("saved", file_name + ".jpg")
     if key == 'x' or key == 'y' or key == 'z' or key == 'v':
         renWin = obj.GetRenderWindow()
@@ -370,7 +375,7 @@ def keypress_callback_(obj, ev, bounds):
         renWin.Render()
 
 
-def write_jpg(renWin, fileName, magnification=5):
+def write_jpg(renWin, fileName, magnification = 5):
     """" Save the current render window in a jpg (e.g. from vtkRenderWindowInteractor.GetRenderWindow())
     @param renWin        the vtkRenderWindow
     @parma fileName      file name without extension
@@ -379,14 +384,14 @@ def write_jpg(renWin, fileName, magnification=5):
 
     # Find and temporarily adjust the scalar bar, so that screenshot has nice scale but viewer can also be reset
     bars = [a for a in ren.GetActors2D() if isinstance(a, vtk.vtkScalarBarActor)]
-    # Patch titles with \n, hardcoded as there is no clean solution 
+    # Patch titles with \n, hardcoded as there is no clean solution
     original_titles = []
     for bar in bars:
         orig_title = bar.GetTitle()
         original_titles.append(orig_title)
-        bar.SetTitle(orig_title + "\n\n\n")       
+        bar.SetTitle(orig_title + "\n\n\n")
     renWin.Render()
-    
+
     windowToImageFilter = vtk.vtkWindowToImageFilter();
     windowToImageFilter.SetInput(renWin)
     windowToImageFilter.SetScale(magnification)
@@ -397,7 +402,7 @@ def write_jpg(renWin, fileName, magnification=5):
     writer.SetFileName(fileName + ".jpg")
     writer.SetInputConnection(windowToImageFilter.GetOutputPort())
     writer.Write()
-    
+
     # Restore original titles
     for bar, orig_title in zip(bars, original_titles):
         bar.SetTitle(orig_title)
@@ -545,6 +550,8 @@ def plot_mesh(grid, p_name, win_title = "", render = True, interactiveImage = Tr
     meshActor = vtk.vtkActor()
     meshActor.SetMapper(mapper)
     meshActor.GetProperty().SetRepresentationToWireframe();
+    meshActor.GetProperty().SetLineWidth(2.0)  # Increase line width
+    meshActor.GetProperty().SetColor(0.0, 0.0, 0.0)
 
     lut = create_lookup_table()
     scalar_bar = create_scalar_bar(lut, grid, p_name)  # vtkScalarBarActor
@@ -617,6 +624,65 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interact
     return actors, scalar_bar
 
 
+def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True):
+    """ Plots soil slices and roots, additionally saves both grids as files
+    @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
+    @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
+    @param s             soil, of type RichardsSP, or RichardsNCSP
+    @param rp            root parameter segment data (will be added, in case SegmentAnalyser is creaeted)
+    @param periodic      if yes the root system will be mapped into the domain
+    @param min_b         minimum of domain boundaries
+    @param max_b         maximum of domain boundaries
+    @param cell_number   domain resolution
+    @param filename      file name (without extension)
+    """
+    wc = np.array(s.getWaterContent())
+    pHead = np.array(s.getSolutionHead())
+    if sol_ind > 0:
+        solute = np.array(s.getSolution(sol_ind))
+
+    if rank == 0:
+        if isinstance(rs, pb.SegmentAnalyser):
+            ana = rs
+        else:
+            ana = pb.SegmentAnalyser(rs)
+            ana.addData(pname, rp)
+        if periodic:
+            w = np.array(max_b) - np.array(min_b)
+            ana.mapPeriodic(w[0], w[1])
+
+        pd = segs_to_polydata(ana, 1., [pname, "radius"])
+
+        pname_mesh = "pressure head"  # pname <------ TODO find better function arguments
+        soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+        soil_water_content = vtk_data(wc)
+        soil_water_content.SetName("water content")
+        soil_grid.GetCellData().AddArray(soil_water_content)
+        soil_pressure = vtk_data(pHead)
+        soil_pressure.SetName("pressure head")  # in macroscopic soil
+        soil_grid.GetCellData().AddArray(soil_pressure)
+        if sol_ind > 0:
+            d = vtk_data(solute)
+            pname_mesh = "solute no " + str(sol_ind) + " g/cm3"
+            d.SetName(pname_mesh)  # in macroscopic soil
+            soil_grid.GetCellData().AddArray(d)
+
+        plantActors, rootCBar = plot_plant(ana, pname, False, False)
+        tube_plot_actor = plantActors[0]
+        leafActor = plantActors[1]
+        meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
+        meshActors.extend([tube_plot_actor])
+        meshActors.extend([leafActor])
+        ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
+        if interactiveImage:
+            ren.Start()
+        if filename:
+            path = "results/"
+            write_vtp(path + filename + ".vtp", pd)
+            write_vtu(path + filename + ".vtu", soil_grid)
+
+
+
 def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
@@ -629,41 +695,46 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     @param cell_number   domain resolution
     @param filename      file name (without extension)
     """
-    if isinstance(rs, pb.SegmentAnalyser):
-        ana = rs
-    else:
-        ana = pb.SegmentAnalyser(rs)
-        ana.addData(pname, rp)
-    if periodic:
-        w = np.array(max_b) - np.array(min_b)
-        ana.mapPeriodic(w[0], w[1])
-    pd = segs_to_polydata(ana, 1., [pname, "radius"])
-
-    pname_mesh = "pressure head"  # pname <------ TODO find better function arguments
-    soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
-    soil_water_content = vtk_data(np.array(s.getWaterContent()))
-    soil_water_content.SetName("water content")
-    soil_grid.GetCellData().AddArray(soil_water_content)
-    soil_pressure = vtk_data(np.array(s.getSolutionHead()))
-    soil_pressure.SetName("pressure head")  # in macroscopic soil
-    soil_grid.GetCellData().AddArray(soil_pressure)
+    wc = np.array(s.getWaterContent())
+    pHead = np.array(s.getSolutionHead())
     if sol_ind > 0:
-        d = vtk_data(np.array(s.getSolution(sol_ind)))
-        pname_mesh = "solute" + str(sol_ind)
-        d.SetName(pname_mesh)  # in macroscopic soil
-        soil_grid.GetCellData().AddArray(d)
+        solute = np.array(s.getSolution(sol_ind))
+    if rank == 0:
+        if isinstance(rs, pb.SegmentAnalyser):
+            ana = rs
+        else:
+            ana = pb.SegmentAnalyser(rs)
+            ana.addData(pname, rp)
+        if periodic:
+            w = np.array(max_b) - np.array(min_b)
+            ana.mapPeriodic(w[0], w[1])
+        pd = segs_to_polydata(ana, 1., [pname, "radius"])
 
-    rootActor, rootCBar = plot_roots(pd, pname, "", False)
-    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
-    meshActors.extend([rootActor])
-    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
-    if interactiveImage:
-        ren.Start()
+        pname_mesh = "pressure head"  # pname <------ TODO find better function arguments
+        soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+        soil_water_content = vtk_data(wc)
+        soil_water_content.SetName("water content")
+        soil_grid.GetCellData().AddArray(soil_water_content)
+        soil_pressure = vtk_data(pHead)
+        soil_pressure.SetName("pressure head")  # in macroscopic soil
+        soil_grid.GetCellData().AddArray(soil_pressure)
+        if sol_ind > 0:
+            d = vtk_data(solute)
+            pname_mesh = "solute" + str(sol_ind)
+            d.SetName(pname_mesh)  # in macroscopic soil
+            soil_grid.GetCellData().AddArray(d)
 
-    if filename:
-        path = "results/"
-        write_vtp(path + filename + ".vtp", pd)
-        write_vtu(path + filename + ".vtu", soil_grid)
+        rootActor, rootCBar = plot_roots(pd, pname, "", False)
+        meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
+        meshActors.extend([rootActor])
+        ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
+        if interactiveImage:
+            ren.Start()
+
+        if filename:
+            path = "results/"
+            write_vtp(path + filename + ".vtp", pd)
+            write_vtu(path + filename + ".vtu", soil_grid)
 
 
 def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = "", interactiveImage = True):
@@ -701,8 +772,46 @@ def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1,
         write_vtu(path + filename + ".vtu", soil_grid)
 
 
+def plot_soil(s, pname_mesh, min_b, max_b, cell_number, solutes = [], filename:str = "", interactiveImage = True):
+    """ Writes results of a macroscopic soil model (e.g. Richards, RichardsNC) as vtu file
+        @param filename      filename without extension 
+        @parma s             soil model (e.g. Richards, RichardsNC)
+        @parma min_b         minimum of bounding box
+        @parma max_b         maximum of bounding box
+        @parma cell_number   resolution of soil grid
+        @parma solutes       (optionally) names of solutes, list of str (e.g. in case of RichardsNC)
+    """
+    soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+    soil_water_content = vtk_data(np.array(s.getWaterContent()))
+    soil_water_content.SetName("water content")
+    soil_grid.GetCellData().AddArray(soil_water_content)
+    soil_pressure = vtk_data(np.array(s.getSolutionHead()))
+    soil_pressure.SetName("pressure head")  # in macroscopic soil
+    soil_grid.GetCellData().AddArray(soil_pressure)
+    for i, s_ in enumerate(solutes):
+        d = vtk_data(np.array(s.getSolution(i + 1)))
+        d.SetName(s_)  # in macroscopic soil
+        soil_grid.GetCellData().AddArray(d)
+
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
+    ren = render_window(meshActors, filename, [meshCBar], soil_grid.GetBounds(), interactiveImage)
+    if interactiveImage:
+        ren.Start()
+
+    if filename:
+        path = "results/"
+        write_vtu(path + filename + ".vtu", soil_grid)
+
+
 def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
-    """ TODO """
+    """ Writes results of a macroscopic soil model (e.g. Richards, RichardsNC) as vtu file
+        @param filename      filename without extension 
+        @parma s             soil model (e.g. Richards, RichardsNC)
+        @parma min_b         minimum of bounding box
+        @parma max_b         maximum of bounding box
+        @parma cell_number   resolution of soil grid
+        @parma solutes       (optionally) names of solutes, list of str (e.g. in case of RichardsNC)
+    """
     soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
     soil_water_content = vtk_data(np.array(s.getWaterContent()))
     soil_water_content.SetName("water content")
@@ -721,7 +830,7 @@ def write_plant(filename, plant, add_params = []):
     """ write the plants organ ceneterlines and leafs into two seperate vtp files"""
     params = ["radius", "subType", "organType", "age"]
     params.extend(add_params)
-    pd = segs_to_polydata(plant, 1., params)
+    pd = segs_to_polydata(plant, 1., params)  # TODO: DL this would work for a SegmentAnalyser (and there we could attach data),  maybe split leaf part
     write_vtp(filename + ".vtp", pd)
 
     leaf_points = vtk.vtkPoints()
@@ -736,22 +845,22 @@ def write_plant(filename, plant, add_params = []):
     write_vtp(filename + "_leafs.vtp", pd_leafs)
 
 
-def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True):
+def plot_roots_and_soil_files(filename: str, pname_mesh:str, pname:str, path = "results/", interactiveImage = True):
     """ Plots soil slices and roots from two files (one vtp and one vtu), created by plot_roots_and_soil()
     @param filename      file name (without extension)
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
     """
-    path = "results/"
     pd = read_vtp(path + filename + ".vtp")
-    soil_grid = read_rect_vtu(path + filename + ".vtp")
-    rootActor, rootCBar = plot_roots(pd, pname, "", False)
-    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname, 4, "", False)
-    lut = meshActors[-1].GetMapper().GetLookupTable()  # same same
-    rootActor.GetMapper().SetLookupTable(lut)
-    meshActors.extend([rootActor])
-    ren = render_window(meshActors, filename, meshCBar, soil_grid.GetBounds(), interactiveImage)
+    soil_grid = read_rect_vtu(path + filename + ".vtu")
+    rootActor, rootCBar = plot_roots(pd, pname, False, False)
+    tube_plot_actor = rootActor
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
+    meshActors.extend([tube_plot_actor])
+    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
     if interactiveImage:
         ren.Start()
+    else:
+        return ren
 
 
 class AnimateRoots:
@@ -783,15 +892,14 @@ class AnimateRoots:
         """ creates plot and adjusts camera """
         if self.container_sdf:
             # Create the container actor once and store it, so it does not have to be recalculated each frame
-            container_actors, _, _ = plot_container(self.container_sdf, render=False)
+            container_actors, _, _ = plot_container(self.container_sdf, render = False)
             self.container_actor = container_actors[0]
-            
+
         self.create_root_actors()
         self.create_soil_actors()
         if self.container_actor:
             self.actors.append(self.container_actor)
-        
-        
+
         self.iren = render_window(self.actors, "AnimateRoots", self.color_bar, self.bounds)
         renWin = self.iren.GetRenderWindow()
         ren = renWin.GetRenderers().GetItemAsObject(0)
@@ -823,7 +931,7 @@ class AnimateRoots:
         self.actors = []
         self.create_root_actors()
         self.create_soil_actors()
-        
+
         if self.container_actor:
             self.actors.append(self.container_actor)
         for a in self.actors:
@@ -894,8 +1002,8 @@ def sdf_to_vtk_mesh(sdf, initial_resolution = 100, expansion_factor = 1.5, resol
         raise ValueError("No valid surface detected. Check SDF function!")
 
     # **Step 2: Compute Adaptive Bounds**
-    min_bounds = surface_points.min(axis=0)
-    max_bounds = surface_points.max(axis=0)
+    min_bounds = surface_points.min(axis = 0)
+    max_bounds = surface_points.max(axis = 0)
 
     # Calculate center and size of the detected bounds
     center = (min_bounds + max_bounds) / 2.0
@@ -1004,7 +1112,10 @@ def plot_roots_and_container(root_system, sdf, p_name = "subType", title = "Root
 
     # Render in a single window
     if render:
-        render_window(all_actors, title, root_cbar, mesh_bounds, interactive).Start()
+        ren = render_window(all_actors, title, root_cbar, mesh_bounds, interactive)
+        if interactive:
+            ren.Start()
+
     else:
         return all_actors, [root_cbar, mesh_cbar], mesh_bounds
 

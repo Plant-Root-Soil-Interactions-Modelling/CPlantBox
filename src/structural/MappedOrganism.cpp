@@ -90,29 +90,15 @@ void MappedSegments::setSubTypes(int t) {
 }
 
 /**
- * Sets the soil cell index call back function, and defines a rectangular grid for cutting the segments.
- * First cuts all segments at the grid boundaries, then resets and updates the mappers.
- *
- * @param s 		the callback function picks a cell with spatial coordinate [cm] and returns the index of the cell [1]
- * @param min 		minimum of the soil domain [cm]
- * @param max		maximum of the soil domain [cm]
- * @param res	 	resolution, how many cells in each dimension [1]
- */
-void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res, bool cut) {
-	soil_index = s;
-	this->setRectangularGrid(min,max,res, cut);
-	this->setSoilGrid(s);
-}
-
-/**
  * Sets the soil cell index call back function, resets and updates the mappers.
  *
  * @param s 		the callback function picks a cell with spatial coordinate [cm] and returns the index of the cell [1]
  */
-void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s) {
+void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s, bool noChanges) {
 	soil_index = s;
 	seg2cell.clear(); // re-map all segments
 	cell2seg.clear();
+	constantLoc = noChanges;
 	mapSegments(segments);
 }
 
@@ -144,7 +130,6 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
 	mapSegments(segments);
 }
 
-
 /**
  * Update the mappers root2cell, which maps root segment index to soil cell index, and
  * cell2seg which maps soil cell index to multiple root segments.
@@ -175,7 +160,8 @@ void MappedSegments::cutSegments() {
 	assert(segments.size()==organTypes.size() && "MappedSegments::addSegments: number of segments and organTypes disagree!");
 	int n = segments.size(); // segs.size() will change within the loop (recursive implementation)
 	for (int i=0; i<n; i++ ) {
-		addSegment(segments[i], radii[i], subTypes[i], organTypes[i], i);
+		addCutSegment(segments[i], radii[i], subTypes[i], organTypes[i],
+		    leafBladeSurface[i], segVol[i], bladeLength[i], segO[i], i);
 	}
 }
 
@@ -190,7 +176,7 @@ void MappedSegments::cutSegments() {
  * @param ot 		segment organ type
  * @param ii		index to insert the segment, -1 to append the segment
  */
-void MappedSegments::addSegment(Vector2i ns, double r,  int st, int ot, int ii) {
+void MappedSegments::addCutSegment(Vector2i ns, double r,  int st, int ot, double lbsurf, double vols, double blen, std::weak_ptr<Organ> segO, int ii) {
 	Vector3d n1 = nodes[ns.x];
 	Vector3d n2 = nodes[ns.y];
 	Vector3d mid = (n1.plus(n2)).times(0.5);
@@ -244,20 +230,20 @@ void MappedSegments::addSegment(Vector2i ns, double r,  int st, int ot, int ii) 
 			Vector2i s1(ns.x, nodes.size()-1);
 			Vector2i s2(nodes.size()-1, ns.y);
 			if ((length(s1)<eps) ||  (length(s2)<eps)) { // if the cut segments are too small, just give up
-				add(ns, r, st, ot, ii);
+				addSegment(ns, r, st, ot, lbsurf, vols, blen, segO, ii);
 				nodes.pop_back(); // remove cPoint
 				nodeCTs.pop_back();
 			} else {
-				addSegment(s1, r, st , ot, ii); // first segment replaces at index ii
-				addSegment(s2, r, st , ot, -1); // append second segment
+				addCutSegment(s1, r, st , ot, lbsurf, vols, blen, segO, ii); // first segment replaces at index ii
+				addCutSegment(s2, r, st , ot, lbsurf, vols, blen, segO, -1); // append second segment
 			}
 		} else { // im==in1==in2, dont't cut
 			// std::cout << "ok " << ii <<": (" << ns.x <<", " << ns.y << ") [" << n1.toString() <<", "<< n2.toString() <<"\n";
-			add(ns, r, st, ot, ii);
+			addSegment(ns, r, st, ot, lbsurf, vols, blen, segO, ii);
 		}
 	} else { // im==in1==in2, dont't cut
 		// std::cout << "ok " << ii <<": (" << ns.x <<", " << ns.y << ") [" << n1.toString() <<", "<< n2.toString() <<"\n";
-		add(ns, r, st, ot, ii);
+		addSegment(ns, r, st, ot, lbsurf, vols, blen, segO, ii);
 	}
 }
 
@@ -270,17 +256,25 @@ void MappedSegments::addSegment(Vector2i ns, double r,  int st, int ot, int ii) 
  * @param ot 		segment organ type
  * @param i			index to insert the segment, -1 to append the segment
  */
-void MappedSegments::add(Vector2i s, double r,  int st, int ot,  int i) {
+void MappedSegments::addSegment(Vector2i s, double a,  int st, int ot, double lbsurf, double vols, double blen, std::weak_ptr<Organ> o, int i) {
 	if (i>=0) {
-		segments[i] = s;
-		radii[i] = r;
-		subTypes[i] = st;
-		organTypes[i] = ot;
+		segments.at(i) = s;
+		radii.at(i) = a;
+		subTypes.at(i) = st;
+		organTypes.at(i) = ot;
+        leafBladeSurface.at(i) = lbsurf;
+        segVol.at(i) = vols;
+        bladeLength.at(i) = blen;
+        segO.at(i) = o;
 	} else {
 		segments.push_back(s);
-		radii.push_back(r);
+		radii.push_back(a);
 		subTypes.push_back(st);
 		organTypes.push_back(ot);
+		leafBladeSurface.push_back(lbsurf);
+		segVol.push_back(vols);
+		bladeLength.push_back(blen);
+		segO.push_back(o);
 	}
 }
 
@@ -361,64 +355,105 @@ void MappedSegments::sort() {
 	organTypes = newTypesorgan;
 }
 
+
 /**
- * Calculates outer segment radii [cm], so that the summed segment volumes per cell equals the cell volume
- * @param type 			prescribed cylinder volume proportional to 0: segment volume, 1: segment surface, 2: segment length
- * @param vols 			(optional) in case of non-equidistant grids, volumes per cell must be defined
+ * Sums segment fluxes over each cell
  *
- * DEPRICATED!
- * Use Perirhizal class (in functional/) instead:
- *      pr = Perirhizal(mappedSegments);
- *      outer_r = pr.segOuterRadii(type, vols);
- *
+ * @param segFluxes 	segment fluxes given per segment index [cm3/day]
+ * @return hash map with cell indices as keys and fluxes as values [cm3/day]
  */
-std::vector<double> MappedSegments::segOuterRadii(int type, const std::vector<double>& vols) const {
-    std::cout << "MappedRootSystem::segOuterRadii: DEPRICATED use wrapper class Perirhizal instead (Perirhizal(ms).segOuterRadii) \n" << std::flush;
-	double cellVolume;
-	auto lengths =  this->segLength();
-	auto width = maxBound.minus(minBound);
-	std::vector<double> outer_radii = std::vector<double>(segments.size());
-	std::fill(outer_radii.begin(), outer_radii.end(), 0.);
-	for(auto iter = cell2seg.begin(); iter != cell2seg.end(); ++iter) {
-		int cellId =  iter->first;
-		if (vols.size()==0) {
-			cellVolume = width.x*width.y*width.z/resolution.x/resolution.y/resolution.z;
-		} else {
-			cellVolume = vols.at(cellId);
-		}
-		auto segs = cell2seg.at(cellId);
-		double v = 0.;  // calculate sum of root volumes or surfaces over cell
-		for (int i : segs) {
-			if(organTypes[i] == Organism::ot_root)
+std::map<int,double> MappedSegments::sumSegFluxes(const std::vector<double>& segFluxes)
+{
+    std::map<int,double> fluxes;
+    for (int si = 0; si<this->segments.size(); si++) {
+        int j = this->segments[si].y;
+        int segIdx = j-1;
+
+        if (this->seg2cell.count(segIdx)>0)
+		{
+			int cellIdx = this->seg2cell[segIdx];
+			if (cellIdx>=0)
 			{
-				if (type==0) { // volume
-					v += M_PI*(radii[i]*radii[i])*lengths[i];
-				} else if (type==1) { // surface
-					v += 2*M_PI*radii[i]*lengths[i];
-				} else if (type==2) { // length
-					v += lengths[i];
+				if(this->organTypes[segIdx] == Organism::ot_root)//only divid the fluxes between the root segments
+				{
+					if (fluxes.count(cellIdx)==0) {
+						fluxes[cellIdx] = segFluxes[segIdx];
+					} else {
+						fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
+					}
+				}else{
+					if(segFluxes[segIdx] != 0.)
+					{
+						std::stringstream errMsg;
+						errMsg<<"MappedSegments::sumSegFluxes. ot:"<<this->organTypes[segIdx]<<" segIdx:"<<segIdx
+						<<" cellIdx:"<<cellIdx<<" segFluxes[segIdx] :"
+						<<segFluxes[segIdx]<<"=> shoot segment bellow ground ans exchanges water" <<std::endl;
+
+						throw std::runtime_error(errMsg.str().c_str());
+					}
 				}
 			}
-		}
-		for (int i : segs) { // calculate outer radius
-			if(organTypes[i] == Organism::ot_root)
-			{
-				double l = lengths[i];
-				double t =0.; // proportionality factor (must sum up to == 1 over cell)
-				if (type==0) { // volume
-					t = M_PI*(radii[i]*radii[i])*l/v;
-				} else if (type==1) { // surface
-					t = 2*M_PI*radii[i]*l/v;
-				} else if (type==2) { // length
-					t = l/v;
-				}
-				double targetV = t * cellVolume;  // target volume
-				outer_radii[i] = std::sqrt(targetV/(M_PI*l)+radii[i]*radii[i]);
-			}
-		}
-	}
-	return outer_radii;
+        }
+    }
+    return fluxes;
 }
+
+/**
+ * Splits soil fluxes per cell to the segments within the cell, so that the summed fluxes agree, @see sumSoilFluxes()
+ *
+ * @param soilFluxes 	cell fluxes per global index [cm3/day]
+ * @param type 			split flux proportional to 0: segment volume, 1: segment surface, 2: segment length
+ * @return fluxes for each segment [cm3/day]
+ */
+std::vector<double> MappedSegments::splitSoilFluxes(const std::vector<double>& soilFluxes, int type) const
+{
+    auto lengths =  this->segLength();
+    std::vector<double> fluxes = std::vector<double>(this->segments.size());
+    std::fill(fluxes.begin(), fluxes.end(), 0.);
+    auto map = this->cell2seg;
+	double fluxesTotTot =0;
+    for(auto iter = map.begin(); iter != map.end(); ++iter) {
+        int cellId =  iter->first;
+        auto segs = map.at(cellId);
+		if (cellId>=0) {
+			double v = 0.;  // calculate sum over cell
+			for (int i : segs) {
+
+				if(this->organTypes[i] == Organism::ot_root)//only divid the fluxes between the root segments
+				{
+					if (type==0) { // volume
+						v += M_PI*(this->radii[i]*this->radii[i])*lengths[i];
+					} else if (type==1) { // surface
+						v += 2*M_PI*this->radii[i]*lengths[i];
+					} else if (type==2) { // length
+						v += lengths[i];
+					}
+				}
+			}
+			double fluxesTot = 0;
+			for (int i : segs) { // calculate outer radius
+
+				if(this->organTypes[i] == Organism::ot_root)
+				{
+					double t =0.; // proportionality factor (must sum up to == 1 over cell)
+					if (type==0) { // volume
+						t = M_PI*(this->radii[i]*this->radii[i])*lengths[i]/v;
+					} else if (type==1) { // surface
+						t = 2*M_PI*this->radii[i]*lengths[i]/v;
+					} else if (type==2) { // length
+						t = lengths[i]/v;
+					}
+					if(fluxes[i] !=0){std::cout<<"fluxes "<<i<<" already set "<<std::endl;assert(false);}
+					fluxes[i] = t*soilFluxes.at(cellId);
+					fluxesTot +=  t*soilFluxes.at(cellId);
+					fluxesTotTot += t*soilFluxes.at(cellId);
+				}
+			}
+		}
+    }
+    return fluxes;
+}
+
 
 /**
  * Calculates segment lengths [cm]
@@ -493,20 +528,15 @@ std::vector<double> MappedSegments::total2matric(std::vector<double> sx) const{
 std::vector<int> MappedSegments::getSegmentMapper() const {
     std::vector<int> mapper = std::vector<int>(segments.size());
     for (int i=0; i<mapper.size(); i++) {
-
         try {
             mapper[i] = seg2cell.at(i);
         } catch(...) {
             std::cout << "MappedSegments::getSegmentMapper(): Index "<< i << " not mapped\n" << std::flush;
             throw;
         }
-
     }
     return mapper;
 }
-
-
-
 
 /**
  * Calculates the minimum of node coordinates
@@ -545,165 +575,63 @@ std::vector<double> MappedSegments::getEffectiveRadii() {
 
 
 
-/**
- * Overridden, to map initial shoot segments (@see RootSystem::initialize).
- *
- * Shoot segments have per default radii = 0.1 cm, types = 0, orgtype = 2
- * This can be changed by directly accessing the member variables.
- * @param basaltype			subtype of basal roots 	(default = 4)
- * @param shootbornetype	subtype of shootborn roots (default = 5)
- * @param LB		 		implement length-based waiting time before growth (true) of laterals or delay-based (false)? (default = true)
- */
-void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbose, bool LB) {
-	if (LB) {
-		if (verbose) {
-		    std::cout << "MappedRootSystem::initialize length based (LB) \n" << std::flush;
-		}
-		RootSystem::initializeLB( basaltype, shootbornetype, verbose);
-	} else {
-		if (verbose) {
-		    std::cout << "MappedRootSystem::initialize delay based (DB) \n" << std::flush;
-		}
-		RootSystem::initializeDB( basaltype, shootbornetype, verbose);
-	}
-	segments = this->getShootSegments();
-	nodes = this->getNodes();
-	nodeCTs = this->getNodeCTs();
-	radii.resize(segments.size());
-	std::fill(radii.begin(), radii.end(), 0.1);
-	subTypes.resize(segments.size());
-	std::fill(subTypes.begin(), subTypes.end(), 0);
-	organTypes.resize(segments.size());
-	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root); //root organ type = 2
-	mapSegments(segments);
-}
 
 
 
-/**
- * Simulates the development of the organism in a time span of @param dt days.
- *
- * @param dt        time step [day]
- * @param verbose   turns console output on or off
- */
-void MappedRootSystem::simulate(double dt, bool verbose)
-{
-	if (soil_index==nullptr) {
-		throw std::invalid_argument("MappedRootSystem::simulate():soil was not set, use MappedRootSystem::simulate::setSoilGrid" );
-	}
 
-	RootSystem::simulate(dt,verbose);
-
-	auto uni = this->getUpdatedNodeIndices(); // move nodes
-	auto unodes = this->getUpdatedNodes();
-    auto uncts = this->getUpdatedNodeCTs();
-	assert(uni.size()==unodes.size() && "updated node indices and number of nodes must be equal");
-	int c = 0;
-	for (int i : uni) {
-		nodes.at(i) = unodes[c];
-		nodeCTs.at(i) = uncts[c];
-		c++;
-	}
-	if (verbose) {
-		std::cout << "nodes moved "<< uni.size() << "\n" << std::flush;
-	}
-	auto newnodes = this->getNewNodes(); // add nodes
-	nodes.reserve(nodes.size()+newnodes.size());
-	for (auto& nn : newnodes) {
-		nodes.push_back(nn);
-	}
-	auto newnode_cts = this->getNewNodeCTs(); // add node cts
-	nodeCTs.reserve(nodeCTs.size()+newnode_cts.size());
-	for (auto& nct : newnode_cts) {
-		nodeCTs.push_back(nct);
-	}
-	if (verbose) {
-		std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
-	}
-
-	auto newsegs = this->getNewSegments(); // add segments (TODO cutting)
-	segments.resize(segments.size()+newsegs.size());
-	for (auto& ns : newsegs) {
-		segments[ns.y-1] = ns;
-	}
-	if (verbose) {
-		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
-	}
-	auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
-	radii.resize(radii.size()+newsegO.size());
-	subTypes.resize(subTypes.size()+newsegO.size());
-	organTypes.resize(organTypes.size()+newsegO.size());
-	this->segO.resize(this->segO.size()+newsegO.size());
-
-
-	c = 0;
-	if (verbose) {
-		std::cout << "number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
-	}
-	for (auto& so : newsegO) {
-		int segIdx = newsegs[c].y-1;
-		c++;
-//		radii[segIdx] = so->param()->a;
-//		subTypes[segIdx] = so->param()->subType;
-//		organTypes[segIdx] = so->organType();
-		radii.at(segIdx) = so->param()->a;
-		subTypes.at(segIdx) = so->param()->subType;
-		organTypes.at(segIdx) = so->organType();
-		this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment
-	}
-	// map new segments
-	this->mapSegments(newsegs);
-
-//	// update segments of moved nodes
-//	std::vector<Vector2i> rSegs;
-//	for (int i : uni) {
-//		int segIdx = i -1;
-//		int cellIdx = seg2cell[segIdx];
-//		auto s = segments[segIdx];
-//		Vector3d mid = (nodes[s.x].plus(nodes[s.y])).times(0.5);
-//		int newCellIdx = soil_index(mid.x,mid.y,mid.z);
-//		// 1. check if mid is still in same cell (otherwise, remove, and add again)
-//		// 2. if cut is on, check if end point is in same cell than mid point (otherwise remove and add again)
-//		bool remove = false;
-//		if (cellIdx==newCellIdx) {
-//			if (cutAtGrid) {
-//				auto endPoint = nodes[s.y];
-//				newCellIdx = soil_index(endPoint.x,endPoint.y,endPoint.z);
-//				remove = (newCellIdx!=cellIdx);
-//			}
-//		} else {
-//			remove = true;
-//		}
-//		if (remove) {
-//			rSegs.push_back(s);
-//		}
-//	}
-//	MappedSegments::unmapSegments(rSegs);
-//	MappedSegments::mapSegments(rSegs);
-}
 
 
 /**
  * initialization of mappedplant
  * @param verbose 		indicates if status is written to the console (cout) (default = false)
- * @param stochastic 	keep stochasticity in simulation? (default = true)
  * @param LB		 	implement length-based waiting time before growth (true) of laterals or delay-based (false)? (default = true)
+ *
+ *
+ * use setStochastic(stochastic); to turn on or off stochasticity
  */
-void MappedPlant::initialize_(bool verbose, bool stochastic, bool LB) {
-	reset(); // just in case
-    if(verbose)
-    {
-        std::cout << "MappedPlant::initialize \n" << std::flush;
-    }
-	this->stochastic = stochastic;
-	if(LB){	Plant::initializeLB(verbose);
-	}else{Plant::initializeDB(verbose);}
-	Plant::setStochastic(stochastic);
-	nodes = this->getNodes();
-	nodeCTs = this->getNodeCTs();
+void MappedPlant::initialize_(bool verbose, bool lengthBased) {
+
+    reset(); // just in case (Plant::reset()) (careful, MappedPlant cannot reset, yet)
+	auto stemP = getOrganRandomParameter(Organism::ot_stem);
+	bool plantBox = stemP.size()>1; // prototype + a real parameter definition
+	if ((extraNode == -1) && (plantBox)) {
+		disableExtraNode(); // no meed for additional node to create the artificial stem
+	} else {
+	    enableExtraNode();
+	}
+	if (lengthBased){
+	    if(verbose) {
+	        std::cout << "MappedPlant::initializeLB \n" << std::flush;
+	    }
+	    Plant::initializeLB(verbose); // initializes plant
+	} else {
+        if(verbose) {
+            std::cout << "MappedPlant::initializeDB \n" << std::flush;
+        }
+	    Plant::initializeDB(verbose); // initializes plant
+	}
+	if (extraNode==1) { // inserts a special seed segment (for root system only hydraulic simualtions)
+        auto initial_nodes = this->getNodes();
+        auto initial_ncts = this->getNodeCTs();
+        auto n0 = initial_nodes.at(0);
+        auto ct0 = initial_ncts.at(0);
+        n0.x += 0.1; // 0.1 cm next to seed pos
+        nodes.push_back(n0);
+        for (auto n : initial_nodes) {
+            nodes.push_back(n);
+        }
+        nodeCTs.push_back(ct0);
+        for (auto ct : initial_ncts) {
+            nodeCTs.push_back(ct);
+        }
+        addSegment(Vector2i(0,1), 0.1, 0, Organism::OrganTypes::ot_stem, 0, 0, 0, getSeed(), -1 ); // (Vector2i s, double a,  int st, int ot, double lbsurf, double vols, double blen, std::weak_ptr<Organ> o, int i)
+	} else {
+        nodes = this->getNodes();
+        nodeCTs = this->getNodeCTs();
+	}
+
 	mapSegments(segments);
 	mapSubTypes();
-	plantParam = this->organParam;
 }
 
 /**
@@ -711,18 +639,16 @@ void MappedPlant::initialize_(bool verbose, bool stochastic, bool LB) {
  * the N subtypes of one organ type go from 0 to N-1
  */
 void MappedPlant::mapSubTypes(){
-	for(int ot = 0; ot < organParam.size();ot++ )
-	{
+	for(int ot = 0; ot < organParam.size(); ot++) {
 		//std::cout<<"MappedPlant::mapSubTypes for organtype "<<ot<<" with "<<organParam[ot].size()<<" subtypes "<<std::endl;
 		int stNew = 0;
-		for(int stOld_ = 1; stOld_ < organParam[ot].size();stOld_++)//skipe stOld ==0, not realted to any organ st
-		{
-			if(organParam[ot][stOld_] != NULL) {
+		for(int stOld_ = 1; stOld_ < organParam[ot].size();stOld_++) { //skipe stOld ==0, not realted to any organ st
+			if (organParam[ot][stOld_] != NULL) {
 				int stOld = organParam[ot][stOld_]->subType;
 				st2newst[std::make_tuple(ot, stOld)] = stNew;
 				//std::cout<<"old st: "<<stOld<<", new st: "<< stNew <<std::endl;
 				stNew ++;
-			}// else {std::cout<<"subType n#"<<stOld_<<" does not exist, skip "<<std::endl;}
+			} // else {std::cout<<"subType n#"<<stOld_<<" does not exist, skip "<<std::endl;}
 		}
 	}
 }
@@ -735,11 +661,18 @@ void MappedPlant::mapSubTypes(){
  */
 void MappedPlant::simulate(double dt, bool verbose)
 {
+    size_t shift = (extraNode == 1);
+
 	if (soil_index==nullptr) {
 		throw std::invalid_argument("MappedPlant::simulate():soil was not set, use MappedPlant::simulate::setSoilGrid" );
 	}
-	Plant::simulate( dt,  verbose);
+
+	Plant::simulate(dt,  verbose);
+
 	auto uni = this->getUpdatedNodeIndices(); // move nodes
+	for (int& i : uni) { // shift
+		i += shift;
+	}
 	auto unodes = this->getUpdatedNodes();
 	auto uncts = this->getUpdatedNodeCTs();
 	assert(uni.size()==unodes.size() && "updated node indices and number of nodes must be equal");
@@ -749,10 +682,10 @@ void MappedPlant::simulate(double dt, bool verbose)
 		nodeCTs.at(i) = uncts[c];
 		c++;
 	}
-
 	if (verbose) {
 		std::cout << "nodes moved "<< uni.size() << "\n" << std::flush;
 	}
+
 	auto newnodes = this->getNewNodes(); // add nodes
 	nodes.reserve(nodes.size()+newnodes.size());
 	for (auto& nn : newnodes) {
@@ -766,23 +699,25 @@ void MappedPlant::simulate(double dt, bool verbose)
 	if (verbose) {
 		std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
 	}
-	auto newsegs = this->getSegments(); // add segments (TODO cutting)
-	segments.resize(newsegs.size());
-	for (auto& ns : newsegs) {
+
+	auto newsegs = this->getSegments(); // add segments (TODO ALL) (TODO cutting, more nodes will lead to different shift???)
+	segments.resize(newsegs.size()+shift);
+	for (auto& ns : newsegs) { // shift
+	    ns.x += shift;
+	    ns.y += shift;
 		segments[ns.y-1] = ns;
 	}
 	if (verbose) {
 		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
 	}
-	auto newsegO = this->getSegmentOrigins(); // to add radius and type (TODO cutting)
-	radii.resize(newsegO.size());
-	subTypes.resize(newsegO.size());
-	organTypes.resize(newsegO.size());  
-	segVol.resize(newsegO.size());
-	bladeLength.resize(newsegO.size());
-	leafBladeSurface.resize(newsegO.size());
-	this->segO.resize(newsegO.size());
-
+	auto newsegO = this->getSegmentOrigins(); // (TODO ALL) to add radius and type (TODO cutting)
+	radii.resize(newsegO.size()+shift);
+	subTypes.resize(newsegO.size()+shift);
+	organTypes.resize(newsegO.size()+shift);
+	segVol.resize(newsegO.size()+shift);
+	bladeLength.resize(newsegO.size()+shift);
+	leafBladeSurface.resize(newsegO.size()+shift);
+	this->segO.resize(newsegO.size()+shift);
 	c = 0;
 	if (verbose) {
 		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
@@ -799,13 +734,17 @@ void MappedPlant::simulate(double dt, bool verbose)
 		{
 			int index;
 			auto nodeIds = so->getNodeIds();
+		    for (int& i : nodeIds) { // shift
+		        i += shift;
+		    }
 			auto it = find(nodeIds.begin(), nodeIds.end(), newsegs[c].y);
 			if (it != nodeIds.end()){ index = it - nodeIds.begin() -1;
 			} else {
 				throw std::runtime_error("MappedPlant::simulate: global segment index not found in organ");
 			}
 			int localSegId = index;
-			bool realized = true; bool withPetiole = false;
+			bool realized = true;
+			bool withPetiole = false;
 			segVol.at(segIdx) = -1;
 			bladeLength.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafLengthAtSeg(localSegId, withPetiole);
 			leafBladeSurface.at(segIdx) =  std::static_pointer_cast<Leaf>(so)->leafAreaAtSeg(localSegId,realized, withPetiole);
@@ -829,6 +768,10 @@ void MappedPlant::simulate(double dt, bool verbose)
 
 	// map new segments
 	newsegs = this->getNewSegments();
+    for (auto& ns : newsegs) { // shift
+        ns.x += shift;
+        ns.y += shift;
+    }
 	this->mapSegments(newsegs);
 
 	// update segments of moved nodes
@@ -863,9 +806,11 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
+
 	if (kr_length > 0. || rootHairs) {
 	    calcExchangeZoneCoefs();
 	}
+
 	getSegment2leafIds();
 
 }
@@ -876,19 +821,20 @@ void MappedPlant::simulate(double dt, bool verbose)
  * see @XylemFlux::kr_RootExchangeZonePerType()
  **/
 void MappedPlant::calcExchangeZoneCoefs() { //
+    size_t shift = (extraNode==1);
 	exchangeZoneCoefs.resize(segments.size(), -1.0);
 	distanceTip.resize(segments.size(), -1.0);
+	distanceTip.at(0) = 0.;
+	exchangeZoneCoefs.at(0) =1.;
 	auto orgs = getOrgans(-1);
-	for(auto org: orgs)
-	{
-		for(int localIdx = 1; localIdx < org->getNumberOfNodes();localIdx++)
-		{
-			int globalIdx_x = org->getNodeId(localIdx -1 );
-			int globalIdx_y = org->getNodeId(localIdx);
+	for(auto org: orgs) {
+		for(int localIdx = 1; localIdx < org->getNumberOfNodes();localIdx++) {
+			int globalIdx_x = org->getNodeId(localIdx -1 ) + shift; // add shift
+			int globalIdx_y = org->getNodeId(localIdx) + shift;
 			if(org->organType() != Organism::ot_root){
 				exchangeZoneCoefs.at(globalIdx_y-1) = 1;
 				distanceTip.at(globalIdx_y-1) = -1;
-			}else{
+			} else {
 				auto n1 = nodes.at(globalIdx_x);
 				auto n2 = nodes.at(globalIdx_y);
 				auto v = n2.minus(n1);
@@ -916,7 +862,6 @@ void MappedPlant::calcExchangeZoneCoefs() { //
  *
  **/
 void MappedPlant::printNodes() {
-
 	std::cout << "\n MappedPlant::printnodes \n"<< std::flush;
 	std::cout << "\n nodes \n"<< std::flush;
 	nodes = this->getNodes();
@@ -984,8 +929,7 @@ void MappedPlant::getSegment2leafIds()
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          Id of each segment
  */
-std::vector<int> MappedPlant::getNodeIds(int ot) const
-{
+std::vector<int> MappedPlant::getNodeIds(int ot) const {
 	std::vector<int> nodeId;// = std::vector<int>(segments.size());
     for (int i=0; i<segments.size(); i++) {
 		if((ot == -1)||(organTypes[segments[i].y-1]== ot)){
@@ -994,7 +938,6 @@ std::vector<int> MappedPlant::getNodeIds(int ot) const
     }
 	return nodeId;
 }
-
 
 /**
  *  returns the plant radius plus root hair length
@@ -1023,15 +966,13 @@ double MappedPlant::getEffectiveRadius(int si) {
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          Id of each segment
  */
-double MappedPlant::getPerimeter(int si_, double l_)
-{
+double MappedPlant::getPerimeter(int si_, double l_) {
 	if (organTypes.at(si_) == Organism::ot_leaf) {
-	//perimeter of the leaf blade
-	// "*2" => C3 plant has stomatas on both sides.
-	//later make it as option to have C4, i.e., stomatas on one side
-	//int leafId = getSegment2leafId(si_);
-	return leafBladeSurface.at(si_) / l_ *2;
-
+        //perimeter of the leaf blade
+        // "*2" => C3 plant has stomatas on both sides.
+        //later make it as option to have C4, i.e., stomatas on one side
+        //int leafId = getSegment2leafId(si_);
+	    return leafBladeSurface.at(si_) / l_ *2;
     } else {
     	return 2 * M_PI * this->getEffectiveRadius(si_);
     }
@@ -1039,9 +980,9 @@ double MappedPlant::getPerimeter(int si_, double l_)
 
 int MappedPlant::getSegment2leafId(int si_) {
 		int leafSi = segment2leafIds.at(si_);
-		if(leafSi == -1){
+		if(leafSi == -1) {
 			throw std::runtime_error("MappedSegments::getsegment2leafId: tried to access leafId of non-leaf segment");
-			}
+		}
 		return leafSi;
 	}
 

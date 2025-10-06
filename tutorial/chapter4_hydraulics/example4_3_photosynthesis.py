@@ -1,100 +1,126 @@
 """ Example of the photosynthesis module, using real data from the Selhausen lysimeter setup """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")  # |\label{6h:imports}|
-import plantbox as pb
-import visualisation.vtk_plot as vp
-from functional.PlantHydraulicParameters import PlantHydraulicParameters
-from functional.Photosynthesis import PhotosynthesisPython  # |\label{6h:importsPhotosynthesis}|
-
+import sys; sys.path.append("../.."); sys.path.append("../../src/")  # |\label{l43:imports}|
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import pandas as pd
-import numpy as np  # |\label{6h:importsEnd}|
+import numpy as np 
+import plantbox as pb
+import visualisation.vtk_plot as vp
+from datetime import datetime 
+from matplotlib.dates import DateFormatter, HourLocator
+from functional.PlantHydraulicParameters import PlantHydraulicParameters
+from functional.Photosynthesis import PhotosynthesisPython  # |\label{l43:importsPhotosynthesis}|
+
+def getWeatherData(sim_time):
+    diffDt = abs(pd.to_timedelta(weatherData['time']) - pd.to_timedelta(sim_time % 1,unit='d'))
+    line_data = np.where(diffDt == min(diffDt))[0][0]
+    return weatherData.iloc[line_data]  # get the weather data for the current time step
 
 """ Parameters and variables """
-plant_age = 14  # plant age [day]       # |\label{6h:Parameters}|
-kx = 4.32e-2  # axial conductivity [cm3/day]
-kr = 1.728e-4  # radial conductivity [1/day]
-gmax = 0.004  #  cm3/day radial conductivity of leaves = stomatal conductivity [1/day]
-Hs = -1000  #  top soil matric potential [cm]
+plant_age = 14  # plant age [day]       # |\label{l43:Parameters}|
+sim_time = 1. # [day]
+dt = 10./60./24.
+N = int(sim_time/dt)
 depth = 60  # soil depth [cm]
+Hs = -1000  #  top soil matric potential [cm]
 
-sim_init = '00:00:00'
-sim_end = '23:50:00'
+""" Weather data """
 path = "../../modelparameter/functional/climate/"
-weatherData = pd.read_csv(path + 'Selhausen_weather_data.txt', delimiter = "\t")  # |\label{6h:Tereno}|
-line_init = weatherData.index[weatherData['time'] == sim_init].tolist()[0]
-line_end = weatherData.index[weatherData['time'] == sim_end].tolist()[0]  # |\label{6h:ParametersEnd}|
+weatherData = pd.read_csv(path + 'Selhausen_weather_data.txt', delimiter = "\t")  # |\label{l43:Tereno}|
 
 """ soil """
-min_ = np.array([-5, -5, -60])  # |\label{6h:Soil}|
-max_ = np.array([9, 4, 0])
-# res_ = np.array([5, 5, 5])
-soilSpace = pb.SDF_PlantContainer(max_[0] - min_[0], max_[1] - min_[1], max_[2] - min_[2], True)  # to avoid root growing aboveground
-soil_index = lambda x, y, z: max(int(np.floor(-z)), -1)  # abovegroud nodes get index -1
-p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer  # |\label{6h:SoilEnd}|
+soilSpace = pb.SDF_PlantContainer(np.inf, np.inf, depth, True)  # to avoid root growing aboveground
+picker = lambda x, y, z: max(int(np.floor(-z)), -1)  # abovegroud nodes get index -1
+p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer  # |\label{l43:SoilEnd}|
 
 """ plant """
-plant = pb.MappedPlant()  # |\label{6h:plant}|
+plant = pb.MappedPlant()  # |\label{l43:plant}|
 path = "../../modelparameter/structural/plant/"
 name = "Triticum_aestivum_test_2021"
 plant.readParameters(path + name + ".xml")
 
 plant.setGeometry(soilSpace)  # creates soil space to stop roots from growing out of the soil
-plant.setSoilGrid(soil_index)
+plant.setSoilGrid(picker)
 
-verbose = False
-plant.initialize(verbose)
-plant.simulate(plant_age, verbose)  # |\label{6h:plantEnd}|
+plant.initialize(False)
+plant.simulate(plant_age, False)  # |\label{l43:plantEnd}|
+
 
 """ plant hydraulic properties """
-params = PlantHydraulicParameters()  # |\label{6h:hydraulicparams}|
-params.set_kr_const(kr, organType = pb.root)
-params.set_kr_const(0., organType = pb.stem)
-params.set_kr_const(gmax, organType = pb.leaf)
-params.set_kx_const(kx, organType = -1)
-hm = PhotosynthesisPython(plant, params)  # |\label{6h:PhotosynthesisPython}|
+params = PlantHydraulicParameters()  # |\label{l43:hydraulicparams}|
+params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l6h:hydraulic_end}|
+hm = PhotosynthesisPython(plant, params)  # |\label{l43:PhotosynthesisPython}|
 
 path = '../../modelparameter/functional/plant_photosynthesis/'
-hm.read_photosynthesis_parameters(filename = path + "photosynthesis_parameters")  # |\label{6h:read}|
-hm.pCO2 = weatherData['co2'][0]
-# hm.write_photosynthesis_parameters(filename=path+"photosynthesis_parametersNew")   # |\label{6h:write}|
+hm.read_photosynthesis_parameters(filename = path + "photosynthesis_parameters")  # |\label{l43:read}|
+# hm.write_photosynthesis_parameters(filename=path+"photosynthesis_parametersNew")   # |\label{l43:write}|
 
-results = {'transpiration':[], 'An':[], 'Vc':[], 'Vj':[] }
-for i in range(line_init, line_end):  # |\label{6h:loop}|
+results = {'transpiration':[], 'gco2':[], 'An':[], 'Vc':[], 'Vj':[] }
+for i in range(N):  # |\label{l43:loop}|
+    """ Weather variables """
+    weatherData_i = getWeatherData(plant_age)   # |\label{l52:weather}|
 
-    dt = (pd.to_timedelta(weatherData['time'][i]) - pd.to_timedelta(weatherData['time'][max(0, i - 1)])).total_seconds() / (60 * 60 * 24)
+    """ Plant growth """
     plant_age += dt
-    plant.simulate(dt, verbose)
+    plant.simulate(dt, False)  # |\label{l52:plant}|   
 
-    es = hm.get_es(weatherData['Tair'][i])
-    ea = es * weatherData['RH'][i]
+    """ Plant transpiration and photosynthesis """
+    hm.pCO2 = weatherData_i['co2']
+    es = hm.get_es(weatherData_i['Tair'])
+    ea = es * weatherData_i['RH']
 
     hm.solve(sim_time = plant_age, rsx = p_s, cells = True,
-             ea = ea, es = es, PAR = weatherData['PAR'][i] * (24 * 3600) / 1e4, TairC = weatherData['Tair'][i])  # |\label{6h:solve}|
-
-    hx = hm.get_water_potential()  # |\label{6h:results}|
-    results['transpiration'].append(hm.get_tot_transpiration() / 18 * 1e3)  # [cm3/day] * [mol/cm3] * [mmol/mol]
+             ea = ea, es = es, 
+             PAR = weatherData['PAR'][i] * (24 * 3600) / 1e4, # [mol/m2/s] -> [mol/cm2/d]
+             TairC = weatherData_i['Tair'],
+             verbose = 0)  # |\label{l43:solve}|
+             
+    """ Post processing """             
+    hx = hm.get_water_potential()  # |\label{l43:results}|
+    results['transpiration'].append(np.sum(hm.get_transpiration()) / 18 * 1e3)  # [cm3/day] * [mol/cm3] * [mmol/mol]
     results['An'].append(np.sum(hm.get_net_assimilation()) * 1e3)
     results['Vc'].append(np.sum(hm.get_Vc()) * 1e3)
-    results['Vj'].append(np.sum(hm.get_Vj()) * 1e3)  # |\label{6h:resultsEnd}|
-
+    results['Vj'].append(np.sum(hm.get_Vj()) * 1e3)  # |\label{l43:resultsEnd}|
+    
     print('at', weatherData['time'][i], 'mean water potential (cm)', np.round(np.mean(hx)),
             '\n\tin [mmol d-1], net assimilation:', np.round(np.sum(hm.get_net_assimilation()) * 1e3, 2),
-            'transpiration:', np.round(hm.get_tot_transpiration() / 18 * 1e3, 2))
+            'transpiration:', np.round(np.sum(hm.get_transpiration()) / 18 * 1e3, 2))
 
-timePlot = weatherData[line_init:line_end]['time']
 
-fig, axs = plt.subplots(2, 2)  # |\label{6h:plot}|
-axs[0, 0].plot(timePlot, results['An'])
-axs[0, 0].set(xlabel = '', ylabel = 'total net actual\nassimilation rate[mmol CO2 d-1]')
-axs[0, 0].xaxis.set_major_locator(MaxNLocator(5))
-axs[1, 0].plot(timePlot, results['Vc'], 'tab:red')
-axs[1, 0].set(xlabel = 'time', ylabel = 'total gross carboxilation-limited\nassimilation rate [mmol CO2 d-1]')
-axs[1, 0].xaxis.set_major_locator(MaxNLocator(5))
-axs[0, 1].plot(timePlot, results['Vj'], 'tab:brown')
-axs[0, 1].set(xlabel = '', ylabel = 'total gross electron transport-limited\nassimilation rate [mmol CO2 d-1]')
-axs[0, 1].xaxis.set_major_locator(MaxNLocator(5))
-axs[1, 1].plot(timePlot, results['transpiration'], 'tab:brown')
-axs[1, 1].set(xlabel = 'time', ylabel = 'total transpiration (mmol H2O d-1)')
-axs[1, 1].xaxis.set_major_locator(MaxNLocator(5))
-plt.show()
+time = [datetime.strptime(tt, '%H:%M:%S') for tt in weatherData['time']]
+with plt.rc_context({
+    'axes.labelsize': 15,     # axis labels
+    'xtick.labelsize': 15,    # x-tick labels
+    'ytick.labelsize': 15,    # y-tick labels
+    'legend.fontsize': 14     # legend text
+    }):
+    fig, axs = plt.subplots(2, 2)  # |\label{l43:plot}|
+    axs[0, 1].plot(time, weatherData['PAR'] * 1e3 * (24 * 3600) / 1e4, 'k', label =  'PAR [mmol cm-2 d-1]')
+    axs[0, 1].plot(time, weatherData['Tair'] / 6.2, 'tab:red', label = 'T [°C]')
+    axs[0, 1].set(ylabel = 'PAR\n[mmol cm-2 d-1]')
+    secax_y = axs[0, 1].secondary_yaxis('right',
+                                 functions=(lambda v: v*6.2, lambda v: v/6.2))
+    secax_y.set_ylabel("T [°C]", color="tab:red")
+    secax_y.tick_params(axis="y", colors="tab:red")
+    secax_y.spines["right"].set_color("tab:red")
+
+    axs[0, 0].plot(time, weatherData['RH'], 'tab:blue')
+    axs[0, 0].set(ylabel = 'Relative humidity\n[-]')
+
+    axs[1, 1].plot(time, results['An'], 'g', lw = 3 ,label = 'Net', zorder=1)
+    axs[1, 1].plot(time, results['Vj'], 'k', label = 'Electron transport-limited')
+    axs[1, 1].plot(time, results['Vc'], 'tab:red', label = 'Carboxilation-limited')
+    axs[1, 1].set(xlabel = 'Time', ylabel = 'Total assimilation\n[mmol CO2 d-1]')
+    axs[1, 1].legend(loc="upper left",frameon= False)
+
+    axs[1, 0].plot(time, results['transpiration'], 'tab:blue')
+    axs[1, 0].set(xlabel = 'Time', ylabel = 'Total transpiration\n[mmol H2O d-1]')
+    axs[1, 0].xaxis.set_major_locator(MaxNLocator(5))
+
+    for ax in axs.flatten():
+        ax.xaxis.set_major_locator(HourLocator(range(0, 25, 6)))
+        ax.xaxis.set_major_formatter(DateFormatter('%H:%M'))
+        ax.fmt_xdata = DateFormatter('%H:%M')
+        fig.autofmt_xdate()
+        
+    plt.show()

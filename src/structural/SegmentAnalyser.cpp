@@ -66,7 +66,6 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
         subType[i] = segO[i].lock()->getParameter("subType");
         id[i] = segO[i].lock()->getParameter("id");
         organType[i] = segO[i].lock()->getParameter("organType"); // = 2
-
     }
     data["radius"] = radii;
     data["subType"] = subType;

@@ -1,7 +1,7 @@
 """ 
 Solute transport example - nitrate in movement in soil 
 """
-import sys; sys.path.append("../"); sys.path.append("../../../CPlantBox/"); sys.path.append("../../../CPlantBox/src")
+import sys; sys.path.append("../"); sys.path.append("../.."); sys.path.append("../../src/")
 sys.path.append("../../../dumux-rosi/python/modules"); sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/");
 
 import datetime
@@ -20,7 +20,7 @@ from richards import RichardsWrapper  # Python part, macroscopic soil model
 import functional.van_genuchten as vg
 
 
-def plot_results(h, c , times, net_inf, depth = -100.):
+def plot_results(h, c , times, net_inf, fw, depth = -100.):
     """ creates a figures presenting soil water matric potential and 
     nitrate concentration over time """
     c = np.transpose(c)
@@ -28,7 +28,7 @@ def plot_results(h, c , times, net_inf, depth = -100.):
     h = np.transpose(h)
     h = h[::-1,:]
     fig, ax = plt.subplots(3, 1, figsize = (18, 10), gridspec_kw = {'height_ratios': [1.5, 3, 3]})
-    bar = ax[0].bar(times[::2], -10 * net_inf[::2], 0.8)  # cm -> mm
+    bar = ax[0].bar(times[::2], -10 * (net_inf[::2] - np.array(fw)), 0.8)  # cm -> mm
     ax[0].set_ylabel("net inf [mm/day]")
     ax[0].set_xlim(times[0] - 0.5, times[-1] + 0.5)
     divider = make_axes_locatable(ax[0])
@@ -110,8 +110,8 @@ def net_infiltration_csv(filename, start_date, end_date):
 
 """ Soil """  # |\label{l62:init_soil}|
 s = RichardsWrapper(RichardsNCSP())  # water & single solute
-min_b = [-38., -8., -100.]  # [cm]
-max_b = [38., 8., 0.]  # [cm]
+min_b = [-35., -10., -100.]  # [cm]
+max_b = [35., 10., 0.]  # [cm]
 cell_number = [1, 1, 100]  # [1] spatial resolution (1D model)
 area = (max_b[0] - min_b[0]) * (max_b[1] - min_b[1])  # [cm2]
 vol = area * (max_b[2] - min_b[2])  # [cm3]
@@ -143,8 +143,8 @@ s.setBotBC("freeDrainage")
 # s.setBotBC("noflux")
 s.setTopBC_solute(["constantFlux"], [0.], [0.])
 # s.setTotBC_solute(["outflow"])
-s.setBotBC_solute(["constantFlux"], [0.])
-# s.setBotBC_solute(["outflow"])
+# s.setBotBC_solute(["constantFlux"], [0.])
+s.setBotBC_solute(["outflow"])
 
 """ Fertilizer """  # |\label{l62:init_source}|
 fertilization_time = 31  # [day] fertilisation event
@@ -180,7 +180,8 @@ print("sum net inf", 10 * np.sum(net_inf), "mm")
 # plot_profile(s.getSolutionHead(), s.getSolution_(1))
 
 N = int(np.ceil(sim_time / dt))
-c, h, w = [], [], []  # results
+c, h, w = [], [], [] # results
+fw = np.zeros(sim_time)
 
 for i in range(0, N):  # |\label{l62:loop_loop}|
 
@@ -200,10 +201,11 @@ for i in range(0, N):  # |\label{l62:loop_loop}|
         soil_sol_fluxes = { ind: 0. * fertilization_amount}
         s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)  # |\label{l62:fert_end}|
 
-    s.solve(dt)
+    s.solve(dt, saveInnerFluxes_ = True)
     h.append(s.getSolutionHead_())  # [cm]
     w.append(s.getWaterContent())  # [1]
     c.append(s.getSolution_(1))  # [g/L]
+    fw[int(t)] += s.getLowerBoundaryFluxesPerCell(0).sum() # [cm/day]  # |\label{l62:BCfluxes}| 
 
 print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000., "l")  # |\label{l62:results}|
 print("water content to water volume", np.sum(w[-1]) * area * 1, "cm3")
@@ -211,5 +213,5 @@ print("change in water volume", s.getWaterVolume() - volume0, "cm3 = ", 1.e-3 * 
 
 plot_history(w, c, N)
 plot_profile(h[-1], c[-1])
-plot_results(h, c, times_, netinf_, min_b[2])
+plot_results(h, c, times_, netinf_, fw, min_b[2])
 

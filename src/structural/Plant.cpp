@@ -58,9 +58,9 @@ void Plant::initializeReader()
     auto strp = std::make_shared<StemRandomParameter>(shared_from_this());
     strp->subType = 0;
     setOrganRandomParameter(strp);
-    auto strp1 = std::make_shared<StemRandomParameter>(shared_from_this()); // Dummy stem, in case there is no stem defined
-    strp1->subType = 1;
-    setOrganRandomParameter(strp1);
+    // auto strp1 = std::make_shared<StemRandomParameter>(shared_from_this()); // Dummy stem, in case there is no stem defined
+    // strp1->subType = 1;
+    // setOrganRandomParameter(strp1);
     auto lrp = std::make_shared<LeafRandomParameter>(shared_from_this());
     lrp->subType = 0;
     setOrganRandomParameter(lrp);
@@ -107,11 +107,11 @@ void Plant::initializeLB(bool verbose)
 {
     reset(); // just in case
     auto seed = std::make_shared<Seed>(shared_from_this());
-    baseOrgans.push_back(seed);
+    this->addOrgan(seed);
 	seed->initialize(verbose);
     initialize_(verbose);
-
 }
+
 /**
  * Sets up the plant according to the plant parameters,
  * a confining geometry, the tropism functions, and the growth functions.
@@ -134,7 +134,7 @@ void Plant::initializeDB(bool verbose)
     };
 
     auto seed = std::make_shared<SeedDB>(shared_from_this());
-    baseOrgans.push_back(seed);
+    this->addOrgan(seed);
 	seed->initialize(verbose);
     initialize_(verbose);
 }

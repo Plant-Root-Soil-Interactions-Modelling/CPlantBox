@@ -87,7 +87,7 @@ protected:
 
 	std::weak_ptr<SignedDistanceFunction> geometry; ///< confining geometry
 	double randn(int nNode) { if((nNode > 0) && (plant.lock()->getStochastic())) { return ND(gen);} else { return plant.lock()->randn();} } ///< normally distributed random number (0,1)
-    double rand(int nNode) { if((nNode > 0) && (plant.lock()->getStochastic())) { return UD(gen);} else { return plant.lock()->randn();} } ///< uniformly distributed random number (0,1)
+    double rand(int nNode) { if((nNode > 0) && (plant.lock()->getStochastic())) { return UD(gen);} else { return plant.lock()->rand();} } ///< uniformly distributed random number (0,1)
 
     std::normal_distribution<double> ND;
     std::uniform_real_distribution<double> UD;

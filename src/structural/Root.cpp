@@ -23,27 +23,26 @@ namespace CPlantBox {
  */
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d partialIHeading_, int pni, bool moved, int oldNON)
-     :Organ(id, param, alive, active, age, length,
-	 partialIHeading_,pni, moved,  oldNON )
-      {
+     :Organ(id, param, alive, active, age, length, partialIHeading_,pni, moved,  oldNON )
+{
     insertionAngle = this->param()->theta;
-      }
+}
 
 
 /**
  * Constructor: Should be only called during simulation by Root::createLateral().
  * For base roots the initial node and node creation time must be set from outside
  *
- * @param rs 			points to RootSystem
- * @param type 		    type of root that is created
+ * @param plant_      	points to RootSystem
+ * @param subType 		subType of root that is created
  * @param heading		heading of parent root at emergence
  * @param delay 		to give apical zone of parent time to develop
  * @param parent		parent root
  * @param pbl			parent base length
  * @param pni			parent node index
  */
-Root::Root(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
-:Organ(rs, parent, Organism::ot_root, type, delay,  pni) // <- OrganRandomParameter::realize() is called here
+Root::Root(std::shared_ptr<Organism> plant_, int subType,  double delay, std::shared_ptr<Organ> parent, int pni)
+:Organ(plant_, parent, Organism::ot_root, subType, delay,  pni) // <- OrganRandomParameter::realize() is called here
 {
     assert(parent!=nullptr && "Root::Root parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
@@ -277,7 +276,7 @@ double Root::getParameter(std::string name) const
 {
     // specific parameters
     if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
-	if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
+    if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
@@ -292,11 +291,11 @@ double Root::getParameter(std::string name) const
     // further
     if (name=="lnMean") { // mean lateral distance [cm]
         auto& v =param()->ln;
-		if(v.size()>0){
-			return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
-		}else{
-			return 0;
-		}
+        if(v.size()>0){
+            return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+        } else {
+            return 0;
+        }
     }
     if (name=="lnDev") { // standard deviation of lateral distance [cm]
         auto& v =param()->ln;
@@ -320,6 +319,25 @@ std::string Root::toString() const
     std::stringstream newstring;
     newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index" << parentNI << ".";
     return  Organ::toString()+newstring.str();
+}
+
+/**
+ * Static root
+ */
+
+StaticRoot::StaticRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, double length, int pni)
+        :Root(id, param, true, false, 0., length, Vector3d(0.,0.,-1.), pni, false,  0 )
+{ }
+
+void StaticRoot::initializeLaterals() {
+    assert(lateralNodeIndices.size()==lateralTypes.size() && lateralNodeIndices.size()==lateralDelays.size() && "Root::Root parent must be set");
+    // std::cout << lateralNodeIndices.size() << "\n";
+    for (int i=0; i<lateralNodeIndices.size(); i++) {
+        int lni = lateralNodeIndices.at(i); // rename
+        std::shared_ptr<Organ> lateral = std::make_shared<Root>(plant.lock(), lateralTypes.at(i) , lateralDelays.at(i), shared_from_this(), lni);
+        // lateral->addNode(getNode(lni), getNodeId(lni), lateralDelays.at(i));
+        this->addChild(lateral);
+    }
 }
 
 } // end namespace CPlantBox

@@ -517,6 +517,9 @@ class EstimateDataModel:
         length_, age_ = [], []
         for i, j_ in enumerate(indices):
             for j in j_:
+                # print("i", i, type(i))
+                # print("j", j, type(j))
+                # print("j_", j_, type(j))
                 age = self.estimates[i][(j, "age")]
                 l = self.rsmls[i].properties["length"][j]
                 age_.append(age)  # for fitting

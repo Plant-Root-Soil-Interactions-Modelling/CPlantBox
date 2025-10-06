@@ -71,7 +71,7 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
         else:
             raise Exception(f'unexpected object type for TairC ({type(TairC)})')
             
-        self.solve_photosynthesis(sim_time = sim_time, sxx = rsx, cells = True, 
+        self.solve_photosynthesis(sim_time = sim_time, sxx = rsx, cells = cells, 
                                         ea =  ea, es = es, TleafK =  TairK , soil_k = soil_k,  
                                 verbose = verbose, doLog = doLog, outputDir = outputDirectory)
                                 
@@ -100,25 +100,25 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
             organTypes = np.array(self.plant.organTypes)
             return np.array(leafBlade)[organTypes == ot]
         
-    def get_tot_transpiration(self):
+    def get_transpiration(self):
         """ actual transpiration [cm3 day-1], calculated as the sum of all leaf radial fluxes"""
-        return sum(self.Ev)
+        return self.Ev
 
     def get_net_assimilation(self):
         """ net actual assimilation rate assimilation [mol CO2 d-1] """
-        leafBlade = self.get_leafBlade_area(pb.leaf)
+        leafBlade = self.get_leafBlade_area(pb.leaf) * 2.
         An = self.get_net_assimilation_perleafBladeArea()
         return An * leafBlade
     
     def get_Vc(self):
         """ gross carboxilation-limited assimilation rate [mol CO2 d-1]"""
-        leafBlade = self.get_leafBlade_area(pb.leaf)
+        leafBlade = self.get_leafBlade_area(pb.leaf) * 2.
         Vc = self.get_Vc_perleafBladeArea()
         return Vc * leafBlade
         
     def get_Vj(self):
         """ gross electron transport-limited assimilation rate [mol CO2 d-1] """
-        leafBlade = self.get_leafBlade_area(pb.leaf)
+        leafBlade = self.get_leafBlade_area(pb.leaf) * 2.
         Vj = self.get_Vj_perleafBladeArea()
         return Vj * leafBlade
         
@@ -242,3 +242,8 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
 
         # C4 parameters
         self.Q10_photo = parameters["Plant"]["C4"]["Q10_photo"]["value"]
+        
+        
+    def radial_fluxes(self):
+        """ plant-exterior exchanges [cm3/day] """
+        return np.array(self.outputFlux)

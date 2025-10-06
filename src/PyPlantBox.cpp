@@ -600,7 +600,7 @@ PYBIND11_MODULE(plantbox, m) {
 
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, bool>()) // <---------------------------------------------------
             .def_readwrite("lb", &RootSpecificParameter::lb)
             .def_readwrite("la", &RootSpecificParameter::la)
             .def_readwrite("ln", &RootSpecificParameter::ln)
@@ -608,6 +608,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a", &RootSpecificParameter::a)
             .def_readwrite("theta", &RootSpecificParameter::theta)
             .def_readwrite("rlt", &RootSpecificParameter::rlt)
+            .def_readwrite("laterals", &RootSpecificParameter::laterals)
             .def("getK",&RootSpecificParameter::getK)
             .def("nob", &RootSpecificParameter::nob);
      py::class_<MycorrhizalRootRandomParameter, RootRandomParameter, OrganRandomParameter, std::shared_ptr<MycorrhizalRootRandomParameter>>(m, "MycorrhizalRootRandomParameter")
@@ -650,7 +651,7 @@ PYBIND11_MODULE(plantbox, m) {
 
 
      /*
-			.def("getK",&RootSpecificParameter::getK)
+            .def("getK",&RootSpecificParameter::getK)
             .def("nob", &RootSpecificParameter::nob);
     /*
      * seedparameter.h
@@ -835,6 +836,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def("calcAge", &Root::calcAge)
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
             .def("param", &Root::param);
+    py::class_<StaticRoot, Root, std::shared_ptr<StaticRoot>>(m, "StaticRoot")
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, double, int>())
+            .def("initializeLaterals", &StaticRoot::initializeLaterals)
+            .def("addLateral", &StaticRoot::addLateral);
+
     py::class_<MycorrhizalRoot, Root, Organ, std::shared_ptr<MycorrhizalRoot>>(m,"MycorrhizalRoot")
             .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, int>())
@@ -939,15 +945,15 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setRadius", &MappedSegments::setRadius)
         .def("setTypes", &MappedSegments::setSubTypes) //kept for backward compatibility
         .def("setSubTypes", &MappedSegments::setSubTypes)
-        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&)) &MappedSegments::setSoilGrid)
-        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d, bool)) &MappedSegments::setSoilGrid,
-        		py::arg("s"), py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true)
-        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
+        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, bool)) &MappedSegments::setSoilGrid, py::arg("s"), py::arg("noChanges") = false)
+        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d, bool, bool)) &MappedSegments::setSoilGrid,
+        		py::arg("s"), py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
+        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"),
+				py::arg("cut") = true, py::arg("noChanges") = false)
         .def("mapSegments",  &MappedSegments::mapSegments)
         .def("cutSegments", &MappedSegments::cutSegments)
         .def_readwrite("soil_index", &MappedSegments::soil_index)
         .def("sort",&MappedSegments::sort)
-        .def("segOuterRadii",&MappedSegments::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))
 		.def("segLength",&MappedSegments::segLength)
 		.def("getHs",&MappedSegments::getHs)
         .def("getSegmentZ",&MappedSegments::getSegmentZ)
@@ -972,12 +978,10 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("minBound", &MappedSegments::minBound)
         .def_readwrite("maxBound", &MappedSegments::maxBound)
         .def_readwrite("resolution", &MappedSegments::resolution)
-		.def_readwrite("organParam", &MappedSegments::plantParam)
-	    .def_readwrite("segO", &MappedSegments::segO);
-    py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
-        .def(py::init<>())
-        .def("mappedSegments",  &MappedRootSystem::mappedSegments)
-        .def("addSegments", &MappedRootSystem::rootSystem);
+//		.def_readwrite("organParam", &MappedSegments::plantParam)
+	    .def_readwrite("segO", &MappedSegments::segO)
+		.def("sumSegFluxes",&MappedSegments::sumSegFluxes)
+		.def("splitSoilFluxes",&MappedSegments::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0);
 
     /*
      * Plant.h
@@ -1007,12 +1011,11 @@ PYBIND11_MODULE(plantbox, m) {
 	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")
 			.def(py::init<unsigned int>(),  py::arg("seednum")=0)
 			.def("mappedSegments", &MappedPlant::mappedSegments)
-			.def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
-			.def("initializeLB", &MappedPlant::initializeLB, py::arg("verbose") = true, py::arg("stochastic") = true)
-			.def("initializeDB", &MappedPlant::initializeDB, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("printNodes",  &MappedPlant::printNodes)
 			.def("plant", &MappedPlant::plant)
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
+			.def("disableExtraNode",&MappedPlant::disableExtraNode)
+            .def("enableExtraNode",&MappedPlant::enableExtraNode)
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
 			.def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
@@ -1031,10 +1034,19 @@ PYBIND11_MODULE(plantbox, m) {
 	 * Perirhizal.h
 	 */
     py::class_<Perirhizal, std::shared_ptr<Perirhizal>> (m, "Perirhizal")
-           .def(py::init<>())
-           .def(py::init<std::shared_ptr<MappedSegments>>())
-           .def("segOuterRadii",&Perirhizal::segOuterRadii,  py::arg("type"), py::arg("vols") = std::vector<double>(0))
-           .def_readwrite("ms",  &Perirhizal::ms);
+            .def(py::init<>())
+            .def(py::init<std::shared_ptr<MappedSegments>>())
+            .def("segOuterRadii",&Perirhizal::segOuterRadii,  py::arg("type"), py::arg("vols") = std::vector<double>(0))
+            .def("adapt_values",&Perirhizal::adapt_values,  py::arg("val_new_"), py::arg("minVal_"), py::arg("maxVal_")=-1., py::arg("volumes_"), py::arg("divideEqually_"),  py::arg("verbose_"))
+            .def("distributeValSolute_",&Perirhizal::distributeValSolute_,  py::arg("seg_values_content"), py::arg("volumes"), py::arg("source"),
+                   py::arg("dt"))
+            .def("distributeValWater_",&Perirhizal::distributeValWater_,  py::arg("seg_values_perVol"), py::arg("volumes"), py::arg("source"),
+                   py::arg("dt"), py::arg("theta_S"), py::arg("theta_wilting_point"))
+            .def("splitSoilVals_",&Perirhizal::splitSoilVals,  py::arg("soilVals"), py::arg("cellIds"), py::arg("isWater"),
+                   py::arg("seg_values"), py::arg("seg_volume"), py::arg("dt"), py::arg("theta_S"), py::arg("theta_wilting_point"))
+			.def("sumSegFluxes",&Perirhizal::sumSegFluxes)
+			.def("splitSoilFluxes",&Perirhizal::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
+            .def_readwrite("ms",  &Perirhizal::ms);
 
     /*
      * XylemFlux.h
@@ -1241,12 +1253,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("C_ST",&PhloemFlux::C_STv)
             .def_readwrite("r_ST_ref",&PhloemFlux::r_ST_refv)
             .def_readwrite("r_ST",&PhloemFlux::r_STv)
-            .def_readwrite("delta_ls",&PhloemFlux::delta_ls)
-            .def_readwrite("delta_ls_org_i",&PhloemFlux::delta_ls_org_i)
-            .def_readwrite("delta_suc_org",&PhloemFlux::delta_suc_org)
-            .def_readwrite("delta_ls_org",&PhloemFlux::delta_ls_org)
-            .def_readwrite("delta_ls_org_imax",&PhloemFlux::delta_ls_org_imax)
-            .def_readwrite("delta_ls_org_max",&PhloemFlux::delta_ls_org_max)
             .def_readwrite("update_viscosity",&PhloemFlux::update_viscosity_)
             .def_readwrite("AgPhl",&PhloemFlux::Agv)
             .def_readwrite("Q_Grmax",&PhloemFlux::Q_Grmaxv)
@@ -1260,7 +1266,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("Csoil_node",&PhloemFlux::Csoil_node)
             .def_readwrite("deltaSucOrgNode",&PhloemFlux::deltaSucOrgNode_)
             .def_readwrite("usePsiXyl",&PhloemFlux::usePsiXyl)
-            .def_readwrite("expression",&PhloemFlux::expression)
+            //.def_readwrite("expression",&PhloemFlux::expression)
             .def_readwrite("JW_ST",&PhloemFlux::JW_STv)
             .def_readwrite("Gr_Y",&PhloemFlux::Gr_Y)
             .def_readwrite("solver",&PhloemFlux::solver)
@@ -1278,8 +1284,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("initValST",&PhloemFlux::initValST)
 			.def_readwrite("initValMeso",&PhloemFlux::initValMeso)
 			.def_readwrite("doTroubleshooting",&PhloemFlux::doTroubleshooting)
-			.def_readwrite("Q_GrUnbornv_i",&PhloemFlux::Q_GrUnbornv_i)
-			.def_readwrite("Q_GrmaxUnbornv_i",&PhloemFlux::Q_GrmaxUnbornv_i)
+			//.def_readwrite("Q_GrUnbornv_i",&PhloemFlux::Q_GrUnbornv_i)
+			//.def_readwrite("Q_GrmaxUnbornv_i",&PhloemFlux::Q_GrmaxUnbornv_i)
 			.def_readwrite("Fpsi",&PhloemFlux::Fpsi)
 			.def_readwrite("Flen",&PhloemFlux::Flen)
 			.def_readwrite("Q10",&PhloemFlux::Q10)
@@ -1301,7 +1307,15 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kM_S_Mesophyll",&PhloemFlux::kM_S_Mesophyll)
             .def_readwrite("kHyd_S_Mesophyll",&PhloemFlux::kHyd_S_Mesophyll)
             .def_readwrite("k_S_Mesophyll",&PhloemFlux::k_S_Mesophyll)
-            .def_readwrite("k_mucil_",&PhloemFlux::k_mucil_);
+            .def_readwrite("k_mucil_",&PhloemFlux::k_mucil_)
+            .def_readwrite("kr_st",&PhloemFlux::kr_st)
+            .def_readwrite("kx_st",&PhloemFlux::kx_st)
+            .def_readwrite("Across_st",&PhloemFlux::Across_st)
+            .def_readwrite("Perimeter_st",&PhloemFlux::Perimeter_st)
+            .def_readwrite("Rmax_st",&PhloemFlux::Rmax_st)
+            .def_readwrite("rhoSucrose",&PhloemFlux::rhoSucrose)
+            .def_readwrite("krm1v",&PhloemFlux::krm1v)
+            .def_readwrite("krm2v",&PhloemFlux::krm2v);
 
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
         .def(py::init<>())

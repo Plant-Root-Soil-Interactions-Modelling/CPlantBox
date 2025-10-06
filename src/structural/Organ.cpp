@@ -43,8 +43,7 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
  * @param ot        organ type
  * @param st        sub type of the organ type, e.g. different root types
  * @param delay     time delay in days when the organ will start to grow
- * @param iHeading TODO
- * @param pni
+ * @param pni       parent node index
  */
 Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int ot, int st, double delay,
     int pni)
@@ -849,38 +848,38 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
     assert(delayDefinition >= 0);
 
     switch(delayDefinition){
-    case Organism::dd_distance:
-    {
-        double meanLn = getParameter("lnMean"); // mean inter-lateral distance
-        double effectiveLa = std::max(getParameter("la")-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
-        double ageLN = this->calcAge(getLength(true)); // theoretical age of root when lateral node is created
-        ageLN = std::max(ageLN, age-dt);
-        double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
-        growthDelay = ageLG-ageLN; // time the lateral has to wait
-        break;
-    }
-    case Organism::dd_time_lat:
-    {
-        // time the lateral has to wait
-        growthDelay = std::max(rp->ldelay + plant.lock()->randn()*rp->ldelays, 0.);
-        break;
-    }
-    case Organism::dd_time_self:
-    {
+      case Organism::dd_distance:
+      {
+          double meanLn = getParameter("lnMean"); // mean inter-lateral distance
+          double effectiveLa = std::max(getParameter("la")-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
+          double ageLN = this->calcAge(getLength(true)); // theoretical age of root when lateral node is created
+          ageLN = std::max(ageLN, age-dt);
+          double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
+          growthDelay = ageLG-ageLN; // time the lateral has to wait
+          break;
+      }
+      case Organism::dd_time_lat:
+      {
+          // time the lateral has to wait
+          growthDelay = std::max(rp->ldelay + plant.lock()->randn()*rp->ldelays, 0.);
+          break;
+      }
+      case Organism::dd_time_self:
+      {
 
-        //get delay per lateral
-        auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
-        growthDelay = std::max(latRp->ldelay + plant.lock()->randn()*latRp->ldelays, 0.);
-        break;
-    }
-    default:
-    {
-        std::cout<<"delayDefinition "<<delayDefinition<<" "<<Organism::dd_distance<<" ";
-        std::cout<< Organism::dd_time_lat<<" "<< Organism::dd_time_self<<std::endl<<std::flush;
-        std::cout<<"				"<<(delayDefinition==Organism::dd_distance)<<" ";
-        std::cout<<(delayDefinition== Organism::dd_time_lat)<<" "<< (delayDefinition==Organism::dd_time_self)<<std::endl<<std::flush;
-        throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
-    }
+          //get delay per lateral
+          auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
+          growthDelay = std::max(latRp->ldelay + plant.lock()->randn()*latRp->ldelays, 0.);
+          break;
+      }
+      default:
+      {
+          std::cout<<"delayDefinition "<<delayDefinition<<" "<<Organism::dd_distance<<" ";
+          std::cout<< Organism::dd_time_lat<<" "<< Organism::dd_time_self<<std::endl<<std::flush;
+          std::cout<<"				"<<(delayDefinition==Organism::dd_distance)<<" ";
+          std::cout<<(delayDefinition== Organism::dd_time_lat)<<" "<< (delayDefinition==Organism::dd_time_self)<<std::endl<<std::flush;
+          throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
+      }
     }
     return growthDelay;
 }

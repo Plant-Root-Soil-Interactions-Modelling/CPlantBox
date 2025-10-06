@@ -87,7 +87,7 @@ for program in programs:
 
 if len(error) > 0:
     print("Program(s) {0} has/have not been found. try running sudo apt-get install {0}".format(" ".join(error)))
-    # raise Exception('import modules')
+    raise Exception('import modules')
 
 # check some prerequistes
 modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'pandas', 'pybind11[global]', 'ipython']  # 'mpi4py',
@@ -138,4 +138,5 @@ show_message("(2/2) Step completed. Succesfully configured and built CPlantBox."
 show_message("to test installation, run \n cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
 
 show_message("CPlantBox is currently at stable branch, use \n $git switch master \n to obtain the latest version, use cmake . & make to recompile")
+
 

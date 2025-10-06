@@ -3,6 +3,8 @@
 
 #include "mymath.h"
 #include "Quaternion.h"
+#include <optional>
+#include <vector>
 
 namespace CPlantBox {
 
@@ -19,7 +21,9 @@ class CatmullRomSpline
   CatmullRomSpline(std::vector<Vector3d> y, double t0, double t1) : y0(y[0]), y1(y[1]), y2(y[2]), y3(y[3]), t0(t0), t1(t1) {}
   Vector3d operator() (double t) const {
     double t_ = (t-t0)/(t1-t0);
-    return 0.5 * ((2.0*y1) + (-y0 + y2) * t_ + (2.0*y0 - 5.0*y1 + 4.0*y2 - y3) * t_ * t_ + (-y0 + 3.0*y1 - 3.0*y2 + y3) * t_ * t_ * t_);
+    Vector3d quadp = 0.5 * ((2.0*y1) + (-y0 + y2) * t_ + (2.0*y0 - 5.0*y1 + 4.0*y2 - y3) * t_ * t_ + (-y0 + 3.0*y1 - 3.0*y2 + y3) * t_ * t_ * t_);
+    Vector3d linp = y1 + t_ * (y2 - y1);
+    return quadp * alpha + linp * (1.0 - alpha);
   }
 
   double getT0() const { return t0; }
@@ -27,7 +31,9 @@ class CatmullRomSpline
 
   Vector3d derivative(double t) const {
     double t_ = (t-t0)/(t1-t0);
-    return 0.5 * ((-y0 + y2) + (2.0*y0 - 5.0*y1 + 4.0*y2 - y3) * 2.0 * t_ + (-y0 + 3.0*y1 - 3.0*y2 + y3) * 3.0 * t_ * t_);
+    Vector3d quadd = 0.5 * ((-y0 + y2) + (2.0*y0 - 5.0*y1 + 4.0*y2 - y3) * 2.0 * t_ + (-y0 + 3.0*y1 - 3.0*y2 + y3) * 3.0 * t_ * t_);
+    Vector3d lind = y2 - y1;
+    return quadd * alpha + lind * (1.0 - alpha);
   }
 
   Vector3d operator[](int i) {
@@ -45,16 +51,36 @@ class CatmullRomSpline
     return Quaternion::FromForward(v);
   }
 
+  int closestId(double t) const {
+    double t_ = (t-t0)/(t1-t0);
+    if(t_ < 0.5)
+    {
+      return id1;
+    }
+    else
+    {
+      return id2;
+    }
+  }
+
+  void IdPair(int id1, int id2) {
+    this->id1 = id1;
+    this->id2 = id2;
+  }
+
+  void setAlpha(double alpha) {
+    this->alpha = alpha;
+  }
+
   private:
   // start and end time of the spline
   double t0, t1;
   // the control points of the spline
   Vector3d y0, y1, y2, y3;
-  // the stages of the apline
-  Vector3d a0, a1, a2, a3;
-  Vector3d b0, b1, b2;
+  // the original IDs of the control points
+  int id1, id2;
   // spline parameter
-  double alpha = 0.5;
+  double alpha = 0.9;
 };
 
 /**
@@ -66,7 +92,10 @@ class CatmullRomSplineManager
 {
   public:
   CatmullRomSplineManager() = default;
-  CatmullRomSplineManager(std::vector<Vector3d> y) : y(y) {
+  CatmullRomSplineManager(std::vector<Vector3d> y, std::optional<std::vector<int>> ids = std::nullopt) : y(y), indices(ids) {
+    computeT();
+  }
+  CatmullRomSplineManager(std::initializer_list<Vector3d> y) : y(y), indices(std::nullopt) {
     computeT();
   }
 
@@ -90,27 +119,34 @@ class CatmullRomSplineManager
     return splines[index];
   }
 
+  double getT0() const {
+    return t0;
+  }
+  double getT1() const {
+    return t1;
+  }
+
+  std::vector<double> getT() const {
+    return yt;
+  }
+
+  void setAlpha(double alpha, int i) {
+    splines[i].setAlpha(alpha);
+  }
+
   const std::vector<CatmullRomSpline> &getSplines() const
   {
     return splines;
   }
 
   Vector3d operator() (double t) const {
-    Vector3d p(0,0,0);
-    int sum = 0;
-    for(int i = 0; i < splines.size(); i++)
-    {
-      // whether the spline has t in its interval
-      bool in = t >= splines[i].getT0() && t <= splines[i].getT1();
-      // we add the spline if it is in the interval
-      if(in)
-      {
-        p = p + splines[i](t);
-        sum++;
-      }
-    }
-    return p / static_cast<double>(sum);
+    return std::find_if(splines.begin(), splines.end(), [t](const CatmullRomSpline &s) { return t >= s.getT0() && t <= s.getT1(); })->operator()(t);
   }
+
+  Vector3d derivative(double t) const {
+    return std::find_if(splines.begin(), splines.end(), [t](const CatmullRomSpline &s) { return t >= s.getT0() && t <= s.getT1(); })->derivative(t);
+  }
+
   void setY(std::vector<Vector3d> y) {
     this->y = y;
     computeT();
@@ -138,6 +174,25 @@ class CatmullRomSplineManager
     return i;
   }
 
+  Vector3d help_lower() const {
+    return y[0] - (y[1] - y[0]);
+  }
+  Vector3d help_upper() const {
+    return y[y.size()-1] + (y[y.size()-1] - y[y.size()-2]);
+  }
+  Vector3d getControlPoint(int i) const {
+    return y[i];
+  }
+  int size() const {
+    return y.size();
+  }
+  int splineSize() const {
+    return splines.size();
+  }
+  std::vector<double> getTValues(int spline) const {
+    return {splines[spline].getT0(), splines[spline].getT1()};
+  }
+
   private:
 
   void computeT()
@@ -153,9 +208,34 @@ class CatmullRomSplineManager
       yt[i] /= yt.back();
     }
     splines.clear();
-    for(int i = 0; i < y.size()-3; i++)
+    for(int i = 0; i < y.size()-1; i++)
     {
-      splines.push_back(CatmullRomSpline({y[i], y[i+1], y[i+2], y[i+3]}, yt[i], yt[i+3]));
+      if(i == 0)
+      {
+        auto helper = help_lower();
+        splines.push_back(CatmullRomSpline({helper, y[0], y[1], y[2]}, 0.0, yt[1]));
+        if(indices)
+        {
+          splines.back().IdPair(indices.value()[0], indices.value()[1]);
+        }
+      }
+      else if(i == y.size()-1)
+      {
+        auto helper = help_upper();
+        splines.push_back(CatmullRomSpline({y[i-1], y[i], y[i+1], helper}, yt[i], 1.0));
+        if(indices)
+        {
+          splines.back().IdPair(indices.value()[i], indices.value()[i+1]);
+        }
+      }
+      else
+      {
+        splines.push_back(CatmullRomSpline({y[i-1], y[i], y[i+1], y[i+2]}, yt[i], yt[i+1]));
+        if(indices)
+        {
+          splines.back().IdPair(indices.value()[i], indices.value()[i+1]);
+        }
+      }
     }
     this->t0 = splines[0].getT0();
     this->t1 = splines.back().getT1();
@@ -163,6 +243,7 @@ class CatmullRomSplineManager
 
   std::vector<Vector3d> y; // control points
   std::vector<double> yt; // t values
+  std::optional<std::vector<int>> indices;
   std::vector<CatmullRomSpline> splines;
   float t0 = -1.0;
   float t1 = -1.0;

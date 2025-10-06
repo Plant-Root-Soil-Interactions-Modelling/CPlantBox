@@ -159,8 +159,8 @@ def age_to_creationtime(age):
     return [[maxage - a for a in pl] for pl in age]
 
 
-def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
-    """ Copies radius, creation times, and types one value per node, if type or order is not found, root order is calculated 
+def get_root_parameters(polylines:list, funcs:dict, props:dict) -> (list, list, list):
+    """ Copies radius, creation times, and types one value per root, if type or order is not found, root order is calculated 
         
         Args:
         polylines(list): flat list of polylines, one polyline per root
@@ -168,7 +168,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
         props(dict): dictionary of properties     
         
         Returns:
-        radius, creation time, type or order (per node)
+        radius, creation time, type or order (per root), selected tag names, radii is single valued, type is single valued
         
         different rsml writer call parameters different names, get_parameter expect the ones in the list below
         functions are checked first, then properties, if not found NaN values are set.       
@@ -181,35 +181,35 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
     age_names = ["age", "Age", "age [d]"]
 
     tag_names = []
-    diam = None
+    radii = None
     for n in radius_names:  # search for radius
         if n in funcs:  # in functions
             tag_names.append(n)
             radius = True
-            diam = funcs[n]
-            diam_p = False
+            radii = funcs[n]
+            radii_p = False
             break
         elif n in props:  # and in properties
             tag_names.append(n)
             radius = True
-            diam = props[n]
-            diam_p = True
+            radii = props[n]
+            radii_p = True
             break
-    if diam == None:  # nothing found yet
-        for n in diam_names:  # search for diameter
+    if radii == None:  # nothing found yet
+        for n in diam_names:  # search for radiieter
             if n in funcs:  # in functions
                 tag_names.append(n)
                 radius = False
-                diam = funcs[n]
-                diam_p = False
+                radii = funcs[n]
+                radii_p = False
                 break
             elif n in props:  # and in properties
                 tag_names.append(n)
                 radius = False
-                diam = props[n]
-                diam_p = True
+                radii = props[n]
+                radii_p = True
                 break
-    if diam == None:  # nothing found
+    if radii == None:  # nothing found
         tag_names.append("")
 
     et = None
@@ -245,33 +245,53 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
         props["order"] = type_
         tag_names.append("order")
 
+    if radius == False:
+        for i, p in enumerate(polylines):
+            for j in range(0, len(p)):
+                if radii_p:
+                    radii[i] = radii[i] / 2.
+                else:
+                    radii[i][j] = radii[i][j] / 2.
+
+    return radii, et, type_, tag_names, radii_p, type_p
+
+
+def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
+    """ Copies radius, creation times, and types one value per node, if type or order is not found, root order is calculated.
+        see also get_root_parameters
+        
+        Args:
+        polylines(list): flat list of polylines, one polyline per root
+        funcs(dict): dictionary of functions
+        props(dict): dictionary of properties     
+        
+        Returns:
+        radius, creation time, type or order (per node)                                    
+    """
+
+    radii_, et, type_, tag_names, radii_p, type_p = get_root_parameters(polylines, funcs, props)
+
     radii, types, cts = [], [], []
     for i, p in enumerate(polylines):
         for j in range(0, len(p)):
-            if diam is not None:
-                if diam_p:
-                    if radius:
-                        radii.append(diam[i])
-                    else:
-                        radii.append(diam[i] / 2.)
+            if radii_ is not None:
+                if radii_p:
+                    radii.append(radii_[i])
                 else:
-                    if radius:
-                        radii.append(diam[i][j])
-                    else:
-                        radii.append(diam[i][j] / 2.)
+                    radii.append(radii_[i][j])
             else:
-                radii.append(np.NaN)
+                radii.append(np.nan)
             if type_ is not None:
                 if type_p:
                     types.append(type_[i])
                 else:
                     types.append(type_[i][j])
             else:
-                types.append(np.NaN)
+                types.append(np.nan)
             if et is not None:
                 cts.append(et[i][j])
             else:
-                cts.append(np.NaN)
+                cts.append(np.nan)
 
     return radii, cts, types, tag_names
 

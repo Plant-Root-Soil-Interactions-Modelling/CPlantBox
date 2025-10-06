@@ -10,6 +10,7 @@ import numpy as np
 from scipy.spatial import ConvexHull, Voronoi
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import fsolve
+from scipy.optimize import root_scalar
 import scipy.linalg as la
 
 
@@ -17,7 +18,7 @@ class PerirhizalPython(Perirhizal):
     """
     Helper class for modelling the perirhizal zone 
     
-    Wraps MappedSegments (or specialisations MappedPlant, MappedRootsystem) and adds functions to retrieve information 
+    Wraps MappedSegments (or specialisations MappedPlant) and adds functions to retrieve information 
     
     * calculates outer perirhizal radii    
     * calculates root soil interface potential using steady rate approximation (Schröder et al. 2008)
@@ -66,7 +67,7 @@ class PerirhizalPython(Perirhizal):
             rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
         else:
             rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], self.sp) for i in range(0, len(rx))])
-            rsx = rsx[:, 0]
+            # rsx = rsx[:, 0]
         return rsx
 
     @staticmethod
@@ -80,14 +81,35 @@ class PerirhizalPython(Perirhizal):
         rho            geometry factor [1] (outer_radius / inner_radius)
         sp             soil parameter: van Genuchten parameter set (type vg.Parameters)
         """
-        k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint)
-        # rho = outer_r / inner_r  # Eqn [5]
-        rho2 = rho * rho  # rho squaredswitched
-        # b = 2 * (rho2 - 1) / (1 + 2 * rho2 * (np.log(rho) - 0.5))  # Eqn [4]
-        b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Eqn [7]
+        if inner_kr < 1.e-7:
+            return sx
+        k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint)  # Vanderborgth et al. 2023, Eqn [7]
+        rho2 = np.square(rho)  # rho squared
+        b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
         fun = lambda x: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
-        rsx = fsolve(fun, (rx + sx) / 2)
-        return rsx
+        rsx = root_scalar(fun, method = 'brentq', bracket = [min(rx, sx), max(rx, sx)])
+        return rsx.root
+
+    def perirhizal_conductance_per_layer(self, h_bs, h_sr, sp):
+        """ 
+        The perirhizal conductance in a soil layer (or cell) (Vanderborght et al. 2023, Eqn [6]) [day-1], 
+        see also PlantHydraulicModel.get_soil_rootsystem_concductance().
+        If there are no roots in a layer nan is returned
+        
+        h_bs           bulk soil matric potential
+        h_sr           matric potential at the soil root interface   
+        sp             soil parameter: van Genuchten parameter set (type vg.Parameters)        
+        """
+        r_root = self.average(self.ms.getEffectiveRadii())  # average radius over layer [cm]
+        rld = self.get_density("length")  # root length density per layer [cm-2] = [cm/cm3]
+        r_phriz = np.divide(1., np.sqrt(np.pi * rld))  # outer perirhizal radii per layer [cm]
+        rho = np.divide(r_phriz, r_root)  # [1], see Vanderborght et al. (2023), Eqn [9]
+        rho2 = np.square(rho)  # [1]
+        b = np.divide(2 * (rho2 - np.ones(rho2.shape)) , np.ones(rho2.shape) - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # [1], see Eqn [8]
+        k_prhiz = lambda h_bs, h_sr: (vg.fast_mfp[sp](h_bs) - vg.fast_mfp[sp](h_sr)) / (h_bs - h_sr)  # an effective conductivity [cm/day]
+        dz = (self.ms.maxBound.z - self.ms.minBound.z) / self.ms.resolution.z  # [cm]
+        l_root = rld * dz  # [cm-1]
+        return 2 * np.pi * np.multiply(l_root, np.multiply(b, k_prhiz(h_bs, h_sr)))  # [day-1], see Vanderborght et al. (2023), Eqn [6]
 
     def create_lookup_mpi(self, filename, sp):
         """      
@@ -218,18 +240,18 @@ class PerirhizalPython(Perirhizal):
         try:
             rsx = self.lookup_table((rx, sx, inner_kr_ , rho_))
         except:
-            print("PerirhizalPython.soil_root_interface_potentials_table(): table look up failed, value exceeds table")
-            #
+
             if np.max(rx) > 0: print("xylem matric potential positive", np.max(rx), "at", np.argmax(rx))
             if np.min(rx) < -16000: print("xylem matric potential under -16000 cm", np.min(rx), "at", np.argmin(rx))
             if np.max(sx) > 0: print("soil matric potential positive", np.max(sx), "at", np.argmax(sx))
             if np.min(sx) < -16000: print("soil matric potential under -16000 cm", np.min(sx), "at", np.argmin(sx))
-            if np.min(inner_kr_) < 1.e-7: print("radius times radial conductivity below 1.e-7", np.min(inner_kr_), "at", np.argmin(inner_kr_))
+            if np.min(inner_kr_) < 1.e-7: return sx  # for kr ~ 0, rsx == sx
             if np.max(inner_kr_) > 1.e-4: print("radius times radial conductivity above 1.e-4", np.max(inner_kr_), "at", np.argmax(inner_kr_))
             if np.min(rho_) < 1: print("geometry factor below 1", np.min(rho_), "at", np.argmin(rho_))
             if np.max(rho_) > 200: print("geometry factor above 200", np.max(rho_), "at", np.argmax(rho_))
-            print("???")
-            print("rx", np.min(rx), np.max(rx), "sx", np.min(sx), np.max(sx), "inner_kr", np.min(inner_kr_), np.max(inner_kr_), "rho", np.min(rho_), np.max(rho_))
+
+            print("PerirhizalPython.soil_root_interface_potentials_table(): table look up failed, value exceeds table")
+            print("\trx", np.min(rx), np.max(rx), "sx", np.min(sx), np.max(sx), "inner_kr", np.min(inner_kr_), np.max(inner_kr_), "rho", np.min(rho_), np.max(rho_))
 
         return rsx
 
@@ -279,7 +301,7 @@ class PerirhizalPython(Perirhizal):
             return np.ones((0,)), np.ones((0,))
 
     def get_density(self, type:str, volumes:list = []):
-        """ retrives length, surface or volume density [cm/cm3, cm2/cm3, or cm3/cm3] per soil cells
+        """ retrieves length, surface or volume density [cm/cm3, cm2/cm3, or cm3/cm3] per soil cells
             
             type       length, surface or volume
             volumes    soil volume cells, if empty a recangular grid is assumed (its data stored in MappedSegments), see get_default_volumes_() 
@@ -335,7 +357,7 @@ class PerirhizalPython(Perirhizal):
         return d
 
     def get_outer_radii(self, type:str, volumes:list = []):
-        """ retrives the outer radii of the perirhizal zones [cm] 
+        """ retrieves the outer radii of the perirhizal zones [cm] 
             
             type       each soil volume is splitted into perirhizal zones proportional to segment "length", "surface" or "volume"
             volumes    soil volume cells, if empty a recangular grid is assumed (its data stored in MappedSegments), see get_default_volumes_() 
@@ -353,7 +375,7 @@ class PerirhizalPython(Perirhizal):
             print("PerirhizalPython.get_outer_radii() unknown type (should be 'length', 'surface', or 'volume')", type)
             raise
 
-    def get_outer_radii_(self, type:str, volumes:list = []):
+    def get_outer_radii_(self, type:str, volumes:list = None):
         """ python version of segOuterRadii, see get_outer_radii() """
         if type == "length":
             f = lambda a, l: l  # cm
@@ -655,17 +677,15 @@ if __name__ == "__main__":
     peri = PerirhizalPython()
     # peri.create_lookup(filename, sp)  # takes some hours
     # peri.open_lookup(filename)
-    
+
     peri.set_soil(vg.Parameters(loam))
-    a = 0.1 # cm
+    a = 0.1  # cm
     kr = 1.73e-4  # [1/day]
-    rx = -15000 # cm
-    sx = 0. # cm
+    rx = -15000  # cm
+    sx = 0.  # cm
     rho = 1 / a
-    inner_kr = a*kr 
+    inner_kr = a * kr
     rsx = peri.soil_root_interface_potentials([rx], [sx], [inner_kr], [rho])
     print("root soil interface", rsx, "cm")
-    print("results into a flux of", kr*2*a*np.pi*(rsx-rx), "cm3/day")
-    
-    
-    
+    print("results into a flux of", kr * 2 * a * np.pi * (rsx - rx), "cm3/day")
+
