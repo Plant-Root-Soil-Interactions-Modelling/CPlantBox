@@ -894,6 +894,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getSegmentMapper",&MappedSegments::getSegmentMapper)
         .def("getEffectiveRadius",&MappedSegments::getEffectiveRadius)
         .def("getEffectiveRadii",&MappedSegments::getEffectiveRadii)
+        .def("getMinBounds",&MappedSegments::getMinBounds)
 		.def("calcExchangeZoneCoefs",&MappedSegments::calcExchangeZoneCoefs)
         .def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
         .def_readwrite("distanceTip", &MappedPlant::distanceTip)
