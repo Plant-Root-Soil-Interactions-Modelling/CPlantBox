@@ -891,6 +891,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("matric2total",&MappedSegments::matric2total)
         .def("total2matric",&MappedSegments::total2matric)
 		.def("getNumberOfMappedSegments",&MappedSegments::getNumberOfMappedSegments)
+		.def("getNumberOfMappedNodes",&MappedSegments::getNumberOfMappedNodes)
         .def("getSegmentMapper",&MappedSegments::getSegmentMapper)
         .def("getEffectiveRadius",&MappedSegments::getEffectiveRadius)
         .def("getEffectiveRadii",&MappedSegments::getEffectiveRadii)

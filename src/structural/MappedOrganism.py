@@ -141,15 +141,31 @@ class MappedPlantPython():
         """
         segs = self.ms.segments
         sn = len(segs)
-        nn = len(self.ms.nodes)  # TODO write getter
-        ii_, jj_, vv_ = [], [], []
-        for i, s in enumerate(segs):  # build incidence matrix from edges
-            ii_.append(i)
-            ii_.append(i)
-            jj_.append(segs[i].x)
-            jj_.append(segs[i].y)
-            vv_.append(-1.)
-            vv_.append(1.)
+        nn = self.ms.getNumberOfMappedNodes()  
+        # ii_, jj_, vv_ = [], [], []
+        # for i, s in enumerate(segs):  # build incidence matrix from edges
+        #     ii_.append(i)
+        #     ii_.append(i)
+        #     jj_.append(segs[i].x)
+        #     jj_.append(segs[i].y)
+        #     vv_.append(-1.)
+        #     vv_.append(1.)
+        # # first optimization 
+        # ii_ = np.repeat(np.arange(sn), 2)
+        # jj_ = np.array([(s.x, s.y) for s in segs]).ravel()
+        # vv_ = np.tile([-1., 1.], sn) 
+        # # second optimization
+        ii_ = np.repeat(np.arange(sn, dtype=np.int32), 2)
+        # Build jj_ efficiently using fromiter
+        xs = np.fromiter((s.x for s in segs), dtype=np.int32, count=sn) # TODO C++ gettter could improve performance
+        ys = np.fromiter((s.y for s in segs), dtype=np.int32, count=sn) 
+        jj_ = np.empty(sn * 2, dtype=np.int32)
+        jj_[0::2] = xs
+        jj_[1::2] = ys
+        # Values array
+        vv_ = np.empty(sn * 2, dtype=np.float64)
+        vv_[0::2] = -1.0
+        vv_[1::2] =  1.0        
         return sparse.coo_matrix((np.array(vv_), (np.array(ii_), np.array(jj_))), shape = (sn, nn))
 
     def get_soil_matrix(self):

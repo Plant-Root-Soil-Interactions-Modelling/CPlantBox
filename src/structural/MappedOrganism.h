@@ -41,6 +41,7 @@ public:
     void mapSegments(const std::vector<Vector2i>& segs);
     void cutSegments(); // cut and add segments
     int getNumberOfMappedSegments() const { return segments.size(); };  // for the python binding, != getNumberOfSegments (because of shoot roots or cutting)
+    int getNumberOfMappedNodes() const { return nodes.size(); }; // might contain extra nodes
     std::vector<int> getSegmentMapper() const;  // seg2cell mapper as vector
 
     void sort(); ///< sorts segments, each segment belongs to position s.y-1
