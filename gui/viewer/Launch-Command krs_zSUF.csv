@@ -1,0 +1,9 @@
+
+'constant conductivties whole system, no age-dependency: (scenario 5)'
+python3 MRI_paper_label_rsml.py /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/ 5 MRI
+
+
+Order and age dependent conductivities: (scenario 6)
+python3 MRI_paper_label_rsml.py /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/ 6 MRI
+
+

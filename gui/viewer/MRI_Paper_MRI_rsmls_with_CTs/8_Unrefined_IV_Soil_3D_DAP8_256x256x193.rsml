@@ -1,0 +1,871 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsml>
+   <metadata>
+      <version>1</version>
+      <unit>cm</unit>
+      <resolution>1</resolution>
+      <last-modified>13-June-2022</last-modified>
+      <software>Daniel's friendly RSML converter</software>
+      <property-definitions/>
+      <time-sequence>
+         <label>artifical</label>
+         <index>1/1</index>
+         <unified>true</unified>
+      </time-sequence>
+   </metadata>
+   <scene>
+      <plant>
+         <root ID="2881">
+            <geometry>
+               <polyline>
+                  <Point x="0.7656402587890625" y="0.3927459716796875" z="-0.0679473876953125"/>
+                  <Point x="0.6761817932128906" y="0.20355606079101562" z="-1.1437950134277344"/>
+                  <Point x="0.5358123779296875" y="0.13479232788085938" z="-1.3348884582519531"/>
+                  <Point x="0.0948944091796875" y="-0.1231536865234375" z="-1.597503662109375"/>
+                  <Point x="-0.20185470581054688" y="-0.2636528015136719" z="-1.6002349853515625"/>
+                  <Point x="-0.3742561340332031" y="-0.4162178039550781" z="-1.5889739990234375"/>
+                  <Point x="-0.4458160400390625" y="-0.6564903259277344" z="-1.5635032653808594"/>
+                  <Point x="-0.443878173828125" y="-0.8278694152832031" z="-1.3822669982910156"/>
+                  <Point x="-0.30132293701171875" y="-0.91571044921875" z="-1.2758216857910156"/>
+                  <Point x="-0.13716888427734375" y="-0.9779167175292969" z="-1.122650146484375"/>
+                  <Point x="-0.054805755615234375" y="-0.8910636901855469" z="-0.8047370910644531"/>
+                  <Point x="0.13036346435546875" y="-0.5776290893554688" z="-0.7219581604003906"/>
+                  <Point x="0.19365310668945312" y="-0.2928962707519531" z="-0.9361038208007812"/>
+                  <Point x="0.17893218994140625" y="-0.1306934356689453" z="-1.1173515319824219"/>
+                  <Point x="0.026988983154296875" y="0.3318901062011719" z="-1.2072792053222656"/>
+                  <Point x="-0.03302764892578125" y="0.30321502685546875" z="-1.5831069946289062"/>
+                  <Point x="-0.10214614868164062" y="0.278839111328125" z="-1.9198722839355469"/>
+                  <Point x="-0.4687461853027344" y="0.1631450653076172" z="-2.260936737060547"/>
+                  <Point x="-0.666595458984375" y="-0.03443145751953125" z="-2.427196502685547"/>
+                  <Point x="-0.8596534729003906" y="-0.193572998046875" z="-2.6829490661621094"/>
+                  <Point x="-1.0560493469238281" y="-0.34100341796875" z="-3.118743896484375"/>
+                  <Point x="-1.2718086242675781" y="-0.4394340515136719" z="-3.637226104736328"/>
+                  <Point x="-1.3478317260742188" y="-0.5083770751953125" z="-3.864978790283203"/>
+                  <Point x="-1.3954582214355469" y="-0.5274810791015625" z="-4.348407745361328"/>
+                  <Point x="-1.4991035461425781" y="-0.5800399780273438" z="-5.201469421386719"/>
+                  <Point x="-1.3066978454589844" y="-0.5563774108886719" z="-6.4398040771484375"/>
+                  <Point x="-1.2518577575683594" y="-0.5176887512207031" z="-6.792751312255859"/>
+                  <Point x="-1.1109809875488281" y="-0.5160903930664062" z="-7.2035369873046875"/>
+                  <Point x="-1.0904617309570312" y="-0.6172752380371094" z="-7.838092803955078"/>
+                  <Point x="-0.9666099548339844" y="-0.545013427734375" z="-7.984039306640625"/>
+                  <Point x="-0.6673355102539062" y="-0.41255950927734375" z="-7.870143890380859"/>
+               </polyline>
+            </geometry>
+            <properties>
+               <parent-node value="-1"/>
+            </properties>
+            <root ID="2882">
+               <geometry>
+                  <polyline>
+                     <Point x="0.02622319757938385" y="-0.0713764950633049" z="-1.6017242670059204"/>
+                     <Point x="-0.16234970092773438" y="0.09244918823242188" z="-1.6996498107910156"/>
+                     <Point x="-0.2964897155761719" y="0.4671363830566406" z="-1.8305778503417969"/>
+                     <Point x="-0.3573112487792969" y="0.6654281616210938" z="-2.165668487548828"/>
+                     <Point x="-0.6837997436523438" y="1.0664787292480469" z="-2.5595932006835938"/>
+                     <Point x="-0.9130172729492188" y="1.4205131530761719" z="-2.979053497314453"/>
+                     <Point x="-1.160247802734375" y="1.620513916015625" z="-3.109588623046875"/>
+                     <Point x="-1.2583999633789062" y="1.8230934143066406" z="-3.409984588623047"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="3"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.08610706"/>
+                     <sample value="0.027377518"/>
+                     <sample value="0.027377518"/>
+                     <sample value="0.027377518"/>
+                     <sample value="0.027377518"/>
+                     <sample value="0.027377518"/>
+                     <sample value="0.027377518"/>
+                     <sample value="0.027377518"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="1.1749608045342006"/>
+                     <sample value="1.7762602554785198"/>
+                     <sample value="2.7151869811078813"/>
+                     <sample value="3.5983745176327036"/>
+                     <sample value="5.055282598931713"/>
+                     <sample value="6.388364497959433"/>
+                     <sample value="7.158737167514971"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2883">
+               <geometry>
+                  <polyline>
+                     <Point x="0.16570144891738892" y="-0.1275668442249298" z="-1.646302342414856"/>
+                     <Point x="0.14044761657714844" y="-0.43865203857421875" z="-1.7355918884277344"/>
+                     <Point x="0.3468055725097656" y="-0.9043388366699219" z="-1.8582344055175781"/>
+                     <Point x="0.4987030029296875" y="-1.6250991821289062" z="-2.2934036254882812"/>
+                     <Point x="0.41623687744140625" y="-2.1292686462402344" z="-2.854022979736328"/>
+                     <Point x="0.2700328826904297" y="-2.7216224670410156" z="-3.4993133544921875"/>
+                     <Point x="0.191680908203125" y="-2.8463058471679688" z="-5.004791259765625"/>
+                     <Point x="0.12199211120605469" y="-2.902027130126953" z="-6.229122161865234"/>
+                     <Point x="0.04390907287597656" y="-2.899974822998047" z="-7.0562896728515625"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="3"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.08610706"/>
+                     <sample value="0.034240655"/>
+                     <sample value="0.034240655"/>
+                     <sample value="0.034240655"/>
+                     <sample value="0.034240655"/>
+                     <sample value="0.0307886565"/>
+                     <sample value="0.0307886565"/>
+                     <sample value="0.0307886565"/>
+                     <sample value="0.0307886565"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="1.1749608045342006"/>
+                     <sample value="1.495056645199445"/>
+                     <sample value="2.0116566149517228"/>
+                     <sample value="2.8552435008969885"/>
+                     <sample value="3.603123889527694"/>
+                     <sample value="4.478785600522858"/>
+                     <sample value="5.970322618975537"/>
+                     <sample value="7.180756251576702"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2884">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.25634023547172546" y="-0.22441205382347107" z="-1.6541415452957153"/>
+                     <Point x="-0.4387016296386719" y="-0.022869110107421875" z="-1.86083984375"/>
+                     <Point x="-0.7570762634277344" y="0.2564277648925781" z="-2.247570037841797"/>
+                     <Point x="-0.9490203857421875" y="0.7131538391113281" z="-2.8492584228515625"/>
+                     <Point x="-1.0733070373535156" y="0.9082183837890625" z="-3.183055877685547"/>
+                     <Point x="-1.074249267578125" y="1.0499725341796875" z="-3.621196746826172"/>
+                     <Point x="-1.2189483642578125" y="1.1534080505371094" z="-3.851409912109375"/>
+                     <Point x="-1.1946792602539062" y="1.4723777770996094" z="-4.391101837158203"/>
+                     <Point x="-1.3695449829101562" y="1.7459754943847656" z="-5.501289367675781"/>
+                     <Point x="-1.5085563659667969" y="1.8294639587402344" z="-6.198101043701172"/>
+                     <Point x="-1.3951492309570312" y="1.7921295166015625" z="-6.549846649169922"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="4"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.08610706"/>
+                     <sample value="0.027756518"/>
+                     <sample value="0.027756518"/>
+                     <sample value="0.027756518"/>
+                     <sample value="0.027756518"/>
+                     <sample value="0.027756518"/>
+                     <sample value="0.027756518"/>
+                     <sample value="0.027756518"/>
+                     <sample value="0.027756518"/>
+                     <sample value="0.027756518"/>
+                     <sample value="0.027756518"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="1.3761777774520976"/>
+                     <sample value="1.7714009796031267"/>
+                     <sample value="2.435213707439832"/>
+                     <sample value="3.337317916104701"/>
+                     <sample value="3.8073509480246024"/>
+                     <sample value="4.340349734259868"/>
+                     <sample value="4.677069655348683"/>
+                     <sample value="5.4032102243832"/>
+                     <sample value="6.74200555176443"/>
+                     <sample value="7.570065478633255"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2885">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.1363547146320343" y="-0.3188784420490265" z="-1.608855128288269"/>
+                     <Point x="0.0570220947265625" y="-0.5748252868652344" z="-1.6761741638183594"/>
+                     <Point x="0.2041015625" y="-1.0709342956542969" z="-1.8020820617675781"/>
+                     <Point x="0.3418922424316406" y="-1.5827178955078125" z="-2.1128387451171875"/>
+                     <Point x="0.166595458984375" y="-2.576160430908203" z="-2.8040008544921875"/>
+                     <Point x="0.145294189453125" y="-2.8453807830810547" z="-3.1018524169921875"/>
+                     <Point x="-0.3194751739501953" y="-2.7948455810546875" z="-3.654449462890625"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="4"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.08610706"/>
+                     <sample value="0.01824358"/>
+                     <sample value="0.01824358"/>
+                     <sample value="0.01824358"/>
+                     <sample value="0.01824358"/>
+                     <sample value="0.01824358"/>
+                     <sample value="0.01824358"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="1.3761777774520976"/>
+                     <sample value="1.9440185799225143"/>
+                     <sample value="2.8666186500988875"/>
+                     <sample value="3.9310050393330775"/>
+                     <sample value="6.04949504766478"/>
+                     <sample value="6.746024695266326"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2886">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.43150049448013306" y="-0.38082149624824524" z="-1.6426825523376465"/>
+                     <Point x="-0.5874557495117188" y="-0.2634391784667969" z="-1.8400001525878906"/>
+                     <Point x="-1.0599937438964844" y="-0.019290924072265625" z="-2.133373260498047"/>
+                     <Point x="-1.168853759765625" y="0.20422744750976562" z="-2.2032127380371094"/>
+                     <Point x="-1.64093017578125" y="0.5908775329589844" z="-2.8914642333984375"/>
+                     <Point x="-1.7261505126953125" y="0.7383308410644531" z="-3.2247161865234375"/>
+                     <Point x="-1.50384521484375" y="0.8416404724121094" z="-5.293632507324219"/>
+                     <Point x="-1.3795890808105469" y="0.8593635559082031" z="-6.1380462646484375"/>
+                     <Point x="-1.3804244995117188" y="1.0395393371582031" z="-6.318817138671875"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="5"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.08610706"/>
+                     <sample value="0.025995275"/>
+                     <sample value="0.025995275"/>
+                     <sample value="0.025995275"/>
+                     <sample value="0.025995275"/>
+                     <sample value="0.025995275"/>
+                     <sample value="0.025995275"/>
+                     <sample value="0.025995275"/>
+                     <sample value="0.025995275"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="1.5174283377656632"/>
+                     <sample value="1.8370341756309152"/>
+                     <sample value="2.5364984128399946"/>
+                     <sample value="2.833867977039559"/>
+                     <sample value="3.8930426795610766"/>
+                     <sample value="4.323996672742458"/>
+                     <sample value="6.723057319114454"/>
+                     <sample value="7.706098418165023"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2887">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.3528205156326294" y="-0.45310136675834656" z="-1.6637706756591797"/>
+                     <Point x="-0.08218765258789062" y="-0.6652040481567383" z="-1.8954391479492188"/>
+                     <Point x="0.24814605712890625" y="-1.092801570892334" z="-2.073333740234375"/>
+                     <Point x="0.4140892028808594" y="-1.6043953895568848" z="-2.466144561767578"/>
+                     <Point x="0.15763092041015625" y="-2.373959541320801" z="-2.856006622314453"/>
+                     <Point x="0.10523223876953125" y="-2.6815595626831055" z="-3.2147560119628906"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="5"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.08610706"/>
+                     <sample value="0.026833441"/>
+                     <sample value="0.020508643"/>
+                     <sample value="0.020508643"/>
+                     <sample value="0.020508643"/>
+                     <sample value="0.020508643"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="1.5174283377656632"/>
+                     <sample value="2.405951551229771"/>
+                     <sample value="3.625051972478967"/>
+                     <sample value="5.052334179580402"/>
+                     <sample value="6.981063605455064"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2888">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.521629273891449" y="-0.6335626244544983" z="-1.5972834825515747"/>
+                     <Point x="-0.7875251770019531" y="-0.41635894775390625" z="-1.7690048217773438"/>
+                     <Point x="-1.3100090026855469" y="-0.2887077331542969" z="-2.0042877197265625"/>
+                     <Point x="-1.8427658081054688" y="-0.2707023620605469" z="-2.5368003845214844"/>
+                     <Point x="-2.5419692993164062" y="-0.4390907287597656" z="-3.1235885620117188"/>
+                     <Point x="-2.6298828125" y="-0.5266914367675781" z="-3.2586593627929688"/>
+                     <Point x="-2.6901168823242188" y="-0.5388221740722656" z="-3.5886459350585938"/>
+                     <Point x="-2.7277870178222656" y="-0.5451889038085938" z="-4.367973327636719"/>
+                     <Point x="-2.721923828125" y="-0.4168739318847656" z="-4.852577209472656"/>
+                     <Point x="-2.7761383056640625" y="-0.3539085388183594" z="-5.780632019042969"/>
+                     <Point x="-2.899158477783203" y="-0.3392219543457031" z="-6.505867004394531"/>
+                     <Point x="-2.804668426513672" y="-0.3745536804199219" z="-7.477634429931641"/>
+                     <Point x="-2.8103103637695312" y="-0.39098358154296875" z="-9.081584930419922"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="6"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.08610706"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                     <sample value="0.0266424565"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="1.6718572360267998"/>
+                     <sample value="1.951023840416696"/>
+                     <sample value="2.377945938464185"/>
+                     <sample value="2.9258858349119246"/>
+                     <sample value="3.600891302978311"/>
+                     <sample value="3.7342852795654204"/>
+                     <sample value="3.9783818466347007"/>
+                     <sample value="4.545803040493865"/>
+                     <sample value="4.9103850431195255"/>
+                     <sample value="5.587982361013851"/>
+                     <sample value="6.123026488966205"/>
+                     <sample value="6.833510523785081"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2889">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.4855915606021881" y="-0.8697829842567444" z="-1.4098674058914185"/>
+                     <Point x="-0.6512928009033203" y="-1.031515121459961" z="-1.3695411682128906"/>
+                     <Point x="-0.9245681762695312" y="-1.1590900421142578" z="-1.5496444702148438"/>
+                     <Point x="-1.1932945251464844" y="-1.236398696899414" z="-1.7695274353027344"/>
+                     <Point x="-1.503662109375" y="-1.375680923461914" z="-1.938201904296875"/>
+                     <Point x="-1.6890182495117188" y="-1.5069618225097656" z="-2.071857452392578"/>
+                     <Point x="-1.8988685607910156" y="-1.6366729736328125" z="-2.1573562622070312"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="7"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.065257475"/>
+                     <sample value="0.0216928"/>
+                     <sample value="0.0216928"/>
+                     <sample value="0.0216928"/>
+                     <sample value="0.0216928"/>
+                     <sample value="0.0216928"/>
+                     <sample value="0.0216928"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="1.8247225950773893"/>
+                     <sample value="2.6107978337536024"/>
+                     <sample value="3.7856392027132983"/>
+                     <sample value="4.975367905880112"/>
+                     <sample value="6.2453167484496"/>
+                     <sample value="7.126748492557836"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2890">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.5034031867980957" y="-0.8182501792907715" z="-1.4072226285934448"/>
+                     <Point x="-0.7890853881835938" y="-0.933319091796875" z="-1.5722770690917969"/>
+                     <Point x="-1.4878425598144531" y="-1.2770805358886719" z="-2.0655441284179688"/>
+                     <Point x="-1.7886161804199219" y="-1.4630203247070312" z="-2.3742713928222656"/>
+                     <Point x="-1.9190864562988281" y="-1.5409374237060547" z="-2.571369171142578"/>
+                     <Point x="-2.1112747192382812" y="-1.7028236389160156" z="-3.1939926147460938"/>
+                     <Point x="-2.175403594970703" y="-1.6751489639282227" z="-3.942218780517578"/>
+                     <Point x="-2.155742645263672" y="-1.697214126586914" z="-4.635833740234375"/>
+                     <Point x="-2.2005767822265625" y="-1.6800565719604492" z="-5.344535827636719"/>
+                     <Point x="-2.1798019409179688" y="-1.792607307434082" z="-6.934329986572266"/>
+                     <Point x="-2.0841598510742188" y="-1.8041601181030273" z="-8.392570495605469"/>
+                     <Point x="-2.0488662719726562" y="-1.8532609939575195" z="-8.994438171386719"/>
+                     <Point x="-2.0296058654785156" y="-1.8711252212524414" z="-9.721004486083984"/>
+                     <Point x="-2.0355072021484375" y="-1.8400659561157227" z="-11.227973937988281"/>
+                     <Point x="-2.0620269775390625" y="-1.9446868896484375" z="-12.471946716308594"/>
+                     <Point x="-2.1183242797851562" y="-1.9241523742675781" z="-12.832942962646484"/>
+                     <Point x="-2.08819580078125" y="-1.9135856628417969" z="-13.107994079589844"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="7"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.065257475"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                     <sample value="0.0235742575"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="1.8247225950773893"/>
+                     <sample value="1.9959349945662994"/>
+                     <sample value="2.4476091330924508"/>
+                     <sample value="2.6776145679642784"/>
+                     <sample value="2.7995612942515855"/>
+                     <sample value="3.1285449247203774"/>
+                     <sample value="3.496756616510645"/>
+                     <sample value="3.8369242602424967"/>
+                     <sample value="4.184971697496076"/>
+                     <sample value="4.965959240884748"/>
+                     <sample value="5.682029293877354"/>
+                     <sample value="5.978418661399336"/>
+                     <sample value="6.334656152064206"/>
+                     <sample value="7.073207480579539"/>
+                     <sample value="7.685022385761252"/>
+                     <sample value="7.864324794085337"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2891">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.3454428017139435" y="-0.9598785042762756" z="-1.2568175792694092"/>
+                     <Point x="-0.48595428466796875" y="-1.106719970703125" z="-1.1961746215820312"/>
+                     <Point x="-0.6766719818115234" y="-1.260894775390625" z="-1.2059783935546875"/>
+                     <Point x="-0.8903961181640625" y="-1.4403266906738281" z="-1.2933921813964844"/>
+                     <Point x="-1.1317920684814453" y="-1.6031951904296875" z="-1.3874969482421875"/>
+                     <Point x="-1.3157711029052734" y="-1.7777595520019531" z="-1.3764381408691406"/>
+                     <Point x="-1.4072322845458984" y="-1.8287811279296875" z="-1.6094970703125"/>
+                     <Point x="-1.7367534637451172" y="-2.1166343688964844" z="-1.8745460510253906"/>
+                     <Point x="-1.6972236633300781" y="-2.1326732635498047" z="-2.0844573974609375"/>
+                     <Point x="-1.9562454223632812" y="-1.9588146209716797" z="-3.1481285095214844"/>
+                     <Point x="-2.10162353515625" y="-1.8002653121948242" z="-4.045936584472656"/>
+                     <Point x="-2.0747909545898438" y="-1.8636503219604492" z="-4.650577545166016"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="8"/>
+               </properties>
+               <root ID="2892">
+                  <geometry>
+                     <polyline>
+                        <Point x="-0.49228325486183167" y="-1.1210383176803589" z="-1.1769243478775024"/>
+                        <Point x="-0.6298255920410156" y="-1.1187858581542969" z="-1.2934341430664062"/>
+                        <Point x="-0.9107894897460938" y="-1.2778472900390625" z="-1.3322410583496094"/>
+                        <Point x="-1.3214588165283203" y="-1.4710655212402344" z="-1.6248207092285156"/>
+                        <Point x="-1.5057373046875" y="-1.5508155822753906" z="-1.66741943359375"/>
+                        <Point x="-2.023548126220703" y="-1.7914447784423828" z="-1.9839859008789062"/>
+                        <Point x="-2.0904464721679688" y="-1.7845592498779297" z="-2.2966461181640625"/>
+                     </polyline>
+                  </geometry>
+                  <properties>
+                     <parent-node value="1"/>
+                  </properties>
+                  <functions>
+                     <functions domain="polyline" name="subType">
+                        <sample value="2.0"/>
+                        <sample value="2.0"/>
+                        <sample value="2.0"/>
+                        <sample value="2.0"/>
+                        <sample value="2.0"/>
+                        <sample value="2.0"/>
+                        <sample value="2.0"/>
+                     </functions>
+                     <functions domain="polyline" name="radius">
+                        <sample value="0.024812201"/>
+                        <sample value="0.0179307125"/>
+                        <sample value="0.0179307125"/>
+                        <sample value="0.0179307125"/>
+                        <sample value="0.0179307125"/>
+                        <sample value="0.0179307125"/>
+                        <sample value="0.0179307125"/>
+                     </functions>
+                     <functions domain="polyline" name="creationTime">
+                        <sample value="2.206680755192447"/>
+                        <sample value="2.676397354112592"/>
+                        <sample value="3.523713385450809"/>
+                        <sample value="4.930712551824248"/>
+                        <sample value="5.465552191474233"/>
+                        <sample value="7.166693801787828"/>
+                        <sample value="8.0"/>
+                     </functions>
+                  </functions>
+               </root>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.065257475"/>
+                     <sample value="0.024812201"/>
+                     <sample value="0.024812201"/>
+                     <sample value="0.024812201"/>
+                     <sample value="0.024812201"/>
+                     <sample value="0.024812201"/>
+                     <sample value="0.024812201"/>
+                     <sample value="0.024812201"/>
+                     <sample value="0.024812201"/>
+                     <sample value="0.024812201"/>
+                     <sample value="0.024812201"/>
+                     <sample value="0.024812201"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="1.9463174987285812"/>
+                     <sample value="2.206680755192447"/>
+                     <sample value="2.507976463086167"/>
+                     <sample value="2.8669598754214793"/>
+                     <sample value="3.2426381673980487"/>
+                     <sample value="3.5542702346691533"/>
+                     <sample value="3.867930382967944"/>
+                     <sample value="4.495917433112488"/>
+                     <sample value="4.758869982548905"/>
+                     <sample value="6.119621722962233"/>
+                     <sample value="7.252955052975665"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2893">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.08525120466947556" y="-0.9722158312797546" z="-1.134460210800171"/>
+                     <Point x="0.036151885986328125" y="-0.8677520751953125" z="-1.3812103271484375"/>
+                     <Point x="0.3361339569091797" y="-0.36161231994628906" z="-1.6148605346679688"/>
+                     <Point x="0.7068901062011719" y="0.15871429443359375" z="-1.9145317077636719"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="9"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.0535483175"/>
+                     <sample value="0.029318372"/>
+                     <sample value="0.029318372"/>
+                     <sample value="0.029318372"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="2.089092054534448"/>
+                     <sample value="3.153946313071233"/>
+                     <sample value="5.44550477636769"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2894">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.10417483747005463" y="-0.9373733997344971" z="-1.134271502494812"/>
+                     <Point x="0.03288459777832031" y="-0.7215728759765625" z="-1.2319869995117188"/>
+                     <Point x="0.07307815551757812" y="-0.4963722229003906" z="-1.4393882751464844"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="9"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.0535483175"/>
+                     <sample value="0.02546529"/>
+                     <sample value="0.02546529"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="2.089092054534448"/>
+                     <sample value="4.866464176581264"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <root ID="2895">
+               <geometry>
+                  <polyline>
+                     <Point x="-0.08974912762641907" y="-1.0016214847564697" z="-1.1301915645599365"/>
+                     <Point x="-0.07909011840820312" y="-0.7799530029296875" z="-1.7934379577636719"/>
+                     <Point x="0.47240447998046875" y="-0.920654296875" z="-2.0480079650878906"/>
+                     <Point x="0.4967041015625" y="-1.1335258483886719" z="-2.1358489990234375"/>
+                     <Point x="0.8972988128662109" y="-1.1980400085449219" z="-2.4161834716796875"/>
+                  </polyline>
+               </geometry>
+               <properties>
+                  <parent-node value="9"/>
+               </properties>
+               <functions>
+                  <functions domain="polyline" name="subType">
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                     <sample value="1.0"/>
+                  </functions>
+                  <functions domain="polyline" name="radius">
+                     <sample value="0.0535483175"/>
+                     <sample value="0.0152346025"/>
+                     <sample value="0.0152346025"/>
+                     <sample value="0.0152346025"/>
+                     <sample value="0.0152346025"/>
+                  </functions>
+                  <functions domain="polyline" name="creationTime">
+                     <sample value="2.089092054534448"/>
+                     <sample value="4.108027779601329"/>
+                     <sample value="5.907883798415893"/>
+                     <sample value="6.5763351617773305"/>
+                     <sample value="8.0"/>
+                  </functions>
+               </functions>
+            </root>
+            <functions>
+               <functions domain="polyline" name="subType">
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+                  <sample value="0.0"/>
+               </functions>
+               <functions domain="polyline" name="radius">
+                  <sample value="0.11486905"/>
+                  <sample value="0.11486905"/>
+                  <sample value="0.11486905"/>
+                  <sample value="0.08610706"/>
+                  <sample value="0.08610706"/>
+                  <sample value="0.08610706"/>
+                  <sample value="0.08610706"/>
+                  <sample value="0.065257475"/>
+                  <sample value="0.065257475"/>
+                  <sample value="0.0535483175"/>
+                  <sample value="0.0535483175"/>
+                  <sample value="0.04604679"/>
+                  <sample value="0.04604679"/>
+                  <sample value="0.04604679"/>
+                  <sample value="0.04604679"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+                  <sample value="0.038285765"/>
+               </functions>
+               <functions domain="polyline" name="creationTime">
+                  <sample value="0.6716696077941121"/>
+                  <sample value="0.6716696077941121"/>
+                  <sample value="0.8229638675510348"/>
+                  <sample value="1.1749608045342006"/>
+                  <sample value="1.3761777774520976"/>
+                  <sample value="1.5174283377656632"/>
+                  <sample value="1.6718572360267998"/>
+                  <sample value="1.8247225950773893"/>
+                  <sample value="1.9463174987285812"/>
+                  <sample value="2.089092054534448"/>
+                  <sample value="2.297270236043129"/>
+                  <sample value="2.5260630021086983"/>
+                  <sample value="2.74781669260956"/>
+                  <sample value="2.8971476934204614"/>
+                  <sample value="3.2005804787972703"/>
+                  <sample value="3.434478395930421"/>
+                  <sample value="3.6456892325792927"/>
+                  <sample value="3.9606300721523016"/>
+                  <sample value="4.15998658202157"/>
+                  <sample value="4.379245187429679"/>
+                  <sample value="4.6857976314634655"/>
+                  <sample value="5.0351992144947255"/>
+                  <sample value="5.188288968683916"/>
+                  <sample value="5.486213182771094"/>
+                  <sample value="6.013823649097233"/>
+                  <sample value="6.781954994548051"/>
+                  <sample value="7.002127392691257"/>
+                  <sample value="7.26826344172668"/>
+                  <sample value="7.662251989241687"/>
+                  <sample value="7.787637418119136"/>
+                  <sample value="8.0"/>
+               </functions>
+            </functions>
+         </root>
+      </plant>
+   </scene>
+</rsml>

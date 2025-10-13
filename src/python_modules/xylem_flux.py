@@ -313,6 +313,24 @@ class XylemFluxPython(XylemFlux):
         tipleaf = np.intersect1d(np.where(nodes_type == 4, nodesy, -1), nodesy)  # take leaf tips
         return tiproots, tipstem, tipleaf
 
+    def get_orders_tips(self):
+        """ return index of nodes at the end of each organ """
+        organTypes = self.get_organ_types()
+        segments = self.get_segments()
+        get_y_node = lambda vec: vec[1]
+        get_x_node = lambda vec: vec[0]
+        get_nodetype = lambda y: organTypes[y - 1]
+        nodesy = np.array([get_y_node(xi) for xi in segments], dtype = np.int64)
+        nodesx = np.array([get_x_node(xi) for xi in segments], dtype = np.int64)
+        nodesy = np.setdiff1d(nodesy, nodesx)  # select all the nodes which belong to tip of an organ
+        nodes_type = np.array([get_nodetype(xi) for xi in nodesy], dtype = np.int64)
+        tiproots = np.intersect1d(np.where(nodes_type == 2, nodesy, -1), nodesy)  # take root tips
+        #orders = []
+        #for i,k in tiproots:
+           #orders_ = self.rs.subTypes[k]
+           #orders.append(orders_)
+        return tiproots
+
     def get_organ_segments_tips(self):
         """ return index of segments at the end of each organ """
         tiproots, tipstems, tipleaves = self.get_organ_nodes_tips()
@@ -373,6 +391,30 @@ class XylemFluxPython(XylemFlux):
             jc -= self.axial_flux(i, sim_time, rx, p_s, [], cells = False, ij = True)
         krs = jc / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[self.dirichlet_ind[0]])
         return krs , jc
+
+    #### TOBI
+    def get_rx_krs(self, sim_time, seg_ind = [0]):
+        """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] 
+        if there is no single collar segment at index 0, pass indices using @param seg_ind, see find_base_segments        
+        """
+        segs = self.rs.segments
+        nodes = self.rs.nodes
+        p_s = np.zeros((len(segs),))
+        for i, s in enumerate(segs):
+            p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
+        rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, cells = False)
+        return rx
+
+    def get_rx_krs_p_s(self, sim_time, seg_ind = [0]):
+        """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] 
+        if there is no single collar segment at index 0, pass indices using @param seg_ind, see find_base_segments        
+        """
+        segs = self.rs.segments
+        nodes = self.rs.nodes
+        p_s = np.zeros((len(segs),))
+        for i, s in enumerate(segs):
+            p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
+        return p_s
 
     def get_eswp(self, sim_time, p_s):
         """ calculates the equivalent soil water potential [cm] at simulation time @param sim_time [day] for 
@@ -441,8 +483,8 @@ class XylemFluxPython(XylemFlux):
         @param lateral_ind  for monocots a list of two root types for "1st order laterals", "2nd order laterals"
                             for dicots a list of three root types for "1st order laterals", "2nd order laterals", "3rd order laterals"          
         """
-        axes_age = np.linspace(-5, 100, 500)
-        lateral_age = np.linspace(-2, 25, 125)
+        axes_age = np.linspace(-1, 20, 500)
+        lateral_age = np.linspace(-1, 20, 125)
         lateral_cols = ["r", "g:", "m--", "b--"]
         axes_cols = ["r", "g:", "m--", "b--"]
         if monocot:

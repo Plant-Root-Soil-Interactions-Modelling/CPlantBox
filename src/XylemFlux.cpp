@@ -602,7 +602,7 @@ void XylemFlux::setKx(std::vector<std::vector<double>> values, std::vector<std::
         } else {
             if (values[0].size()==1) {
                 kx_f = std::bind(&XylemFlux::kx_perOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
+                std::cout << "Kx is constant per organ typemake deprecated, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
             } else {
                 kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
                 std::cout << "Kx is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " cm3 day-1 \n";

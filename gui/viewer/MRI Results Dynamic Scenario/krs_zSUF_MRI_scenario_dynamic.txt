@@ -1,0 +1,667 @@
+file 1_III_Sand_1W_auto_correct_scale.vtp.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/1_III_Sand_1W_auto_correct_scale.vtp.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0008129757764024817 0.00411 0.002607694579397196
+kx min max mean [cm]: 0.000407 0.1376180275698843 0.026777670598849227
+TRL [cm]:  56.2965108004748
+RLD [cm/cm³]:  0.12372859516587868    with a convex hull of  455 cm³
+HMD [cm]:  1.6039470336768187
+Number of roots:  33
+Roots per order: [(0.0, 1), (1.0, 13), (2.0, 16), (3.0, 3)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.002734000008786097 0.13123200042173266 0.03556825245347079
+Number of segments:  242
+mean segment length [cm]:  0.23263020991931735
+Root System age:  14.0
+segment creation time min max mean [d]0.34028177573081614 14.0 8.275838589339116
+segment ages          min max mean [d]0.0 13.659718224269184 5.724161410660883
+mean xylem pressure resulting from krs calculation: -6424.432567261957
+while a mean soil water potential (hydrostatic equilibrium of -495.99976499318643is applied.
+Transpiration -131.22039766415617 cm3/day
+
+mean SUF depth (zSUF):  [-3.3120008018550595] cm
+krs 0.00904956, suf from 0 to 0.110072, sums up to 1
+done. 
+
+
+file 1_Unrefined_III_Sand_1W_DAP14_256x256x131.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/1_Unrefined_III_Sand_1W_DAP14_256x256x131.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0008177195623853689 0.00411 0.002896816720344219
+kx min max mean [cm]: 0.000407 0.13599819820987402 0.019992569283343684
+TRL [cm]:  64.5708802340516
+RLD [cm/cm³]:  0.1419140224924211    with a convex hull of  455 cm³
+HMD [cm]:  1.4976571651036337
+Number of roots:  17
+Roots per order: [(0.0, 1), (1.0, 8), (2.0, 8)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.011817578 0.07952596 0.025678220171779138
+Number of segments:  162
+mean segment length [cm]:  0.3985856804571086
+Root System age:  14.0
+segment creation time min max mean [d]0.5716859700179966 14.0 9.331077670933155
+segment ages          min max mean [d]0.0 13.428314029982003 4.668922329066846
+mean xylem pressure resulting from krs calculation: -5749.465642831692
+while a mean soil water potential (hydrostatic equilibrium of -496.0567567642824is applied.
+Transpiration -105.6963939866214 cm3/day
+
+mean SUF depth (zSUF):  [-3.4810263190673916] cm
+krs 0.00728933, suf from 0 to 0.0577017, sums up to 1
+done. 
+
+
+file 1_downsampled_out_III_Sand_1W_DAP14_256x256x131.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/1_downsampled_out_III_Sand_1W_DAP14_256x256x131.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0008186574361998867 0.00411 0.0029918512351962035
+kx min max mean [cm]: 0.000407 0.13567794861467286 0.015433335938044107
+TRL [cm]:  84.09700109931289
+RLD [cm/cm³]:  0.1848285738446437    with a convex hull of  455 cm³
+HMD [cm]:  1.3123222959472438
+Number of roots:  38
+Roots per order: [(0.0, 1), (1.0, 17), (2.0, 15), (3.0, 5)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.0129471225 0.08256872 0.0336733792004717
+Number of segments:  211
+mean segment length [cm]:  0.39856398625266776
+Root System age:  14.0
+segment creation time min max mean [d]0.6174359121895954 14.0 9.491710016514915
+segment ages          min max mean [d]0.0 13.382564087810405 4.508289983485085
+mean xylem pressure resulting from krs calculation: -4741.836682742501
+while a mean soil water potential (hydrostatic equilibrium of -496.00663183707195is applied.
+Transpiration -155.73077637305073 cm3/day
+
+mean SUF depth (zSUF):  [-3.4747791803665473] cm
+krs 0.0107398, suf from 0 to 0.0802862, sums up to 1
+done. 
+
+
+file 2_III_Sand_3D_auto_correct_scale.vtp.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/2_III_Sand_3D_auto_correct_scale.vtp.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.000807004324362311 0.00411 0.003093390874164169
+kx min max mean [cm]: 0.000407 0.13965705997384503 0.012483413733080134
+TRL [cm]:  138.63436928199008
+RLD [cm/cm³]:  0.3046909214988793    with a convex hull of  455 cm³
+HMD [cm]:  1.0221045145045773
+Number of roots:  111
+Roots per order: [(0.0, 1), (1.0, 35), (2.0, 40), (3.0, 26), (4.0, 9)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.0010252500032947864 0.15583799686282873 0.0268413652593956
+Number of segments:  815
+mean segment length [cm]:  0.17010352059139885
+Root System age:  14.0
+segment creation time min max mean [d]0.048991432307857005 14.0 9.811388212722116
+segment ages          min max mean [d]0.0 13.951008567692144 4.188611787277884
+mean xylem pressure resulting from krs calculation: -4566.680707352175
+while a mean soil water potential (hydrostatic equilibrium of -491.93082144623907is applied.
+Transpiration -248.6362251599511 cm3/day
+
+mean SUF depth (zSUF):  [-4.251752008859048] cm
+krs 0.0171473, suf from 0 to 0.047091, sums up to 1
+done. 
+
+
+file 2_Unrefined_III_Sand_3D_DAP14_256x256x191.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/2_Unrefined_III_Sand_3D_DAP14_256x256x191.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0008129424791814415 0.00411 0.0029177085927607625
+kx min max mean [cm]: 0.000407 0.1376293973526785 0.017754259610034
+TRL [cm]:  148.28137303143416
+RLD [cm/cm³]:  0.32589312754161354    with a convex hull of  455 cm³
+HMD [cm]:  0.9882969670803889
+Number of roots:  37
+Roots per order: [(0.0, 1), (1.0, 32), (2.0, 4)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.0109867715 0.08426715 0.024982191977941177
+Number of segments:  339
+mean segment length [cm]:  0.43740818003372905
+Root System age:  14.0
+segment creation time min max mean [d]0.33865752104592817 14.0 9.19953678680776
+segment ages          min max mean [d]0.0 13.661342478954072 4.80046321319224
+mean xylem pressure resulting from krs calculation: -4368.299123581834
+while a mean soil water potential (hydrostatic equilibrium of -493.3647591617607is applied.
+Transpiration -175.21516099164123 cm3/day
+
+mean SUF depth (zSUF):  [-4.681289544864451] cm
+krs 0.0120833, suf from 0 to 0.0427453, sums up to 1
+done. 
+
+
+file 2_downsampled_out_III_Sand_3D_DAP14_256x256x191.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/2_downsampled_out_III_Sand_3D_DAP14_256x256x191.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0008199298794252482 0.00411 0.0030413026137070002
+kx min max mean [cm]: 0.000407 0.13524345580601282 0.013127929827083077
+TRL [cm]:  185.73817981345465
+RLD [cm/cm³]:  0.40821577980979046    with a convex hull of  455 cm³
+HMD [cm]:  0.883039578362275
+Number of roots:  55
+Roots per order: [(0.0, 1), (1.0, 50), (2.0, 4)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.01323435 0.104437285 0.03329575505808081
+Number of segments:  395
+mean segment length [cm]:  0.4702232400340624
+Root System age:  14.0
+segment creation time min max mean [d]0.6795063134267423 14.0 9.497350017687403
+segment ages          min max mean [d]0.0 13.320493686573258 4.502649982312596
+mean xylem pressure resulting from krs calculation: -3093.5071790155807
+while a mean soil water potential (hydrostatic equilibrium of -493.1864577436749is applied.
+Transpiration -201.75067964238636 cm3/day
+
+mean SUF depth (zSUF):  [-3.7807331894092533] cm
+krs 0.0139136, suf from 0 to 0.0662479, sums up to 1
+done. 
+
+
+file 3_IV_Sand_2W_auto_correct_scale.vtp.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/3_IV_Sand_2W_auto_correct_scale.vtp.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009421323103221398 0.00411 0.003230504630025459
+kx min max mean [cm]: 0.000407 0.10052896099605867 0.008840246894258826
+TRL [cm]:  84.67802368959954
+RLD [cm/cm³]:  0.18610554657054845    with a convex hull of  455 cm³
+HMD [cm]:  1.3078122628996165
+Number of roots:  36
+Roots per order: [(0.0, 1), (1.0, 1), (2.0, 12), (3.0, 9), (4.0, 12), (5.0, 1)]
+Roots >= Order 5:  1    highest order =  5.0
+radius min max mean [cm]: 0.006151499837869778 0.1230300054885447 0.030990671206382103
+Number of segments:  349
+mean segment length [cm]:  0.2426304403713454
+Root System age:  8.0
+segment creation time min max mean [d]0.2971795967558242 8.0 4.6965624094697525
+segment ages          min max mean [d]0.0 7.702820403244176 3.303437590530247
+mean xylem pressure resulting from krs calculation: -2517.40092043879
+while a mean soil water potential (hydrostatic equilibrium of -496.6785968565529is applied.
+Transpiration -81.47275546717054 cm3/day
+
+mean SUF depth (zSUF):  [-2.7144031353969393] cm
+krs 0.00561872, suf from 0 to 0.056483, sums up to 1
+done. 
+
+
+file 3_Unrefined_IV_Sand_2W_DAP8_256x256x136.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/3_Unrefined_IV_Sand_2W_DAP8_256x256x136.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009509101251599249 0.00411 0.0032399761845055127
+kx min max mean [cm]: 0.000407 0.09871853668576548 0.007049365663692103
+TRL [cm]:  98.23686477937287
+RLD [cm/cm³]:  0.215905197317303    with a convex hull of  455 cm³
+HMD [cm]:  1.2142091889026572
+Number of roots:  18
+Roots per order: [(0.0, 1), (1.0, 14), (2.0, 3)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.012096958 0.066314725 0.027984957312500003
+Number of segments:  191
+mean segment length [cm]:  0.5143291349705386
+Root System age:  8.0
+segment creation time min max mean [d]0.6629218816635372 8.0 4.52097366856967
+segment ages          min max mean [d]0.0 7.337078118336462 3.4790263314303296
+mean xylem pressure resulting from krs calculation: -5361.842506915148
+while a mean soil water potential (hydrostatic equilibrium of -496.99636876520685is applied.
+Transpiration -161.91045253010014 cm3/day
+
+mean SUF depth (zSUF):  [-1.9451763260805108] cm
+krs 0.0111659, suf from 0 to 0.104589, sums up to 1
+done. 
+
+
+file 3_downsampled_out_IV_Sand_2W_DAP8_256x256x136.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/3_downsampled_out_IV_Sand_2W_DAP8_256x256x136.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009589097831566581 0.00411 0.0033174518886422873
+kx min max mean [cm]: 0.000407 0.09706860722393923 0.007074340544517319
+TRL [cm]:  97.46939618063013
+RLD [cm/cm³]:  0.21421845314424204    with a convex hull of  455 cm³
+HMD [cm]:  1.218980123573883
+Number of roots:  19
+Roots per order: [(0.0, 1), (1.0, 14), (2.0, 4)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.0220285915 0.077072255 0.03857470190068493
+Number of segments:  145
+mean segment length [cm]:  0.6722027322802078
+Root System age:  8.0
+segment creation time min max mean [d]0.9962409648607599 8.0 4.97557275281051
+segment ages          min max mean [d]0.0 7.0037590351392405 3.024427247189491
+mean xylem pressure resulting from krs calculation: -4313.093903241074
+while a mean soil water potential (hydrostatic equilibrium of -496.91943323735535is applied.
+Transpiration -175.49972884043382 cm3/day
+
+mean SUF depth (zSUF):  [-1.8332587672380392] cm
+krs 0.0121034, suf from 0 to 0.10144, sums up to 1
+done. 
+
+
+file 4_IV_Sand_3D_auto_correct_scale.vtp.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/4_IV_Sand_3D_auto_correct_scale.vtp.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009353228346082503 0.00411 0.002593008162629586
+kx min max mean [cm]: 0.000407 0.10193341536204836 0.032130173855092495
+TRL [cm]:  58.821384788608285
+RLD [cm/cm³]:  0.12927776876617206    with a convex hull of  455 cm³
+HMD [cm]:  1.5691452254623197
+Number of roots:  31
+Roots per order: [(0.0, 1), (1.0, 21), (2.0, 6), (3.0, 3)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.004921200161334127 0.1230300054885447 0.03514495750443204
+Number of segments:  206
+mean segment length [cm]:  0.28554070285732175
+Root System age:  8.0
+segment creation time min max mean [d]0.013451442010429606 8.0 4.365177417956096
+segment ages          min max mean [d]0.0 7.98654855798957 3.634822582043905
+mean xylem pressure resulting from krs calculation: -6978.815252276194
+while a mean soil water potential (hydrostatic equilibrium of -495.5684451727667is applied.
+Transpiration -147.3690483900012 cm3/day
+
+mean SUF depth (zSUF):  [-3.898960376925613] cm
+krs 0.0101634, suf from 0 to 0.0591585, sums up to 0.997621
+done. 
+
+
+file 4_Unrefined_IV_Sand_3D_DAP8_256x256x192.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/4_Unrefined_IV_Sand_3D_DAP8_256x256x192.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009397095315453967 0.00411 0.002735268782698126
+kx min max mean [cm]: 0.000407 0.1010286591187619 0.025733866463447854
+TRL [cm]:  55.936700334091896
+RLD [cm/cm³]:  0.1229378029320701    with a convex hull of  455 cm³
+HMD [cm]:  1.6090974253665213
+Number of roots:  15
+Roots per order: [(0.0, 1), (1.0, 13), (2.0, 1)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.01082164 0.07337754 0.03294199957894737
+Number of segments:  113
+mean segment length [cm]:  0.4950150472043531
+Root System age:  8.0
+segment creation time min max mean [d]0.1962304810582014 8.0 4.336321634082358
+segment ages          min max mean [d]0.0 7.803769518941799 3.663678365917643
+mean xylem pressure resulting from krs calculation: -7457.760200494054
+while a mean soil water potential (hydrostatic equilibrium of -496.1401997298266is applied.
+Transpiration -137.75940524838484 cm3/day
+
+mean SUF depth (zSUF):  [-3.919197549215468] cm
+krs 0.00950031, suf from 0 to 0.0657525, sums up to 1
+done. 
+
+
+file 4_downsampled_out_IV_Sand_3D_DAP8_256x256x192.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/4_downsampled_out_IV_Sand_3D_DAP8_256x256x192.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009445122472133976 0.00411 0.003002152225899581
+kx min max mean [cm]: 0.000407 0.1000380990122367 0.017145319311240713
+TRL [cm]:  74.13027160906198
+RLD [cm/cm³]:  0.1629236738660703    with a convex hull of  455 cm³
+HMD [cm]:  1.3977611531350778
+Number of roots:  32
+Roots per order: [(0.0, 1), (1.0, 29), (2.0, 2)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.021122681 0.09050545 0.0444134127027027
+Number of segments:  147
+mean segment length [cm]:  0.504287561966408
+Root System age:  8.0
+segment creation time min max mean [d]0.3963436338915732 8.0 4.544612613748987
+segment ages          min max mean [d]0.0 7.603656366108427 3.4553873862510147
+mean xylem pressure resulting from krs calculation: -5354.431067272635
+while a mean soil water potential (hydrostatic equilibrium of -496.4393589334423is applied.
+Transpiration -197.73097938402472 cm3/day
+
+mean SUF depth (zSUF):  [-3.1289372330785863] cm
+krs 0.0136364, suf from 0 to 0.135864, sums up to 1
+done. 
+
+
+file 5_III_Soil_1W_auto_correct_scale.dgf.vtp.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/5_III_Soil_1W_auto_correct_scale.dgf.vtp.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0008067670092685097 0.00411 0.0032646798780016652
+kx min max mean [cm]: 0.000407 0.13973809439611865 0.007616946425968595
+TRL [cm]:  276.572187670905
+RLD [cm/cm³]:  0.607850961914077    with a convex hull of  455 cm³
+HMD [cm]:  0.7236465726002871
+Number of roots:  124
+Roots per order: [(0.0, 1), (1.0, 37), (2.0, 64), (3.0, 20), (4.0, 2)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.0006561600002896739 0.1230300054885447 0.02402019765673063
+Number of segments:  1410
+mean segment length [cm]:  0.1961504877098617
+Root System age:  14.0
+segment creation time min max mean [d]0.037415086268765996 14.0 10.350887146956715
+segment ages          min max mean [d]0.0 13.962584913731234 3.649112853043286
+mean xylem pressure resulting from krs calculation: -2324.589378726851
+while a mean soil water potential (hydrostatic equilibrium of -489.2131333029086is applied.
+Transpiration -181.73358464540408 cm3/day
+
+mean SUF depth (zSUF):  [-6.044487565113145] cm
+krs 0.0125333, suf from 0 to 0.034047, sums up to 1
+done. 
+
+
+file 5_downsampled_out_III_Soil_1W_DAP14_256x256x186.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/5_downsampled_out_III_Soil_1W_DAP14_256x256x186.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0008167746237432254 0.00411 0.003223685010601284
+kx min max mean [cm]: 0.000407 0.13632086018524014 0.00850633224595925
+TRL [cm]:  293.1580083999021
+RLD [cm/cm³]:  0.6443033151646199    with a convex hull of  455 cm³
+HMD [cm]:  0.702877887545298
+Number of roots:  109
+Roots per order: [(0.0, 1), (1.0, 59), (2.0, 49)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.0087129315 0.080252365 0.024677993337817637
+Number of segments:  668
+mean segment length [cm]:  0.4388592940118295
+Root System age:  14.0
+segment creation time min max mean [d]0.525591402108554 14.0 10.180850544863628
+segment ages          min max mean [d]0.0 13.474408597891445 3.8191494551363734
+mean xylem pressure resulting from krs calculation: -2440.6232755293245
+while a mean soil water potential (hydrostatic equilibrium of -489.6374910821815is applied.
+Transpiration -206.20687605486373 cm3/day
+
+mean SUF depth (zSUF):  [-6.303923909742766] cm
+krs 0.0142208, suf from 0 to 0.0372911, sums up to 1
+done. 
+
+
+file 6_III_Soil_3D_auto_correct_scale.vtp.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/6_III_Soil_3D_auto_correct_scale.vtp.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0007868109013450794 0.00411 0.003379603822459139
+kx min max mean [cm]: 0.000407 0.14738042255958483 0.005048956869158698
+TRL [cm]:  473.022689871643
+RLD [cm/cm³]:  1.0396103074102045    with a convex hull of  455 cm³
+HMD [cm]:  0.5533370816894244
+Number of roots:  267
+Roots per order: [(0.0, 1), (1.0, 39), (2.0, 127), (3.0, 73), (4.0, 20), (5.0, 5), (6.0, 2)]
+Roots >= Order 5:  7    highest order =  6.0
+radius min max mean [cm]: 0.000878786977409618 0.13943399535492063 0.02212003706378241
+Number of segments:  2787
+mean segment length [cm]:  0.16972468240819627
+Root System age:  15.0
+segment creation time min max mean [d]0.015943658722023434 15.0 11.609962393868628
+segment ages          min max mean [d]0.0 14.984056341277977 3.39003760613137
+mean xylem pressure resulting from krs calculation: -1682.3994987876813
+while a mean soil water potential (hydrostatic equilibrium of -488.4625201593135is applied.
+Transpiration -209.4004191649207 cm3/day
+
+mean SUF depth (zSUF):  [-5.813449290023431] cm
+krs 0.0144414, suf from 0 to 0.033016, sums up to 0.999003
+done. 
+
+
+file 6_Unrefined_III_Soil_3D_DAP15_256x256x199.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/6_Unrefined_III_Soil_3D_DAP15_256x256x199.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0007967777584162444 0.00411 0.003250740037379635
+kx min max mean [cm]: 0.000407 0.14354701599375214 0.005082279622495295
+TRL [cm]:  488.3425643092293
+RLD [cm/cm³]:  1.0732803611191852    with a convex hull of  455 cm³
+HMD [cm]:  0.5445885076888111
+Number of roots:  192
+Roots per order: [(0.0, 1), (1.0, 45), (2.0, 137), (3.0, 9)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.0060741405 0.09864536 0.023315307316072908
+Number of segments:  1206
+mean segment length [cm]:  0.40492749942722167
+Root System age:  15.0
+segment creation time min max mean [d]0.5270645341663821 15.0 10.779539770168192
+segment ages          min max mean [d]0.0 14.472935465833618 4.220460229831808
+mean xylem pressure resulting from krs calculation: -2021.7212067262433
+while a mean soil water potential (hydrostatic equilibrium of -489.7693967235029is applied.
+Transpiration -237.04334657048614 cm3/day
+
+mean SUF depth (zSUF):  [-5.3784952454467785] cm
+krs 0.0163472, suf from 0 to 0.0393794, sums up to 1
+done. 
+
+
+file 6_downsampled_out_III_Soil_3D_DAP15_256x256x199.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/6_downsampled_out_III_Soil_3D_DAP15_256x256x199.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0007999875263061499 0.00411 0.0032620930136519352
+kx min max mean [cm]: 0.000407 0.14231248988225004 0.00572486111745233
+TRL [cm]:  480.6910782498917
+RLD [cm/cm³]:  1.0564639082415201    with a convex hull of  455 cm³
+HMD [cm]:  0.5489056880439556
+Number of roots:  199
+Roots per order: [(0.0, 1), (1.0, 44), (2.0, 146), (3.0, 8)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.0077627945 0.10387951 0.025640641289264413
+Number of segments:  1005
+mean segment length [cm]:  0.47829958034815095
+Root System age:  15.0
+segment creation time min max mean [d]0.6916680156999959 15.0 10.917788474863665
+segment ages          min max mean [d]0.0 14.308331984300004 4.082211525136333
+mean xylem pressure resulting from krs calculation: -1932.2914045354996
+while a mean soil water potential (hydrostatic equilibrium of -489.8496225081866is applied.
+Transpiration -233.47488463821915 cm3/day
+
+mean SUF depth (zSUF):  [-5.0215198570564965] cm
+krs 0.0161014, suf from 0 to 0.0523221, sums up to 1
+done. 
+
+
+file 7_IV_Soil_1W_auto_correct_scale.vtp.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/7_IV_Soil_1W_auto_correct_scale.vtp.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009155636621155724 0.00411 0.0032174280363739915
+kx min max mean [cm]: 0.000407 0.1067511048161934 0.012030522778411809
+TRL [cm]:  64.37002858103367
+RLD [cm/cm³]:  0.1414725902879861    with a convex hull of  455 cm³
+HMD [cm]:  1.4999918901287388
+Number of roots:  34
+Roots per order: [(0.0, 1), (1.0, 11), (2.0, 18), (3.0, 1), (4.0, 1), (5.0, 2)]
+Roots >= Order 5:  2    highest order =  5.0
+radius min max mean [cm]: 0.008202000026358292 0.14763600192964077 0.030358071394525846
+Number of segments:  369
+mean segment length [cm]:  0.17444452189982024
+Root System age:  9.0
+segment creation time min max mean [d]0.13616276069210947 9.0 5.941157600031078
+segment ages          min max mean [d]0.0 8.863837239307891 3.058842399968922
+mean xylem pressure resulting from krs calculation: -5212.390536327496
+while a mean soil water potential (hydrostatic equilibrium of -497.1980057049134is applied.
+Transpiration -125.52647083213328 cm3/day
+
+mean SUF depth (zSUF):  [-1.7488920787916409] cm
+krs 0.00865697, suf from 0 to 0.274867, sums up to 1
+done. 
+
+
+file 7_Unrefined_IV_Soil_1W_DAP9_256x256x136.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/7_Unrefined_IV_Soil_1W_DAP9_256x256x136.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009244095838973804 0.00411 0.003083741289535122
+kx min max mean [cm]: 0.000407 0.10458876838064032 0.014308280469671404
+TRL [cm]:  68.56091998480822
+RLD [cm/cm³]:  0.15068334062595215    with a convex hull of  455 cm³
+HMD [cm]:  1.453424389579009
+Number of roots:  35
+Roots per order: [(0.0, 1), (1.0, 34)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.013478052 0.088969475 0.032991184520467835
+Number of segments:  170
+mean segment length [cm]:  0.4032995293224013
+Root System age:  9.0
+segment creation time min max mean [d]0.529314839883577 9.0 5.467725119892389
+segment ages          min max mean [d]0.0 8.470685160116423 3.5322748801076114
+mean xylem pressure resulting from krs calculation: -7159.025325500886
+while a mean soil water potential (hydrostatic equilibrium of -496.65782098139033is applied.
+Transpiration -193.25814468501866 cm3/day
+
+mean SUF depth (zSUF):  [-2.9642004481746467] cm
+krs 0.0133275, suf from 0 to 0.145049, sums up to 1
+done. 
+
+
+file 7_downsampled_out_IV_Soil_1W_DAP9_256x256x136.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/7_downsampled_out_IV_Soil_1W_DAP9_256x256x136.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009224800493199373 0.00411 0.0030784828704303615
+kx min max mean [cm]: 0.000407 0.10506043238845977 0.015022494066509028
+TRL [cm]:  76.02333321628451
+RLD [cm/cm³]:  0.16708424882699893    with a convex hull of  455 cm³
+HMD [cm]:  1.380248578044554
+Number of roots:  39
+Roots per order: [(0.0, 1), (1.0, 37), (2.0, 1)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.017134916 0.10642995 0.03892293929581152
+Number of segments:  190
+mean segment length [cm]:  0.40012280640149744
+Root System age:  9.0
+segment creation time min max mean [d]0.44355774755276867 9.0 5.5965804217459985
+segment ages          min max mean [d]0.0 8.556442252447232 3.4034195782540024
+mean xylem pressure resulting from krs calculation: -5745.390491796755
+while a mean soil water potential (hydrostatic equilibrium of -496.46779705223287is applied.
+Transpiration -202.38762934899637 cm3/day
+
+mean SUF depth (zSUF):  [-2.916177789644721] cm
+krs 0.0139577, suf from 0 to 0.166049, sums up to 1
+done. 
+
+
+file 8_IV_Soil_3D_auto_correct_scale.vtp.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/8_IV_Soil_3D_auto_correct_scale.vtp.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.000936213513116187 0.00411 0.0027650316704715882
+kx min max mean [cm]: 0.000407 0.10174971291978643 0.023616765128492603
+TRL [cm]:  68.02654691867606
+RLD [cm/cm³]:  0.14950889432676057    with a convex hull of  455 cm³
+HMD [cm]:  1.4591218090910443
+Number of roots:  17
+Roots per order: [(0.0, 1), (1.0, 13), (2.0, 3)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.008202000026358292 0.15583799686282873 0.03529018412767695
+Number of segments:  303
+mean segment length [cm]:  0.22451005583721473
+Root System age:  8.0
+segment creation time min max mean [d]0.05056304650779091 8.0 4.053881875679116
+segment ages          min max mean [d]0.0 7.949436953492209 3.9461181243208836
+mean xylem pressure resulting from krs calculation: -6153.034481966667
+while a mean soil water potential (hydrostatic equilibrium of -496.58291280068295is applied.
+Transpiration -151.0554669978938 cm3/day
+
+mean SUF depth (zSUF):  [-2.5909573582276395] cm
+krs 0.0104176, suf from 0 to 0.104604, sums up to 1
+done. 
+
+
+file 8_Unrefined_IV_Soil_3D_DAP8_256x256x193.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/8_Unrefined_IV_Soil_3D_DAP8_256x256x193.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009511200705870587 0.00411 0.002926899598759011
+kx min max mean [cm]: 0.000407 0.09867523544141914 0.01776099786802744
+TRL [cm]:  76.77517828405408
+RLD [cm/cm³]:  0.16873665556934964    with a convex hull of  455 cm³
+HMD [cm]:  1.373473691895152
+Number of roots:  15
+Roots per order: [(0.0, 1), (1.0, 13), (2.0, 1)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.0152346025 0.11486905 0.03537180609731544
+Number of segments:  148
+mean segment length [cm]:  0.518751204621987
+Root System age:  8.0
+segment creation time min max mean [d]0.6716696077941121 8.0 4.412974586301109
+segment ages          min max mean [d]0.0 7.3283303922058876 3.5870254136988913
+mean xylem pressure resulting from krs calculation: -6044.476012840345
+while a mean soil water potential (hydrostatic equilibrium of -496.91998383080636is applied.
+Transpiration -158.08218975632354 cm3/day
+
+mean SUF depth (zSUF):  [-2.171226710367427] cm
+krs 0.0109018, suf from 0 to 0.0945374, sums up to 1
+done. 
+
+
+file 8_downsampled_out_IV_Soil_3D_DAP8_256x256x193.rsml (full path: /home/tobi/Schreibtisch/DuMuX_MRI_Root_System_Reconstruction_Paper/CPlantBox/gui/viewer/MRI_Paper_MRI_rsmls_with_CTs/8_downsampled_out_IV_Soil_3D_DAP8_256x256x193.rsml)
+
+DataModel.open_rsml(): scale to cm 1.0
+DataModel.scale_selected_():radius length scale 1.0
+XylemFluxPython.find_base_segments(): base segment indices for node indics [0] are [0]
+Scenario: MRI_scenario_dynamic ,see file viewer_conductivities.py
+kr min max mean [cm]: 0.0009468274508265258 0.00411 0.0029589973749099188
+kx min max mean [cm]: 0.000407 0.09956058826702904 0.016878699389404044
+TRL [cm]:  75.61245921838308
+RLD [cm/cm³]:  0.16618122905139138    with a convex hull of  455 cm³
+HMD [cm]:  1.3839935952973308
+Number of roots:  15
+Roots per order: [(0.0, 1), (1.0, 12), (2.0, 2)]
+Roots >= Order 5: 0
+radius min max mean [cm]: 0.0203311185 0.105984 0.04213294961016948
+Number of segments:  117
+mean segment length [cm]:  0.6462603351998554
+Root System age:  8.0
+segment creation time min max mean [d]0.4928104511052421 8.0 4.334388273311379
+segment ages          min max mean [d]0.0 7.5071895488947575 3.6656117266886206
+mean xylem pressure resulting from krs calculation: -5579.925782362802
+while a mean soil water potential (hydrostatic equilibrium of -496.8323794786747is applied.
+Transpiration -167.51345587802288 cm3/day
+
+mean SUF depth (zSUF):  [-2.1567912581304327] cm
+krs 0.0115522, suf from 0 to 0.186171, sums up to 1
+done. 
+
+

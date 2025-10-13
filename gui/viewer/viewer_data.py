@@ -164,8 +164,8 @@ class ViewerDataModel(RsmlData):
         ct = self.functions["creation_time"][i]  # rename
         lt = self.get_length_(pl)
         pni = self.properties["parent-node"][i]
-        # print("Root", i, "Parent", ppi, "node index", pni)
-        ct[0] = self.functions["creation_time"][ppi][pni]  #  + 1  # 1 day
+        #print("Root", i, "Parent", ppi, "node index", pni)
+        ct[0] = self.functions["creation_time"][int(ppi)][int(pni)]  #  + 1  # 1 day  #Tobi: needs int for files written in the VR-system.
         l = 0.
         for j in range(0, len(pl) - 1):
             l += np.linalg.norm(np.array(pl[j + 1]) - np.array(pl[j]))

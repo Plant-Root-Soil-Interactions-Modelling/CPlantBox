@@ -93,6 +93,10 @@ def plot_suf(data, ax3, j):
         viewer_conductivities.init_dynamic_scenario1(data.xylem_flux)
     elif j == 3:
         viewer_conductivities.init_dynamic_scenario2(data.xylem_flux)
+    elif j == 4:
+         viewer_conductivities.init_MRI_paper_scenario_constant(data.xylem_flux) # Tobi: include both scenarios of the MRI Paper
+    elif j == 5:
+         viewer_conductivities.init_MRI_paper_scenario_dynamic(data.xylem_flux)
 
     print(data.max_ct)
     print(data.base_segs)
@@ -136,6 +140,10 @@ def plot_krs(data, ax, j):
         viewer_conductivities.init_dynamic_scenario1(data.xylem_flux)
     elif j == 3:
         viewer_conductivities.init_dynamic_scenario2(data.xylem_flux)
+    elif j == 4:
+         viewer_conductivities.init_MRI_paper_scenario_constant(data.xylem_flux) # Tobi: include both scenarios of the MRI Paper
+    elif j == 5:
+         viewer_conductivities.init_MRI_paper_scenario_dynamic(data.xylem_flux)
 
     t = int(np.ceil(data.max_ct))
     t_ = np.linspace(1, t, t)
@@ -150,5 +158,8 @@ def plot_krs(data, ax, j):
     # for Debugging
     kr, kx = data.xylem_flux.get_conductivities(-1.)  # (default) -1. means: current time is maximum of node creation times
     print("\nkr")
+    print(kr)
+    print("\n")
+    print("\nkx")
     print(kr)
     print("\n")
