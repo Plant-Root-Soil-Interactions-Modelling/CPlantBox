@@ -1,6 +1,7 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 from vtk.util import numpy_support
+import vtk
 import numpy as np
 
 import plantbox as pb
@@ -148,11 +149,11 @@ def fix_dx(rrp, strp, lrp):
         # r.betaDev = 0.
         print("delayNGStarts", r.delayNGStarts)
         print("delayNGEnds", r.delayNGEnds)
-        #print("initBeta", r.initBeta)
-        #print("betaDev", r.betaDev)
-        #print("rotBeta", r.rotBeta)
+        # print("initBeta", r.initBeta)
+        # print("betaDev", r.betaDev)
+        # print("rotBeta", r.rotBeta)
         # r.rotBeta = 0.5
-        #r.betaDev = 10
+        # r.betaDev = 10
     for r in lrp:
         # print(r.subType, ":", r.dx, r.dxMin)
         r.dx = 0.25
@@ -292,7 +293,7 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         p.a = d[4]
         p.delayNGStart = d[5]
         p.delayNGEnd = d[5] + d[6]
-        p.rotBeta = d[7]/ 180.
+        p.rotBeta = d[7] / 180.
         p.tropismN = d[8]
         p.tropismS = d[9]
         p.tropismT = tropism_names[d[10]]
