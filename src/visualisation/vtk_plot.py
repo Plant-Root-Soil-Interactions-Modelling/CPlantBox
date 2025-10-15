@@ -4,8 +4,6 @@ from visualisation.vtk_tools import *
 import time
 import numpy as np
 import vtk
-from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank(); max_rank = comm.Get_size()
-# from IPython.display import Image, display
 
 """
 VTK Plot, by Daniel Leitner (refurbished 06/2020)
@@ -330,8 +328,8 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
         writer.SetInputConnection(windowToImageFilter.GetOutputPort())
         writer.Write()
 
-        # move this somewhere else?
-        im = Image(writer.GetResult(), format = "jpeg")
+        from IPython.display import Image, display
+        im = Image(writer.GetResult(), format = "jpeg")  # move this somewhere else?
         display(im)
 
 
@@ -641,6 +639,8 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     if sol_ind > 0:
         solute = np.array(s.getSolution(sol_ind))
 
+    from mpi4py import MPI;rank = comm.Get_rank();  # moved it here because it caused trouble for webapp server
+
     if rank == 0:
         if isinstance(rs, pb.SegmentAnalyser):
             ana = rs
@@ -682,7 +682,6 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
             write_vtu(path + filename + ".vtu", soil_grid)
 
 
-
 def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
@@ -699,6 +698,9 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     pHead = np.array(s.getSolutionHead())
     if sol_ind > 0:
         solute = np.array(s.getSolution(sol_ind))
+
+    from mpi4py import MPI; rank = comm.Get_rank();  # moved it here because it caused trouble for webapp server
+
     if rank == 0:
         if isinstance(rs, pb.SegmentAnalyser):
             ana = rs
