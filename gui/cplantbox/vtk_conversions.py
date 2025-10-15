@@ -1,5 +1,7 @@
+
+
 from vtk.util import numpy_support
-import vtk
+from vtk import vtkTubeFilter, vtkTriangleFilter, vtkIdList
 import numpy as np
 
 import plotly.graph_objs as go
@@ -19,7 +21,7 @@ def vtk_polyline_to_dict(polydata):
 
     # Lines connectivity array
     lines.InitTraversal()
-    id_list = vtk.vtkIdList()
+    id_list = vtkIdList()
     conn = []
 
     for _ in range(n_lines):
@@ -44,11 +46,11 @@ def vtk_polydata_to_dashvtk_dict(polydata):
     print(f"Number of points: {n_points}, polys: {n_polys}")
 
     # Efficiently extract points to a numpy array
-    pts_array = vtk.util.numpy_support.vtk_to_numpy(points.GetData()).astype(np.float32)
+    pts_array = numpy_support.vtk_to_numpy(points.GetData()).astype(np.float32)
     pts = pts_array.flatten().tolist()
 
     # Efficiently extract polygon connectivity
-    polys_data = vtk.util.numpy_support.vtk_to_numpy(polys.GetData())
+    polys_data = numpy_support.vtk_to_numpy(polys.GetData())
     conn = polys_data.tolist()
 
     vtk_data = {
@@ -62,14 +64,14 @@ def vtk_polydata_to_dashvtk_dict(polydata):
 def apply_tube_filter(polydata):
     """ applies the tube filter """
     polydata.GetPointData().SetActiveScalars("radius")
-    tube_filter = vtk.vtkTubeFilter()
+    tube_filter = vtkTubeFilter()
     tube_filter.SetInputData(polydata)
     tube_filter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
     tube_filter.SetNumberOfSides(5)
     tube_filter.SetRadius(1.0)
     tube_filter.SetCapping(True)
     tube_filter.Update()
-    triangle_filter = vtk.vtkTriangleFilter()  # Convert triangle strips to regular triangles
+    triangle_filter = vtkTriangleFilter()  # Convert triangle strips to regular triangles
     triangle_filter.SetInputConnection(tube_filter.GetOutputPort())
     triangle_filter.Update()
 
