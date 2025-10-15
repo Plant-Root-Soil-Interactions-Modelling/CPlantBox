@@ -2,7 +2,7 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import numpy as np
-import vtk
+# import vtk
 
 import dash
 from dash import html, dcc, Input, Output, State, ctx
@@ -99,12 +99,12 @@ app.layout = dbc.Container([
 
         html.Div([
     html.A(
-        html.Img(src='/assets/cplantbox.png', className='logo'),
-        href='https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox',
-        target='_blank'  # Opens in a new tab
+        html.Img(src = '/assets/cplantbox.png', className = 'logo'),
+        href = 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox',
+        target = '_blank'  # Opens in a new tab
     ),
-            html.Img(src='/assets/fzj.png', className='logo'),
-        ], className='logoContainer')
+            html.Img(src = '/assets/fzj.png', className = 'logo'),
+        ], className = 'logoContainer')
 ], fluid = True)
 
 """ 1. LEFT - Simulation Panel """
@@ -439,7 +439,7 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(stem_parameter_sliders.keys()):
         style = {}
-        #if i in [7]:  # rotBeta (not working)
+        # if i in [7]:  # rotBeta (not working)
         #    style = {'display': 'none'}
         if (not successors) and (i in [3]):
             style = {'display': 'none'}
@@ -620,4 +620,4 @@ def render_result_tab(tab, vtk_data):
 
 
 if __name__ == '__main__':
-    app.run(debug = False, port=8051)
+    app.run(debug = False, port = 8051)
