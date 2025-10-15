@@ -482,7 +482,7 @@ def plot_segments(pd, p_name:str, win_title:str = " ", render:bool = True, inter
     return plot_roots(pd, p_name, win_title, render, interactiveImage)
 
 
-def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True, returnLut:bool = False):
+def plot_roots(pd, p_name:str,p_names = [], win_title:str = "", render:bool = True, interactiveImage:bool = True, returnLut:bool = False):
     """ plots the root system
     @param pd                       RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
     @param p_name                   parameter name of the data to be visualized
@@ -492,10 +492,10 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interacti
     @return a tuple of a vtkActor and the corresponding color bar vtkScalarBarActor
     """
     if isinstance(pd, pb.RootSystem):
-        pd = segs_to_polydata(pd, 1., [p_name, "radius", "organType"])
+        pd = segs_to_polydata(pd, 1., [p_name, "radius", "organType"] + p_names)
 
     if isinstance(pd, pb.Plant):
-        pd = segs_to_polydata(pd, 1., [p_name, "radius", "organType"])
+        pd = segs_to_polydata(pd, 1., [p_name, "radius", "organType"] + p_names)
 
     if isinstance(pd, pb.SegmentAnalyser):
         pd = segs_to_polydata(pd, 1., [p_name, "radius"])

@@ -34,7 +34,7 @@ def get3Dshape(plant,title_ = 'wine', saveOnly = True):
     ana.addData('alive', aliveSegs)
     ana.addData('lignification', lignification)
     ana.filter('alive', 1)
-    vp.plot_roots(ana, "subType", win_title = title_, render = not saveOnly)
+    vp.plot_roots(ana, "subType",p_names = ['lignification',"creationTime","id"] , win_title = title_, render = not saveOnly)
     
 doAnim = False
 
