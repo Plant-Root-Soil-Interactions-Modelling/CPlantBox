@@ -113,6 +113,7 @@ void Root::simulate(double dt, bool verbose)
         if (age+dt>p.rlt) { // root life time
             dt=p.rlt-age; // remaining life span
             alive = false; // this root is dead
+			
         }
         age+=dt;
 
@@ -131,9 +132,20 @@ void Root::simulate(double dt, bool verbose)
             // children first (lateral roots grow even if base root is inactive)
             for (auto l:children) {
                 l->simulate(dt,verbose);
+				
             }
 
-				
+			if(!alive){
+				int is_fine_root = getParameter("is_fine_root");
+				bool not_lignified = getParameter("lengthTh") < getPlant()->getSeed()->getParameter("Lmax_unsuberized");
+				//if(is_fine_root || not_lignified) // for post-processing
+				//{
+					killChildren();
+				//}else{
+				//	deactivateChildren(); // turn off deactivate as we would still have 2ndary growth
+				//}
+			}
+
             if (active) {
 
                 // length increment, moved outside of 'if(active)' because needed for lateral creation out of existing linking nodes
@@ -290,7 +302,8 @@ double Root::getRadius(int local_segIndex) const
 	//if(segRadii.size()<=local_segIndex)
 	//	{
 			int nodeIndx = local_segIndex + 1; // local node_y index == local seg_indx + 1
-		double age_seg = std::max(getPlant()->getSimTime() - nodeCTs.at(nodeIndx), 0.);
+		
+		double age_seg = std::max(age + nodeCTs.at(0) - nodeCTs.at(nodeIndx), 0.);
 		return param()->a + param()->a_gr * age_seg; 
 	//		}else{
 	//int nodeIndx = local_segIndex + 1; // local node_y index == local seg_indx + 1
@@ -299,20 +312,34 @@ double Root::getRadius(int local_segIndex) const
 	//		}
 };
 
-// void Root::updateRadii() // Y use this? could instead update dynamically with getRadius
-// {
-	// for (int local_segIndex = 0; local_segIndex < getNumberOfSegments(); local_segIndex++)
-	// {
-		// int nodeIndx = local_segIndex + 1; // local node_y index == local seg_indx + 1
-		// double age = std::max(nodeCTs.at(nodeIndx) - age, 0.);
-		// if(segRadii.size()<=local_segIndex)
-		// {
-			// segRadii.push_back(param()->a + param()->a_gr * age);
-		// }else{
-			// segRadii.at(local_segIndex) = param()->a + param()->a_gr * age; // from google drive, subimage B
-		// }
-	// }
-// }
+std::vector<double> Root::getRadii() // Y use this? could instead update dynamically with getRadius
+{
+	std::vector<double> radii;
+	for (int local_segIndex = 0; local_segIndex < getNumberOfSegments(); local_segIndex++)
+	{
+		radii.push_back(getRadius(local_segIndex));
+	}
+	return radii;
+}
+
+
+int Root::lignificationStatus() 
+{
+	if(getParameter("lengthTh") < getPlant()->getSeed()->getParameter("Lmax_unsuberized"))
+	{
+		return 1;
+	}else
+	{
+		if(getParameter("lengthTh") < getPlant()->getSeed()->getParameter("Lmax_suberized"))
+		{
+			return 1;
+		}else{
+			return 2;
+		}
+	}
+	return -1;
+}
+
 
 /**
  *
@@ -322,18 +349,20 @@ double Root::getRadius(int local_segIndex) const
  */
 void Root::survivalTest() 
 {
-	if (isAlive())
+	if (isAlive() && (getAge() > 0.))
 	{
 		int is_fine_root = getParameter("is_fine_root");
-		bool not_lignified = getParameter("length_th") < getPlant()->getSeed()->getParameter("Lmax_suberized");
+		bool not_lignified = getParameter("lengthTh") < getPlant()->getSeed()->getParameter("Lmax_unsuberized");
 		if(is_fine_root || not_lignified)
 		{
 			alive = false; // this root is dead
+			killChildren();
 		}else{
-			double rlt_winter = getParameter("rlt_winter");
+			double rlt_winter = param()->rlt_winter;
 			if(getParameter("age") >= rlt_winter)
 			{
 				alive = false;
+				killChildren(); //deactivateChildren();
 			}
 		}
 	}
@@ -342,6 +371,22 @@ void Root::survivalTest()
 		if(children[i]->organType() == 2){ //if root
 			children[i]->survivalTest();//even if parent does not have relCoordinate, the laterals might
 		}
+    }
+}
+
+void Root::deactivateChildren() 
+{
+	active = false;
+    for(size_t i=0; i<children.size(); i++){
+		std::static_pointer_cast<Root>(children[i])->deactivateChildren();//even if parent does not have relCoordinate, the laterals might
+    }
+}
+
+void Root::killChildren() 
+{
+	alive = false;
+    for(size_t i=0; i<children.size(); i++){
+		std::static_pointer_cast<Root>(children[i])->killChildren();//even if parent does not have relCoordinate, the laterals might
     }
 }
 
@@ -385,9 +430,10 @@ std::shared_ptr<const RootSpecificParameter> Root::param() const
  */
 double Root::getParameter(std::string name) const
 {
-    // specific parameters
+    // specific parameters rlt_winter
     if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
     if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
+    if (name=="rlt_winter") { return param()->rlt_winter; } // basal zone [cm]
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
@@ -450,5 +496,16 @@ void StaticRoot::initializeLaterals() {
         this->addChild(lateral);
     }
 }
+
+
+void StaticRoot::survivalTest() 
+{
+    for(size_t i=0; i<children.size(); i++){
+		if(children[i]->organType() == 2){ //if root
+			children[i]->survivalTest();//even if parent does not have relCoordinate, the laterals might
+		}
+    }
+}
+
 
 } // end namespace CPlantBox

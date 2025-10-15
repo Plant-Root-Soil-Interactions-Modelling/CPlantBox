@@ -34,7 +34,7 @@ class Plant :public Organism
 {
 public:
 
-  enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_antigravi = 4, tt_twist = 5,  tt_antigravi2gravi = 6};  ///< plant tropism types
+  enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_antigravi = 4, tt_twist = 5,  tt_antigravi2gravi = 6 ,  tt_shift = 7};  ///< plant tropism types
   enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 , gft_CWLim = 3 }; // plant growth function
 
   Plant(unsigned int seednum  = 0.);
@@ -61,7 +61,8 @@ public:
 
   /* call back function creation */
   void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()
-  std::shared_ptr<Tropism> createTropismFunction(int tt, double N, double sigma, double Tage = 0.); ///< Creates the tropisms, overwrite or change this method to add more tropisms
+  std::shared_ptr<Tropism> createTropismFunction(int tt, double N, double sigma, double Tage = 0.,
+													double w1 = 1., double w2 = 0.); ///< Creates the tropisms, overwrite or change this method to add more tropisms
   virtual std::shared_ptr<GrowthFunction> createGrowthFunction(int gft); ///< Creates the growth function per root type, overwrite or change this method to add more tropisms
 
   std::string toString() const override;

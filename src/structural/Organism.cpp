@@ -221,10 +221,10 @@ std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot, bool all) const
  * @param organs    optionally, a predefined sequential organ list can be used (@param ot is ignored in this case)
  * @return A vector of one parameter values per each organ, if unknown NaN
  */
-std::vector<double> Organism::getParameter(std::string name, int ot, std::vector<std::shared_ptr<Organ>> organs) const
+std::vector<double> Organism::getParameter(std::string name, int ot, std::vector<std::shared_ptr<Organ>> organs, bool all) const
 {
     if (organs.empty()) {
-        organs = getOrgans(ot);
+        organs = getOrgans(ot, all);
     }
     std::vector<double> p = std::vector<double>(organs.size());
     for (int i=0; i<organs.size(); i++) {

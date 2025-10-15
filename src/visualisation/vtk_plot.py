@@ -334,6 +334,11 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
         im = Image(writer.GetResult(), format = "jpeg")
         display(im)
 
+def do_save_(obj, ev, bounds):
+    renWin = obj.GetRenderWindow()
+    file_name = renWin.GetWindowName()
+    write_jpg(renWin, file_name)# magnification = 5)
+    print("saved", file_name + ".jpg")
 
 def keypress_callback_(obj, ev, bounds):
     """ adds the functionality to make a screenshot by pressing 'g',
@@ -342,12 +347,12 @@ def keypress_callback_(obj, ev, bounds):
     if key == 'g':
         renWin = obj.GetRenderWindow()
         file_name = renWin.GetWindowName()
-        write_jpg(renWin, file_name, magnification = 5)
+        write_jpg(renWin, file_name)# magnification = 5)
         print("saved", file_name + ".jpg")
     if key == 's':  # for small
         renWin = obj.GetRenderWindow()
         file_name = renWin.GetWindowName()
-        write_jpg(renWin, file_name, magnification = 1)
+        write_jpg(renWin, file_name)#, magnification = 1)
         print("saved", file_name + ".jpg")
     if key == 'x' or key == 'y' or key == 'z' or key == 'v':
         renWin = obj.GetRenderWindow()
@@ -394,7 +399,7 @@ def write_jpg(renWin, fileName, magnification = 5):
 
     windowToImageFilter = vtk.vtkWindowToImageFilter();
     windowToImageFilter.SetInput(renWin)
-    windowToImageFilter.SetScale(magnification)
+    #windowToImageFilter.SetScale(magnification)
     windowToImageFilter.SetInputBufferTypeToRGB()
     windowToImageFilter.ReadFrontBufferOff()  # read from the back buffer
     windowToImageFilter.Update()
@@ -524,6 +529,9 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interacti
         ren = render_window(plantActor, win_title, scalar_bar, pd.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
+    else:# filename:
+        path = "results/"
+        write_vtp(path + win_title + ".vtp", pd)
 
     if returnLut:
         return plantActor, scalar_bar, lut

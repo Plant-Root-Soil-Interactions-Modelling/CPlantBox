@@ -149,7 +149,8 @@ void Plant::initCallbacks()
     // Create tropisms and growth functions per random root parameter
     for (auto& p_otp :organParam[Organism::ot_root]) {
 		auto rp = std::static_pointer_cast<RootRandomParameter>(p_otp.second);
-        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS,// rp->tropismT1,rp->tropismT2,
+											0.,rp->tropismW1,rp->tropismW2);
         tropism->setGeometry(geometry);
         rp->f_tf = tropism; // set new one
         auto gf_ = this->createGrowthFunction(rp->gf);
@@ -373,7 +374,9 @@ void Plant::rel2abs()
  * @param ageSwitch age at which new tropism funciton is implemented
  * @return          the tropism class containing with the callback functions
  */
-std::shared_ptr<Tropism> Plant::createTropismFunction(int tt, double N, double sigma, double ageSwitch) {
+std::shared_ptr<Tropism> Plant::createTropismFunction(int tt, double N, double sigma, double ageSwitch,
+														//int t1, int t2, 
+														double w1, double w2 ) {
     switch (tt) {
     case tt_plagio: return std::make_shared<Plagiotropism>(shared_from_this(),N,sigma);
     case tt_gravi: return std::make_shared<Gravitropism>(shared_from_this(),N,sigma);
@@ -386,6 +389,11 @@ std::shared_ptr<Tropism> Plant::createTropismFunction(int tt, double N, double s
     case tt_twist:  return std::make_shared<TwistTropism>(shared_from_this(),N,sigma);
     case tt_antigravi: return std::make_shared<AntiGravitropism>(shared_from_this(),N,sigma);
 	case tt_antigravi2gravi: return std::make_shared<AntiGravi2Gravitropism>(shared_from_this(),N,sigma, ageSwitch);
+    case tt_shift: {		
+        auto gt =  std::make_shared<Gravitropism>(shared_from_this(),N,sigma);
+        auto pt = std::make_shared<Plagiotropism>(shared_from_this(),N, sigma);
+		return std::make_shared<ShiftTropism>(shared_from_this(),N,sigma,gt,w1,pt,w2);
+	}
     default: throw std::invalid_argument( "Plant::createTropismFunction() tropism type not implemented" );
     }
 }

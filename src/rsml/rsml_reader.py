@@ -77,7 +77,7 @@ def read_rsml(name:str) -> (list, dict, dict, Metadata):
         (polylines, properties, functions) = parse_rsml_(elem, polylines, properties, functions, -1)
 
     if metadata.software == "RSWMS":
-         del properties['parent-node']  # they are something unexpected
+        del properties['parent-node']  # they are something unexpected
 
     return polylines, properties, functions, metadata
 

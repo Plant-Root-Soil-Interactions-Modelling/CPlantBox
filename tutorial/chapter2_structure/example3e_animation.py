@@ -4,7 +4,7 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import plantbox as pb
 import visualisation.vtk_plot as vp
 
-rs = pb.Plant()
+rs = pb.MappedPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")

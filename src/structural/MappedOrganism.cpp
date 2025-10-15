@@ -723,9 +723,22 @@ void MappedPlant::simulate(double dt, bool verbose)
 		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
 	}
 	for (auto& so : newsegO) {
-		int segIdx = newsegs[c].y-1;
+		int segIdx = newsegs[c].y-1; //global ID
+		int local_segIdx = -1;
+		//if(
+		int testval = newsegs[c].y - shift;
+		std::vector<int> nodeIds_ = so->getNodeIds();
+		auto it = std::find(nodeIds_.begin(), nodeIds_.end(), testval);//);
+			std::cout <<"test "<< *it << " " <<  newsegs[c].y ;//<<std::endl;
+		assert(int(*it) == int( newsegs[c].y- shift) && "MappedPlant::simulate: node ID not found in organ");
+		   //it != so->getNodeIds().end())
+		//{
+			local_segIdx = std::distance(nodeIds_.begin(), it) - 1;
+			std::cout<< " "  <<local_segIdx << std::endl;
+		//}
+		assert(local_segIdx >= 0 && "MappedPlant::simulate: node ID not found in organ");
 
-		radii.at(segIdx) = so->getRadius(c);
+		radii.at(segIdx) = so->getRadius(local_segIdx);
 		organTypes.at(segIdx) = so->organType();
 		subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
 		this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment

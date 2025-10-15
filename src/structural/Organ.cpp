@@ -278,7 +278,7 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v, bool all)
     //deprecated: do not need bulb anymore, stems of subtype 2 are normal stems
     //bool notBulb = !((this->organType() == Organism::ot_stem)&&(this->getParameter("subType") == 2));//do not count leaf bulb
     //might have age <0 and node.size()> 1 when adding organ manuelly @see test_organ.py
-    bool forCarbon_limitedGrowth = (all && (this->getAge()>0));//when ask for "all" organs which have age > 0 even if nodes.size() == 1
+    bool forCarbon_limitedGrowth = all;//(all && (this->getAge()>0));//when ask for "all" organs which have age > 0 even if nodes.size() == 1
     bool notSeed = ( this->organType() != Organism::ot_seed);
 
     if ((this->nodes.size()>1 || forCarbon_limitedGrowth) && notSeed) {//&& notBulb
@@ -898,7 +898,9 @@ double Organ::getLatGrowthDelay() const //override for stems
       case Organism::dd_time_lat_rand:
       {
 		  // same as dd_time_lat, only use rand() rather than randn
-          growthDelay = std::max(rp->ldelay + plant.lock()->rand()*rp->ldelays, 0.);
+		  // std::abs for if we start using randn again
+          growthDelay = std::max(rp->ldelay +std::abs( plant.lock()->rand())*rp->ldelays, 0.);
+		  //std::cout<< "growthDelay " << growthDelay << std::endl;
           break;
       }
     }

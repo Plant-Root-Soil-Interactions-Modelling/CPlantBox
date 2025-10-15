@@ -88,6 +88,7 @@ public:
 	double Lmax_unsuberized = 1.e9;
 	double Lmax_suberized = 2.e9;
 	//double Lmax_lignified = 3.e9;
+	int maxOrder = 5; // use that or define limite in the parameters?
 
     // Basal roots (nodal roots)
     double firstB = 1.e9;  ///< Mean emergence of first basal root [day]
@@ -116,6 +117,7 @@ public:
     double firstTils = 0.;   ///< Standard deviation of emergence of first basal root [day]
     double delayTil = 1.e9;  ///< Mean time delay between the basal roots [day]
     double delayTils = 0.;   ///< Standard deviation of time delay between the basal roots [day]
+	
 
     // Simulation parameters
     double simtime = 30.;  ///< Mean recommended final simulation time

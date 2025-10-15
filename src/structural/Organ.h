@@ -123,6 +123,11 @@ public:
 	virtual double getRadius(int local_segIndex) const {return getParameter("a");};
 	//virtual std::vector<double> getRadii() const;
 	virtual void survivalTest() {};
+	double getLatGrowthDelay(int ot_lat, int st_lat, double dt, double growthDelay);
+	double getLatGrowthDelay() const;
+	
+	virtual int lignificationStatus() {return 0;};
+	
 
 protected:
 
@@ -133,8 +138,6 @@ protected:
 	virtual Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction. overriden by @see Leaf::getIncrement()
     void createSegments(double l, double dt, bool silence, int PhytoIdx = -1 ); ///< creates segments of length l, called by Root::simulate()
     virtual double getLatInitialGrowth(double dt);
-	double getLatGrowthDelay(int ot_lat, int st_lat, double dt, double growthDelay);
-	double getLatGrowthDelay() const;
 	bool getApplyHere(int i) const;
 	/* up and down the organ tree */
     std::weak_ptr<Organism> plant; ///< the plant of which this organ is part of

@@ -69,7 +69,7 @@ public:
 
     /* as sequential list */
     std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1, bool all = false) const; ///< sequential list of organs
-    virtual std::vector<double> getParameter(std::string name, int ot = -1, std::vector<std::shared_ptr<Organ>> organs = std::vector<std::shared_ptr<Organ>>(0)) const; ///< parameter value per organ
+    virtual std::vector<double> getParameter(std::string name, int ot = -1, std::vector<std::shared_ptr<Organ>> organs = std::vector<std::shared_ptr<Organ>>(0), bool all = false) const; ///< parameter value per organ
     double getSummed(std::string name, int ot = -1) const; ///< summed up parameters
     // std::shared_ptr<Organ> pickOrgan(int nodeId); // TODO
 

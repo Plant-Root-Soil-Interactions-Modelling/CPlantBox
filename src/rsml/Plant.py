@@ -212,13 +212,13 @@ if __name__ == '__main__':
     plant.initialize_static_laterals()
 
     plant.simulate(125., True)
-    ana = pb.SegmentAnalyser(plant) 
-    rad = np.array(ana.getParameter('radius'))
-    cts = np.array(ana.getParameter('creationTime'))
-    st = np.array(ana.getParameter('subType'))
-    ot = np.array(ana.getParameter('organType'))
-    print(rad[(st == 2)&(ot == 2)])
-    print(cts[(st == 2)&(ot == 2)])
+    # ana = pb.SegmentAnalyser(plant) 
+    # rad = np.array(ana.getParameter('radius'))
+    # cts = np.array(ana.getParameter('creationTime'))
+    # st = np.array(ana.getParameter('subType'))
+    # ot = np.array(ana.getParameter('organType'))
+    # print(rad[(st == 2)&(ot == 2)])
+    # print(cts[(st == 2)&(ot == 2)])
 
 
     vp.plot_roots(plant, "subType")

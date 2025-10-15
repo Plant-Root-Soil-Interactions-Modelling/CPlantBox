@@ -128,7 +128,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
         }
     }
 	double p_survive = plant.lock()->rand();
-	double rlt_winter = lambda_survive * (std::pow(-std::log(p_survive),1/k_survive));
+	double rlt_winter = lambda_survive * (std::pow(-std::log(p_survive),1/k_survive)) * 1e6; // yrs to GDD
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
     double a_ = std::max(a + p->randn()*as, 0.01); // radius
     double a_gr_ = std::max(a_gr + p->randn()*a_grs, 0.); // secondary growth rate
@@ -276,6 +276,8 @@ void RootRandomParameter::bindParameters()
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
     bindParameter("lmax", &lmax, "Maximal root length [cm]", &lmaxs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
+    bindParameter("tropismW1", &tropismW1, "probability of tropismT1");
+    bindParameter("tropismW2", &tropismW2, "probability of tropismT2");
     bindParameter("tropismT", &tropismT, "Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of root tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of root tropism [1/cm]");

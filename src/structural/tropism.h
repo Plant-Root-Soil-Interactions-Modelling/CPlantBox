@@ -87,7 +87,7 @@ protected:
 
 	std::weak_ptr<SignedDistanceFunction> geometry; ///< confining geometry
 	double randn(int nNode) { if((nNode > 0) && (plant.lock()->getStochastic())) { return ND(gen);} else { return plant.lock()->randn();} } ///< normally distributed random number (0,1)
-    double rand(int nNode) { if((nNode > 0) && (plant.lock()->getStochastic())) { return UD(gen);} else { return plant.lock()->randn();} } ///< uniformly distributed random number (0,1)
+    double rand(int nNode) { if((nNode > 0) && (plant.lock()->getStochastic())) { return UD(gen);} else { return plant.lock()->rand();} } ///< uniformly distributed random number (0,1)
 
     std::normal_distribution<double> ND;
     std::uniform_real_distribution<double> UD;
@@ -222,6 +222,24 @@ public:
 		nt->plant = plant; //todo
 		return nt;
 	} ///< copy constructor, deep copies tropisms
+
+	double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o = nullptr) override;
+	///< getHeading() minimizes this function, @see TropismFunction
+
+private:
+
+	std::vector<std::shared_ptr<Tropism>> tropisms;
+	std::vector<double> weights;
+
+};
+
+
+class ShiftTropism : public Tropism
+{
+public:
+	ShiftTropism(std::shared_ptr<Organism> plant, double n, double sigma, std::shared_ptr<Tropism> t1, double w1, std::shared_ptr<Tropism> t2, double w2);
+	///< linearly combines the objective functions of two tropism functions
+
 
 	double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o = nullptr) override;
 	///< getHeading() minimizes this function, @see TropismFunction

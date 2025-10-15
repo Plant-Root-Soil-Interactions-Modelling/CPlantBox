@@ -213,6 +213,7 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
 	successorOT.resize(0, std::vector<int>(0));//2D, int
     successorST.resize(0, std::vector<int>(0));//2D, int
     successorP.resize(0, std::vector<double>(0));//2D, double
+    successorP_age.resize(0);//2D, double
     successorNo.resize(0);//1D, int
     successorWhere.resize(0, std::vector<double>(0));//2D, double
     auto p = element->FirstChildElement("parameter");
@@ -305,10 +306,10 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 
 		int numLat;
 		success = p->QueryIntAttribute("numLat",&numLat);
-		if(success == tinyxml2::XML_SUCCESS){successorNo.push_back(numLat);}
+		if(success == tinyxml2::XML_SUCCESS){successorNo.push_back(numLat);}else{successorNo.push_back(1);}
 
-		int age_threshold;
-		success = p->QueryIntAttribute("age_threshold",&age_threshold);
+		double age_threshold;
+		success = p->QueryDoubleAttribute("age_threshold",&age_threshold);
 		if(success == tinyxml2::XML_SUCCESS){successorP_age.push_back(age_threshold);}
 
 		//default == empty vector == apply rule to all the linking nodes
@@ -331,8 +332,8 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 
 		replaceByDefaultValue = true;
 		lookfor = std::vector<std::string>{"probability","percentage"};//probability (or percentage for backward compatibility)
-		defaultVald = successorNo.at(ruleId)/successorST.at(ruleId).size();//default = number of laterals / option for laterals
-		defaultSize = (successorST.at(ruleId).size() - successorP.at(ruleId).size());
+		defaultVald = 1;//successorNo.at(ruleId)/successorST.at(ruleId).size();//default = number of laterals / option for laterals
+		defaultSize = 1;//(successorST.at(ruleId).size() - successorP.at(ruleId).size());
 		if(!std::isfinite(defaultVald))
 		{
 			for(int k = 0;k < successorST.at(ruleId).size(); k++){
@@ -351,7 +352,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 			//if (no organtype given) + (parent is stem) + (subtype == 2) == we want a leaf
 			defaultVal = Organism::ot_leaf;
 		}else{defaultVal = this->organType;}
-		defaultSize = (successorST.at(ruleId).size() - successorOT.at(ruleId).size());
+		defaultSize = 1;//(successorST.at(ruleId).size() - successorOT.at(ruleId).size());
 		cpb_queryStringAttribute(lookfor,
 					defaultVal,defaultSize, replaceByDefaultValue,
 					successorOT, p, ruleId);
@@ -623,14 +624,15 @@ int OrganRandomParameter::getLateralType(const Vector3d& pos, int ruleId, double
 	std::vector<double> successorP_; 
     if (successorP_age.size()>0)
 	{
-	assert(successorP_age.size()==successorP.size()
-        && "StemTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
-		
-		for(int i = 0; i < successorP_age.size(); i++)
+		assert(successorP_age.size()==successorP.size()
+			&& "StemTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
+		successorP_ = successorP.back();  // default: use last if all thresholds are exceeded
+		for (size_t i = 0; i < successorP_age.size(); ++i)
 		{
-			if(creation_time <= successorP_age.at(i))
+			if (creation_time <= successorP_age[i])
 			{
-				successorP_ = successorP.at(i);
+				successorP_ = successorP[i];
+				break;  // stop at the first threshold not exceeded
 			}
 		}
 	}else{

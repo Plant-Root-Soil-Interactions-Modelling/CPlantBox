@@ -26,7 +26,7 @@ public:
 
     RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
     RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a,
-    		double theta, double rlt, bool laterals = false, double a_growth = 0., double rlt_winter = 1e9):
+    		double theta, double rlt, bool laterals = false, double a_growth = 0., double rlt_winter = 1e10):
         OrganSpecificParameter(type, a),  lb(lb), la(la), ln(ln), r(r), theta(theta), rlt(rlt), laterals(laterals), a_gr(a_growth), rlt_winter(rlt_winter) { }; ///< Constructor setting all parameters
 
     /*
@@ -43,7 +43,7 @@ public:
     double a_gr;            ///< Secondary growth rate [cm day-1]
     int nob() const { return ln.size()+ laterals; } ///< return the maximal number of lateral branching nodes [1]
     double getK() const; ///< Returns the exact maximal root length of this realization [cm]
-	double rlt_winter = 1.e9;
+	double rlt_winter = 1.e10;
 
     std::string toString() const override; ///< for debugging
 
@@ -94,6 +94,10 @@ public:
     double a_gr = 0.;        ///< Secondary growth rate [cm day-1]
     double a_grs = 0.;      ///< Standard deviation Secondary growth rate [cm day-1]
     int tropismT = 1;       ///< Root tropism parameter (Type)
+    //int tropismT1 = 1;       ///< Root tropism parameter (Type)
+    //int tropismT2 = 1;       ///< Root tropism parameter (Type)
+    double tropismW1 = 1;       ///< Root tropism parameter (Type)
+    double tropismW2 = 0;       ///< Root tropism parameter (Type)
     double tropismN = 1.;   ///< Root tropism parameter (number of trials)
     double tropismS = 0.2;  ///< Root tropism parameter (mean value of expected changeg) [1/cm]
     double theta = 1.22;    ///< Angle between root and parent root (rad)

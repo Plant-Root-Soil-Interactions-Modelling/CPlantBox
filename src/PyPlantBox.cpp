@@ -284,6 +284,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("bindParameters",&OrganRandomParameter::bindParameters)
             .def("bindIntParameter", (void (OrganRandomParameter::*)(std::string, int*, std::string, double*)) &OrganRandomParameter::bindParameter, py::arg("name"), py::arg("i"), py::arg("descr") = "", py::arg("dev") = (double*) nullptr) // overloads, defaults
             .def("bindDoubleParameter", (void (OrganRandomParameter::*)(std::string, double*, std::string, double*))  &OrganRandomParameter::bindParameter, py::arg("name"), py::arg("i"), py::arg("descr") = "", py::arg("dev") = (double*) nullptr) // overloads, defaults
+            .def("getLateralType",&OrganRandomParameter::getLateralType)
             .def_readwrite("name",&OrganRandomParameter::name)
 			.def_readwrite("organType",&OrganRandomParameter::organType)
 			.def_readwrite("subType",&OrganRandomParameter::subType)
@@ -297,6 +298,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("successorWhere", &OrganRandomParameter::successorWhere)
             .def_readwrite("successorNo", &OrganRandomParameter::successorNo)
             .def_readwrite("successorP", &OrganRandomParameter::successorP)
+            .def_readwrite("successorP_age", &OrganRandomParameter::successorP_age)
             .def_readwrite("ldelay", &OrganRandomParameter::ldelay)
             .def_readwrite("ldelays", &OrganRandomParameter::ldelays)
             .def_readwrite("plant",&OrganRandomParameter::plant)
@@ -352,6 +354,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def("orgVolume",&Organ::orgVolume, py::arg("length_")=-1, py::arg("realized")=false)
 			.def("orgVolume2Length",&Organ::orgVolume2Length)
             .def("getiHeading0", &Organ::getiHeading0)
+            .def("lignificationStatus", &Organ::lignificationStatus)
+            .def("getLatGrowthDelay",(double (Organ::*)(int ot_lat, int st_lat, double dt, double growthDelay)) &Organ::getLatGrowthDelay)
+            .def("getLatGrowthDelay",(double (Organ::*)() const) &Organ::getLatGrowthDelay)
             .def_readwrite("parentNI", &Organ::parentNI);
 
     /*
@@ -374,7 +379,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("survivalTest", &Organism::survivalTest)
 
             .def("getOrgans", &Organism::getOrgans, py::arg("ot") = -1, py::arg("allOrgs")=false) // default
-            .def("getParameter", &Organism::getParameter, py::arg("name"), py::arg("ot") = -1, py::arg("organs") = std::vector<std::shared_ptr<Organ>>(0)) // default
+            .def("getParameter", &Organism::getParameter, py::arg("name"), py::arg("ot") = -1, py::arg("organs") = std::vector<std::shared_ptr<Organ>>(0), py::arg("all") = false) // default
             .def("getSummed", &Organism::getSummed, py::arg("name"), py::arg("ot") = -1) // default
 
             .def("getNumberOfOrgans", &Organism::getNumberOfOrgans)
@@ -561,7 +566,6 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<RootRandomParameter, OrganRandomParameter, std::shared_ptr<RootRandomParameter>>(m, "RootRandomParameter")
             .def(py::init<std::shared_ptr<Organism>>())
-            .def("getLateralType",&RootRandomParameter::getLateralType)
             .def("nob",&RootRandomParameter::nob)
             .def("nobs",&RootRandomParameter::nobs)
             .def_readwrite("lb", &RootRandomParameter::lb)
@@ -574,9 +578,13 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("lmaxs", &RootRandomParameter::lmaxs)
             .def_readwrite("r", &RootRandomParameter::r)
             .def_readwrite("rs", &RootRandomParameter::rs)
+            .def_readwrite("tropismW1", &RootRandomParameter::tropismW1)
+            .def_readwrite("tropismW2", &RootRandomParameter::tropismW2)
             .def_readwrite("tropismT", &RootRandomParameter::tropismT)
             .def_readwrite("tropismN", &RootRandomParameter::tropismN)
             .def_readwrite("tropismS", &RootRandomParameter::tropismS)
+            .def_readwrite("k_survive", &RootRandomParameter::k_survive)
+            .def_readwrite("lambda_survive", &RootRandomParameter::lambda_survive)
             .def_readwrite("theta", &RootRandomParameter::theta)
             .def_readwrite("thetas", &RootRandomParameter::thetas)
             .def_readwrite("rlt", &RootRandomParameter::rlt)
@@ -589,7 +597,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("hairsElongation", &RootRandomParameter::hairsElongation)
 			.def_readwrite("hairsZone", &RootRandomParameter::hairsZone)
 			.def_readwrite("hairsLength", &RootRandomParameter::hairsLength)
-            .def_readwrite("a_gr", &RootRandomParameter::a_gr);
+            .def_readwrite("a_gr", &RootRandomParameter::a_gr)
+            .def_readwrite("is_fine_root", &RootRandomParameter::is_fine_root);
 
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())
@@ -621,6 +630,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("maxBs", &SeedRandomParameter::maxBs)
             .def_readwrite("nC", &SeedRandomParameter::nC)
             .def_readwrite("nCs", &SeedRandomParameter::nCs)
+            .def_readwrite("Lmax_unsuberized", &SeedRandomParameter::Lmax_unsuberized)
+            .def_readwrite("Lmax_suberized", &SeedRandomParameter::Lmax_suberized)
             .def_readwrite("firstSB", &SeedRandomParameter::firstSB)
             .def_readwrite("firstSBs", &SeedRandomParameter::firstSBs)
             .def_readwrite("delaySB", &SeedRandomParameter::delaySB)
@@ -786,7 +797,9 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("calcLength", &Root::calcLength)
             .def("calcAge", &Root::calcAge)
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
-            .def("param", &Root::param);
+            .def("param", &Root::param)
+            .def("getRadius", &Root::getRadius)
+            .def("getRadii", &Root::getRadii);
     py::class_<StaticRoot, Root, std::shared_ptr<StaticRoot>>(m, "StaticRoot")
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, double, int>())
             .def("initializeLaterals", &StaticRoot::initializeLaterals)

@@ -203,4 +203,30 @@ double CombinedTropism::tropismObjective(const Vector3d& pos, const Matrix3d& ol
     return v;
 }
 
+ShiftTropism::ShiftTropism(std::shared_ptr<Organism> plant, double n, double sigma, std::shared_ptr<Tropism> t1, double w1, std::shared_ptr<Tropism> t2, double w2)
+    :Tropism(plant,n,sigma)
+{
+    tropisms.push_back(t1);
+    tropisms.push_back(t2);
+    weights.push_back(w1);
+    weights.push_back(w2);
+}
+/**
+ * getHeading() minimizes this function, @see TropismFunction::tropismObjective
+ */
+double ShiftTropism::tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o)
+{
+	double v;
+	double test_val = plant.lock()->rand();
+	double weight_cumul = 0;
+	int i = 0;
+	while ((test_val > weight_cumul) && (i < tropisms.size())) {
+	  weight_cumul +=  weights[i];
+      v = tropisms[i]->tropismObjective(pos,old,a,b,dx,o);
+	  i++;
+	}
+	
+    return v;
+}
+
 } // end namespace CPlantBox
