@@ -2,7 +2,7 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import numpy as np
-# import vtk
+import vtk
 
 import dash
 from dash import html, dcc, Input, Output, State, ctx
@@ -26,7 +26,7 @@ leaf_parameter_sliders = get_leaf_slider_names()
 SEED_SLIDER_INITIALS = [180, 1, 7, 7, 20, 7, 7, 15, 5]
 ROOT_SLIDER_INITIALS = [100, 3, 45, 1, 1, 7, 0.1, 1, 0.2, "Gravitropism"]
 STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180., 1, 0.2, "Gravitropism"]
-LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45, 2., 90, 1., 0.2, "Gravitropism"]
+LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45., 2., 90, 1., 0.2, "Gravitropism"]
 
 """ LAYOUT """
 app.layout = dbc.Container([
@@ -50,8 +50,8 @@ app.layout = dbc.Container([
                         className = 'customDropdown'),
             html.Div(className = "spacer"),
             html.H6("Simulation time [day]"),
-            dcc.Slider(id = 'time-slider', min = 1, max = 90, step = 1, value = 30,
-                       marks = {1: "1", 90: "90"},
+            dcc.Slider(id = 'time-slider', min = 1, max = 45, step = 1, value = 20,
+                       marks = {1: "1", 45: "45"},
                        tooltip = { "always_visible": False}),
             html.Div(className = "spacer"),
             dbc.Button("Create", id = "create-button"),
@@ -97,14 +97,19 @@ app.layout = dbc.Container([
         ], width = 6),
     ]),
 
-        html.Div([
-    html.A(
-        html.Img(src = '/assets/cplantbox.png', className = 'logo'),
-        href = 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox',
-        target = '_blank'  # Opens in a new tab
-    ),
+    html.Div([
+        html.A(
+            html.Img(src = '/assets/cplantbox.png', className = 'logo'),
+            href = 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox',  # Replace with actual URL
+            target = '_blank'
+        ),
+        html.A(
             html.Img(src = '/assets/fzj.png', className = 'logo'),
-        ], className = 'logoContainer')
+            href = 'https://www.fz-juelich.de/de',  # Replace with actual URL
+            target = '_blank'
+        ),
+    ], className = 'logoContainer')
+
 ], fluid = True)
 
 """ 1. LEFT - Simulation Panel """
@@ -128,6 +133,7 @@ app.layout = dbc.Container([
     # prevent_initial_call = True,
 )
 def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value):
+    print("update_plant()",plant_value)
     set_data(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data)
     return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, seed_data["simulationTime"])
 
@@ -143,14 +149,16 @@ def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typena
     State('root-store', 'data'),
     State('stem-store', 'data'),
     State('leaf-store', 'data'),
+    State('typename-store', 'data'),
     State('result-store', 'data'),
     State('result-tabs', 'value'),
     prevent_initial_call = True,
 )
-def click_simulate(n_clicks, plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data, vtk_data, result_value):
-    print("click_simulate()", plant_value, stem_data)
-    vtk_data = simulate_plant(plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data)
-    content = render_result_tab(result_value, vtk_data)  # call by hand
+
+def click_simulate(n_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, vtk_data, result_value):
+    print("click_simulate()", plant_value)
+    vtk_data = simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data)
+    content = render_result_tab(result_value, vtk_data, typename_data)  # call by hand
     return (content, vtk_data, html.H6(""))
 
 
@@ -167,7 +175,7 @@ def click_simulate(n_clicks, plant_value, time_slider_value, seed_data, root_dat
     State('leaf-store', 'data'),
 )
 def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_data):
-    print("")
+    print()
     if tab == 'Seed':
         print("render_organtype_tab() seed:", seed_data)
         return generate_seed_sliders(seed_data)
@@ -258,7 +266,7 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
     prevent_initial_call = True,
 )
 def update_seed_store(slider_values, data):
-    # print("update_seed_store()", store_data, slider_values, len(store_data["seed"]))
+    print("update_seed_store()", data, slider_values, len(data["seed"]))
     if len(slider_values) > 1:  # called empty
         data["seed"] = slider_values
     return data
@@ -345,7 +353,7 @@ def toggle_slider(checkbox_value):
 #
 def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs from stored values
     """ @param root_values is root_data[current_tab] """
-    # print("generate_root_sliders()")
+    print("generate_root_sliders()", root_values)
     style = {}
     successors = root_values[-1]
     sliders = []
@@ -380,8 +388,7 @@ def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs f
                 value = root_values[i + 1],
                 clearable = False,
                 className = 'customDropdown'
-            ))
-    print("generate_root_sliders()", len(sliders))
+            ))    
     return html.Div(sliders)
 
 
@@ -401,8 +408,8 @@ def root_layout(data, type_names):
     return [tab, content]
 
 
-# render_root_tab - Display sliders for the selected tab, using stored values
-@app.callback(
+
+@app.callback( # render_root_tab - Display sliders for the selected tab, using stored values
     Output('root-tabs-content', 'children'),
     Input('root-tabs', 'value'),
     State('root-store', 'data'), suppress_callback_exceptions = True
@@ -413,8 +420,8 @@ def render_root_tab(selected_tab, root_data):
     return generate_root_sliders(stored_values, int(selected_tab[-1]))
 
 
-# Update root-store when any slider changes
-@app.callback(
+
+@app.callback( # Update root-store when any slider changes
     Output('root-store', 'data', allow_duplicate = True),  #
     Input({'type': 'dynamic-slider', 'index': dash.ALL}, 'value'),
     State('root-tabs', 'value'),
@@ -422,11 +429,11 @@ def render_root_tab(selected_tab, root_data):
     prevent_initial_call = True,
 )
 def update_root_store(slider_values, current_tab, store_data):
-    print("update_root_store() from", store_data[current_tab])
+    print("update_root_store()", store_data[current_tab])
     successors = store_data[current_tab][-1]
     store_data[current_tab] = slider_values
     store_data[current_tab].append(successors)
-    print("update_root_store() to  ", store_data[current_tab])
+    # print("update_root_store() to  ", store_data[current_tab])
     return store_data
 
 
@@ -439,7 +446,7 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(stem_parameter_sliders.keys()):
         style = {}
-        # if i in [7]:  # rotBeta (not working)
+        #if i in [7]:  # rotBeta (not working)
         #    style = {'display': 'none'}
         if (not successors) and (i in [3]):
             style = {'display': 'none'}
@@ -525,7 +532,7 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
         return [html.Div(className = "spacer"), html.H6("There is no leaf defined in your plant data set") ]
 
     leaf_values = data["leaf"]
-    print(len(leaf_values), len(leaf_parameter_sliders.keys()))
+    # print(len(leaf_values), len(leaf_parameter_sliders.keys()))
     sliders = []
     sliders.append(html.Div(className = "spacer"))
     sliders.append(html.H6("Leaf shape"))
@@ -574,7 +581,7 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
 #     return slider_values
 
 
-@app.callback(# Update root-store when any slider changes
+@app.callback( # Update leaf-store when any slider changes
     Output('leaf-store', 'data', allow_duplicate = True),  #
     Input({'type': 'leaf-dynamic-slider', 'index': dash.ALL}, 'value'),
     State('leaf-store', 'data'),
@@ -594,16 +601,14 @@ def update_leaf_store(slider_values, store_data):
     Output('result-tabs-content', 'children', allow_duplicate = True),
     Input('result-tabs', 'value'),
     State('result-store', 'data'),
+    State('typename-store', 'data'),
     prevent_initial_call = True,
 )
-def render_result_tab(tab, vtk_data):
-
+def render_result_tab(tab, vtk_data, typename_data):
     print("render_result_tab()", tab)
-
     if not vtk_data:
         print("no data")
         return html.Div([html.H6("press the create button")])
-
     if tab == 'VTK3D':
         color_pick = vtk_data["subType"]
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
@@ -616,8 +621,8 @@ def render_result_tab(tab, vtk_data):
     elif tab == 'Profile1D':
         return profile_plot(vtk_data)
     elif tab == 'Dynamics':
-        return dynamics_plot(vtk_data)
+        return dynamics_plot(vtk_data, typename_data)
 
 
 if __name__ == '__main__':
-    app.run(debug = False, port = 8051)
+    app.run(debug = True)

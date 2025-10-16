@@ -67,7 +67,7 @@ def vtk3D_plot(vtk_data, color_pick, type_):
     cbarcontent = dcc.Graph(
                 # id = 'dummy-id',
                 figure = cbar,
-                style = {'width': '200px', 'height': '40px'},
+                style = {'width': '200px', 'height': '60px','marginTop': '10px'},
                 config = {
                     'displayModeBar': False  # Hides the entire toolbar
                 }
@@ -86,10 +86,14 @@ def vtk3D_plot(vtk_data, color_pick, type_):
 
 def profile_plot(vtk_data):
 
-    z_ = vtk_data["z"]
-    rld = vtk_data["rld"]
-    rld = go.Scatter(x = rld, y = z_, mode = 'lines', name = "length fraction")
-    traces = [rld]
+    time = vtk_data["time"][-1]  # final simtime
+
+    traces = []
+    for i in range(0, 5):
+        z_ = vtk_data[f"z{i}"]
+        rld = vtk_data[f"rld{i}"]
+        print(rld)
+        traces.append(go.Scatter(x = rld, y = z_, mode = 'lines', name = "Day {:g}".format(time / 5.*(i + 1))))
 
     content = dcc.Graph(
             id = 'profile-plot',
@@ -97,8 +101,8 @@ def profile_plot(vtk_data):
                 'data': traces,
                 'layout': go.Layout(
                     # title='Line Plot of Multiple Arrays vs Time',
-                    xaxis = {'title': 'Fraction [-]'},
-                    yaxis = {'title': 'Depth [cm]'},
+                    xaxis = {'title': 'Fraction of plant organ length per cm layer [-]'},
+                    yaxis = {'title': 'Vertical position [cm]'},
                     hovermode = 'closest',
                     colorway = qualitative.Set2,
                 ),
@@ -109,9 +113,9 @@ def profile_plot(vtk_data):
     return  html.Div(content, style = {"width": "100%", "height": "600px"})
 
 
-def dynamics_plot(vtk_data):
+def dynamics_plot(vtk_data, typename_data):
 
-    N = 50  # hard coded, see conversions.py
+    N = 25  # hard coded, see conversions.py
     number_r = vtk_data["number_r"]
     number_s = vtk_data["number_s"]
     time = vtk_data["time"]
@@ -128,17 +132,16 @@ def dynamics_plot(vtk_data):
     slength = np.sum(stem_length, axis = 0)
 
     # Create line traces
-    go_leaf_length = go.Scatter(x = time, y = leaf_length, mode = 'lines', name = "leaf length")  # , line = { 'color': 'blue' }
-    go_stem_length = go.Scatter(x = time, y = slength, mode = 'lines', name = "stem length")
-    go_root_length = go.Scatter(x = time, y = rlength, mode = 'lines', name = "root length")
-    go_stem_length_ = []
-    for j in range(number_s):
-        go_stem_length_.append(go.Scatter(x = time, y = stem_length[j,:], mode = 'lines', name = f"stem_length-{j+1}"))
-    go_root_length_ = []
-    for j in range(number_r):
-        go_root_length_.append(go.Scatter(x = time, y = root_length[j,:], mode = 'lines', name = f"root_length-{j+1}"))
-
-    traces = [go_leaf_length, go_stem_length] + go_stem_length_ + [go_root_length] + go_root_length_
+    traces = []
+    traces.append(go.Scatter(x = time, y = leaf_length, mode = 'lines', name = "Leaf"))
+    if number_s > 1:
+        traces.append(go.Scatter(x = time, y = slength, mode = 'lines', name = "Stem (total)"))
+    for j in range(number_s):  # sub types
+        traces.append(go.Scatter(x = time, y = stem_length[j,:], mode = 'lines', name = typename_data[f"stem tab-{j+1}"]))
+    if number_r > 1:
+        traces.append(go.Scatter(x = time, y = rlength, mode = 'lines', name = "Root (total)"))
+    for j in range(number_r):  # sub type
+        traces.append(go.Scatter(x = time, y = root_length[j,:], mode = 'lines', name = typename_data[f"root tab-{j+1}"]))
 
     content = dcc.Graph(
             id = 'profile-plot',
