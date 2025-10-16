@@ -498,7 +498,7 @@ def plot_roots(pd, p_name:str,p_names = [], win_title:str = "", render:bool = Tr
         pd = segs_to_polydata(pd, 1., [p_name, "radius", "organType"] + p_names)
 
     if isinstance(pd, pb.SegmentAnalyser):
-        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
+        pd = segs_to_polydata(pd, 1., [p_name, "radius"] + p_names)
 
     if win_title == "":
         win_title = p_name

@@ -12,6 +12,29 @@ import numpy as np
 from structural.Plant import PlantPython
 import matplotlib.pyplot as plt
 
+'''
+length vs time init
+'''
+# def getlen1(BEDD_tot,beta,L_max):
+    # return L_max *(1-np.exp(-beta * BEDD_tot))
+
+# def getlen2(BEDD_tot,r,L_max):
+    # return L_max *(1-np.exp(-r/L_max * BEDD_tot))
+    
+# Mainbeta = 3.28 * 10e-5
+# Subbeta = 2.16 * 10e-5
+# SubSubbeta  = 2.00 * 10e-5
+# L_max = 96
+# r = L_max * Mainbeta
+
+# testmain = [getlen1(btot,Mainbeta,L_max) for btot in range(int(1225))]
+# testmain2 = [getlen2(btot,r,L_max) for btot in range(int(1225))]
+# btots = [btot for btot in range(int(1225))]
+# plt.plot(btots, testmain)
+# #plt.show()
+# plt.plot(btots, testmain2)
+# plt.show()
+
 def get3Dshape(plant,title_ = 'wine', saveOnly = True):        
     orgs_ = plant.getOrgans(2)
     orgs_a = [1 for org in orgs_ if org.isAlive() ]
@@ -38,6 +61,8 @@ def get3Dshape(plant,title_ = 'wine', saveOnly = True):
     
 doAnim = False
 
+depth = 60  # soil depth [cm]
+soilSpace = pb.SDF_PlantContainer(np.inf, np.inf, depth, True)  # to avoid root growing aboveground
 plant = PlantPython(1)
 
 # Open plant and root parameter from a file
@@ -46,26 +71,27 @@ name = "wine_Fichtl"
 
 plant.readParameters(path + name + ".xml")
 
+plant.setGeometry(soilSpace) 
 
 ps = plant.getOrganRandomParameter(pb.seed)[0]
 ps.Lmax_unsuberized = 5.
 ps.Lmax_suberized = 10.
 ps.delayDefinition = 4
 
-
+yr_to_BEDD = 1225
 
 
 for ii, pp in enumerate(plant.getOrganRandomParameter(2)):
     if ii < 2:
-        pp.ldelay  = 0*1e6
-        pp.ldelays = 1e6*50#*5
+        pp.ldelay  = 0*yr_to_BEDD
+        pp.ldelays = yr_to_BEDD*40#*5
     else:
-        pp.ldelay  = 0*1e6
-        pp.ldelays = 1e6*50#/2.
+        pp.ldelay  = 0*yr_to_BEDD
+        pp.ldelays = yr_to_BEDD*40#/2.
         
 allRRP = plant.getOrganRandomParameter(2)
-allRRP[2].a_gr = 0.085/1e6
-allRRP[3].a_gr = 0.085/1e6
+allRRP[2].a_gr = 0.085/yr_to_BEDD
+allRRP[3].a_gr = 0.085/yr_to_BEDD
 allRRP[3].k_survive = 2.17
 allRRP[3].lambda_survive = 4.55
 
@@ -74,17 +100,17 @@ for newpId in range(3,6):
     
     rrpA.subType += 1
     rrpA.successorST =  np.array(rrpA.successorST) + 1
-    rrpA.successorP[0][0] *= 0.5
-    rrpA.successorP[0][1] *= 0.75
+    #rrpA.successorP[0][0] *= 0.5
+    #rrpA.successorP[0][1] *= 0.75
     #rrpA.successorP =  np.array(rrpA.successorP) *0.5
-    rrpA.a_gr = 0.085/1e6
+    rrpA.a_gr = 0.085/yr_to_BEDD
     #rrpB.successorP =  np.array(rrpB.successorP) /10.
     allRRP.append(rrpA)
     
 allRRP[6].successorST = [[11]]
 allRRP[6].successorP = [[allRRP[6].successorP[0][1]]] # [[pp1],[pp2]]
 
-pplats = np.array([[0.35]])#,[0.35]])
+pplats = np.array([[0.5]])#,[0.35]])
 for newpId in range(6,11):
     rrpA = allRRP[newpId].copy(plant)
     
@@ -94,11 +120,11 @@ for newpId in range(6,11):
     #pp = rrpA.successorP[0][0] * 0.5
     rrpA.successorP =  pplats
     #rrpB.successorP =  np.array(rrpB.successorP) /10.
-    allRRP.append(rrpA)
     rrpA.is_fine_root = True
     rrpA.lmax = ps.Lmax_suberized
+    allRRP.append(rrpA)
     
-    pplats *= 0.5
+    pplats *= 0.75
 
 allRRP[-1].successorST = []
 
@@ -123,14 +149,14 @@ p2.tropismW2 = 0.6
 p3 = plant.getOrganRandomParameter(2, 3)
 p3.r = p3.lmax * Sub_beta
 
-for subindx in [4,5,6]:
+for subindx in range(4,11):
     p4 = plant.getOrganRandomParameter(2, subindx)
     p4.r = p4.lmax * SubSub_beta
     
     
-# for ii, pp in enumerate(plant.getOrganRandomParameter(2)):
+#for ii, pp in enumerate(plant.getOrganRandomParameter(2)):
 #    print(pp)
-    
+
 '''
 check Tropisms
 '''
@@ -153,16 +179,13 @@ plant.initialize_static(path + "B-23_Fichtl.rsml", [0, 1])  # 0 is shoot, 1 are 
 # the static laterals 2 and 3 are replaced with the growing lateral 2
 ld = plant.set_identical_laterals([0, 1], [2, 3], 2)
 plant.initialize_static_laterals()
-
-plt.hist(np.array(ld)/1e6, density = False, bins=30)
+  
+plt.hist(np.array(ld)/yr_to_BEDD, density = False, bins=30)
 plt.title("Creation time of the main roots")
 plt.show()
 
-dt = 1e6 # ~1 yr
-N = 50
 min_ = np.array([-20, -20, -50])
 max_ = np.array([20, 20, 30.])
-
 
 
 if doAnim:
@@ -175,31 +198,117 @@ if doAnim:
     anim.plant = True
     anim.start()
     
-for i in range(0, N):
-    if i > 0:
-        plant.survivalTest()
-    plant.simulate(dt, False)
-    print('time', dt * i /1e6)
-    get3Dshape(plant,title_ = 'wine'+str(i), saveOnly = True)
+# N1 = 365
+# dt = yr_to_BEDD/N1 # ~1 d
+
+# all_lengths = []
+# all_ages = []
+# all_subtypes = []
+
+# for i in range(0, N1):
+    # plant.simulate(dt, False)
+    # print('time', dt * i /yr_to_BEDD, end=", ")
+    # get3Dshape(plant,title_ = 'wine'+str(i), saveOnly = True)
         
+    # orgs_ = plant.getOrgans(2)
+    # orgs_ = [org for org in orgs_ if org.param().subType > 0] # ignore the static roots
+    # all_ages.append(np.array([org.getAge() for org in orgs_]))
+    # all_lengths.append(np.array([org.getLength() for org in orgs_]))
+    # all_subtypes.append(np.array([org.param().subType for org in orgs_]))
+    
+    # if doAnim:
+        # anim.root_name = "organType"
+        # anim.update()
+        
+# '''
+# Length vs age
+# '''
+# all_ages = np.array([item for sublist in all_ages for item in sublist])
+# all_lengths = np.array([item for sublist in all_lengths for item in sublist])
+# all_subtypes = np.array([item for sublist in all_subtypes for item in sublist])
+# for stroots in set(all_subtypes):
+    # age_ = all_ages[all_subtypes == stroots]
+    # len_ = all_lengths[all_subtypes == stroots]
+    # plt.scatter(age_,len_, label = stroots)
+# plt.title("Length vs age")
+# plt.legend()
+# plt.show()
+
+
+all_lengths = []
+all_ages = []
+all_subtypes = []
+all_alive = []
+dt = yr_to_BEDD # ~1 yr
+N = 49
+ 
+for i in range(0, N):
+    plant.survivalTest()
+    plant.simulate(dt, False)
+    print('time', dt * i /yr_to_BEDD, end=", ")
+    get3Dshape(plant,title_ = 'wine'+str(i), saveOnly = True) #+N1
+        
+    orgs_ = plant.getOrgans(2)
+    orgs_ = [org for org in orgs_ if org.param().subType > 0] # ignore the static roots
+    all_ages.append(np.array([org.getAge()/yr_to_BEDD for org in orgs_]))
+    all_lengths.append(np.array([org.getLength() for org in orgs_]))
+    all_alive.append(np.array([org.isAlive() for org in orgs_]))
+    all_subtypes.append(np.array([org.param().subType for org in orgs_]))
+    
     if doAnim:
         anim.root_name = "organType"
         anim.update()
         
 
-orgs_ = plant.getOrgans(2)
+
+#orgs_ = plant.getOrgans(2)
 orgs_long = [org for org in orgs_ if org.param().subType in range(2,7)]
 orgs_fine = [org for org in orgs_ if org.param().subType in range(7,12)]
 
 '''
+Presence (creation time vs death)
+'''
+#all_alive = np.array([item for sublist in all_alive for item in sublist])
+#all_subtypes_ = np.array([item for sublist in all_subtypes for item in sublist])
+alive_long = [sum(all_alive[i][np.isin(all_subtypes[i],[2,3,4,5,6])]) for i in range(len(all_alive))]
+alive_short = [sum(all_alive[i][np.isin(all_subtypes[i],[7,8,9,10,11])]) for i in range(len(all_alive))]
+#alive_short = all_alive[np.isin(all_subtypes_,[2,3,4,5,6])]
+#alive_long = all_alive[np.isin(all_subtypes_,[7,8,9,10,11])]
+year_ = [i for i in range(len(all_alive))]
+plt.figure()
+plt.scatter(year_,alive_long, label= 'long-lived roots')
+plt.scatter(year_,alive_short, label='fine roots')
+#plt.hist([alive_long,alive_short], 
+#            stacked=True, density = False, bins=30, edgecolor='black',
+#            label=[ 'long-lived roots','fine roots'] )
+plt.title("Root count")
+plt.legend()
+plt.show()
+
+'''
+Length vs age
+'''
+all_ages_ = np.array([item for sublist in all_ages for item in sublist])
+all_lengths_ = np.array([item for sublist in all_lengths for item in sublist])
+all_subtypes_ = np.array([item for sublist in all_subtypes for item in sublist])
+for stroots in set(all_subtypes_):
+    age_ = all_ages_[all_subtypes_ == stroots]
+    len_ = all_lengths_[all_subtypes_ == stroots]
+    plt.scatter(age_,len_, label = stroots)
+plt.title("Length vs age")
+plt.legend()
+plt.show()
+
+'''
 Age distribution at last time step
 '''
-ages_long = np.array([org.getAge()/1e6 for org in orgs_long])
-subType_long = np.array([org.param().subType for org in orgs_long])
-print(set(subType_long))
-ages_long = [ages_long[np.isin(subType_long, hh)] for hh in [[2],[3],[4,5,6]]]
+ages_long_ = np.array([org.getAge()/yr_to_BEDD for org in orgs_long])
+subType_long_ = np.array([org.param().subType for org in orgs_long])
+subType_fine_ = np.array([org.param().subType for org in orgs_fine])
+print('root subtypes obtained',set(subType_long_),set(subType_fine_))
+ages_long_ = [ages_long_[np.isin(subType_long_, hh)] for hh in [[2],[3],[4,5,6]]]
 
-plt.hist(ages_long, 
+plt.hist(ages_long_, 
          bins=30, 
          density=False, 
          stacked = True,
@@ -215,7 +324,7 @@ plt.show()
 secondary growth
 '''
 for org in orgs_long:
-    age_segs = (org.getAge() + org.getNodeCT(0) - np.array([org.getNodeCT(ii) for ii in range(1,org.getNumberOfNodes())]))/1e6
+    age_segs = (org.getAge() + org.getNodeCT(0) - np.array([org.getNodeCT(ii) for ii in range(1,org.getNumberOfNodes())]))/yr_to_BEDD
     plt.plot(age_segs,org.getRadii())
 plt.title("Radius vs time for long lived roots")
 plt.show()
@@ -224,8 +333,8 @@ plt.show()
 '''
 Survival rate
 '''
-rtl_winters = np.array([org.getParameter('rlt_winter')/1e6 for org in orgs_long])
-rtl_winters = [rtl_winters[np.isin(subType_long, hh)] for hh in [[2],[3],[4,5,6]]]
+rtl_winters = np.array([org.getParameter('rlt_winter')/yr_to_BEDD for org in orgs_long])
+rtl_winters = [rtl_winters[np.isin(subType_long_, hh)] for hh in [[2],[3],[4,5,6]]]
 #maxT = int(max(rtl_winters)) + 1
 outout = [[],[],[]]
 for idrt, RootType in enumerate(['main','sub', 'subsub']):
@@ -243,8 +352,8 @@ plt.show()
 '''
 Creation time
 '''
-creationTime_long = np.array([org.getParameter('creationTime')/1e6 for org in orgs_long])
-creationTime_short = np.array([org.getParameter('creationTime')/1e6 for org in orgs_fine])
+creationTime_long = np.array([org.getParameter('creationTime')/yr_to_BEDD for org in orgs_long])
+creationTime_short = np.array([org.getParameter('creationTime')/yr_to_BEDD for org in orgs_fine])
 
 plt.figure()
 plt.hist([creationTime_long,creationTime_short], 
@@ -253,3 +362,4 @@ plt.hist([creationTime_long,creationTime_short],
 plt.title("Root emergence time")
 plt.legend()
 plt.show()
+

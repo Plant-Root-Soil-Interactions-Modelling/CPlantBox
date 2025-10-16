@@ -327,10 +327,12 @@ int Root::lignificationStatus()
 {
 	if(getParameter("lengthTh") < getPlant()->getSeed()->getParameter("Lmax_unsuberized"))
 	{
-		return 1;
+		return 0;
 	}else
 	{
-		if(getParameter("lengthTh") < getPlant()->getSeed()->getParameter("Lmax_suberized"))
+		int is_fine_root = getParameter("is_fine_root");
+		bool not_lignified = getParameter("lengthTh") < getPlant()->getSeed()->getParameter("Lmax_unsuberized");
+		if(is_fine_root || not_lignified)
 		{
 			return 1;
 		}else{

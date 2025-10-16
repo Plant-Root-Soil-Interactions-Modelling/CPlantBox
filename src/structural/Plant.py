@@ -156,7 +156,7 @@ class PlantPython(Plant):
                                 # pr.successorNo,
                                 # pr.successorP,
                                 # pr.successorP_age)
-                        p_idx = 0 # pr.getLateralType(pb.Vector3d(), 0, # ruleID: assumed to be 0 here
+                        p_idx = 0#pr.getLateralType(pb.Vector3d(), 0, # ruleID: assumed to be 0 here
                         #                            creation_time)
                         if(p_idx >=0) :
                             emerge_type_ = pr.successorST[0][p_idx]
@@ -176,13 +176,8 @@ class PlantPython(Plant):
             numKids = organ.getNumberOfChildren()
             # for numKid in range(numKids):
                 # pr = organ.getChild(numKid).getOrganRandomParameter()
-                # print(pr.subType,
-                            # pr.successorOT,
-                            # pr.successorST,
-                            # pr.successorNo,
-                            # pr.successorP,
-                            # pr.successorP_age,
-                            # organ.getChild(numKid).param().laterals)
+                # ps = organ.getChild(numKid).param()
+                # print(ps.getK(),ps.subType)
         # raise Exception
 
     def analyse_laterals(self, initial_sub_types, lateral_subtypes):
