@@ -664,6 +664,13 @@ std::vector<Vector3d> Leaf::getLeafVis(int i)
 			Vector3d x1= getiHeading0();
 			x1.normalize();
 			Vector3d y1 = Vector3d(0,0,-1).cross(x1); // todo angle between leaf - halfs
+			double l = y1.length();
+			if (l<1.e-4) { // if x1 and 0,0,-1 are parallel, we take cross product between down and final position
+					// std::cout << "strange... " << y1.toString() << ", " << x1.toString() << " \n" << std::flush;
+					auto leaf_tip = getNode(getNumberOfNodes()-1);
+					leaf_tip.normalize(); // vector to leaf tip
+					y1 = Vector3d(0,0,-1).cross(leaf_tip);
+			}
 			y1.normalize();
 
 			double a  = leafArea() / leafLength(); // scale radius
