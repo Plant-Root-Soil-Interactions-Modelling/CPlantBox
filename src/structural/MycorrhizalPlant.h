@@ -3,9 +3,9 @@
 
 #include "Plant.h"
 #include "MycorrhizalRoot.h"
-#include "soil.h"
-#include "sdf_rs.h"
-//#include "sdf.h"
+// #include "soil.h"
+#include "sdf_rs.h" 
+// #include "sdf.h"
 //#include "Hyphae.h"
 
 namespace CPlantBox {
@@ -36,7 +36,7 @@ namespace CPlantBox {
 
         std::vector<double> stopTime; // time when root stopped growing, 0 if it has not
         std::vector<Vector3d> tip;
-        std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
+        // std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
     };
 }
 
