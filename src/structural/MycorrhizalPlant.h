@@ -36,7 +36,7 @@ namespace CPlantBox {
 
         std::vector<double> stopTime; // time when root stopped growing, 0 if it has not
         std::vector<Vector3d> tip;
-        // std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
+        std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
     };
 }
 
