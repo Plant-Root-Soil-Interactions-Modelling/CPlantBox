@@ -56,3 +56,4 @@ tutorial/jupyter/.ipynb_checkpoints/
 
 # images
 *.png
+/build_win

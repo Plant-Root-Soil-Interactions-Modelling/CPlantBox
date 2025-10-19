@@ -1,6 +1,9 @@
 # Let pybind11 locate and configure Python properly.
 set(PYBIND11_FINDPYTHON ON)
 
+# Allow building CPlantBox as a shared library to respect LGPL linking expectations.
+option(BUILD_CPLANTBOX_SHARED "Build CPlantBox as a shared library (DLL/.so) when possible" ON)
+
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(tinyxml2 CONFIG REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
@@ -38,8 +41,18 @@ set(CPLANTBOX_SOURCES
 # Should be all except for PiafMunch, legacy SUNDIALS makes problems with vcpkg...
 
 
-# Static library containing the core C++ logic.
-add_library(CPlantBox STATIC ${CPLANTBOX_SOURCES})
+if (BUILD_CPLANTBOX_SHARED)
+  # Shared library (DLL on Windows, .so/.dylib on Unix)
+  add_library(CPlantBox SHARED ${CPLANTBOX_SOURCES})
+  if (MSVC)
+    # If the project doesn't use explicit __declspec(dllexport) annotations
+    # ensure the linker produces an import library by exporting all symbols.
+    set_target_properties(CPlantBox PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+  endif()
+else()
+  # Static library containing the core C++ logic.
+  add_library(CPlantBox STATIC ${CPLANTBOX_SOURCES})
+endif()
 target_compile_features(CPlantBox PUBLIC cxx_std_17)
 
 target_include_directories(CPlantBox
@@ -52,7 +65,7 @@ target_include_directories(CPlantBox
 )
 
 target_link_libraries(CPlantBox
-  PRIVATE tinyxml2::tinyxml2
+  PUBLIC tinyxml2::tinyxml2
   PRIVATE Eigen3::Eigen
 )
 
@@ -64,18 +77,23 @@ add_dependencies(plantbox CPlantBox)
 
 # Multi-config output locations (especially for MSVC).
 if (MSVC)
-  set_target_properties(CPlantBox PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Release"
-    ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Debug"
-  )
+  if (BUILD_CPLANTBOX_SHARED)
+    set_target_properties(CPlantBox PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+    )
+  else()
+    # Static: archives (.lib) go to the top-level archive dir too
+    set_target_properties(CPlantBox PROPERTIES
+      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+    )
+  endif()
   set_target_properties(plantbox PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Release"
     RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Debug"
   )
 endif()
-
-
-# produce a cmakeconfig file for find_package
 
 set(CPLANTBOX_INCLUDE_DIRS
   "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -94,26 +112,38 @@ write_basic_package_version_file(
   COMPATIBILITY AnyNewerVersion
 )
 
-# Generate a minimal config file that defines the imported target
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/CPlantBoxConfig.cmake"
-"include(CMakeFindDependencyMacro)\n"
-"find_dependency(Eigen3)\n"
-"find_dependency(tinyxml2)\n"
-"add_library(CPlantBox STATIC IMPORTED)\n"
-"set_target_properties(CPlantBox PROPERTIES\n"
-"  IMPORTED_LOCATION \"${CPLANTBOX_LIBRARY_DIR}/\$<CONFIG>/libCPlantBox.a\"\n"
-"  INTERFACE_INCLUDE_DIRECTORIES \"${CPLANTBOX_INCLUDE_DIRS}\"\n"
-")\n"
+export(TARGETS CPlantBox
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/CPlantBoxTargets.cmake"
+  NAMESPACE CPlantBox::
+)
+configure_package_config_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/CPlantBoxConfig.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/CPlantBoxConfig.cmake"
+  INSTALL_DESTINATION "lib/cmake/CPlantBox"
+)
+install(TARGETS CPlantBox
+  EXPORT CPlantBoxTargets
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  INCLUDES DESTINATION include
 )
 
-# Install the config and version files
+install(EXPORT CPlantBoxTargets
+  FILE CPlantBoxTargets.cmake
+  NAMESPACE CPlantBox::
+  DESTINATION lib/cmake/CPlantBox
+)
 install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/CPlantBoxConfig.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/CPlantBoxConfigVersion.cmake"
   DESTINATION lib/cmake/CPlantBox
 )
-
-# Install headers
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/CPlantBoxConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/CPlantBoxConfigVersion.cmake"
+  DESTINATION lib/cmake/CPlantBox
+)
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
   DESTINATION include/CPlantBox
   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"

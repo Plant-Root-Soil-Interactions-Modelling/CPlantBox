@@ -1,0 +1,15 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(Eigen3)
+find_dependency(tinyxml2)
+
+# Import the exported targets file created at install time
+include("${CMAKE_CURRENT_LIST_DIR}/CPlantBoxTargets.cmake")
+
+# Variables provided for consumers
+set(CPlantBox_INCLUDE_DIRS "@CPLANTBOX_INCLUDE_DIRS@")
+set(CPlantBox_VERSION "@CPLANTBOX_VERSION@")
+
+# Provide an alias target CPlantBox::CPlantBox if consumers expect it
+# (the CPlantBoxTargets.cmake file declares the imported target already)
