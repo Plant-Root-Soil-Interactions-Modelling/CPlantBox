@@ -117,6 +117,8 @@ void HyphaeRandomParameter::bindParameters()
     bindParameter("b", &b, "Branching rate [1/day]", &bs);
     bindParameter("hlt", &hlt, "Hyphal lifetime  [day]", &hlts);
     bindParameter("theta", &theta, "Branching angle [rad]", &thetas);
+    bindParameter("distTT", &distTT, "Distance for tip-tip anastomosis [cm]");
+    bindParameter("distTH", &distTH, "Distance for tip-hyphae anastomosis [cm]");
     bindParameter("tropismT", &tropismT, "Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of root tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of root tropism [1/cm]");

@@ -26,6 +26,7 @@ namespace CPlantBox {
         void simulatePrimaryInfection(double dt, bool verbose);
         void simulateSecondaryInfection(double dt, bool verbose);
         void simulateHyphalGrowth(double dt);
+        void simulateAnastomosis();
 
         virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
         virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
@@ -35,7 +36,7 @@ namespace CPlantBox {
         void addTree(); // AABB tree
 
         std::vector<double> stopTime; // time when root stopped growing, 0 if it has not
-        std::vector<Vector3d> tip;
+        std::vector<Vector3d> tips;
         std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
     };
 }

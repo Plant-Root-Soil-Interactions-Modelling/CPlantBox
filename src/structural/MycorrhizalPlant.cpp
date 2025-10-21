@@ -106,6 +106,8 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     auto organs = getOrgans();
     abs2rel();
     Organism::simulate(dt, verbose);
+    addTree();
+    simulateAnastomosis();
     rel2abs();
 }
 
@@ -130,6 +132,22 @@ void MycorrhizalPlant::simulateHyphalGrowth(double dt)
         }
     }
 };
+
+void MycorrhizalPlant::simulateAnastomosis() {
+    auto hyphae = this->getOrgans(Organism::ot_hyphae);
+    for (const auto & h : hyphae) {
+        auto tip = h->getNode(h->getNumberOfNodes()-1);
+        for (auto sdf : sdfs)
+        {
+            double dist = sdf.getDist(tip);
+            if (dist < h ->getParameter("distTH") && dist > 0.) {
+                std::cout << "Anastomosis at tip " << tip.toString() << " with distance " << dist << "\n";
+            }
+        }
+    }
+    
+};
+
 
 void MycorrhizalPlant::initCallbacks() {
 
@@ -188,8 +206,6 @@ void MycorrhizalPlant::initCallbacks() {
 
 void MycorrhizalPlant::addTree() {
     // TODO adapt from exudation model or push to hyphae???
-    // right now just straight copy does not make sense
-    // dx3 = (length/nx)*(width/ny)*(depth/nz); // for integration of eqn 13
         auto hyphae = this->getOrgans(Organism::ot_hyphae);
 
         for (const auto& h : hyphae) {
@@ -203,13 +219,13 @@ void MycorrhizalPlant::addTree() {
                 }
                 // root tip
                 Vector3d t = h->getNode(h->getNumberOfNodes()-1);
-                tip.push_back(t);
+                tips.push_back(t);
                 // // direction towards root base
                 // Vector3d base = h->getNode(0);
                 // double a = h->getNodeCT(h->getNumberOfNodes()-1) - h->getNodeCT(0);
                 // v.push_back(base.minus(t).times(1./a));
             }
-            sdfs.push_back(SDF_RootSystem(*(std::dynamic_pointer_cast<Hyphae>(h)), 0.5)); // 0.5 cm resolution
+            sdfs.push_back(SDF_RootSystem(*(std::dynamic_pointer_cast<Hyphae>(h)), h->getParameter("dx")));
 
         }
 }
