@@ -5,10 +5,12 @@
 #include "Root.h"
 #include "Stem.h"
 #include "Leaf.h"
-#include "sdf_rs.h"
+//#include "sdf_rs.h"
 #include <numeric>
 
 namespace CPlantBox {
+
+class SDF_RootSystem;
 
 /**
  * Constructs a root from given data.

@@ -209,7 +209,7 @@ void MycorrhizalPlant::addTree() {
                 // double a = h->getNodeCT(h->getNumberOfNodes()-1) - h->getNodeCT(0);
                 // v.push_back(base.minus(t).times(1./a));
             }
-            // sdfs.push_back(SDF_RootSystem(*(std::dynamic_pointer_cast<Hyphae>(h)), 0.5)); // 0.5 cm resolution
+            sdfs.push_back(SDF_RootSystem(*(std::dynamic_pointer_cast<Hyphae>(h)), 0.5)); // 0.5 cm resolution
 
         }
 }
