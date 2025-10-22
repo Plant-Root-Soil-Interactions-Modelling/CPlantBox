@@ -108,6 +108,7 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     Organism::simulate(dt, verbose);
     addTree();
     simulateAnastomosis();
+    sdfs = {};
     rel2abs();
 }
 
@@ -135,15 +136,22 @@ void MycorrhizalPlant::simulateHyphalGrowth(double dt)
 
 void MycorrhizalPlant::simulateAnastomosis() {
     auto hyphae = this->getOrgans(Organism::ot_hyphae);
+    auto numberofHyphae = sdfs.size();
+    // auto numberofHyphae2 = hyphae.size();
+    // std::cout<< numberofHyphae << " "<< numberofHyphae2 <<std::endl;
+    double dist = 1000;
     for (const auto & h : hyphae) {
         auto tip = h->getNode(h->getNumberOfNodes()-1);
         for (auto sdf : sdfs)
         {
-            double dist = sdf.getDist(tip);
-            if (dist < h ->getParameter("distTH") && dist > 0.) {
-                std::cout << "Anastomosis at tip " << tip.toString() << " with distance " << dist << "\n";
-            }
+            double distfromsdf = sdf.getDist(tip);
+            if ( distfromsdf > 0 && distfromsdf < dist) dist = distfromsdf;
         }
+        if (dist < h->getParameter("distTH"))
+        {
+            std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance: " << dist << std::endl;
+        }
+        
     }
     
 };

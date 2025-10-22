@@ -23,6 +23,7 @@ hyphae_parameter = pb.HyphaeRandomParameter(mycp)
 hyphae_parameter.subType = 1
 hyphae_parameter.a = 0.01
 hyphae_parameter.dx = 0.01
+hyphae_parameter.distTH = 0.001  # distance for anastomosis
 mycp.setOrganRandomParameter(hyphae_parameter)
 # print(hyphae_parameter)
 
