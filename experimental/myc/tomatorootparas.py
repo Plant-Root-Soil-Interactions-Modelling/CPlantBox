@@ -5,11 +5,11 @@ import math
 import visualisation.vtk_plot as vp
 import numpy as np
 
-expWSLength = 92.29 
-expWLength = 73.03
+expWSLength = 9229 # cm
+expWLength = 7303 # cm
 
-expRMCSLength = 143.01
-expRMCLength = 106.39
+expRMCSLength = 14301 # cm
+expRMCLength = 10639 # cm
 
 expWSDia = 0.33
 expWDia = 0.34
@@ -18,8 +18,9 @@ expRMCSDia = 0.32
 expRMCDia = 0.27
 
 
-mycp = pb.MycorrhizalPlant(1)
-path = "../../modelparameter/structural/plant/"
+mycp = pb.MycorrhizalPlant()
+# path = "../../modelparameter/structural/rootsystem/"
+path = ""
 name = "TomatoJohanna"
 
 mycp.readParameters(path +name + ".xml", fromFile = True, verbose = True)
@@ -33,7 +34,7 @@ mycp.setOrganRandomParameter(hyphae_parameter)
 
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
-    rp.hyphalEmergenceDensity = 2
+    rp.hyphalEmergenceDensity = 0
     rp.highresolution = 0
     rp.dx = 0.2
 
@@ -51,13 +52,17 @@ for i in range(1,N):
         # mycp.simulateHyphalGrowth(dt)
     
 print('done')
-    
-# ana = pb.SegmentAnalyser(mycp)
-# rl = ana.distribution("length", 0., -100., 50, False)
+vp.plot_plant(mycp, "organType")
+ana = pb.SegmentAnalyser(mycp)
+rad = ana.getParameter("radius")
+rad = sum(rad)/len(rad)
+rl = ana.getSummed("length")
+print("Root length total (cm):", rl)
+print("Average root diameter (cm):", rad)
 # ana.addData("infection", mycp.getNodeInfections(2))
 # ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
 # pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
-# vp.plot_roots(ana, "infection")
+vp.plot_roots(ana, "radius")
 # # vp.plot_roots(ana, "infectionTime")
 # # vp.plot_plant(mycp, "organType")
 # ana.write(name + ".vtp", ["radius", "subType", "creationTime","organType"])# "infection", "infectionTime",

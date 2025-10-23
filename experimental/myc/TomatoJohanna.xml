@@ -86,7 +86,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.2"/>
+        <parameter name="a" value="1.5"/>
         <!--radius [cm]-->
         <parameter name="colorB" value="0"/>
         <!--Root color, blue component [0.-1.]-->
@@ -110,12 +110,12 @@
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="5.5"/>
+        <parameter name="r" value="1.5"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="9.9999998e+10" dev="1000000"/>
         <!--Root life time [day]-->
         <parameter name="theta" value="0"/>
-        <!--Angle between root and parent root [rad]-->
+        <!-- Angle between root and parent root [rad] -->
         <parameter name="tropismN" value="1.5"/>
         <!--Number of trials of root tropism-->
         <parameter name="tropismS" value="0.2"/>
@@ -128,7 +128,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.32"/>
+        <parameter name="a" value="0.33"/>
         <!--radius [cm]-->
         <parameter name="colorB" value="0"/>
         <!--Root color, blue component [0.-1.]-->
@@ -146,19 +146,19 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="40.299999"/>
+        <parameter name="lmax" value="45"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.69999999"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="2"/>
+        <parameter name="r" value="2.5"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="9.9999998e+10" dev="1000000"/>
         <!--Root life time [day]-->
         <parameter name="theta" value="1.22173"/>
         <!--Angle between root and parent root [rad]-->
-        <parameter name="tropismN" value="0.1"/>
+        <parameter name="tropismN" value="0.5"/>
         <!--Number of trials of root tropism-->
         <parameter name="tropismS" value="0.30000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
@@ -170,7 +170,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.02"/>
+        <parameter name="a" value="0.2"/>
         <!--radius [cm]-->
         <parameter name="colorB" value="0"/>
         <!--Root color, blue component [0.-1.]-->
@@ -194,7 +194,7 @@
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="2"/>
+        <parameter name="r" value="1"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="0"/>
         <!--Root life time [day]-->
@@ -204,8 +204,6 @@
         <!--Number of trials of root tropism-->
         <parameter name="tropismS" value="0.40000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
-        <parameter name="successor" ruleId="0" numLat="1" Where="" subType="6" organType="2" percentage="1"/>
-        <!--Sub type of lateral -->
     </root>
     <stem name="undefined" subType="0">
         <parameter name="gf" value="1"/>
@@ -303,7 +301,7 @@
         <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of stem tropism [1/cm]-->
     </stem>
-    <!-- <leaf name="undefined" subType="0">
+    <leaf name="undefined" subType="0">
         <parameter name="geometryN" value="100"/>
         <!--leaf geometry resolution-->
         <parameter name="gf" value="1"/>
@@ -358,5 +356,5 @@
         <!--Number of trials of leaf tropism-->
         <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of leaf tropism [1/cm]-->
-    </leaf> -->
+    </leaf>
 </plant>
