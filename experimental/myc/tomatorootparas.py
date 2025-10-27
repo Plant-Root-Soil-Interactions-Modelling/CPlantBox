@@ -31,6 +31,7 @@ hyphae_parameter.a = 0.01
 hyphae_parameter.dx = 0.01
 mycp.setOrganRandomParameter(hyphae_parameter)
 
+pot = pb.SDF_PlantContainer(11.7, 11.7, 30, False)
 
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
@@ -38,6 +39,7 @@ for rp in root:
     rp.highresolution = 0
     rp.dx = 0.2
 
+mycp.setGeometry(pot)
 mycp.initialize(True)
 totalduration = 108
 potduration = 73
@@ -52,7 +54,7 @@ for i in range(1,N):
         # mycp.simulateHyphalGrowth(dt)
     
 print('done')
-vp.plot_plant(mycp, "organType")
+# vp.plot_plant(mycp, "organType")
 ana = pb.SegmentAnalyser(mycp)
 rad = ana.getParameter("radius")
 rad = sum(rad)/len(rad)
@@ -62,7 +64,7 @@ print("Average root diameter (cm):", rad)
 # ana.addData("infection", mycp.getNodeInfections(2))
 # ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
 # pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
-vp.plot_roots(ana, "radius")
+vp.plot_roots_and_container(mycp, pot)
 # # vp.plot_roots(ana, "infectionTime")
 # # vp.plot_plant(mycp, "organType")
 # ana.write(name + ".vtp", ["radius", "subType", "creationTime","organType"])# "infection", "infectionTime",
