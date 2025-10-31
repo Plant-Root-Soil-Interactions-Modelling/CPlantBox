@@ -133,7 +133,7 @@ app.layout = dbc.Container([
     # prevent_initial_call = True,
 )
 def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value):
-    print("update_plant()",plant_value)
+    print("update_plant()", plant_value)
     set_data(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data)
     return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, seed_data["simulationTime"])
 
@@ -154,7 +154,6 @@ def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typena
     State('result-tabs', 'value'),
     prevent_initial_call = True,
 )
-
 def click_simulate(n_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, vtk_data, result_value):
     print("click_simulate()", plant_value)
     vtk_data = simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data)
@@ -388,7 +387,7 @@ def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs f
                 value = root_values[i + 1],
                 clearable = False,
                 className = 'customDropdown'
-            ))    
+            ))
     return html.Div(sliders)
 
 
@@ -408,8 +407,7 @@ def root_layout(data, type_names):
     return [tab, content]
 
 
-
-@app.callback( # render_root_tab - Display sliders for the selected tab, using stored values
+@app.callback(# render_root_tab - Display sliders for the selected tab, using stored values
     Output('root-tabs-content', 'children'),
     Input('root-tabs', 'value'),
     State('root-store', 'data'), suppress_callback_exceptions = True
@@ -420,8 +418,7 @@ def render_root_tab(selected_tab, root_data):
     return generate_root_sliders(stored_values, int(selected_tab[-1]))
 
 
-
-@app.callback( # Update root-store when any slider changes
+@app.callback(# Update root-store when any slider changes
     Output('root-store', 'data', allow_duplicate = True),  #
     Input({'type': 'dynamic-slider', 'index': dash.ALL}, 'value'),
     State('root-tabs', 'value'),
@@ -446,7 +443,7 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(stem_parameter_sliders.keys()):
         style = {}
-        #if i in [7]:  # rotBeta (not working)
+        # if i in [7]:  # rotBeta (not working)
         #    style = {'display': 'none'}
         if (not successors) and (i in [3]):
             style = {'display': 'none'}
@@ -581,7 +578,7 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
 #     return slider_values
 
 
-@app.callback( # Update leaf-store when any slider changes
+@app.callback(# Update leaf-store when any slider changes
     Output('leaf-store', 'data', allow_duplicate = True),  #
     Input({'type': 'leaf-dynamic-slider', 'index': dash.ALL}, 'value'),
     State('leaf-store', 'data'),
@@ -606,6 +603,8 @@ def update_leaf_store(slider_values, store_data):
 )
 def render_result_tab(tab, vtk_data, typename_data):
     print("render_result_tab()", tab)
+    print(vtk_data)
+
     if not vtk_data:
         print("no data")
         return html.Div([html.H6("press the create button")])

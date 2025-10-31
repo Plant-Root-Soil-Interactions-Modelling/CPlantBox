@@ -15,13 +15,13 @@ tropism_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "N
 def get_parameter_names():  # parameter xml file names
     """ returns a list of plant parameter names with two values each, first a short name, second exact filename """
     parameter_names = [
+        ("Maize", "P0.xml"),
+        ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
+        ("FSPM", "fspm2023.xml"),
         ("Demo Leaf", "leaf_only.xml"),
         ("Demo Root", "root_only.xml"),
         ("Demo Stem", "stem_only.xml"),
-#        ("Maize3", "P3.xml"),
-        ("Maize", "P0.xml"),
-        ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
-        ("FSPM", "fspm2023.xml") ]
+        ]
     return parameter_names
 
 # Felix Maximilian Bauer, Dirk Norbert Baker, Mona Giraud, Juan Carlos Baca Cabrera, Jan Vanderborght, Guillaume Lobet, Andrea Schnepf, Root system architecture reorganization under decreasing soil phosphorus lowers root system conductance of Zea mays, Annals of Botany, 2024;, mcae198, https://doi.org/10.1093/aob/mcae198
@@ -117,7 +117,7 @@ def set_leaf_geometry(shapename, p):
         p.areaMax = 50
         p.la, p.lb, p.lmax = 5, 1, 11
         phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
-        l = np.array([5., 1, 4.5, 1, 4, 1, 4.5, 1, 5])    
+        l = np.array([5., 1, 4.5, 1, 4, 1, 4.5, 1, 5])
     p.createLeafRadialGeometry(phi, l, 100)
 
 
@@ -141,11 +141,11 @@ def fix_dx(rrp, strp, lrp):
         # r.betaDev = 0.
         print("delayNGStarts", r.delayNGStarts)
         print("delayNGEnds", r.delayNGEnds)
-        #print("initBeta", r.initBeta)
-        #print("betaDev", r.betaDev)
-        #print("rotBeta", r.rotBeta)
+        # print("initBeta", r.initBeta)
+        # print("betaDev", r.betaDev)
+        # print("rotBeta", r.rotBeta)
         # r.rotBeta = 0.5
-        #r.betaDev = 10
+        # r.betaDev = 10
     for r in lrp:
         # print(r.subType, ":", r.dx, r.dxMin)
         r.dx = 0.25
@@ -210,12 +210,23 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     pd = vp.segs_to_polydata(plant, 1., ["subType", "organType", "radius", "creationTime"])  # poly-data, "radius",
     tube = apply_tube_filter(pd)  # polydata + tube filter
     vtk_data = vtk_polydata_to_dashvtk_dict(tube)
+
+    from pympler import asizeof
+    print("***********************************************************************************************************************************")
+    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+    print("***********************************************************************************************************************************")
+
     cellData = pd.GetCellData()
     cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
     vtk_data["creationTime"] = cT  ################################################################### TODO somehow creationTime and Age are mixed up
     for i in range(0, len(rld_)):
         vtk_data[f"rld{i}"] = rld_[i] / length
         vtk_data[f"z{i}"] = z_[i]
+
+    from pympler import asizeof
+    print("***********************************************************************************************************************************")
+    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+    print("***********************************************************************************************************************************")
 
     # vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
     organType = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))  #
@@ -235,11 +246,16 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
         vp.create_leaf_(l, leaf_points, leaf_polys)
     pts_array = vtk.util.numpy_support.vtk_to_numpy(leaf_points.GetData()).astype(np.float32)
     polys_data = vtk.util.numpy_support.vtk_to_numpy(leaf_polys.GetData())
-    vtk_data["leaf_points"] = pts_array.flatten().tolist()
-    vtk_data["leaf_polys"] = polys_data.tolist()
+    vtk_data["leaf_points"] = pts_array.flatten()
+    vtk_data["leaf_polys"] = polys_data
     # general
     vtk_data["number_r"] = number_r
     vtk_data["number_s"] = number_s
+
+    from pympler import asizeof
+    print("***********************************************************************************************************************************")
+    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+    print("***********************************************************************************************************************************")
 
     return vtk_data
 
@@ -289,7 +305,7 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         p.a = d[4]
         p.delayNGStart = d[5]
         p.delayNGEnd = d[5] + d[6]
-        p.rotBeta = d[7]/ 180.
+        p.rotBeta = d[7] / 180.
         p.tropismN = d[8]
         p.tropismS = d[9]
         p.tropismT = tropism_names[d[10]]
@@ -373,6 +389,7 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
 
 
 def param_to_dict(orp):
+    """ todo """
 
     print(orp.ogranType)
     if organType == pb.root:
@@ -383,6 +400,7 @@ def param_to_dict(orp):
 
 
 def debug_params(plant_):
+    """ todo """
     fname = get_parameter_names()[int(plant_)][1]  # xml filename
     plant = pb.Plant()
     plant.readParameters("params/" + fname)

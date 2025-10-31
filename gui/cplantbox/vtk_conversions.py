@@ -5,35 +5,6 @@ import numpy as np
 import plotly.graph_objs as go
 
 
-def vtk_polyline_to_dict(polydata):
-    """ converts polylines to a dict """
-    points = polydata.GetPoints()
-    lines = polydata.GetLines()
-
-    n_points = points.GetNumberOfPoints()
-    n_lines = lines.GetNumberOfCells()
-
-    # Points array
-    pts = np.array([points.GetPoint(i) for i in range(n_points)], dtype = np.float32)
-    pts = pts.flatten().tolist()
-
-    # Lines connectivity array
-    lines.InitTraversal()
-    id_list = vtk.vtkIdList()
-    conn = []
-
-    for _ in range(n_lines):
-        lines.GetNextCell(id_list)
-        conn.append(id_list.GetNumberOfIds())
-        for j in range(id_list.GetNumberOfIds()):
-            conn.append(id_list.GetId(j))
-
-    return {
-        "points": pts,
-        "lines": conn,
-    }
-
-
 def vtk_polydata_to_dashvtk_dict(polydata):
     """Converts vtkPolyData to a dictionary with optimized handling for large arrays."""
     points = polydata.GetPoints()
@@ -44,16 +15,14 @@ def vtk_polydata_to_dashvtk_dict(polydata):
     print(f"Number of points: {n_points}, polys: {n_polys}")
 
     # Efficiently extract points to a numpy array
-    pts_array = vtk.util.numpy_support.vtk_to_numpy(points.GetData()).astype(np.float32)
-    pts = pts_array.flatten().tolist()
+    pts_array = vtk.util.numpy_support.vtk_to_numpy(points.GetData()).astype(np.float16)
 
     # Efficiently extract polygon connectivity
-    polys_data = vtk.util.numpy_support.vtk_to_numpy(polys.GetData())
-    conn = polys_data.tolist()
+    polys_data = vtk.util.numpy_support.vtk_to_numpy(polys.GetData()).astype(np.int32)
 
     vtk_data = {
-        "points": pts,
-        "polys": conn,
+        "points": pts_array.flatten(),
+        "polys": polys_data,
     }
 
     return vtk_data
@@ -122,3 +91,30 @@ def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, widt
     )
     return fig
 
+# def vtk_polyline_to_dict(polydata):
+#     """ converts polylines to a dict """
+#     points = polydata.GetPoints()
+#     lines = polydata.GetLines()
+#
+#     n_points = points.GetNumberOfPoints()
+#     n_lines = lines.GetNumberOfCells()
+#
+#     # Points array
+#     pts = np.array([points.GetPoint(i) for i in range(n_points)], dtype = np.float32)
+#     pts = pts.flatten().tolist()
+#
+#     # Lines connectivity array
+#     lines.InitTraversal()
+#     id_list = vtk.vtkIdList()
+#     conn = []
+#
+#     for _ in range(n_lines):
+#         lines.GetNextCell(id_list)
+#         conn.append(id_list.GetNumberOfIds())
+#         for j in range(id_list.GetNumberOfIds()):
+#             conn.append(id_list.GetId(j))
+#
+#     return {
+#         "points": pts,
+#         "lines": conn,
+#     }

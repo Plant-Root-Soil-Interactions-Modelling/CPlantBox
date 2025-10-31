@@ -25,8 +25,8 @@ def vtk3D_plot(vtk_data, color_pick, type_):
         colorDataRange = color_range,
         children = [
             dash_vtk.PolyData(
-                points = vtk_data["points"],
-                polys = vtk_data["polys"],
+                points = vtk_data["points"].tolist(),
+                polys = vtk_data["polys"].tolist(),
                 children = [
                     dash_vtk.CellData([
                         dash_vtk.DataArray(
@@ -46,8 +46,8 @@ def vtk3D_plot(vtk_data, color_pick, type_):
     leaf_rep = dash_vtk.GeometryRepresentation(
         children = [
             dash_vtk.PolyData(
-                points = vtk_data["leaf_points"],
-                polys = vtk_data["leaf_polys"]
+                points = vtk_data["leaf_points"].tolist(),
+                polys = vtk_data["leaf_polys"].tolist()
             )
         ],
         property = {
@@ -67,7 +67,7 @@ def vtk3D_plot(vtk_data, color_pick, type_):
     cbarcontent = dcc.Graph(
                 # id = 'dummy-id',
                 figure = cbar,
-                style = {'width': '200px', 'height': '60px','marginTop': '10px'},
+                style = {'width': '200px', 'height': '60px', 'marginTop': '10px'},
                 config = {
                     'displayModeBar': False  # Hides the entire toolbar
                 }
