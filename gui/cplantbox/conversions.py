@@ -139,8 +139,8 @@ def fix_dx(rrp, strp, lrp):
         r.nodalGrowth = 1  # <------- !
         # r.initBeta = 0.
         # r.betaDev = 0.
-        print("delayNGStarts", r.delayNGStarts)
-        print("delayNGEnds", r.delayNGEnds)
+        # print("delayNGStarts", r.delayNGStarts)
+        # print("delayNGEnds", r.delayNGEnds)
         # print("initBeta", r.initBeta)
         # print("betaDev", r.betaDev)
         # print("rotBeta", r.rotBeta)
@@ -209,35 +209,32 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     # 5. make results store compatible (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
     pd = vp.segs_to_polydata(plant, 1., ["subType", "organType", "radius", "creationTime"])  # poly-data, "radius",
     tube = apply_tube_filter(pd)  # polydata + tube filter
-    vtk_data = vtk_polydata_to_dashvtk_dict(tube)
+    vtk_data = vtk_polydata_to_dashvtk_dict(tube) # addd "points" and "polys"
 
     from pympler import asizeof
     print("***********************************************************************************************************************************")
     print(asizeof.asizeof(vtk_data) / 1e6, "MB")
-    print("***********************************************************************************************************************************")
 
     cellData = pd.GetCellData()
     cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
-    vtk_data["creationTime"] = cT  ################################################################### TODO somehow creationTime and Age are mixed up
+    vtk_data["creationTime"] = encode_array(cT)  ################################################################### TODO somehow creationTime and Age are mixed up
     for i in range(0, len(rld_)):
-        vtk_data[f"rld{i}"] = rld_[i] / length
-        vtk_data[f"z{i}"] = z_[i]
+        vtk_data[f"rld{i}"] = encode_array(rld_[i] / length)
+        vtk_data[f"z{i}"] = encode_array(z_[i])
 
-    from pympler import asizeof
     print("***********************************************************************************************************************************")
     print(asizeof.asizeof(vtk_data) / 1e6, "MB")
-    print("***********************************************************************************************************************************")
 
     # vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
     organType = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))  #
-    vtk_data["subType"] = numpy_support.vtk_to_numpy(cellData.GetArray("subType")) + 5 * (organType - np.ones(organType.shape) * 2)
-    vtk_data["radius"] = numpy_support.vtk_to_numpy(cellData.GetArray("radius"))
-    vtk_data["time"] = t_[1:]
+    vtk_data["subType"] = encode_array(numpy_support.vtk_to_numpy(cellData.GetArray("subType")) + 5 * (organType - np.ones(organType.shape) * 2))
+    vtk_data["radius"] = encode_array(numpy_support.vtk_to_numpy(cellData.GetArray("radius")))
+    vtk_data["time"] = encode_array(t_[1:])
     for j in range(number_r):
-        vtk_data[f"root_length-{j+1}"] = list(root_length[j,:])
+        vtk_data[f"root_length-{j+1}"] = encode_array(root_length[j,:])
     for j in range(number_s):
-        vtk_data[f"stem_length-{j+1}"] = list(stem_length[j,:])
-    vtk_data["leaf_length"] = list(leaf_length[:])
+        vtk_data[f"stem_length-{j+1}"] = encode_array(stem_length[j,:])
+    vtk_data["leaf_length"] = encode_array(leaf_length[:])
     # leaf geometry
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
@@ -246,16 +243,14 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
         vp.create_leaf_(l, leaf_points, leaf_polys)
     pts_array = vtk.util.numpy_support.vtk_to_numpy(leaf_points.GetData()).astype(np.float32)
     polys_data = vtk.util.numpy_support.vtk_to_numpy(leaf_polys.GetData())
-    vtk_data["leaf_points"] = pts_array.flatten()
-    vtk_data["leaf_polys"] = polys_data
+    vtk_data["leaf_points"] = encode_array(pts_array)
+    vtk_data["leaf_polys"] = encode_array(polys_data)
     # general
     vtk_data["number_r"] = number_r
     vtk_data["number_s"] = number_s
 
-    from pympler import asizeof
     print("***********************************************************************************************************************************")
     print(asizeof.asizeof(vtk_data) / 1e6, "MB")
-    print("***********************************************************************************************************************************")
 
     return vtk_data
 

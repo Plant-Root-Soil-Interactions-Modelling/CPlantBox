@@ -1,9 +1,33 @@
-from vtk.util import numpy_support
+import base64 
+import json
+import zlib
+
 import vtk
+
 import numpy as np
-
 import plotly.graph_objs as go
+from vtk.util import numpy_support
 
+
+
+def encode_array(arr: np.ndarray) -> str:
+    """ numpy -> json string """
+    payload = {
+        "data": base64.b64encode(zlib.compress(arr.tobytes())).decode("ascii"),
+        "dtype": str(arr.dtype),
+        "shape": arr.shape,
+    }
+    return json.dumps(payload)
+
+
+def decode_array(json_str: str) -> np.ndarray:
+    """ json string -> numpy"""
+    payload = json.loads(json_str)
+    arr = np.frombuffer(
+        zlib.decompress(base64.b64decode(payload["data"])),
+        dtype=payload["dtype"],
+    ).reshape(payload["shape"])
+    return arr
 
 def vtk_polydata_to_dashvtk_dict(polydata):
     """Converts vtkPolyData to a dictionary with optimized handling for large arrays."""
@@ -12,17 +36,17 @@ def vtk_polydata_to_dashvtk_dict(polydata):
 
     n_points = points.GetNumberOfPoints()
     n_polys = polys.GetNumberOfCells()
-    print(f"Number of points: {n_points}, polys: {n_polys}")
+    print(f"vtk_polydata_to_dashvtk_dict(): Number of points: {n_points}, polys: {n_polys}")
 
     # Efficiently extract points to a numpy array
     pts_array = vtk.util.numpy_support.vtk_to_numpy(points.GetData()).astype(np.float16)
 
     # Efficiently extract polygon connectivity
-    polys_data = vtk.util.numpy_support.vtk_to_numpy(polys.GetData()).astype(np.int32)
+    polys_array = vtk.util.numpy_support.vtk_to_numpy(polys.GetData()).astype(np.int32)
 
     vtk_data = {
-        "points": pts_array.flatten(),
-        "polys": polys_data,
+        "points": encode_array(pts_array),
+        "polys": encode_array(polys_array)
     }
 
     return vtk_data

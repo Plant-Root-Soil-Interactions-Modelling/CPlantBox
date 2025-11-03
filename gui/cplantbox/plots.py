@@ -25,8 +25,8 @@ def vtk3D_plot(vtk_data, color_pick, type_):
         colorDataRange = color_range,
         children = [
             dash_vtk.PolyData(
-                points = vtk_data["points"].tolist(),
-                polys = vtk_data["polys"].tolist(),
+                points = decode_array(vtk_data["points"]).flatten().tolist(),
+                polys = decode_array(vtk_data["polys"]).tolist(),
                 children = [
                     dash_vtk.CellData([
                         dash_vtk.DataArray(
@@ -46,8 +46,8 @@ def vtk3D_plot(vtk_data, color_pick, type_):
     leaf_rep = dash_vtk.GeometryRepresentation(
         children = [
             dash_vtk.PolyData(
-                points = vtk_data["leaf_points"].tolist(),
-                polys = vtk_data["leaf_polys"].tolist()
+                points = decode_array(vtk_data["leaf_points"]).flatten().tolist(),
+                polys = decode_array(vtk_data["leaf_polys"]).tolist()
             )
         ],
         property = {
@@ -86,13 +86,13 @@ def vtk3D_plot(vtk_data, color_pick, type_):
 
 def profile_plot(vtk_data):
 
-    time = vtk_data["time"][-1]  # final simtime
+    time = decode_array(vtk_data["time"])[-1]  # final simtime
 
     traces = []
     for i in range(0, 5):
-        z_ = vtk_data[f"z{i}"]
-        rld = vtk_data[f"rld{i}"]
-        print(rld)
+        z_ = decode_array(vtk_data[f"z{i}"])
+        rld = decode_array(vtk_data[f"rld{i}"])
+        # print(rld)
         traces.append(go.Scatter(x = rld, y = z_, mode = 'lines', name = "Day {:g}".format(time / 5.*(i + 1))))
 
     content = dcc.Graph(
@@ -118,16 +118,16 @@ def dynamics_plot(vtk_data, typename_data):
     N = 25  # hard coded, see conversions.py
     number_r = vtk_data["number_r"]
     number_s = vtk_data["number_s"]
-    time = vtk_data["time"]
+    time = decode_array(vtk_data["time"])
 
     # fetch results
     root_length = np.zeros((number_r, N))
     stem_length = np.zeros((number_s, N))
     for j in range(number_r):
-        root_length[j,:] = vtk_data[f"root_length-{j+1}"]
+        root_length[j,:] = decode_array(vtk_data[f"root_length-{j+1}"])
     for j in range(number_s):
-        stem_length[j,:] = vtk_data[f"stem_length-{j+1}"]
-    leaf_length = vtk_data["leaf_length"]
+        stem_length[j,:] = decode_array(vtk_data[f"stem_length-{j+1}"])
+    leaf_length = decode_array(vtk_data["leaf_length"])
     rlength = np.sum(root_length, axis = 0)
     slength = np.sum(stem_length, axis = 0)
 

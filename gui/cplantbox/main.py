@@ -174,7 +174,6 @@ def click_simulate(n_clicks, plant_value, time_slider, seed_data, root_data, ste
     State('leaf-store', 'data'),
 )
 def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_data):
-    print()
     if tab == 'Seed':
         print("render_organtype_tab() seed:", seed_data)
         return generate_seed_sliders(seed_data)
@@ -603,18 +602,21 @@ def update_leaf_store(slider_values, store_data):
 )
 def render_result_tab(tab, vtk_data, typename_data):
     print("render_result_tab()", tab)
-    print(vtk_data)
-
+    from pympler import asizeof
+    print("***********************************************************************************************************************************")
+    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+    print("***********************************************************************************************************************************")
     if not vtk_data:
         print("no data")
         return html.Div([html.H6("press the create button")])
     if tab == 'VTK3D':
-        color_pick = vtk_data["subType"]
+        color_pick = decode_array(vtk_data["subType"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
         # print("number of cell colors", len(color_pick), "cells", len(vtk_data["subType"]) , "\n", type(color_pick))
         return vtk3D_plot(vtk_data, color_pick, "Type")
+    
     elif tab == 'VTK3DAge':
-        color_pick = vtk_data["creationTime"]
+        color_pick = decode_array(vtk_data["creationTime"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
         return vtk3D_plot(vtk_data, color_pick, "Age")
     elif tab == 'Profile1D':
