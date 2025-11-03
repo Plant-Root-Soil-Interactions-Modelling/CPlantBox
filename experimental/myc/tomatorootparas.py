@@ -7,7 +7,7 @@ import numpy as np
 
 # make choice of treatment here
 
-treatment = 1
+treatment = 3
 
 treatments = ["WS", "W", "RMCS", "RMC"]
 
@@ -73,7 +73,6 @@ potduration = 73
 simtime = totalduration
 fpd = 1 # one step per day
 N = simtime * fpd
-N= 10
 dt = simtime / N
 
 for i in range(1,N):
@@ -107,9 +106,5 @@ if treatment == 3:
     print("Standard deviation of expected radius (cm):", RMC[1])
 
 
-roots = mycp.getOrganRandomParameter(pb.root)
-for r in roots:
-    print("Root radius (cm):", r.a)
-    print("Root subtype:", r.subType)
-
-# vp.plot_roots_and_container(mycp, pot)
+vp.plot_roots_and_container(mycp, pot)
+ana.write(names[treatment] + ".vtp", ["radius", "subType", "creationTime","organType"])
