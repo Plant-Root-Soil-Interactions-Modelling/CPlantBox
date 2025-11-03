@@ -48,7 +48,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.075000003" dev="0.0049999999"/>
+        <parameter name="a" value="0.063"/>
         <!--radius [cm]-->
         <parameter name="dx" value="0.25"/>
         <!--Axial resolution [cm] (maximal segment size)-->
@@ -106,7 +106,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.00185" dev="0.00050000002"/>
+        <parameter name="a" value="0.02"/>
         <!--radius [cm]-->
         <parameter name="dx" value="0.25"/>
         <!--Axial resolution [cm] (maximal segment size)-->
@@ -164,7 +164,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.0014" dev="0.00050000002"/>
+        <parameter name="a" value="0.015"/>
         <!--radius [cm]-->
         <parameter name="dx" value="0.25"/>
         <!--Axial resolution [cm] (maximal segment size)-->
