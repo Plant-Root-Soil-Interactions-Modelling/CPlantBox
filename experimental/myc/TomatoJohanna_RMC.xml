@@ -72,7 +72,7 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="197.35001"/>
+        <parameter name="lmax" value="100"/>
         <!--Maximal root length [cm]-->
         <parameter name="lmbd" value="0.15000001"/>
         <!--Rate of primary infection for dispersed inoculum [1/(cm day)]-->
@@ -130,7 +130,7 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="45"/>
+        <parameter name="lmax" value="100"/>
         <!--Maximal root length [cm]-->
         <parameter name="lmbd" value="0.15000001"/>
         <!--Rate of primary infection for dispersed inoculum [1/(cm day)]-->
@@ -188,7 +188,7 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="5"/>
+        <parameter name="lmax" value=""/>
         <!--Maximal root length [cm]-->
         <parameter name="lmbd" value="0.15000001"/>
         <!--Rate of primary infection for dispersed inoculum [1/(cm day)]-->
