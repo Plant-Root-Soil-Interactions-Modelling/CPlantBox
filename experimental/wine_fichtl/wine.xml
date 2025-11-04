@@ -1,0 +1,152 @@
+<plant>
+    <root name="undefined" subType="1">
+        <parameter name="gf" value="1"/>
+        <!--Growth function number [1]-->
+        <parameter name="is_fine_root" value="0"/>
+        <!--Fine [1] or long-lived [0] root?-->
+        <parameter name="tropismT" value="1"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.10326923" dev="0.04083132"/>
+        <!--radius [cm]-->
+        <parameter name="dx" value="0.25"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="1e-06"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="hairsElongation" value="0"/>
+        <!--Zone behind the tip without root hairs  [cm]-->
+        <parameter name="hairsLength" value="0"/>
+        <!--Root hair length [cm]-->
+        <parameter name="hairsZone" value="0"/>
+        <!--Length of the root hair zone [cm]-->
+        <parameter name="k_survive" value="1.88"/>
+        <!--Parameter for the Root::survivalTest() function-->
+        <parameter name="la" value="0.058975272" dev="5.9180088"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lambda_survive" value="7.5300002"/>
+        <!--Parameter for the Root::survivalTest() function-->
+        <parameter name="lb" value="6.2612143" dev="2.5221331"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="-1"/>
+        <!--Lateral root emergence delay [day]-->
+        <parameter name="lmax" value="0"/>
+        <!--Maximal root length [cm]-->
+        <parameter name="ln" value="1.7689117" dev="1.9685736"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="lnk" value="0"/>
+        <!--Slope of inter-lateral distances [1]-->
+        <parameter name="r" value="1"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Root life time [day]-->
+        <parameter name="theta" value="49.349274" dev="15.998004"/>
+        <!--Angle between root and parent root [rad]-->
+        <parameter name="tropismN" value="1"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.2"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+        <parameter name="tropismW1" value="1"/>
+        <!--probability of tropismT1-->
+        <parameter name="tropismW2" value="0"/>
+        <!--probability of tropismT2-->
+    </root>
+    <root name="undefined" subType="2">
+        <parameter name="gf" value="1"/>
+        <!--Growth function number [1]-->
+        <parameter name="is_fine_root" value="0"/>
+        <!--Fine [1] or long-lived [0] root?-->
+        <parameter name="tropismT" value="1"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.044374999" dev="0.021629576"/>
+        <!--radius [cm]-->
+        <parameter name="dx" value="0.25"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="1e-06"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="hairsElongation" value="0"/>
+        <!--Zone behind the tip without root hairs  [cm]-->
+        <parameter name="hairsLength" value="0"/>
+        <!--Root hair length [cm]-->
+        <parameter name="hairsZone" value="0"/>
+        <!--Length of the root hair zone [cm]-->
+        <parameter name="k_survive" value="1.88"/>
+        <!--Parameter for the Root::survivalTest() function-->
+        <parameter name="la" value="11.840172" dev="8.2548046"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lambda_survive" value="7.5300002"/>
+        <!--Parameter for the Root::survivalTest() function-->
+        <parameter name="lb" value="8.4099455" dev="6.175745"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="-1"/>
+        <!--Lateral root emergence delay [day]-->
+        <parameter name="lmax" value="99.463745"/>
+        <!--Maximal root length [cm]-->
+        <parameter name="ln" value="4.1081762" dev="3.19629"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="lnk" value="0"/>
+        <!--Slope of inter-lateral distances [1]-->
+        <parameter name="r" value="0.12966537"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Root life time [day]-->
+        <parameter name="theta" value="54.419697" dev="20.644199"/>
+        <!--Angle between root and parent root [rad]-->
+        <parameter name="tropismN" value="1"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.2"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+        <parameter name="tropismW1" value="1"/>
+        <!--probability of tropismT1-->
+        <parameter name="tropismW2" value="0"/>
+        <!--probability of tropismT2-->
+    </root>
+    <root name="undefined" subType="3">
+        <parameter name="gf" value="1"/>
+        <!--Growth function number [1]-->
+        <parameter name="is_fine_root" value="0"/>
+        <!--Fine [1] or long-lived [0] root?-->
+        <parameter name="tropismT" value="1"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.0125" dev="4.5356654e-18"/>
+        <!--radius [cm]-->
+        <parameter name="dx" value="0.25"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="1e-06"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="hairsElongation" value="0"/>
+        <!--Zone behind the tip without root hairs  [cm]-->
+        <parameter name="hairsLength" value="0"/>
+        <!--Root hair length [cm]-->
+        <parameter name="hairsZone" value="0"/>
+        <!--Length of the root hair zone [cm]-->
+        <parameter name="k_survive" value="1.88"/>
+        <!--Parameter for the Root::survivalTest() function-->
+        <parameter name="la" value="10"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lambda_survive" value="7.5300002"/>
+        <!--Parameter for the Root::survivalTest() function-->
+        <parameter name="lb" value="0"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="-1"/>
+        <!--Lateral root emergence delay [day]-->
+        <parameter name="lmax" value="47.175198"/>
+        <!--Maximal root length [cm]-->
+        <parameter name="ln" value="1"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="lnk" value="0"/>
+        <!--Slope of inter-lateral distances [1]-->
+        <parameter name="r" value="0.032570649"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Root life time [day]-->
+        <parameter name="theta" value="57.583836" dev="21.900419"/>
+        <!--Angle between root and parent root [rad]-->
+        <parameter name="tropismN" value="1"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.2"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+        <parameter name="tropismW1" value="1"/>
+        <!--probability of tropismT1-->
+        <parameter name="tropismW2" value="0"/>
+        <!--probability of tropismT2-->
+    </root>
+</plant>

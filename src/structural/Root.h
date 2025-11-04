@@ -89,10 +89,10 @@ public:
         lateralDelays.push_back(lateralDelay);
     }
 
-	void survivalTest() override;
+	//void survivalTest() override;
 	int lignificationStatus() override {return 2;};
 	
-protected:
+//protected:
 
     std::vector<int> lateralNodeIndices;
     std::vector<int> lateralTypes;

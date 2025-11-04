@@ -112,7 +112,7 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
         while ((d>0)&&(o->organType()== Organism::ot_root))  { // not valid
             i++;
             j=0;
-            while ((d>0) && j<betaN) { // change beta
+            while ((d>0) && j<plant.lock()->betaN) { // change beta
 
                 b = 2*M_PI*rand(nodeIdx); // dice
                 d = geometry.lock()->getDist(this->getPosition(pos,old,a,b,dx));
@@ -125,10 +125,10 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
             }
 
             if ((d>0)&&(o->organType()== Organism::ot_root))  {
-                a = a + M_PI/2./double(alphaN);
+                a = a + M_PI/2./double(plant.lock()->alphaN);
             }
 
-            if (i>alphaN) {
+            if (i>plant.lock()->alphaN) {
                 //std::cout << "Could not respect geometry boundaries \n";
                 a = bestA;
                 b = bestB;

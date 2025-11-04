@@ -132,6 +132,8 @@ public:
 	void survivalTest();
 
     int plantId; // unique plant id (for debugging copy)
+	int alphaN = 20; //stop protecting in case want to increase number of trials => very important to respect soil boundaries when using photosynthesis
+	int betaN = 50; //stop protecting in case want to increase number of trials
 
 protected:
 

@@ -372,6 +372,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)
             .def("getSeed", &Organism::getSeed)
 
+            .def_readwrite("alphaN", &Organism::alphaN)
+            .def_readwrite("betaN", &Organism::betaN)
             .def("addOrgan", &Organism::addOrgan)
             .def("initialize", &Organism::initialize, py::arg("verbose") = true)
             .def("simulate", &Organism::simulate, py::arg("dt"), py::arg("verbose") = false) //default
@@ -502,8 +504,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getUCHeading",&Tropism::getUCHeading)
             .def("tropismObjective",&Tropism::tropismObjective)
             .def("getPosition",&Tropism::getPosition)
-            .def_readwrite("alphaN", &Tropism::alphaN)
-            .def_readwrite("betaN", &Tropism::betaN)
             .def("isExpired",&Tropism::isExpired)
             .def("getPlant",&Tropism::getPlant);
 
@@ -602,7 +602,7 @@ PYBIND11_MODULE(plantbox, m) {
 
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, bool>()) // <---------------------------------------------------
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, bool, double, double>()) // <---------------------------------------------------
             .def_readwrite("lb", &RootSpecificParameter::lb)
             .def_readwrite("la", &RootSpecificParameter::la)
             .def_readwrite("ln", &RootSpecificParameter::ln)
@@ -803,8 +803,10 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<StaticRoot, Root, std::shared_ptr<StaticRoot>>(m, "StaticRoot")
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, double, int>())
             .def("initializeLaterals", &StaticRoot::initializeLaterals)
-            .def("addLateral", &StaticRoot::addLateral);
-
+            .def("addLateral", &StaticRoot::addLateral)
+            .def_readwrite("lateralNodeIndices", &StaticRoot::lateralNodeIndices)
+            .def_readwrite("lateralTypes", &StaticRoot::lateralTypes)
+            .def_readwrite("lateralDelays", &StaticRoot::lateralDelays);
     /**
      * Seed.h
      */

@@ -69,8 +69,8 @@ public:
 	static Vector3d getPosition(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx);
 	///< Auxiliary function: Applies angles a and b and goes dx [cm] into the new direction
 
-	int alphaN = 20; //stop protecting in case want to increase number of trials => very important to respect soil boundaries when using photosynthesis
-	int betaN = 5; //stop protecting in case want to increase number of trials
+	// int alphaN = 20; //stop protecting in case want to increase number of trials => very important to respect soil boundaries when using photosynthesis
+	// int betaN = 50; //stop protecting in case want to increase number of trials
 
 	bool isExpired() { return (!plant.lock()); } // for debugging
 	std::shared_ptr<Organism> getPlant() { return plant.lock(); }

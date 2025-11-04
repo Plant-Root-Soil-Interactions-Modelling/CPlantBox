@@ -37,7 +37,7 @@
         <parameter name="tropismN" value="1"/>
         <!--Number of trials of root tropism-->
         <parameter name="tropismS" value="0.2"/>
-    <parameter name="successor" number="0" numLat="5" type="2,7" percentage="0.64,0.35"/>
+    <parameter name="successor" number="0" numLat="10" type="2,7" percentage="0.64,0.35"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
     <root name="undefined" subType="1">
@@ -70,6 +70,8 @@
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
         <parameter name="r" value="1"/>
+        <parameter name="k_survive" value="1.88"/>
+        <parameter name="lambda_survive" value="7.53"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
@@ -107,7 +109,7 @@
 		
         <parameter name="ldelay" value="1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="96.428551"/>
+        <parameter name="lmax" value="100"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="3.0106544" dev="2.5845962"/>
         <!--Inter-lateral distance [cm]-->

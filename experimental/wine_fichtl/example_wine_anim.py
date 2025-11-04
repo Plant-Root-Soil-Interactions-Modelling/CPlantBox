@@ -45,24 +45,22 @@ def get3Dshape(plant,title_ = 'wine', saveOnly = True):
     #vp.plot_roots(ana, "id")
 
     '''
-    Lignification status
+    Lignification status, Survival, fine roots
     '''
     lignification = [segO.lignificationStatus() for segO in segOs]
-    '''
-    Survival
-    '''
     aliveSegs = [segO.isAlive() for segO in segOs]
+    is_fine_root = [segO.getParameter('is_fine_root') for segO in segOs]
     
     print('alive nodes:', sum(aliveSegs), 'alive organs',sum(orgs_a), 'alive long lived roots',sum(orgs_al))
     ana.addData('alive', aliveSegs)
     ana.addData('lignification', lignification)
+    ana.addData('is_fine_root', is_fine_root)
     ana.filter('alive', 1)
-    vp.plot_roots(ana, "subType",p_names = ['lignification',"creationTime","id"] , win_title = title_, render = not saveOnly)
+    vp.plot_roots(ana, "subType",p_names = ['lignification','is_fine_root',"creationTime","id"] , win_title = title_, render = not saveOnly)
     
 doAnim = False
 
-depth = 60  # soil depth [cm]
-soilSpace = pb.SDF_PlantContainer(np.inf, np.inf, depth, True)  # to avoid root growing aboveground
+soilSpace = pb.SDF_PlantContainer(np.inf, np.inf,  np.inf, True)  # to avoid root growing aboveground
 plant = PlantPython(1)
 
 # Open plant and root parameter from a file
@@ -82,18 +80,21 @@ yr_to_BEDD = 1225
 
 
 for ii, pp in enumerate(plant.getOrganRandomParameter(2)):
-    if ii < 2:
+    if ii == 0:
+        pp.ldelay  = 0*yr_to_BEDD
+        pp.ldelays = yr_to_BEDD*200#*5
+    elif ii < 2:
         pp.ldelay  = 0*yr_to_BEDD
         pp.ldelays = yr_to_BEDD*40#*5
     else:
         pp.ldelay  = 0*yr_to_BEDD
         pp.ldelays = yr_to_BEDD*40#/2.
+    pp.a_gr =  0.083/2/yr_to_BEDD
+    print(pp.successorNo)
+    raise Exception
         
 allRRP = plant.getOrganRandomParameter(2)
-allRRP[2].a_gr = 0.085/yr_to_BEDD
-allRRP[3].a_gr = 0.085/yr_to_BEDD
-allRRP[3].k_survive = 2.17
-allRRP[3].lambda_survive = 4.55
+
 
 for newpId in range(3,6):
     rrpA = allRRP[newpId].copy(plant)
@@ -103,10 +104,13 @@ for newpId in range(3,6):
     #rrpA.successorP[0][0] *= 0.5
     #rrpA.successorP[0][1] *= 0.75
     #rrpA.successorP =  np.array(rrpA.successorP) *0.5
-    rrpA.a_gr = 0.085/yr_to_BEDD
+    rrpA.a_gr = 0.083/2/yr_to_BEDD
     #rrpB.successorP =  np.array(rrpB.successorP) /10.
     allRRP.append(rrpA)
     
+allRRP[4].k_survive = 2.17
+allRRP[4].lambda_survive = 4.55
+
 allRRP[6].successorST = [[11]]
 allRRP[6].successorP = [[allRRP[6].successorP[0][1]]] # [[pp1],[pp2]]
 
@@ -121,7 +125,7 @@ for newpId in range(6,11):
     rrpA.successorP =  pplats
     #rrpB.successorP =  np.array(rrpB.successorP) /10.
     rrpA.is_fine_root = True
-    rrpA.lmax = ps.Lmax_suberized
+    rrpA.lmax = 5. #ps.Lmax_suberized
     allRRP.append(rrpA)
     
     pplats *= 0.75
@@ -129,6 +133,7 @@ for newpId in range(6,11):
 allRRP[-1].successorST = []
 
 for newp in allRRP:
+    #newp.tropismS = 0.8
     plant.setOrganRandomParameter(newp)
    
 
@@ -140,10 +145,9 @@ p2 = plant.getOrganRandomParameter(2, 2)
 p2.r = p2.lmax * Main_beta
 
 p2.tropismT = 7  # mix of planar and gravitropism
-p2.tropismS = 0.2
-p2.tropismN = 0.5  
-p2.tropismW1 = 0.4
-p2.tropismW2 = 0.6
+p2.tropismN = 1  
+p2.tropismW1 = 0.85 #0.4 # gravitropism
+p2.tropismW2 = 0.15 #0.6 # plagiotropism
 
 
 p3 = plant.getOrganRandomParameter(2, 3)
@@ -151,7 +155,7 @@ p3.r = p3.lmax * Sub_beta
 
 for subindx in range(4,11):
     p4 = plant.getOrganRandomParameter(2, subindx)
-    p4.r = p4.lmax * SubSub_beta
+    p4.r = p3.r # p4.lmax * SubSub_beta
     
     
 #for ii, pp in enumerate(plant.getOrganRandomParameter(2)):
@@ -174,20 +178,31 @@ check inputs
 #for ii, pp in enumerate(plant.getOrganRandomParameter(2)):
 #    print(pp)
     
+    
+    
+'''
+start simulation
+'''
 plant.initialize_static(path + "B-23_Fichtl.rsml", [0, 1])  # 0 is shoot, 1 are static roots
 
 # the static laterals 2 and 3 are replaced with the growing lateral 2
-ld = plant.set_identical_laterals([0, 1], [2, 3], 2)
-plant.initialize_static_laterals()
-  
+ld, ld1 = plant.set_identical_laterals([0, 1], [1, 2, 3], 2)
+plt.hist(np.array(ld1)/yr_to_BEDD, density = False, bins=30)
+plt.title("Creation time of the main roots")
+plt.show()
 plt.hist(np.array(ld)/yr_to_BEDD, density = False, bins=30)
 plt.title("Creation time of the main roots")
 plt.show()
+
+plant.initialize_static_laterals()
+plant.betaN = 5000
+  
 
 min_ = np.array([-20, -20, -50])
 max_ = np.array([20, 20, 30.])
 
 
+    
 if doAnim:
     anim = vp.AnimateRoots(plant)
     anim.min = min_
@@ -239,28 +254,50 @@ all_lengths = []
 all_ages = []
 all_subtypes = []
 all_alive = []
-dt = yr_to_BEDD # ~1 yr
+dt = yr_to_BEDD  # ~1 yr
 N = 49
- 
+
+# orrs = plant.getOrgans(-1)[0]
+# print(orrs.organType(),orrs.param().subType,orrs.getAge(),orrs.getLength(),
+            # orrs.getRootRandomParameter().a_gr, orrs.getRadius(0))
+            
+# orr = plant.getOrgans(2)[0]
+# print(orr.param().subType,orr.getNumberOfChildren(), orr.getParameter('age')/yr_to_BEDD,orr.getParameter('rlt_winter')/yr_to_BEDD  )
+# for orrid in range(orr.getNumberOfChildren()):
+    # orrk = orr.getChild(orrid)
+    # print(orrk.param().subType,orrk.getNumberOfChildren(), orrk.getParameter('age')/yr_to_BEDD,orrk.getParameter('rlt_winter')/yr_to_BEDD  )
+
+# raise Exception
+get3Dshape(plant,title_ = 'wine0', saveOnly = True)
 for i in range(0, N):
     plant.survivalTest()
     plant.simulate(dt, False)
     print('time', dt * i /yr_to_BEDD, end=", ")
-    get3Dshape(plant,title_ = 'wine'+str(i), saveOnly = True) #+N1
+    get3Dshape(plant,title_ = 'wine'+str(i+1), saveOnly = True) #+N1
         
     orgs_ = plant.getOrgans(2)
-    orgs_ = [org for org in orgs_ if org.param().subType > 0] # ignore the static roots
+    #orgs_ = [org for org in orgs_ if org.param().subType > 0] # ignore the static roots
     all_ages.append(np.array([org.getAge()/yr_to_BEDD for org in orgs_]))
     all_lengths.append(np.array([org.getLength() for org in orgs_]))
     all_alive.append(np.array([org.isAlive() for org in orgs_]))
     all_subtypes.append(np.array([org.param().subType for org in orgs_]))
     
-    if doAnim:
-        anim.root_name = "organType"
-        anim.update()
+    zzz = np.array([xyz[2] for xyz in plant.get_nodes()])
+    print('zzz[zzz > 0]',zzz[zzz > 0])
         
+    # orrs = plant.getOrgans(-1)[0]
+    # print(orrs.getId(),orrs.organType(),orrs.param().subType,orrs.getAge(),orrs.getLength(),
+                # orrs.getRootRandomParameter().a_gr, orrs.getRadius(0),
+                # # orrs.getNodeCT(0))
+    # if i == 2:
+        # raise Exception
+    
+    if doAnim:
+        anim.root_name = "subType"
+        anim.update()
+    
 
-
+raise Exception
 #orgs_ = plant.getOrgans(2)
 orgs_long = [org for org in orgs_ if org.param().subType in range(2,7)]
 orgs_fine = [org for org in orgs_ if org.param().subType in range(7,12)]

@@ -211,6 +211,8 @@ def get_root_parameters(polylines:list, funcs:dict, props:dict) -> (list, list, 
                 break
     if radii == None:  # nothing found
         tag_names.append("")
+        radius = True
+        radii_p =False
 
     et = None
     for n in ct_names:  # search for creation times

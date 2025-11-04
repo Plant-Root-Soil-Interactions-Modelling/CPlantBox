@@ -500,14 +500,14 @@ void StaticRoot::initializeLaterals() {
 }
 
 
-void StaticRoot::survivalTest() 
-{
-    for(size_t i=0; i<children.size(); i++){
-		if(children[i]->organType() == 2){ //if root
-			children[i]->survivalTest();//even if parent does not have relCoordinate, the laterals might
-		}
-    }
-}
+// void StaticRoot::survivalTest() 
+// {
+    // for(size_t i=0; i<children.size(); i++){
+		// if(children[i]->organType() == 2){ //if root
+			// children[i]->survivalTest();//even if parent does not have relCoordinate, the laterals might
+		// }
+    // }
+// }
 
 
 } // end namespace CPlantBox

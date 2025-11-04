@@ -26,6 +26,14 @@ class PlantPython(Plant):
         self.static_organs = {}
         self.data = None  # RsmlData
 
+    def get_nodes(self):
+        """ converts the list of Vector3d to a 2D numpy array """
+        return np.array(list(map(lambda x: np.array(x), self.getNodes())))
+
+    def get_segments(self):
+        """ converts the list of Vector2i to a 2D numpy array """
+        return np.array(list(map(lambda x: np.array(x), self.getSegments())), dtype = np.int64)
+        
     def plot_rsml_(self, polylines:list, prop:list):
         """Plots the polylines in y-z axis with colors given by a root property
     
@@ -47,7 +55,39 @@ class PlantPython(Plant):
         for i in range(i0, i1):
             l += np.linalg.norm(np.array(poly[i]) - np.array(poly[i + 1]))
         return l
-
+        
+    def get_rsml_data(self, rsml_file):    
+        self.reset()  # resets plant
+        
+        self.data = RsmlData()
+        self.data.open_rsml(rsml_file)
+        radii, et, types, tag_names, _, _ = rsml_reader.get_root_parameters(self.data.polylines, self.data.functions, self.data.properties)
+        
+        # print('self.data.polylines',self.data.polylines[1], types[1])
+        # lenlen = 0
+        # for ttid, tt in enumerate(types):
+            # if tt == 1:
+                # lenlen += self.polyline_length_(0, len(self.data.polylines[ttid]) - 1, self.data.polylines[ttid])
+        # print('lengths',lenlen, self.polyline_length_(0, len(self.data.polylines[1]) - 1, self.data.polylines[1]))
+        # lenlen = 0
+        # for ttid, tt in enumerate(types):
+            # if tt == 2:
+                # lenlen += self.polyline_length_(0, len(self.data.polylines[ttid]) - 1, self.data.polylines[ttid])
+        # print('lengths',lenlen, self.polyline_length_(0, len(self.data.polylines[1]) - 1, self.data.polylines[1]))
+        # lenlen = 0
+        # for ttid, tt in enumerate(types):
+            # if tt == 3:
+                # lenlen += self.polyline_length_(0, len(self.data.polylines[ttid]) - 1, self.data.polylines[ttid])
+        # print('lengths',lenlen, self.polyline_length_(0, len(self.data.polylines[1]) - 1, self.data.polylines[1]))
+        # raise Exception
+        lengths = np.array([self.polyline_length_(0, len(root) - 1, root) for root in self.data.polylines])
+        types = np.array(types)
+        try:
+            radii =  np.array([np.mean(x)/2. for x in self.data.functions["diameter"] ])
+        except:
+            radii =  np.ones(types.shape)
+        return radii, types, lengths
+    
     def initialize_static(self, rsml_file, initial_sub_types):
         """ uses initial_sub_types of the rsml_file as a static initial root system, 
         called instead of initialize(), initializeLB(), or initializeDB() """
@@ -65,15 +105,18 @@ class PlantPython(Plant):
         seed = pb.Seed(self)
 
         # 2. Parse rsml, create self.static_organs
+        
         parent_id = {}
         static_polys, static_types = [], []
         for i, root in enumerate(self.data.polylines):
             if types[i] in initial_sub_types:
+                rp = self.getOrganRandomParameter(2, types[i])
                 parent_id = self.data.properties["parent-poly"][i]
                 pni = self.data.properties["parent-node"][i]
 
                 length = self.polyline_length_(0, len(root) - 1, root)
                 a = np.mean(radii[i])
+                a_gr = rp.a_gr
                 # print(a, len(radii[i]))
                 r = 1.e6  # planted initially, and static
                 lb = 0  # length of basal zone
@@ -81,7 +124,12 @@ class PlantPython(Plant):
                 rlt = 1.e10  # root life time
                 ln_ = []
                 laterals = False
-                param = pb.RootSpecificParameter(0, lb, length, ln_, r, a, theta, rlt, laterals)  ############## which subType
+                if types[i] > 0:
+                    p_survive = self.rand()
+                    rlt_winter = rp.lambda_survive * ((-np.log(p_survive))**(1/rp.k_survive)) * 1225. # (25. + 10. * max(min(self.randn(),1.),-1.)) * 1225. #rp.lambda_survive * ((-np.log(rp.p_survive))**(1/rp.k_survive)) * 1225.
+                else:
+                    rlt_winter = 200. * 1225.
+                param = pb.RootSpecificParameter(types[i], lb, length, ln_, r, a, theta, rlt, laterals, a_gr, rlt_winter)  ############## which subType
                 # print(param)
 
                 id = self.getOrganIndex()  # next index
@@ -137,18 +185,41 @@ class PlantPython(Plant):
         lateral_subtypes              subTypes of the laterals wihtin the RSML
         emerge_type                   subType of the model lateral (todo: could be probabilistic)        
         """
-        lni, lt, ld = [], [], []
+        # where we add laterals on tope of the statics
+        add_to_statics = np.array(initial_sub_types)[np.isin(initial_sub_types, lateral_subtypes)]
+        ld = [] #lni, lt, , [], []
+        ld1 = []
         types = self.data.properties[self.data.tagnames[2]]
-        #prs = self.getOrganRandomParameter(2)
+        # print('types', types)
         for i, root in enumerate(self.data.polylines):
             if types[i] in lateral_subtypes:
                 parent_id = self.data.properties["parent-poly"][i]
+                # print('types[i]',types[i], 'types[parent_id]',types[parent_id], types[parent_id] in initial_sub_types)
                 if types[parent_id] in initial_sub_types:
-                    pni = self.data.properties["parent-node"][i] + 1
+                    pni_init = self.data.properties["parent-node"][i] + 1 # why + 1?
                     parent = self.static_organs[parent_id]
                     pr = parent.getOrganRandomParameter()
-                    for latId in range(pr.successorNo[0]):
+                    init_num_kids = parent.getNumberOfChildren()  
+                    #print('latId', parent.param().subType, pr.successorNo[0] , init_num_kids)
+                    ##
+                    # every time it sees a root in the rsml file, it will add pr.successorNo[0] laterals
+                    ##
+                    for latId in range(pr.successorNo[0] ):#(pr.successorNo[0] - init_num_kids)):
+                        #print('in latid', latId)
+                        pni = pni_init
                         creation_time = abs(self.randn() * pr.ldelays)
+                        delay_mean = 0.
+                        for kid_id in range(init_num_kids):
+                            
+                            kid = parent.getChild(kid_id)
+                            if (kid.parentNI + 1 == pni) and (kid.getParameter('subType') == types[i]) and (np.isin(types[i], add_to_statics)):
+                                delay_mean = kid.getParameter('rlt_winter') 
+                                creation_time = abs( (max(min(self.rand(),3.),-3.) / 3)* pr.ldelays) # delay_mean +
+                                #print('delay1', creation_time, delay_mean,pr.ldelays,(max(min(self.randn(),3.),-3.) / 3),(max(min(self.randn(),3.),-3.) / 3))
+                                ld1.append(creation_time)
+                                pni -= 1
+                                break
+                                
                         #parent.getLatGrowthDelay()
                         # print('creation_time',creation_time,
                                 # pr.successorOT,
@@ -158,27 +229,30 @@ class PlantPython(Plant):
                                 # pr.successorP_age)
                         p_idx = 0#pr.getLateralType(pb.Vector3d(), 0, # ruleID: assumed to be 0 here
                         #                            creation_time)
+                        #print('addlat','parent_st', parent.param().subType, 'kid_st' , pr.successorST[0][p_idx], 'pni',  pni)
                         if(p_idx >=0) :
                             emerge_type_ = pr.successorST[0][p_idx]
                             parent.addLateral(pni, emerge_type_, creation_time)
                             parent.param().laterals = True
-                            lt.append(emerge_type_)
+                            # lt.append(emerge_type_)
                             # print("Root", i, ":", parent_id, pni, emerge_type, 0.)
-                        else:
-                            lt.append(p_idx)
+                        # else:
+                        #    lt.append(p_idx)
                         ld.append(creation_time)
-        return ld
+                        
+        return ld, ld1
 
     def initialize_static_laterals(self):
         """ Creates lateral root instances from static roots lateralDelays, lateralTypes, and lateralDelays """
         for organ in self.static_organs.values():
             organ.initializeLaterals()
-            numKids = organ.getNumberOfChildren()
+            # numKids = organ.getNumberOfChildren()
+            # print('organ', organ.param().subType )
             # for numKid in range(numKids):
                 # pr = organ.getChild(numKid).getOrganRandomParameter()
                 # ps = organ.getChild(numKid).param()
                 # print(ps.getK(),ps.subType)
-        # raise Exception
+            # raise Exception
 
     def analyse_laterals(self, initial_sub_types, lateral_subtypes):
         """ prints emergence points of laterals (for debugging)"""
