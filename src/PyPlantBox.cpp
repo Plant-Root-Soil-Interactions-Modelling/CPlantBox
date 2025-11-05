@@ -578,6 +578,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("lmaxs", &RootRandomParameter::lmaxs)
             .def_readwrite("r", &RootRandomParameter::r)
             .def_readwrite("rs", &RootRandomParameter::rs)
+            .def_readwrite("a", &RootRandomParameter::a)
+            .def_readwrite("a_s", &RootRandomParameter::as)
             .def_readwrite("tropismW1", &RootRandomParameter::tropismW1)
             .def_readwrite("tropismW2", &RootRandomParameter::tropismW2)
             .def_readwrite("tropismT", &RootRandomParameter::tropismT)

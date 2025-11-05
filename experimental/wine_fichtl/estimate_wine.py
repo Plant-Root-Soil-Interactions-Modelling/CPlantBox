@@ -46,6 +46,7 @@ def create_xml(genotype):
     Type 7-10: thin roots
     get: la, lb, theta, a (if available)
     """
+    plant = pb.Plant()
     yr_to_BEDD = 1225
     numTypes = 10
     main = 2
@@ -119,6 +120,8 @@ def create_xml(genotype):
         pp.subType = ii
         pp.tropismS = 0.2
         pp.successorNo = [1]
+        pp.a_s = 0.
+        pp.la = max(pp.la, 0.)
         if ii <= max(subsub):
             pp.a = 0.093/2
             pp.a_gr =  0.083/2/yr_to_BEDD
@@ -143,7 +146,12 @@ def create_xml(genotype):
                     pp.tropismN = 2  
                     pp.tropismW1 = tropism[genotype][0] #0.85 #0.4 # gravitropism
                     pp.tropismW2 = tropism[genotype][1] # plagiotropism
-                    
+            if ii == max(subsub):
+                pp = data.parameters[min(subsub)].copy(plant)
+                pp.subType = ii
+                pp.successorST =  np.array([[ii + 4]]) 
+                pp.successorOT =  np.array([[2]]) 
+                pp.successorP = np.array([[0.35]])
         else:
             pp.a = 0.05/2
             pp.is_fine_root = True
@@ -156,11 +164,11 @@ def create_xml(genotype):
             pp.la = 1
             pp.lb = 1
             pp.ln = 1
+        data.parameters[ii] = pp
             
     data.parameters[-1].successorST =  [] 
     
     """ write set """
-    plant = pb.Plant()
 
     for ii, pp in enumerate(data.parameters):
         param = pp.copy(plant)
