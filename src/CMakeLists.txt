@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(CPlantBox LANGUAGES CXX)
 
+
+message(STATUS "Project source dir: ${PROJECT_SOURCE_DIR}")
 message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "Project binary dir: ${PROJECT_BINARY_DIR}")
 
