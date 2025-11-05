@@ -1,5 +1,3 @@
-import sys;sys.path.append("../..");sys.path.append("../../src/")  # |\label{l13:path}|
-
 import plantbox as pb  # |\label{l13:cplantbox}|
 import visualisation.vtk_plot as vp  # |\label{l13:vtk_plot}|
 
