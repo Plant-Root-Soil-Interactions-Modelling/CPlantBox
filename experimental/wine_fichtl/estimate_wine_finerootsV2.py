@@ -87,8 +87,8 @@ def checkData(year):
     genotype = "E" # "D" "E"
     file_path = "./rsml/RSML_year"+str(year)+"/"
 
-    file_names = [name for name in os.listdir(file_path) if name[0] == genotype ] # repetitions of same genotype
-    rootsystem_age = [365] * len(file_names)  # days
+    file_names.extend([name for name in os.listdir(file_path) if name[0] == genotype ]) # repetitions of same genotype
+    rootsystem_age.extend([365*year for _ in range(len(file_names))])  # days
 
 
     """

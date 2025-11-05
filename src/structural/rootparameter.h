@@ -111,6 +111,7 @@ public:
 	int is_fine_root = 0; // fine [1] or long-lived [0] root? maybe better way to define that.
 	double k_survive = 1.88;
 	double lambda_survive = 7.53;
+	double rlt_winter_max = 1e100;
 
     // root hair
     double hairsElongation = 0.; // zone behind the tip without root hairs [cm]

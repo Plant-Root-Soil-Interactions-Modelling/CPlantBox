@@ -585,6 +585,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("tropismS", &RootRandomParameter::tropismS)
             .def_readwrite("k_survive", &RootRandomParameter::k_survive)
             .def_readwrite("lambda_survive", &RootRandomParameter::lambda_survive)
+            .def_readwrite("rlt_winter_max", &RootRandomParameter::rlt_winter_max)
             .def_readwrite("theta", &RootRandomParameter::theta)
             .def_readwrite("thetas", &RootRandomParameter::thetas)
             .def_readwrite("rlt", &RootRandomParameter::rlt)

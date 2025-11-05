@@ -45,6 +45,7 @@ import os
 from structural.Plant import PlantPython
 import pandas as pd
 import copy
+from scipy.stats import gaussian_kde
 
 
 def getMeasData(genotype,dt_types, years_ = 10):#, doGraphs = False):
@@ -53,11 +54,11 @@ def getMeasData(genotype,dt_types, years_ = 10):#, doGraphs = False):
 
 
     # Define column names
-    columns = ['Year', 'Data', 'ST']
+    #columns = ['Year', 'Data', 'ST']
 
     # Create an empty DataFrame with these columns
-    dfmean = pd.DataFrame(columns=columns)
-    dfsd = pd.DataFrame(columns=columns)
+    # dfmean = pd.DataFrame(columns=columns)
+    # dfsd = pd.DataFrame(columns=columns)
 
     # outpouts = [
         # [
@@ -78,14 +79,21 @@ def getMeasData(genotype,dt_types, years_ = 10):#, doGraphs = False):
             'num':[0.,0.,0.,0.,0.],
             'ratio':0
             }
+    outputs_50 = {
+            'num':[0.,0.,0.,0.,0.],
+            'ratio':0,
+            'kde_main':[0. for i in range(50)],
+            'kde_sub':[0. for i in range(50)],
+            'kde_subsub':[0. for i in range(50)]
+            }
             
     outpouts_mean = {
-        'year'+str(i+1): copy.deepcopy(outputs_12) if i < 2 else copy.deepcopy(outputs_3to10)
-        for i in range(10)
+        'year'+str(i+1): copy.deepcopy(outputs_12) if i < 2 else copy.deepcopy(outputs_3to10) if i < 49 else copy.deepcopy(outputs_50)
+        for i in range(50)
     }
     outpouts_sd = {
-        'year'+str(i+1): copy.deepcopy(outputs_12) if i < 2 else copy.deepcopy(outputs_3to10)
-        for i in range(10)
+        'year'+str(i+1): copy.deepcopy(outputs_12) if i < 2 else copy.deepcopy(outputs_3to10) if i < 49 else copy.deepcopy(outputs_50)
+        for i in range(50)
     }
 
     for year in [1,2]:
@@ -176,12 +184,15 @@ def getMeasData(genotype,dt_types, years_ = 10):#, doGraphs = False):
     #print('means',outpouts[0])
     #print('sd',outpouts[1])
 
-    type1_yr1 = outpouts_mean['year1']['num'][0] # outpouts[0][0][0][0]
-    type1_yr2 = outpouts_mean['year2']['num'][0] #outpouts[0][0][1][0]
-    dt_type1 = type1_yr2 - type1_yr1
-    if dt_type1 >= 0:
-        dt_type1 = np.mean(dt_types)
-
+    dt_typeX = []
+    for st in range(subtypes):
+        typeX_yr1 = outpouts_mean['year1']['num'][st] # outpouts[0][0][0][0]
+        typeX_yr2 = outpouts_mean['year2']['num'][st] #outpouts[0][0][1][0]
+        #dt_type1 = type1_yr2 - type1_yr1
+        dt_typeX.append(typeX_yr2 - typeX_yr1)
+        #if dt_type1 >= 0:
+        #    dt_type1 = np.mean(dt_types)
+        
     # # length of type 1 will not be used
     # outpouts[0][0][0][0] = 0.
     # outpouts[1][0][0][0] = 0.
@@ -205,12 +216,12 @@ def getMeasData(genotype,dt_types, years_ = 10):#, doGraphs = False):
     outpouts_mean['year'+str(year)]['ratio'] = ratio_init + (ratio_10 - ratio_init ) * ((year-1)/9)
     outpouts_sd['year'+str(year)]['ratio'] = sd_init #CV_all * outpouts_mean['year'+str(year)]['ratio']
 
-    for year in range(3,11):
+    for year in range(3,4):
         for dt_id, datatype in enumerate(['num', 'ratio']): # 'length',
             if datatype == 'ratio':#'num':
                 # outpouts[0][dt_id][year-1] = ratio_init + (ratio_10 - ratio_init ) * (year/10)
                 # outpouts[1][dt_id][year-1] = CV_all * outpouts[0][dt_id][year-1] 
-                outpouts_mean['year'+str(year)][datatype] = ratio_init + (ratio_10 - ratio_init ) * ((year-1)/9)
+                outpouts_mean['year'+str(year)][datatype] = ratio_init + (ratio_10 - ratio_init ) * ((min(year,10)-1)/9)
                 outpouts_sd['year'+str(year)][datatype] = sd_init# CV_all * outpouts_mean['year'+str(year)][datatype]
             elif datatype == 'length':
                 raise Exception
@@ -221,17 +232,94 @@ def getMeasData(genotype,dt_types, years_ = 10):#, doGraphs = False):
                 for st in range(subtypes):
                     #outpouts[0][dt_id][year-1][st] = outpouts[0][dt_id][1][st]
                     #outpouts[1][dt_id][year-1][st] = outpouts[1][dt_id][1][st]
-                    outpouts_mean['year'+str(year)][datatype][st] = outpouts_mean['year2'][datatype][st]
-                    outpouts_sd['year'+str(year)][datatype][st] = outpouts_sd['year2'][datatype][st]
-                            
-                # outpouts[0][0][year-1][0] = max(0.,outpouts[0][0][year-1][0] + dt_type1 * year)
-                outpouts_mean['year'+str(year)][datatype][0] = max(0.,outpouts_mean['year'+str(year)][datatype][0] + dt_type1 * float(year - 2.))
-     
+                    outpouts_mean['year'+str(year)][datatype][st] = outpouts_mean['year'+str(year-1)][datatype][st]
+                    outpouts_sd['year'+str(year)][datatype][st] = outpouts_sd['year'+str(year-1)][datatype][st]
+                                
+                    # outpouts[0][0][year-1][0] = max(0.,outpouts[0][0][year-1][0] + dt_type1 * year)
+                    if year < 3:
+                        outpouts_mean['year'+str(year)][datatype][st] = max(0.,outpouts_mean['year2'][datatype][st] + dt_typeX[st] * float(year - 2.))
+                        
+    for year in range(4, 5):
+        for dt_id, datatype in enumerate(['num', 'ratio']): # 'length',
+            if datatype == 'ratio':#'num':
+                # outpouts[0][dt_id][year-1] = ratio_init + (ratio_10 - ratio_init ) * (year/10)
+                # outpouts[1][dt_id][year-1] = CV_all * outpouts[0][dt_id][year-1] 
+                # outpouts_mean['year'+str(year)][datatype] = outpouts_mean['year'+str(year-1)][datatype]
+                outpouts_mean['year'+str(year)][datatype] = ratio_init + (ratio_10 - ratio_init ) * ((min(year,10)-1)/9)
+                outpouts_sd['year'+str(year)][datatype] = outpouts_sd['year'+str(year-1)][datatype]
+            else:
+                for st in range(subtypes):
+                    #outpouts[0][dt_id][year-1][st] = outpouts[0][dt_id][1][st]
+                    #outpouts[1][dt_id][year-1][st] = outpouts[1][dt_id][1][st]
+                    outpouts_mean['year'+str(year)][datatype][st] = outpouts_mean['year'+str(year-1)][datatype][st]
+                    outpouts_sd['year'+str(year)][datatype][st] = outpouts_sd['year'+str(year-1)][datatype][st]
+    year_bu = year 
+    V_num_mean = np.array([0,17.00,20.67,6.67,0.67])
+    V_num_sd = np.array([0,2.645751311,7.371114796,4.163331999,1.154700538])
+    dt_typeX_old = (V_num_mean - outpouts_mean['year'+str(year_bu)]['num'])/(50 - year_bu)
+    dtsd_typeX_old = (V_num_sd - outpouts_sd['year'+str(year_bu)]['num'])/(50 - year_bu)
+                        
+    for year in range(year_bu, 51):
+        for dt_id, datatype in enumerate(['num', 'ratio']): # 'length',
+            if datatype == 'ratio':#'num':
+                # outpouts[0][dt_id][year-1] = ratio_init + (ratio_10 - ratio_init ) * (year/10)
+                # outpouts[1][dt_id][year-1] = CV_all * outpouts[0][dt_id][year-1] 
+                # outpouts_mean['year'+str(year)][datatype] = outpouts_mean['year'+str(year-1)][datatype]
+                outpouts_mean['year'+str(year)][datatype] = ratio_init + (ratio_10 - ratio_init ) * ((min(year,10)-1)/9)
+                outpouts_sd['year'+str(year)][datatype] = outpouts_sd['year'+str(year-1)][datatype]
+            else:
+                for st in range(subtypes):
+                    #outpouts[0][dt_id][year-1][st] = outpouts[0][dt_id][1][st]
+                    #outpouts[1][dt_id][year-1][st] = outpouts[1][dt_id][1][st]
+                    # outpouts_mean['year'+str(year)][datatype][st] = outpouts_mean['year'+str(year-1)][datatype][st]
+                    outpouts_mean['year'+str(year)][datatype][st] = max(0.,outpouts_mean['year'+str(year_bu)][datatype][st] + dt_typeX_old[st] * float(year - year_bu))
+                    outpouts_sd['year'+str(year)][datatype][st] = max(0.,outpouts_sd['year'+str(year_bu)][datatype][st] + dtsd_typeX_old[st] * float(year - year_bu)) #V_num_sd[st] #outpouts_sd['year'+str(year-1)][datatype][st]
+                    
     # for dt_id, datatype in enumerate(['num', 'length', 'ratio']):
         # print(datatype)
         # print([outpouts_mean['year'+str(year)][datatype] for year in range(1,11)])
+    
+    file_path = './rsml/length_vs_BEDD_and_root_age.xlsx'
+    df = pd.read_excel(file_path, sheet_name='length_vs_BEDD_and_root_age')
+    df = df[['FileName', 'order', 'root_age']]
+    orders = list(set(df['order']))
+    xx = {}
+    for oo in orders:
+        filtered_df = df[df['order'] == oo][['root_age', 'FileName']].copy()
+        
+        # List to store KDE y-values for each FileName
+        kde_ys = []
+        
+        # Determine a common x-grid across all FileNames for this order
+        min_x = max(filtered_df['root_age'].min() - 3*filtered_df['root_age'].std(), 0)
+        max_x = filtered_df['root_age'].max() + 3*filtered_df['root_age'].std()
+        x = np.linspace(min_x, max_x, 50)
+        
+        # Plot KDE for each FileName
+        for im in filtered_df['FileName'].unique():
+            filtered_df_ = filtered_df[filtered_df['FileName'] == im]['root_age'].copy()
+            
+            # KDE
+            kde = gaussian_kde(filtered_df_)
+            y = kde(x)
+            plt.plot(x, y, label=f'{im} KDE', linewidth=2)
+            kde_ys.append(y)
+        
+        # Convert list to array for easier computation
+        kde_ys = np.array(kde_ys)
+        
+        # Compute mean and std across KDEs
+        outpouts_mean['year50']['kde_' +oo] = np.mean(kde_ys, axis=0)
+        outpouts_sd['year50']['kde_' +oo] = np.std(kde_ys, axis=0)
+
+        xx[oo] = x
+            
+    
     outpouts = {'mean':outpouts_mean, 'sd':outpouts_sd}
     
+    with open('./measurements'+ genotype +'InitXX.pkl','wb') as f:
+         pickle.dump(xx,f, protocol=pickle.HIGHEST_PROTOCOL)
+         
     with open('./measurements'+ genotype +'Init.pkl','wb') as f:
          pickle.dump(outpouts,f, protocol=pickle.HIGHEST_PROTOCOL)
          
@@ -262,7 +350,7 @@ def getMeasData(genotype,dt_types, years_ = 10):#, doGraphs = False):
          'sd_mu' : sd_mu},f, protocol=pickle.HIGHEST_PROTOCOL)
 
     
-    return dt_type1 #outpouts_mean, outpouts_sd
+    return dt_typeX #outpouts_mean, outpouts_sd
 
 dt_types = []
 for genotype in ["B", "D", "E"]:

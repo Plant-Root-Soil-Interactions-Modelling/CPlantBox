@@ -90,8 +90,7 @@ for ii, pp in enumerate(plant.getOrganRandomParameter(2)):
         pp.ldelay  = 0*yr_to_BEDD
         pp.ldelays = yr_to_BEDD*40#/2.
     pp.a_gr =  0.083/2/yr_to_BEDD
-    print(pp.successorNo)
-    raise Exception
+
         
 allRRP = plant.getOrganRandomParameter(2)
 
@@ -145,7 +144,7 @@ p2 = plant.getOrganRandomParameter(2, 2)
 p2.r = p2.lmax * Main_beta
 
 p2.tropismT = 7  # mix of planar and gravitropism
-p2.tropismN = 1  
+p2.tropismN = 2  
 p2.tropismW1 = 0.85 #0.4 # gravitropism
 p2.tropismW2 = 0.15 #0.6 # plagiotropism
 
@@ -187,12 +186,12 @@ plant.initialize_static(path + "B-23_Fichtl.rsml", [0, 1])  # 0 is shoot, 1 are 
 
 # the static laterals 2 and 3 are replaced with the growing lateral 2
 ld, ld1 = plant.set_identical_laterals([0, 1], [1, 2, 3], 2)
-plt.hist(np.array(ld1)/yr_to_BEDD, density = False, bins=30)
-plt.title("Creation time of the main roots")
-plt.show()
-plt.hist(np.array(ld)/yr_to_BEDD, density = False, bins=30)
-plt.title("Creation time of the main roots")
-plt.show()
+# plt.hist(np.array(ld1)/yr_to_BEDD, density = False, bins=30)
+# plt.title("Creation time of the main roots")
+# plt.show()
+# plt.hist(np.array(ld)/yr_to_BEDD, density = False, bins=30)
+# plt.title("Creation time of the main roots")
+# plt.show()
 
 plant.initialize_static_laterals()
 plant.betaN = 5000
@@ -297,7 +296,6 @@ for i in range(0, N):
         anim.update()
     
 
-raise Exception
 #orgs_ = plant.getOrgans(2)
 orgs_long = [org for org in orgs_ if org.param().subType in range(2,7)]
 orgs_fine = [org for org in orgs_ if org.param().subType in range(7,12)]
@@ -385,6 +383,9 @@ plt.title("Survival probability")
 plt.legend()
 plt.show()
 
+import pickle
+with open('./SurvivalRate.pkl','wb') as f:
+    pickle.dump(rtl_winters,f, protocol=pickle.HIGHEST_PROTOCOL)
 
 '''
 Creation time

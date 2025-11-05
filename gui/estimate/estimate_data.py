@@ -14,7 +14,7 @@ class EstimateDataModel:
     Model in the sense of model view controller (MVC), stores most that is presented in the view    
     """
 
-    def __init__(self):
+    def __init__(self, numTypes):
         self.rsmls = []  # list of rsml data to analyse, rsml_data.RsmlData
         self.estimates = [{}]  # list of dictionary of parameters per root
         self.plant = pb.Plant()  # to own the CPlantBox parameters
@@ -28,6 +28,7 @@ class EstimateDataModel:
         self.root_indices = []  # all roots
         self.folder_name = ""
         self.file_names = []  # for debugging
+        self.numTypes = numTypes
 
     def open_folder(self, folder_name):
         """ see RsmlData.open_rsml() in src/python_modules/rsml_data.py                
@@ -59,7 +60,7 @@ class EstimateDataModel:
                         print("filename", filename)
                         self.times.append(0)
         self.estimates = [None] * len(self.times)
-        self.parameters = [pb.RootRandomParameter(self.plant) for _ in range(0, 10)]
+        self.parameters = [pb.RootRandomParameter(self.plant) for _ in range(0, self.numTypes)]
         self.pparameters = [pb.SeedRandomParameter(self.plant)][0]
         self.create_length()  # add a length tag to properties
         self.initialize_roots_()  # find base roots
@@ -71,7 +72,7 @@ class EstimateDataModel:
         self.folder_name = folder_name
         for filename in file_names:
             file_path = os.path.join(folder_name, filename)
-            print('\nFile %s (full path: %s)\n' % (filename, file_path))
+            #print('\nFile %s (full path: %s)\n' % (filename, file_path))
             self.file_names.append(filename)
             file_data = RsmlData()
             file_data.open_rsml(file_path)
@@ -452,7 +453,8 @@ class EstimateDataModel:
         p.a_s = np.nanstd(a_)
         p.theta = np.nanmean(theta_)
         p.thetas = np.nanstd(theta_)
-
+        p.subType = target_type
+        #print(self.parameters[target_type])
         self.orders.append(np.max(order_))
 
     def compute_age(self, indices, target_type, apical_method):
