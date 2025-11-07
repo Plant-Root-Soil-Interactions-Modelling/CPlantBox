@@ -7,7 +7,8 @@ import numpy as np
 
 # make choice of treatment here
 
-treatment = 3
+treatment = 1
+animation = False
 
 treatments = ["WS", "W", "RMCS", "RMC"]
 
@@ -79,6 +80,11 @@ for i in range(1,N):
         if i % 18 == 0:
             print('step',i, '/',N)
         mycp.simulate(dt, False)
+        if animation:
+            ana = pb.SegmentAnalyser(mycp)
+            ana.addData("infection", mycp.getNodeInfections(2))
+            ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+            ana.write(names[treatment] + "_animation_" + "{:04d}".format(i) + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
     
 print('done')
 
@@ -108,3 +114,6 @@ if treatment == 3:
 
 vp.plot_roots_and_container(mycp, pot)
 ana.write(names[treatment] + ".vtp", ["radius", "subType", "creationTime","organType"])
+vp.write_container(pot, "pot.vtp")
+
+

@@ -72,7 +72,7 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="197.35001"/>
+        <parameter name="lmax" value="100"/>
         <!--Maximal root length [cm]-->
         <parameter name="lmbd" value="0.15000001"/>
         <!--Rate of primary infection for dispersed inoculum [1/(cm day)]-->
@@ -86,7 +86,7 @@
         <!--Percentage of maximal infection-->
         <parameter name="minAge" value="0"/>
         <!--Minimal infectious age of a root segment [day]-->
-        <parameter name="r" value="0.80000001"/>
+        <parameter name="r" value="1.5"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="9.9999998e+10" dev="1000000"/>
         <!--Root life time [day]-->
@@ -130,7 +130,7 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="45"/>
+        <parameter name="lmax" value="20"/>
         <!--Maximal root length [cm]-->
         <parameter name="lmbd" value="0.15000001"/>
         <!--Rate of primary infection for dispersed inoculum [1/(cm day)]-->
@@ -144,13 +144,13 @@
         <!--Percentage of maximal infection-->
         <parameter name="minAge" value="0"/>
         <!--Minimal infectious age of a root segment [day]-->
-        <parameter name="r" value="0.46000001"/>
+        <parameter name="r" value="0.6"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="9.9999998e+10" dev="1000000"/>
         <!--Root life time [day]-->
         <parameter name="theta" value="1.22173"/>
         <!--Angle between root and parent root [rad]-->
-        <parameter name="tropismN" value="0.5"/>
+        <parameter name="tropismN" value="1.5"/>
         <!--Number of trials of root tropism-->
         <parameter name="tropismS" value="0.30000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
@@ -208,7 +208,7 @@
         <!--Root life time [day]-->
         <parameter name="theta" value="1.22173"/>
         <!--Angle between root and parent root [rad]-->
-        <parameter name="tropismN" value="0"/>
+        <parameter name="tropismN" value="1.5"/>
         <!--Number of trials of root tropism-->
         <parameter name="tropismS" value="0.40000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
