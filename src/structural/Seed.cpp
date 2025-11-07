@@ -114,7 +114,7 @@ void Seed::initialize(bool verbose)
         shootborneType = st;
     } // otherwise stick with default
     if ((sp->nC>0) && (sp->firstSB+sp->delaySB<maxT)) { // only if there are any shootborne roots
-        std::cout << "Seed::initialize: Shoot borne definition is DEPRICATED, shoot borne roots will be handeled like basal roots \n";
+        //std::cout << "Seed::initialize: Shoot borne definition is DEPRICATED, shoot borne roots will be handeled like basal roots \n";
         try {
             p->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
         } catch (...) {
