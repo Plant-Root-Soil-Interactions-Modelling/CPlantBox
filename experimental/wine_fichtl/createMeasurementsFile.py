@@ -331,8 +331,9 @@ def getMeasData(genotype,dt_types, years_ = 10):#, doGraphs = False):
     #mu_tmp = np.concatenate([np.ravel(list(oo.values())) for oo in outpouts_mean.values()])
     sd_tmp = np.array(list(flatten_values(outpouts_sd)))   #np.ravel([list(oo.values()) for oo in outpouts_sd.values()])
     print('mu_tmp',mu_tmp, len(mu_tmp))
+    print('sd_tmp',sd_tmp, len(sd_tmp))
     # first random guess
-    sd_mu = mu_tmp * 0.1  
+    sd_mu = sd_tmp #mu_tmp * 0.1  
     sd_sd = sd_tmp * 0.1    
     #sd >= 0.01 to avoid division by 0 when computing the log.
     sd_mu[sd_mu < 0.01] = 0.01
