@@ -437,8 +437,8 @@ class EstimateDataModel:
             p.lb = np.mean(lb_)
             p.lbs = np.std(lb_)
         if ln_:
-            p.ln = np.nanmean(ln_)
-            p.lns = np.nanstd(ln_)
+            p.ln = np.nanmin(ln_)
+            p.lns = 0. #np.nanstd(ln_)
         if la_:
             # p.la = np.nanmean(la_)
             if np.isnan(p.ln):

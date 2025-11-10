@@ -93,6 +93,7 @@ public:
 	int lignificationStatus() override {return 2;};
 	
 //protected:
+	void survivalTest() override;
 
     std::vector<int> lateralNodeIndices;
     std::vector<int> lateralTypes;

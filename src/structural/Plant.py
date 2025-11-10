@@ -130,8 +130,7 @@ class PlantPython(Plant):
                 else:
                     rlt_winter = 200. * 1225.
                 param = pb.RootSpecificParameter(types[i], lb, length, ln_, r, a, theta, rlt, laterals, a_gr, rlt_winter)  ############## which subType
-                # print(param)
-
+                
                 id = self.getOrganIndex()  # next index
                 organ = pb.StaticRoot(id, param, length, pni)
 
@@ -207,14 +206,15 @@ class PlantPython(Plant):
                     for latId in range(pr.successorNo[0] ):#(pr.successorNo[0] - init_num_kids)):
                         #print('in latid', latId)
                         pni = pni_init
-                        creation_time = abs(self.randn() * pr.ldelays)
-                        delay_mean = 0.
+                        creation_time = abs(self.randn() * pr.ldelays) # switch to rand?
+                        # delay_mean = 0.
                         for kid_id in range(init_num_kids):
                             
                             kid = parent.getChild(kid_id)
                             if (kid.parentNI + 1 == pni) and (kid.getParameter('subType') == types[i]) and (np.isin(types[i], add_to_statics)):
-                                delay_mean = kid.getParameter('rlt_winter') 
-                                creation_time = abs( (max(min(self.rand(),3.),-3.) / 3)* pr.ldelays) # delay_mean +
+                                # delay_mean = kid.getParameter('rlt_winter') 
+                                creation_time = self.rand() * pr.ldelays
+                                #creation_time = abs( (max(min(self.randn(),3.),-3.) / 3)* pr.ldelays) # delay_mean +
                                 #print('delay1', creation_time, delay_mean,pr.ldelays,(max(min(self.randn(),3.),-3.) / 3),(max(min(self.randn(),3.),-3.) / 3))
                                 ld1.append(creation_time)
                                 pni -= 1
@@ -235,7 +235,7 @@ class PlantPython(Plant):
                             parent.addLateral(pni, emerge_type_, creation_time)
                             parent.param().laterals = True
                             # lt.append(emerge_type_)
-                            # print("Root", i, ":", parent_id, pni, emerge_type, 0.)
+                            # print("Root", i, ":", parent_id, pni, emerge_type, creation_time)
                         # else:
                         #    lt.append(p_idx)
                         ld.append(creation_time)

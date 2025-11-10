@@ -68,7 +68,7 @@
         <!--Length of the root hair zone [cm]-->
         <parameter name="k_survive" value="1.88"/>
         <!--Parameter for the Root::survivalTest() function-->
-        <parameter name="la" value="0" dev="3.0456026"/>
+        <parameter name="la" value="0.36553648" dev="3.0456026"/>
         <!--Apical zone [cm]-->
         <parameter name="lambda_survive" value="7.5300002"/>
         <!--Parameter for the Root::survivalTest() function-->
@@ -78,7 +78,7 @@
         <!--Lateral root emergence delay [day]-->
         <parameter name="lmax" value="0"/>
         <!--Maximal root length [cm]-->
-        <parameter name="ln" value="1.1882248" dev="2.1422098"/>
+        <parameter name="ln" value="0"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
@@ -120,7 +120,7 @@
         <!--Length of the root hair zone [cm]-->
         <parameter name="k_survive" value="1.88"/>
         <!--Parameter for the Root::survivalTest() function-->
-        <parameter name="la" value="34.459465" dev="24.795948"/>
+        <parameter name="la" value="39.808002" dev="24.795948"/>
         <!--Apical zone [cm]-->
         <parameter name="lambda_survive" value="7.5300002"/>
         <!--Parameter for the Root::survivalTest() function-->
@@ -130,7 +130,7 @@
         <!--Lateral root emergence delay [day]-->
         <parameter name="lmax" value="790"/>
         <!--Maximal root length [cm]-->
-        <parameter name="ln" value="11.115401" dev="13.828789"/>
+        <parameter name="ln" value="0.41833001"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
@@ -172,7 +172,7 @@
         <!--Length of the root hair zone [cm]-->
         <parameter name="k_survive" value="1.42"/>
         <!--Parameter for the Root::survivalTest() function-->
-        <parameter name="la" value="27.675425" dev="24.380342"/>
+        <parameter name="la" value="30.876791" dev="24.380342"/>
         <!--Apical zone [cm]-->
         <parameter name="lambda_survive" value="3.54"/>
         <!--Parameter for the Root::survivalTest() function-->
@@ -182,7 +182,7 @@
         <!--Lateral root emergence delay [day]-->
         <parameter name="lmax" value="120"/>
         <!--Maximal root length [cm]-->
-        <parameter name="ln" value="7.7765956" dev="8.7811089"/>
+        <parameter name="ln" value="1.3738632"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
@@ -224,7 +224,7 @@
         <!--Length of the root hair zone [cm]-->
         <parameter name="k_survive" value="2.1700001"/>
         <!--Parameter for the Root::survivalTest() function-->
-        <parameter name="la" value="14.24378" dev="10.829869"/>
+        <parameter name="la" value="14.284962" dev="10.829869"/>
         <!--Apical zone [cm]-->
         <parameter name="lambda_survive" value="4.5500002"/>
         <!--Parameter for the Root::survivalTest() function-->
@@ -234,7 +234,7 @@
         <!--Lateral root emergence delay [day]-->
         <parameter name="lmax" value="60"/>
         <!--Maximal root length [cm]-->
-        <parameter name="ln" value="2.8264847" dev="0.082363792"/>
+        <parameter name="ln" value="2.7441211"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
@@ -276,7 +276,7 @@
         <!--Length of the root hair zone [cm]-->
         <parameter name="k_survive" value="2.1700001"/>
         <!--Parameter for the Root::survivalTest() function-->
-        <parameter name="la" value="14.24378" dev="10.829869"/>
+        <parameter name="la" value="14.284962" dev="10.829869"/>
         <!--Apical zone [cm]-->
         <parameter name="lambda_survive" value="4.5500002"/>
         <!--Parameter for the Root::survivalTest() function-->
@@ -286,7 +286,7 @@
         <!--Lateral root emergence delay [day]-->
         <parameter name="lmax" value="60"/>
         <!--Maximal root length [cm]-->
-        <parameter name="ln" value="2.8264847" dev="0.082363792"/>
+        <parameter name="ln" value="2.7441211"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->

@@ -499,6 +499,30 @@ void StaticRoot::initializeLaterals() {
     }
 }
 
+/**
+ *
+ *
+ * die directly if (a) a fine root, or (b) a long-lived root but not suberised (?)
+ *
+ */
+void StaticRoot::survivalTest() 
+{
+	if (isAlive() && (getAge() > 0.))
+	{
+		double rlt_winter = param()->rlt_winter;
+		if(getParameter("age") >= rlt_winter)
+		{
+			alive = false;
+			killChildren(); //deactivateChildren();
+		}
+	}
+	
+    for(size_t i=0; i<children.size(); i++){
+		if(children[i]->organType() == 2){ //if root
+			children[i]->survivalTest();//even if parent does not have relCoordinate, the laterals might
+		}
+    }
+}
 
 // void StaticRoot::survivalTest() 
 // {
