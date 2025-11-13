@@ -374,6 +374,24 @@ void Root::survivalTest()
 			children[i]->survivalTest();//even if parent does not have relCoordinate, the laterals might
 		}
     }
+	
+	//getDecayStatus();
+}
+
+int Root::getDecayStatus() 
+{
+	int anyAlive = int((isAlive() && (getAge() > 0.))) ;
+	if (!isAlive() & !isDecayed())
+	{
+		for(size_t i=0; i<children.size(); i++){
+			anyAlive += std::static_pointer_cast<Root>(children[i])->getDecayStatus();//even if parent does not have relCoordinate, the laterals might
+		}
+		if (anyAlive == 0)
+		{
+			decayed = true;
+		}
+	}
+	return anyAlive;
 }
 
 void Root::deactivateChildren() 

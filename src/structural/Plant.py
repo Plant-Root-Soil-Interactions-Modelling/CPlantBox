@@ -129,6 +129,7 @@ class PlantPython(Plant):
                     rlt_winter = rp.lambda_survive * ((-np.log(p_survive))**(1/rp.k_survive)) * 1225. # (25. + 10. * max(min(self.randn(),1.),-1.)) * 1225. #rp.lambda_survive * ((-np.log(rp.p_survive))**(1/rp.k_survive)) * 1225.
                 else:
                     rlt_winter = 200. * 1225.
+                print('rlt_winter',rlt_winter/1225)
                 param = pb.RootSpecificParameter(types[i], lb, length, ln_, r, a, theta, rlt, laterals, a_gr, rlt_winter)  ############## which subType
                 
                 id = self.getOrganIndex()  # next index

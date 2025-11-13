@@ -39,9 +39,9 @@ class EstimateDataModel:
             for filename in files:
                 if filename.endswith('.rsml'):
                     file_path = os.path.join(root, filename)
-                    print()
-                    print('file %s (full path: %s)\n' % (filename, file_path))
-                    print()
+                    # print()()
+                    # print()('file %s (full path: %s)\n' % (filename, file_path))
+                    # print()()
                     self.file_names.append(filename)
                     file_data = RsmlData()
                     file_data.open_rsml(file_path)
@@ -57,7 +57,7 @@ class EstimateDataModel:
                             str = ''.join([n for n in s[0][-3:] if n.isdigit()])
                             self.times.append(int(str))
                     except:
-                        print("filename", filename)
+                        # print()("filename", filename)
                         self.times.append(0)
         self.estimates = [None] * len(self.times)
         self.parameters = [pb.RootRandomParameter(self.plant) for _ in range(0, self.numTypes)]
@@ -72,7 +72,7 @@ class EstimateDataModel:
         self.folder_name = folder_name
         for filename in file_names:
             file_path = os.path.join(folder_name, filename)
-            #print('\nFile %s (full path: %s)\n' % (filename, file_path))
+            ## print()('\nFile %s (full path: %s)\n' % (filename, file_path))
             self.file_names.append(filename)
             file_data = RsmlData()
             file_data.open_rsml(file_path)
@@ -88,7 +88,7 @@ class EstimateDataModel:
                     str = ''.join([n for n in s[0][-3:] if n.isdigit()])
                     self.times.append(int(str))
             except:
-                print("filename", filename)
+                # print()("filename", filename)
                 self.times.append(0)
         self.estimates = [None] * len(self.times)
         self.parameters = [pb.RootRandomParameter(self.plant) for _ in range(0, 10)]
@@ -112,7 +112,7 @@ class EstimateDataModel:
                         l += np.linalg.norm(np.array(n2) - np.array(n1))
                     self.rsmls[k].properties["length"].append(l)
             else:
-                print("EstimateDataModel.create_length: 'length' tag is already available")
+                # print()("EstimateDataModel.create_length: 'length' tag is already available")
                 lengths = self.rsmls[k].properties["length"]  # TODO this is a hack for the RSWMS files
                 for i in range(0, len(lengths)):
                     lengths[i] = lengths[i] / 10
@@ -147,24 +147,24 @@ class EstimateDataModel:
             self.basal_root_indices[i] = []
             bri = np.array(self.base_root_indices[i], dtype = np.int64)
 
-            print("measurement (file)", i)
+            # print()("measurement (file)", i)
 
             lengths = np.array(self.rsmls[i].properties["length"])
             tap_index = np.argmax(lengths[bri])  # longest base root is tap root (not perfect)
 
-            print("bri", bri, "lengths[bri]", lengths[bri], bri[tap_index])
+            # print()("bri", bri, "lengths[bri]", lengths[bri], bri[tap_index])
 
             self.tap_root_indices[i].append(bri[tap_index])
-            print("tap roots", self.tap_root_indices[-1], "tap index", tap_index, "root", bri[tap_index])
+            # print()("tap roots", self.tap_root_indices[-1], "tap index", tap_index, "root", bri[tap_index])
 
             lo_ = np.argsort(lengths[bri])
             lo = lo_[::-1]
             self.base_root_indices[i] = [self.base_root_indices[i][j] for j in lo]  # in descending order
-            print("base roots", self.base_root_indices[i], self.basal_root_indices[i])
+            # print()("base roots", self.base_root_indices[i], self.basal_root_indices[i])
 
             self.basal_root_indices[i] = self.base_root_indices[i].copy()  # same without tap root
             self.basal_root_indices[i].pop(0)  # first one is longest (i.e. tap root)
-            print()
+            # print()()
 
     def create_params(self, apical_method, base_method, clustering_method):
         """
@@ -180,7 +180,7 @@ class EstimateDataModel:
         order = 0
         indices = self.base_root_indices
         c = np.array([len(x) for x in indices])
-        # print(c, "roots of oder", order, "at times", self.times)
+        # # print()(c, "roots of oder", order, "at times", self.times)
         while np.sum(c) > 0:
             self.estimate_zones_(indices)
             # if base_method < 2:  # tap and basals are treated the same way (multiple dicots)
@@ -191,7 +191,7 @@ class EstimateDataModel:
             order += 1
             indices = self.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
             c = np.array([len(x) for x in indices])
-            # print(c, "roots of oder", order, self.times)
+            # # print()(c, "roots of oder", order, self.times)
 
         # initial roots age of the base roots
         for i, j_ in enumerate(self.base_root_indices):
@@ -226,9 +226,10 @@ class EstimateDataModel:
             length_basals_ = [l or [1e-14] for l in length_basals]
             res, f, ages = ep.estimate_order0_rate(np.array(length_basals_), p.r, p.lmax, self.times)
             if res.x[0] < 0:
-                print("ERROR: negative growth rate!!!")
+                print()("ERROR: negative growth rate!!!")
+                raise Exception
             else:
-                print("production rate", res.x[0])
+                print()("production rate", res.x[0])
 
             # compute seed params
             delayB_, firstB_, maxB_ = [], [], []
@@ -236,7 +237,7 @@ class EstimateDataModel:
                 delayB_.append(np.mean(np.diff(np.sort(ages[i]))))
                 firstB_.append(self.times[i] - np.max(ages[i]))
                 maxB_.append(len(ages[i]))
-            # print('delayB_, firstB_, maxB_', delayB_, firstB_, maxB_)
+            # # print()('delayB_, firstB_, maxB_', delayB_, firstB_, maxB_)
 
             srp = self.pparameters
             if delayB_:
@@ -248,17 +249,17 @@ class EstimateDataModel:
             if maxB_:
                 srp.maxB = np.nanmean(maxB_)
                 srp.maxBs = np.nanstd(maxB_)
-            # print('checkallParams', srp.delayB, srp.delayBs,srp.firstB,srp.firstBs, srp.maxB, srp.maxBs)
+            # # print()('checkallParams', srp.delayB, srp.delayBs,srp.firstB,srp.firstBs, srp.maxB, srp.maxBs)
 
             # res, f, ages = estimate_order0_rrate(np.array(length_basals), p.r, p.lmax, self.times)
-            # print("production rate", res.x[0], "elongation rate", res.x[1])
+            # # print()("production rate", res.x[0], "elongation rate", res.x[1])
 
             # add basal ages accordingly
-            # print('indices', indices)
+            # # print()('indices', indices)
             for i, j_ in enumerate(indices):
                 for j in range(0, len(j_)):
-                    # print('i,j', i,j)
-                    # print('ages', ages)
+                    # # print()('i,j', i,j)
+                    # # print()('ages', ages)
                     self.estimates[i][(j_[j], "age")] = ages[i][j]
             self.fit_root_length_(indices, base_method, target_type = target_type)  # 1
             self.add_r_(indices, target_type)  # 2
@@ -287,7 +288,7 @@ class EstimateDataModel:
             indices = self.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
             c = np.array([len(x) for x in indices])
 
-            # print("new length", np.sum(c), "at order", order, "indices", c)  # TODO change while criteria [[],[],[]] will pass
+            # # print()("new length", np.sum(c), "at order", order, "indices", c)  # TODO change while criteria [[],[],[]] will pass
 
     def estimate_zones_(self, indices):
         """ creates lb, ln, la per root (if possible), and redius a, and inseriton angle theta 
@@ -306,7 +307,7 @@ class EstimateDataModel:
 
             for j in j_:
                 kids = self.pick_kids(i, j)
-                # print("kids", kids[:, 0])
+                # # print()("kids", kids[:, 0])
                 if kids.shape[0] > 0:
                     ii = [self.rsmls[i].properties["parent-node"][kids[m, 0]] for m in range (0, kids.shape[0])]
                     base_polyline = self.rsmls[i].polylines[j]
@@ -320,7 +321,7 @@ class EstimateDataModel:
                     ln_ = []
                     for k in range(0, len(ii) - 1):  # laterals
                         ln_.append(ep.polyline_length(ii[k], ii[k + 1], base_polyline))  # internodal distances
-                    # print("found values for ", i, j)
+                    # # print()("found values for ", i, j)
                     self.estimates[i][(j, "lb")] = lb
                     self.estimates[i][(j, "ln")] = ln_
                     self.estimates[i][(j, "la")] = la
@@ -356,14 +357,14 @@ class EstimateDataModel:
                         v2 = v2 / np.linalg.norm(v2)
                         # theta_ = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
                         angle = np.arccos(np.dot(v1, v2)) / np.pi * 180
-                        # print('basal vectors', p, p2, angle)
+                        # # print()('basal vectors', p, p2, angle)
                     else:
                         angle = 0
                 else:
                     p = coordina[(int(ii[j]))]
                     p0 = coordina[(int(ii[j] - 1))]
                     p2 = np.asarray(self.rsmls[i].polylines[j][0])
-                    # print('p0, p, p2',p0, p, p2)
+                    # # print()('p0, p, p2',p0, p, p2)
 
                     # growth angle should be measured between segments >1cm
                     v1 = p0 - p
@@ -416,7 +417,7 @@ class EstimateDataModel:
         la_, lb_, ln_, delay_, a_, theta_, order_ = [], [], [], [], [], [], []
         for i, j_ in enumerate(indices):
             for j in j_:
-                # print('i,j', i,j)
+                # # print()('i,j', i,j)
                 if (j, "la") in self.estimates[i]:
                     la_.append(self.estimates[i][(j, "la")])
                 if (j, "delay") in self.estimates[i]:
@@ -437,8 +438,8 @@ class EstimateDataModel:
             p.lb = np.mean(lb_)
             p.lbs = np.std(lb_)
         if ln_:
-            p.ln = np.nanmin(ln_)
-            p.lns = 0. #np.nanstd(ln_)
+            p.ln = np.mean(lb_) #np.nanmin(ln_)
+            p.lns = np.nanstd(ln_) # 0.
         if la_:
             # p.la = np.nanmean(la_)
             if np.isnan(p.ln):
@@ -454,7 +455,7 @@ class EstimateDataModel:
         p.theta = np.nanmean(theta_)
         p.thetas = np.nanstd(theta_)
         p.subType = target_type
-        #print(self.parameters[target_type])
+        ## print()(self.parameters[target_type])
         self.orders.append(np.max(order_))
 
     def compute_age(self, indices, target_type, apical_method):
@@ -468,7 +469,7 @@ class EstimateDataModel:
         for i, j_ in enumerate(indices):
             measurement_time = self.times[i]
             ct_name = self.rsmls[i].tagnames[1]
-            # print("ct_name", ct_name, "measurement_time", measurement_time)
+            # # print()("ct_name", ct_name, "measurement_time", measurement_time)
             ct_name = None  # TESTING
             if ct_name:
                 for j in j_:
@@ -513,15 +514,15 @@ class EstimateDataModel:
 
                             self.estimates[i][(k, "age")] = root_age  # tap root et =  0
 
-    def fit_root_length_(self, indices, base_method, target_type):
+    def fit_root_length_(self, indices, base_method, target_type, firstguess):
         """ fit (r, lmax) based on "age" and "length" of root/polyline into target_type = order
         """
         length_, age_ = [], []
         for i, j_ in enumerate(indices):
             for j in j_:
-                # print("i", i, type(i))
-                # print("j", j, type(j))
-                # print("j_", j_, type(j))
+                # # print()("i", i, type(i))
+                # # print()("j", j, type(j))
+                # # print()("j_", j_, type(j))
                 age = self.estimates[i][(j, "age")]
                 l = self.rsmls[i].properties["length"][j]
                 age_.append(age)  # for fitting
@@ -530,12 +531,12 @@ class EstimateDataModel:
         age_ = np.array(age_)
 
         if base_method == 0 or base_method == 2:
-            r, k, res = ep.fit_taproot_rk(length_, age_)
-            print("order", target_type, "r", r, "k", k, "res", res)
+            r, k, res = ep.fit_taproot_rk(length_, age_, firstguess)
+            # print()("order", target_type, "r", r, "k", k, "res", res)
         elif base_method == 1 or base_method == 3:
             k = self.parameters[target_type].lmax
             r, res = ep.fit_taproot_r(length_, age_, k)
-            print("order", target_type, "r", r, "k", k, "res", res)
+            # print()("order", target_type, "r", r, "k", k, "res", res)
 
         self.parameters[target_type].r = r
         self.parameters[target_type].lmax = k
@@ -553,7 +554,7 @@ class EstimateDataModel:
                 r = ep.negexp_rate(l, p.lmax, t)  # if age = t small, r becomes large...
                 self.estimates[i][(j, "r")] = r  # individual growth rate
                 r_.append(r)
-        # print("r ", np.mean(r_), np.std(r_), "for target type", target_type)
+        # # print()("r ", np.mean(r_), np.std(r_), "for target type", target_type)
 
     def add_delay_(self, indices, target_type):
         """ adds the apical delay based on measured la, r, and lmax """
@@ -561,7 +562,7 @@ class EstimateDataModel:
         delay_ = []  # for debugging
         for i, j_ in enumerate(indices):
             for j in j_:
-                kids = self.pick_kids(i, j)  # print("kids", kids[:, 0])
+                kids = self.pick_kids(i, j)  # # print()("kids", kids[:, 0])
                 if kids.shape[0] > 0:
                     r = self.estimates[i][(j, "r")]  # of parent root
                     ii = [self.rsmls[i].properties["parent-node"][kids[m, 0]] for m in range (0, kids.shape[0])]
@@ -575,7 +576,7 @@ class EstimateDataModel:
                     age1 = ep.negexp_age(l1, r, p.lmax)
                     self.estimates[i][(j, "delay")] = max(age1 - age0, 0.)
                     delay_.append(max(age1 - age0, 0.))
-        print("delay", np.nanmean(delay_), np.nanstd(delay_), "for target type", target_type)
+        # print()("delay", np.nanmean(delay_), np.nanstd(delay_), "for target type", target_type)
 
     def pick_order(self, root_order, order_tag = "order"):
         """ returns a list of size len(self.rsmls), with polyline indices of order @param root_order 
@@ -594,10 +595,10 @@ class EstimateDataModel:
         root @param base_root_index in measurement @param measurement_index
         """
         ppi = np.array(self.rsmls[measurement_index].properties["parent-poly"])
-        # print(base_root_index)
-        # print("ppi", ppi)
+        # # print()(base_root_index)
+        # # print()("ppi", ppi)
         kids_indices = np.array(np.argwhere(ppi == base_root_index * np.ones(ppi.shape)), dtype = np.int64)
-        # print(kids_indices[:, 0])
+        # # print()(kids_indices[:, 0])
         # if len(kids_indices[:, 0]):
         #     input()
         return kids_indices

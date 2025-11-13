@@ -65,7 +65,8 @@ public:
     std::shared_ptr<OrganRandomParameter> getOrganRandomParameter() const;  ///< organ type parameter
     bool isAlive() const { return alive; } ///< checks if alive
     bool isActive() const { return active; } ///< checks if active
-    double getAge() const { return age; } ///< return age of the organ
+    bool isDecayed() const { return decayed; } 
+	double getAge() const { return age; } ///< return age of the organ
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
     double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
 	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
@@ -149,6 +150,7 @@ protected:
     std::shared_ptr<const OrganSpecificParameter> param_; ///< the parameter set of this organ (@see getParam())
 
     /* Parameters are changing over time */
+    bool decayed = false; 
     bool alive = true; ///< true: alive, false: dead
     bool active = true; ///< true: active, false: organ stopped growing
     double age = 0; ///< current age [days]

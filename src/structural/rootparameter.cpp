@@ -128,7 +128,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
         }
     }
 	double p_survive = plant.lock()->rand();
-	double rlt_winter = std::min(lambda_survive * (std::pow(-std::log(p_survive),1/k_survive)), rlt_winter_max )* 1225; // yrs to GDD
+	double rlt_winter = std::min(rlt_winter_min + lambda_survive * (std::pow(-std::log(p_survive),1/k_survive)), rlt_winter_max )* 1225; // yrs to GDD
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
     double a_ = std::max(a + p->randn()*as, 0.01); // radius
     double a_gr_ = std::max(a_gr + p->randn()*a_grs, 0.); // secondary growth rate

@@ -137,7 +137,7 @@ def run_benchmark(params, genotype = 'B'):
         # print('age',i)
         plant.survivalTest()
         plant.simulate(dt, False)
-        orgs_ = plant.getOrgans(2)
+        orgs_ = plant.getOrgans(2, False)
         all_ages.append(np.array([org.getAge()/yr_to_BEDD for org in orgs_]))
         all_lengths.append(np.array([org.getLength() for org in orgs_]))
         all_alive_long.append(np.array([org.isAlive() for org in orgs_ if org.param().subType in long_root_types]))

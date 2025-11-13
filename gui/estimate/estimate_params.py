@@ -39,7 +39,7 @@ def target_rate(rate, lengths:np.array, r:float, lmax:float, times:float):
         for i in range(0, nn):
             ages.append(min(max(times[ii] - (i + 1) * rate, 0.), times[ii]))
             lengths2.append(lengths[ii][i])
-    # print('target rate', rate, np.array(lengths2), np.array(ages))
+    # # print()('target rate', rate, np.array(lengths2), np.array(ages))
     x = target_length(r, lmax, np.array(lengths2), np.array(ages))
     return x
 
@@ -65,11 +65,11 @@ def fit_taproot_r(length, times, k):
     return res.x[0], f(res.x[0])
 
 
-def fit_taproot_rk(length, times):
+def fit_taproot_rk(length, times, x0 = [5., 200]):
     """ fits initial growth rate r, and maximal root lenght k """
     assert(len(length) == len(times))
     f = lambda x: target_length(x[0], x[1], np.array(length), np.array(times))
-    x0 = [5., 200]
+    
     res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
     return res.x[0], res.x[1], f(res.x)
 

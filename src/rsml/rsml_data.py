@@ -61,7 +61,7 @@ class RsmlData:
         """
         polylines, properties, functions, metadata = rsml_reader.read_rsml(fname)
         # if metadata.software == "archisimple":
-        #     print("DataModel.open_rsml(): special rules for archisimple: switch -y and z")
+        #     # print("DataModel.open_rsml(): special rules for archisimple: switch -y and z")
         #     new_polylines = []
         #     for pl in polylines:
         #         pl_ = []
@@ -71,7 +71,7 @@ class RsmlData:
         #         new_polylines.append(pl_)
         #     polylines = new_polylines
 
-        print("DataModel.open_rsml(): scale to cm", metadata.scale_to_cm)
+        # print("DataModel.open_rsml(): scale to cm", metadata.scale_to_cm)
         self.set_rsml(polylines, properties, functions, metadata)
         self.scale_polylines_()  # converts units
         self.check_polylines_2d_(shift_z)  # 2d -> 3d
@@ -96,7 +96,7 @@ class RsmlData:
         maxz = np.max(nodes[:, 2])
         minz = np.min(nodes[:, 2])
         if maxz >= 0 and minz >= 0:  # image coordinates in px often start in lower left corner
-            print("DataModel.check_polylines_2d_(): assuming image coordinates, y-centered and z-flipped ")
+            # print("DataModel.check_polylines_2d_(): assuming image coordinates, y-centered and z-flipped ")
             miny = np.min(nodes[:, 1])
             yy = np.max(nodes[:, 1]) - miny
             for pl in self.polylines:  # both (pl and node) are references
@@ -104,9 +104,9 @@ class RsmlData:
                     node[2] = -node[2]
                     node[1] = node[1] - miny - yy / 2
         if shift_z:
-            print("DataModel.check_polylines_2d_(): root system seed is shifted to (x,y,-3) ")
+            # print("DataModel.check_polylines_2d_(): root system seed is shifted to (x,y,-3) ")
             z = self.polylines[0][0][2]
-            print("z", z)
+            # print("z", z)
             for pl in self.polylines:  # both (pl and node) are references
                 for node in pl:
                     node[2] = node[2] - z + (-3)
@@ -131,7 +131,7 @@ class RsmlData:
         if self.metadata.software == "archisimple":
             r_scale = scale
             extra_str = " (archisimple)"
-        print("DataModel.scale_selected_():radius length scale" + extra_str, r_scale)
+        # print("DataModel.scale_selected_():radius length scale" + extra_str, r_scale)
         for i in range (0, len(self.radii)):
             self.radii[i] *= r_scale
         # creation times
@@ -139,7 +139,7 @@ class RsmlData:
         if self.tagnames[1]:
             if self.tagnames[1] in self.metadata.properties:
                 cts_scale = self.scales_[self.metadata.properties[self.tagnames[1]].unit]
-                print("DataModel.scale_rsml() temporal scale", cts_scale)
+                # print("DataModel.scale_rsml() temporal scale", cts_scale)
         for i in range (0, len(self.cts)):
             self.cts[i] *= cts_scale
         # types

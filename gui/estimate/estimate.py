@@ -283,8 +283,8 @@ class App:
         """ menu item: save cplantbox parameters """
         if self.data:
             fname = tkinter.filedialog.asksaveasfilename(defaultextension = ".xml")
-            print(fname)
-            print(type(fname))
+            # print()(fname)
+            # print()(type(fname))
             if isinstance(fname, str):
                 if fname:
                     self.data.write_parameters(fname)

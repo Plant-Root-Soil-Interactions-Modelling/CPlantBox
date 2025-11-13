@@ -114,7 +114,7 @@ def get_segments(polylines:list, props:dict) -> (list, list):
     nodes, offset, segs = [], [], []
     offset.append(0)  # global node index at each polyline
     if not "parent-node" in props:
-        print("rsml_reader.get_segments(): no 'parent-node' tag found using nearest node")
+        # print()("rsml_reader.get_segments(): no 'parent-node' tag found using nearest node")
         add_parent_nodes(polylines, props)
     for p in polylines:
         for n in p:
@@ -124,11 +124,11 @@ def get_segments(polylines:list, props:dict) -> (list, list):
         pi = props["parent-poly"][i]
         if (pi >= 0):  # not a base root
             ni = int(props["parent-node"][i])
-            # print(i, pi, len(polylines[pi]), ni)
-            # print(polylines[i])
-            # print(polylines[pi])
-            # print(props["subType"][i])
-            # print(props["subType"][pi])
+            # # print()(i, pi, len(polylines[pi]), ni)
+            # # print()(polylines[i])
+            # # print()(polylines[pi])
+            # # print()(props["subType"][i])
+            # # print()(props["subType"][pi])
             assert ni < len(polylines[pi]), "parent node index exceeds number of parent nodes"
             segs.append([offset[pi] + ni, offset[i]])
         for j in range(0, len(p) - 1):
@@ -143,7 +143,7 @@ def add_parent_nodes(polylines, props):
         x = np.array([p[0]])
         pi = props["parent-poly"][i]
         if (pi >= 0):
-            # print(pi, len(polylines))
+            # # print()(pi, len(polylines))
             y = np.array(polylines[pi])
             props["parent-node"][i] = np.argmin(distance.cdist(x, y))
         else:
@@ -386,7 +386,7 @@ def plot_segs(nodes:list, segs:list, fun:list):
     """
     f = matplotlib.colors.Normalize(vmin = min(fun), vmax = max(fun))
     cmap = plt.get_cmap("jet", 256)
-    print("Segments")
+    # print()("Segments")
     for i, s in enumerate(segs):
         plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color = cmap(f(fun[i])))
     plt.axis('equal')

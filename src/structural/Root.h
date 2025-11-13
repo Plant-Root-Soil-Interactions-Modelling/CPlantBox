@@ -60,6 +60,7 @@ public:
 	void deactivateChildren() ;
 	void killChildren() ;
 	int lignificationStatus() override;
+	int getDecayStatus();
 //protected:
     //std::vector<double> segRadii; ///< node creation times [days]
 };

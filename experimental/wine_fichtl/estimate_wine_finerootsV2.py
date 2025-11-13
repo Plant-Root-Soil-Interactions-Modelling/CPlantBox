@@ -86,7 +86,7 @@ def rootAge(l, r, k):  # root age at a certain length
 def checkData(year):
     genotype = "E" # "D" "E"
     file_path = "./rsml/RSML_year"+str(year)+"/"
-
+    file_names = [];rootsystem_age=[]
     file_names.extend([name for name in os.listdir(file_path) if name[0] == genotype ]) # repetitions of same genotype
     rootsystem_age.extend([365*year for _ in range(len(file_names))])  # days
 
@@ -102,15 +102,15 @@ def checkData(year):
     """ 
         open rsml files 
     """
-    data = EstimateDataModel()  # new data model
+    data = EstimateDataModel(10)  # new data model
     data.open_files(file_path, file_names)  # open rmsl
     data.times = rootsystem_age  # initialize
     for i in range(0, len(data.times)):
         data.estimates[i] = {}
-    print("***********\n\n\n\n")
-    print(data.rsmls[0].properties['parent-poly'])
-    print(data.rsmls[0].properties.keys())
-    raise Exception
+    # print("***********\n\n\n\n")
+    # print(data.rsmls[0].properties['parent-poly'])
+    # print(data.rsmls[0].properties.keys())
+    # raise Exception
     # all_types = []  # flatten all type2 lengths
     # for i in range(0, len(file_names)):
         # all_types.extend(np.array(data.rsmls[i].properties["order"]))
@@ -151,19 +151,19 @@ def checkData(year):
     # fine roots: 0.07178061695802503 of year 1
     # fine roots: 0.01777865528453766 of year 2
     # fine roots: 0.0005035465969174654 of year 48
-    print(sum(root_lengths[fine_roots])/sum(root_lengths))
+    print('ratio fine roots',sum(root_lengths[fine_roots])/sum(root_lengths))
     order = 1
     # fig, ax = plt.subplots(1, 1, figsize = (9, 8))
     # plt.scatter(root_diameter[root_order == order], 
                     # root_lengths[root_order == order], label=order)
     # plt.legend()
     # plt.show()
-    order = 1
-    fig, ax = plt.subplots(1, 1, figsize = (9, 8))
-    plt.scatter(root_age[root_order == order], 
-                    root_lengths[root_order == order], label=order)
-    plt.legend()
-    plt.show()
+    # order = 1
+    # fig, ax = plt.subplots(1, 1, figsize = (9, 8))
+    # plt.scatter(root_age[root_order == order], 
+                    # root_lengths[root_order == order], label=order)
+    # plt.legend()
+    # plt.show()
     return sum(root_lengths[fine_roots])/sum(root_lengths), root_order[root_age > 1]#[~fine_roots]
     
 # def checkData(year):
@@ -187,7 +187,7 @@ def checkData(year):
         # root_diameter =  np.array([np.mean(x) for x in root_diameter])
         # print(file_names[i],sum(root_order==1))
 
-#ratioy1, num1y1 = checkData(1)
+ratioy1, num1y1 = checkData(1)
 ratioy2, num1y2 = checkData(2)
 print(ratioy1, sum(num1y1==1))
 print(ratioy2, sum(num1y2==1))
