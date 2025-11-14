@@ -6,9 +6,25 @@ import numpy as np
 from scipy import sparse
 from plantbox import MappedPlant
 
+class MappedPlantPython:
+    def __init__(self, base=None):
+        import plantbox
+        if base is None:
+            self._base = plantbox.MappedPlant()
+        else:
+            self._base = base # for backward compatibility
 
-class MappedPlantPython(MappedPlant):
+    def __getattr__(self, name):
+        # for backward compatibility
+        return getattr(self._base, name)
 
+    def __setattr__(self, name, value):
+        # for backward compatibility
+        if name == "_base" or name.startswith("__"):
+            super().__setattr__(name, value)
+        else:
+            setattr(self._base, name, value)
+            
     def toNumpy(self,cpbArray):
         """ converts the cpbArray to a numpy array """
         return np.array(list(map(lambda x: np.array(x), cpbArray)))
