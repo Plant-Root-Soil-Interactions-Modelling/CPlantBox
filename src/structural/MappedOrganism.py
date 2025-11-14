@@ -8,9 +8,8 @@ from plantbox import MappedPlant
 
 class MappedPlantPython:
     def __init__(self, base=None):
-        import plantbox
         if base is None:
-            self._base = plantbox.MappedPlant()
+            self._base = MappedPlant()
         else:
             self._base = base # for backward compatibility
 
