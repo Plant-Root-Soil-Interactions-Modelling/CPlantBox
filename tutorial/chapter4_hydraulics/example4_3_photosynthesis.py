@@ -1,5 +1,5 @@
 """ Example of the photosynthesis module, using real data from the Selhausen lysimeter setup """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")  # |\label{l43:imports}|
+import sys; sys.path.append("../"); sys.path.append("../.."); sys.path.append("../../src/")  # |\label{l43:imports}|
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import pandas as pd
@@ -7,7 +7,7 @@ import numpy as np
 import plantbox as pb
 import visualisation.vtk_plot as vp
 from datetime import datetime 
-from matplotlib.dates import DateFormatter, HourLocator
+from matplotlib.dates import DateFormatter, HourLocator; import figure_style
 from functional.PlantHydraulicParameters import PlantHydraulicParameters
 from functional.Photosynthesis import PhotosynthesisPython  # |\label{l43:importsPhotosynthesis}|
 
@@ -124,3 +124,4 @@ with plt.rc_context({
         fig.autofmt_xdate()
         
     plt.show()
+
