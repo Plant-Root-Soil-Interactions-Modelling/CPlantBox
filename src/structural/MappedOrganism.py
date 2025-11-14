@@ -4,35 +4,47 @@ to add functionality that is easier implemented in Python
 """
 import numpy as np
 from scipy import sparse
+from plantbox import MappedPlant
 
+class MappedPlantPython:
+    def __init__(self, base=None):
+        if base is None:
+            self._base = MappedPlant()
+        else:
+            self._base = base # for backward compatibility
 
-class MappedPlantPython():
+    def __getattr__(self, name):
+        # for backward compatibility
+        return getattr(self._base, name)
 
-    def __init__(self, ms):
-        """ @param ms (MappedPlant, MappedSegments, or MappedOrganism) to be wrapped """
-        self.ms = ms
-
+    def __setattr__(self, name, value):
+        # for backward compatibility
+        if name == "_base" or name.startswith("__"):
+            super().__setattr__(name, value)
+        else:
+            setattr(self._base, name, value)
+            
     def toNumpy(self,cpbArray):
         """ converts the cpbArray to a numpy array """
         return np.array(list(map(lambda x: np.array(x), cpbArray)))
         
     def get_nodes(self):
         """ converts the list of Vector3d to a 2D numpy array """
-        return np.array(list(map(lambda x: np.array(x), self.ms.nodes)))
+        return np.array(list(map(lambda x: np.array(x), self.nodes)))
 
     def get_segments(self):
         """ converts the list of Vector2i to a 2D numpy array """
-        return np.array(list(map(lambda x: np.array(x), self.ms.segments)), dtype = np.int64)
+        return np.array(list(map(lambda x: np.array(x), self.segments)), dtype = np.int64)
 
     def get_subtypes(self):
         """ segment sub types as numpy array """
-        return np.array(self.ms.subTypes)
+        return np.array(self.subTypes)
 
     def get_ages(self, final_age = -1.):
         """ converts the list of nodeCT to a numpy array of segment ages
         @param final_age [day]         current root system age, (default = 0 means detect maximum from nodeCT)
         """
-        cts = np.array(self.ms.nodeCTs)
+        cts = np.array(self.nodeCTs)
         if final_age == -1.:
             final_age = np.max(cts)
         node_ages = final_age * np.ones(cts.shape) - cts  # from creation time to age
@@ -67,7 +79,7 @@ class MappedPlantPython():
         
     def get_organ_types(self):
         """ segment organ types as numpy array """
-        return np.array(self.ms.organTypes)
+        return np.array(self.organTypes)
 
     def get_organ_nodes_tips(self):
         """ return index of nodes at the end of each organ """
@@ -92,10 +104,15 @@ class MappedPlantPython():
         tipstems = tipstems - np.ones(tipstems.shape, dtype = np.int64)  # segIndx = seg.y -1
         tipleaves = tipleaves - np.ones(tipleaves.shape, dtype = np.int64)  # segIndx = seg.y -1
         return tiproots, tipstems, tipleaves
+        
+    def get_root_tips(self):
+        tiproots = self.get_organ_nodes_tips()[0]
+        nodes = self.get_nodes()
+        return nodes[tiproots]
 
     def collar_index(self):
         """ returns the segment index of the collar segment """
-        segs = self.ms.segments
+        segs = self.segments
         for i, s in enumerate(segs):
             if s.x == 0:
                 return i
@@ -139,9 +156,9 @@ class MappedPlantPython():
     def get_incidence_matrix(self):
         """ returns the incidence matrix (number of segments)x(number of nodes) of the root system in self.ms 
         """
-        segs = self.ms.segments
+        segs = self.segments
         sn = len(segs)
-        nn = self.ms.getNumberOfMappedNodes()  
+        nn = self.getNumberOfMappedNodes()  
         # ii_, jj_, vv_ = [], [], []
         # for i, s in enumerate(segs):  # build incidence matrix from edges
         #     ii_.append(i)
@@ -177,8 +194,8 @@ class MappedPlantPython():
             a list matrix2soil which maps soil_matrix_index to soil_cell_index
         """
         soil2matrix = {}
-        seg2cell = self.ms.seg2cell
-        segs = self.ms.segments
+        seg2cell = self.seg2cell
+        segs = self.segments
         ns = len(segs)
         smi = 0  # soil matrix index
         ii_, jj_ = [], []
