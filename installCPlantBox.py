@@ -130,7 +130,7 @@ os.chdir("CPlantBox")
 
 subprocess.run(['git', 'submodule', 'update', '--recursive', '--init'])
 subprocess.run(['cmake', '.'])
-subprocess.run(['make install'])
+subprocess.run(['make', 'install'])
 os.chdir("..")
 
 show_message("(2/2) Step completed. Succesfully configured and built CPlantBox.")
@@ -138,4 +138,5 @@ show_message("(2/2) Step completed. Succesfully configured and built CPlantBox."
 show_message("to test installation, run \n cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
 
 show_message("CPlantBox is currently at stable branch, use \n $git switch master \n to obtain the latest version, use cmake . & make to recompile")
+
 
