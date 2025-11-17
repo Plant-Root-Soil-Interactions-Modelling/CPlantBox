@@ -150,7 +150,7 @@ os.chdir("CPlantBox")
 
 subprocess.run(['git', 'submodule', 'update', '--recursive', '--init'])
 subprocess.run(['cmake', '.'])
-subprocess.run(['make install'])
+subprocess.run(['make', 'install'])
 os.chdir("..")
 
 # run dunecontrol
