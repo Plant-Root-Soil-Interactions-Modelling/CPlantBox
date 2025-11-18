@@ -4,8 +4,8 @@
 //#include <armadillo>
 //#include <algorithm>
 #include <set>
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Sparse>
+#include <eigen/Eigen/Dense>
+#include <eigen/Eigen/Sparse>
 #include <iostream>
 #include <fstream>
 

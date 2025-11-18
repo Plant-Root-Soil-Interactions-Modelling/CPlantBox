@@ -8,8 +8,8 @@
 #include <iostream>
 #include <fstream>
 
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Sparse>
+#include <eigen/Eigen/Dense>
+#include <eigen/Eigen/Sparse>
 
 namespace CPlantBox {
 
