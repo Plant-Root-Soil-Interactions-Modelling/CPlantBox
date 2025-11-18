@@ -24,10 +24,10 @@ class SeedSpecificParameter :public OrganSpecificParameter
 {
 
 public:
-    SeedSpecificParameter():SeedSpecificParameter(0,Vector3d(0.,0.,-3), 1.e9, 1.e9, 0, 0., 1.e9, 1.e9, 1.e9, 1., 0, 30.) { }; ///< Default constructor
-    SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nC, double fSB, double dSB, double dRC,
+    SeedSpecificParameter():SeedSpecificParameter(0,Vector3d(0.,0.,-3), 1.e9, 1.e9, 0, 0., 10., 1.e9, 1.e9, 1.e9, 1., 0, 30.) { }; ///< Default constructor
+    SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nC,  int maxC, double fSB, double dSB, double dRC,
         double nz, int maxtil, double simtime,  double fTi = 0., double dTi = 0.):
-            OrganSpecificParameter(type, 0.), seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), firstSB(fSB), delaySB(dSB),
+            OrganSpecificParameter(type, 0.), seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), maxC(maxC), firstSB(fSB), delaySB(dSB),
             delayRC(dRC), nz(nz), maxTil(maxtil), firstTi(fTi), delayTi(dTi),  simtime(simtime) {  };
     virtual ~SeedSpecificParameter() { };
 
@@ -43,6 +43,7 @@ public:
 
     //Shoot borne roots (crown roots)
     int nC;             ///< Maximal number of roots per root crown [1]
+	int maxC;			///< Maximal number of root crowns [1]
     double firstSB;     ///< First emergence of a shoot borne root [day]
     double delaySB;     ///< Time delay between the shoot borne roots [day]
     double delayRC;     ///< Delay between the root crowns [day]
@@ -92,8 +93,10 @@ public:
     double maxBs = 0.;     ///< Standard deviation of maximal number of basal roots [1]
 
     // Shoot borne roots (crown roots)
-    double nC = 0.;        ///< Mean maximal number of roots per root crown [1]
+    double nC = 10.;        ///< Mean maximal number of roots per root crown [1]
     double nCs = 0.;       ///< Standard deviation of maximal number of roots per root crown [1]
+    double maxC = 0.;        ///< Mean maximal number of root crowns [1]
+    double maxCs = 0.;       ///< Standard deviation of maximal number of root crowns [1]
     double firstSB = 1.e9; ///< Mean first emergence of a shoot borne root [day]
     double firstSBs = 0.;  ///< Standard deviation of first emergence of a shoot borne root [day]
     double delaySB = 1.e9; ///< Mean time delay between the shoot borne roots [day]

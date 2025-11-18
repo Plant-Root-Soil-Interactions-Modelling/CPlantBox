@@ -63,7 +63,7 @@ void Seed::initialize(bool verbose)
 	/*
 	 * Create roots
 	 */
-	const double maxT = 90.; // maximal simulation time
+	const double maxT = 240.; // maximal simulation time
 	auto sp = this->param(); // rename (SeedSpecificParameter)
 
 	// Taproot
@@ -125,7 +125,8 @@ void Seed::initialize(bool verbose)
 			}
 			Vector3d sbpos = sp->seedPos;
 			sbpos.z=sbpos.z/2.; // half way up the mesocotyl
-			numberOfRootCrowns = ceil((maxT-sp->firstSB)/sp->delayRC); // maximal number of root crowns
+			double maxC = (sp->maxC);
+			numberOfRootCrowns = std::min(ceil((maxT-sp->firstSB)/sp->delayRC),maxC); // maximal number of root crowns
 			double delay = sp->firstSB;
 			for (int i=0; i<numberOfRootCrowns; i++) {
 				std::shared_ptr<Organ>  shootborne0 = createRoot(plant.lock(), shootborneType, delay);
