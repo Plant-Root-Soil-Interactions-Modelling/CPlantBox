@@ -10,7 +10,7 @@
         <!--Time delay between the shoot borne roots [day]-->
         <parameter name="firstB" value="3"/>
         <!--Emergence of first basal root [day]-->
-        <parameter name="firstSB" value="35"/>
+        <parameter name="firstSB" value="25"/>
         <!--First emergence of a shoot borne root [day]-->
         <parameter name="maxB" value="13"/>
         <!--Maximal number of basal roots [1]-->
@@ -70,7 +70,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.015"/>
+        <parameter name="a" value="0.013"/>
         <!--Root radius [cm]-->
         <parameter name="colorB" value="0"/>
         <!--Root color, blue component [0.-1.]-->
@@ -156,7 +156,7 @@
         <!--Basal zone [cm]-->
         <parameter name="lmax" value="90"/>
         <!--Maximal root length [cm]-->
-        <parameter name="ln" value="0.6"/>
+        <parameter name="ln" value="0.5"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="r" value="3"/>
         <!--Initial growth rate [cm day-1]-->
