@@ -48,7 +48,7 @@ conda env create -f environment.yml
 conda activate cpb
 git submodule update --init --recursive
 cmake .
-make
+make install
 ```
 
 3. Test the installation by running a tutorial example, e.g.:
