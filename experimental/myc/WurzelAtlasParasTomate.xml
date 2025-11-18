@@ -15,7 +15,7 @@
         <parameter name="hairsLength" value="0"/>
         <!--Root hair length [cm]-->
         <parameter name="hairsZone" value="0"/>
-        <!--Length of the root hair zone [cm]-->
+        <!--Length of the root hair zone [cm]--> 
         <parameter name="la" value="10.735096"/>
         <!--Apical zone [cm]-->
         <parameter name="lb" value="1.1839136"/>
