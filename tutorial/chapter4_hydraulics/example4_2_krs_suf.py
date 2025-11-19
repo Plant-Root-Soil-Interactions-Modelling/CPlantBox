@@ -1,15 +1,13 @@
 """ Whole root system conductance (Krs) for different root architectures and SUF depth profiles"""
 
-import sys; sys.path.append("../"); sys.path.append("../.."); sys.path.append("../../src/")
-
-import csv
+import csv  # |\label{l42:imports}|
 import matplotlib.pyplot as plt
 import numpy as np
 import plantbox as pb
-from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier  # |\label{l42:imports_end}|
-from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports}|
+from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports_end}|
 
-""" Simulation parameters """  # |\label{l42:parameters}|
+# Simulation parameters   # |\label{l42:parameters}|
 simtime = 70  # simulate from day 1 to 70
 dt = 1
 
@@ -22,7 +20,7 @@ architectures = [  # |\label{l42:architecture}|
 
 path = "../../modelparameter/structural/rootsystem/"  # |\label{l42:architecture_end}|
 
-""" Root hydraulic properties """  # |\label{l42:roothydraulics}|
+# Root hydraulic properties  # |\label{l42:roothydraulics}|
 param = PlantHydraulicParameters()
 
 kr0 = np.array([[0., 2.2e-4], [12.5, 2.2e-4], [20.9, 8.0e-5], [44.6, 8.0e-5], [62.7, 1.9e-5], [100, 1.9e-5]])
@@ -35,14 +33,12 @@ kx1 = np.array([[0, 1.e-4], [9, 2.e-4], [13, 6.e-4], [20, 1.73e-3], [25, 1.73e-3
 param.set_kx_age_dependent(kx0[:, 0], kx0[:, 1], subType = [1, 4])
 param.set_kx_age_dependent(kx1[:, 0], kx1[:, 1], subType = [2, 3])  # |\label{l42:roothydraulics_end}|
 
-""" Simulation loop"""  # |\label{l42:sim_start}|
+# Simulation loop # |\label{l42:sim_start}|
 krs_all = []
 lengths = []
 surfaces = []
 csv_data = []
-
-# To store suf depth profiles for all architectures at final simtime
-suf_profiles = []
+suf_profiles = []  # To store suf depth profiles at final simulation time
 
 for name in architectures:
     print(f"\nSimulating: {name}")
@@ -92,12 +88,10 @@ for name in architectures:
     nonzero_indices = np.where(suf_array > 0)[0]
     if len(nonzero_indices) > 0:
         suf_profiles.append((suf_array[nonzero_indices], depth_array[nonzero_indices]))
-    else:
-        # fallback if no roots (shouldn't normally happen)
+    else:  # fallback if no roots (shouldn't normally happen)
         suf_profiles.append((suf_array, depth_array))  # |\label{l42:suf_filter_end}|
 
-""" Plotting """
-
+# Plotting
 n_arch = len(architectures)  # |\label{l42:plotting_krs}|
 
 fig_krs, axes_krs = plt.subplots(1, n_arch, figsize = (5 * n_arch, 4), sharey = True)
@@ -136,16 +130,15 @@ for i, ax in enumerate(axes_suf):
 plt.tight_layout()
 plt.show()  # |\label{l42:plotting_suf_krs}|
 
+# Printing summary and saving outputs
 print("\nSummary:")  # |\label{l42:summary}|
 for i, name in enumerate(architectures):
     print(f"{name:20s} | Total root length: {lengths[i]:8.2f} cm | Surface area: {surfaces[i]:8.2f} cm2")
 
-# Write CSV
-csv_file = "results/krs_length_surface.csv"
-with open(csv_file, mode = "w", newline = "") as f:
+csv_file = "results/krs_length_surface.csv"  # write CSV
+with open(csv_file, mode = "w", newline = "", encoding = "utf-8") as f:
     writer = csv.writer(f)
     writer.writerow(["architecture", "day", "krs", "length", "surface"])
     writer.writerows(csv_data)
 
 print(f"\nSaved results to: {csv_file}")  # |\label{l42:summary_end}|
-
