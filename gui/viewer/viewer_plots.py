@@ -1,7 +1,7 @@
 import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
 
 import plantbox as pb
-import functional.xylem_flux
+import plantbox.functional.xylem_flux
 import viewer_conductivities
 
 import numpy as np

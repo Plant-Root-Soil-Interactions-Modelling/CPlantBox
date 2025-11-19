@@ -8,10 +8,10 @@ import sys; sys.path.append("../../..");  sys.path.append("../../../src")
 
 import plantbox as pb
 
-from functional.PlantHydraulicModel import HydraulicModel_Doussan
-from functional.PlantHydraulicModel import HydraulicModel_Meunier
-from functional.PlantHydraulicParameters import PlantHydraulicParameters
-import visualisation.vtk_plot as vp
+from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
+from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
+import plantbox.visualisation.vtk_plot as vp
 
 import numpy as np
 import matplotlib.pyplot as plt

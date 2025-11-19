@@ -1,8 +1,8 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
-import functional.xylem_flux as xylem_flux
-import visualisation.vtk_plot as vp
-import visualisation.vtk_tools as vt
+import plantbox.functional.xylem_flux as xylem_flux
+import plantbox.visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_tools as vt
 from viewer_data import ViewerDataModel
 import viewer_plots
 import viewer_conductivities

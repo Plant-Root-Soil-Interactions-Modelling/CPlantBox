@@ -5,11 +5,11 @@ from matplotlib.ticker import MaxNLocator
 import pandas as pd
 import numpy as np 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 from datetime import datetime 
 from matplotlib.dates import DateFormatter, HourLocator; import figure_style
-from functional.PlantHydraulicParameters import PlantHydraulicParameters
-from functional.Photosynthesis import PhotosynthesisPython  # |\label{l43:importsPhotosynthesis}|
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
+from plantbox.functional.Photosynthesis import PhotosynthesisPython  # |\label{l43:importsPhotosynthesis}|
 
 def getWeatherData(sim_time):
     diffDt = abs(pd.to_timedelta(weatherData['time']) - pd.to_timedelta(sim_time % 1,unit='d'))

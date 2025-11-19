@@ -1,5 +1,7 @@
+"""Small example"""
+
 import plantbox as pb  # |\label{l13:cplantbox}|
-import visualisation.vtk_plot as vp  # |\label{l13:vtk_plot}|
+import plantbox.visualisation.vtk_plot as vp  # |\label{l13:vtk_plot}|
 
 plant = pb.Plant()  # Create a new plant |\label{l13:plant}|
 

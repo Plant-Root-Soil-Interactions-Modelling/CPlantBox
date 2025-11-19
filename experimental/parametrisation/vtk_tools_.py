@@ -1,6 +1,6 @@
 import vtk
 import numpy as np
-# from rsml_writer import write_rsml # to write a rsml
+# from plantbox.rsml_writer import write_rsml # to write a rsml
 
 """ 
 VTK Tools, by Daniel Leitner (refurbished 6/2020) 

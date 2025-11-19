@@ -2,7 +2,7 @@ import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
 
 import plantbox as pb
-from rsml.rsml_reader import *
+from plantbox.rsml.rsml_reader import *
 
 import matplotlib.pyplot as plt
 

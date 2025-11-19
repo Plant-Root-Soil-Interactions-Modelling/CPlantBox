@@ -8,7 +8,7 @@ Jun-2025
 
 
 import plantbox as pb
-#import visualisation.vtk_plot as vp
+#import plantbox.visualisation.vtk_plot as vp
 
 rs = pb.Plant()
 

@@ -3,9 +3,9 @@
 import sys; sys.path.append("../"); sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
-from functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports}|
-from functional.PlantHydraulicModel import HydraulicModel_Meunier  # |\label{l42:imports_end}|
+import plantbox.visualisation.vtk_plot as vp
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports}|
+from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier  # |\label{l42:imports_end}|
 
 import numpy as np
 import matplotlib.pyplot as plt

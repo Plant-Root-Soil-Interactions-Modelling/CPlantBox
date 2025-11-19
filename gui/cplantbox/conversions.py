@@ -4,7 +4,7 @@ from vtk.util import numpy_support
 import numpy as np
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 from vtk_conversions import *
 

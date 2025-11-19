@@ -2,10 +2,10 @@ import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
 
 import plantbox as pb
-import rsml.rsml_reader as rsml_reader
-import rsml.rsml_writer as rsml_writer
-import visualisation.vtk_tools as vt
-import visualisation.vtk_plot as vp
+import plantbox.rsml.rsml_reader as rsml_reader
+import plantbox.rsml.rsml_writer as rsml_writer
+import plantbox.visualisation.vtk_tools as vt
+import plantbox.visualisation.vtk_plot as vp
 
 import matplotlib.pyplot as plt
 import numpy as np

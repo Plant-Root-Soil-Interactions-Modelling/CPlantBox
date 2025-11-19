@@ -6,9 +6,7 @@ adapted from installdumux.py of the Dumux developers
 """
 import os
 import sys
-import shutil
 import subprocess
-import fileinput
 
 
 def show_message(message):
@@ -17,38 +15,10 @@ def show_message(message):
     print("*" * 120)
 
 
-def run_command(command):
-    with open("../installDumuxRosi.log", "a") as log:
-        popen = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE, universal_newlines = True)
-        for line in popen.stdout:
-            log.write(line)
-            print(line, end = '')
-        for line in popen.stderr:
-            log.write(line)
-            print(line, end = '')
-        popen.stdout.close()
-        popen.stderr.close()
-        return_code = popen.wait()
-        if return_code:
-            print("\n")
-            message = "\n    (Error) The command {} returned with non-zero exit code\n".format(command)
-            message += "\n    If you can't fix the problem yourself consider reporting your issue\n"
-            message += "    on the mailing list (dumux@listserv.uni-stuttgart.de) and attach the file 'installdumux.log'\n"
-            show_message(message)
-            sys.exit(1)
-
-
-def git_clone(url, branch = None):
-    clone = ["git", "clone"]
-    if branch:
-        clone += ["-b", branch]
-    result = run_command(command = [*clone, url])
-
-
 # clear the log file
-open('installDumuxRosi.log', 'w').close()
+open('installCPlantBox.log', 'w').close()
 
-show_message("do not forget to run \nsudo apt update \nsudo apt upgrade")
+show_message("Do not forget to run \nsudo apt update \nsudo apt upgrade")
 show_message("We recommend you to setup CPlantBox in a virtual environment by running\npython3 -m venv cpbenv\nsource cpbenv/bin/activate")
 
 #################################################################
@@ -75,8 +45,8 @@ for program in programs:
 # tried to make evaluation automatic but not sure it holds on all machines
 isCluster = ('ENV' in os.environ.keys())
 
-programs = ['default-jre', 'libeigen3-dev' , 'python3-pip', 'openmpi-bin', 'libopenmpi-dev', 'python3-tk', 'libqt5x11extras5', 'libx11-dev']  #
-# sudo apt install openmpi-bin libopenmpi-dev
+programs = ['default-jre', 'libeigen3-dev' , 'python3-pip', 'openmpi-bin', 'libopenmpi-dev', 'python3-tk', 'libqt5x11extras5', 'libx11-dev']
+
 if not isCluster:
     programs.append('libboost-all-dev')
 
@@ -96,6 +66,7 @@ show_message("(1/2) (b) Checking python prerequistes: " + " ".join(modules) + ".
 for mymodule in modules:
     try:
         subprocess.run(["python3", "-m", "pip", "install", mymodule], check = True, text = True, capture_output = True)  # ,"-y"
+
     except subprocess.CalledProcessError as e:
         # Check for the "externally-managed-environment" error
         if "externally-managed-environment" in e.stderr:
@@ -107,27 +78,29 @@ for mymodule in modules:
             print(f"An error occurred: {e.stderr}")
         raise Exception
 
-# pip3 install --upgrade pip setuptools wheel # necessary?
 subprocess.run(["python3", "-m", "pip", "install", "--no-cache-dir", "mpi4py", "--verbose"])  # mpi4py can take a lot of time to install
 
 show_message("(1/2) Step completed. All prerequistes found.")
 
 #################################################################
 #################################################################
-# # (2/2) Clone modules
+# # (2/2) Clone CPlantBox
 #################################################################
 #################################################################
-# make a new folder containing everything
-# os.makedirs("./CPB", exist_ok=True)
-# os.chdir("CPB")
 
-# CPlantBox
 if not os.path.exists("CPlantBox"):
-    subprocess.run(['git', 'clone', '--depth', '1', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+    if len(sys.argv) < 2:
+        subprocess.run(['git', 'clone', '--depth', '1', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+    else:
+        if sys.argv[1] == "full":
+            subprocess.run(['git', 'clone', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+        else:
+            show_message(f"Warning: Unknown argument: {sys.argv[1]}")
+            subprocess.run(['git', 'clone', '--depth', '1', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
-os.chdir("CPlantBox")
 
+os.chdir("CPlantBox")
 subprocess.run(['git', 'submodule', 'update', '--recursive', '--init'])
 subprocess.run(['cmake', '.'])
 subprocess.run(['make', 'install'])
@@ -135,8 +108,7 @@ os.chdir("..")
 
 show_message("(2/2) Step completed. Succesfully configured and built CPlantBox.")
 
-show_message("to test installation, run \n cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
+show_message("To test installation, run \n cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
 
-show_message("CPlantBox is currently at stable branch, use \n $git switch master \n to obtain the latest version, use cmake . & make to recompile")
-
+show_message("CPlantBox was installed in your python environment (master branch), use 'cmake . & make install' to recompile")
 

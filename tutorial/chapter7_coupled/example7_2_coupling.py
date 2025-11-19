@@ -4,10 +4,10 @@ sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux 
 sys.path.append("../../../dumux-rosi/python/modules/")  # python wrappers
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
-from functional.PlantHydraulicParameters import PlantHydraulicParameters
-from functional.PlantHydraulicModel import HydraulicModel_Doussan
-from functional.PlantHydraulicModel import HydraulicModel_Meunier
+import plantbox.visualisation.vtk_plot as vp
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
+from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
+from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
 from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 from richards import RichardsWrapper  # Python part
 import numpy as np

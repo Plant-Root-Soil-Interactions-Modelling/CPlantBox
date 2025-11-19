@@ -6,7 +6,7 @@ import json
 
 import plantbox as pb
 from plantbox import PhloemFlux
-from functional.Photosynthesis import PhotosynthesisPython 
+from plantbox.functional.Photosynthesis import PhotosynthesisPython 
 
 
 

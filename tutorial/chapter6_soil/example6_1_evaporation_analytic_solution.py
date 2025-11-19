@@ -6,7 +6,7 @@ D. Leitner, 2018
 """
 import sys; sys.path.append("../modules"); sys.path.append("../../../CPlantBox");  sys.path.append("../../../CPlantBox/src")
 
-from functional.van_genuchten import *
+from plantbox.functional.van_genuchten import *
 
 import numpy as np
 from scipy import integrate

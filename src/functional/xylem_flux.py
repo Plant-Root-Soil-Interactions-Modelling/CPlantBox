@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 import plantbox as pb
 from plantbox import XylemFlux
-import rsml.rsml_reader as rsml
+import plantbox.rsml.rsml_reader as rsml
 
 
 def sinusoidal(t):

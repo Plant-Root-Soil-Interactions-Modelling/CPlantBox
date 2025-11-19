@@ -5,13 +5,13 @@ sys.path.append("../../../../dumux-rosi/python/modules/")  # python wrappers
 """ SRA example draft """
 import plantbox as pb
 
-from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
-from functional.perirhizal import PerirhizalPython  # Steady rate helper
-from functional.root_conductivities import *  # hard coded conductivities
-import functional.van_genuchten as vg
-from functional.xylem_flux import sinusoidal2
+from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+from plantbox.functional.perirhizal import PerirhizalPython  # Steady rate helper
+from plantbox.functional.root_conductivities import *  # hard coded conductivities
+import plantbox.functional.van_genuchten as vg
+from plantbox.functional.xylem_flux import sinusoidal2
 
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 from rosi_richards import RichardsSP  # RichardsSP  # C++ part (Dumux binding)
 from richards import RichardsWrapper  # Python part
