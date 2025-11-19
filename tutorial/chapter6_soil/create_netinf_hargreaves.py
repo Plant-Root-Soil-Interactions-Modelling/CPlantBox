@@ -6,10 +6,10 @@ download data from: TERENO (Eifel-Rur), Climate/Runoff/Water Quality station Rol
 (RO_AKRW_003.2007-01-01T00_00_00.2015-01-01T00_00_00.nc)
 """
 
-import xarray as xr
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import xarray as xr
 
 
 def calculate_et0_hargreaves(dates, tmin, tmax, latitude_deg):
@@ -117,7 +117,7 @@ def get_daily_precip(ds, start_date = 0, end_date = -1):
         precip = precip.dropna()
 
         # Check units
-        units = ds['PrecipitationAmount_Cum10min'].attrs.get('units', 'No units attribute found')
+        ds['PrecipitationAmount_Cum10min'].attrs.get('units', 'No units attribute found')
         # print(f"Units for station {station}: {units}")
 
         # Calculate incremental 10-min precipitation by differencing

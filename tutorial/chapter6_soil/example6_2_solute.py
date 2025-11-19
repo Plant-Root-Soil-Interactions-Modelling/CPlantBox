@@ -2,22 +2,17 @@
 Solute transport example - nitrate in movement in soil 
 """
 import sys; sys.path.append("../"); sys.path.append("../.."); sys.path.append("../../src/")
-sys.path.append("../../../dumux-rosi/python/modules"); sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/");
+sys.path.append("../../../dumux-rosi/python/modules"); sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")
 
 import datetime
-import pickle
+
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
-import figure_style
-
-import plantbox as pb  # CPlantBox
-from rosi_richardsnc import RichardsNCSP  # C++ part (Dumux binding), macroscopic soil model
-from rosi_richards import RichardsSP  # C++ part (Dumux binding), macroscopic soil model
 from richards import RichardsWrapper  # Python part, macroscopic soil model
-import plantbox.functional.van_genuchten as vg
+from rosi_richardsnc import RichardsNCSP  # C++ part (Dumux binding), macroscopic soil model
 
 
 def plot_results(h, c , times, net_inf, fw, depth = -100.):
@@ -28,7 +23,7 @@ def plot_results(h, c , times, net_inf, fw, depth = -100.):
     h = np.transpose(h)
     h = h[::-1,:]
     fig, ax = plt.subplots(3, 1, figsize = (18, 10), gridspec_kw = {'height_ratios': [1.5, 3, 3]})
-    bar = ax[0].bar(times[::2], -10 * (net_inf[::2] - np.array(fw)), 0.8)  # cm -> mm
+    ax[0].bar(times[::2], -10 * (net_inf[::2] - np.array(fw)), 0.8)  # cm -> mm
     ax[0].set_ylabel("net inf [mm/day]")
     ax[0].set_xlim(times[0] - 0.5, times[-1] + 0.5)
     divider = make_axes_locatable(ax[0])

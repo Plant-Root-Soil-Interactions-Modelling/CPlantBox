@@ -7,26 +7,25 @@
 # This example solves the Richards equation with DuMux. The github repository "dumux-rosi" (https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git) needs to be cloned
 # into the same path level as CPlantBox.
 
-import sys; sys.path.append("../modules"); sys.path.append("../../build-cmake/cpp/python_binding/");
+import sys; sys.path.append("../modules"); sys.path.append("../../build-cmake/cpp/python_binding/")
 # add paths to the folders containing CPlantBox and dumux-rosi
-import sys;  # |\label{l61:paths_a}|
-sys.path.append("../../../dumux-rosi/python/modules");
-sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/");
+import sys  # |\label{l61:paths_a}|
+
+sys.path.append("../../../dumux-rosi/python/modules")
+sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")
 sys.path.append("../../../CPlantBox/src")  # |\label{l61:paths_e}|
 
-from rosi_richards import RichardsSP  # C++ part (Dumux binding)
-from richards import RichardsWrapper  # Python part
 # from example6_2_evaporation_analytic_solution import *  # analytical solution
-
 import matplotlib.pyplot as plt
-import numpy as np
+from richards import RichardsWrapper  # Python part
+from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 # Define Van Genuchten and other parameters
 sand = [0.045, 0.43, 0.15, 3, 1000]  # |\label{l61:params_a}|
 loam = [0.08, 0.43, 0.04, 1.6, 50]
 clay = [0.1, 0.4, 0.01, 1.1, 10]
 soil = loam  # Select soil type for simulation   |\label{l61:params_e}|
-sim_time = 10;  # |\label{l61:simtime}|
+sim_time = 10  # |\label{l61:simtime}|
 N = 2000
 dt = sim_time / N  # time step [days]    |\label{l61:timestep}|
 ic = -200  # |\label{l61:ic}|

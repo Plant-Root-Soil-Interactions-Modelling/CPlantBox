@@ -435,7 +435,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
     def get_transpiration(self, sim_time, rx, rsx, cells = False, soil_k = []):
         """ actual transpiration [cm3 day-1], calculated as the sum of all radial fluxes"""
         return np.sum(self.radial_fluxes(sim_time, rx, rsx, cells, soil_k))
-        
+
     def radial_fluxes(self, sim_time, rx, rsx, cells = False, soil_k = []):
         """ returns the exact radial fluxes per segment (calls base class)
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
@@ -619,7 +619,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @return [cm] root matric potential per root system node  
         """
         self.update(sim_time)
-        #print('suf', self.suf.shape)
+        # print('suf', self.suf.shape)
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
         collar = self.get_collar_potential(t_act, rsx)
@@ -722,7 +722,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
     def get_soil_rootsystem_conductance(self, sim_time, h_bs, h_sr, sp):  # Vanderborgth et al. (2023), Eqn (12)
         """ The soil root system conductance per soil layer [day-1]
         
-        sim_time             simulation time in days
+        sim_time       simulation time in days
         h_bs           bulk soil matric potential
         h_sr           matric potential at the soil root interface   
         sp             soil parameter: van Genuchten parameter set (type vg.Parameters)           
