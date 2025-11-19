@@ -530,8 +530,8 @@ def plot_roots(pd, p_name:str,p_names = [], win_title:str = "", render:bool = Tr
         if interactiveImage:
             ren.Start()
     else:# filename:
-        path = "results/"
-        write_vtp(path + win_title + ".vtp", pd)
+        #path = "./results/"
+        write_vtp(win_title + ".vtp", pd)
 
     if returnLut:
         return plantActor, scalar_bar, lut
