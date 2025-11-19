@@ -162,22 +162,24 @@ set_target_properties(plantbox PROPERTIES
 )
 
 # Install plantbox module into Python site-packages
-install(TARGETS CPlantBox LIBRARY DESTINATION "${Python3_SITEARCH}") 
-install(TARGETS plantbox LIBRARY DESTINATION "${Python3_SITEARCH}")
+install(TARGETS CPlantBox LIBRARY DESTINATION "${Python3_SITEARCH}/plantbox") 
+install(TARGETS plantbox LIBRARY DESTINATION "${Python3_SITEARCH}/plantbox")
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/visualisation DESTINATION ${Python3_SITEARCH} 
+install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${Python3_SITEARCH}/plantbox)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/visualisation DESTINATION ${Python3_SITEARCH}/plantbox
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rsml DESTINATION ${Python3_SITEARCH}
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rsml DESTINATION ${Python3_SITEARCH}/plantbox
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/structural DESTINATION ${Python3_SITEARCH}
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/structural DESTINATION ${Python3_SITEARCH}/plantbox
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/functional DESTINATION ${Python3_SITEARCH}
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/functional DESTINATION ${Python3_SITEARCH}/plantbox
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
