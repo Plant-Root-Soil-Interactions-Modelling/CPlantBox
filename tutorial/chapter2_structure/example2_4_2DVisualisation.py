@@ -1,6 +1,7 @@
 """ 2D representation of a plant using Matplotlib"""
 
 import matplotlib.pyplot as plt  # |\label{l2_1g:importStart}|
+
 import plantbox as pb
 from plantbox.structural.MappedOrganism import MappedPlantPython  # |\label{l2_1g:importEnd}|
 

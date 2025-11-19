@@ -1,11 +1,13 @@
 """ Example of the photosynthesis module, using real data from the Selhausen lysimeter setup """
 
 from datetime import datetime  # |\label{l43:imports}|
+
 from matplotlib.dates import DateFormatter, HourLocator
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import numpy as np
 import pandas as pd
+
 import plantbox as pb
 from plantbox.functional.Photosynthesis import PhotosynthesisPython  # |\label{l43:importsPhotosynthesis}|
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters

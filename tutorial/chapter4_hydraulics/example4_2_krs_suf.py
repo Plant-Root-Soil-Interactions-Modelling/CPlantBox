@@ -1,8 +1,10 @@
 """ Whole root system conductance (Krs) for different root architectures and SUF depth profiles"""
 
 import csv  # |\label{l42:imports}|
+
 import matplotlib.pyplot as plt
 import numpy as np
+
 import plantbox as pb
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports_end}|

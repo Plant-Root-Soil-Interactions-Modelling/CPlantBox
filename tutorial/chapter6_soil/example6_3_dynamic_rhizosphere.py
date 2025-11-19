@@ -2,21 +2,15 @@
 Solute transport example - radially symmetric 1D model for nitrate uptake
 """
 import sys; sys.path.append("../"); sys.path.append("../../../CPlantBox/"); sys.path.append("../../../CPlantBox/src") # |\label{l63:lib_start}|
-sys.path.append("../../../dumux-rosi/python/modules"); sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/");
+sys.path.append("../../../dumux-rosi/python/modules"); sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")
 
-import datetime
-import pickle
-import matplotlib
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-import numpy as np
-import pandas as pd
 import matplotlib as mpl
-import plantbox as pb  # CPlantBox
-from plantbox.functional.xylem_flux import *  # root system Python hybrid solver
-from rosi_richardsnc_cyl import RichardsNCCylFoam   # C++ part (Dumux binding), macroscopic soil model
+import matplotlib.pyplot as plt
+import numpy as np
 from richards_flat import RichardsFlatWrapper  # Python part of cylindrcial
-import plantbox.functional.van_genuchten as vg # |\label{l63:lib_end}|
+from rosi_richardsnc_cyl import RichardsNCCylFoam  # C++ part (Dumux binding), macroscopic soil model
+
+from plantbox.functional.xylem_flux import *  # root system Python hybrid solver
 
 SMALL_SIZE = 20
 MEDIUM_SIZE = 20

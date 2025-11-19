@@ -11,21 +11,18 @@ exclude = ["examples", "figures", "jupyter", "latex", "__pycache__"]
 # Combine imports from the same module (e.g., "from x import a, b")
 combine-as-imports = true
 # combine-star = true
+known-first-party = ["plantbox","my_project"]
+# known-third-party = ["matplotlib", "numpy", "pyevtk"]
+section-order = ["standard-library", "third-party", "first-party", "local-folder"]
 
 # Keep all imports together (no blank lines between stdlib, third-party, local)
-no-sections = true
-
+# no-sections = true
 # Don’t leave blank lines between different import types
 lines-between-types = 0
-
 # Sort imports alphabetically within their section
 force-sort-within-sections = true
 
-# multi-line-output = 3  # 3 = Vertical Hanging Indent (compact)
-# include-trailing-comma = false
 
-# Optionally detect local imports by your package name
-known-first-party = ["my_project"]
 
 #
 # run ruff: 

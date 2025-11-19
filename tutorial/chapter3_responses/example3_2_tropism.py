@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 import plantbox as pb
 
 fig, axes = plt.subplots(4, 4, figsize = (15, 10))

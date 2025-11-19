@@ -8,16 +8,17 @@
 # into the same path level as CPlantBox.
 
 # add paths to the folders containing CPlantBox and dumux-rosi
-import sys;  # |\label{l61i:paths_a}|
-sys.path.append("../../../dumux-rosi/python/modules");
-sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/");
+import sys  # |\label{l61i:paths_a}|
+
+sys.path.append("../../../dumux-rosi/python/modules")
+sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")
 sys.path.append("../../../CPlantBox/src")  # |\label{l61i:paths_e}|
 
 import matplotlib.pyplot as plt  # |\label{l61i:bibs1_a}|
 import numpy as np  # |\label{l61i:bibs1_e}|
-
-from rosi_richards import RichardsSPnum  # C++ part (Dumux binding) |\label{l61i:bibs2_a}|
 from richards import RichardsWrapper  # Python part  |\label{l61i:bibs2_e}|
+from rosi_richards import RichardsSPnum  # C++ part (Dumux binding) |\label{l61i:bibs2_a}|
+
 # from analytic_solution import *  # plots the analytical solutions to ax1, ax2, ax3 # optional |\label{l61i:bib3}|
 
 # Define van Genuchten parameters for sand, loam and clay  |\label{l61i:genuchten_a}|
@@ -27,7 +28,7 @@ loam = [0.08, 0.43, 0.04, 1.6, 50]
 clay = [0.1, 0.4, 0.01, 1.1, 10]
 soil = loam  # Select soil type for simulation   |\label{l61i:genuchten_e}|
 # simulation time, days
-sim_time = 1;  # |\label{l61i:simtime}|
+sim_time = 1  # |\label{l61i:simtime}|
 dt = 720 / (24 * 3600)  # time step [days]    |\label{l61i:timestep}|
 
 # Solve the Richards equation using the Python wrapper of dumux-rosi

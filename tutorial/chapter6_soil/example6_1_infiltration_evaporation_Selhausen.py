@@ -7,6 +7,7 @@
 
 # add paths to the folders containing CPlantBox and dumux-rosi
 import sys
+
 base_path= "./CPlantBox/dumux/"
 sys.path.append(base_path+"dumux-rosi/python/modules")
 sys.path.append(base_path+"dumux-rosi/build-cmake/cpp/python_binding/")
@@ -14,9 +15,8 @@ sys.path.append(base_path+"CPlantBox/src")
 
 import matplotlib.pyplot as plt  #
 import numpy as np  #
-
-from rosi_richards import RichardsSPnum  # C++ part (Dumux binding) 
 from richards import RichardsWrapper  # Python part  
+from rosi_richards import RichardsSPnum  # C++ part (Dumux binding) 
 
 # Define Mualem van Genuchten parameters for Selhausen soil profile according to Bauer et al. (2011, table 3, \url{https://doi.org/10.1007/s10533-011-9583-1}) |\label{l61ies:genuchten_a}|
 # theta_r (-), theta_s (-), alpha (1/cm), n (-), Ks (cm d-1) 

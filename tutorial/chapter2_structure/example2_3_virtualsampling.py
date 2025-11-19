@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 import plantbox as pb
 
 path = "../../modelparameter/structural/rootsystem/"
@@ -33,7 +34,6 @@ soilcolumns = [pb.SDF_RotateTranslate(soilcolumn, vi) for vi in soilcolumns_]  #
 
 soilSpace = pb.SDF_PlantContainer(500, 500, 500, True)
 
-allRS = []
 for i in range(0, M):  # |\label{l2_3:simulationbegin}|
     for j in range(0, N):
         plant = pb.Plant()
@@ -45,13 +45,13 @@ for i in range(0, M):  # |\label{l2_3:simulationbegin}|
         plant.simulate(30 * months, False)
         allRS.append(plant)
         if i + j == 0:
-            allAna = pb.SegmentAnalyser(plant)
+            all_ana = pb.SegmentAnalyser(plant)
         else:
-            allAna.addSegments(plant)  # |\label{l2_3:simulationend}|
+            all_ana.addSegments(plant)  # |\label{l2_3:simulationend}|
 rld = np.zeros([len(soilcolumns) * len(times[1:]), layers])
 
 for k, sc in enumerate(soilcolumns):  # |\label{l2_3:soilcolselectbegin}|
-    ana = pb.SegmentAnalyser(allAna)
+    ana = pb.SegmentAnalyser(all_ana)  # copy all
     ana.crop(sc)  # select soil column
     for j in range(len(times[1:])):
         ana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
@@ -59,31 +59,14 @@ for k, sc in enumerate(soilcolumns):  # |\label{l2_3:soilcolselectbegin}|
         distrib = ana.distribution("length", 0.0, -depth, layers, True)
         rld[(len(times[1:]) - 1 - j) * len(soilcolumns) + k] = np.array(distrib) / layerVolume  # |\label{l2_3:soilcolselectend}|
 
-pt_idx = [
-    (0, 0),
-    (0, 1),
-    (0, 2),  # |\label{l2_3:plotbegin}|
-    (1, 0),
-    (1, 1),
-    (1, 2),
-    (2, 0),
-    (2, 1),
-    (2, 2),
-    (3, 0),
-    (3, 1),
-    (3, 2),
-    (4, 0),
-    (4, 1),
-    (4, 2),
-]
-legend_lst = [str(int(t_i)) for t_i in times[1:]]
+legend_lst = [str(int(t_i)) for t_i in times[1:]]  # |\label{l2_3:plotbegin}|
 fig, axes = plt.subplots(nrows = 5, ncols = int(len(soilcolumns) / 5), sharex = True, sharey = True, figsize = (8, 16))
 
 for k in range(len(soilcolumns)):
-    axes[pt_idx[k]].set_title("Soil core" + " " + str(k + 1))
+    axes.flat[k].set_title("Soil core" + " " + str(k + 1))
     for j in range(len(times[1:])):
-        axes[pt_idx[k]].plot(np.array(rld[len(soilcolumns) * j + k]), z_)
-        axes[pt_idx[k]].set_xlim(0, 5)
+        axes.flat[k].plot(np.array(rld[len(soilcolumns) * j + k]), z_)
+        axes.flat[k].set_xlim(0, 5)
 
 plt.setp(axes[-1,:], xlabel = "RLD $(cm/cm^3)$")
 plt.setp(axes[:, 0], ylabel = "Depth $(cm)$")

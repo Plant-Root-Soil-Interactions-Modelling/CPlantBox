@@ -1,6 +1,7 @@
 """small example in a container"""
 
 import numpy as np
+
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 

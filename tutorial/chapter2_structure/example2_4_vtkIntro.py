@@ -1,6 +1,7 @@
 """increase axial resolution (e.g. for animation)"""
 
 import numpy as np
+
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp  # |\label{3f:importvtk}|
 

@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 import plantbox as pb
 
 plant = pb.Plant()

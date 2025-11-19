@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt  # |\label{l2_2d:importEnd}|
 import numpy as np
+
 import plantbox as pb  # |\label{l2_2d:importStart}|
 
 path = "../../modelparameter/structural/rootsystem/"  # |\label{l2_2d:defineStart}|
