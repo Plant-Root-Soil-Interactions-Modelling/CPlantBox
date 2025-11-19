@@ -1,15 +1,15 @@
 """ Example of the photosynthesis module, using real data from the Selhausen lysimeter setup """
 import sys; sys.path.append("../"); sys.path.append("../.."); sys.path.append("../../src/")  # |\label{l43:imports}|
+from datetime import datetime
+from matplotlib.dates import DateFormatter, HourLocator
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+import numpy as np
 import pandas as pd
-import numpy as np 
 import plantbox as pb
-import plantbox.visualisation.vtk_plot as vp
-from datetime import datetime 
-from matplotlib.dates import DateFormatter, HourLocator; import figure_style
-from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 from plantbox.functional.Photosynthesis import PhotosynthesisPython  # |\label{l43:importsPhotosynthesis}|
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
+
 
 def getWeatherData(sim_time):
     diffDt = abs(pd.to_timedelta(weatherData['time']) - pd.to_timedelta(sim_time % 1,unit='d'))
@@ -30,7 +30,8 @@ weatherData = pd.read_csv(path + 'Selhausen_weather_data.txt', delimiter = "\t")
 
 """ soil """
 soilSpace = pb.SDF_PlantContainer(np.inf, np.inf, depth, True)  # to avoid root growing aboveground
-picker = lambda x, y, z: max(int(np.floor(-z)), -1)  # abovegroud nodes get index -1
+def picker(x, y, z):
+    return max(int(np.floor(-z)), -1)  # abovegroud nodes get index -1
 p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer  # |\label{l43:SoilEnd}|
 
 """ plant """

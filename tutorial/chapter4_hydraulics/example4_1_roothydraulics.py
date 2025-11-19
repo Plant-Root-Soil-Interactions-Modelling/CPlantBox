@@ -1,14 +1,13 @@
 """ water movement within the root (static soil) """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
-import plantbox as pb
-import plantbox.visualisation.vtk_plot as vp
-from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l41:imports}|
-from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
-from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier  # |\label{l41:imports_end}|
-
 import numpy as np
-import matplotlib.pyplot as plt
+import plantbox as pb
+from plantbox.functional.PlantHydraulicModel import (
+          HydraulicModel_Doussan,  # |\label{l41:imports_end}|
+)
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l41:imports}|
+import plantbox.visualisation.vtk_plot as vp
 
 """ Parameters """  # |\label{l41:parameters}|
 initial_age = 14  # root system age [day]

@@ -1,13 +1,13 @@
+""" change parameters in the input script"""
+
 import plantbox as pb
-import sys
-import plantbox.visualisation.vtk_plot as vp  # |\label{l2_1:importEnd}|
+import plantbox.visualisation.vtk_plot as vp
 
 path = "../../modelparameter/structural/plant/"
-sys.path.append(path)
 
-# ## Simple example
+# Simple example
 p = pb.MappedPlant(2)
-p.readParameters(path + "example2_1_2.xml", verbose=True)
+p.readParameters(path + "example2_1_2.xml", verbose = True)
 
 rrp = p.getOrganRandomParameter(pb.root)[1]  # define laterals of taproot #|\label{l2_1:arrayStart1}|
 rrp.successorOT = [[pb.root]]
@@ -29,7 +29,7 @@ p.simulate(time, False)
 vp.plot_plant(p, "organType")
 p.write("results/example2_1_2a.vtp")
 
-# ## Several successor types, specific locations
+# Several successor types, specific locations
 p = pb.MappedPlant(2)
 p.readParameters(path + "example2_1_2.xml")
 
@@ -53,7 +53,7 @@ p.simulate(time, False)
 vp.plot_plant(p, "organType")
 p.write("results/example2_1_2b.vtp")
 
-# ## Probabilistic branching
+# Probabilistic branching
 p = pb.MappedPlant(2)
 p.readParameters(path + "example2_1_2.xml")
 

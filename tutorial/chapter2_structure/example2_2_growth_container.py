@@ -43,8 +43,8 @@ rhizotubes_ = []  # |\label{l2_2_1:tubesmultbegin}|
 y_ = (-30, -18, -6, 6, 18, 30)
 z_ = (-10, -20, -40, -60, -80, -120)
 tube = []
-for i in range(0, len(y_)):
-    v = pb.Vector3d(0, y_[i], z_[i])
+for i, y in enumerate(y_):
+    v = pb.Vector3d(0, y, z_[i])
     tube.append(pb.SDF_RotateTranslate(rhizoX, v))
     rhizotubes_.append(tube[i])
 

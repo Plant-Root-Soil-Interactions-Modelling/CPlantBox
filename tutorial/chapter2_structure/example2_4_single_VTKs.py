@@ -3,7 +3,7 @@
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp  # |\label{3f:importvtk}|
 
-""" plant """  # |\label{3f:plantStart}|
+# plant  # |\label{3f:plantStart}|
 plant = pb.MappedPlant(0)
 path = "../../modelparameter/structural/plant/"
 name = "fspm2023"
@@ -28,5 +28,5 @@ for organ_type in [pb.root, pb.stem, pb.leaf]:
 plant.initialize()
 for i in range(0, N):
     plant.simulate(dt)
-    vp.write_plant("results/" + filename + "{:04d}".format(i), plant)
+    vp.write_plant(f"results/{filename}{i:04d}", plant)
     print(i, "/", N)

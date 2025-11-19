@@ -3,7 +3,7 @@ select = ["E", "F", "I"]
 line-length = 320
 fix = true
 unsafe-fixes = true
-# ignore = ["E741", "E742", "E743", "E702"]
+ignore = ["E741", "E742", "E743"]
 exclude = ["examples", "figures", "jupyter", "latex", "__pycache__"]
 
 

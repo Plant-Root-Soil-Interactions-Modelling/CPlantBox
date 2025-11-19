@@ -13,7 +13,7 @@ p0.a = 0.2  # [cm] radius
 p0.subType = 1  # [-] index starts at 1
 p0.lb = 5  # [cm] basal zone
 p0.la = 10  # [cm] apical zone
-p0.lmax = 30  # [cm] maximal root length, number of lateral branching nodes = round((lmax-lb-la)/ln) + 1
+p0.lmax = 30  # [cm] maximal root length,
 p0.ln = 1.0  # [cm] inter-lateral distance (16 branching nodes)
 p0.theta = 0.0  # [rad]
 p0.r = 1  # [cm/day] initial growth rate
@@ -54,8 +54,8 @@ for i in range(0, 3):
     plant.simulate(np.diff(simtimes)[i])  #  [day]
     a = axes[i]
     a.set_xlim([-15, 15.0])
-    a.set_ylim([-35.0, 0.0])  # starts at -3 cm, max lengthsimple root system from scratch (without parameter files) 30 cm
-    a.set_title("after {} days".format(plant.getSimTime()))
+    a.set_ylim([-35.0, 0.0])
+    a.set_title(f"after {plant.getSimTime()} days")
     roots = plant.getPolylines()
     for root in roots:
         for j, n in enumerate(root[:-1]):

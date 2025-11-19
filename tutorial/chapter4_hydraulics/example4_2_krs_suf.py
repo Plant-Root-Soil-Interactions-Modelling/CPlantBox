@@ -2,15 +2,12 @@
 
 import sys; sys.path.append("../"); sys.path.append("../.."); sys.path.append("../../src/")
 
-import plantbox as pb
-import plantbox.visualisation.vtk_plot as vp
-from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports}|
-from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier  # |\label{l42:imports_end}|
-
-import numpy as np
-import matplotlib.pyplot as plt
-import figure_style
 import csv
+import matplotlib.pyplot as plt
+import numpy as np
+import plantbox as pb
+from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier  # |\label{l42:imports_end}|
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports}|
 
 """ Simulation parameters """  # |\label{l42:parameters}|
 simtime = 70  # simulate from day 1 to 70
