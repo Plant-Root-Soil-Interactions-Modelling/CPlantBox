@@ -40,7 +40,7 @@
         <!--Y-Coordinate of seed position [cm]-->
         <parameter name="seedPos.z" value="-5"/>
         <!--Z-Coordinate of seed position [cm]-->
-        <parameter name="simulationTime" value="30"/>
+        <parameter name="simulationTime" value="26"/>
         <!--Recommended final simulation time  [day]-->
     </seed>
     <root name="Taproot" subType="1">
@@ -62,9 +62,9 @@
         <!--Root hair length [cm]-->
         <parameter name="hairsZone" value="0"/>
         <!--Length of the root hair zone [cm]-->
-        <parameter name="highresolution" value="1"/>
+        <parameter name="highresolution" value="0"/>
         <!--If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity-->
-        <parameter name="hyphalEmergenceDensity" value="1"/>
+        <parameter name="hyphalEmergenceDensity" value="0"/>
         <!--Density of hyphal emergence along root [1/cm]-->
         <parameter name="la" value="10.735096"/>
         <!--Apical zone [cm]-->
@@ -120,9 +120,9 @@
         <!--Root hair length [cm]-->
         <parameter name="hairsZone" value="0"/>
         <!--Length of the root hair zone [cm]-->
-        <parameter name="highresolution" value="1"/>
+        <parameter name="highresolution" value="0"/>
         <!--If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity-->
-        <parameter name="hyphalEmergenceDensity" value="1"/>
+        <parameter name="hyphalEmergenceDensity" value="0"/>
         <!--Density of hyphal emergence along root [1/cm]-->
         <parameter name="la" value="2.5453775" dev="2.2677875"/>
         <!--Apical zone [cm]-->
@@ -178,9 +178,9 @@
         <!--Root hair length [cm]-->
         <parameter name="hairsZone" value="0"/>
         <!--Length of the root hair zone [cm]-->
-        <parameter name="highresolution" value="1"/>
+        <parameter name="highresolution" value="0"/>
         <!--If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity-->
-        <parameter name="hyphalEmergenceDensity" value="1"/>
+        <parameter name="hyphalEmergenceDensity" value="0"/>
         <!--Density of hyphal emergence along root [1/cm]-->
         <parameter name="la" value="1.6597699" dev="1.6159165"/>
         <!--Apical zone [cm]-->
@@ -236,9 +236,9 @@
         <!--Root hair length [cm]-->
         <parameter name="hairsZone" value="0"/>
         <!--Length of the root hair zone [cm]-->
-        <parameter name="highresolution" value="1"/>
+        <parameter name="highresolution" value="0"/>
         <!--If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity-->
-        <parameter name="hyphalEmergenceDensity" value="1"/>
+        <parameter name="hyphalEmergenceDensity" value="0"/>
         <!--Density of hyphal emergence along root [1/cm]-->
         <parameter name="la" value="1.5127106" dev="1.6042612"/>
         <!--Apical zone [cm]-->
@@ -278,7 +278,7 @@
         <!--Growth function number [1]-->
         <parameter name="lnf" value="0"/>
         <!--Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)-->
-        <parameter name="nodalGrowth" value="1"/>
+        <parameter name="nodalGrowth" value="0"/>
         <!--nodal growth function (sequential = 0, equal = 0)-->
         <parameter name="tropismT" value="1"/>
         <!--Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
@@ -321,4 +321,28 @@
         <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of stem tropism [1/cm]-->
     </stem>
+    <hyphae name="undefined" subType="1">
+        <parameter name="tropismT" value="2"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.0099999998"/>
+        <!--radius [cm]-->
+        <parameter name="b" value="0.5" dev="0.050000001"/>
+        <!--Branching rate [1/day]-->
+        <parameter name="dx" value="0.0099999998"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="1e-06"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="hlt" value="10" dev="0.1"/>
+        <!--Hyphal lifetime  [day]-->
+        <parameter name="ldelay" value="-1"/>
+        <!--Lateral emergence delay [day]-->
+        <parameter name="theta" value="1.0471976" dev="0.10471976"/>
+        <!--Branching angle [rad]-->
+        <parameter name="tropismN" value="1"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.30000001"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+        <parameter name="v" value="0.13" dev="0.0099999998"/>
+        <!--Tip elongation rate [cm/day]-->
+    </hyphae>
 </plant>
