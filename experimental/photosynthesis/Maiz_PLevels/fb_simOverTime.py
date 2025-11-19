@@ -11,11 +11,11 @@ sys.path.append("../../build-cmake/cpp/python_binding/")
 sys.path.append("../modules/")  # python wrappers
 sys.path.append("../../experimental/photosynthesis/")
 
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 import importlib
 import pandas as pd
 import plantbox as pb
-from functional.phloem_flux import PhloemFluxPython  # Python hybrid solver
+from plantbox.functional.phloem_flux import PhloemFluxPython  # Python hybrid solver
 import math
 import os
 import numpy as np

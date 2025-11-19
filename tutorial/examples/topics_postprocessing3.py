@@ -2,7 +2,7 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 # Data from any source, as Python types
 nodes = [ [0, 1, 0], [0.2, 1.8, -1], [0, 1.3, -2], [0, 1, -3] ]

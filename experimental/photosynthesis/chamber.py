@@ -226,8 +226,8 @@ cplantbox_dir = "../../"
 # #endif
 
 import plantbox as pb
-from functional.xylem_flux import XylemFluxPython
-from functional.photosynthesis_cpp import PhotosynthesisPython as Photosynthesis
+from plantbox.functional.xylem_flux import XylemFluxPython
+from plantbox.functional.photosynthesis_cpp import PhotosynthesisPython as Photosynthesis
 
 
 # model parameters

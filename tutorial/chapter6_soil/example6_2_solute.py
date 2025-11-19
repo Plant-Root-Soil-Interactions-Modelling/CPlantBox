@@ -17,7 +17,7 @@ import plantbox as pb  # CPlantBox
 from rosi_richardsnc import RichardsNCSP  # C++ part (Dumux binding), macroscopic soil model
 from rosi_richards import RichardsSP  # C++ part (Dumux binding), macroscopic soil model
 from richards import RichardsWrapper  # Python part, macroscopic soil model
-import functional.van_genuchten as vg
+import plantbox.functional.van_genuchten as vg
 
 
 def plot_results(h, c , times, net_inf, fw, depth = -100.):

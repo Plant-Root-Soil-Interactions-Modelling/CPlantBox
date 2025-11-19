@@ -11,7 +11,7 @@ import dash_vtk
 from dash_vtk.utils import to_mesh_state
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 """ vtk stuff """
 try:

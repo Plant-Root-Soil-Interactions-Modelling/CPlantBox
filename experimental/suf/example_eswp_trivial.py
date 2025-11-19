@@ -4,7 +4,7 @@ sys.path.append("../../build-cmake/cpp/python_binding/")
 
 from xylem_flux import XylemFluxPython  # Python hybrid solver
 import plantbox as pb
-import rsml_reader as rsml
+import plantbox.rsml_reader as rsml
 import vtk_plot as vp
 
 from math import *

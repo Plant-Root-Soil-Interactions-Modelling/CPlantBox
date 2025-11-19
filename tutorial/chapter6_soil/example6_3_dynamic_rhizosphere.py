@@ -13,10 +13,10 @@ import numpy as np
 import pandas as pd
 import matplotlib as mpl
 import plantbox as pb  # CPlantBox
-from functional.xylem_flux import *  # root system Python hybrid solver
+from plantbox.functional.xylem_flux import *  # root system Python hybrid solver
 from rosi_richardsnc_cyl import RichardsNCCylFoam   # C++ part (Dumux binding), macroscopic soil model
 from richards_flat import RichardsFlatWrapper  # Python part of cylindrcial
-import functional.van_genuchten as vg # |\label{l63:lib_end}|
+import plantbox.functional.van_genuchten as vg # |\label{l63:lib_end}|
 
 SMALL_SIZE = 20
 MEDIUM_SIZE = 20

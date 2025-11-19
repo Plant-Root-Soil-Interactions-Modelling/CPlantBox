@@ -1,7 +1,7 @@
-import sys;sys.path.append("../..");sys.path.append("../../src/")  # |\label{l14:path}|
+"""How to modify parameters"""
 
 import plantbox as pb  # |\label{l14:cplantbox}|
-import visualisation.vtk_plot as vp  # |\label{l14:vtk_plot}|
+import plantbox.visualisation.vtk_plot as vp  # |\label{l14:vtk_plot}|
 
 plant = pb.Plant()  # Create a new plant |\label{l14:plant}|
 

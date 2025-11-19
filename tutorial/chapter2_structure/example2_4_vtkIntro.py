@@ -1,15 +1,15 @@
 """increase axial resolution (e.g. for animation)"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
-import plantbox as pb
-import visualisation.vtk_plot as vp  # |\label{3f:importvtk}|
+
 import numpy as np
+import plantbox as pb
+import plantbox.visualisation.vtk_plot as vp  # |\label{3f:importvtk}|
 
 """ plant """  # |\label{3f:plantStart}|
 plant = pb.MappedPlant(0)
 path = "../../modelparameter/structural/plant/"
 name = "fspm2023"
 plant.readParameters(path + name + ".xml")
-simtime = 60.  # days
+simtime = 60.0  # days
 
 # Simulate
 plant.initialize()
@@ -37,4 +37,3 @@ plant.simulate(simtime)  # |\label{3f:rootsystem_end}|
 ana = pb.SegmentAnalyser(plant.mappedSegments())
 ana.mapPeriodic(5, 5)  # |\label{3f:mapPeriodic}|
 vp.plot_plant(ana, "creationTime")
-

@@ -6,7 +6,7 @@ import json
 
 import plantbox as pb
 from plantbox import PlantHydraulicParameters as PlantHydraulicParametersCPP
-import rsml.rsml_reader as rsml
+import plantbox.rsml.rsml_reader as rsml
 
 
 class PlantHydraulicParameters(PlantHydraulicParametersCPP):

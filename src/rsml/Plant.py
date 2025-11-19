@@ -3,9 +3,9 @@ import sys; sys.path.append(".."); sys.path.append("../..");
 import plantbox as pb
 from plantbox import *
 
-from rsml.rsml_data import RsmlData
-import rsml.rsml_reader as rsml_reader
-import visualisation.vtk_plot as vp
+from plantbox.rsml.rsml_data import RsmlData
+import plantbox.rsml.rsml_reader as rsml_reader
+import plantbox.visualisation.vtk_plot as vp
 
 import numpy as np
 import matplotlib.pyplot as plt

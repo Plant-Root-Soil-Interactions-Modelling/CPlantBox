@@ -21,7 +21,7 @@ import plantbox as pb
 import simplace # https://simplace.net/doc/python_wrapper.htm
 
 # custom functions
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 from SimplacePlantbox.simplace import lintulslim_interact as sp_int
 from SimplacePlantbox.util import getRootOutputs
 from SimplacePlantbox.util import checkRuns

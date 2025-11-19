@@ -5,7 +5,7 @@ a) Transpiration over time
 import sys; sys.path.append(".."); sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 import figure_style as st
 
 import matplotlib.pyplot as plt

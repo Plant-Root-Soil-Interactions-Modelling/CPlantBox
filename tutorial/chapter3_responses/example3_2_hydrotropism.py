@@ -2,7 +2,7 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/") # |\label{l3_2_hydrotropism:libsstart}|
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"

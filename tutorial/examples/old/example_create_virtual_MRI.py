@@ -3,9 +3,9 @@ import sys
 sys.path.append("../../")
 sys.path.append("../../src")
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 import numpy as np
-import functional.bresenham3D as bres3D
+import plantbox.functional.bresenham3D as bres3D
 import matplotlib.pyplot as plt
 from pyevtk.hl import gridToVTK
 import scipy

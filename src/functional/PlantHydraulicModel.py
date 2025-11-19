@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 
 import plantbox as pb
 from plantbox import PlantHydraulicModel as PlantHydraulicModelCPP
-from structural.MappedOrganism import MappedPlantPython
-from functional.Perirhizal import PerirhizalPython as Perirhizal
+from plantbox.structural.MappedOrganism import MappedPlantPython
+from plantbox.functional.Perirhizal import PerirhizalPython as Perirhizal
 
-import rsml.rsml_reader as rsml
+import plantbox.rsml.rsml_reader as rsml
 
 
 class PlantHydraulicModel(PlantHydraulicModelCPP):

@@ -1,8 +1,8 @@
 import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
 
 import plantbox as pb
-from rsml.rsml_data import RsmlData
-import rsml.rsml_reader as rsml_reader
+from plantbox.rsml.rsml_data import RsmlData
+import plantbox.rsml.rsml_reader as rsml_reader
 import estimate_params as ep
 
 import numpy as np

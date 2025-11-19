@@ -7,7 +7,7 @@ import scipy.sparse.linalg as LA
 
 import plantbox as pb
 from plantbox import XylemFlux
-import rsml_reader as rsml  # todo
+import plantbox.rsml_reader as rsml  # todo
 from xylem_flux import XylemFluxPython  # Python hybrid solver
 
 class StomataModel(XylemFluxPython):

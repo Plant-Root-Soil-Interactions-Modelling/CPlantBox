@@ -4,9 +4,9 @@ TODO fix it (remove XylemFlux class...)
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
-import visualisation.vtk_plot as vp
-import rsml.rsml_reader as rsml
+from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+import plantbox.visualisation.vtk_plot as vp
+import plantbox.rsml.rsml_reader as rsml
 
 import numpy as np
 import matplotlib.pyplot as plt

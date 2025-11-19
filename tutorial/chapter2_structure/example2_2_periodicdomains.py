@@ -1,8 +1,7 @@
 """increase axial resolution (e.g. for animation)"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
@@ -21,7 +20,7 @@ rs.simulate(60)  # days
 ana = pb.SegmentAnalyser(rs)
 ana.write("results/periodic.vtp")
 
-ana.mapPeriodic(15, 10) #|\label{l2_2_3:periodicity}|
+ana.mapPeriodic(15, 10)  # |\label{l2_2_3:periodicity}|
 ana.write("results/periodic.vtp")
 
 # Export geometry as Paraview Python script

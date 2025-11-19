@@ -30,11 +30,11 @@ sys.path.append("../.."); sys.path.append("../../src/")
 
 sys.path.append("../../modelparameter/functional")
 import plantbox as pb
-from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver
 import numpy as np
-import visualisation.vtk_plot as vp # for quick 3d vizualisations
+import plantbox.visualisation.vtk_plot as vp # for quick 3d vizualisations
 import matplotlib.pyplot as plt
-from functional.phloem_flux import PhloemFluxPython  
+from plantbox.functional.phloem_flux import PhloemFluxPython  
 from plant_photosynthesis.wheat_FcVB_Giraud2023adapted import *
 from plant_hydraulics.wheat_Giraud2023adapted import *
 from plant_sucrose.wheat_phloem_Giraud2023adapted import *

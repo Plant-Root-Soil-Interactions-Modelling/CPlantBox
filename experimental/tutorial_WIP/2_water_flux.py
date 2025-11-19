@@ -5,11 +5,11 @@ sourcedir = os.getcwd()+"/../.."
 import sys; sys.path.append(sourcedir); sys.path.append(sourcedir+"/src")
 import importlib
 import plantbox as pb
-import visualisation.vtk_plot as vp # for quick 3d vizualisations
+import plantbox.visualisation.vtk_plot as vp # for quick 3d vizualisations
 import matplotlib.pyplot as plt # for 2d plots
 import numpy as np
-from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
-from functional.photosynthesis_cpp import PhotosynthesisPython
+from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+from plantbox.functional.photosynthesis_cpp import PhotosynthesisPython
 
 isColab = False
 if True:

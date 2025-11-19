@@ -2,8 +2,8 @@
     run on multiple threads using: mpiexec -n 4 python3 example7_3_lookup.py """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
-from functional.Perirhizal import PerirhizalPython
-import functional.van_genuchten as vg
+from plantbox.functional.Perirhizal import PerirhizalPython
+import plantbox.functional.van_genuchten as vg
 
 peri = PerirhizalPython()  # |\label{l73l:peri}|
 hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]  # |\label{l73l:soil}|

@@ -1,8 +1,8 @@
 import vtk
 import numpy as np
 
-from rsml.rsml_writer import write_rsml as write_rsml2  # to write a rsml (no other dependencies)
-from rsml.rsml_writer import Metadata
+from plantbox.rsml.rsml_writer import write_rsml as write_rsml2  # to write a rsml (no other dependencies)
+from plantbox.rsml.rsml_writer import Metadata
 
 """ 
 VTK Tools, by Daniel Leitner (refurbished 6/2020) 

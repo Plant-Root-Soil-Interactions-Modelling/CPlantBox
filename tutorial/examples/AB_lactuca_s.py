@@ -8,7 +8,7 @@ adapted from "example_1e_plantShape"
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 import numpy as np
 import matplotlib.pyplot as plt

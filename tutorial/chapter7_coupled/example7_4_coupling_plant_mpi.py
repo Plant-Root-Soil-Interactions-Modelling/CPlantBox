@@ -4,15 +4,15 @@ sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux 
 sys.path.append("../../../dumux-rosi/python/modules/")  # python wrappers
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
-from functional.PlantHydraulicParameters import PlantHydraulicParameters  
+import plantbox.visualisation.vtk_plot as vp
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  
 from rosi_richardsnc import RichardsNCSP   # C++ part (Dumux binding)
 from rosi_richardsnc_cyl import RichardsNCCylFoam   # C++ part (Dumux binding), macroscopic soil model
 from richards_flat import RichardsFlatWrapper as RichardsWrapper  # Python part, macroscopic soil model
 from rhizo_models_plant import RhizoMappedSegments
-from functional.PlantHydraulicParameters import PlantHydraulicParameters
-from functional.Photosynthesis import PhotosynthesisPython 
-import functional.van_genuchten as vg  # van Genuchten model for soil hydraulic properties
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
+from plantbox.functional.Photosynthesis import PhotosynthesisPython 
+import plantbox.functional.van_genuchten as vg  # van Genuchten model for soil hydraulic properties
 import helpful  # helper functions
 import numpy as np
 import pandas as pd

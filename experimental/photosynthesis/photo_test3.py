@@ -1,10 +1,10 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src")
 import plantbox as pb
-from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver
 import numpy as np
 import matplotlib.pyplot as plt
-from functional.photosynthesis_cpp import PhotosynthesisPython
-import visualisation.vtk_plot as vp # for quick 3d vizualisations
+from plantbox.functional.photosynthesis_cpp import PhotosynthesisPython
+import plantbox.visualisation.vtk_plot as vp # for quick 3d vizualisations
 
 simtime = 14  # [day] 
 pl = pb.MappedPlant() #for plant objects
