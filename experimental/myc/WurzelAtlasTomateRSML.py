@@ -15,8 +15,9 @@ name_Johanna_WildType = "TomatoJohanna_WildType"
 name_Johanna_RMC = "TomatoJohanna_RMC"
 
 animation = False
-pot = False;
-
+pot = True
+radius = 11.7
+depth = 110
 
 
 tomato_WAT = pb.MycorrhizalPlant()
@@ -29,41 +30,19 @@ tomato_J_RMC.readParameters(path +name_Johanna_RMC + ".xml", fromFile = True, ve
 
 if pot:
     # Pot dimensions 11.7 cm x 11.7 cm x 30 cm
-    pot = pb.SDF_PlantContainer(11.7, 11.7, 30, False)
+    depth = 30
+    pot = pb.SDF_PlantContainer(radius, radius, depth, False)
     tomato_WAT.setGeometry(pot)
     tomato_J_WT.setGeometry(pot)
     tomato_J_RMC.setGeometry(pot) 
 
-# root_paras = pb.HyphaeRandomParameter(tomato_WAT)
-# root_paras.hyphalEmergenceDensity = 0
-# root_paras.highresolution = 0
-# tomato_WAT.setOrganRandomParameter(root_paras)
 
-hyphae_parameter = pb.HyphaeRandomParameter(tomato_WAT)
-hyphae_parameter.subType = 1
-hyphae_parameter.a = 0.01
-hyphae_parameter.dx = 0.01
-tomato_WAT.setOrganRandomParameter(hyphae_parameter)
 
 tomato_WAT.initialize(True)
 tomato_J_WT.initialize(True)
 tomato_J_RMC.initialize(True)
 
-# rootWATParas = pb.MycorrhizalRootRandomParameter(tomato_WAT)
-# rootJWTParas = pb.MycorrhizalRootRandomParameter(tomato_J_WT)
-# rootJRMCParas = pb.MycorrhizalRootRandomParameter(tomato_J_RMC)
-# print(rootWATParas)
-# print(rootJWTParas)
-# print(rootJRMCParas)
-
-
-# mycp = pb.MycorrhizalPlant()
-# mycp.readParameters(path +name + ".xml", fromFile = True, verbose = True)
-
-# # mycp.setGeometry(pot)
-# mycp.initialize(True)
-# mycp.writeParameters("WurzelAtlasTomate_parameters_out.xml")
-
+### Set up simulation parameters
 totalduration = 108
 potduration = 73
 simtime = totalduration
@@ -74,37 +53,60 @@ dt = simtime / N
 for i in range(1,N):
     if i % 18 == 0:
         print('step',i, '/',N)
-    tomato_WAT.simulate(dt, True)
-    tomato_J_WT.simulate(dt, True)
-    tomato_J_RMC.simulate(dt, True)
-        # mycp.simulate(dt, False)
+    tomato_WAT.simulate(dt, False)
+    tomato_J_WT.simulate(dt, False)
+    tomato_J_RMC.simulate(dt, False)
 print('done')
 
-ana_WAT = pb.SegmentAnalyser(tomato_WAT)
-ana_J_WT = pb.SegmentAnalyser(tomato_J_WT)
-ana_J_RMC = pb.SegmentAnalyser(tomato_J_RMC)
+def make_RLD_plot(rs, depth, layers,radius,name):
+    z_ = np.linspace(0, -1 * depth, layers)
+    #fig, axes = plt.subplots(nrows = 1, ncols = 1, figsize = (16, 8))
+    fig, axes = plt.subplots(figsize = (6, 8))
+    # Make a root length distribution
+    ana = pb.SegmentAnalyser(rs)
+    rad = ana.getParameter("radius")
+    rad = sum(rad)/len(rad)
+    rltot = ana.getSummed("length")
+    print("Simulated average root radius and total root length after", simtime, "days:", "\n","  Average root radius (cm):", rad, "\n","  Total root length (cm):", rltot, "\n" )
+    layerVolume = depth / layers * radius * radius * np.pi  # actually the only thing that changes
+    ana.write("results/" + name + "_108days.vtp",["radius", "subType", "creationTime","organType"])
+    rl0_ = ana.distribution("length", 0., -depth, layers, True)
+    ana.filter("creationTime", 0, 80)
+    rl1_ = ana.distribution("length", 0., -depth, layers, True)
+    ana.filter("creationTime", 0, 50)
+    rl2_ = ana.distribution("length", 0., -depth, layers, True)
+    ana.filter("creationTime", 0, 35)
+    rl3_ = ana.distribution("length", 0., -depth, layers, True)
+    axes.set_title('All roots')
+    axes.plot(np.array(rl3_) / layerVolume * 10, z_)
+    axes.plot(np.array(rl2_) / layerVolume * 10, z_)
+    axes.plot(np.array(rl1_) / layerVolume * 10, z_)
+    axes.plot(np.array(rl0_) / layerVolume * 10, z_, color = 'goldenrod')
+    axes.set_xlabel('$\dfrac{1}{10}$ RLD (cm/cm^3)')
+    axes.set_ylabel('Depth (cm)')
+    axes.legend(["35 days", "50 days", "80 days", "108 days"], loc = 'upper right')
+    #axes.set_xlim(0,2)
+    #axes.set_ylim(-31,0)
+    fig.subplots_adjust()
+    plt.savefig("results/" + name + "10th_RLD.pdf", dpi = 300)
 
-rad_WAT = ana_WAT.getParameter("radius")
-rad_WAT = sum(rad_WAT)/len(rad_WAT)
-rl_WAT = ana_WAT.getSummed("length")
-rad_J_WT = ana_J_WT.getParameter("radius")
-rad_J_WT = sum(rad_J_WT)/len(rad_J_WT)
-rl_J_WT = ana_J_WT.getSummed("length")
-rad_J_RMC = ana_J_RMC.getParameter("radius")
-rad_J_RMC = sum(rad_J_RMC)/len(rad_J_RMC)
-rl_J_RMC = ana_J_RMC.getSummed("length")    
+    fig, ax = plt.subplots()
+    ax.plot(np.array(rl3_) / layerVolume, z_)
+    ax.plot(np.array(rl2_) / layerVolume, z_)
+    ax.plot(np.array(rl1_) / layerVolume, z_)
+    ax.plot(np.array(rl0_) / layerVolume, z_)
+    ax.set_xlabel('RLD (cm/cm^3)')
+    ax.set_ylabel('Depth (cm)')
+    ax.legend(["35 days", "50 days", "80 days", "108 days"], loc = 'upper right')
+    # ax.set_ylim(-31,0)
+    fig.subplots_adjust()
+    plt.savefig("results/" + name + "_RLD.pdf", dpi = 300)
 
-print("\n")
+    # plt.show()
+make_RLD_plot(tomato_WAT, 30, 60, radius, name_new)
+make_RLD_plot(tomato_J_WT, 110, 220, radius, name_Johanna_WildType)
+make_RLD_plot(tomato_J_RMC, 110, 220, radius, name_Johanna_RMC)
 
-print("Simlated average root radius and total root length after", simtime, "days:", "\n")
-print("WurzelAtlas Paras Tomato:", "\n","  Average root radius (cm):", rad_WAT, "\n","  Total root length (cm):", rl_WAT, "\n")
-print("Johanna Wild Type Tomato:", "\n","  Average root radius (cm):", rad_J_WT, "\n","  Total root length (cm):", rl_J_WT, "\n")
-print("Johanna RMC Tomato:", "\n","  Average root radius (cm):", rad_J_RMC, "\n","  Total root length (cm):", rl_J_RMC, "\n")  
-
-
-ana_WAT.write(name_new + ".vtp", ["radius", "subType", "creationTime","organType"])
-ana_J_WT.write(name_Johanna_WildType + ".vtp", ["radius", "subType", "creationTime","organType"])
-ana_J_RMC.write(name_Johanna_RMC + ".vtp", ["radius", "subType", "creationTime","organType"])
 # ana = pb.SegmentAnalyser(mycp)
 # rad = ana.getParameter("radius")
 # rad = sum(rad)/len(rad)
@@ -120,5 +122,6 @@ ana_J_RMC.write(name_Johanna_RMC + ".vtp", ["radius", "subType", "creationTime",
 
 # vp.plot_roots(mycp)
 # ana.write(name + ".vtp", ["radius", "subType", "creationTime","organType"])
-# # vp.write_container(pot, "pot.vtp")
+if pot:
+    vp.write_container(pot, "results/pot.vtp")
 
