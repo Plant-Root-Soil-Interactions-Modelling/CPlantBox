@@ -296,7 +296,7 @@ def create_xml(genotype):
     param = data.pparameters.copy(plant)
     plant.setOrganRandomParameter(param)
     
-    plant.writeParameters(genotype + "-wineV2.xml")
+    plant.writeParameters("./results/xmlFiles/"+genotype + "-wineV2.xml")
     return max(length_[0]),max(length_[1])
         
 lb1, lb2 = create_xml('B')
