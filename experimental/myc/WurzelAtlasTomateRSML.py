@@ -45,12 +45,13 @@ tomato_J_RMC.initialize(True)
 ### Set up simulation parameters
 totalduration = 108
 potduration = 73
+pottime = totalduration-potduration
 simtime = totalduration
 fpd = 1 # one step per day
 N = simtime * fpd
 dt = simtime / N
 
-for i in range(1,N):
+for i in range(1,N+1):
     if i % 18 == 0:
         print('step',i, '/',N)
     tomato_WAT.simulate(dt, False)
