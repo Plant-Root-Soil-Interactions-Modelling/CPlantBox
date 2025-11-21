@@ -30,6 +30,20 @@ source cpbenv/bin/activate
 ```
 The scripts might work on other Linux OS but has not been tested.
 
+By default, your local repository will only track the master branch. This allows for a quicker download and lower use of memory. In case you would like to switch between branches, you have two options:
+1. Use the switch_branch.py script:
+```bash
+python3 switch_branch.py <branch_to_switch_to>
+```
+2. Install all the branches initially, by running
+```bash
+python3 installDumuxRosi_Ubuntu.py full
+```
+You can then change branch by doing 
+```bash
+git checkout <branch_to_switch_to>
+```
+
 ## Linux - with conda environment
 
 This installation method uses ```conda``` to setup the building environment for CPlantBox. It'll pull the packages from the ```conda-forge``` channel to avoid licensing restrictions from default channels. For more info on conda restrictions, check this [article](https://www.fz-juelich.de/en/rse/the_latest/the-anaconda-is-squeezing-us)
@@ -57,22 +71,6 @@ make install
 cd tutorial/examples/
 python example1a_small.py
 ```
-
-## Linux - manual installation 
-Clone the repository by running
-```bash
-git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
-```
-and use CMake to configure and compile the CPlantBox libraries 
-```bash
-cmake . && make
-```
-To test the installation run a tutorial example, e.g
-```bash
-cd tutorial/examples/python
-python3 example1a.py
-```
-Dependecies are listed in the requirements.txt file.
 
 ## Windows
 CPlantBox is currently not available on windows. Some pointers to setup a Linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
