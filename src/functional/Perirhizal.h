@@ -53,8 +53,8 @@ public:
         const std::vector<double>& seg_values, 
         const std::vector<double>& seg_volume, 
         double dt, 
-        double theta_S,
-        double theta_wilting_point) ;
+        const std::vector<double>& theta_S,
+        const std::vector<double>& theta_wilting_point) ;
         
 
 protected:

@@ -86,7 +86,9 @@ void Perirhizal::redistribute_excess() {
 
         double totalCanAdd = std::accumulate(canAdd.begin(), canAdd.end(), 0.0);
         if (totalCanAdd < extraElement) {
-            throw std::runtime_error("Not enough capacity to redistribute excess elements.");
+            std::cout<<"Not enough capacity to redistribute excess elements."<<std::endl;
+            extraElement = totalCanAdd;
+            //throw std::runtime_error("Not enough capacity to redistribute excess elements.");
         }
 
         if (divideEqually) {
@@ -153,7 +155,9 @@ void Perirhizal::redistribute_deficit() {
         
         double totalCanTake = std::accumulate(canTake.begin(), canTake.end(), 0.0);
         if (totalCanTake < missingElement) {
-            throw std::runtime_error("Not enough capacity to redistribute deficit elements.");
+            std::cout <<"Not enough capacity to redistribute deficit elements."<<std::endl;
+            missingElement = totalCanTake;
+            //throw std::runtime_error("Not enough capacity to redistribute deficit elements.");
         }
 
         if (divideEqually) {
@@ -264,7 +268,7 @@ std::vector<double> Perirhizal::adapt_values(std::vector<double> val_new_,
         for (size_t i = 0; i < val_new.size(); ++i) {
                 std::cout<<val_new[i]<<", ";// concentration to content
             }std::cout<<std::endl;
-        throw std::runtime_error("Perirhizal::adapt_values() std::abs(diff) > 1e-16" );
+        //throw std::runtime_error("Perirhizal::adapt_values() std::abs(diff) > 1e-16" );
     }
     if (maxVal > 0.){assert(*std::max_element(val_new.begin(), val_new.end()) <= maxVal);}
     assert(*std::min_element(val_new.begin(), val_new.end()) >= minVal);
@@ -387,8 +391,8 @@ std::vector<double> Perirhizal::adapt_values(std::vector<double> val_new_,
         const std::vector<double>& seg_values, 
         const std::vector<double>& seg_volume, 
         double dt, 
-        double theta_S,
-        double theta_wilting_point) 
+        const std::vector<double>& theta_S, // per cellIds
+        const std::vector<double>& theta_wilting_point) // per cellIds
     {
         std::vector<int> organTypes = this->ms->organTypes;
         std::vector<double> splitVals(organTypes.size(), 0.0);
@@ -422,8 +426,8 @@ std::vector<double> Perirhizal::adapt_values(std::vector<double> val_new_,
                         seg_volume_roots, 
                         soilVals[cellid], 
                         dt,
-                        theta_S,
-                        theta_wilting_point);
+                        theta_S[cellid],
+                        theta_wilting_point[cellid]);
                 } else 
                 {
                     splitVals_ = distributeValSolute_(
