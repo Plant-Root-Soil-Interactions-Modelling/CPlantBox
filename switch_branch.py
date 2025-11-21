@@ -15,6 +15,7 @@ if len(sys.argv) < 2:
     
 remote_branch_name = sys.argv[1]
 print("switch branch to",remote_branch_name)
+subprocess.run(['git', 'stash'])
 
 if local_branch_exists(remote_branch_name):
     print("Branch exists locally: switching normally")
