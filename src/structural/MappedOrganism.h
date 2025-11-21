@@ -59,9 +59,13 @@ public:
     virtual int getSegment2leafId(int si_);
     virtual void calcExchangeZoneCoefs() { throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object"); }; // calcExchangeZoneCoefs() only usefull for carbon-limited growth i.e., with a MappedPlant
 
-    Vector3d getMinBounds();
     void setRadius(double a); ///< sets a constant radius for all segments
     void setSubTypes(int t); ///< sets a constant sub type for all segments
+
+    Vector3d getMinBounds(); ///< minimum bounds of plant nodes
+    Vector3d getMaxBounds(); ///< maximum bounds of plant nodes
+    Vector3d getDomainWidth() { return maxBound.minus(minBound); } ///< grid domain width
+    double getDomainSurface() { auto w = getDomainWidth(); return w.x*w.y; } ///< grid domain surface
 
     // nodes
     std::vector<Vector3d> nodes; ///< nodes [cm]

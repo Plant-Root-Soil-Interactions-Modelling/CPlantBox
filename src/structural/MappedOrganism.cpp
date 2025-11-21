@@ -559,6 +559,27 @@ Vector3d MappedSegments::getMinBounds() {
     return min_;
 }
 
+/**
+ * Calculates the maximum of node coordinates
+ * (e.g. maximum corner of bounding box)
+ * value not cached
+ */
+Vector3d MappedSegments::getMaxBounds() {
+    Vector3d max_ = Vector3d(nodes[0].x, nodes[0].y, nodes[0].z);
+    for (const auto& n : nodes) {
+        if (n.x > max_.x) {
+            max_.x = n.x;
+        }
+        if (n.y > max_.y) {
+            max_.y = n.y;
+        }
+        if (n.z > max_.z) {
+            max_.z = n.z;
+        }
+    }
+    return max_;
+}
+
 int MappedSegments::getSegment2leafId(int si_){
 		throw std::runtime_error("MappedSegments::getsegment2leafId: tried to access leafId of");
 		return -1;
