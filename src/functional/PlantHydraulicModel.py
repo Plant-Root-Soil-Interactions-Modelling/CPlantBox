@@ -729,6 +729,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         """
         # krs, _ = self.get_krs(sim_time)  # [cm2/day]
         krs = self.krs
+        area = self.ms.getDomainSurface()
         # print("area", area)  #
         krs = krs / area  # [day-1]
         peri = Perirhizal(self.ms)  # helper class, wrap mappedSegments
