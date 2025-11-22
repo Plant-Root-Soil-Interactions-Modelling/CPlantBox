@@ -571,7 +571,7 @@ void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbo
 	subTypes.resize(segments.size());
 	std::fill(subTypes.begin(), subTypes.end(), 0);//shoot of subtype 0
 	organTypes.resize(segments.size());
-	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root); //currently, all segments are shoot segments
+	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_stem); //currently, all segments are shoot segments
 	mapSegments(segments);
 }
 
