@@ -64,3 +64,4 @@ tutorial/jupyter/.ipynb_checkpoints/
 .venv/
 venv/
 env/
+.vscode/settings.json

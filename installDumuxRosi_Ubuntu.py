@@ -108,7 +108,7 @@ for mymodule in modules:
         raise Exception
 
 # pip3 install --upgrade pip setuptools wheel # necessary?
-subprocess.run(["python3", "-m", "pip","install", "--no-cache-dir", "mpi4py", "--verbose"])  # mpi4py can take a lot of time to install
+subprocess.run(["python3", "-m", "pip", "install", "--no-cache-dir", "mpi4py", "--verbose"])  # mpi4py can take a lot of time to install
 
 show_message("(1/3) Step completed. All prerequistes found.")
 
@@ -150,7 +150,7 @@ os.chdir("CPlantBox")
 
 subprocess.run(['git', 'submodule', 'update', '--recursive', '--init'])
 subprocess.run(['cmake', '.'])
-subprocess.run(['make'])
+subprocess.run(['make', 'install'])
 os.chdir("..")
 
 # run dunecontrol

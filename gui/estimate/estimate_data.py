@@ -1,8 +1,8 @@
 import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
 
 import plantbox as pb
-from rsml.rsml_data import RsmlData
-import rsml.rsml_reader as rsml_reader
+from plantbox.rsml.rsml_data import RsmlData
+import plantbox.rsml.rsml_reader as rsml_reader
 import estimate_params as ep
 
 import numpy as np
@@ -517,6 +517,9 @@ class EstimateDataModel:
         length_, age_ = [], []
         for i, j_ in enumerate(indices):
             for j in j_:
+                # print("i", i, type(i))
+                # print("j", j, type(j))
+                # print("j_", j_, type(j))
                 age = self.estimates[i][(j, "age")]
                 l = self.rsmls[i].properties["length"][j]
                 age_.append(age)  # for fitting

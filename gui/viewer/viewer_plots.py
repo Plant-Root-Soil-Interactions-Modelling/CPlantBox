@@ -1,7 +1,7 @@
 import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
 
 import plantbox as pb
-import functional.xylem_flux
+import plantbox.functional.xylem_flux
 import viewer_conductivities
 
 import numpy as np
@@ -93,6 +93,8 @@ def plot_suf(data, ax3, j):
         viewer_conductivities.init_dynamic_scenario1(data.xylem_flux)
     elif j == 3:
         viewer_conductivities.init_dynamic_scenario2(data.xylem_flux)
+    elif j == 4:
+        viewer_conductivities.init_constant_scenario_wine(data.xylem_flux)
 
     print(data.max_ct)
     print(data.base_segs)
@@ -136,6 +138,8 @@ def plot_krs(data, ax, j):
         viewer_conductivities.init_dynamic_scenario1(data.xylem_flux)
     elif j == 3:
         viewer_conductivities.init_dynamic_scenario2(data.xylem_flux)
+    elif j == 4:
+        viewer_conductivities.init_constant_scenario_wine(data.xylem_flux)
 
     t = int(np.ceil(data.max_ct))
     t_ = np.linspace(1, t, t)

@@ -1,8 +1,8 @@
 """ determines the (more easy) parameters la, lb, ln, a, theta by order and prints mean and std"""
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
-import rsml.rsml_reader as rsml
-import visualisation.vtk_plot as vp
+import plantbox.rsml.rsml_reader as rsml
+import plantbox.visualisation.vtk_plot as vp
 import estimate_root_params as es
 import plantbox as pb
 

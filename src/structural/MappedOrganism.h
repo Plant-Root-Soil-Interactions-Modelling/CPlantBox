@@ -31,7 +31,7 @@ public:
     MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii); ///< for constant kr, and kx
 
     virtual ~MappedSegments() { }
-	
+
 	std::map<int,double> sumSegFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
     std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes, int type = 0) const; ///< splits soil fluxes (per cell) into segment fluxes
 
@@ -41,6 +41,7 @@ public:
     void mapSegments(const std::vector<Vector2i>& segs);
     void cutSegments(); // cut and add segments
     int getNumberOfMappedSegments() const { return segments.size(); };  // for the python binding, != getNumberOfSegments (because of shoot roots or cutting)
+    int getNumberOfMappedNodes() const { return nodes.size(); }; // might contain extra nodes
     std::vector<int> getSegmentMapper() const;  // seg2cell mapper as vector
 
     void sort(); ///< sorts segments, each segment belongs to position s.y-1
@@ -58,9 +59,13 @@ public:
     virtual int getSegment2leafId(int si_);
     virtual void calcExchangeZoneCoefs() { throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object"); }; // calcExchangeZoneCoefs() only usefull for carbon-limited growth i.e., with a MappedPlant
 
-    Vector3d getMinBounds();
     void setRadius(double a); ///< sets a constant radius for all segments
     void setSubTypes(int t); ///< sets a constant sub type for all segments
+
+    Vector3d getMinBounds(); ///< minimum bounds of plant nodes
+    Vector3d getMaxBounds(); ///< maximum bounds of plant nodes
+    Vector3d getDomainWidth() { return maxBound.minus(minBound); } ///< grid domain width
+    double getDomainSurface() { auto w = getDomainWidth(); return w.x*w.y; } ///< grid domain surface
 
     // nodes
     std::vector<Vector3d> nodes; ///< nodes [cm]
@@ -80,7 +85,7 @@ public:
     std::vector<double> distanceTip;// save the distance between root segment and root tip (for location-dependent kr)
     std::vector<double> exchangeZoneCoefs;
 
-    Vector3d minBound;
+    Vector3d minBound; // grid bounds
     Vector3d maxBound;
     Vector3d resolution; // cells
     bool cutAtGrid = false;
@@ -124,7 +129,8 @@ public:
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
 
-    void disableExtraNode() { extraNode = false; }
+    void disableExtraNode() { extraNode = 0; }
+    void enableExtraNode() { extraNode = 1; } // extra collar node for collar BC easier
 
     // I made all initializer functions virtual and having only the verbose as argument to avoid confusion, stochasity can be set by Organism::setStochastic
     void initializeLB(bool verbose = true) override { initialize_(verbose,  true); }; ///< overridden, length based initialization
@@ -154,7 +160,7 @@ public:
 
  protected:
 
-    bool extraNode = true; // how to turn on and off again...
+    int extraNode = -1; // -1 .. choose automatic, 0.. False, 1.. True
 
 	bool rootHairs = true; // todo: determine from parameters, and set within constructor
 

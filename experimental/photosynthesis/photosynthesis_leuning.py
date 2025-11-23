@@ -70,7 +70,7 @@ cplantbox_dir = "../../"
 # #endif
 
 import plantbox as pb
-from functional.xylem_flux import XylemFluxPython
+from plantbox.functional.xylem_flux import XylemFluxPython
 from plantbox import Photosynthesis
 
 # load MPI environment

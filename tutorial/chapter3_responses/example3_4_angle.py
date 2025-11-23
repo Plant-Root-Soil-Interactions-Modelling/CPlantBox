@@ -1,9 +1,8 @@
 """scales insertion angle"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
+import numpy as np
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
-import numpy as np
+import plantbox.visualisation.vtk_plot as vp
 
 plant = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
@@ -37,8 +36,8 @@ lm_theta = np.mean(ana.getParameter("theta_deg"))
 ana = pb.SegmentAnalyser(plant)
 ana.crop(pb.SDF_Complement(patch))
 rm_theta = np.mean(ana.getParameter("theta_deg"))
-print('\nMean insertion angle within patch {:g} degrees'.format(lm_theta))
-print('Mean insertion angle outside patch {:g} degrees\n'.format(rm_theta))
+print(f'\nMean insertion angle within patch {lm_theta:g} degrees')
+print(f'Mean insertion angle outside patch {rm_theta:g} degrees\n')
 
 plant.write("results/example_3_4b.vtp")
 vp.plot_roots_and_container(plant, patch, "theta_deg")

@@ -7,9 +7,9 @@ import json
 
 import plantbox as pb
 from plantbox import Photosynthesis
-from functional.PlantHydraulicModel import HydraulicModel_Meunier  
+from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier  
 
-#import rsml_reader as rsml
+#import plantbox.rsml_reader as rsml
 
 
 

@@ -4,7 +4,7 @@ sys.path.append("../../../CPlantBox/src/python_modules")
 
 import vtk_plot as vp
 import vtk_tools as vt
-import rsml_writer
+import plantbox.rsml_writer
 
 """
 plot DuMux .vtp output, converts it to a rsml file

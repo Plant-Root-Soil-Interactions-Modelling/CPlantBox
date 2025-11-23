@@ -1,10 +1,7 @@
 """scales the root elongation rate"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
-
-import numpy as np
+import plantbox.visualisation.vtk_plot as vp
 
 rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
@@ -49,8 +46,8 @@ ll = al.getSummed("length")
 ar = pb.SegmentAnalyser(rs)
 ar.crop(right)
 lr = ar.getSummed("length")
-print('\nLeft  compartment total root length {:g} cm, {:g}%'.format(ll, 100 * ll / l))
-print('\nRight compartment total root length {:g} cm, {:g}% \n'.format(lr, 100 * lr / l))
+print(f'\nLeft  compartment total root length {ll:g} cm, {100 * ll / l:g}%')
+print(f'\nRight compartment total root length {lr:g} cm, {100 * lr / l:g}% \n')
 
 # write results
 rs.write("results/example_5a.py")  # compartment geometry

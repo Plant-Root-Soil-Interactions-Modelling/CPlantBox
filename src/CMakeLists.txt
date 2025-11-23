@@ -1,8 +1,13 @@
-# Disable LTO/IPO to avoid toolchain issues in container builds
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
-#
-# 1. Make CPlantBox library
-#
+message(STATUS "Project dir: ${PROJECT_SOURCE_DIR}")
+message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "Project binary dir: ${PROJECT_BINARY_DIR}")
+
+
+# -----------------------------
+# 1. Dependencies & Includes
+# -----------------------------
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+add_subdirectory(external/pybind11)
 
 include_directories(structural)
 include_directories(functional)
@@ -15,63 +20,10 @@ include_directories(external/) # for PiafMunch
 include_directories(${PROJECT_SOURCE_DIR}/src/external/suitsparse/include/) # for PiafMunch (fallback when bundled)
 include_directories(${PROJECT_SOURCE_DIR}/src/external/sundials/include/) # for PiafMunch (fallback when bundled)
 
-
-# Build CPlantBox as STATIC when building wheels (scikit-build), to embed into the
-# Python extension and avoid shipping a separate shared library in wheels.
-set(CPB_BUILD_SHARED ON)
-if(SKBUILD)
-  set(CPB_BUILD_SHARED OFF)
-endif()
-
-if(CPB_BUILD_SHARED)
+# -----------------------------
+# Shared Library
+# -----------------------------
 add_library(CPlantBox SHARED
-            structural/organparameter.cpp
-            structural/rootparameter.cpp
-			structural/seedparameter.cpp
-			structural/leafparameter.cpp
-			structural/stemparameter.cpp
-            structural/Organ.cpp
-            structural/Root.cpp
-            structural/RootDelay.cpp            
-            structural/Seed.cpp
-			structural/Stem.cpp
-			structural/Leaf.cpp
-			structural/Plant.cpp
-            structural/Organism.cpp
-            structural/Plant.cpp            
-            structural/RootSystem.cpp
-            structural/MappedOrganism.cpp
-     		structural/sdf.cpp
-            structural/SegmentAnalyser.cpp            
-            structural/tropism.cpp            
-			
-            functional/XylemFlux.cpp
-			functional/Photosynthesis.cpp
-			functional/Perirhizal.cpp
-			functional/PlantHydraulicParameters.cpp
-			functional/PlantHydraulicModel.cpp			
-
-			visualisation/Quaternion.h
-			visualisation/CatmullRomSpline.h
-			visualisation/PlantVisualiser.h
-			visualisation/PlantVisualiser.cpp
-            
-			external/tinyxml2/tinyxml2.cpp		
-			external/aabbcc/AABB.cc
-            external/gauss_legendre/gauss_legendre.cpp
-			external/PiafMunch/runPM.cpp     
-			external/PiafMunch/PiafMunch2.cpp     
-			external/PiafMunch/index_vector.cpp
-			external/PiafMunch/initialize.cpp
-			external/PiafMunch/odepack.cpp
-			external/PiafMunch/PM_KLU.cpp
-			external/PiafMunch/PM_matrix.cpp
-			external/PiafMunch/PM_vector.cpp
-			external/PiafMunch/solve.cpp
-            external/PiafMunch/sparse_matrix.cpp            
-)
-else()
-add_library(CPlantBox STATIC
             structural/organparameter.cpp
             structural/rootparameter.cpp
             structural/seedparameter.cpp
@@ -117,9 +69,6 @@ add_library(CPlantBox STATIC
             external/PiafMunch/solve.cpp
             external/PiafMunch/sparse_matrix.cpp            
 )
-set_target_properties(CPlantBox PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
-
 
 # Dependency strategy options (Phase 4)
 option(USE_SYSTEM_SUITESPARSE "Use system-installed SuiteSparse" OFF)
@@ -317,72 +266,52 @@ target_link_libraries(CPlantBox PUBLIC
                         suitesparseconfig
                         )
 
-# Avoid forcing output directories for portability; use CMake defaults (skbuild/packaging will install)
-# set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
-set(SS_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/external/suitsparse/include")
-set(SD_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/external/sundials/include")
-if(USE_SYSTEM_SUITESPARSE)
-  find_path(SS_INCLUDE_DIR NAMES klu.h SuiteSparse_config.h)
-endif()
-if(USE_SYSTEM_SUNDIALS)
-  find_path(SD_INCLUDE_DIR NAMES sundials/sundials_types.h sundials/sundials_config.h)
-endif()
+set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
 
-target_include_directories(CPlantBox PUBLIC ${SS_INCLUDE_DIR} ${SD_INCLUDE_DIR})
-#
-# 2. Make CPlantBox Pyhthon binding
-#
+target_include_directories(
+                        CPlantBox
+                        PUBLIC
+                        ${PROJECT_BINARY_DIR}/src/external/sundials/include
+                        ${PROJECT_BINARY_DIR}/src/external/suitsparse/include
+)
 
-# Python and pybind11 (modern discovery)
-# Prefer Development.Module for wheels; only require Embed outside skbuild builds
-set(_CPB_PY_COMPONENTS Interpreter Development.Module)
-if(NOT SKBUILD)
-  list(APPEND _CPB_PY_COMPONENTS Development.Embed)
-endif()
-find_package(Python3 COMPONENTS ${_CPB_PY_COMPONENTS} REQUIRED)
-# Workaround: some pybind11 tooling expects Python3::Python even for module-only builds.
-# If Embed component is unavailable, provide a dummy INTERFACE target so python3_add_library does not fail.
-if(NOT TARGET Python3::Python)
-  add_library(Python3::Python INTERFACE IMPORTED)
-endif()
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/external/pybind11/CMakeLists.txt")
-  message(FATAL_ERROR "Vendored pybind11 missing. Run: git submodule update --init --recursive")
-endif()
-add_subdirectory(external/pybind11)
+# Set library output directory
+set_target_properties(CPlantBox PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    BUILD_WITH_INSTALL_RPATH TRUE
+    INSTALL_RPATH "$ORIGIN"
+)
 
-pybind11_add_module(_plantbox SHARED 
-            PyPlantBox.cpp                                  
-            )
-# Link Python module; on Linux wheel builds, embed static CPlantBox objects with whole-archive
-if(SKBUILD AND UNIX AND NOT APPLE)
-  target_link_libraries(_plantbox PRIVATE Python3::Module "-Wl,--whole-archive" CPlantBox "-Wl,--no-whole-archive")
-else()
-  target_link_libraries(_plantbox PUBLIC CPlantBox Python3::Module)
-endif()
+# -----------------------------
+# Python binding
+# -----------------------------
 
-# Ensure static CPlantBox is fully included in the extension on Linux wheel builds
+pybind11_add_module(plantbox PyPlantBox.cpp)
+target_link_libraries(plantbox PRIVATE CPlantBox Python3::Module)
 
+set_target_properties(plantbox PROPERTIES
+    INSTALL_RPATH "$ORIGIN"
+)
 
-# Install rules to allow packaging via scikit-build-core
-install(TARGETS _plantbox
-        LIBRARY DESTINATION plantbox
-        ARCHIVE DESTINATION plantbox
-        RUNTIME DESTINATION plantbox
-        )
+# Install plantbox module into Python site-packages
+install(TARGETS CPlantBox LIBRARY DESTINATION "${Python3_SITEARCH}/plantbox") 
+install(TARGETS plantbox LIBRARY DESTINATION "${Python3_SITEARCH}/plantbox")
 
-# Install model parameter data into the wheel under plantbox/, when building via skbuild
-if(SKBUILD)
-  # Start conservatively: include the structural parameters used by smoke tests
-  install(DIRECTORY ${CMAKE_SOURCE_DIR}/modelparameter/structural/
-          DESTINATION plantbox/modelparameter/structural
-          FILES_MATCHING PATTERN "*")
-endif()
-			
-# Avoid forcing output directories; keep default so wheels/deploys are simpler
-# set_target_properties(plantbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
+install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${Python3_SITEARCH}/plantbox)
 
-
-
-
-
-
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/visualisation DESTINATION ${Python3_SITEARCH}/plantbox
+		FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "__pycache__" EXCLUDE)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rsml DESTINATION ${Python3_SITEARCH}/plantbox
+		FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "__pycache__" EXCLUDE)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/structural DESTINATION ${Python3_SITEARCH}/plantbox
+		FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "__pycache__" EXCLUDE)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/functional DESTINATION ${Python3_SITEARCH}/plantbox
+		FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "__pycache__" EXCLUDE)

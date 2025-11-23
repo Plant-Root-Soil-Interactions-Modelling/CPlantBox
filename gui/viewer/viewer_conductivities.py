@@ -14,6 +14,26 @@ r.kx_f(age, type)
 """
 
 
+def convert_axial(kx):
+    """ converts axial conductivity with units of [m4 s-1 MPa-1] to [cm3 / day] """
+    rho = 1000  # [kg/m3]
+    g = 9.81  # [m s-2]
+    rho_g = rho * g  # [kg m-2 s-2] = [Pa m-1]
+    kx_ = kx * rho_g  # m4 s-1 1e-6 Pa-1 * Pa m-1 = m3 s-1 1.e-6 = cm3 s-1
+    kx_ = kx_ * 60.*60.*24  #  cm3 s-1 = 60*60*24 cm3 /day
+    return kx_
+
+
+def convert_radial(kr):
+    """ converts radia conductivity with units of [m s-1 MPa-1] to [1 / day] """
+    rho = 1000  # [kg/m3]
+    g = 9.81  # [m s-2]
+    rho_g = rho * g  # [kg m-2 s-2] = [Pa m-1]
+    kr_ = kr * rho_g  # m s-1 1e-6 Pa-1 * Pa m-1 = s-1 1.e-6 = s-1 1.e-6
+    kr_ = kr_ * 60.*60.*24 * 1.e-6  # s-1 = 60*60*24 /day
+    return kr_
+
+
 def add_shoot_conductivity(kr_values, kr_times, kx_values, kx_times):
     """
     adds shoot conductivities to the tables, at subType 10
@@ -80,6 +100,46 @@ def init_constant_scenario2(r):
     r.setKxTables(kx_values, kx_times)  # [1/day]
 
 
+def init_constant_scenario_wine(r):
+    """ call to initialize age dependent or independent conductivities, 
+    initializes functions kr(age, type) and kx(age, type) """
+
+    kx0 = 1000
+    kx1 = 213.868458207658  # cm3 day-1
+    kx2 = 53.8961351157623
+    kx3 = 6.06479773916046
+
+    kr0 = 0.
+    kr1 = 3.39e-05  # day-1
+    kr2 = 5.93e-05
+    kr3 = 3.39e-04
+
+    # make an age dependent table from the values
+    kr0_ = np.array([[-1e4, 0.], [-1.e-9, 0.], [0., kr0], [1e4, kr0]])  # 0 for negative age
+    kr1_ = np.array([[-1e4, 0.], [-1.e-9, 0.], [0., kr1], [1e4, kr1]])  # 0 for negative age
+    kr2_ = np.array([[-1e4, 0.], [-1.e-9, 0.], [0., kr2], [1e4, kr2]])  # 0 for negative age
+    kr3_ = np.array([[-1e4, 0.], [-1.e-9, 0.], [0., kr3], [1e4, kr3]])  # 0 for negative age
+
+    kx0_ = np.array([[0, kx0], [1e4, kx0]])
+    kx1_ = np.array([[0, kx1], [1e4, kx1]])
+    kx2_ = np.array([[0, kx2], [1e4, kx2]])
+    kx3_ = np.array([[0, kx3], [1e4, kx3]])
+
+    kr_values = [kr0_[:, 1], kr1_[:, 1], kr2_[:, 1]]
+    kr_values.extend([kr3_[:, 1]] * 7)  # for subtype 0 to 9
+    kr_times = [kr0_[:, 0], kr1_[:, 0], kr2_[:, 0]]
+    kr_times.extend([kr3_[:, 0]] * 7)
+
+    kx_values = [kx0_[:, 1], kx1_[:, 1], kx2_[:, 1]]
+    kx_values.extend([kx3_[:, 1]] * 7)  # for subtype 0 to 9
+    kx_times = [kx0_[:, 0], kx1_[:, 0], kx2_[:, 0]]
+    kx_times.extend([kx3_[:, 0]] * 7)
+
+    add_shoot_conductivity(kr_values, kr_times, kx_values, kx_times)
+    r.setKrTables(kr_values, kr_times)  # [cm3/day]
+    r.setKxTables(kx_values, kx_times)  # [1/day]
+
+
 def init_dynamic_scenario1(r):
     """ call to initialize age dependent or independent conductivities, 
     initializes functions kr(age, type) and kx(age, type) """
@@ -129,4 +189,15 @@ def init_dynamic_scenario2(r):
     add_shoot_conductivity(kr_values, kr_times, kx_values, kx_times)
     r.setKrTables(kr_values, kr_times)  # [cm3/day]
     r.setKxTables(kx_values, kx_times)  # [1/day]
+
+
+if __name__ == '__main__':
+
+    print("Radial", convert_radial(4.e-8))
+    print("Radial", convert_radial(7.e-8))
+    print("Radial", convert_radial(4.e-7))
+    print()
+    print("Axial E", convert_axial(2.52327153659882e-07))
+    print("Axial E", convert_axial(6.35879572004218e-08))
+    print("Axial E", convert_axial(7.15539431980838e-09))
 

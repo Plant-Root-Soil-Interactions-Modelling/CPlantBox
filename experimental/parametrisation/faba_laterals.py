@@ -1,8 +1,8 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-# import rsml.rsml_reader as rsml
-import rsml_reader_ as rsml
+# import plantbox.rsml.rsml_reader as rsml
+import plantbox.rsml_reader_ as rsml
 import estimate_params as es
 
 import math

@@ -6,11 +6,11 @@ D. Leitner, 2018
 """
 import sys; sys.path.append("../modules"); sys.path.append("../../../CPlantBox");  sys.path.append("../../../CPlantBox/src")
 
-import functional.van_genuchten as vg
-
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy import integrate
-import matplotlib.pyplot as plt
+
+import plantbox.functional.van_genuchten as vg
 
 sand = vg.Parameters([0.045, 0.43, 0.15, 3, 1000])
 loam = vg.Parameters([0.08, 0.43, 0.04, 1.6, 50])
@@ -26,15 +26,19 @@ for i, soil in enumerate([sand, loam, clay]):  # make three subplots
     else:
         theta_sur = soil.theta_S
 
-    theta_i = vg.water_content(-400, soil);
+    theta_i = vg.water_content(-400, soil)
 
-    K_sur = vg.hydraulic_conductivity(vg.pressure_head(theta_sur, soil), soil);
+    K_sur = vg.hydraulic_conductivity(vg.pressure_head(theta_sur, soil), soil)
     K_i = vg.hydraulic_conductivity(-400, soil)
-    psi = lambda theta: vg.pressure_head(theta, soil)
-    K = lambda psi: vg.hydraulic_conductivity(psi, soil)
-    Dw = lambda psi: K(psi) / (vg.specific_moisture_storage(psi, soil))
+    def psi(theta):
+        return vg.pressure_head(theta, soil)
+    def K(psi):
+        return vg.hydraulic_conductivity(psi, soil)
+    def Dw(psi):
+        return K(psi) / (vg.specific_moisture_storage(psi, soil))
 
-    F = lambda theta: Dw(psi(theta)) / ((K_sur - K_i) * (theta - theta_i) - (K(psi(theta)) - K_i) * (theta_sur - theta_i))
+    def F(theta):
+        return Dw(psi(theta)) / ((K_sur - K_i) * (theta - theta_i) - (K(psi(theta)) - K_i) * (theta_sur - theta_i))
 
     theta_a = (theta_sur + theta_i) / 2
 
@@ -67,7 +71,7 @@ for i, soil in enumerate([sand, loam, clay]):  # make three subplots
     lineStyle = ['b-', 'b-', 'b-']
     for j in range(0, len(tv[0])):
         t = tv[i][j]
-        x = eta + (K_sur - K_i) * t / (theta_sur - theta_i);
+        x = eta + (K_sur - K_i) * t / (theta_sur - theta_i)
         ax[i].plot(theta_, -x, lineStyle[i])
 
     ax[i].set_xlabel(r'$\theta$ (cm$^3$ cm$^{-3}$)', fontsize=20)

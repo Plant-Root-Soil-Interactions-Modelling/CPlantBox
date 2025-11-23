@@ -28,9 +28,10 @@
 		<parameter name="simulationTime" value="28"/>
         <!--Recommended final simulation time  [day]-->
 		<parameter name="delayDefinition" value="1"/>
+		<parameter name="delayDefinitionShoot" value="1"/>
 
 </organ>
-<organ type="root" name="primary" subType="1">
+<organ type="root" name="Primary" subType="1">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -66,7 +67,7 @@
         <parameter name="successor" type="2" percentage="0.04"/>
         <!--Sub type of lateral roots-->
 </organ>
-<organ type="root" name="basal" subType="4">
+<organ type="root" name="Basal" subType="4">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -103,7 +104,7 @@
         <parameter name="successor" type="2" percentage="0.04"/>
         <!--Sub type of lateral roots-->
 </organ>
-<organ type="root" name="crown" subType="5">
+<organ type="root" name="Crown" subType="5">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -140,7 +141,7 @@
         <parameter name="successor" type="2" percentage="0.04"/>
         <!--Sub type of lateral roots-->
 </organ>
-<organ type="root" name="lateral1" subType="2">
+<organ type="root" name="Lateral1" subType="2">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -178,7 +179,7 @@
         <parameter name="successor" type="3" percentage="1"/>
         <!--Sub type of lateral roots-->
 </organ>
-<organ type="root" name="lateral2" subType="3">
+<organ type="root" name="Lateral2" subType="3">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -212,7 +213,7 @@
         <parameter name="tropismS" value="0.31415901"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
 </organ>
-<organ type="stem" name="mainstem" subType="1">
+<organ type="stem" name="Main stem" subType="1">
 		<!--Basal zone [cm]-->
 		<parameter name="lb" value="1" dev="0"/>
 		<!--Basal zone [cm]-->
@@ -220,7 +221,7 @@
 		<!--Apical zone [cm];-->
 		<parameter name="ln" value="1.486971798" dev="0.31335024" functiontype="0"/>
 		<!--Inter-lateral distance [cm];-->
-		<parameter name="lmax" value="14" dev="0"/>
+		<parameter name="lmax" value="15.928870293" dev="0"/>
 		<parameter name="r" value="0.758517633" dev="0.875606321"/>
 		<!--growth delay of laterals (incremental => init age = -delayLat * numLat-->
 		<parameter name="ldelay" value="3" dev="0"/>
@@ -247,29 +248,27 @@
 		<!--Apical zone [cm];-->
 		<parameter name="ln" value="0" dev="0" functiontype="3"/>
 		<!--Inter-lateral distance [cm];-->
-		<parameter name="lmax" value="49.12433414" dev="15.52060474"/>
-		<parameter name="r" value="10.90689765" dev="3.004569284"/>
+		<parameter name="lmax" value="38.41053981" dev="0"/>
+		<parameter name="r" value="7.921748215" dev="2.337502885"/>
 		<parameter name="tropismT" value="1"/>
-		<parameter name="tropismN" value="5"/>
+		<parameter name="tropismN" value="3"/>
 		<parameter name="tropismS" value="0.05"/>
 		<parameter name="dx" value="1"/>
-		<parameter name="theta" value="0.739136061" dev="0.261949409"/>
+		<parameter name="theta" value="0.12" dev="0.261949409"/>
 		<parameter name="rlt" value="1000000000" dev="0"/>
 		<parameter name="gf" value="1"/>
 		<parameter name="RotBeta" value="1"/>
 		<!--says which parameters to use when evaluating area and volume-->
-		<parameter name="shapeType" value="1" />
+		<parameter name="shapeType" value="2" />
 		<!--only used if shapeType == 0-->
 		<parameter name="a" value="0.0638117391" dev="0.0"/>
 		<!--width parameter only used if shapeType == 1-->
-		<parameter name="Width_petiole" value="0.35" />
-		<parameter name="Width_blade" value="1.563152174" />
 		<!--only used if shapeType == 2-->
-		<parameter name="areaMax" value="71.95670914"/>
+		<parameter name="areaMax" value="54.45388021"/>
 		<parameter name="geometryN" value="100"/>
 		<!--leaf 2d shape define along main axis or radially-->
-		<parameter name="parametrisationType" value="1"/>
+		<parameter name="parametrisationType" value="0"/>
 		<!--lead 2d shape-->
-		<parameter name="leafGeometry" phi="-3, -2.1, 0., 2.45, 3.5" x="1., 1., 1., 1., 1."/>
+		<parameter name="leafGeometry" phi="-0.5, -0.44444444, -0.25, 0., 0.25, 0.5" x="38.41053981, 1, 1, 0.3, 1, 38.41053981"/>
 </organ>
 </plant>

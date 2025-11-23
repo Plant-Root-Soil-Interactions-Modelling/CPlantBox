@@ -2,7 +2,7 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 path = path = "../../modelparameter/structural/rootsystem/"
 name = "Zea_mays_4_Leitner_2014"

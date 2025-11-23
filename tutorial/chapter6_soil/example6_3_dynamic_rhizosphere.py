@@ -1,22 +1,16 @@
 """ 
 Solute transport example - radially symmetric 1D model for nitrate uptake
 """
-import sys; sys.path.append("../"); sys.path.append("../../../CPlantBox/"); sys.path.append("../../../CPlantBox/src")
-sys.path.append("../../../dumux-rosi/python/modules"); sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/");
+import sys; sys.path.append("../"); sys.path.append("../../../CPlantBox/"); sys.path.append("../../../CPlantBox/src") # |\label{l63:lib_start}|
+sys.path.append("../../../dumux-rosi/python/modules"); sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")
 
-import datetime
-import pickle
-import matplotlib
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-import numpy as np
-import pandas as pd
 import matplotlib as mpl
-import plantbox as pb  # CPlantBox
-from functional.xylem_flux import *  # root system Python hybrid solver
-from rosi_richardsnc_cyl import RichardsNCCylFoam   # C++ part (Dumux binding), macroscopic soil model
+import matplotlib.pyplot as plt
+import numpy as np
 from richards_flat import RichardsFlatWrapper  # Python part of cylindrcial
-import functional.van_genuchten as vg
+from rosi_richardsnc_cyl import RichardsNCCylFoam  # C++ part (Dumux binding), macroscopic soil model
+
+from plantbox.functional.xylem_flux import *  # root system Python hybrid solver
 
 SMALL_SIZE = 20
 MEDIUM_SIZE = 20
@@ -30,12 +24,12 @@ plt.rc('legend', fontsize = SMALL_SIZE)  # legend fontsize
 plt.rc('figure', titlesize = BIGGER_SIZE)  # fontsize of the figure title
 mpl.rcParams['mathtext.default'] = 'regular'
 
-def plot_profile(cc, h, c,  depth = -100.): 
+def plot_profile(cc, h, c,  depth = -100.): # |\label{l63:plot_profile_start}|
     """ shows soil matric potential and concentration in the profile"""
     fig, ax1 = plt.subplots()
     color = 'tab:red'
     ax1.plot(cc, h, color = color)
-    ax1.set_ylabel("Soil matric potential [cm]", color = color)
+    ax1.set_ylabel("Soil water potential [hPa]", color = color)
     ax1.set_xlabel("Distance from root surface [cm]")
     ax1.tick_params(axis = 'y', labelcolor = color)
     ax2 = ax1.twinx()
@@ -44,10 +38,10 @@ def plot_profile(cc, h, c,  depth = -100.):
     ax2.set_ylabel("Nitrate concentration [g/L]", color = color)
     ax2.set_xlabel("Distance from root surface [cm]")
     ax2.tick_params(axis = 'y', labelcolor = color)
-    plt.tight_layout()
+    plt.tight_layout() # |\label{l63:plot_profile_end}|
 
 
-def plot_history(area, w, c, N):
+def plot_history(area, w, c, N): # |\label{l63:plot_history_start}|
     """ plots concentration per liquid phase and concentration per soil volume"""
     c_ = np.array([np.sum(np.multiply(area, np.multiply(c[i], w[i]))) for i in range(0, N)])  # nitrate concentration per soil volume
     fig, ax1 = plt.subplots()
@@ -62,7 +56,7 @@ def plot_history(area, w, c, N):
     ax2.set_ylabel("[kg/m$^3$] soil", color = color)
     ax2.set_xlabel("Time [day]")
     ax2.tick_params(axis = 'y', labelcolor = color)
-    plt.tight_layout()
+    plt.tight_layout() # |\label{l63:plot_history_end}|
 
 
 """ Soil """  # |\label{l63:soil_start}|
@@ -78,7 +72,7 @@ s.createGrid1d(points)
 s.setVGParameters([soil]) # |\label{l63:soil_end}|
 
 """ Inital conditions """  # |\label{l63:ic_start}|
-s.setHomogeneousIC(-100.)  # cm homogeneous pressure head
+s.setHomogeneousIC(-100.)  # hPa homogeneous pressure head
 nitrate_initial_values = 5.e-3 / soil[1] # [g/L] concentration in the soil to concentration in the water phase
 s.setICZ_solute(nitrate_initial_values )  # step-wise function, ascending order  # |\label{l63:ic_end}|
 

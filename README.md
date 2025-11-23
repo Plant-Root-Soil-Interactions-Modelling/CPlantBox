@@ -2,7 +2,7 @@
 
 # Introduction
 
-CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and provides gerneral tools to build plant soil-interaction models. To solve partial differential equations CPlantBox can use the finite volume solver DuMu<sup>x</sup> and offers simplified Python interfaces in the repository _dumux-rosi_.   
+CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and provides general tools to build plant soil-interaction models. To solve partial differential equations CPlantBox can use the finite volume solver DuMu<sup>x</sup> and offers simplified Python interfaces in the repository _dumux-rosi_.   
 
 # Installation
 
@@ -30,6 +30,20 @@ source cpbenv/bin/activate
 ```
 The scripts might work on other Linux OS but has not been tested.
 
+By default, your local repository will only track the master branch. This allows for a quicker download and lower use of memory. In case you would like to switch between branches, you have two options:
+1. Use the switch_branch.py script:
+```bash
+python3 switch_branch.py <branch_to_switch_to>
+```
+2. Install all the branches initially, by running
+```bash
+python3 installDumuxRosi_Ubuntu.py full
+```
+You can then change branch by doing 
+```bash
+git checkout <branch_to_switch_to>
+```
+
 ## Linux - with conda environment
 
 This installation method uses ```conda``` to setup the building environment for CPlantBox. It'll pull the packages from the ```conda-forge``` channel to avoid licensing restrictions from default channels. For more info on conda restrictions, check this [article](https://www.fz-juelich.de/en/rse/the_latest/the-anaconda-is-squeezing-us)
@@ -48,7 +62,7 @@ conda env create -f environment.yml
 conda activate cpb
 git submodule update --init --recursive
 cmake .
-make
+make install
 ```
 
 3. Test the installation by running a tutorial example, e.g.:
@@ -57,22 +71,6 @@ make
 cd tutorial/examples/
 python example1a_small.py
 ```
-
-## Linux - manual installation 
-Clone the repository by running
-```bash
-git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
-```
-and use CMake to configure and compile the CPlantBox libraries 
-```bash
-cmake . && make
-```
-To test the installation run a tutorial example, e.g
-```bash
-cd tutorial/examples/python
-python3 example1a.py
-```
-Dependecies are listed in the requirements.txt file.
 
 ## Windows
 CPlantBox is currently not available on windows. Some pointers to setup a Linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
@@ -105,8 +103,12 @@ The official [CPlantBox webapp](https://cplantbox.fz-juelich.de) helps to demons
 Another [web application](http://cplantbox.com) was designed to conduct simulations and visualize the dynamics of plant growth. The source code is avialable at [github-xiaoranzhou](https://github.com/xiaoranzhou/cpb).
 
 ## Jupyter notebooks
-1. [Structure definition and analysis](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F1_cplantbox.ipynb)
-2. [Water flow in CPlantBox](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F2_water_flux.ipynb)
+Direct links to notebooks from the summer school of 2025:
+1. [Structure definition and analysis](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/ss2025?urlpath=%2Fdoc%2Ftree%2Ftutorial%2Fjupyter%2Fsummer_school_2025%2F1_root_architecture.ipynb)
+2. [Water flow in CPlantBox](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/ss2025?urlpath=%2Fdoc%2Ftree%2Ftutorial%2Fjupyter%2Fsummer_school_2025%2F2_root_hydraulics.ipynb)
+3. [Online repository](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/ss2025_binder)
+
+For the third repository, you need to go the folder `dumux/CPlantBox/tutorial/jupyter/summer_school_2025` to access the notebooks.
 
 ## Videos
 Simulation videos availabe in [Youtube channel](https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q).

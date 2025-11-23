@@ -1,14 +1,9 @@
+"""Small example"""
+
 import os
 
 import plantbox as pb  # |\label{l13:cplantbox}|
-
-# Optional plotting: works only if the repo's visualisation package and VTK are available
-try:  # |\label{l13:vtk_plot}|
-    import visualisation.vtk_plot as vp  # type: ignore
-
-    _HAVE_VTK = True
-except Exception:
-    _HAVE_VTK = False
+import plantbox.visualisation.vtk_plot as vp  # |\label{l13:vtk_plot}|
 
 plant = pb.Plant()  # Create a new plant |\label{l13:plant}|
 
@@ -29,6 +24,5 @@ plant.write("results/example_plant.vtp")  # using polylines |\label{l13:write_po
 ana = pb.SegmentAnalyser(plant)
 ana.write("results/example_plant_segs.vtp")  # using segments |\label{l13:write_segs}|
 
-if _HAVE_VTK:
-    # Interactive plot, using vtk, press x, y, z to change view, r to reset view, g to save png
-    vp.plot_plant(plant, "age")  # e.g. organType, subType, age |\label{l13:plot_plant}|
+# Interactive plot, using vtk, press x, y, z to change view, r to reset view, g to save png
+vp.plot_plant(plant, "age")  # e.g. organType, subType, age |\label{l13:plot_plant}|

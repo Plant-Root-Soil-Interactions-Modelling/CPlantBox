@@ -3,7 +3,7 @@ import sys; sys.path.append(".."); sys.path.append("../..");
 import plantbox as pb
 from plantbox import Perirhizal
 from plantbox import MappedSegments
-import functional.van_genuchten as vg
+import plantbox.functional.van_genuchten as vg
 
 import numpy as np
 
@@ -83,15 +83,33 @@ class PerirhizalPython(Perirhizal):
         """
         if inner_kr < 1.e-7:
             return sx
-        k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint)
-        # rho = outer_r / inner_r  # Eqn [5]
-        rho2 = rho * rho  # rho squaredswitched
-        # b = 2 * (rho2 - 1) / (1 + 2 * rho2 * (np.log(rho) - 0.5))  # Eqn [4]
-        b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Eqn [7]
+        k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint)  # Vanderborgth et al. 2023, Eqn [7]
+        rho2 = np.square(rho)  # rho squared
+        b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
         fun = lambda x: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
-        # rsx = fsolve(fun, (rx + sx) / 2)
         rsx = root_scalar(fun, method = 'brentq', bracket = [min(rx, sx), max(rx, sx)])
         return rsx.root
+
+    def perirhizal_conductance_per_layer(self, h_bs, h_sr, sp):
+        """ 
+        The perirhizal conductance in a soil layer (or cell) (Vanderborght et al. 2023, Eqn [6]) [day-1], 
+        see also PlantHydraulicModel.get_soil_rootsystem_concductance().
+        If there are no roots in a layer nan is returned
+        
+        h_bs           bulk soil matric potential
+        h_sr           matric potential at the soil root interface   
+        sp             soil parameter: van Genuchten parameter set (type vg.Parameters)        
+        """
+        r_root = self.average(self.ms.getEffectiveRadii())  # average radius over layer [cm]
+        rld = self.get_density("length")  # root length density per layer [cm-2] = [cm/cm3]
+        r_phriz = np.divide(1., np.sqrt(np.pi * rld))  # outer perirhizal radii per layer [cm]
+        rho = np.divide(r_phriz, r_root)  # [1], see Vanderborght et al. (2023), Eqn [9]
+        rho2 = np.square(rho)  # [1]
+        b = np.divide(2 * (rho2 - np.ones(rho2.shape)) , np.ones(rho2.shape) - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # [1], see Eqn [8]
+        k_prhiz = lambda h_bs, h_sr: (vg.fast_mfp[sp](h_bs) - vg.fast_mfp[sp](h_sr)) / (h_bs - h_sr)  # an effective conductivity [cm/day]
+        dz = (self.ms.maxBound.z - self.ms.minBound.z) / self.ms.resolution.z  # [cm]
+        l_root = rld * dz  # [cm-1]
+        return 2 * np.pi * np.multiply(l_root, np.multiply(b, k_prhiz(h_bs, h_sr)))  # [day-1], see Vanderborght et al. (2023), Eqn [6]
 
     def create_lookup_mpi(self, filename, sp):
         """      
@@ -283,7 +301,7 @@ class PerirhizalPython(Perirhizal):
             return np.ones((0,)), np.ones((0,))
 
     def get_density(self, type:str, volumes:list = []):
-        """ retrives length, surface or volume density [cm/cm3, cm2/cm3, or cm3/cm3] per soil cells
+        """ retrieves length, surface or volume density [cm/cm3, cm2/cm3, or cm3/cm3] per soil cells
             
             type       length, surface or volume
             volumes    soil volume cells, if empty a recangular grid is assumed (its data stored in MappedSegments), see get_default_volumes_() 
@@ -339,7 +357,7 @@ class PerirhizalPython(Perirhizal):
         return d
 
     def get_outer_radii(self, type:str, volumes:list = []):
-        """ retrives the outer radii of the perirhizal zones [cm] 
+        """ retrieves the outer radii of the perirhizal zones [cm] 
             
             type       each soil volume is splitted into perirhizal zones proportional to segment "length", "surface" or "volume"
             volumes    soil volume cells, if empty a recangular grid is assumed (its data stored in MappedSegments), see get_default_volumes_() 

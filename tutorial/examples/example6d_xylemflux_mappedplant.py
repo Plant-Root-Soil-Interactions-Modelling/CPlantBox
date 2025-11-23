@@ -2,8 +2,8 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
-from functional.xylem_flux import XylemFluxPython
+import plantbox.visualisation.vtk_plot as vp
+from plantbox.functional.xylem_flux import XylemFluxPython
 
 import numpy as np
 import matplotlib.pyplot as plt

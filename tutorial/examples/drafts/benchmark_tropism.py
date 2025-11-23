@@ -8,7 +8,7 @@ sys.path.append("..")
 import plantbox as pb
 import matplotlib.pyplot as plt
 from rb_tools import *
-from rsml import *
+from plantbox.rsml import *
 from cmath import pi
 
 dx = 1

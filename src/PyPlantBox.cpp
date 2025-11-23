@@ -591,7 +591,7 @@ PYBIND11_MODULE(_plantbox, m) {
 
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, bool>()) // <---------------------------------------------------
             .def_readwrite("lb", &RootSpecificParameter::lb)
             .def_readwrite("la", &RootSpecificParameter::la)
             .def_readwrite("ln", &RootSpecificParameter::ln)
@@ -599,7 +599,8 @@ PYBIND11_MODULE(_plantbox, m) {
             .def_readwrite("a", &RootSpecificParameter::a)
             .def_readwrite("theta", &RootSpecificParameter::theta)
             .def_readwrite("rlt", &RootSpecificParameter::rlt)
-			.def("getK",&RootSpecificParameter::getK)
+            .def_readwrite("laterals", &RootSpecificParameter::laterals)
+            .def("getK",&RootSpecificParameter::getK)
             .def("nob", &RootSpecificParameter::nob);
     /*
      * seedparameter.h
@@ -784,6 +785,11 @@ PYBIND11_MODULE(_plantbox, m) {
             .def("calcAge", &Root::calcAge)
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
             .def("param", &Root::param);
+    py::class_<StaticRoot, Root, std::shared_ptr<StaticRoot>>(m, "StaticRoot")
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, double, int>())
+            .def("initializeLaterals", &StaticRoot::initializeLaterals)
+            .def("addLateral", &StaticRoot::addLateral);
+
     /**
      * Seed.h
      */
@@ -885,11 +891,16 @@ PYBIND11_MODULE(_plantbox, m) {
         .def("matric2total",&MappedSegments::matric2total)
         .def("total2matric",&MappedSegments::total2matric)
 		.def("getNumberOfMappedSegments",&MappedSegments::getNumberOfMappedSegments)
+		.def("getNumberOfMappedNodes",&MappedSegments::getNumberOfMappedNodes)
         .def("getSegmentMapper",&MappedSegments::getSegmentMapper)
         .def("getEffectiveRadius",&MappedSegments::getEffectiveRadius)
         .def("getEffectiveRadii",&MappedSegments::getEffectiveRadii)
 		.def("calcExchangeZoneCoefs",&MappedSegments::calcExchangeZoneCoefs)
-        .def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
+		.def("getMinBounds",&MappedSegments::getMinBounds)
+        .def("getMaxBounds",&MappedSegments::getMaxBounds)
+		.def("getDomainWidth",&MappedSegments::getDomainWidth)
+        .def("getDomainSurface",&MappedSegments::getDomainSurface)
+		.def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
         .def_readwrite("distanceTip", &MappedPlant::distanceTip)
         .def_readwrite("nodes", &MappedSegments::nodes)
         .def_readwrite("nodeCTs", &MappedSegments::nodeCTs)
@@ -940,6 +951,7 @@ PYBIND11_MODULE(_plantbox, m) {
 			.def("plant", &MappedPlant::plant)
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
 			.def("disableExtraNode",&MappedPlant::disableExtraNode)
+            .def("enableExtraNode",&MappedPlant::enableExtraNode)
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
 			.def("getNodeIds",&MappedPlant::getNodeIds);

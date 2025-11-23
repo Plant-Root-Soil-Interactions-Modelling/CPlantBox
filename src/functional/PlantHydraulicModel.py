@@ -8,9 +8,10 @@ import matplotlib.pyplot as plt
 
 import plantbox as pb
 from plantbox import PlantHydraulicModel as PlantHydraulicModelCPP
-from structural.MappedOrganism import MappedPlantPython
+from plantbox.structural.MappedOrganism import MappedPlantPython
+from plantbox.functional.Perirhizal import PerirhizalPython as Perirhizal
 
-import rsml.rsml_reader as rsml
+import plantbox.rsml.rsml_reader as rsml
 
 
 class PlantHydraulicModel(PlantHydraulicModelCPP):
@@ -241,6 +242,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         return heff[0]
 
     def test_unmapped(self):
+        """ test for unmapped segments """
         pass_ = True
         segs = self.get_segments()
         types = self.ms.subTypes
@@ -303,8 +305,8 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         for seg_id, cell_id in map.items():
             # if seg_id < 5:
             #     print("seg_id", seg_id, "cell_id", cell_id)
-            if (cell_id < 0)&(types[seg_id] == int(pb.root)):
-                print("Warning: root segment ", seg_id, "is not mapped (out of the soil domain), this could cause problems with coupling!", 
+            if (cell_id < 0) & (types[seg_id] == int(pb.root)):
+                print("Warning: root segment ", seg_id, "is not mapped (out of the soil domain), this could cause problems with coupling!",
                 nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
         print()
 
@@ -319,7 +321,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
     (no convenient sparse cholesky implementation in scipy)
     """
 
-    def __init__(self, ms, params, cached = True):
+    def __init__(self, ms, params, cached = False):
         """ 
             @param ms is of type MappedSegments (or specializations), or a string containing a rsml filename
             @param params hydraulic conductivities described by PlantHydraulicParameters
@@ -429,6 +431,10 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             self.last = "dirichlet"
 
         return x
+
+    def get_transpiration(self, sim_time, rx, rsx, cells = False, soil_k = []):
+        """ actual transpiration [cm3 day-1], calculated as the sum of all radial fluxes"""
+        return np.sum(self.radial_fluxes(sim_time, rx, rsx, cells, soil_k))
 
     def radial_fluxes(self, sim_time, rx, rsx, cells = False, soil_k = []):
         """ returns the exact radial fluxes per segment (calls base class)
@@ -578,7 +584,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             self.update(sim_time)
         rsx_ = self.ms.matric2total(rsx)
         b = self.Kr.dot(rsx_)
-        b[self.ci] += self.kx0 * collar_pot
+        b[self.collar_index_] += self.kx0 * collar_pot
         rx_ = self.A_d_splu.solve(b)
         rx = self.ms.total2matric(rx_)
         return np.append(collar_pot, rx)
@@ -597,10 +603,10 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         if not self.usecached_:
             self.update(sim_time)
         collar_pot = self.get_collar_potential(t_act, rsx)
-        # print("solve_neumann(), collar potential", collar_pot, "cm", self.ci)
+        # print("solve_neumann(), collar potential", collar_pot, "cm", self.collar_index_)
         rsx_ = self.ms.matric2total(rsx)
         b = self.Kr.dot(rsx_)
-        b[self.ci] += self.kx0 * collar_pot
+        b[self.collar_index_] += self.kx0 * collar_pot
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
         return np.append(collar_pot, rx)
 
@@ -613,13 +619,14 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @return [cm] root matric potential per root system node  
         """
         self.update(sim_time)
+        # print('suf', self.suf.shape)
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
         collar = self.get_collar_potential(t_act, rsx)
         collar = max(collar, self.wilting_point)
         rsx_ = self.ms.matric2total(rsx)
         b = self.Kr.dot(rsx_)
-        b[self.ci] += self.kx0 * collar
+        b[self.collar_index_] += self.kx0 * collar
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
         return np.append(collar, rx)
 
@@ -641,7 +648,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         collar = max(collar, self.wilting_point)
         rsx_ = self.ms.matric2total(rsx)
         b = self.Kr.dot(rsx_)
-        b[self.ci] += self.kx0 * collar
+        b[self.collar_index_] += self.kx0 * collar
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
         return np.append(collar, rx)
 
@@ -698,37 +705,56 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         Kr = sparse.diags(kr)
         L = IMt @ Kx @ IM  # Laplacian
         L_ = L[1:, 1:].tocsc()
-        return  L_ + Kr, Kr, kx_[self.ci]  # L_{N-1} + Kr, se Hess paper
+        return  L_ + Kr, Kr, kx_[self.collar_index_]  # L_{N-1} + Kr, se Hess paper
 
     def update(self, sim_time):
         """ call before solve(), get_collar_potential(), and get_Heff() """
-        # print("update")
-        self.ci = self.collar_index()  # segment index of the collar segment
+        # self.collar_index_ = self.collar_index()  # segment index of the collar segment
         A_d, self.Kr, self.kx0 = self.doussan_system_matrix(sim_time)
         self.A_d_splu = LA.splu(A_d)
         self.krs, _ = self.get_krs_(sim_time)
-        # print("update, krs", self.krs)
         self.suf = np.transpose(self.get_suf_())
-        # print("update, sum suf", np.sum(self.suf))
 
     def get_collar_potential(self, t_act, rsx):
         """ collar potential for an actual transpiration (call update() before) """
         return (self.krs * self.get_heff_(rsx) - (-t_act)) / self.krs
 
+    def get_soil_rootsystem_conductance(self, sim_time, h_bs, h_sr, sp):  # Vanderborgth et al. (2023), Eqn (12)
+        """ The soil root system conductance per soil layer [day-1]
+        
+        sim_time       simulation time in days
+        h_bs           bulk soil matric potential
+        h_sr           matric potential at the soil root interface   
+        sp             soil parameter: van Genuchten parameter set (type vg.Parameters)           
+        """
+        # krs, _ = self.get_krs(sim_time)  # [cm2/day]
+        krs = self.krs
+        area = self.ms.getDomainSurface()
+        # print("area", area)  #
+        krs = krs / area  # [day-1]
+        peri = Perirhizal(self.ms)  # helper class, wrap mappedSegments
+        k_prhiz = peri.perirhizal_conductance_per_layer(h_bs, h_sr, sp)  # [day-1], Vanderborght et al. 2023, Eqn (6)
+        # print("k_prhiz", np.nanmin(k_prhiz), np.nanmax(k_prhiz))
+        # suf_ = self.get_suf(sim_time)  # [1]
+        suf_ = self.suf
+        suf = peri.aggregate(suf_[0,:])  # [1]
+        # print("suf", np.min(suf), np.max(suf), np.sum(suf))
+        return np.divide(krs * k_prhiz, suf * krs + k_prhiz)  # [day-1], see Vanderborgth et al. (2023), Eqn (12)
+
     def get_krs_(self, sim_time):
         """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] """
         # print("krs", sim_time)
         n = self.ms.getNumberOfMappedSegments()
-        s = self.ms.segments[self.ci]
+        s = self.ms.segments[self.collar_index_]
         n2 = self.ms.nodes[s.y]
         rsx_ = np.ones((n, 1)) * (-500)  # total matric potential
         b = self.Kr.dot(rsx_)
-        b[self.ci, 0] += self.kx0 * -15000
+        b[self.collar_index_, 0] += self.kx0 * -15000
         rx = self.A_d_splu.solve(b)  # total matric potential
         t_act = np.sum(-self.Kr.dot(rsx_ - rx))
         # print("get_krs() n2z", n2.z)
-        # print("get_krs() rx[0]", rx[self.ci, 0])
-        # krs = -t_act / ((-500) - (rx[self.ci, 0] - n2.z))
+        # print("get_krs() rx[0]", rx[self.collar_index_, 0])
+        # krs = -t_act / ((-500) - (rx[self.collar_index_, 0] - n2.z))
         krs = -t_act / ((-500) - (-15000))
         return krs, t_act
 
@@ -738,7 +764,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         n = self.ms.getNumberOfMappedSegments()
         rsx = np.ones((n, 1)) * (-500)  # total matric potential
         b = self.Kr.dot(rsx)
-        b[self.ci, 0] += self.kx0 * -15000
+        b[self.collar_index_, 0] += self.kx0 * -15000
         rx = self.A_d_splu.solve(b)  # total matric potential
         q = -self.Kr.dot(rsx - rx)
         return np.array(q) / np.sum(q)

@@ -4,9 +4,9 @@ sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux 
 sys.path.append("../../../dumux-rosi/python/modules/")  # python wrappers
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
-from functional.xylem_flux import XylemFluxPython
-from functional.root_conductivities import *  # hard coded conductivities
+import plantbox.visualisation.vtk_plot as vp
+from plantbox.functional.xylem_flux import XylemFluxPython
+from plantbox.functional.root_conductivities import *  # hard coded conductivities
 
 from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 from richards import RichardsWrapper  # Python part

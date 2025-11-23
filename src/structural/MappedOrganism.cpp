@@ -559,6 +559,27 @@ Vector3d MappedSegments::getMinBounds() {
     return min_;
 }
 
+/**
+ * Calculates the maximum of node coordinates
+ * (e.g. maximum corner of bounding box)
+ * value not cached
+ */
+Vector3d MappedSegments::getMaxBounds() {
+    Vector3d max_ = Vector3d(nodes[0].x, nodes[0].y, nodes[0].z);
+    for (const auto& n : nodes) {
+        if (n.x > max_.x) {
+            max_.x = n.x;
+        }
+        if (n.y > max_.y) {
+            max_.y = n.y;
+        }
+        if (n.z > max_.z) {
+            max_.z = n.z;
+        }
+    }
+    return max_;
+}
+
 int MappedSegments::getSegment2leafId(int si_){
 		throw std::runtime_error("MappedSegments::getsegment2leafId: tried to access leafId of");
 		return -1;
@@ -591,11 +612,13 @@ std::vector<double> MappedSegments::getEffectiveRadii() {
  */
 void MappedPlant::initialize_(bool verbose, bool lengthBased) {
 
-    reset(); // just in case (Plant::reset()) (carefull, MappedPlant cannot reset, yet)
+    reset(); // just in case (Plant::reset()) (careful, MappedPlant cannot reset, yet)
 	auto stemP = getOrganRandomParameter(Organism::ot_stem);
-	bool plantBox = stemP.size()>0;
-	if (plantBox) {
-		disableExtraNode(); // no meed for additional node to create the artificial stem 
+	bool plantBox = stemP.size()>1; // prototype + a real parameter definition
+	if ((extraNode == -1) && (plantBox)) {
+		disableExtraNode(); // no meed for additional node to create the artificial stem
+	} else {
+	    enableExtraNode();
 	}
 	if (lengthBased){
 	    if(verbose) {
@@ -608,7 +631,7 @@ void MappedPlant::initialize_(bool verbose, bool lengthBased) {
         }
 	    Plant::initializeDB(verbose); // initializes plant
 	}
-	if (extraNode) { // inserts a special seed segment (for root system only hydraulic simualtions)
+	if (extraNode==1) { // inserts a special seed segment (for root system only hydraulic simualtions)
         auto initial_nodes = this->getNodes();
         auto initial_ncts = this->getNodeCTs();
         auto n0 = initial_nodes.at(0);
@@ -659,7 +682,7 @@ void MappedPlant::mapSubTypes(){
  */
 void MappedPlant::simulate(double dt, bool verbose)
 {
-    size_t shift = extraNode;
+    size_t shift = (extraNode == 1);
 
 	if (soil_index==nullptr) {
 		throw std::invalid_argument("MappedPlant::simulate():soil was not set, use MappedPlant::simulate::setSoilGrid" );
@@ -819,7 +842,7 @@ void MappedPlant::simulate(double dt, bool verbose)
  * see @XylemFlux::kr_RootExchangeZonePerType()
  **/
 void MappedPlant::calcExchangeZoneCoefs() { //
-    size_t shift = extraNode;
+    size_t shift = (extraNode==1);
 	exchangeZoneCoefs.resize(segments.size(), -1.0);
 	distanceTip.resize(segments.size(), -1.0);
 	distanceTip.at(0) = 0.;

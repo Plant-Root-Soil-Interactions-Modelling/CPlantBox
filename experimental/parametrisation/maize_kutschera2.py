@@ -1,7 +1,7 @@
 import sys;  sys.path.append("../..")
 """ determines growth rate and production rate and ages of the basal roots """
 
-import rsml_reader as rsml
+import plantbox.rsml_reader as rsml
 import estimate_root_params as es
 import numpy as np
 import matplotlib.pyplot as plt

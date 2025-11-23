@@ -188,14 +188,14 @@ void Organism::simulate(double dt, bool verbose)
  * or another organ type is expected, an empty vector is returned.
  */
 std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot, bool all) const
-    {
+{
     auto organs = std::vector<std::shared_ptr<Organ>>(0);
     organs.reserve(getNumberOfOrgans()); // just for speed up
     for (const auto& o : this->baseOrgans) {
         o->getOrgans(ot, organs, all);
     }
     return organs;
-    }
+}
 
 /**
  * Returns a single scalar parameter for each organ as sequential list,

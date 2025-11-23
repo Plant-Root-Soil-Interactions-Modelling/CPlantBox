@@ -4,7 +4,7 @@ import sys; sys.path.append("../..")
 import matplotlib.pyplot as plt
 import numpy as np
 
-import rsml_reader as rsml
+import plantbox.rsml_reader as rsml
 import estimate_root_params as es
 import plantbox as pb
 

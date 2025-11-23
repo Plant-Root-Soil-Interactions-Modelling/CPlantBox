@@ -16,7 +16,7 @@ sys.path.append("../modules/") # python wrappers
 
 #from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 #from richards import RichardsWrapper  # Python part
-from functional.phloem_flux import PhloemFluxPython  # Python hybrid solver
+from plantbox.functional.phloem_flux import PhloemFluxPython  # Python hybrid solver
 #from Leuning_speedup import Leuning #about 0.7 for both
 #from photosynthesis_cython import Leuning
 import plantbox as pb

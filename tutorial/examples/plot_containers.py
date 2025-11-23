@@ -3,7 +3,7 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import numpy as np
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 #This example loops through a number of SDFs (cylinder etc.) and saves/plots them together with the root system
 rs = pb.Plant()

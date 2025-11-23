@@ -6,12 +6,13 @@ D. Leitner, 2018
 """
 import sys; sys.path.append("../modules"); sys.path.append("../../../CPlantBox");  sys.path.append("../../../CPlantBox/src")
 
-from functional.van_genuchten import *
+from math import *
 
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy import integrate
-import matplotlib.pyplot as plt
-from math import *
+
+from plantbox.functional.van_genuchten import *
 
 sand = Parameters([0.045, 0.43, 0.15, 3, 1.1574e-04 * 100 * 3600 * 24])
 loam = Parameters([0.08, 0.43, 0.04, 1.6, 5.7870e-06 * 100 * 3600 * 24])
@@ -31,26 +32,31 @@ for i, soil in enumerate([sand, loam, loam, clay]):
     jwpot = jwpot_[i]
 
     # TH = (theta-theta_sur)/(theta_i-theta_sur)
-    dw = lambda TH: water_diffusivity(TH, theta_i, theta_sur, soil)
+    def dw(TH):
+        return water_diffusivity(TH, theta_i, theta_sur, soil)
     int_dw, err = integrate.quad(dw, 0, 1)
 
-    theta_dw = lambda TH: TH * water_diffusivity(TH, theta_i, theta_sur, soil)
+    def theta_dw(TH):
+        return TH * water_diffusivity(TH, theta_i, theta_sur, soil)
     int_theta_dw, err = integrate.quad(theta_dw, 0, 1)
     beta = pow(int_theta_dw / int_dw, 2)  # 43
 
-    fun_dw = lambda TH: pow(1 - TH * beta, 2) * dw(TH)
+    def fun_dw(TH):
+        return pow(1 - TH * beta, 2) * dw(TH)
     alpha, err = integrate.quad(fun_dw, 0, 1)
     alpha /= int_dw  # 42
 
     mu = (3 * beta * (1 + np.sqrt(1 - (14 / 9) * (1 - alpha / pow(1 - beta, 2))))) / (2 * (1 - beta) * (alpha / pow(1 - beta, 2) - 1))  # eq 41
 
-    sw = lambda theta_sur, theta_i: (theta_i - theta_sur) * sqrt((4 / mu) * int_dw)  # eq 39
+    def sw(theta_sur, theta_i):
+        return (theta_i - theta_sur) * sqrt((4 / mu) * int_dw)  # eq 39
 
     tdash = (sw(theta_sur, theta_i) * sw(theta_sur, theta_i)) / (4 * jwpot * jwpot)  # eq 44
     tpot = (sw(theta_sur, theta_i) * sw(theta_sur, theta_i)) / (2 * jwpot * jwpot)  # eq 45
     print("Scenario ", i, " tpot", tpot)
 
-    jw = lambda t: (t < tpot) * jwpot + (t >= tpot) * sw(theta_sur, theta_i) / (2 * sqrt(abs(tdash + t - tpot)))  # eq 46 & 47
+    def jw(t):
+        return (t < tpot) * jwpot + (t >= tpot) * sw(theta_sur, theta_i) / (2 * sqrt(abs(tdash + t - tpot)))  # eq 46 & 47
 
     y[:, i] = list(map(jw, t))  # evaluate
 
