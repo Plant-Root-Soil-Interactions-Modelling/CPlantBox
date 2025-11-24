@@ -125,14 +125,14 @@ for i in range(N):
 
 # Plot results
 fig, axs = plt.subplots(2, 2)
-axs[0, 0].plot(time, Q_Rm_is)
-axs[0, 0].set(xlabel = "Time [hh:mm]", ylabel = 'total respiration rate (mol/day)')
+axs[0, 0].plot(time, Q_Water_is , 'tab:blue')
+axs[0, 0].set(xlabel = "Time [hh:mm]", ylabel = 'Total transpiration rate\n[cm3/day]')
 axs[1, 0].plot(time, Q_Gr_is, 'tab:red')
-axs[1, 0].set(xlabel = "Time [hh:mm]", ylabel = 'total growth rate (mol/day)')
+axs[1, 0].set(xlabel = "Time [hh:mm]", ylabel = 'Total growth rate\n[mol/day]')
 axs[0, 1].plot(time, Q_Exud_is , 'tab:brown')
-axs[0, 1].set(xlabel = "Time [hh:mm]", ylabel = 'total exudation\nrate (mol/day)')
-axs[1, 1].plot(time, Q_Water_is , 'tab:brown')
-axs[1, 1].set(xlabel = "Time [hh:mm]", ylabel = 'total transpiration\nrate (cm3/day)')
+axs[0, 1].set(xlabel = "Time [hh:mm]", ylabel = 'Total exudation rate\n[mol/day]')
+axs[1, 1].plot(time, Q_Rm_is,  'k')
+axs[1, 1].set(xlabel = "Time [hh:mm]", ylabel = 'Total respiration rate\n[mol/day]')
 for ax in axs.flatten():
     ax.xaxis.set_major_locator(HourLocator(range(0, 25, 1)))
     ax.xaxis.set_major_formatter(DateFormatter('%H:%M'))
