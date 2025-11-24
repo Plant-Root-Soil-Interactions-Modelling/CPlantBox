@@ -7,6 +7,28 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+import types
+import importlib
+import os
+import sys
+SRC_PATH = "../../src/"
+sys.path.append("../.."); sys.path.append(SRC_PATH)
+
+# Create a fake plantbox namespace
+plantbox = types.SimpleNamespace()
+
+# Automatically import all folders inside src and attach to plantbox
+for name in os.listdir(SRC_PATH):
+    folder_path = os.path.join(SRC_PATH, name)
+    if os.path.isdir(folder_path) and not name.startswith('__'):
+        try:
+            module = importlib.import_module(name)
+            setattr(plantbox, name, module)
+            sys.modules[f'plantbox.{name}'] = module
+        except ModuleNotFoundError:
+            # skip folders that are not importable as modules
+            pass
+            
 import plantbox as pb
 from plantbox.functional.phloem_flux import PhloemFluxPython   # |\label{l52:importLib}|
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
@@ -60,7 +82,7 @@ plant.setSoilGrid(picker)
 # Plant functional properties
 params = PlantHydraulicParameters()  # |\label{l52:hydraulic}|
 params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l52:hydraulic_end}|
-hm = PhloemFluxPython(plant, params, psiXylInit = min(sx), ciInit = weatherData['co2'][0] * 0.5)  # |\label{l52:phloempy}|
+hm = PhloemFluxPython(plant, params)  # |\label{l52:phloempy}|
 hm.wilting_point = -10000
 path = '../../modelparameter/functional/'
 hm.read_photosynthesis_parameters(filename = path + "plant_photosynthesis/photosynthesis_parameters2025")  # |\label{l52:read}|
@@ -83,7 +105,7 @@ for i in range(N):
     plant.simulate(dt, False)  # |\label{l52:plant}|
 
     # Plant transpiration and photosynthesis
-    hm.pCO2 = weatherData_i['co2']
+    hm.pCO2 = weatherData_i['co2'] # |\label{l52:pCO2}|
     es = hm.get_es(weatherData_i['Tair'])
     ea = es * weatherData_i['RH']
 
@@ -94,7 +116,7 @@ for i in range(N):
              verbose = 0)  # |\label{l52:solve}|
 
     # Plant inner carbon balance
-    hm.solve_phloem_flow(plant_age, dt, weatherData_i['Tair'])  # |\label{l52:balance}|
+    hm.solve_phloem_flow(dt)  # |\label{l52:balance}|
 
     # Post processing
     cumulAssimilation += np.sum(hm.get_net_assimilation()) * dt  #  [mol CO2]

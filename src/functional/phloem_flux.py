@@ -3,7 +3,7 @@ import timeit
 
 import numpy as np
 import json
-
+import os
 import plantbox as pb
 from plantbox import PhloemFlux
 from plantbox.functional.Photosynthesis import PhotosynthesisPython 
@@ -15,7 +15,7 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
        
     """
 
-    def __init__(self, plant_, params, psiXylInit, ciInit):
+    def __init__(self, plant_, params, psiXylInit = -100, ciInit = 2e-4):
         """ @param mp is a pb.MappedPlant
             @param params are the hydraulic parameters
             @param psiXylInit [cm] is the initial guess of plant water potential [cm] for the fixed point iteration
@@ -47,7 +47,13 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         self.Q_Gr_i        = np.array([])
         self.Q_Exud_i      = np.array([])
                 
-    def solve_phloem_flow(self, simDuration, dt, TairC, verbose = False, outputfile = "outputs.txt" ):
+    def solve_phloem_flow(self, dt, simDuration = None, TairC = None, verbose = False, outputfile = "errors_solve_phloem_flow.txt" ):
+        # stored from the photosynthesis model
+        if simDuration is None :
+            simDuration = self.sim_time
+        if TairC is None :
+            TairC = self.TairC
+        
         self.startPM(simDuration, simDuration + dt, 1, ( TairC + 273.15) , verbose, outputfile )
         self.Nt = len(self.plant.nodes)        
         Q_out = np.array(self.Q_out) * 1e-3 * 12 # mmol Suc => mol C
@@ -79,6 +85,9 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         self.Q_Rmbu       =   self.Q_Rm.copy()
         self.Q_Grbu       =   self.Q_Gr.copy() 
         self.Q_Exudbu     =   self.Q_Exud.copy()
+        
+        if (not self.doTroubleshooting) and (os.path.exists(outputfile)):
+            os.remove(outputfile)
     
     def update_outputs(self):    
         self.outputs_options = {
