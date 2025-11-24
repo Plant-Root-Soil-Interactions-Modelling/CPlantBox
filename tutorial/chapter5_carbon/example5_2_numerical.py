@@ -6,28 +6,6 @@ from matplotlib.dates import DateFormatter, HourLocator
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-import types
-import importlib
-import os
-import sys
-SRC_PATH = "../../src/"
-sys.path.append("../.."); sys.path.append(SRC_PATH)
-
-# Create a fake plantbox namespace
-plantbox = types.SimpleNamespace()
-
-# Automatically import all folders inside src and attach to plantbox
-for name in os.listdir(SRC_PATH):
-    folder_path = os.path.join(SRC_PATH, name)
-    if os.path.isdir(folder_path) and not name.startswith('__'):
-        try:
-            module = importlib.import_module(name)
-            setattr(plantbox, name, module)
-            sys.modules[f'plantbox.{name}'] = module
-        except ModuleNotFoundError:
-            # skip folders that are not importable as modules
-            pass
             
 import plantbox as pb
 from plantbox.functional.phloem_flux import PhloemFluxPython   # |\label{l52:importLib}|
