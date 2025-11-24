@@ -44,6 +44,8 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
             @param doLog            indicates if computed values should be printed in a text file (True) or not (False) 
             @param outputDirectory  where to save the log files
         """
+        self.sim_time = sim_time
+        self.TairC = TairC
         
         # send python data to cpp
         if isinstance(PAR, (int,float)):
