@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 import plantbox as pb
-from plantbox.functional.phloem_flux import PhloemFluxPython
+from plantbox.functional.phloem_flux import PhloemFluxPython   # |\label{l52:importLib}|
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 
 sys.path.append("../../modelparameter/functional")
