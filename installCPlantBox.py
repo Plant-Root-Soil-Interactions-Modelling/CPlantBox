@@ -43,22 +43,22 @@ for program in programs:
 
 # is the script running on (agro)cluster?
 # tried to make evaluation automatic but not sure it holds on all machines
-isCluster = ('ENV' in os.environ.keys())
+isCluster = ('MODULESHOME' in os.environ.keys())
 
 programs = ['default-jre', 'libeigen3-dev' , 'python3-pip', 'openmpi-bin', 'libopenmpi-dev', 'python3-tk', 'libqt5x11extras5', 'libx11-dev']
 
 if not isCluster:
     programs.append('libboost-all-dev')
 
-for program in programs:
-    output = subprocess.run(["dpkg", "-l", program], capture_output = True)
-    if ('no packages found' in str(output)):
-        error.append(program)
+    for program in programs:
+        output = subprocess.run(["dpkg", "-l", program], capture_output = True)
+        if ('no packages found' in str(output)):
+            error.append(program)
 
-if len(error) > 0:
-    print("Program(s) {0} has/have not been found. try running sudo apt-get install {0}".format(" ".join(error)))
-    raise Exception('import modules')
-
+    if len(error) > 0:
+        print("Program(s) {0} has/have not been found. try running sudo apt-get install {0}".format(" ".join(error)))
+        raise Exception('import modules')
+        
 # check some prerequistes
 modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'pandas', 'pybind11[global]', 'ipython']  # 'mpi4py',
 show_message("(1/2) (b) Checking python prerequistes: " + " ".join(modules) + "...")
@@ -111,4 +111,5 @@ show_message("(2/2) Step completed. Succesfully configured and built CPlantBox."
 show_message("To test installation, run \n cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
 
 show_message("CPlantBox was installed in your python environment (master branch), use 'cmake . & make install' to recompile")
+
 
