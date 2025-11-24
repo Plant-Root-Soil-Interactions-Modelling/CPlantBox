@@ -73,21 +73,21 @@ for program in programs:
 
 # is the script running on (agro)cluster?
 # tried to make evaluation automatic but not sure it holds on all machines
-isCluster = ('ENV' in os.environ.keys())
+isCluster = ('MODULESHOME' in os.environ.keys())
 
 programs = ['default-jre', 'libeigen3-dev' , 'python3-pip', 'openmpi-bin', 'libopenmpi-dev', 'python3-tk', 'libqt5x11extras5', 'libx11-dev']  #
 # sudo apt install openmpi-bin libopenmpi-dev
 if not isCluster:
     programs.append('libboost-all-dev')
-
-for program in programs:
-    output = subprocess.run(["dpkg", "-l", program], capture_output = True)
-    if ('no packages found' in str(output)):
-        error.append(program)
-
-if len(error) > 0:
-    print("Program(s) {0} has/have not been found. try running sudo apt-get install {0}".format(" ".join(error)))
-    raise Exception('import modules')
+    
+    for program in programs:
+        output = subprocess.run(["dpkg", "-l", program], capture_output = True)
+        if ('no packages found' in str(output)):
+            error.append(program)
+    
+    if len(error) > 0:
+        print("Program(s) {0} has/have not been found. try running sudo apt-get install {0}".format(" ".join(error)))
+        raise Exception('import modules')
 
 # check some prerequistes
 modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'pandas', 'pybind11[global]', 'ipython']  # 'mpi4py',
@@ -159,3 +159,4 @@ subprocess.run(["./dune-common/bin/dunecontrol", "--opts=dumux-rosi/cmake.opts",
 print("(3/3) Step completed. Succesfully configured and built CPlantBox, dune and dumux.")
 
 print("to test installation, run \n cd dumux/dumux-rosi/python/coupled \n python3 example7b_coupling.py")
+
