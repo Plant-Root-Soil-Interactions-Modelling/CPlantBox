@@ -60,7 +60,7 @@ if not isCluster:
         raise Exception('import modules')
         
 # check some prerequistes
-modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'pandas', 'pybind11[global]', 'ipython']  # 'mpi4py',
+modules = ['numpy', 'scipy', 'matplotlib', 'vtk','cmake', 'pandas', 'pybind11[global]', 'ipython']  # 'mpi4py',
 show_message("(1/2) (b) Checking python prerequistes: " + " ".join(modules) + "...")
 
 for mymodule in modules:
@@ -111,5 +111,6 @@ show_message("(2/2) Step completed. Succesfully configured and built CPlantBox."
 show_message("To test installation, run \n cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
 
 show_message("CPlantBox was installed in your python environment (master branch), use 'cmake . & make install' to recompile")
+
 
 
