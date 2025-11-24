@@ -65,7 +65,7 @@ hm.wilting_point = -10000
 path = '../../modelparameter/functional/'
 hm.read_photosynthesis_parameters(filename = path + "plant_photosynthesis/photosynthesis_parameters2025")  # |\label{l52:read}|
 hm.read_phloem_parameters(filename = path + "plant_sucrose/phloem_parameters2025")  # |\label{l52:read2}|
-# list_data = hm.get_phloem_data_list() # option of data that can be obtained from the phloem model
+# list_data = hm.get_phloem_data_list() # option of data that can be obtained from the phloem model # |\label{l52:outputOptions}|
 # hm.write_phloem_parameters(filename= 'phloem_parameters')  # |\label{l52:read_end}|
 
 time = []
