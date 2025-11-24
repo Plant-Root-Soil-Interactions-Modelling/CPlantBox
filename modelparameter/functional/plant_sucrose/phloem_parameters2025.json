@@ -1,5 +1,5 @@
-{"InitialValues": {"initValST": {"value": 0.8, "description": "Initial concentration in sieve tube"},
-"initValMeso": {"value": 0.06, "description": "Initial concentration in mesophyll"}, 
+{"InitialValues": {"initValST": {"value": 0.2, "description": "Initial concentration in sieve tube"},
+"initValMeso": {"value": 0, "description": "Initial concentration in mesophyll"}, 
 "withInitVal": {"value": true, "description": "Use initial values"}}, 
 "Growth": {
 	"psi_osmo_proto": {"value": -10078.8, "unit": "cm", "description": "Osmotic potential in protophloem"}, 
@@ -46,4 +46,5 @@
 "description": "maximum growth rate when water and carbon limitation is activated"}}, 
 "Soil": {"DefaultC": {"value": 0.0001, "unit": "mmol Suc cm-3", "description": "dummy value for soil concentration"}}, 
 "Solver": {"atol": {"value": 1e-12, "description": "Absolute tolerance"}, "rtol": {"value": 1e-08, "description": "Relative tolerance"}, 
+
 "doTroubleshooting": {"value": false, "description": "Enable troubleshooting"}}}
