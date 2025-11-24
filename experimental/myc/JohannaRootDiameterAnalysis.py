@@ -82,5 +82,15 @@ summary = pd.DataFrame({
     "WT_Mean": wt_mean,
     "WT_SD": wt_std
 })
+# summary = summary.rename(index = {"Root.Length.Diameter.Range.1.mm": "0 to 0.20 mm"})
+# summary = summary.rename(index = {"Root.Length.Diameter.Range.2.mm": "0.20 to 0.40 mm"})
+# summary = summary.rename(index = {"Root.Length.Diameter.Range.3.mm": "0.40 to 0.60 mm"})
+# summary = summary.rename(index = {"Root.Length.Diameter.Range.4.mm": "0.60 to 0.80 mm"})
+# summary = summary.rename(index = {"Root.Length.Diameter.Range.5.mm": "0.80 to 1.00 mm"})
+# summary = summary.rename(index = {"Root.Length.Diameter.Range.6.mm": "1.00 to 1.50 mm"})
+# summary = summary.rename(index = {"Root.Length.Diameter.Range.7.mm": "1.50 to 2.00 mm"})
+# summary = summary.rename(index = {"Root.Length.Diameter.Range.8.mm": "2.00 to 2.50 mm"})
+# summary = summary.rename(index = {"Root.Length.Diameter.Range.9.mm": "2.50 to 3.00 mm"})
+# summary = summary.rename(index = {"Root.Length.Diameter.Range.10.mm": "3.00 mm and above"})
 
-print(summary)
+summary.to_csv("results/rmc_wt_root_diameter_summary.csv")
