@@ -11,7 +11,7 @@ name = "Glycine_max"
 # name = "Heliantus_Pagès_2013"
 
 animation = False
-local = True
+local = False
 infbox = pb.SDF_PlantBox(4, 4, 4)
 # infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 for i in range(1,5):

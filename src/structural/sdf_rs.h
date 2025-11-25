@@ -39,6 +39,8 @@ public:
 
     virtual double getDist(const Vector3d& p) const override;
 
+    Vector3d getDistVec(const Vector3d& p) const;
+
     virtual std::string toString() const override { return "SDF_RootSystem"; }
 
     std::vector<Vector3d> nodes_;
@@ -110,7 +112,7 @@ void SDF_RootSystem::buildTree() {
         tree.insertParticle(c, d, radii_[c]);
         c++;
     }
-}
+}  
 
 
 double SDF_RootSystem::getDist(const Vector3d& p) const {
@@ -147,6 +149,51 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
 
     }
     return -mdist;
+}
+Vector3d SDF_RootSystem::getDistVec(const Vector3d& p) const {
+
+    std::vector<double> a = { p.x-dx_, p.y-dx_, p.z-dx_ };
+    std::vector<double> b = { p.x+dx_, p.y+dx_, p.z+dx_ };
+    aabb::AABB box = aabb::AABB(a,b);
+    double mdist = 1e100; // far far away
+    auto indices = tree.query(box);
+    Vector3d distVec;
+    // std::cout << indices.size() << " segments in range\n";
+    for (int i : indices) {
+
+        Vector3d x1 = nodes_[segments_[i].x];
+        Vector3d x2 = nodes_[segments_[i].y];
+        Vector3d v = x2.minus(x1);
+        Vector3d w = p.minus(x1);
+
+        double c1 = v.times(w);
+        double c2 = v.times(v);
+
+        double l;
+        Vector3d tempdistVec;
+        if (c1<=0) {
+            l = w.length();
+            tempdistVec = x1;
+        } else if (c1>=c2) {
+            l = p.minus(x2).length();
+            tempdistVec = x2;
+        } else {
+            l = p.minus(x1.plus(v.times(c1/c2))).length();
+            if (p.minus(x1).length() < p.minus(x2).length()) {
+                tempdistVec = x1.plus(v.times(c1/c2));
+            } else {
+                tempdistVec = x2;
+            }
+        }
+        l -= radii_[i];
+
+        if (l < mdist) {
+            mdist = l;
+            distVec = tempdistVec;
+        }
+
+    }
+    return distVec;
 }
 
 } // namespace

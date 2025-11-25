@@ -140,16 +140,19 @@ void MycorrhizalPlant::simulateAnastomosis() {
     // auto numberofHyphae2 = hyphae.size();
     // std::cout<< numberofHyphae << " "<< numberofHyphae2 <<std::endl;
     double dist = 1000;
+    Vector3d closestNode;
     for (const auto & h : hyphae) {
         auto tip = h->getNode(h->getNumberOfNodes()-1);
-        for (auto sdf : sdfs)
+        for (auto sdf : sdfs) // TODO Problem! have to make box every time and run search every time. for every sdf and we do not know how the particle id relates to node ids
         {
-            double distfromsdf = sdf.getDist(tip);
+            double distfromsdf = sdf.getDist(tip); 
+            closestNode = sdf.getDistVec(tip);
             if ( distfromsdf > 0 && distfromsdf < dist) dist = distfromsdf;
         }
         if (dist < h->getParameter("distTH"))
         {
             std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance: " << dist << std::endl;
+            std::cout <<"Node for Anastomosis: " << closestNode.toString() << std::endl;
         }
         
     }
