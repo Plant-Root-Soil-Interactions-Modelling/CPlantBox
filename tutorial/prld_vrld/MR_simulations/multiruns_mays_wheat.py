@@ -12,7 +12,7 @@ def run_benchmark_(num):
     #print("run n*",num)
     seed = num+counts
     print('seed', seed) 
-    fx = run_benchmark(seed, name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_highr, x_cont, img_cont, y_, z_, tropismN, tropismS)
+    fx = run_benchmark(seed, name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_stand2, x_highr, x_cont, img_cont, y_, z_, tropismN, tropismS)
     return fx
 
 def setup_scenario(plant, size, tube_diam, pdensity):
@@ -92,15 +92,16 @@ def setup_scenario(plant, size, tube_diam, pdensity):
             dummy = dummy+1
             
     #high resolution image positions 
-    x_highr_ = np.zeros((2))
+    x_startend_ = np.zeros((2))
     arr = [0,N-1]
-    for j in range(0,len(x_highr_)): 
-        x_highr_[j] = distr * arr[j]-((N-1)*distr/2)
-    x_highr = np.linspace(x_highr_[0]-distr/2, x_highr_[1]+distr/2, 40) 
+    for j in range(0,len(x_startend_)): 
+        x_startend_[j] = distr * arr[j]-((N-1)*distr/2)
+    x_stand2 = np.linspace(x_startend_[0]-distr/2, x_startend_[1]+distr/2, 20)    
+    x_highr = np.linspace(x_startend_[0]-distr/2, x_startend_[1]+distr/2, 40) 
 
     #continuous image position 
-    x_cont = x_highr_[0]-distr/2
-    img_cont = (x_highr_[1]+distr/2)-(x_highr_[0]-distr/2)
+    x_cont = x_startend_[0]-distr/2
+    img_cont = (x_startend_[1]+distr/2)-(x_startend_[0]-distr/2)
 
     #rhizotubes, single batch 
     rhizotube_ = pb.SDF_PlantContainer(tube_diam/2, tube_diam/2, tube_len, False)  # a single rhizotube
@@ -160,16 +161,16 @@ def setup_scenario(plant, size, tube_diam, pdensity):
     nyz = pb.Vector3d(0., l_field, -1.)
     planes = [[x0x, nxx, nyx],[x0y, nxy, nyy],[x0z, nxz, nyz]]
     
-    return name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, pdensity, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_highr, x_cont, img_cont, y_, z_, tropismN_, tropismS_
+    return name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, pdensity, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_stand2, x_highr, x_cont, img_cont, y_, z_, tropismN_, tropismS_
 
 def write_results(name, simtime, repetitions, imgw, imgl, tube_diam, pdensity, finalr): 
     #write out results
     header = ['depth', 'tropismN', 'tropismS', 'rRLD', 'An','CV',
-        'prld_stand', 'prld_highr','prld_cont',
+        'prld_stand', 'prld_stand2', 'prld_highr','prld_cont',
         'vrld_sl', 'vrld_2sc', 'vrld_4sc','vrld_sc_ir', 'vrld_sc_ip',
-        'prvd_stand','prvd_highr','prvd_cont',
+        'prvd_stand','prvd_stand2','prvd_highr','prvd_cont',
         'vrvd_sl', 'vrvd_2sc', 'vrvd_4sc',
-        'prcd_stand','prcd_highr','prcd_cont'] 
+        'prcd_stand','prcd_stand2','prcd_highr','prcd_cont'] 
     with open('results/'+name+'_day'+str(simtime)+'_reps'+str(repetitions)+'_imgsize'+str(imgw)+'x'+str(imgl)+'tubediam'+str(tube_diam)+'_pdensity_'+pdensity+'.csv', 'w') as f:
         writer=csv.writer(f, delimiter=',', lineterminator='\n')
         writer.writerow(header)
@@ -189,7 +190,7 @@ if __name__ == "__main__":
     print()
     print(name_id, "\n")
 
-    name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, pdensity, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_highr, x_cont, img_cont, y_, z_, tropismN_, tropismS_ = setup_scenario(args.plant, args.size, args.tubediam, args.pdensity)
+    name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, pdensity, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_stand2, x_highr, x_cont, img_cont, y_, z_, tropismN_, tropismS_ = setup_scenario(args.plant, args.size, args.tubediam, args.pdensity)
 
     repetitions = 100
     simnum = 0

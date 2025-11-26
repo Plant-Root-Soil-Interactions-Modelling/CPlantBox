@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def run_benchmark(num, name,M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1, sc2, sc3,sc4,sc_volume, imgw, imgl, size, x_standard, x_highr, x_layer, img_cont, y_, z_, tropismN, tropismS): 
+def run_benchmark(num, name,M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1, sc2, sc3,sc4,sc_volume, imgw, imgl, size, x_standard, x_stand2, x_highr, x_layer, img_cont, y_, z_, tropismN, tropismS): 
 
     # Initialize and simulate N*M root systems
     allRS = []
@@ -193,38 +193,44 @@ def run_benchmark(num, name,M, N, distr, distp, distl, simtime, w_field, l_field
         imgbox = pb.SDF_PlantBox(imgw, imgl,30)
     
     #rhizotron images (taken 80° clockwise and counterclockwise) 
-    imgs_standard = []; imgs_highr = []; imgs_cont = []
+    imgs_standard = []; imgs_stand2 = []; imgs_highr = []; imgs_cont = []
     for i in range(0, len(z_)): 
-        dummy1 = []; dummy2 = []; dummy3 = []
+        dummy1 = []; dummy2 = []; dummy3 = []; dummy4 = []
         for j in range(0, len(x_standard)): 
             if size == 'complete': 
                 dummy1.append(pb.SDF_RotateTranslate(imgbox, 90, pb.SDF_Axis.xaxis, pb.Vector3d(x_standard[j], y_[i]-15, z_[i])))
             else: 
                 dummy1.append(pb.SDF_RotateTranslate(imgbox, 180-80, pb.SDF_Axis.xaxis, pb.Vector3d(x_standard[j], y_[i], z_[i])))
                 dummy1.append(pb.SDF_RotateTranslate(imgbox, 180+80, pb.SDF_Axis.xaxis, pb.Vector3d(x_standard[j], y_[i], z_[i])))
+        for j in range(0, len(x_stand2)): 
+            if size == 'complete': 
+                dummy2.append(pb.SDF_RotateTranslate(imgbox, 90, pb.SDF_Axis.xaxis, pb.Vector3d(x_stand2[j], y_[i]-15, z_[i])))
+            else: 
+                dummy2.append(pb.SDF_RotateTranslate(imgbox, 180-80, pb.SDF_Axis.xaxis, pb.Vector3d(x_stand2[j], y_[i], z_[i])))
+                dummy2.append(pb.SDF_RotateTranslate(imgbox, 180+80, pb.SDF_Axis.xaxis, pb.Vector3d(x_stand2[j], y_[i], z_[i])))
         for j in range(0, len(x_highr)):   
             if size == 'complete': 
-                dummy2.append(pb.SDF_RotateTranslate(imgbox, 90, pb.SDF_Axis.xaxis, pb.Vector3d(x_highr[j], y_[i]-15, z_[i])))
+                dummy3.append(pb.SDF_RotateTranslate(imgbox, 90, pb.SDF_Axis.xaxis, pb.Vector3d(x_highr[j], y_[i]-15, z_[i])))
             else: 
-                dummy2.append(pb.SDF_RotateTranslate(imgbox, 180-80, pb.SDF_Axis.xaxis, pb.Vector3d(x_highr[j], y_[i], z_[i])))
-                dummy2.append(pb.SDF_RotateTranslate(imgbox, 180+80, pb.SDF_Axis.xaxis, pb.Vector3d(x_highr[j], y_[i], z_[i])))
+                dummy3.append(pb.SDF_RotateTranslate(imgbox, 180-80, pb.SDF_Axis.xaxis, pb.Vector3d(x_highr[j], y_[i], z_[i])))
+                dummy3.append(pb.SDF_RotateTranslate(imgbox, 180+80, pb.SDF_Axis.xaxis, pb.Vector3d(x_highr[j], y_[i], z_[i])))
         if size == 'complete': 
-            dummy3.append(pb.SDF_RotateTranslate(pb.SDF_PlantBox(img_cont, imgl,30), 90, pb.SDF_Axis.xaxis, pb.Vector3d(0, y_[i]-15, z_[i])))            
-        else: 
-            dummy3.append(pb.SDF_RotateTranslate(pb.SDF_PlantBox(img_cont, imgl,10), 180-80, pb.SDF_Axis.xaxis, pb.Vector3d(0, y_[i], z_[i])))
-            dummy3.append(pb.SDF_RotateTranslate(pb.SDF_PlantBox(img_cont, imgl,10), 180+80, pb.SDF_Axis.xaxis, pb.Vector3d(0, y_[i], z_[i])))
-        imgs_standard.append(dummy1); imgs_highr.append(dummy2); imgs_cont.append(dummy3)
-    imgs_standard = np.array(imgs_standard); imgs_highr = np.array(imgs_highr);  imgs_cont = np.array(imgs_cont)
+            dummy4.append(pb.SDF_RotateTranslate(pb.SDF_PlantBox(img_cont, imgl,30), 90, pb.SDF_Axis.xaxis, pb.Vector3d(0, y_[i]-15, z_[i])))            
+        else:
+            dummy4.append(pb.SDF_RotateTranslate(pb.SDF_PlantBox(img_cont, imgl,10), 180-80, pb.SDF_Axis.xaxis, pb.Vector3d(0, y_[i], z_[i])))
+            dummy4.append(pb.SDF_RotateTranslate(pb.SDF_PlantBox(img_cont, imgl,10), 180+80, pb.SDF_Axis.xaxis, pb.Vector3d(0, y_[i], z_[i])))
+        imgs_standard.append(dummy1); imgs_stand2.append(dummy2); imgs_highr.append(dummy3); imgs_cont.append(dummy4)
+    imgs_standard = np.array(imgs_standard); imgs_stand2 = np.array(imgs_stand2); imgs_highr = np.array(imgs_highr);  imgs_cont = np.array(imgs_cont)
     
     ana_prld = pb.SegmentAnalyser(allAna)
     ana_prld.crop(pb.SDF_Difference(rhizotubeso, rhizotubes))
-    prld_stand = np.zeros(len(z_)); prld_highr = np.zeros(len(z_)); prld_cont = np.zeros(len(z_))
-    prvd_stand = np.zeros(len(z_)); prvd_highr = np.zeros(len(z_)); prvd_cont = np.zeros(len(z_))
-    prcd_stand = np.zeros(len(z_)); prcd_highr = np.zeros(len(z_)); prcd_cont = np.zeros(len(z_))
+    prld_stand = np.zeros(len(z_)); prld_stand2 = np.zeros(len(z_)); prld_highr = np.zeros(len(z_)); prld_cont = np.zeros(len(z_))
+    prvd_stand = np.zeros(len(z_)); prvd_stand2 = np.zeros(len(z_)); prvd_highr = np.zeros(len(z_)); prvd_cont = np.zeros(len(z_))
+    prcd_stand = np.zeros(len(z_)); prcd_stand2 = np.zeros(len(z_)); prcd_highr = np.zeros(len(z_)); prcd_cont = np.zeros(len(z_))
     for i in range(np.shape(imgs_standard)[0]):
-        prld_layer_stand = []; prld_layer_highr = []; prld_layer_cont = []
-        prvd_layer_stand = []; prvd_layer_highr = []; prvd_layer_cont = []
-        prcd_layer_stand = []; prcd_layer_highr = []; prcd_layer_cont = []
+        prld_layer_stand = []; prld_layer_stand2 = []; prld_layer_highr = []; prld_layer_cont = []
+        prvd_layer_stand = []; prvd_layer_stand2 = [];prvd_layer_highr = []; prvd_layer_cont = []
+        prcd_layer_stand = []; prcd_layer_stand2 = [];prcd_layer_highr = []; prcd_layer_cont = []
         #prld / prvd, standard resolution imgs
         for j in range(np.shape(imgs_standard)[1]):
             ana_prld1= pb.SegmentAnalyser(ana_prld)
@@ -255,6 +261,37 @@ def run_benchmark(num, name,M, N, distr, distp, distl, simtime, w_field, l_field
             prld_layer_stand.append(leng_sum/imgsa) #root length density
             prvd_layer_stand.append(vol_sum/imgsa) #root volume density
             prcd_layer_stand.append(vol_sum/imgsa) #root volume density
+
+        #prld / prvd, standard2 resolution imgs
+        for j in range(np.shape(imgs_stand2)[1]):
+            ana_prld1= pb.SegmentAnalyser(ana_prld)
+            ana_prld1.crop(imgs_stand2[i,j])
+            ana_prld1.pack()
+            #ana_prld1.write('test_results/prld_stand_'+str(j)+'.vtp')
+            segs = ana_prld1.segments
+            nodes = ana_prld1.nodes
+            radii = ana_prld1.getParameter("radius")
+            length = ana_prld1.getParameter("length")
+            volume = np.array(radii)**2*np.pi*np.array(length)
+            leng_sum = 0; vol_sum = 0
+            dist = np.zeros((len(segs)))
+            count = 0
+            for m, s in enumerate(segs):
+                s1 = segs[m]
+                n1, n2 = nodes[s1.x], nodes[s1.y]
+                D1 = rhizotubeso.getDist(pb.Vector3d(n1.x, n1.y, n1.z))
+                D2 = rhizotubeso.getDist(pb.Vector3d(n2.x, n2.y, n2.z))
+                if D1<radii[m] and D2<radii[m]: 
+                    leng_sum = leng_sum + length[m]
+                    vol_sum = vol_sum + volume[m]
+                    count = count +1
+                elif D1<radii[m] or D2<radii[m]: 
+                    leng_sum = leng_sum + length[m]/2
+                    vol_sum = vol_sum +volume[m]/2
+                    count = count +0.5
+            prld_layer_stand2.append(leng_sum/imgsa) #root length density
+            prvd_layer_stand2.append(vol_sum/imgsa) #root volume density
+            prcd_layer_stand2.append(vol_sum/imgsa) #root volume density
 
         #prld / prvd, high resolution imgs    
         for j in range(np.shape(imgs_highr)[1]):
@@ -317,12 +354,12 @@ def run_benchmark(num, name,M, N, distr, distp, distl, simtime, w_field, l_field
             prvd_layer_cont.append(vol_sum/(img_cont*imgl)) #root volume density
             prcd_layer_cont.append(count/(img_cont*imgl)) #root count density 
 
-        prld_stand[i] = np.mean(prld_layer_stand); prld_highr[i] = np.mean(prld_layer_highr); prld_cont[i] = np.mean(prld_layer_cont)    
-        prvd_stand[i] = np.mean(prvd_layer_stand); prvd_highr[i] = np.mean(prvd_layer_highr); prvd_cont[i] = np.mean(prvd_layer_cont) 
-        prcd_stand[i] = np.mean(prcd_layer_stand); prcd_highr[i] = np.mean(prcd_layer_highr); prcd_cont[i] = np.mean(prcd_layer_cont); 
+        prld_stand[i] = np.mean(prld_layer_stand); prld_stand2[i] = np.mean(prld_layer_stand2); prld_highr[i] = np.mean(prld_layer_highr); prld_cont[i] = np.mean(prld_layer_cont)    
+        prvd_stand[i] = np.mean(prvd_layer_stand); prvd_stand2[i] = np.mean(prvd_layer_stand2); prvd_highr[i] = np.mean(prvd_layer_highr); prvd_cont[i] = np.mean(prvd_layer_cont) 
+        prcd_stand[i] = np.mean(prcd_layer_stand); prcd_stand2[i] = np.mean(prcd_layer_stand2); prcd_highr[i] = np.mean(prcd_layer_highr); prcd_cont[i] = np.mean(prcd_layer_cont); 
         
     #Results 
-    result=np.zeros((len(z_),23))
+    result=np.zeros((len(z_),26))
     
     #general params 
     result[:,0] = z_
@@ -334,27 +371,30 @@ def run_benchmark(num, name,M, N, distr, distp, distl, simtime, w_field, l_field
     
     #root length density 
     result[:,6] = prld_stand #pRLD standard images
-    result[:,7] = prld_highr #pRLD continuous images
-    result[:,8] = prld_cont #pRLD layer image
+    result[:,7] = prld_stand2 #pRLD standard images
+    result[:,8] = prld_highr #pRLD continuous images
+    result[:,9] = prld_cont #pRLD layer image
    
-    result[:,9] = vrld #vRLD
-    result[:,10] = vrld_sc2 #vRLD
-    result[:,11] = vrld_sc4 #vRLD
-    result[:,12] = vrld_sc_ir #vRLD
-    result[:,13] = vrld_sc_ip #vRLD
+    result[:,10] = vrld #vRLD
+    result[:,11] = vrld_sc2 #vRLD
+    result[:,12] = vrld_sc4 #vRLD
+    result[:,13] = vrld_sc_ir #vRLD
+    result[:,14] = vrld_sc_ip #vRLD
        
     #volume density
-    result[:,14] = prvd_stand #pRVD
-    result[:,15] = prvd_highr #pRVD
-    result[:,16] = prvd_cont #pRVD
+    result[:,15] = prvd_stand #pRVD
+    result[:,16] = prvd_stand2 #pRVD
+    result[:,17] = prvd_highr #pRVD
+    result[:,18] = prvd_cont #pRVD
    
-    result[:,17] = vrvd #vRLD
-    result[:,18] = vrvd_sc2 #vRLD
-    result[:,19] = vrvd_sc4 #vRLD           
+    result[:,19] = vrvd #vRLD
+    result[:,20] = vrvd_sc2 #vRLD
+    result[:,21] = vrvd_sc4 #vRLD           
     
-    result[:,20] = prcd_stand #pRCD standard images
-    result[:,21] = prcd_highr #pRCD continuous images
-    result[:,22] = prcd_cont #pRCD layer image
+    result[:,22] = prcd_stand #pRCD standard images
+    result[:,23] = prcd_stand2 #pRCD standard images
+    result[:,24] = prcd_highr #pRCD continuous images
+    result[:,25] = prcd_cont #pRCD layer image
     
     return result
 
