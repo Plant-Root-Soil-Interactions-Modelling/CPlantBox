@@ -868,7 +868,7 @@ class AnimateRoots:
            if self.plant:
                newRootActor, rootCBar = plot_plant(self.rootsystem, self.root_name, False)
            else:
-               newRootActor, rootCBar = plot_roots(pd, self.root_name, "", False)
+               newRootActor, rootCBar, x = plot_roots(pd, self.root_name, "", False)
            if isinstance(newRootActor, list):
                for a in newRootActor:
                    self.actors.append(a)
