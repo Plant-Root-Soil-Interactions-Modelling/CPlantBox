@@ -71,6 +71,7 @@ class XylemFluxPython(XylemFlux):
             sf[i] = -2 * np.pi * a[i] * l[i] * 1.e-4 * ((c[i] - self.CMin) * self.Vmax / (self.Km + (c[i] - self.CMin)))  # kg/day
         sf = np.minimum(sf, 0.)
         return sf * 1.e3  # kg/day -> g/day
+       
 
     def exudate_fluxes(self, dt, kex, stopgr = False):
         """ returns [mol/day]
@@ -126,10 +127,10 @@ class XylemFluxPython(XylemFlux):
                     kexu = 0
                     c = 0
 
-                kex_all.append(kexu* 1.e-4* 1.e3) #mol/day
-                sf.append(2 * np.pi * a * l * 1.e-4 * kexu * 1.e3 / g_per_molC * dt) # mol/day/segment
+                kex_all.append(kexu* 1.e-4* 1.e3) #g/day
+                sf.append(2 * np.pi * a * l * 1.e-4 * kexu * 1.e3 / g_per_molC * dt) # mol/segment/dt
             
-        return sf, kex_all #  mol / segment, mol / d
+        return sf #  mol / segment /dt
 
     def get_incidence_matrix(self):
         """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 
@@ -389,6 +390,8 @@ class XylemFluxPython(XylemFlux):
         for i in range(0, len(ages)):
             kr[i] = self.kr_f(ages[i], subtypes[i])
             kx[i] = self.kx_f(ages[i], subtypes[i])
+        print(kr, kx) 
+        sys.exit()
         return kr, kx
 
     def get_nodes_index(self, ot):
