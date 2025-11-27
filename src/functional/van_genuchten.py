@@ -178,6 +178,92 @@ def create_mfp_lookup(sp, wilting_point = -16000, n = 16001):
 
     print("done")
 
+
+# === Fast forward MFP table (vectorized) =====================================
+import numpy as np
+try:
+    import jax, jax.numpy as jnp
+    JAX_AVAILABLE = True
+    try: jax.config.update("jax_enable_x64", True)
+    except Exception: pass
+except Exception:
+    JAX_AVAILABLE = False
+    jnp = None  # type: ignore
+
+def make_default_h_tab(h_min: float = -20000.0, dense: bool = False) -> np.ndarray:
+    """
+    Return a strictly increasing h grid [h_min, 0] in cm.
+    dense=True uses a non-uniform grid denser near saturation.
+    """
+    if dense:
+        h1 = np.linspace(-50.0, 0.0, 100_001)
+        h2 = -np.logspace(np.log10(50.0),  np.log10(2000.0), 60_000)
+        h3 = -np.logspace(np.log10(2000.0), np.log10(20000.0), 40_000)
+        h = np.unique(np.sort(np.concatenate([h3, h2, h1])))
+    else:
+        h = np.linspace(h_min, 0.0, 200_001)
+    return h.astype(float)
+
+def _as_backend(x):
+    return jnp.asarray(x) if JAX_AVAILABLE else np.asarray(x)
+
+def _hydraulic_conductivity_vec(H, sp):
+    """
+    Vectorized Mualem–van Genuchten K(h) using sp.{theta_R,theta_S,alpha,n,Ksat}.
+    JAX path for speed; NumPy fallback mirrors the same algebra.
+    """
+    if JAX_AVAILABLE and isinstance(H, jnp.ndarray):
+        theta_R, theta_S, alpha, n, Ksat = sp.theta_R, sp.theta_S, sp.alpha, sp.n, sp.Ksat
+        m = 1.0 - 1.0 / n
+        Se = (1.0 + jnp.power(jnp.maximum(alpha * jnp.abs(H), 0.0), n)) ** (-m)
+        K  = Ksat * jnp.sqrt(Se) * jnp.power(1.0 - jnp.power(1.0 - jnp.power(Se, 1.0/m), m), 2.0)
+        return K
+    else:
+        # NumPy version
+        theta_R, theta_S, alpha, n, Ksat = sp.theta_R, sp.theta_S, sp.alpha, sp.n, sp.Ksat
+        m = 1.0 - 1.0 / n
+        Habs = np.maximum(alpha * np.abs(H), 0.0)
+        Se = (1.0 + np.power(Habs, n)) ** (-m)
+        K  = Ksat * np.sqrt(Se) * np.power(1.0 - np.power(1.0 - np.power(Se, 1.0/m), m), 2.0)
+        return K
+
+def make_forward_mfp_table(sp, h_tab: np.ndarray | None = None):
+    """
+    Build forward MFP(h) = ∫_{h_min}^{h} K(h') dh' on a monotone h_tab using fused array ops.
+    Returns (h_tab, mfp_tab).
+    """
+    if h_tab is None:
+        h_tab = make_default_h_tab()
+    h_tab = np.asarray(h_tab, dtype=float)
+    if np.all(np.diff(h_tab) < 0):  # normalize ordering
+        h_tab = h_tab[::-1]
+    if not np.all(np.diff(h_tab) > 0):
+        raise ValueError("h_tab must be strictly increasing.")
+
+    H = _as_backend(h_tab)
+    K = _hydraulic_conductivity_vec(H, sp)
+
+    # cumulative trapezoid (no SciPy)
+    if JAX_AVAILABLE:
+        dH   = H[1:] - H[:-1]
+        avgK = 0.5 * (K[1:] + K[:-1])
+        M = jnp.concatenate([jnp.array([0.0], dtype=H.dtype), jnp.cumsum(avgK * dH)])
+        mfp_tab = np.asarray(M)
+    else:
+        dH   = H[1:] - H[:-1]
+        avgK = 0.5 * (K[1:] + K[:-1])
+        M = np.concatenate([np.array([0.0], dtype=float), np.cumsum(np.asarray(avgK)*np.asarray(dH))])
+        mfp_tab = M
+    return np.asarray(h_tab), np.asarray(mfp_tab)
+
+def save_mfp_tables(npz_path: str, *, h_tab, mfp_tab, sp):
+    """Persist minimal payload needed by the strict-parity builder."""
+    np.savez(npz_path, h_tab=np.asarray(h_tab), mfp_tab=np.asarray(mfp_tab), soil=list(sp))
+
+def load_mfp_tables(npz_path: str) -> dict:
+    z = np.load(npz_path, allow_pickle=True)
+    return {k: z[k] for k in z.files}
+
 # fast_specific_moisture_storage = {}
 # fast_water_content = {}
 # fast_hydraulic_conductivity = {}

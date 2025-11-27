@@ -805,7 +805,8 @@ def plot_soil(s, pname_mesh, min_b, max_b, cell_number, solutes = [], filename:s
         write_vtu(path + filename + ".vtu", soil_grid)
 
 
-def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
+def write_soil(filename, s, min_b, max_b, cell_number,
+               solutes = [], root_flux_per_cell=None):
     """ Writes results of a macroscopic soil model (e.g. Richards, RichardsNC) as vtu file
         @param filename      filename without extension 
         @parma s             soil model (e.g. Richards, RichardsNC)
@@ -821,6 +822,58 @@ def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
     soil_pressure = vtk_data(np.array(s.getSolutionHead()))
     soil_pressure.SetName("pressure head")  # in macroscopic soil
     soil_grid.GetCellData().AddArray(soil_pressure)
+    
+    flows = -np.array(s.getFlowsPerCell(0)) # < 0 means leave the cell, > 0 means enter the cell
+    flows_vtk = vtk_data(flows)
+    flows_vtk.SetName("flows_per_cell")
+    soil_grid.GetCellData().AddArray(flows_vtk)
+ 
+    # ---------------------------------------------
+    # Net root–soil fluxes as three fields:
+    #   root_flux_net     : signed (cm^3/day), 0 where no roots
+    #   root_flux_lift    : q>0 only (cm^3/day), 0 otherwise
+    #   root_flux_uptake  : |q| for q<0 (cm^3/day), 0 otherwise
+    # ---------------------------------------------
+    if root_flux_per_cell is not None:
+        n_cells = int(np.prod(cell_number))
+
+        # Build full net flux vector (q_net) with 0 where no roots
+        if isinstance(root_flux_per_cell, dict):
+            q_net = np.zeros(n_cells, dtype=float)
+            for cid, q in root_flux_per_cell.items():
+                if 0 <= cid < n_cells:
+                    q_net[cid] = float(q)
+        else:
+            q_net = np.asarray(root_flux_per_cell, dtype=float).ravel()
+            if q_net.size != n_cells:
+                raise ValueError(
+                    f"root_flux_per_cell has size {q_net.size}, expected {n_cells}"
+                )
+
+        # Lift and uptake magnitudes, 0 where not applicable
+        q_lift   = np.zeros_like(q_net)
+        q_uptake = np.zeros_like(q_net)
+
+        pos = q_net > 0
+        neg = q_net < 0
+
+        q_lift[pos]   = q_net[pos]       # positive values
+        q_uptake[neg] = -q_net[neg]      # magnitude of negative values
+
+        # Attach to VTK
+        root_flux_net_vtk = vtk_data(q_net)
+        root_flux_net_vtk.SetName("root_flux_net")
+        soil_grid.GetCellData().AddArray(root_flux_net_vtk)
+
+        root_flux_lift_vtk = vtk_data(q_lift)
+        root_flux_lift_vtk.SetName("root_flux_lift")
+        soil_grid.GetCellData().AddArray(root_flux_lift_vtk)
+
+        root_flux_uptake_vtk = vtk_data(q_uptake)
+        root_flux_uptake_vtk.SetName("root_flux_uptake")
+        soil_grid.GetCellData().AddArray(root_flux_uptake_vtk)
+
+
     for i, s_ in enumerate(solutes):
         d = vtk_data(np.array(s.getSolution(i + 1)))
         d.SetName(s_)  # in macroscopic soil

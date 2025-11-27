@@ -1,0 +1,23 @@
+# VTK and simulation outputs
+*.vtp
+*.vtu
+*.vti
+*.vtk
+
+# Logs and temp
+*.log
+*~
+
+# Ignore entire example folder
+Soil3_look_ups/
+Soil3_scenario_look_ups/
+
+# Python cache
+__pycache__/
+*.pyc
+
+#Zone Identifiers
+*:Zone.Identifier
+
+results/*/*.npz
+results/**/*.npz

@@ -1,129 +1,182 @@
-import sys; sys.path.append(".."); sys.path.append("../..");
-
-import plantbox as pb
-from Perirhizal import PerirhizalPython
-
-import functional.van_genuchten as vg
-
+import sys
 import numpy as np
 
+# if you need path tweaks, you can keep these two, but NOT an import of this file itself
+# sys.path.append("..")
+# sys.path.append("../..")
 
-class PerirhizalHetereogeneous(PerirhizalPython):
-    """ 
-    Same as PerirhizalPython but with multiple VG sets for heterogeneous soil layers (1D layers only)
-    
-    similar to cpp/soil_richards/richardsparams.hh but only for 1D
-    
-    TODO not finished yet 
+import plantbox as pb
+
+from functional.Perirhizal import PerirhizalPython
+import functional.van_genuchten as vg
+from scipy.interpolate import RegularGridInterpolator
+
+# global cache so multiple plants can reuse the same table
+_TABLE_CACHE = {}  # key: filename (str) -> (table, vg.Parameters)
+
+
+
+class PerirhizalHeterogeneous(PerirhizalPython):
+    """
+    Perirhizal with several soil/lookup sets, chosen by z-layers.
     """
 
-    def __init__(self, ms = None):
-        """  ms      reference to MappedSegments """
+    def __init__(self, ms=None):
         super().__init__(ms)
 
-        self.lookup_tables = []  # optional array of 4d look up table to find soil root interface potentials
-        self.sp = []  # corresponding array of van Genuchten soil parameter
+        # parallel lists: same index = same soil
+        self.lookup_tables = []   # list of RegularGridInterpolator or None
+        self.sp_list = []         # list of vg.Parameters
 
-        self.corners = [0]  # layers are given by there edges, i.e. [0, -10, -20] are two layers [0,-10] and [-10, -20]
-        self.layer_indices = []  # van Genuchten set index per layer
+        # layer description
+        self.corners = [0.0]      # z values, e.g. [0, -25, -50]
+        self.layer_indices = []   # which soil index for each interval
 
-        self.ind_ = []  # layer index per segment mid z coordinate
+        self.boxes = []
+        self.seg_xyz = None   # <- optional, only set if user gives it
 
-    def set_soil(self, sp):
-        raise "PerirhizalHetereogeneous: use set_soils "
+    def add_box(self, p1, p2, soil_idx):
+        self.boxes.append((np.array(p1), np.array(p2), soil_idx))
 
-    def open_lookup(self, filename):
-        raise "PerirhizalHetereogeneous: use open_lookup_tabless "
-
-    def addLayers(self, corners, layer_indices):
-        """ adds the layer geometry,  
-            where soil parameter set with index @param layer_index applies, see addVanGenuchtenParamters, or addLookUpTable
-        """
-        I = np.argsort(corners)
-        I = I[::-1]  # descending order
-        scorners = np.array(corners)[I]
-        slayer_indices = np.array(layer_indices)[I]
-        self.corners = scorners
-        self.layer_indices = slayer_indices
-
-    def addVanGenuchtenParamters(self, sp_):
-        """ 
-        """
-        self.sp.append(sp_)
+    def set_segment_xyz(self, xyz):
+        """xyz: shape (nseg, 3), segment midpoints in soil coords"""
+        self.seg_xyz = np.asarray(xyz)
+        
+    def add_vg_parameters(self, sp_):
+        # register for fast_mfp so PerirhizalPython.soil_root_interface_ can use it
+        vg.create_mfp_lookup(sp_)
+        self.sp_list.append(sp_)
         self.lookup_tables.append(None)
 
-    def addLookUpTable(self, table_name):
+    def add_lookup_table(self, filename):
         """
+        Load a precomputed .npz lookup table and register it as a soil.
+        Uses a module-level cache so the same file is only loaded once,
+        even if multiple plants / perirhizal objects call this.
         """
-        npzfile = np.load(table_name + ".npz")
-        interface = npzfile["interface"]
-        rx_, sx_, akr_, rho_ = npzfile["rx_"], npzfile["sx_"], npzfile["akr_"], npzfile["rho_"]
-        soil = npzfile["soil"]
-        table = RegularGridInterpolator((rx_, sx_, akr_, rho_), interface)  # method = "nearest" fill_value = None , bounds_error=False
-        self.sp.append(vg.Parameters(soil))
-        self.lookup_tables.append(table)
+        global _TABLE_CACHE
 
-    def test(self):
-        """ checks if sizes are correct """
-        assert len(self.boxes_min) == len(self.boxes_max) == len(self.layer_indices), "PerirhizalHetereogeneous.test(): Lengths should agree"
-        assert len(self.sp_) == len(self.lookup_tables), "PerirhizalHetereogeneous.test(): Lengths should agree"
-        assert len(self.lookup_tables) > np.max(self.layer_indices), "PerirhizalHetereogeneous.test(): there is a layer index exceeding the table"
+        # 1) seen before? just reuse
+        if filename in _TABLE_CACHE:
+            table, sp = _TABLE_CACHE[filename]
+            self.lookup_tables.append(table)
+            self.sp_list.append(sp)
+            return
+
+        # 2) otherwise load from disk
+        npzfile = np.load(filename + ".npz")
+        interface = npzfile["interface"]
+        rx_, sx_, akr_, rho_ = (
+            npzfile["rx_"],
+            npzfile["sx_"],
+            npzfile["akr_"],
+            npzfile["rho_"],
+        )
+        soil = npzfile["soil"]
+
+        table = RegularGridInterpolator((rx_, sx_, akr_, rho_), interface)
+
+        # build vg.Parameters and register its mfp
+        sp = vg.Parameters(soil)
+        vg.create_mfp_lookup(sp)
+
+        # put into global cache
+        _TABLE_CACHE[filename] = (table, sp)
+
+        # and also into THIS instance
+        self.lookup_tables.append(table)
+        self.sp_list.append(sp)
+
+
+    # ------------------------------------------------------
+    # layers
+    # ------------------------------------------------------
+    def add_layers(self, corners, layer_indices):
+        """
+        corners: e.g. [0, -25, -50]
+        layer_indices: e.g. [0, 1]  (same length as corners-1)
+        """
+        # sort descending in z
+        I = np.argsort(corners)[::-1]
+        corners = np.array(corners)[I]
+        layer_indices = np.array(layer_indices)[I[:-1]]
+
+        self.corners = corners
+        self.layer_indices = layer_indices
 
     def create_layer_indices(self):
-        """
-        """
-        print("create_layer_indices")
+        # always do z-layers first
         z = np.array(self.ms.getSegmentZ())
-        self.ind_ = np.zeros(z.shape, dtype = int)
-        for i in range(1, len(self.corners)):  # per layer
-            self.ind_ += (np.logical_and(z <= np.array(self.corners[i - 1]), z > np.array(self.corners[i]))) * (i - 1)
-        self.ind_ = np.array(list(self.layer_indices[i] for i in self.ind_))
+        seg_soil = np.zeros_like(z, dtype=int)
 
+        for i in range(len(self.corners) - 1):
+            upper = self.corners[i]
+            lower = self.corners[i + 1]
+            mask = (z <= upper) & (z > lower)
+            seg_soil[mask] = self.layer_indices[i]
+
+        # if we got full xyz, we can cut out boxes and overwrite
+        if self.seg_xyz is not None and len(self.boxes) > 0:
+            xyz = self.seg_xyz
+            for (p1, p2, soil_idx) in self.boxes:
+                m = (
+                    (xyz[:, 0] >= p1[0]) & (xyz[:, 0] <= p2[0]) &
+                    (xyz[:, 1] >= p1[1]) & (xyz[:, 1] <= p2[1]) &
+                    (xyz[:, 2] >= p1[2]) & (xyz[:, 2] <= p2[2])
+                )
+                seg_soil[m] = soil_idx
+
+        self.seg_soil_index = seg_soil
+
+    def set_segment_soil_index(self, seg_soil_index: np.ndarray):
+        self.seg_soil_index = np.asarray(seg_soil_index, dtype=int)
+
+
+    # ------------------------------------------------------
+    # main interface
+    # ------------------------------------------------------
     def soil_root_interface_potentials(self, rx, sx, inner_kr, rho):
         """
-        finds matric potentials at the soil root interface for as all segments
-        uses a look up tables if present (see create_lookup, and open_lookup) 
-        addVanGenuchtenDomain
-        rx             xylem matric potential [cm]
-        sx             bulk soil matric potential [cm]
-        inner_kr       root radius times hydraulic conductivity [cm/day] 
-        rho            geometry factor [1] (outer_radius / inner_radius)
+        Same signature as base class but now chooses soil/table per segment.
+        We convert inputs to numpy arrays so boolean masks work.
         """
-        assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length"
-        if not len(ind_) == len(x):
-          self. create_layer_indices(self)
-        assert len(rx) == len(ind_), "number of segments and xylem potentials must have the same length"
+        # make sure we can mask
+        rx = np.asarray(rx)
+        sx = np.asarray(sx)
+        inner_kr = np.asarray(inner_kr)
+        rho = np.asarray(rho)
 
-        rsx = np.zeros(rx.shape)
+        # (re)build segment → soil mapping if needed
+        if self.seg_soil_index is None or len(self.seg_soil_index) != len(rx):
+            self.create_layer_indices()
 
-        for i in range(0, np.max(self.layer_indices)):  # per soil parameter set
-            self.lookup_table = self.lookup_tables[i]  # used for table look up
-            if self.lookup_tables:  # if it was set
-                i0 = self.ind_ == i  # binary indexing of the segments with layer i
-                rsx[i0] = self.soil_root_interface_potentials_table(rx[i0], sx[i0], inner_kr[i0], rho[i0])
+        rsx = np.zeros_like(rx, dtype=float)
+
+        # loop over all soil sets we have stored
+        for soil_idx in range(len(self.sp_list)):
+            mask = (self.seg_soil_index == soil_idx)
+            if not np.any(mask):
+                continue
+
+            table = self.lookup_tables[soil_idx]
+            if table is not None:
+                # use lookup-table path
+                self.lookup_table = table  # reuse parent’s helper
+                rsx[mask] = self.soil_root_interface_potentials_table(
+                    rx[mask], sx[mask], inner_kr[mask], rho[mask]
+                )
             else:
-                rsx[i0] = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], self.sp) for i in range(0, len(rx))])
-                rsx = rsx[:, 0]
+                # fall back to analytical VG for this soil
+                sp = self.sp_list[soil_idx]
+                idxs = np.where(mask)[0]
+                vals = []
+                for j in idxs:
+                    vals.append(
+                        PerirhizalPython.soil_root_interface_(
+                            rx[j], sx[j], inner_kr[j], rho[j], sp
+                        )
+                    )
+                rsx[mask] = np.array(vals)
 
         return rsx
 
-
-if __name__ == "__main__":
-
-    plant = pb.MappedPlant()
-    path = "../../modelparameter/structural/rootsystem/"
-    name = "Anagallis_femina_Leitner_2010"
-    plant.readParameters(path + name + ".xml")
-    plant.initialize()
-    plant.simulate(4, False)
-    # setGrid
-
-    peri = PerirhizalHetereogeneous(plant)
-
-    corners = [0, -2, -4, -8, -120, -150, -180, -190]  # 7 layers
-    peri.addLayers(corners, range(0, 8))
-
-    peri.create_layer_indices()
-    print(peri.ind_)
-
-    print("fin")

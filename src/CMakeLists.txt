@@ -40,7 +40,9 @@ add_library(CPlantBox SHARED
 			functional/Perirhizal.cpp
 			functional/PlantHydraulicParameters.cpp
 			functional/PlantHydraulicModel.cpp			
-
+			functional/MultiPerirhizalManager.cpp
+			functional/New_MultiPerirhizalManager.cpp  
+			
 			visualisation/Quaternion.h
 			visualisation/CatmullRomSpline.h
 			visualisation/PlantVisualiser.h

@@ -30,6 +30,8 @@ namespace py = pybind11;
 
 // functional
 #include "Perirhizal.h"
+#include "MultiPerirhizalManager.h"
+#include "New_MultiPerirhizalManager.h"
 #include "XylemFlux.h"
 #include "ExudationModel.h"
 #include "Photosynthesis.h"
@@ -970,6 +972,35 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("sumSegFluxes",&Perirhizal::sumSegFluxes)
 			.def("splitSoilFluxes",&Perirhizal::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
             .def_readwrite("ms",  &Perirhizal::ms);
+
+    py::class_<CPlantBox::MultiPerirhizalManager>(m, "MultiPerirhizalManager")
+        .def(py::init<>())
+        .def("addPlant", &CPlantBox::MultiPerirhizalManager::addPlant,
+             py::arg("perirhizal"), py::arg("mapped_segments"))
+        .def("setProposal", &CPlantBox::MultiPerirhizalManager::setProposal)
+        .def("mergeSharedCells", &CPlantBox::MultiPerirhizalManager::mergeSharedCells)
+        .def("recomputeSharedOuterRadii", &CPlantBox::MultiPerirhizalManager::recomputeSharedOuterRadii,
+             py::arg("type") = 2)
+        .def("getMerged", &CPlantBox::MultiPerirhizalManager::getMerged,
+             py::return_value_policy::reference_internal)
+        .def("getSharedOuter", &CPlantBox::MultiPerirhizalManager::getSharedOuter,
+             py::return_value_policy::reference_internal)
+        .def("size", &CPlantBox::MultiPerirhizalManager::size);
+
+    py::class_<CPlantBox::New_MultiPerirhizalManager>(m, "New_MultiPerirhizalManager")
+        .def(py::init<>())
+        .def("addPlant", &CPlantBox::New_MultiPerirhizalManager::addPlant,
+            py::arg("perirhizal"), py::arg("mapped_segments"))
+        .def("setProposal", &CPlantBox::New_MultiPerirhizalManager::setProposal)
+        .def("mergeSharedCells", &CPlantBox::New_MultiPerirhizalManager::mergeSharedCells)
+        .def("recomputeSharedOuterRadii", &CPlantBox::New_MultiPerirhizalManager::recomputeSharedOuterRadii,
+            py::arg("type") = 2)
+        .def("getMerged", &CPlantBox::New_MultiPerirhizalManager::getMerged,
+            py::return_value_policy::reference_internal)
+        .def("getSharedOuter", &CPlantBox::New_MultiPerirhizalManager::getSharedOuter,
+            py::return_value_policy::reference_internal)
+        .def("size", &CPlantBox::New_MultiPerirhizalManager::size);
+
 
     /*
      * XylemFlux.h

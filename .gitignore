@@ -54,5 +54,4 @@ tutorial/jupyter/.ipynb_checkpoints/
 .ipynb_checkpoints/
 
 # images
-*.png
 .vscode/settings.json

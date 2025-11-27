@@ -237,8 +237,14 @@ class PerirhizalPython(Perirhizal):
         rho            geometry factor [1]
         f              function to look up the potentials
         """
+        rho_clamped = np.clip(
+            rho_,
+            self.lookup_table.grid[3][0],
+            self.lookup_table.grid[3][-1],
+        )
+
         try:
-            rsx = self.lookup_table((rx, sx, inner_kr_ , rho_))
+            rsx = self.lookup_table((rx, sx, inner_kr_, rho_clamped))
         except:
 
             if np.max(rx) > 0: print("xylem matric potential positive", np.max(rx), "at", np.argmax(rx))
@@ -659,6 +665,217 @@ class PerirhizalPython(Perirhizal):
         n_ = n_ + np.ones((nodes.shape[0], 1)) @ center
         return n_
 
+
+# === === ===  Strict-parity 4D lookup builders (append-only patch)  === === ===
+# These helpers build the RSI 4D table by calling PerirhizalPython.soil_root_interface_
+# for every grid point, after patching vg.fast_mfp[sp] to use a prebuilt forward
+# MFP(h) table (no scipy.quad calls during the build).
+# Progress prints match the baseline style.
+
+# Local imports (safe even if already imported above)
+import numpy as _np
+try:
+    from functional import van_genuchten as _vg
+except Exception:
+    import van_genuchten as _vg  # fallback if run from same package root
+
+
+def _patch_fast_mfp(sp, h_tab: _np.ndarray, mfp_tab: _np.ndarray) -> None:
+    """
+    Install a fast, bounds-safe MFP(h) into _vg.fast_mfp[sp] so that calls to
+    PerirhizalPython.soil_root_interface_ use the prebuilt table (no integrals).
+    """
+    if not hasattr(_vg, "fast_mfp"):
+        _vg.fast_mfp = {}
+    class _MFPCallable:
+        def __call__(self, h):
+            h = _np.asarray(h, dtype=float)
+            return _np.interp(h, h_tab, mfp_tab)
+    _vg.fast_mfp[sp] = _MFPCallable()
+
+
+def _default_grid_spec():
+    """Reproduce your original log-spaced axes (rx_, sx_, akr_, rho_)."""
+    rxn = 150
+    rx_ = -_np.logspace(_np.log10(1.), _np.log10(16000), rxn) + 1.0
+    rx_ = rx_[::-1]
+    sxn = 150
+    sx_ = -_np.logspace(_np.log10(1.), _np.log10(16000), sxn) + 1.0
+    sx_ = sx_[::-1]
+    akrn = 100
+    akr_ = _np.logspace(_np.log10(1.e-7), _np.log10(1.e-4), akrn)
+    rhon = 30
+    rho_ = _np.logspace(_np.log10(1.), _np.log10(200.), rhon)
+    return rx_, sx_, akr_, rho_
+
+
+def soil_root_interface_offline_interp(rx: float,
+                                       sx: float,
+                                       inner_kr: float,
+                                       rho: float,
+                                       sp,
+                                       *,
+                                       tables_npz: str) -> float:
+    """
+    STRICT PARITY single-point RSI:
+    - Loads forward MFP table from npz and patches _vg.fast_mfp[sp].
+    - Calls this module's PerirhizalPython.soil_root_interface_ with the same args.
+    """
+    # Load MFP table and patch fast_mfp
+    tbl = _vg.load_mfp_tables(tables_npz)
+    h_tab = _np.asarray(tbl["h_tab"], dtype=float)
+    mfp_tab = _np.asarray(tbl["mfp_tab"], dtype=float)
+    _patch_fast_mfp(sp, h_tab, mfp_tab)
+
+    # Delegate to the baseline implementation in this module
+    Per = getattr(globals().get("PerirhizalPython", None), "soil_root_interface_", None)
+    if Per is None:
+        raise ImportError("PerirhizalPython.soil_root_interface_ not found in Perirhizal.py.")
+    return float(Per(float(rx), float(sx), float(inner_kr), float(rho), sp))
+
+
+def create_lookup_interp(filename: str,
+                         sp,
+                         *,
+                         tables_npz: str,
+                         grid_spec=None) -> None:
+    """
+    Serial STRICT-PARITY builder.
+    Prints progress like:
+      "<filename> calculating <N> supporting points on 1 thread(s)"
+      "at index <i> / <N> on thread 0"
+    """
+    # Load MFP and patch baseline to use it
+    tbl = _vg.load_mfp_tables(tables_npz)
+    h_tab = _np.asarray(tbl["h_tab"], dtype=float)
+    mfp_tab = _np.asarray(tbl["mfp_tab"], dtype=float)
+    _patch_fast_mfp(sp, h_tab, mfp_tab)
+
+    # Axes (original defaults unless overridden)
+    if grid_spec is None:
+        rx_, sx_, akr_, rho_ = _default_grid_spec()
+    else:
+        rx_, sx_, akr_, rho_ = grid_spec
+    rx_  = _np.asarray(rx_,  float)
+    sx_  = _np.asarray(sx_,  float)
+    akr_ = _np.asarray(akr_, float)
+    rho_ = _np.asarray(rho_, float)
+
+    soil = list(sp)
+    interface = _np.empty((rx_.size, sx_.size, akr_.size, rho_.size), float)
+
+    # Progress header & counter
+    total_pts = rx_.size * sx_.size * akr_.size * rho_.size
+    points_per_rank = total_pts
+    print(f"{filename} calculating {total_pts} supporting points on 1 thread(s)")
+    local_idx = 0
+    PRINT_EVERY = 10000  # adjust to taste
+
+    # Baseline entry point in this module
+    Per = getattr(PerirhizalPython, "soil_root_interface_", None)
+    if Per is None:
+        raise ImportError("PerirhizalPython.soil_root_interface_ not found in Perirhizal.py.")
+
+    # Full strict-parity fill (every point delegates to baseline)
+    for k in range(akr_.size):
+        A = float(akr_[k])
+        for l in range(rho_.size):
+            R = float(rho_[l])
+            block = _np.empty((rx_.size, sx_.size), float)
+            for i in range(rx_.size):
+                rxi = float(rx_[i])
+                for j in range(sx_.size):
+                    block[i, j] = float(Per(rxi, float(sx_[j]), A, R, sp))
+                    local_idx += 1
+                    if local_idx % PRINT_EVERY == 1:
+                        print(f"at index {local_idx} / {points_per_rank} on thread 0")
+            interface[:, :, k, l] = block
+
+    _np.savez(filename, interface=interface, rx_=rx_, sx_=sx_, akr_=akr_, rho_=rho_, soil=soil)
+
+
+def create_lookup_mpi_interp(filename: str,
+                             sp,
+                             *,
+                             tables_npz: str,
+                             grid_spec=None) -> None:
+    """
+    MPI STRICT-PARITY builder.
+    Rank 0 prints:
+      "<filename> calculating <N> supporting points on <ranks> thread(s)"
+      "at index <i> / <localN> on thread 0"
+    """
+    try:
+        from mpi4py import MPI
+    except Exception as e:
+        raise ImportError("mpi4py is required for create_lookup_mpi_interp") from e
+
+    # Load MFP and patch baseline to use it
+    tbl = _vg.load_mfp_tables(tables_npz)
+    h_tab = _np.asarray(tbl["h_tab"], dtype=float)
+    mfp_tab = _np.asarray(tbl["mfp_tab"], dtype=float)
+    _patch_fast_mfp(sp, h_tab, mfp_tab)
+
+    # Axes
+    if grid_spec is None:
+        rx_, sx_, akr_, rho_ = _default_grid_spec()
+    else:
+        rx_, sx_, akr_, rho_ = grid_spec
+    rx_  = _np.asarray(rx_,  float)
+    sx_  = _np.asarray(sx_,  float)
+    akr_ = _np.asarray(akr_, float)
+    rho_ = _np.asarray(rho_, float)
+
+    soil = list(sp)
+
+    # MPI setup
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+
+    # Partition (akr, rho) pairs across ranks
+    pairs = [(k, l) for k in range(akr_.size) for l in range(rho_.size)]
+    my_pairs = pairs[rank::size]
+
+    # Progress header & local counter (rank 0 only)
+    total_pts = rx_.size * sx_.size * akr_.size * rho_.size
+    points_per_rank = rx_.size * sx_.size * len(my_pairs)
+    if rank == 0:
+        print(f"{filename} calculating {total_pts} supporting points on {size} thread(s)")
+    local_idx = 0
+    PRINT_EVERY = 10000  # adjust to taste
+
+    # Baseline entry point in this module
+    Per = getattr(PerirhizalPython, "soil_root_interface_", None)
+    if Per is None:
+        raise ImportError("PerirhizalPython.soil_root_interface_ not found in Perirhizal.py.")
+
+    # Compute local blocks
+    local_interface = {}
+    for (k, l) in my_pairs:
+        A = float(akr_[k])
+        R = float(rho_[l])
+        block = _np.empty((rx_.size, sx_.size), float)
+        for i in range(rx_.size):
+            rxi = float(rx_[i])
+            for j in range(sx_.size):
+                block[i, j] = float(Per(rxi, float(sx_[j]), A, R, sp))
+                if rank == 0:
+                    local_idx += 1
+                    if local_idx % PRINT_EVERY == 1:
+                        print(f"at index {local_idx} / {points_per_rank} on thread 0")
+        local_interface[(k, l)] = block
+
+    # Gather to rank 0 and save
+    all_data = comm.gather(local_interface, root=0)
+
+    if rank == 0:
+        interface = _np.empty((rx_.size, sx_.size, akr_.size, rho_.size), float)
+        for src in all_data:
+            for (k, l), block in src.items():
+                interface[:, :, k, l] = block
+        _np.savez(filename, interface=interface, rx_=rx_, sx_=sx_, akr_=akr_, rho_=rho_, soil=soil)
+# === === ===  end of append-only patch  === === ===
 
 if __name__ == "__main__":
 
