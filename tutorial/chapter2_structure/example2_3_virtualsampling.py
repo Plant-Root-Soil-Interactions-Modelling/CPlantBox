@@ -43,7 +43,6 @@ for i in range(0, M):  # |\label{l2_3:simulationbegin}|
         plant.setGeometry(soilSpace)
         plant.initialize(False)
         plant.simulate(30 * months, False)
-        allRS.append(plant)
         if i + j == 0:
             all_ana = pb.SegmentAnalyser(plant)
         else:

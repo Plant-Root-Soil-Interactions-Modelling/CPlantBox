@@ -1,7 +1,7 @@
 """simple root system from scratch (without parameter files)"""
 
-import matplotlib.pyplot as plt
-import numpy as np
+import matplotlib.pyplot as plt  # |\label{l2_1:matplotlib}|
+import numpy as np  # |\label{l2_1:numpy}|
 
 import plantbox as pb
 

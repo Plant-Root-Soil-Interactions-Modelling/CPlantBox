@@ -21,5 +21,5 @@ plant.write("results/example_plant.vtp")  # using polylines |\label{l13:write_po
 ana = pb.SegmentAnalyser(plant)
 ana.write("results/example_plant_segs.vtp")  # using segments |\label{l13:write_segs}|
 
-# Interactive plot, using vtk, press x, y, z to change view, r to reset view, g to save png
+# Interactive plot, using vtk
 vp.plot_plant(plant, "age")  # e.g. organType, subType, age |\label{l13:plot_plant}|
