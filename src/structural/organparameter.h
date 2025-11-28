@@ -69,7 +69,9 @@ public:
     virtual tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const; ///< writes a organ root parameter set
     void writeXML(std::string name) const; ///< writes a organ root parameter set
 
-	int getLateralType(const Vector3d& pos, int ruleId, double creation_time = 0.); ///< Choose (dice) lateral type based on stem parameter set
+	std::vector<int> getLateralType(const Vector3d& pos, int ruleId, double creation_time = 0.); ///< Choose (dice) lateral type based on stem parameter set
+    int interpolate_P(int ruleId, double creation_time);
+    std::vector<double> interpolate_P(int ruleId, double creation_time, int age_id);
 
 	virtual void bindParameters(); ///<sets up class introspection
     void bindParameter(std::string name, int* i, std::string descr = "", double* dev = nullptr); ///< binds integer to parameter name
@@ -86,13 +88,13 @@ public:
     double ldelays = 0.; ///< Standard deviation of lateral emergence delay [day]
     std::vector<std::vector<double> > ldelay_v = std::vector<std::vector<double>>(0, std::vector<double> (0, 0)); ///< Lateral emergence delay [day], used by RootDelay, @see RootDelay, RootSystem::initializeDB or if Organism->delayDefinition != Organism::dd_distance
     std::vector<std::vector<double> > ldelay_vs = std::vector<std::vector<double>>(0, std::vector<double> (0, 0)); ///< Standard deviation of lateral emergence delay [day]
-    std::vector<std::vector<double> > successorWhere = std::vector<std::vector<double>>(0, std::vector<double> (0, 0));
+    std::vector<std::vector<double> > successorWhere{};
     ///< Where should rule be implemented [1] or not [-1]; need to use double to distiguish between -0 and 0; default: vector empty == rule implemented everywhere
-    std::vector<std::vector<int> > successorOT = std::vector<std::vector<int>>(0, std::vector<int> (0, 0)); ///< Lateral types [1]
-    std::vector<std::vector<int> > successorST = std::vector<std::vector<int>>(0, std::vector<int> (0, 0)); ///< Lateral types [1]
-    std::vector<std::vector<double>> successorP = std::vector<std::vector<double>>(0, std::vector<double> (0, 0)); ///< Probabilities of lateral type to emerge (sum of values == 1) [1]
-    std::vector<double> successorP_age = std::vector<double> (0, 0); ///< age when to switch to next successorPTable_value vector
-    std::vector<int>  successorNo = std::vector<int>(0); ///< Lateral types [1]
+    std::vector<std::vector<std::vector<int>> > successorOT{}; ///< Lateral types [1]
+    std::vector<std::vector<std::vector<int>> > successorST{}; ///< Lateral types [1]
+    std::vector<std::vector<std::vector<double>>> successorP{}; ///< Probabilities of lateral type to emerge (sum of values == 1) [1]
+    std::vector<std::vector<double>> successorP_age{}; ///< age when to switch to next successorPTable_value vector
+    std::vector<int> successorNo{}; ///< Lateral types [1]
 
     std::weak_ptr<Organism> plant;
 	std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
@@ -118,6 +120,13 @@ protected:
 								int sizeVector,
                                     bool replaceByDefault,
                                     std::vector<std::vector<IntOrDouble>> & vToFill, 
+									tinyxml2::XMLElement* key, int& ruleId);
+    template <class IntOrDouble>
+    void cpb_queryStringAttribute(std::vector<std::string> keyNames,
+								IntOrDouble defaultVal,
+								int sizeVector,
+                                    bool replaceByDefault,
+                                    std::vector<std::vector<std::vector<IntOrDouble>>> & vToFill, 
 									tinyxml2::XMLElement* key, int& ruleId);
 
 

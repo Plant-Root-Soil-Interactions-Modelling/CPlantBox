@@ -60,9 +60,10 @@ void RootDelay::createLateral(double dt, bool verbose)
 
 			for(int nn = 0; nn < numlats; nn++) {
 				const Vector3d& pos = Vector3d();
-				int p_id = rrp->getLateralType(pos, i);
-				if (p_id>=0) {
-					int lt = rrp->successorST.at(i).at(p_id);
+				std::vector<int> l_ids = rrp->getLateralType(pos, i);
+                
+				if (l_ids.at(0) >=0) {
+                    int lt = l_ids.at(1);
 					double delay = std::max(rrp->ldelay + plant.lock()->randn()*rrp->ldelays, 0.);
 					auto lateral = std::make_shared<RootDelay>(plant.lock(), lt,   delay,  shared_from_this(), nodes.size()-1);
 					children.push_back(lateral);

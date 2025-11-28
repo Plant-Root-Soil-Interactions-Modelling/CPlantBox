@@ -226,17 +226,21 @@ void RootRandomParameter::read(std::istream & cin)
     int is;
     for (int i=0; i<n; i++) {
         cin >> is;
-        successorST.push_back(std::vector<int>(is));
-        successorOT.push_back(std::vector<int>(2));
+        // 3D vector: successorST[i][j][k], innermost vector size 1
+        successorST.push_back(std::vector<std::vector<int>>(1, std::vector<int>(1,is)));
+        successorOT.push_back(std::vector<std::vector<int>>(1, std::vector<int>(1,2)));
+        // 2D vector, innermost size 0
+        successorWhere.push_back(std::vector<double>(0));
+        // 1D vector, innermost size 1
         successorNo.push_back(1);
-        successorWhere.push_back(std::vector<double>(0,0));
     }
     cin >> s >> n;
     successorP.clear();
     double ds;
     for (int i=0; i<n; i++) {
         cin >> ds;
-        successorP.push_back(std::vector<double>(ds));
+        // 3D vector: successorST[i][j][k], innermost vector size 1
+        successorP.push_back(std::vector<std::vector<double>>(1, std::vector<double>(1, ds)));
     }
     cin >> s >> theta >> thetas >> s >> rlt >> rlts >> s >> gf >> s;
 }
@@ -251,14 +255,18 @@ void RootRandomParameter::write(std::ostream & cout) const {
         << "ln\t" << ln << "\t" << lns << "\n" << "lmax\t"<< lmax <<"\t"<< lmaxs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
         "a\t" << a << "\t" << as << "\n" << "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successorST.size() << "\t";
     for (size_t i=0; i<successorST.size(); i++) {
-        for (int j=0; i<successorST.at(i).size(); j++) {
-				cout << successorST.at(i).at(j) << "\t";
+        for (int j=0; j<successorST.at(i).size(); j++) {
+            for (int k=0; k<successorST.at(i).at(j).size(); k++) {
+                    cout << successorST.at(i).at(j).at(k) << "\t";
+            }
 		}
     }
     cout << "\n" << "successorP\t" << successorP.size() <<"\t";
     for (size_t i=0; i<successorP.size(); i++) {
-        for (int j=0; i<successorP.at(i).size(); j++) {
-				cout << successorP.at(i).at(j) << "\t";
+        for (int j=0; j<successorP.at(i).size(); j++) {
+            for (int k=0; k<successorP.at(i).at(j).size(); k++) {
+                    cout << successorP.at(i).at(j).at(k) << "\t";
+            }
 		}
     }
     cout << "\n" << "theta\t" << theta << "\t" << thetas << "\n" << "rlt\t" << rlt << "\t" << rlts << "\n" << "gf\t" << gf << "\n";

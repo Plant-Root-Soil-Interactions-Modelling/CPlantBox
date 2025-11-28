@@ -729,12 +729,12 @@ void MappedPlant::simulate(double dt, bool verbose)
 		int testval = newsegs[c].y - shift;
 		std::vector<int> nodeIds_ = so->getNodeIds();
 		auto it = std::find(nodeIds_.begin(), nodeIds_.end(), testval);//);
-			std::cout <<"test "<< *it << " " <<  newsegs[c].y ;//<<std::endl;
+		//	std::cout <<"test "<< *it << " " <<  newsegs[c].y ;//<<std::endl;
 		assert(int(*it) == int( newsegs[c].y- shift) && "MappedPlant::simulate: node ID not found in organ");
 		   //it != so->getNodeIds().end())
 		//{
 			local_segIdx = std::distance(nodeIds_.begin(), it) - 1;
-			std::cout<< " "  <<local_segIdx << std::endl;
+		//	std::cout<< " "  <<local_segIdx << std::endl;
 		//}
 		assert(local_segIdx >= 0 && "MappedPlant::simulate: node ID not found in organ");
 

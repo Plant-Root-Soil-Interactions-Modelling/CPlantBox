@@ -148,7 +148,10 @@ std::string OrganRandomParameter::toString(bool verbose) const
         str << "successor organ types\t";
         for (int i=0; i<successorOT.size(); i++) {
             for (int j=0; j<successorOT.at(i).size(); j++) {
-				str << successorOT.at(i).at(j) << " ";
+                for (int k=0; j<successorOT.at(i).at(j).size(); k++) {
+                    str << successorOT.at(i).at(j).at(k) << " ";
+                }
+                str << "; ";
 			}
 			str << "; ";
         }
@@ -156,7 +159,10 @@ std::string OrganRandomParameter::toString(bool verbose) const
         str << "successor sub types\t";
         for (int i=0; i<successorST.size(); i++) {
             for (int j=0; j<successorST.at(i).size(); j++) {
-				str << successorST.at(i).at(j) << " ";
+                for (int k=0; j<successorST.at(i).at(j).size(); k++) {
+                    str << successorST.at(i).at(j).at(k) << " ";
+                }
+                str << "; ";
 			}
 			str << "; ";
         }
@@ -169,7 +175,10 @@ std::string OrganRandomParameter::toString(bool verbose) const
         str << "successorP\t";
         for (int i=0; i<successorP.size(); i++) {
             for (int j=0; j<successorP.at(i).size(); j++) {
-				str << successorP.at(i).at(j) << " ";
+                for (int k=0; j<successorP.at(i).at(j).size(); k++) {
+                    str << successorP.at(i).at(j).at(k) << " ";
+                }
+                str << "; ";
 			}
 			str << "; ";
         }
@@ -210,12 +219,12 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
     } else {
         name = "undefined*";
     }
-	successorOT.resize(0, std::vector<int>(0));//2D, int
-    successorST.resize(0, std::vector<int>(0));//2D, int
-    successorP.resize(0, std::vector<double>(0));//2D, double
-    successorP_age.resize(0);//2D, double
-    successorNo.resize(0);//1D, int
-    successorWhere.resize(0, std::vector<double>(0));//2D, double
+	successorOT.clear();//3D, int
+    successorST.clear();//3D, int
+    successorP.clear();//3D, double
+    successorP_age.clear();//2D, double
+    successorNo.clear();//1D, int
+    successorWhere.clear();//2D, double
     auto p = element->FirstChildElement("parameter");
     while(p!=nullptr) {
         const char* str = p->Attribute("name");
@@ -289,29 +298,29 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 				{
 					std::cout<<"OrganRandomParameter::readSuccessor: for parameter of organ "+std::to_string(organType)
 					+", subType "+std::to_string(subType)+", 'ruleId' (and 'number') not found in successor definition. ";
-					std::cout<<"Use defeault ruleId instead: "+ std::to_string(ruleId)+"\n";
+					std::cout<<"Use default ruleId instead: "+ std::to_string(ruleId)+"\n";
 				}
 			}
 		}
-
-		// if(ruleId>= successorNo.size() )//create new rules
-		// {
-			// int toAdd = ruleId + 1;
-			// successorOT.resize(toAdd,std::vector<int>());
-			// successorST.resize(toAdd,std::vector<int>());
-			// successorWhere.resize(toAdd,std::vector<double>());
-			// successorP.resize(toAdd,std::vector<double>());
-			// successorNo.resize(toAdd,1);//default == make one lateral
-		// }
 
 		int numLat;
 		success = p->QueryIntAttribute("numLat",&numLat);
 		if(success == tinyxml2::XML_SUCCESS){successorNo.push_back(numLat);}else{successorNo.push_back(1);}
 
-		double age_threshold;
-		success = p->QueryDoubleAttribute("age_threshold",&age_threshold);
-		if(success == tinyxml2::XML_SUCCESS){successorP_age.push_back(age_threshold);}
+		// double age_threshold;
+		// success = p->QueryDoubleAttribute("age_threshold",&age_threshold);
+		// if(success == tinyxml2::XML_SUCCESS){successorP_age.push_back(age_threshold);}
 
+		//default == empty vector == apply rule to all the linking nodes
+		replaceByDefaultValue = true;//replace by default value if not found (if false: throw an error)
+		lookfor = std::vector<std::string>{"age_threshold"};//parameter name
+		defaultVald = -0.0;
+		defaultSize = 0;//how many time do we need to repeat the value. Here: leave vectore empty == apply everywhere
+
+		cpb_queryStringAttribute(lookfor,
+					defaultVald,defaultSize, replaceByDefaultValue,
+					successorP_age, p, ruleId);
+        
 		//default == empty vector == apply rule to all the linking nodes
 		replaceByDefaultValue = true;//replace by default value if not found (if false: throw an error)
 		lookfor = std::vector<std::string>{"where"};//parameter name
@@ -322,13 +331,13 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 					defaultVald,defaultSize, replaceByDefaultValue,
 					successorWhere, p, ruleId);//name, default value, vector to fill, accept not found
 
+        
+        
 		replaceByDefaultValue = false;lookfor = std::vector<std::string>{"subType","subtype","type"};//subtype (or type for backarwad compatibility)
 		defaultVal = 1.0;defaultSize = 0;
 		cpb_queryStringAttribute(lookfor,
 					defaultVal,defaultSize, replaceByDefaultValue,
 					successorST, p, ruleId);
-
-
 
 		replaceByDefaultValue = true;
 		lookfor = std::vector<std::string>{"probability","percentage"};//probability (or percentage for backward compatibility)
@@ -336,8 +345,13 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 		defaultSize = 1;//(successorST.at(ruleId).size() - successorP.at(ruleId).size());
 		if(!std::isfinite(defaultVald))
 		{
-			for(int k = 0;k < successorST.at(ruleId).size(); k++){
-				std::cout<<successorST.at(ruleId).at(k)<<" ";}
+			for(int k = 0;k < successorST.at(ruleId).size(); k++)
+            {
+				for(int l = 0;l < successorST.at(ruleId).at(k).size(); l++)
+                {
+                    std::cout<<successorST.at(ruleId).at(k).at(l)<<" ";
+                }
+            }
 			std::cout<<std::endl;
 			throw std::runtime_error("OrganRandomParameter::readSuccessor !std::isfinite(default growth probability) "+
 			std::to_string(defaultVald)+" , successorST.at(ruleId).size() == "+ std::to_string(successorST.at(ruleId).size()));
@@ -347,7 +361,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 					successorP, p, ruleId);
 
 		replaceByDefaultValue = true;lookfor = std::vector<std::string>{"organType","organtype"};
-		if((successorST.at(ruleId).at(0) == 2)&&(this->organType == Organism::ot_stem)){
+		if((successorST.at(ruleId).at(0).at(0) == 2)&&(this->organType == Organism::ot_stem)){
 			//for backward compatibility =>
 			//if (no organtype given) + (parent is stem) + (subtype == 2) == we want a leaf
 			defaultVal = Organism::ot_leaf;
@@ -358,17 +372,48 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 					successorOT, p, ruleId);
 
 		//sum(p_) <= 1.
-		p_ = std::accumulate(successorP.at(ruleId).begin(), successorP.at(ruleId).end(), 0.);
-		if(p_ > (1. + 1e-6)) //can be < 1 but not > 1
-		{
-			throw std::runtime_error("OrganRandomParameter::readSuccessor: probability of emergence for rule "+ std::to_string(ruleId)
-			+" is > 1: "+ std::to_string(p_));
-		}
+		//p_ = std::accumulate(successorP.at(ruleId).begin(), successorP.at(ruleId).end(), 0.);
+		//if(p_ > (1. + 1e-6)) //can be < 1 but not > 1
+		//{
+		//	throw std::runtime_error("OrganRandomParameter::readSuccessor: probability of emergence for rule "+ std::to_string(ruleId)
+		//	+" is > 1: "+ std::to_string(p_));
+		//}
 	}
 }
 
 
 
+template <class IntOrDouble>
+void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
+	bool replaceByDefault,
+	std::vector<std::vector<std::vector<IntOrDouble>>> & vToFill, 
+                                                    tinyxml2::XMLElement* key, int& ruleId)
+{
+	int success = -1;
+	std::vector<IntOrDouble> dummy;
+	for(int i = 0; (i < keyNames.size())&&(tinyxml2::XML_SUCCESS != success); i++){
+		const char* cckey;
+		success = key->QueryStringAttribute(keyNames.at(i).c_str(),&cckey);
+		if (tinyxml2::XML_SUCCESS == success){
+			//use default val to defin type of element in vector
+			dummy = string2vector(cckey, defaultVal);
+		}
+	}
+    
+	if(tinyxml2::XML_SUCCESS != success){
+		assert(replaceByDefault &&
+		"mymath::queryStringAttribute: key not found in xml file without default value");
+		dummy = std::vector<IntOrDouble>(sizeVector, defaultVal);
+	};
+    
+	if(vToFill.size() <= ruleId){vToFill.resize(ruleId + 1);}
+	if(vToFill.at(ruleId).size() == 0){
+	    vToFill.at(ruleId) = {dummy};
+	} else {
+		vToFill.at(ruleId).push_back({dummy});//.insert( vToFill.at(ruleId).end(), dummy.begin(), dummy.end() );
+	}
+
+}
 
 template <class IntOrDouble>
 void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
@@ -458,24 +503,26 @@ tinyxml2::XMLElement* OrganRandomParameter::writeXML(tinyxml2::XMLDocument& doc,
     }
 	double p_ = 0.;
 	for (int j = 0; j<successorST.size(); j++) {
+        for (int k = 0; k<successorST.at(j).size(); k++) {
 			tinyxml2::XMLElement* p = doc.NewElement("parameter");
 			p->SetAttribute("name", "successor");
 			p->SetAttribute("ruleId",j);
 			if(successorNo.size()>j){p->SetAttribute("numLat", successorNo.at(j));}
 			if(successorWhere.size()>j){p->SetAttribute("Where", vector2string(successorWhere.at(j)).c_str());}
-			p->SetAttribute("subType", vector2string(successorST.at(j)).c_str());
-			if(successorOT.size()>j){p->SetAttribute("organType", vector2string(successorOT.at(j)).c_str());}
-			p->SetAttribute("percentage", vector2string(successorP.at(j)).c_str());
+			p->SetAttribute("subType", vector2string(successorST.at(j).at(k)).c_str());
+			if(successorOT.size()>j){p->SetAttribute("organType", vector2string(successorOT.at(j).at(k)).c_str());}
+			p->SetAttribute("percentage", vector2string(successorP.at(j).at(k)).c_str());
 			organ->InsertEndChild(p);
 			if (comments) {
 				std::string str = description.at("successorST");
 				tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
 				organ->InsertEndChild(c);
 			}
-			p_ += std::accumulate(successorP.at(j).begin(), successorP.at(j).end(), 0.);
+			p_ += std::accumulate(successorP.at(j).at(k).begin(), successorP.at(j).at(k).end(), 0.);
 			if (p_>1) {
 				std::cout << "OrganRandomParameter::writeXML: Warning! percentages "<< p_ <<"  > 1.\n";
 			}
+        }
 	}
     return organ;
 }
@@ -612,6 +659,41 @@ std::string OrganRandomParameter::vector2string(std::vector<double> vec) const
     return ss.str() ;
 }
 
+int OrganRandomParameter::interpolate_P(int ruleId, double creation_time)
+{
+    // Constant extrapolation if outside bounds
+    if (creation_time <= successorP_age[ruleId][0])
+        return 0;//successorP[ruleId][0];
+
+    if (creation_time >= successorP_age[ruleId].back())
+        return successorP[ruleId].size() - 1;//successorP[ruleId].back();
+
+    // Find interval
+    size_t i = 1;  // 
+    while (i < successorP_age[ruleId].size() && creation_time >= successorP_age[ruleId][i]){++i;}
+    
+    return i;
+}
+std::vector<double> OrganRandomParameter::interpolate_P(int ruleId, double creation_time, int age_id)
+{
+    
+    const auto& prev = successorP[ruleId][age_id - 1];
+    const auto& next = successorP[ruleId][age_id];
+
+    // Copy previous vector as starting point
+    std::vector<double> result = prev;
+
+    // Interpolation ratio
+    double ratio = (creation_time - successorP_age[ruleId][age_id - 1]) / (successorP_age[ruleId][age_id] - successorP_age[ruleId][age_id - 1]);
+
+    // Interpolate element-wise
+    size_t todo = std::min(prev.size(), next.size());
+    for (size_t j = 0; j < todo; ++j) {
+        result[j] = prev[j] + (next[j] - prev[j]) * ratio;
+    }
+
+    return result;
+}
 
 /**
  * Choose (dice) lateral type based on stem parameters successor and successorP
@@ -619,27 +701,24 @@ std::string OrganRandomParameter::vector2string(std::vector<double> vec) const
  * @param pos       spatial position (for coupling to a soil model)
  * @return          stem sub type of the lateral stem
  */
-int OrganRandomParameter::getLateralType(const Vector3d& pos, int ruleId, double creation_time)//
+std::vector<int> OrganRandomParameter::getLateralType(const Vector3d& pos, int ruleId, double creation_time)//
 {
 	std::vector<double> successorP_; 
-    if (successorP_age.size()>0)
+    int age_id;
+    if ((successorP_age.size()>ruleId) && (successorP_age.at(ruleId).size()>0))
 	{
-		assert(successorP_age.size()==successorP.size()
-			&& "StemTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
-		successorP_ = successorP.back();  // default: use last if all thresholds are exceeded
-		for (size_t i = 0; i < successorP_age.size(); ++i)
-		{
-			if (creation_time <= successorP_age[i])
-			{
-				successorP_ = successorP[i];
-				break;  // stop at the first threshold not exceeded
-			}
-		}
+        
+		assert(successorP_age.at(ruleId).size()==successorP.at(ruleId).size()
+			&& "OrganRandomParameter::getLateralType: Successor age threshold and probability vector does not have the same size");
+		age_id = interpolate_P(ruleId, creation_time);
+		successorP_ = interpolate_P(ruleId, creation_time, age_id);
+		
 	}else{
-		successorP_ = successorP.at(ruleId);
+        age_id = 0;
+		successorP_ = successorP.at(ruleId).at(0);
 	}
-	assert(successorST.at(ruleId).size()==successorP_.size()
-        && "StemTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
+	assert(successorST.at(ruleId).at(age_id).size()==successorP_.size()
+        && "OrganRandomParameter::getLateralType: Successor sub type and probability vector does not have the same size");
 	if (successorP_.size()>0) { // at least 1 successor type
         double d = plant.lock()->rand(); // in [0,1]
         int i=0;
@@ -651,13 +730,13 @@ int OrganRandomParameter::getLateralType(const Vector3d& pos, int ruleId, double
         }
         if (p>=d) { // success
             // std::cout << "lateral type " << successor.at(i-1) << "\n" << std::flush;
-            return i-1;//successor.at(i-1);
+            return {successorOT.at(ruleId).at(age_id).at(i-1), successorST.at(ruleId).at(age_id).at(i-1)};//successor.at(i-1);
         } else { // no successors
             // std::cout << "no lateral type " << std::flush;
-            return -1;
+            return {-1, -1};
         }
     } else {
-        return -1; // no successors
+        return {-1, -1}; // no successors
     }
 }
 

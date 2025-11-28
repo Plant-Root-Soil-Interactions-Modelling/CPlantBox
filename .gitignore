@@ -48,6 +48,14 @@ __pycache__
 .settings/
 Debug/
 *.vtp
+*.pkl
+*.xml
+*.rsml
+*.png
+*.jpg
+*.err
+*.out
+*.xlsx
 
 # Jupyter notebook
 tutorial/jupyter/.ipynb_checkpoints/

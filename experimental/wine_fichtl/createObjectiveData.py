@@ -206,48 +206,6 @@ def getMeasData(genotype,dt_types, years_ = 10):#, doGraphs = False):
 
     year = 2
     dt_id = 2
-    # outpouts[0][dt_id][year-1] = ratio_init + (ratio_10 - ratio_init ) * (year/10)
-    # outpouts[1][dt_id][year-1] = CV_all * outpouts[0][dt_id][year-1] 
-    # outpouts_mean['year'+str(year)]['ratio'] = ratio_init + (ratio_10 - ratio_init ) * ((year-1)/9)
-    # outpouts_sd['year'+str(year)]['ratio'] = sd_init #CV_all * outpouts_mean['year'+str(year)]['ratio']
-
-    # for year in range(3,4):
-        # for dt_id, datatype in enumerate(['num', 'ratio']): # 'length',
-            # if datatype == 'ratio':#'num':
-                # # outpouts[0][dt_id][year-1] = ratio_init + (ratio_10 - ratio_init ) * (year/10)
-                # # outpouts[1][dt_id][year-1] = CV_all * outpouts[0][dt_id][year-1] 
-                # outpouts_mean['year'+str(year)][datatype] = ratio_init + (ratio_10 - ratio_init ) * ((min(year,10)-1)/9)
-                # outpouts_sd['year'+str(year)][datatype] = sd_init# CV_all * outpouts_mean['year'+str(year)][datatype]
-            # elif datatype == 'length':
-                # raise Exception
-                # for st in range(1,subtypes):
-                    # outpouts_mean['year'+str(year)][datatype][st-1] = outpouts_mean['year2'][datatype][st-1]
-                    # outpouts_sd['year'+str(year)][datatype][st-1] = outpouts_sd['year2'][datatype][st-1]
-            # else:
-                # for st in range(subtypes):
-                    # #outpouts[0][dt_id][year-1][st] = outpouts[0][dt_id][1][st]
-                    # #outpouts[1][dt_id][year-1][st] = outpouts[1][dt_id][1][st]
-                    # outpouts_mean['year'+str(year)][datatype][st] = outpouts_mean['year'+str(year-1)][datatype][st]
-                    # outpouts_sd['year'+str(year)][datatype][st] = outpouts_sd['year'+str(year-1)][datatype][st]
-                                
-                    # # outpouts[0][0][year-1][0] = max(0.,outpouts[0][0][year-1][0] + dt_type1 * year)
-                    # if year < 3:
-                        # outpouts_mean['year'+str(year)][datatype][st] = max(0.,outpouts_mean['year2'][datatype][st] + dt_typeX[st] * float(year - 2.))
-                        
-    # for year in range(4, 5):
-        # for dt_id, datatype in enumerate(['num', 'ratio']): # 'length',
-            # if datatype == 'ratio':#'num':
-                # # outpouts[0][dt_id][year-1] = ratio_init + (ratio_10 - ratio_init ) * (year/10)
-                # # outpouts[1][dt_id][year-1] = CV_all * outpouts[0][dt_id][year-1] 
-                # # outpouts_mean['year'+str(year)][datatype] = outpouts_mean['year'+str(year-1)][datatype]
-                # outpouts_mean['year'+str(year)][datatype] = ratio_init + (ratio_10 - ratio_init ) * ((min(year,10)-1)/9)
-                # outpouts_sd['year'+str(year)][datatype] = outpouts_sd['year'+str(year-1)][datatype]
-            # else:
-                # for st in range(subtypes):
-                    # #outpouts[0][dt_id][year-1][st] = outpouts[0][dt_id][1][st]
-                    # #outpouts[1][dt_id][year-1][st] = outpouts[1][dt_id][1][st]
-                    # outpouts_mean['year'+str(year)][datatype][st] = outpouts_mean['year'+str(year-1)][datatype][st]
-                    # outpouts_sd['year'+str(year)][datatype][st] = outpouts_sd['year'+str(year-1)][datatype][st]
     year_bu = year 
     V_num_mean = np.array([0,17.00,20.67,6.67,0.67])
     V_num_sd = np.array([0,2.645751311,7.371114796,4.163331999,1.154700538])
@@ -311,7 +269,8 @@ def getMeasData(genotype,dt_types, years_ = 10):#, doGraphs = False):
             
     
     outpouts = {'mean':outpouts_mean, 'sd':outpouts_sd}
-    
+    os.makedirs("results/part1/vtp", exist_ok=True)
+    os.makedirs("results/objectiveData", exist_ok=True)
     with open('./results/objectiveData/measurements'+ genotype +'InitXX.pkl','wb') as f:
          pickle.dump(xx,f, protocol=pickle.HIGHEST_PROTOCOL)
          

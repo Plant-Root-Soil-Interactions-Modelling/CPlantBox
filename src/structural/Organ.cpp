@@ -763,18 +763,13 @@ void Organ::createLateral(double dt, bool verbose)
                 const Vector3d& pos = nodes[nodes.size() - 1]; // att: won t work for organ with relative coordinates
                 double delay = getLatGrowthDelay();// forDelay*multiplyDelay
 				double creation_time = nodeCTs[nodes.size() - 1] + delay;
-                int p_id = rp->getLateralType(pos, i, creation_time);//if probabilistic branching
+                std::vector<int> l_ids = rp->getLateralType(pos, i, creation_time);//if probabilistic branching
 
-                if(p_id >=0)
+                if(l_ids.at(0) >=0)
                 {
-                    int ot;
+                    int ot = l_ids.at(0);
+                    int st = l_ids.at(1);
 
-                    if((rp->successorOT.size()>i)&&(rp->successorOT.at(i).size()>p_id)){
-                        ot = rp->successorOT.at(i).at(p_id);
-                    }else{ot = getParameter("organType");}//default
-
-					
-                    int st = rp->successorST.at(i).at(p_id);
 					delay = getLatGrowthDelay(ot, st, dt, delay);// forDelay*multiplyDelay
                     double growth_dt = getLatInitialGrowth(dt);
 

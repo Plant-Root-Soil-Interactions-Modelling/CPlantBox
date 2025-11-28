@@ -232,7 +232,7 @@ class PlantPython(Plant):
                         #                            creation_time)
                         #print('addlat','parent_st', parent.param().subType, 'kid_st' , pr.successorST[0][p_idx], 'pni',  pni)
                         if(p_idx >=0) :
-                            emerge_type_ = pr.successorST[0][p_idx]
+                            emerge_type_ = pr.successorST[0][0][p_idx]
                             parent.addLateral(pni, emerge_type_, creation_time)
                             parent.param().laterals = True
                             # lt.append(emerge_type_)

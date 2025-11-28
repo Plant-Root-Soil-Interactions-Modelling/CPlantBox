@@ -244,13 +244,13 @@ def create_xml(genotype):
                 pp.rlt_winter_max = survive[ii]['rlt_winter_max']
                 
             if ii < main:
-                pp.successorST =  np.array([[main]]) 
-                pp.successorOT =  np.array([[2]]) 
-                pp.successorP = np.array([[1]])
+                pp.successorST =  np.array([[[main]]]) 
+                pp.successorOT =  np.array([[[2]]]) 
+                pp.successorP = np.array([[[1]]])
             else:
-                pp.successorST =  np.array([[ii + 1, ii + 4]]) 
-                pp.successorOT =  np.array([[2, 2]]) 
-                pp.successorP = np.array([[1., 0.]]) #0.64,0.35
+                pp.successorST =  np.array([ [[ii + 1]], [[ii + 4]] ]) 
+                pp.successorOT =  np.array([ [[2]],       [[2]] ]) 
+                pp.successorP = np.array([ [[1.]], [[0.]] ]) #0.64,0.35
                 pp.lmax = lmax[genotype][ii]
                 if ii == 2:
                     pp.r = r_4_min
@@ -264,17 +264,17 @@ def create_xml(genotype):
             if ii == max(subsub):
                 pp = data.parameters[min(subsub)].copy(plant)
                 pp.subType = ii
-                pp.successorST =  np.array([[ii + 4]]) 
-                pp.successorOT =  np.array([[2]]) 
-                pp.successorP = np.array([[0.35]])
+                pp.successorST =  np.array([[[ii + 4]]]) 
+                pp.successorOT =  np.array([[[2]]]) 
+                pp.successorP = np.array([[[0.35]]])
         else:
             pp.a = 0.05/2
             pp.is_fine_root = True
             pp.lmax = 5.
             pp.r = data.parameters[max(subsub)].r
-            pp.successorP = np.array([[0.5]])
-            pp.successorST =  np.array([[ii + 1]]) 
-            pp.successorOT =  np.array([[2]]) 
+            pp.successorP = np.array([[[0.5]]])
+            pp.successorST =  np.array([[[ii + 1]]]) 
+            pp.successorOT =  np.array([[[2]]]) 
             # update?
             pp.la = data.parameters[min(subsub)].la
             pp.lb = data.parameters[min(subsub)].lb
@@ -296,6 +296,7 @@ def create_xml(genotype):
     param = data.pparameters.copy(plant)
     plant.setOrganRandomParameter(param)
     
+    os.makedirs("results/xmlFiles", exist_ok=True)
     plant.writeParameters("./results/xmlFiles/"+genotype + "-wineV2.xml")
     return max(length_[0]),max(length_[1])
         

@@ -1,5 +1,5 @@
 """
-Get the new parameters 
+Run simulation
 """
 import sys; 
 from pathlib import Path
@@ -7,6 +7,7 @@ from pathlib import Path
 #edit CPlantBox dir
 CPlantBox_dir =  "../.." # "/data2model_0807/CPlantBox"
 
+from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank(); max_rank = comm.Get_size()
 sys.path.append(CPlantBox_dir)
 sys.path.append( CPlantBox_dir+"/src")
 
@@ -51,12 +52,14 @@ fine_root_types = np.array([6,7,8,9])
 subtypes = max(long_root_types)
 orders = {'main' : [2], 'sub' : [3], 'subsub' : [4,5]}
     
-def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
+def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
     start_time = time.time()
     output = []
+    doVTP = False
     file_path =  CPlantBox_dir + '/experimental/wine_fichtl/rsml/RSML_year1/'
     file_names = [name for name in os.listdir(file_path) if name[0] == genotype ] # repetitions of same genotype
 
+    data_file = file_names[rep_input]
     reps = 1# len(file_names)
     for rep in range(reps):
         N = 50
@@ -96,21 +99,21 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
 
 
         yr_to_BEDD = 1225
-        k_No = 1
-        for ii, pp in enumerate(plant.getOrganRandomParameter(2)):
-            
+        for ii, pp in enumerate(plant.getOrganRandomParameter(2)):            
             if ii == 0:      
                 pp.ldelay  = 0*yr_to_BEDD
                 pp.ldelays = yr_to_BEDD * 50.#params['ldelays0'] #200#*5
-                pp.successorP = [[1.]]# [[params['successorP0']]]
+                pp.successorP = [[[1.]]]# [[params['successorP0']]]
                 pp.successorNo = [10]#[params['successorNo0']] 
-                pp.successorST = [[2]]
+                pp.successorST = [[[2]]]
+                pp.successorOT = [[[2]]]
             elif ii == 1:      
                 pp.ldelay  = 0*yr_to_BEDD
-                pp.ldelays = yr_to_BEDD *0.5#yr_to_BEDD * params['ldelays0'] #200#*5
-                pp.successorP = [[1]]#[[params['successorP0']]]
+                pp.ldelays = yr_to_BEDD *0.5 #yr_to_BEDD * params['ldelays0'] #200#*5
+                pp.successorP = [[[1]]]#[[params['successorP0']]]
                 pp.successorNo = [1] #[params['successorNo0']] 
-                pp.successorST = [[2]]
+                pp.successorST = [[[2]]]
+                pp.successorOT = [[[2]]]
                 pp.k_survive = 1.261
                 pp.lambda_survive = 9.426
                 pp.rlt_winter_max = 26.8 
@@ -118,21 +121,23 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
             elif ii == 2:      
                 pp.ldelay  = 0*yr_to_BEDD
                 pp.ldelays = yr_to_BEDD #yr_to_BEDD * params['ldelays0'] #200#*5
-                pp.successorNo = [1 * k_No] #[params['successorNo0']] 
-                pp.successorP = [[0.5/pp.successorNo[0], 0.], [0.1/pp.successorNo[0], 0.9]]#[[params['successorP0']]]
-                pp.successorST = [[ii + 1, ii + 4], [ii + 1, ii + 4]]
-                pp.successorP_age = [1225*2, 1225 * 100]
+                pp.successorNo = [1,1] #[params['successorNo0']] 
+                pp.successorP = [ [[0.5],[0.5],[0.1]], [[0.],[0.]]] #, [0.1, 0]]#[[params['successorP0']]]
+                pp.successorST = [ [[ii + 1],[ii + 1],[ii + 1]], [[ii + 4],[ii + 4]]] #[[ii + 1, ii + 4], [ii + 1, ii + 4]]
+                pp.successorOT = [ [[2],[2],[2]], [[2],[2]]] 
+                pp.successorP_age = [[0., 1225 * 2, 1225 * 100],[]]
                 pp.k_survive = 1.261
                 pp.lambda_survive = 9.426
                 pp.rlt_winter_max = 26.8 
                 pp.rlt_winter_min =  3.169
             elif ii == 3:      
                 pp.ldelay  = 0.#yr_to_BEDD
-                pp.ldelays = yr_to_BEDD#yr_to_BEDD * params['ldelays0'] #200#*5
-                pp.successorNo = [1 * k_No] #[params['successorNo0']] 
-                pp.successorP = [[0.5/pp.successorNo[0], 0.3/pp.successorNo[0]], [0.05/pp.successorNo[0], 0.9]]#[[params['successorP0']]]
-                pp.successorST = [[ii + 1, ii + 4], [ii + 1, ii + 4]]
-                pp.successorP_age = [1225*2, 1225 * 100]
+                pp.ldelays = yr_to_BEDD #yr_to_BEDD * params['ldelays0'] #200#*5
+                pp.successorNo = [1,1] #[params['successorNo0']] 
+                pp.successorP = [ [[0.5],[0.5],[0.5]], [[0.],[0.]]] # [[0.5, 0.], [0.05, 0]]#[[params['successorP0']]]
+                pp.successorST = [ [[ii + 1],[ii + 1],[ii + 1]], [[ii + 4],[ii + 4]]] #
+                pp.successorOT = [ [[2],[2],[2]], [[2],[2]]] 
+                pp.successorP_age = [[0., 1225 * 2, 1225 * 10],[]]
                 # pp.r *= 2
                 pp.k_survive = 1.261
                 pp.lambda_survive = 9.426
@@ -142,10 +147,11 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
                 pp.rlt_winter_min =  0
             elif ii == 4:      
                 pp.ldelay  = 0*yr_to_BEDD
-                pp.ldelays = yr_to_BEDD #yr_to_BEDD * params['ldelays0'] #200#*5
-                pp.successorNo = [1 * k_No] #[params['successorNo0']] 
-                pp.successorP = [[0.05/pp.successorNo[0], 0.], [0.05/pp.successorNo[0], 0.]]#[[params['successorP0']]]
-                pp.successorST = [[ii + 1, ii + 4], [ii + 1, ii + 4]]
+                pp.ldelays = yr_to_BEDD  #yr_to_BEDD * params['ldelays0'] #200#*5
+                pp.successorNo = [1] #[params['successorNo0']] 
+                pp.successorP = [ [[0.05]], [[0.]]] #[[0.05, 0.], [0.05, 0.]]#[[params['successorP0']]]
+                pp.successorST =  [ [[ii + 1],[ii + 1]], [[ii + 4],[ii + 4]]] #[[ii + 1, ii + 4], [ii + 1, ii + 4]]
+                pp.successorOT = [ [[2],[2]], [[2],[2]]] 
                 #pp.k_survive = 1.261
                 #pp.lambda_survive = 1.367
                 #pp.rlt_winter_max = 13.9 
@@ -157,9 +163,10 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
             elif ii == 5:      
                 pp.ldelay  = 0*yr_to_BEDD
                 pp.ldelays =yr_to_BEDD#yr_to_BEDD * params['ldelays0'] #200#*5
-                pp.successorP = [[1*0.]]#[[params['successorP0']]]
-                pp.successorNo = [1 * k_No] #[params['successorNo0']] 
-                pp.successorST = [[ii + 4]]
+                pp.successorP = [[[0.]]]#[[params['successorP0']]]
+                pp.successorNo = [1] #[params['successorNo0']] 
+                pp.successorST = [[[ii + 4]]]
+                pp.successorOT = [[[2]]]
                 #pp.k_survive = 1.261
                 #pp.lambda_survive = 1.367
                 #pp.rlt_winter_max = 13.9 
@@ -180,7 +187,6 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
         start simulation
         '''
         # select randomly one of the rsml files of year 1
-        data_file = file_names[rep]
         plant.initialize_static(file_path + data_file, [0, 1])  # 0 is shoot, 1 are static roots
 
         # the static laterals 2 and 3 are replaced with the growing lateral 2
@@ -205,7 +211,8 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
         # all_alive_short = []
         dt = yr_to_BEDD  # ~1 yr
 
-        get3Dshape(plant,title_ = CPlantBox_dir + "/experimental/wine_fichtl/results/part1/vtp/"+genotype+"0", saveOnly = True)
+        if doVTP:
+            get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+"0", saveOnly = True)
         for i in range(N):
             print('age', i, end=", ", flush = True)
             plant.survivalTest()
@@ -236,7 +243,7 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
                 len_fine = sum(all_lengths[i][is_fine_roots])
             len_long = sum(all_lengths[i][np.invert(is_fine_roots)]) # ignore the length of 1 as seem different between xml and xlsx
             value = len_fine/(len_long + len_fine)
-            print('percent', np.round(value*100), end=", ", flush = True)    
+            # print('percent', np.round(value*100), end=", ", flush = True)    
             '''
             Num
             '''
@@ -244,12 +251,13 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
             for st in range(subtypes): # from 2 to 5            
                 nums.append(sum(all_alive[i][all_subtypes[i] == (st + 1)]))
             nums.append(sum(all_alive[i][all_subtypes[i] > (st + 1)]))
-            print('num', nums, end=", ", flush = True)
+            # print('num', nums, end=", ", flush = True)
             # all_alive_long.append(np.array([org.isAlive() for org in orgs_ if org.param().subType in long_root_types]))
             # all_alive_short.append(np.array([org.isAlive() for org in orgs_ if org.param().subType in fine_root_types]))
 
             # # get3Dshape(plant,title_ = 'wine'+str(i+1), saveOnly = True) 
-            get3Dshape(plant,title_ = CPlantBox_dir + "/experimental/wine_fichtl/results/part1/vtp/"+genotype+str(i+1), saveOnly = True)
+            if doVTP:
+                get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+str(i+1), saveOnly = True)
             
         # print('postprocessing')
         #print("--- %s seconds for plant development---" % (time.time() - start_time),rep)
@@ -293,13 +301,15 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
             
             root_age = all_ages[np.isin(all_subtypes[idy],value)]
             try:
-                if len(root_age) > 0:
-                    if len(root_age) == 1:
-                        root_age.append(root_age[0])
+                if len(root_age) == 0:
+                    y = np.zeros(len(x))
+                elif len(root_age) == 1:
+                    y = np.zeros(len(x))
+                    indx_y = np.where(abs(x - root_age[0]) == min(abs(x - root_age[0])))[0][0]
+                    y[indx_y] = 1.
+                else:
                     kde = gaussian_kde(root_age)
                     y = kde(x)
-                else:
-                    y = np.zeros(len(x))
             except:
                 print('issue root_age',root_age)
                 raise Exception
@@ -317,9 +327,9 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
                 yield obj
         output.append(outpouts_mean)#list(flatten_values(outpouts_mean)))
     
-        
+        print('output',output)
         print("--- %s seconds for plant development---" % ((time.time() - start_time)/(rep+1)))
-        print("--- %s seconds for total---" % (time.time() - start_time),'at',(rep+1),'/',(reps))
+        # print("--- %s seconds for total---" % (time.time() - start_time),'at',(rep+1),'/',(reps))
         
     #if getdict:
     #    return outpouts_mean
@@ -333,17 +343,27 @@ def run_benchmark(xx, genotype = 'B'): #llambdao, kko,
     
 if __name__ == '__main__': 
     
-    genotype = 'B'
+    genotype = sys.argv[1]
+    rep = int(sys.argv[2])
+    
+    extraName = "default"
+    if len(sys.argv) > 3:
+        extraName = sys.argv[3]
+    print('add',extraName)
+    if rep == 0:
+        directory ='./results/outputSim/'+extraName
+        os.makedirs(directory, exist_ok=True)
+        
     with open(CPlantBox_dir + '/experimental/wine_fichtl/results/objectiveData/measurements'+ genotype +'InitXX.pkl','rb') as f:
         xx = pickle.load(f)
-            
-    # with open('./measurements'+ genotype +'Init.pkl','rb') as f:
-        # temp = pickle.load(f)
-        # obs_mean = temp['mean']
-        # obs_sd = temp['sd']
         
-    output = run_benchmark(xx, genotype )
+    output = run_benchmark(xx, genotype, rep)
     
-    with open(CPlantBox_dir + '/experimental/wine_fichtl/results/outputSim'+ genotype +'.pkl','wb') as f:
+    with open(CPlantBox_dir + '/experimental/wine_fichtl/results/outputSim/'+extraName+'/'+ genotype + str(rep) +'.pkl','wb') as f:
          pickle.dump(output,f, protocol=pickle.HIGHEST_PROTOCOL)
+            
+    #comm.Barrier()
+    #if rank == 0:
+    #    import gatherAndPlotOutputs
+    #    gatherAndPlotOutputs.plot_all()
     
