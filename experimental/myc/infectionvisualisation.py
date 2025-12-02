@@ -34,7 +34,6 @@ for rp in root:
     if local:
         rp.f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
     rp.dx = 0.2
-    # rp.hyphalEmergenceDist = 0.5;  # distance between hyphal emergence points
 
 
 mycp.initialize(True)
@@ -59,7 +58,6 @@ else:
 if animation:
     for i in range(1, N):
         mycp.simulate(dt, False)
-        # mycp.simulateHyphalGrowth(dt)
         ana = pb.SegmentAnalyser(mycp)
         ana.addData("infection", mycp.getNodeInfections(2))
         ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
@@ -70,7 +68,6 @@ else:
     for i in range(0, N):
         print('step',i, '/',N)
         mycp.simulate(dt, False)
-        # mycp.simulateHyphalGrowth(dt)
     
     print('done')
     

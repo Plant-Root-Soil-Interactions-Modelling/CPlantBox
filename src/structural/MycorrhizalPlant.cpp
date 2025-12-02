@@ -5,6 +5,7 @@
 //#include "MycorrhizalRoot.h"
 #include "mycorrhizalrootparameter.h"
 #include "hyphaeparameter.h"
+#include "aabbcc/AABB.h"
 // #include "sdf.h"
 #include "sdf_rs.h"
 // #include "soil.h"
@@ -109,6 +110,9 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     addTree();
     simulateAnastomosis();
     sdfs = {};
+    // buildAnastomosisTree();
+    // updateAnastomosisTree(dt);
+    // simulateAnastomosisTree();
     rel2abs();
 }
 
@@ -149,7 +153,9 @@ void MycorrhizalPlant::simulateAnastomosis() {
             closestNode = sdf.getDistVec(tip);
             if ( distfromsdf > 0 && distfromsdf < dist) dist = distfromsdf;
         }
-        if (dist < h->getParameter("distTH"))
+        bool notsame = abs(closestNode.x - tip.x) > 1e-6 || abs(closestNode.y - tip.y) > 1e-6 || abs(closestNode.z - tip.z) > 1e-6;
+        bool notnull = closestNode.x != 0.  && closestNode.y != 0. && closestNode.z != 0.;
+        if (dist < h->getParameter("distTH") && notnull && notsame)
         {
             std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance: " << dist << std::endl;
             std::cout <<"Node for Anastomosis: " << closestNode.toString() << std::endl;
@@ -158,6 +164,41 @@ void MycorrhizalPlant::simulateAnastomosis() {
     }
     
 };
+
+void MycorrhizalPlant::simulateAnastomosisTree() {
+    auto hyphae = this->getOrgans(Organism::ot_hyphae);
+    unsigned int dist;
+    Vector3d closestNode;
+    for (const auto & h : hyphae) {
+        auto tipID = h->getNodeId(h->getNumberOfNodes()-1);
+        auto tip = h->getNode(h->getNumberOfNodes()-1);
+        auto radius = h->getParameter("a"); // hyphal diameter plus threshold
+        dist = getDistTree(tipID, tip, radius*2 + h->getParameter("distTH"));
+
+        std::cout<<"Anastomosis between: " << tipID << " and " << dist << " ." << std::endl;
+        // std::vector<double> posVec = {tip.x, tip.y, tip.z};
+        // std::vector<aabb::Tree::ParticleInfo> results;
+        // tree.queryPoint(posVec, results);
+        // for (const auto& r : results) {
+        //     // get position of the particle
+        //     // double px = r.position[0];
+        //     // double py = r.position[1];
+        //     // double pz = r.position[2];
+        //     Vector3d partPos = Vector3d(r.position[0], r.position[1], r.position[2]);
+        //     double distfromsdf = partPos.minus(tip).length();
+        //     closestNode = partPos;
+        //     if ( distfromsdf > 0 && distfromsdf < dist) dist = distfromsdf;
+        // }
+        // if (dist < h->getParameter("distTH"))
+        // {
+        //     std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance: " << dist << std::endl;
+        //     std::cout <<"Node for Anastomosis: " << closestNode.toString() << std::endl;
+        // }
+        
+    }
+};
+
+
 
 
 void MycorrhizalPlant::initCallbacks() {
@@ -240,5 +281,87 @@ void MycorrhizalPlant::addTree() {
 
         }
 }
+
+void MycorrhizalPlant::buildAnastomosisTree() {
+    // tree = aabb::Tree();
+    auto hyphae = this->getOrgans(Organism::ot_hyphae);
+    for (const auto& h : hyphae) {
+        for (unsigned int i=0; i < h->getNumberOfNodes(); i++) {
+            Vector3d pos = h->getNode(i);
+            std::vector<double> posVec = {pos.x, pos.y, pos.z};
+            double radius = h->getParameter("a");
+            tree.insertParticle(h->getNodeId(i), posVec, radius);
+        }
+    }
+}
+
+void MycorrhizalPlant::updateAnastomosisTree(double dt) {
+    // tree = aabb::Tree();
+    double currentSimTime = this->getSimTime();
+    double previousSimTime = currentSimTime - dt;
+    Vector3d pos;
+    std::vector<double> posVec;
+    double radius;
+    double creationTime;
+
+    auto hyphae = this->getOrgans(Organism::ot_hyphae);
+    for (const auto& h : hyphae) {
+        for (unsigned int i=0; i < h->getNumberOfNodes(); i++) {
+            pos = h->getNode(i);
+            posVec = {pos.x, pos.y, pos.z};
+            radius = h->getParameter("a");
+            creationTime = h->getNodeCT(i);
+            if (creationTime <= currentSimTime && creationTime > previousSimTime) {
+                // node is new if creation time is within current sim time and sim time - dt
+                tree.insertParticle(h->getNodeId(i), posVec, radius);
+            } else {
+                tree.updateParticle(h->getNodeId(i), posVec, radius);
+            }
+        }
+    }
+    tree.rebuild();
+}
+
+unsigned int MycorrhizalPlant::getDistTree(unsigned int p, Vector3d  tip, double dist) {
+    
+    // get the needed distance
+    double dx_ = dist; 
+
+    // get the tree minus the particle we are trying to find the distance for
+    // tree.removeParticle(p);
+
+
+    // make the box around the point
+    std::vector<double> a = { tip.x-dx_, tip.y-dx_, tip.z-dx_ };
+    std::vector<double> b = { tip.x+dx_, tip.y+dx_, tip.z+dx_ };
+    aabb::AABB box = aabb::AABB(a,b);
+    double mdist = 1e100; // far far away
+
+    // get the indices of all particles in the box
+    auto indices = tree.query(box);
+    std::cout << indices.size() << " segments in range\n";
+    if (indices.size() == 1) {
+        return p; // only itself
+    }
+    else if (indices.size()==2)
+    {
+        if (indices.at(0) == p) {
+            return indices.at(1);
+        }
+        else {
+            return indices.at(0);
+        }
+    }
+    else {
+        std::cout<< "more than two hyphal nodes nearby"<< std::endl;
+        return p;
+        // iterate over all hyphae to find the ones with the accurate global node id
+        // safe the location and ids of the nodes
+        // check the distance from the tip to these nodes
+        // only if there are more than two
+    }
+}
+
+
 
 }

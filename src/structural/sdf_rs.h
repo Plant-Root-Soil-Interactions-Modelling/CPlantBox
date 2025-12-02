@@ -180,7 +180,7 @@ Vector3d SDF_RootSystem::getDistVec(const Vector3d& p) const {
         } else {
             l = p.minus(x1.plus(v.times(c1/c2))).length();
             if (p.minus(x1).length() < p.minus(x2).length()) {
-                tempdistVec = x1.plus(v.times(c1/c2));
+                tempdistVec = x1;
             } else {
                 tempdistVec = x2;
             }

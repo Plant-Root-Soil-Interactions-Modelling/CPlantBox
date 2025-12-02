@@ -5,6 +5,7 @@
 #include "MycorrhizalRoot.h"
 // #include "soil.h"
 #include "sdf_rs.h" 
+#include "aabbcc/AABB.h"
 // #include "sdf.h"
 //#include "Hyphae.h"
 
@@ -27,6 +28,7 @@ namespace CPlantBox {
         void simulateSecondaryInfection(double dt, bool verbose);
         void simulateHyphalGrowth(double dt);
         void simulateAnastomosis();
+        void simulateAnastomosisTree();
 
         virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
         virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
@@ -38,6 +40,12 @@ namespace CPlantBox {
         std::vector<double> stopTime; // time when root stopped growing, 0 if it has not
         std::vector<Vector3d> tips;
         std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
+
+        aabb::Tree tree = aabb::Tree(); // aabb tree for anastomosis
+        void buildAnastomosisTree();
+        void updateAnastomosisTree(double dt);
+        unsigned int getDistTree(unsigned int p,Vector3d  tip, double dist);
+
     };
 }
 
