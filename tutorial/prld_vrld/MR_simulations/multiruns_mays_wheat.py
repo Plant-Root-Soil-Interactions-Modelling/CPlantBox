@@ -9,10 +9,9 @@ import time
 import csv
 
 def run_benchmark_(num):
-    #print("run n*",num)
     seed = num+counts
     print('seed', seed) 
-    fx = run_benchmark(seed, name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_stand2, x_highr, x_cont, img_cont, y_, z_, tropismN, tropismS)
+    fx = run_benchmark(seed, name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_lowr, x_highr, x_cont, img_cont, y_, z_, tropismN, tropismS)
     return fx
 
 def setup_scenario(plant, size, tube_diam, pdensity):
@@ -37,12 +36,12 @@ def setup_scenario(plant, size, tube_diam, pdensity):
         name = "wheat_Morandage"
         simtime = 215 #days
         if pdensity == 'base': 
-            M = 50 # number of plants in one row #2
+            M = 50 # number of plants in one row 
             N = 10 # number of rows
             distp = 1.5 # distance between the plants[cm] (P-P)
             distr = 21 # distance between the rows[cm] (R-R)
         elif pdensity == 'alt': 
-            M = 30 # number of plants in one row #2
+            M = 30 # number of plants in one row 
             N = 16 # number of rows
             distp = 3 # distance between the plants[cm] (P-P)
             distr = 12 # distance between the rows[cm] (R-R)
@@ -55,8 +54,7 @@ def setup_scenario(plant, size, tube_diam, pdensity):
     soilvolume = (depth / layers) * l_field * w_field #soil volume per layer
     tube_diam = float(tube_diam) #tube diameter
     tube_len = 700 #tube length 
-    v_d  = 2 # viewing_depth in mm --> experiment
-    ladd = 1.80 #length addition to minirhizotube diameter- should not overlap -->6.4+1.8*2= 10
+    v_d  = 2 # maximum viewing_depth in mm 
     r_sc = 4.5 #radius of soil cores 
     sc_volume = r_sc**2*np.pi*hlayer
     distl = 5 #distance between perpendicular planes for coimputation of anisotropy factor 
@@ -81,22 +79,22 @@ def setup_scenario(plant, size, tube_diam, pdensity):
         dummy = 0
         for i in range(0,4): 
             for j in range(0,5): 
-                x_standard[dummy] = xstart+i*93 + j*10
+                x_standard[dummy] = xstart+i*93 + j*10 #Lärm et al. 2023
+            dummy = dummy+1
                 dummy = dummy+1
     elif plant == 'wheat': 
         xstart = -(N-1)*distr/2
         x_standard = np.zeros(20) 
         dummy = 0
         for i in range(0,20): 
-            x_standard[dummy] = xstart+i*10 #93 and 12 is spacing defined by Lena
-            dummy = dummy+1
+            x_standard[dummy] = xstart+i*10 
             
     #high resolution image positions 
     x_startend_ = np.zeros((2))
     arr = [0,N-1]
     for j in range(0,len(x_startend_)): 
         x_startend_[j] = distr * arr[j]-((N-1)*distr/2)
-    x_stand2 = np.linspace(x_startend_[0]-distr/2, x_startend_[1]+distr/2, 20)    
+    x_lowr = np.linspace(x_startend_[0]-distr/2, x_startend_[1]+distr/2, 20)    
     x_highr = np.linspace(x_startend_[0]-distr/2, x_startend_[1]+distr/2, 40) 
 
     #continuous image position 
@@ -110,9 +108,7 @@ def setup_scenario(plant, size, tube_diam, pdensity):
     for i in range(0, len(y_)):
         rhizotubes_.append(pb.SDF_RotateTranslate(rhizotube, pb.Vector3d(0, y_[i], z_[i])))
     rhizotubes = pb.SDF_Union(rhizotubes_) #single batch rhizotubes 
-    # rs = pb.RootSystem()
-    # rs.setGeometry(rhizotubes)
-    # rs.write("test_results/rhizotubes.py")
+
 
     #rhizotubes increased by viewing depth, single batch 
     rhizotubeo_ = pb.SDF_PlantContainer(tube_diam/2+v_d/10, tube_diam/2+v_d/10, tube_len, False)
@@ -161,16 +157,16 @@ def setup_scenario(plant, size, tube_diam, pdensity):
     nyz = pb.Vector3d(0., l_field, -1.)
     planes = [[x0x, nxx, nyx],[x0y, nxy, nyy],[x0z, nxz, nyz]]
     
-    return name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, pdensity, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_stand2, x_highr, x_cont, img_cont, y_, z_, tropismN_, tropismS_
+    return name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, pdensity, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_lowr, x_highr, x_cont, img_cont, y_, z_, tropismN_, tropismS_
 
 def write_results(name, simtime, repetitions, imgw, imgl, tube_diam, pdensity, finalr): 
     #write out results
     header = ['depth', 'tropismN', 'tropismS', 'rRLD', 'An','CV',
-        'prld_stand', 'prld_stand2', 'prld_highr','prld_cont',
+        'prld_stand', 'prld_lowr', 'prld_highr','prld_cont',
         'vrld_sl', 'vrld_2sc', 'vrld_4sc','vrld_sc_ir', 'vrld_sc_ip',
-        'prvd_stand','prvd_stand2','prvd_highr','prvd_cont',
+        'prvd_stand','prvd_lowr','prvd_highr','prvd_cont',
         'vrvd_sl', 'vrvd_2sc', 'vrvd_4sc',
-        'prcd_stand','prcd_stand2','prcd_highr','prcd_cont'] 
+        'prcd_stand','prcd_lowr','prcd_highr','prcd_cont'] 
     with open('results/'+name+'_day'+str(simtime)+'_reps'+str(repetitions)+'_imgsize'+str(imgw)+'x'+str(imgl)+'tubediam'+str(tube_diam)+'_pdensity_'+pdensity+'.csv', 'w') as f:
         writer=csv.writer(f, delimiter=',', lineterminator='\n')
         writer.writerow(header)
@@ -190,7 +186,7 @@ if __name__ == "__main__":
     print()
     print(name_id, "\n")
 
-    name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, pdensity, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_stand2, x_highr, x_cont, img_cont, y_, z_, tropismN_, tropismS_ = setup_scenario(args.plant, args.size, args.tubediam, args.pdensity)
+    name, M, N, distr, distp, distl, simtime, w_field, l_field, hlayer, depth, planes, tube_diam, pdensity, fieldbox_wo_rhizotubes, rhizotubes, rhizotubeso, sc1,sc2,sc3,sc4,sc_volume, imgw, imgl,size,x_standard, x_lowr, x_highr, x_cont, img_cont, y_, z_, tropismN_, tropismS_ = setup_scenario(args.plant, args.size, args.tubediam, args.pdensity)
 
     repetitions = 100
     simnum = 0

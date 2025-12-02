@@ -39,33 +39,27 @@ depth_ = df1["depth"].loc[:].values
 depth = np.unique(depth_)[::-1] 
 
 plant = ['Maize', 'Winter wheat']
-num = ['(a)', '(b)']
 xtext = [0.4, 0.3, 0.07]
 xlim = [1,5]
 ylim = [1,5]
-c = ['r', 'b', 'g', 'c', 'y','m']
+c = ['r', 'b', 'g', 'y', 'y','m']
 marker = ['x', '.']
-alts = ['2x2','6x4', '2x20']
-labels = ['2x2 cm', '6x4 cm', 'Entire tube surface']
+alts = ['prld_stand','prld_lowr','prld_highr', 'prld_cont']
+labels = ['Selhausen setup', 'Low resolution', 'High resolution', 'Continuous']
 annot = ['(a)', '(b)']
 
 fig, axs = plt.subplots(2,3)
 for i in range(0,len(df_)): 
-    R2 = np.zeros((len(alts)))
+    df = df_[i]
+    R2 = np.zeros((len(alts)))    
     for k in range(0, len(alts)): 
-        
-        if i == 0: 
-            df = pd.read_csv("../results/Zea_mays_3_Postma_2011_day120_reps100_imgsize"+alts[k]+"tubediam6.4_pdensity_base.csv")
-        else: 
-            df = pd.read_csv("../results/wheat_Morandage_day215_reps100_imgsize"+alts[k]+"tubediam6.4_pdensity_base.csv")
-    
         axs[0,i].set_ylim(0, ylim[i]) 
         axs[0,i].set_xlim(0, xlim[i]) 
         data = df
-        x = data['prld_stand'].loc[:].values
+        x = data[alts[k]].loc[:].values
         y = data['vrld_sl'].loc[:].values
         popt, pcov = curve_fit(func, x, y)
-        axs[0,i].scatter(x,y,marker = '.', color = c[k], alpha = 0.05, edgecolor = 'None')
+        axs[0,i].scatter(x,y,marker = '.', color = c[k], alpha = 0.1, edgecolor = 'None')
         axs[0,i].plot(x, func(x, popt),color = c[k], linestyle = ':', linewidth = 2)
         
         #stats
@@ -73,16 +67,16 @@ for i in range(0,len(df_)):
         y_pred = func(x, *popt)
         R2[k]= r2_score(y, y_pred)
     
-    axs[0,i].scatter(1000, 1000, marker = '.', color = c[0], label = labels[0]+', $R^2$ = '+str(np.around(R2[0],2)))
-    axs[0,i].scatter(1000, 1000, marker = '.', color = c[1],  label = labels[1]+', $R^2$ = '+str(np.around(R2[1],2)))
-    axs[0,i].scatter(1000, 1000, marker = '.', color = c[2],  label = labels[2]+', \n$R^2$ = '+str(np.around(R2[2],2)))
+    axs[0,i].scatter(1000, 1000, marker = '.', color = c[0], label = labels[0]+', $R^2$='+str(np.around(R2[0],2)))
+    axs[0,i].scatter(1000, 1000, marker = '.', color = c[1],  label = labels[1]+', $R^2$='+str(np.around(R2[1],2)))
+    axs[0,i].scatter(1000, 1000, marker = '.', color = c[2],  label = labels[2]+', $R^2$='+str(np.around(R2[2],2)))
+    axs[0,i].scatter(1000, 1000, marker = '.', color = c[3],  label = labels[3]+', $R^2$='+str(np.around(R2[3],2)))
     axs[0,i].plot([0,1000], [0,1000], 'k--')
     axs[0,i].set_ylabel('vRLD $(cm$ $cm^{-3})$')
     axs[0,i].set_title(plant[i])
     t = axs[0,i].text(0.9*xlim[i], 0.9*ylim[i], annot[i])
     t.set_bbox(dict(facecolor='w', edgecolor='w'))
-
-    axs[0,i].legend()
+    axs[0,i].legend(loc = 'upper left')
     
 for i in range(0,3): 
     axs[1,i].axis('off') 

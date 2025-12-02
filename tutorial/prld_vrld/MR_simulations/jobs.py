@@ -60,6 +60,9 @@ def make_list():
             for t in tube_diam:
                 for pd in pdensity:
                     jobs.append([p, s, t, pd])
+                    
+    if not os.path.exists('jobs'):
+        os.makedirs('jobs')
 
     return jobs
 

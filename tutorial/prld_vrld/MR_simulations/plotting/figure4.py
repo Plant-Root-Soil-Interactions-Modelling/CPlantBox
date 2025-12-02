@@ -41,7 +41,7 @@ cbar_ax = fig.add_axes([.93,.3,.01,.3])
 for i in range(0, len(df_)): 
     df = df_[i]
     
-    target = df['vrld_sl']/df['prld_stand']
+    target = df['vrld_sl']/df['prld_cont']
     df_corr = pd.DataFrame({"vRLD/pRLD":target})
     for k in range(0,2): 
         c = df[fac[k]].loc[:].values

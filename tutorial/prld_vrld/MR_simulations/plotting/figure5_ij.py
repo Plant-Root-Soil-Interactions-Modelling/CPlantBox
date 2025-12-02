@@ -39,7 +39,6 @@ depth_ = df1["depth"].loc[:].values
 depth = np.unique(depth_)[::-1] 
 
 plant = ['Maize', 'Winter wheat']
-num = ['(a)', '(b)']
 xtext = [0.4, 0.3, 0.07]
 xlim = [1.5,6]
 ylim = [5,8]
@@ -57,7 +56,7 @@ for i in range(0,len(df_)):
         axs[0,i].set_ylim(0, ylim[i]) 
         axs[0,i].set_xlim(0, xlim[i]) 
         data = df
-        x = data['prld_stand'].loc[:].values
+        x = data['prld_cont'].loc[:].values
         y = data[alts[k]].loc[:].values
         popt, pcov = curve_fit(func, x, y)
         axs[0,i].scatter(x,y,marker = '.', color = c[k], alpha = 0.1, edgecolor = 'None')
@@ -68,11 +67,11 @@ for i in range(0,len(df_)):
         y_pred = func(x, *popt)
         R2[k]= r2_score(y, y_pred)
     
-    axs[0,i].scatter(1000, 1000, marker = '.', color = c[0], label = labels[0]+', $R^2$ = '+str(np.around(R2[0],2)))
-    axs[0,i].scatter(1000, 1000, marker = '.', color = c[1], label = labels[1]+', $R^2$ = '+str(np.around(R2[1],2)))
-    axs[0,i].scatter(1000, 1000, marker = '.', color = c[2], label = labels[2]+', $R^2$ = '+str(np.around(R2[2],2)))
-    axs[0,i].scatter(1000, 1000, marker = '.', color = c[3], label = labels[3]+', $R^2$ = '+str(np.around(R2[3],2)))
-    axs[0,i].scatter(1000, 1000, marker = '.', color = c[4], label = labels[4]+', $R^2$ = '+str(np.around(R2[4],2)))
+    axs[0,i].scatter(1000, 1000, marker = '.', color = c[0], label = labels[0]+', $R^2$='+str(np.around(R2[0],2)))
+    axs[0,i].scatter(1000, 1000, marker = '.', color = c[1], label = labels[1]+', $R^2$='+str(np.around(R2[1],2)))
+    axs[0,i].scatter(1000, 1000, marker = '.', color = c[2], label = labels[2]+', $R^2$='+str(np.around(R2[2],2)))
+    axs[0,i].scatter(1000, 1000, marker = '.', color = c[3], label = labels[3]+', $R^2$='+str(np.around(R2[3],2)))
+    axs[0,i].scatter(1000, 1000, marker = '.', color = c[4], label = labels[4]+', $R^2$='+str(np.around(R2[4],2)))
     axs[0,i].plot([0,1000], [0,1000], 'k--')
     axs[0,i].set_xlabel('pRLD $(cm$ $cm^{-2})$')
     axs[0,i].set_ylabel('vRLD $(cm$ $cm^{-3})$')

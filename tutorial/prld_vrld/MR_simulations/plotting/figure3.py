@@ -68,9 +68,9 @@ for i in range(0,len(df_)):
     x2 = np.linspace(np.min(x), np.max(x), 100)
     y2 = func(x2, popt)
     pi = t * s_err * np.sqrt(1 + 1/n + (x2 - np.mean(x))**2 / np.sum((x - np.mean(x))**2))   
-    axs[0,i].plot(func(x, popt),x, color = "0.3", linestyle = ':', linewidth = 1) 
-    axs[0,i].plot(np.nan, np.nan,color = '0.3', linestyle = ':', label = "Regression line \nfor all depths")
-    axs[0,i].plot([0,1000], [0,1000], 'k--', label = '1:1 line')
+    axs[0,i].plot(func(x, popt),x, color = "0", linestyle = ':', linewidth = 1) 
+    axs[0,i].plot(np.nan, np.nan,color = '0', linestyle = ':', label = "Regression line \nfor all depths")
+    axs[0,i].plot([0,1000], [0,1000], color = '0.3', linestyle = '--', label = '1:1 line')
     slope = popt[0]
     print(plant[i], np.around(1/popt[0],2), np.around(pi[0], 2), np.around(R2,2)) 
     
@@ -82,7 +82,7 @@ for i in range(0,len(df_)):
         y = data['prld_stand'].loc[:].values
         popt, pcov = curve_fit(func, x, y)
         axs[0,i].scatter(y,x,marker = '.', color = c[j], alpha = 0.1, edgecolor = 'None')
-        axs[0,i].plot(func(x, popt),x, color = c[j], linestyle = ':', linewidth = 2) 
+        axs[0,i].plot(func(x, popt),x, color = c[j], linestyle = '-', linewidth = 2) 
         
         y_pred = func(x, *popt)
         R2= r2_score(y, y_pred)
