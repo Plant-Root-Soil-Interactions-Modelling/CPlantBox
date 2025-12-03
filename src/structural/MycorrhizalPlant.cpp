@@ -145,20 +145,44 @@ void MycorrhizalPlant::simulateAnastomosis() {
     // std::cout<< numberofHyphae << " "<< numberofHyphae2 <<std::endl;
     double dist = 1000;
     Vector3d closestNode;
+
+    // TODO could make this easier by not iterating through hyphae directly but through the vector i.e. safe position in vector.
     for (const auto & h : hyphae) {
         auto tip = h->getNode(h->getNumberOfNodes()-1);
+
         for (auto sdf : sdfs) // TODO Problem! have to make box every time and run search every time. for every sdf and we do not know how the particle id relates to node ids
         {
             double distfromsdf = sdf.getDist(tip); 
-            closestNode = sdf.getDistVec(tip);
-            if ( distfromsdf > 0 && distfromsdf < dist) dist = distfromsdf;
+            
+            if ( distfromsdf > 0 && distfromsdf < dist) {
+                dist = distfromsdf;
+                closestNode = sdf.getDistVec(tip);
+            }
         }
+
         bool notsame = abs(closestNode.x - tip.x) > 1e-6 || abs(closestNode.y - tip.y) > 1e-6 || abs(closestNode.z - tip.z) > 1e-6;
-        bool notnull = closestNode.x != 0.  && closestNode.y != 0. && closestNode.z != 0.;
+        bool notnull = closestNode.x != 0.  || closestNode.y != 0. || closestNode.z != 0.;
+
         if (dist < h->getParameter("distTH") && notnull && notsame)
         {
             std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance: " << dist << std::endl;
             std::cout <<"Node for Anastomosis: " << closestNode.toString() << std::endl;
+
+            // for (const auto & hh : hyphae)
+            // {
+            //     auto nodes = hh->getNodes();
+
+            //     for (const auto & n : nodes)
+            //     {
+            //         if (n == closestNode)
+            //         {
+            //             std::cout<< "Found the closes node!" << std::endl;
+            //         }
+                    
+            //     }
+                
+            // }
+            
         }
         
     }
@@ -263,12 +287,6 @@ void MycorrhizalPlant::addTree() {
         for (const auto& h : hyphae) {
             if (h->getNumberOfNodes()>1) { // started growing
                 // time when the root stopped growing
-                double sTime = h->getNodeCT(h->getNumberOfNodes()-1);
-                if (h->isActive()) {
-                    stopTime.push_back(0);
-                } else {
-                    stopTime.push_back(sTime);
-                }
                 // root tip
                 Vector3d t = h->getNode(h->getNumberOfNodes()-1);
                 tips.push_back(t);

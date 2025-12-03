@@ -23,7 +23,7 @@ hyphae_parameter = pb.HyphaeRandomParameter(mycp)
 hyphae_parameter.subType = 1
 hyphae_parameter.a = 0.01
 hyphae_parameter.dx = 0.01
-hyphae_parameter.distTH = 0.001  # distance for anastomosis
+hyphae_parameter.distTH = 0.009  # distance for anastomosis
 mycp.setOrganRandomParameter(hyphae_parameter)
 # print(hyphae_parameter)
 
@@ -41,7 +41,7 @@ mycp.initialize(True)
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
 simtime = 10
-fps = 30
+fps = 1
 anim_time = 10
 N = fps * anim_time
 dt = simtime / N
