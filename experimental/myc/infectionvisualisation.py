@@ -7,7 +7,7 @@ import numpy as np
 
 mycp = pb.MycorrhizalPlant(1)
 path = "../../modelparameter/structural/rootsystem/"
-name = "Glycine_max"
+name = "Glycine_max_Moraes2020"
 # name = "Heliantus_Pagès_2013"
 
 animation = False
@@ -29,8 +29,8 @@ mycp.setOrganRandomParameter(hyphae_parameter)
 
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
-    rp.hyphalEmergenceDensity = 2
-    rp.highresolution = 1
+    rp.hyphalEmergenceDensity = 0
+    rp.highresolution = 0
     if local:
         rp.f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
     rp.dx = 0.2
@@ -46,13 +46,13 @@ anim_time = 10
 N = fps * anim_time
 dt = simtime / N
 
-filename = "infection_" + str(simtime)
-if animation:
-    filename = "animation"
-if not local:
-    filename = filename + "_dispersed"
-else:
-    filename = filename + "_local"
+# filename = "infection_" + str(simtime)
+# if animation:
+#     filename = "animation"
+# if not local:
+#     filename = filename + "_dispersed"
+# else:
+#     filename = filename + "_local"
 
 
 if animation:
@@ -69,14 +69,14 @@ else:
         print('step',i, '/',N)
         mycp.simulate(dt, False)
     
-    print('done')
+#     print('done')
     
-    ana = pb.SegmentAnalyser(mycp)
-    ana.addData("infection", mycp.getNodeInfections(2))
-    ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
-    pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
-    vp.plot_roots(ana, "infection")
-    # vp.plot_roots(ana, "infectionTime")
-    # vp.plot_plant(mycp, "organType")
-    ana.write(filename + ".vtp", ["radius", "subType", "creationTime","organType"])# "infection", "infectionTime",
+#     ana = pb.SegmentAnalyser(mycp)
+#     ana.addData("infection", mycp.getNodeInfections(2))
+#     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+#     pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
+#     vp.plot_roots(ana, "infection")
+#     # vp.plot_roots(ana, "infectionTime")
+#     # vp.plot_plant(mycp, "organType")
+#     ana.write(filename + ".vtp", ["radius", "subType", "creationTime","organType"])# "infection", "infectionTime",
 
