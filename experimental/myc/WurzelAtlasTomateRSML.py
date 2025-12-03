@@ -8,8 +8,7 @@ import rsml.rsml_reader as rsml
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = ""
-name = "WurzelAtlasParasTomate"
+path = "results/"
 name_new = "WurzelAtlasTomate_parameters_out"
 name_Johanna_WildType = "TomatoJohanna_WildType"
 name_Johanna_RMC = "TomatoJohanna_RMC"

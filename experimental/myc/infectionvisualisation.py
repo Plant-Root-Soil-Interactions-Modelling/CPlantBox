@@ -37,8 +37,6 @@ for rp in root:
 
 
 mycp.initialize(True)
-# print(mycp.toString())
-mycp.writeParameters("modified_parameters.xml", 'plant', True)
 
 # simtime = 10
 # fps = 30
