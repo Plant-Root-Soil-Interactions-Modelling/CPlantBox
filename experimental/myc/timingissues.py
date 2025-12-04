@@ -25,7 +25,7 @@ root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
     # rp.hyphalEmergenceDensity = 1
     # rp.dx = rp.dx_inf
-    rp.highresolution = 0
+    rp.highresolution = 1
 
 local = False
 
