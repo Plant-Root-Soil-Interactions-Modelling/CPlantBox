@@ -53,7 +53,7 @@ public:
 
     int selectedOrganType = -1; // getDist will compare only to this organTypes, -1 for all
     int excludeOrganId = -1; // getDist will exclude this Organ from the search (only if selectedOrganType >=0)
-    int distIndex = -1; // last segment index of getDist call, -1 if
+    mutable int distIndex = -1; // last segment index of getDist call, -1 if
 
 protected:
 
