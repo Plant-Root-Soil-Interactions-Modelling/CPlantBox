@@ -7,47 +7,50 @@
 
 namespace CPlantBox {
 
-    class MycorrhizalPlant :public Plant {
-        public:
-        MycorrhizalPlant(unsigned int seednum = 0.);
-        virtual ~MycorrhizalPlant() {};
+class MycorrhizalPlant :public Plant {
+    public:
+    MycorrhizalPlant(unsigned int seednum = 0.);
+    virtual ~MycorrhizalPlant() {};
 
-        //copy
-        void initializeReader() override; ///< initializes XML reader
-        void readParameters(std::string name, std::string basetag = "plant", bool fromFile = true, bool verbose = true) override {this -> initializeReader(); Organism::readParameters(name, basetag, fromFile, verbose);};
+    //copy
+    void initializeReader() override; ///< initializes XML reader
+    void readParameters(std::string name, std::string basetag = "plant", bool fromFile = true, bool verbose = true) override {this -> initializeReader(); Organism::readParameters(name, basetag, fromFile, verbose);};
 
-        // std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay);
-        void initialize(bool verbose = true) override {initializeLB(verbose);};
-        void initializeLB(bool verbose = true);
+    // std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay);
+    void initialize(bool verbose = true) override {initializeLB(verbose);};
+    void initializeLB(bool verbose = true);
 
-        void simulate(double dt, bool verbose) override;
-        void simulatePrimaryInfection(double dt, bool verbose);
-        void simulateSecondaryInfection(double dt, bool verbose);
-        void simulateHyphalGrowth(double dt);
-        void simulateAnastomosis();
-        void simulateAnastomosisTree();
+    void simulate(double dt, bool verbose) override;
+    void simulatePrimaryInfection(double dt, bool verbose);
+    void simulateSecondaryInfection(double dt, bool verbose);
+    void simulateHyphalGrowth(double dt);
+    void simulateAnastomosis();
+    void simulateAnastomosisTree();
 
-        virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
-        virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
+    virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
+    virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
 
-        // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
-        void initCallbacks() override;
-        // void addTree(); // AABB tree
+    // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
+    void initCallbacks() override;
+    // void addTree(); // AABB tree
 
-        int getNextHyphalTreeIndex() { hyphalTreeIndex++; return hyphalTreeIndex; }
-        // std::vector<Vector3d> tips;
-        std::shared_ptr<SDF_RootSystem> sdf; // direction from tip towards root base
+    int getNextHyphalTreeIndex() { hyphalTreeIndex++; return hyphalTreeIndex; }
+    // std::vector<Vector3d> tips;
+    std::shared_ptr<SDF_RootSystem> sdf; // direction from tip towards root base
 
-        aabb::Tree tree = aabb::Tree(); // aabb tree for anastomosis
+    aabb::Tree tree = aabb::Tree(); // aabb tree for anastomosis
 
-        std::vector<int> localNodes;
-        std::vector<std::shared_ptr<Hyphae>> localHyphae;
-        int hyphalTreeIndex = -1;
-        // void buildAnastomosisTree();
-        // void updateAnastomosisTree(double dt);
-        unsigned int getDistTree(unsigned int p,Vector3d  tip, double dist);
+    std::vector<int> localNodes;
+    std::vector<std::shared_ptr<Hyphae>> localHyphae;
+    int hyphalTreeIndex = -1;
+    // void buildAnastomosisTree();
+    // void updateAnastomosisTree(double dt);
+    unsigned int getDistTree(unsigned int p,Vector3d  tip, double dist);
 
     };
+
 }
 
-#endif
+#endif // namespace
+
+
