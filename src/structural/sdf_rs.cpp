@@ -183,4 +183,3 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
 } // namespace
 
 
-#endif
