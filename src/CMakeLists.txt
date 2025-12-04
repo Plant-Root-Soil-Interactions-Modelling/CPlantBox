@@ -38,7 +38,8 @@ add_library(CPlantBox SHARED
             structural/MappedOrganism.cpp
      		structural/sdf.cpp
             structural/SegmentAnalyser.cpp            
-            structural/tropism.cpp            
+            structural/tropism.cpp  
+            structural/sdf_rs.cpp                         
 			
             functional/XylemFlux.cpp
 			functional/Photosynthesis.cpp
