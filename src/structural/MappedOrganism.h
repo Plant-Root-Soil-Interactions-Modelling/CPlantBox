@@ -2,7 +2,7 @@
 #ifndef MAPPED_ROOTSYSTEM_H_
 #define MAPPED_ROOTSYSTEM_H_
 
-#include "RootSystem.h"
+//  #include "RootSystem.h"
 #include "Plant.h"
 
 #include <functional>

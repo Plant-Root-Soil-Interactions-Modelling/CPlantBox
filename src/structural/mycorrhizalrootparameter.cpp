@@ -127,4 +127,5 @@ void MycorrhizalRootRandomParameter::readXML(tinyxml2::XMLElement* element, bool
 {
     OrganRandomParameter::readXML(element, verbose);
 }
-}
+
+} // name space

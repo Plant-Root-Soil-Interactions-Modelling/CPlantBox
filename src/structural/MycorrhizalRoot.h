@@ -9,6 +9,7 @@
 
 namespace CPlantBox {
 
+
 class MycorrhizalRoot :public Root {
 public:
 
@@ -38,7 +39,7 @@ public:
     void addNode(Vector3d n, int id, double t, size_t index, bool shift) override;
     void createLateral(double ageLN, bool silence) override;
 
-    
+
     std::string toString() const override;
 
     std::shared_ptr<MycorrhizalRootRandomParameter> getRootRandomParameter() const;

@@ -2,7 +2,6 @@
 #define MYCORRHIZIALROOTPARAMETER_H_
 
 #include "rootparameter.h"
-#include "organparameter.h"
 #include "soil.h"
 
 
@@ -13,7 +12,7 @@ namespace CPlantBox {
         public:
         MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0.,0.15, 0.13, false, 0., 0.) { }
 
-        MycorrhizalRootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, 
+        MycorrhizalRootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt,
 				bool laterals, double lmbd, double vi, int infected = false):
             RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), lmbd(lmbd), vi(vi) {};
 
@@ -50,7 +49,7 @@ namespace CPlantBox {
 
         double hyphalEmergenceDensity = 1; //< [1 / cm]
 
-        std::shared_ptr<SoilLookUp> f_inf = std::make_shared<SoilLookUp>();    
+        std::shared_ptr<SoilLookUp> f_inf = std::make_shared<SoilLookUp>();
 		void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
 
     };
