@@ -109,7 +109,7 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     Organism::simulate(dt, verbose);
     addTree();
     simulateAnastomosis();
-    sdfs = {};
+    // sdfs = {};
     // buildAnastomosisTree();
     // updateAnastomosisTree(dt);
     // simulateAnastomosisTree();
@@ -140,7 +140,7 @@ void MycorrhizalPlant::simulateHyphalGrowth(double dt)
 
 void MycorrhizalPlant::simulateAnastomosis() {
     auto hyphae = this->getOrgans(Organism::ot_hyphae);
-    auto numberofHyphae = sdfs.size();
+    // auto numberofHyphae = sdfs.size();
     // auto numberofHyphae2 = hyphae.size();
     // std::cout<< numberofHyphae << " "<< numberofHyphae2 <<std::endl;
     double dist = 1000;
@@ -170,8 +170,8 @@ void MycorrhizalPlant::simulateAnastomosis() {
 
             // for (const auto & hh : hyphae)
             // {
-            //     auto nodes = hh->getNodes();
 
+            //     auto nodes = hh->getNodes();
             //     for (const auto & n : nodes)
             //     {
             //         if (n == closestNode)
@@ -301,17 +301,26 @@ void MycorrhizalPlant::addTree() {
 }
 
 void MycorrhizalPlant::buildAnastomosisTree() {
-    // tree = aabb::Tree();
     auto hyphae = this->getOrgans(Organism::ot_hyphae);
+    std::vector<Vector3d> nodes;
+    std::vector<Vector2i> segments;
+    std::vector<double> radii;
+    double dx_;
     for (const auto& h : hyphae) {
         for (unsigned int i=0; i < h->getNumberOfNodes(); i++) {
+            dx_ = h->getParameter("dx");
             Vector3d pos = h->getNode(i);
-            std::vector<double> posVec = {pos.x, pos.y, pos.z};
-            double radius = h->getParameter("a");
-            tree.insertParticle(h->getNodeId(i), posVec, radius);
+            nodes.push_back(pos);
+            segments.push_back(Vector2i(i,i+1));
+            radii.push_back(h->getParameter("a"));
+            
+            // tree.insertParticle(h->getNodeId(i), posVec, radius);
+            localNodes.push_back(i);
+            localHyphae.push_back(std::dynamic_pointer_cast<Hyphae>(h));
         }
     }
-}
+    sdf = SDF_RootSystem(nodes,segments,radii,dx_);
+}   
 
 void MycorrhizalPlant::updateAnastomosisTree(double dt) {
     // tree = aabb::Tree();

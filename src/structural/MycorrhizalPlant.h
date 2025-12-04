@@ -38,9 +38,13 @@ namespace CPlantBox {
         void addTree(); // AABB tree
 
         std::vector<Vector3d> tips;
-        std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
+        SDF_RootSystem sdf; // direction from tip towards root base
 
         aabb::Tree tree = aabb::Tree(); // aabb tree for anastomosis
+        
+        std::vector<int> localNodes;
+        std::vector<std::shared_ptr<Hyphae>> localHyphae;
+
         void buildAnastomosisTree();
         void updateAnastomosisTree(double dt);
         unsigned int getDistTree(unsigned int p,Vector3d  tip, double dist);
