@@ -5,7 +5,7 @@
 //#include "MycorrhizalRoot.h"
 #include "mycorrhizalrootparameter.h"
 #include "hyphaeparameter.h"
-#include "aabbcc/AABB.h"
+// #include "aabbcc/AABB.h"
 // #include "sdf.h"
 #include "sdf_rs.h"
 // #include "soil.h"
