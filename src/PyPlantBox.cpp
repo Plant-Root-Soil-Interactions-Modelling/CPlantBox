@@ -36,6 +36,7 @@ namespace py = pybind11;
 #include "Plant.h"
 #include "MycorrhizalPlant.h"
 #include "MappedOrganism.h"
+#include "SegmentAnalyser.h"
 
 // functional
 #include "Perirhizal.h"
@@ -52,7 +53,7 @@ namespace py = pybind11;
 #include "CatmullRomSpline.h"
 #include "PlantVisualiser.h"
 
-#include "sdf_rs.h" // todo to revise ...
+#include "sdf_rs.h"
 
 namespace CPlantBox {
 

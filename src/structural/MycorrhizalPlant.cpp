@@ -2,7 +2,7 @@
 #include "Organ.h"
 #include "Organism.h"
 #include "MycorrhizalPlant.h"
-//#include "MycorrhizalRoot.h"
+#include "MycorrhizalRoot.h"
 #include "mycorrhizalrootparameter.h"
 #include "hyphaeparameter.h"
 #include "aabbcc/AABB.h"
@@ -148,7 +148,7 @@ void MycorrhizalPlant::simulateAnastomosis() {
     // std::cout<< numberofHyphae << " "<< numberofHyphae2 <<std::endl;
     double dist = 1000;
     // Vector3d closestNode;
-    
+
 
     for (const auto & h : hyphae) {
         sdf->excludeTreeId = h->getParameter("hyphalTreeIndex");
@@ -176,18 +176,18 @@ void MycorrhizalPlant::simulateAnastomosis() {
                 //         {
                 //             std::cout<< "Found the closes node!" << std::endl;
                 //         }
-                        
+
                 //     }
-                    
+
                 // }
-                
+
             }
         }
 
-        
-        
+
+
     }
-    
+
 };
 
 void MycorrhizalPlant::simulateAnastomosisTree() {
@@ -219,7 +219,7 @@ void MycorrhizalPlant::simulateAnastomosisTree() {
         //     std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance: " << dist << std::endl;
         //     std::cout <<"Node for Anastomosis: " << closestNode.toString() << std::endl;
         // }
-        
+
     }
 };
 
@@ -230,7 +230,7 @@ void MycorrhizalPlant::initCallbacks() {
 
     // std::cout << "MycorrhizalPlant::initCallbacks()\n";
 
-    Plant::initCallbacks(); 
+    Plant::initCallbacks();
 
     for (auto& p_otp :organParam[Organism::ot_root]) {
         auto rp = std::static_pointer_cast<MycorrhizalRootRandomParameter>(p_otp.second);
@@ -314,14 +314,14 @@ void MycorrhizalPlant::initCallbacks() {
 //             nodes.push_back(pos);
 //             segments.push_back(Vector2i(i,i+1));
 //             radii.push_back(h->getParameter("a"));
-            
+
 //             // tree.insertParticle(h->getNodeId(i), posVec, radius);
 //             localNodes.push_back(i);
 //             localHyphae.push_back(std::dynamic_pointer_cast<Hyphae>(h));
 //         }
 //     }
 //     sdf = SDF_RootSystem(nodes,segments,radii,dx_);
-// }   
+// }
 
 // void MycorrhizalPlant::updateAnastomosisTree(double dt) {
 //     // tree = aabb::Tree();
@@ -351,9 +351,9 @@ void MycorrhizalPlant::initCallbacks() {
 // }
 
 unsigned int MycorrhizalPlant::getDistTree(unsigned int p, Vector3d  tip, double dist) {
-    
+
     // get the needed distance
-    double dx_ = dist; 
+    double dx_ = dist;
 
     // get the tree minus the particle we are trying to find the distance for
     // tree.removeParticle(p);

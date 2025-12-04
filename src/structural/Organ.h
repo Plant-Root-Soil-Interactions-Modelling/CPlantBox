@@ -3,7 +3,6 @@
 #define ORGAN_H_
 
 #include "mymath.h"
-
 #include "tinyxml2.h"
 
 #include <vector>

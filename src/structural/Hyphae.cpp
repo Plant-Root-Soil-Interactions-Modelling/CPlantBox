@@ -1,4 +1,5 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+
 #include "Hyphae.h"
 #include "MycorrhizalRoot.h"
 #include "mycorrhizalrootparameter.h"
@@ -6,12 +7,12 @@
 #include "Root.h"
 #include "Stem.h"
 #include "Leaf.h"
-//#include "sdf_rs.h"
+
+#include "aabbcc/AABB.h"
+
 #include <numeric>
 
 namespace CPlantBox {
-
-class SDF_RootSystem;
 
 /**
  * Constructs a root from given data.
@@ -30,11 +31,8 @@ class SDF_RootSystem;
  * @param moved     indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
-Hyphae::Hyphae(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-    Vector3d partialIHeading_, int pni, bool moved, int oldNON)
-                     :Organ(id, param, alive, active, age, length, partialIHeading_,pni, moved,  oldNON )
-                      {
-                      }
+Hyphae::Hyphae(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,Vector3d partialIHeading_, int pni, bool moved, int oldNON)
+    :Organ(id, param, alive, active, age, length, partialIHeading_,pni, moved,  oldNON ) { }
 
 
 /**
@@ -49,17 +47,17 @@ Hyphae::Hyphae(int id, std::shared_ptr<const OrganSpecificParameter> param, bool
  * @param pbl			parent base length
  * @param pni			parent node index
  */
-Hyphae::Hyphae(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
-:Organ(rs, parent, Organism::ot_hyphae, type, delay,  pni) // <- OrganRandomParameter::realize() is called here
+Hyphae::Hyphae(std::shared_ptr<Organism> plant, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
+:Organ(plant, parent, Organism::ot_hyphae, type, delay,  pni) // <- OrganRandomParameter::realize() is called here
 {
     // std::cout << "create Hyphae\n" << std::flush;
     assert(parent!=nullptr && "Hyphae::Hyphae parent must be set");
-    double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
+    double beta = 2*M_PI*plant->rand(); // initial rotation
     double theta = M_PI/2.;
     this->partialIHeading = Vector3d::rotAB(theta,beta);
     double creationTime= parent->getNodeCT(pni)+delay;//default
     addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
-    std::shared_ptr<MycorrhizalPlant> mp = std::dynamic_pointer_cast<MycorrhizalPlant>(rs);
+    std::shared_ptr<MycorrhizalPlant> mp = std::dynamic_pointer_cast<MycorrhizalPlant>(plant);
     hyphalTreeIndex = mp->getNextHyphalTreeIndex();
 }
 
@@ -121,11 +119,11 @@ void Hyphae::simulate(double dt, bool verbose)
 						dt_=dt;
 					}
 
-					double targetlength = calcLength(age_+dt_);//+ this->epsilonDx; 
+					double targetlength = calcLength(age_+dt_);//+ this->epsilonDx;
 					// TODO: maybe add later the epsilonDx. could be usefull for flow computation + in case of length errors created by anastomosis
 
                     //double targetlength = p.v*(age); // Warum hier age + dt wenn oben schon dt an age angerechnet wurde?
-					
+
                     double e = targetlength-length; // unimpeded elongation in time step dt
                     double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                     double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
@@ -137,7 +135,7 @@ void Hyphae::simulate(double dt, bool verbose)
                     {
                         active = false; // if no length increment, hyphae become inactive
                     }
-                    
+
                     // if (sdf(plant.tree).getDist(nodes.at(nodes.size()-1)) < distTT) { // for tip tip anastomosis
                     //     makeanastomosis();
                     // }
@@ -147,7 +145,7 @@ void Hyphae::simulate(double dt, bool verbose)
                 }
                 // std::cout << p.getMaxLength() << " " << getLength(false) << std::endl;
                 // std::cout << nodes.size() << std::endl;
-                
+
                 active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
                 bool activeafter = active; // store new state
 
@@ -185,7 +183,7 @@ void Hyphae::simulate(double dt, bool verbose)
 // * @param age          age of the root [day]
 // * @return             root length [cm]
 // */
-double Hyphae::calcLength(double age) // ACHTUNG MIT WACHSTUM EINSTELLEN LINEAR NICHT EXPONENTIELL 
+double Hyphae::calcLength(double age) // ACHTUNG MIT WACHSTUM EINSTELLEN LINEAR NICHT EXPONENTIELL
 {
    assert(age >= 0 && "Hyphae::calcLength() negative hyphae age");
    return getHyphaeRandomParameter()->f_gf->getLength(age,param()->v,param()->getMaxLength(), shared_from_this());
@@ -224,7 +222,7 @@ std::shared_ptr<const HyphaeSpecificParameter> Hyphae::param() const
  * @copydoc Organ::getParameter
  * @param name  name of the parameter
  */
-double Hyphae::getParameter(std::string name) const 
+double Hyphae::getParameter(std::string name) const
 {
     // specific parameters
         if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?

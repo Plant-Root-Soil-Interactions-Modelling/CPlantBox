@@ -1,11 +1,12 @@
+#include "mycorrhizalrootparameter.h"
+#include "hyphaeparameter.h"
 #include "MycorrhizalRoot.h"
+#include "Hyphae.h"
 #include "Root.h"
 #include "Stem.h"
 #include "Leaf.h"
 #include "Organ.h"
 #include "Organism.h"
-
-#include "Hyphae.h"
 #include "math.h"
 
 namespace CPlantBox {
@@ -54,7 +55,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
         infected.push_back(0);
         emergedHyphae.push_back(0);
         infectionTime.push_back(-1);
-    } 
+    }
     else {
         //Organ::addNode(n, id,  t,  index, shift);
 		nodes.insert(nodes.begin() + index-1, n);//add the node at index
@@ -96,7 +97,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         {
             lmbd = getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this());
             // std::cout << "MycorrhizalRoot::primaryInfection(): Infection rate at node " << i << ": " << lmbd << std::endl;
-        } 
+        }
         else {
             lmbd = getRootRandomParameter()->lmbd;
         }
@@ -117,7 +118,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
                     Vector3d newNode = Vector3d(newx,newy,newz);
                     //std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
                     addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(i), i, true);
-                }   
+                }
             }
         }
     }
@@ -165,7 +166,7 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                                 // std::cout << "inserting node at index " << basalnode << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
                                 addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(basalnode), basalnode, true);
                                 // infectionTime.at(basalnode) = infTime;
-                            }   
+                            }
                         }
                         // std::cout<< "secondary infection from " << i << " to " << basalnode << std::endl;
                         if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()))
@@ -175,7 +176,7 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                             std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->simulateInfection(dt,silence);
                         }
                     }
-                    
+
                     oldNode = basalnode;
                     basalnode--;
                 }
@@ -206,9 +207,9 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                                 infTime = infectionTime.at(oldNode) + abs(nodes.at(oldNode).minus(newNode).length())/getRootRandomParameter()->vi;
                                 //std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
                                 addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(apicalnode), apicalnode, true);
-                            }   
+                            }
                     }
-                }    
+                }
                 oldNode = apicalnode;
                 apicalnode++;
             }
@@ -251,7 +252,7 @@ void MycorrhizalRoot::simulateHyphalGrowth() {
         // std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae <<  ", new noh " << new_noh << std::endl;
 
         int currentNode = 1;
-        while (new_noh > 0 && numberOfHyphae < new_total_noh) 
+        while (new_noh > 0 && numberOfHyphae < new_total_noh)
         {
             if (infected.at(currentNode) > 0){ // if the current node is infected and the number of hyphae to be created is reached
                 createHyphae(currentNode);
@@ -265,7 +266,7 @@ void MycorrhizalRoot::simulateHyphalGrowth() {
             }
         }
     }
-    
+
 }
 
 
@@ -322,7 +323,7 @@ std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomPa
 
 double MycorrhizalRoot::getParameter(std::string name) const {
     // std::cout << "MycorrhizalRoot::getParameter called" << std::endl;
-    if (name == "primaryInfection") 
+    if (name == "primaryInfection")
     {
         double primaryInfectedLength = 0;
         for (size_t i = 1; i < nodes.size(); i++)
@@ -346,7 +347,7 @@ double MycorrhizalRoot::getParameter(std::string name) const {
         }
         return secondaryInfectedLength;
     }
-    if (name == "infectionLength") 
+    if (name == "infectionLength")
     {
         double infectedLength = 0;
         for (size_t i = 1; i < nodes.size(); i++)
@@ -358,7 +359,7 @@ double MycorrhizalRoot::getParameter(std::string name) const {
         }
         return infectedLength;
     }
-    
+
     return Root::getParameter(name);
 }
 
@@ -372,7 +373,7 @@ void MycorrhizalRoot::setInfection(int i, int infection, double t)
 void MycorrhizalRoot::createLateral(double dt, bool verbose)
 {
     auto rp = getOrganRandomParameter(); // rename
-    
+
     for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule
         //found id
         bool applyHere = getApplyHere(i);
