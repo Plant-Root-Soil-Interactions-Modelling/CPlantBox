@@ -46,7 +46,14 @@ public:
     std::vector<Vector3d> nodes_;
     std::vector<Vector2i> segments_;
     std::vector<double> radii_;
+    std::vector<int> organTypes_;
+    std::vector<int> organIds_;
+    std::vector<std::weak_ptr<Organ>> segO;
     double dx_;
+
+    int selectedOrganType = -1; // getDist will compare only to this organTypes, -1 for all
+    int excludeOrganId = -1; // getDist will exclude this Organ from the search (only if selectedOrganType >=0)
+    int distIndex = -1; // last segment index of getDist call, -1 if
 
 protected:
 
@@ -96,6 +103,15 @@ SDF_RootSystem::SDF_RootSystem(const Organism& plant, double dx): dx_(dx) {
     nodes_ = ana.nodes;
     segments_ = ana.segments;
     radii_ = ana.getParameter("radius");
+    auto vd = ana.getParameter("organType");
+    organTypes_.reserve(vd.size());
+    std::transform(vd.begin(), vd.end(), organTypes_.begin(),
+                   [](double x) { return static_cast<int>(x); });
+    vd = ana.getParameter("organIds");
+    organIds_.reserve(vd.size());
+    std::transform(vd.begin(), vd.end(), organIds_.begin(),
+                   [](double x) { return static_cast<int>(x); });
+    segO = ana.segO; // weak pointer to the organ containing the segment
     buildTree();
 }
 
@@ -143,13 +159,31 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
         }
         l -= radii_[i];
 
-        if (l < mdist) {
-            mdist = l;
+        if (selectedOrganType == -1) {
+			if (l < mdist) {
+				mdist = l;
+				distIndex = i;
+			}
+        } else {
+        	if (excludeOrganId == -1) {
+				if ((l < mdist) && (selectedOrganType == organTypes_[i]))  {
+					mdist = l;
+					distIndex = i;
+				}
+        	} else {
+				if ((l < mdist) && (selectedOrganType == organTypes_[i]) && (excludeOrganId != organIds_[i]))  {
+					mdist = l;
+					distIndex = i;
+				}
+        	}
+
         }
 
     }
     return -mdist;
 }
+
+
 Vector3d SDF_RootSystem::getDistVec(const Vector3d& p) const {
 
     std::vector<double> a = { p.x-dx_, p.y-dx_, p.z-dx_ };
