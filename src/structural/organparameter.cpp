@@ -368,8 +368,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 
 template <class IntOrDouble>
 void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
-	bool replaceByDefault,
-	std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key)
+	bool replaceByDefault, std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key)
 {
 	int success = -1;
 	std::vector<IntOrDouble> dummy;
@@ -390,6 +389,7 @@ void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> key
 	if(vToFill.size() == 0){
 	    vToFill = dummy;
 	} else {
+	    vToFill.reserve(dummy.size());
 		vToFill.insert( vToFill.end(), dummy.begin(), dummy.end() );
 	}
 
