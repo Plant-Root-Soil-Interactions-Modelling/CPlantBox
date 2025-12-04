@@ -15,7 +15,7 @@ sudo apt-get upgrade
 wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installCPlantBox.py
 python3 installCPlantBox.py
 ```
-For CPlantBox with _dumux-rosi_, download and run the Python file "installDumuxRosi_Ubuntu.py" (the file is based on the DuMu$^x$ installation file).
+For CPlantBox with _dumux-rosi_, download and run the Python file "installDumuxRosi_Ubuntu.py" (the file is based on the DuMu<sup>x</sup> installation file).
 ```bash
 sudo apt-get update
 sudo apt-get upgrade
