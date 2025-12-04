@@ -6,8 +6,9 @@ import visualisation.vtk_plot as vp
 import numpy as np
 
 mycp = pb.MycorrhizalPlant(1)
-path = "../../modelparameter/structural/rootsystem/"
-name = "Glycine_max_Moraes2020"
+path = "tomatoparameters/"
+name = "TomatoJohanna_WildType"
+
 # name = "Heliantus_Pagès_2013"
 
 animation = False
@@ -29,7 +30,7 @@ mycp.setOrganRandomParameter(hyphae_parameter)
 
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
-    rp.hyphalEmergenceDensity = 0
+    rp.hyphalEmergenceDensity = 1
     rp.highresolution = 0
     if local:
         rp.f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
@@ -40,19 +41,19 @@ mycp.initialize(True)
 # print(mycp.toString())
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-simtime = 10
+simtime = 100
 fps = 1
-anim_time = 10
+anim_time = 100
 N = fps * anim_time
 dt = simtime / N
 
-# filename = "infection_" + str(simtime)
-# if animation:
-#     filename = "animation"
-# if not local:
-#     filename = filename + "_dispersed"
-# else:
-#     filename = filename + "_local"
+filename = "infection_" + str(simtime)
+if animation:
+    filename = "animation"
+if not local:
+    filename = filename + "_dispersed"
+else:
+    filename = filename + "_local"
 
 
 if animation:
@@ -68,7 +69,7 @@ else:
     for i in range(0, N):
         print('step',i, '/',N)
         mycp.simulate(dt, False)
-    
+    vp.plot_plant(mycp, "organType")  
 #     print('done')
     
 #     ana = pb.SegmentAnalyser(mycp)
@@ -77,6 +78,6 @@ else:
 #     pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
 #     vp.plot_roots(ana, "infection")
 #     # vp.plot_roots(ana, "infectionTime")
-#     # vp.plot_plant(mycp, "organType")
+#     # 
 #     ana.write(filename + ".vtp", ["radius", "subType", "creationTime","organType"])# "infection", "infectionTime",
 
