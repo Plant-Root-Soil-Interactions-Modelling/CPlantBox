@@ -107,7 +107,10 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     auto organs = getOrgans();
     abs2rel();
     Organism::simulate(dt, verbose);
-    addTree();
+    sdf = std::make_shared<SDF_RootSystem>(*this);
+    sdf->selectedOrganType = Organism::ot_hyphae;
+
+    // buildAnastomosisTree();
     simulateAnastomosis();
     // sdfs = {};
     // buildAnastomosisTree();
@@ -144,46 +147,44 @@ void MycorrhizalPlant::simulateAnastomosis() {
     // auto numberofHyphae2 = hyphae.size();
     // std::cout<< numberofHyphae << " "<< numberofHyphae2 <<std::endl;
     double dist = 1000;
-    Vector3d closestNode;
+    // Vector3d closestNode;
+    
 
-    // TODO could make this easier by not iterating through hyphae directly but through the vector i.e. safe position in vector.
     for (const auto & h : hyphae) {
-        auto tip = h->getNode(h->getNumberOfNodes()-1);
+        sdf->excludeTreeId = h->getParameter("hyphalTreeIndex");
+        if (h->isActive()) {
+            auto tip = h->getNode(h->getNumberOfNodes()-1);
 
-        // for (auto sdf : sdfs) // TODO Problem! have to make box every time and run search every time. for every sdf and we do not know how the particle id relates to node ids
-        // {
-        //     double distfromsdf = sdf.getDist(tip); 
-            
-        //     if ( distfromsdf > 0 && distfromsdf < dist) {
-        //         dist = distfromsdf;
-        //         closestNode = sdf.getDistVec(tip);
-        //     }
-        // }
+            dist = sdf->getDist(tip);
+            // std::cout<<h->getParameter("distTH") << std::endl;
+            // std::cout<<"Distance to nearest hyphae from tip " << tip.toString() << " is " << dist << " cm." << std::endl;
 
-        bool notsame = abs(closestNode.x - tip.x) > 1e-6 || abs(closestNode.y - tip.y) > 1e-6 || abs(closestNode.z - tip.z) > 1e-6;
-        bool notnull = closestNode.x != 0.  || closestNode.y != 0. || closestNode.z != 0.;
+            if (dist < h->getParameter("distTH"))
+            {
+                auto distID = sdf->distIndex;
+                std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance id: " << distID << std::endl;
+                std::cout<< "OrganID: " << h->getId() << " SDF" << sdf->treeIds_.at(distID)<< std::endl;
+                // std::cout <<"Node for Anastomosis: " << closestNode.toString() << std::endl;
 
-        if (dist < h->getParameter("distTH") && notnull && notsame)
-        {
-            std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance: " << dist << std::endl;
-            std::cout <<"Node for Anastomosis: " << closestNode.toString() << std::endl;
+                // for (const auto & hh : hyphae)
+                // {
 
-            // for (const auto & hh : hyphae)
-            // {
-
-            //     auto nodes = hh->getNodes();
-            //     for (const auto & n : nodes)
-            //     {
-            //         if (n == closestNode)
-            //         {
-            //             std::cout<< "Found the closes node!" << std::endl;
-            //         }
+                //     auto nodes = hh->getNodes();
+                //     for (const auto & n : nodes)
+                //     {
+                //         if (n == closestNode)
+                //         {
+                //             std::cout<< "Found the closes node!" << std::endl;
+                //         }
+                        
+                //     }
                     
-            //     }
+                // }
                 
-            // }
-            
+            }
         }
+
+        
         
     }
     
@@ -280,74 +281,74 @@ void MycorrhizalPlant::initCallbacks() {
 }
 
 
-void MycorrhizalPlant::addTree() {
-    // TODO adapt from exudation model or push to hyphae???
-        auto hyphae = this->getOrgans(Organism::ot_hyphae);
+// void MycorrhizalPlant::addTree() {
+//     // TODO adapt from exudation model or push to hyphae???
+//         auto hyphae = this->getOrgans(Organism::ot_hyphae);
 
-        for (const auto& h : hyphae) {
-            if (h->getNumberOfNodes()>1) { // started growing
-                // time when the root stopped growing
-                // root tip
-                Vector3d t = h->getNode(h->getNumberOfNodes()-1);
-                tips.push_back(t);
-                // // direction towards root base
-                // Vector3d base = h->getNode(0);
-                // double a = h->getNodeCT(h->getNumberOfNodes()-1) - h->getNodeCT(0);
-                // v.push_back(base.minus(t).times(1./a));
-            }
-            // sdfs.push_back(SDF_RootSystem(*(std::dynamic_pointer_cast<Hyphae>(h)), h->getParameter("dx")));
+//         for (const auto& h : hyphae) {
+//             if (h->getNumberOfNodes()>1) { // started growing
+//                 // time when the root stopped growing
+//                 // root tip
+//                 Vector3d t = h->getNode(h->getNumberOfNodes()-1);
+//                 // tips.push_back(t);
+//                 // // direction towards root base
+//                 // Vector3d base = h->getNode(0);
+//                 // double a = h->getNodeCT(h->getNumberOfNodes()-1) - h->getNodeCT(0);
+//                 // v.push_back(base.minus(t).times(1./a));
+//             }
+//             // sdfs.push_back(SDF_RootSystem(*(std::dynamic_pointer_cast<Hyphae>(h)), h->getParameter("dx")));
 
-        }
-}
+//         }
+// }
 
-void MycorrhizalPlant::buildAnastomosisTree() {
-    auto hyphae = this->getOrgans(Organism::ot_hyphae);
-    std::vector<Vector3d> nodes;
-    std::vector<Vector2i> segments;
-    std::vector<double> radii;
-    double dx_;
-    for (const auto& h : hyphae) {
-        for (unsigned int i=0; i < h->getNumberOfNodes(); i++) {
-            dx_ = h->getParameter("dx");
-            Vector3d pos = h->getNode(i);
-            nodes.push_back(pos);
-            segments.push_back(Vector2i(i,i+1));
-            radii.push_back(h->getParameter("a"));
+// void MycorrhizalPlant::buildAnastomosisTree() {
+//     auto hyphae = this->getOrgans(Organism::ot_hyphae);
+//     std::vector<Vector3d> nodes;
+//     std::vector<Vector2i> segments;
+//     std::vector<double> radii;
+//     double dx_;
+//     for (const auto& h : hyphae) {
+//         for (unsigned int i=0; i < h->getNumberOfNodes(); i++) {
+//             dx_ = h->getParameter("dx");
+//             Vector3d pos = h->getNode(i);
+//             nodes.push_back(pos);
+//             segments.push_back(Vector2i(i,i+1));
+//             radii.push_back(h->getParameter("a"));
             
-            // tree.insertParticle(h->getNodeId(i), posVec, radius);
-            localNodes.push_back(i);
-            localHyphae.push_back(std::dynamic_pointer_cast<Hyphae>(h));
-        }
-    }
-    sdf = SDF_RootSystem(nodes,segments,radii,dx_);
-}   
+//             // tree.insertParticle(h->getNodeId(i), posVec, radius);
+//             localNodes.push_back(i);
+//             localHyphae.push_back(std::dynamic_pointer_cast<Hyphae>(h));
+//         }
+//     }
+//     sdf = SDF_RootSystem(nodes,segments,radii,dx_);
+// }   
 
-void MycorrhizalPlant::updateAnastomosisTree(double dt) {
-    // tree = aabb::Tree();
-    double currentSimTime = this->getSimTime();
-    double previousSimTime = currentSimTime - dt;
-    Vector3d pos;
-    std::vector<double> posVec;
-    double radius;
-    double creationTime;
+// void MycorrhizalPlant::updateAnastomosisTree(double dt) {
+//     // tree = aabb::Tree();
+//     double currentSimTime = this->getSimTime();
+//     double previousSimTime = currentSimTime - dt;
+//     Vector3d pos;
+//     std::vector<double> posVec;
+//     double radius;
+//     double creationTime;
 
-    auto hyphae = this->getOrgans(Organism::ot_hyphae);
-    for (const auto& h : hyphae) {
-        for (unsigned int i=0; i < h->getNumberOfNodes(); i++) {
-            pos = h->getNode(i);
-            posVec = {pos.x, pos.y, pos.z};
-            radius = h->getParameter("a");
-            creationTime = h->getNodeCT(i);
-            if (creationTime <= currentSimTime && creationTime > previousSimTime) {
-                // node is new if creation time is within current sim time and sim time - dt
-                tree.insertParticle(h->getNodeId(i), posVec, radius);
-            } else {
-                tree.updateParticle(h->getNodeId(i), posVec, radius);
-            }
-        }
-    }
-    tree.rebuild();
-}
+//     auto hyphae = this->getOrgans(Organism::ot_hyphae);
+//     for (const auto& h : hyphae) {
+//         for (unsigned int i=0; i < h->getNumberOfNodes(); i++) {
+//             pos = h->getNode(i);
+//             posVec = {pos.x, pos.y, pos.z};
+//             radius = h->getParameter("a");
+//             creationTime = h->getNodeCT(i);
+//             if (creationTime <= currentSimTime && creationTime > previousSimTime) {
+//                 // node is new if creation time is within current sim time and sim time - dt
+//                 tree.insertParticle(h->getNodeId(i), posVec, radius);
+//             } else {
+//                 tree.updateParticle(h->getNodeId(i), posVec, radius);
+//             }
+//         }
+//     }
+//     tree.rebuild();
+// }
 
 unsigned int MycorrhizalPlant::getDistTree(unsigned int p, Vector3d  tip, double dist) {
     

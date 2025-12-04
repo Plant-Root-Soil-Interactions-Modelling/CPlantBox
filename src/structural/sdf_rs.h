@@ -39,7 +39,7 @@ public:
 
     virtual double getDist(const Vector3d& p) const override;
 
-    Vector3d getDistVec(const Vector3d& p) const;
+    // Vector3d getDistVec(const Vector3d& p) const;
 
     virtual std::string toString() const override { return "SDF_RootSystem"; }
 
@@ -47,12 +47,12 @@ public:
     std::vector<Vector2i> segments_;
     std::vector<double> radii_;
     std::vector<int> organTypes_;
-    std::vector<int> organIds_;
+    std::vector<int> treeIds_;
     std::vector<std::weak_ptr<Organ>> segO;
     double dx_;
 
     int selectedOrganType = -1; // getDist will compare only to this organTypes, -1 for all
-    int excludeOrganId = -1; // getDist will exclude this Organ from the search (only if selectedOrganType >=0)
+    int excludeTreeId = -1; // getDist will exclude this hyphal tree from the search (only if selectedOrganType >=0)
     mutable int distIndex = -1; // last segment index of getDist call, -1 if
 
 protected:
@@ -107,9 +107,9 @@ SDF_RootSystem::SDF_RootSystem(const Organism& plant, double dx): dx_(dx) {
     organTypes_.reserve(vd.size());
     std::transform(vd.begin(), vd.end(), organTypes_.begin(),
                    [](double x) { return static_cast<int>(x); });
-    vd = ana.getParameter("organIds");
-    organIds_.reserve(vd.size());
-    std::transform(vd.begin(), vd.end(), organIds_.begin(),
+    vd = ana.getParameter("hyphalTreeIndex");
+    treeIds_.reserve(vd.size());
+    std::transform(vd.begin(), vd.end(), treeIds_.begin(),
                    [](double x) { return static_cast<int>(x); });
     segO = ana.segO; // weak pointer to the organ containing the segment
     buildTree();
@@ -165,13 +165,13 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
 				distIndex = i;
 			}
         } else {
-        	if (excludeOrganId == -1) {
+        	if (excludeTreeId == -1) {
 				if ((l < mdist) && (selectedOrganType == organTypes_[i]))  {
 					mdist = l;
 					distIndex = i;
 				}
         	} else {
-				if ((l < mdist) && (selectedOrganType == organTypes_[i]) && (excludeOrganId != organIds_[i]))  {
+				if ((l < mdist) && (selectedOrganType == organTypes_[i]) && (excludeTreeId != treeIds_[i]))  {
 					mdist = l;
 					distIndex = i;
 				}
@@ -184,51 +184,51 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
 }
 
 
-Vector3d SDF_RootSystem::getDistVec(const Vector3d& p) const {
+// Vector3d SDF_RootSystem::getDistVec(const Vector3d& p) const {
 
-    std::vector<double> a = { p.x-dx_, p.y-dx_, p.z-dx_ };
-    std::vector<double> b = { p.x+dx_, p.y+dx_, p.z+dx_ };
-    aabb::AABB box = aabb::AABB(a,b);
-    double mdist = 1e100; // far far away
-    auto indices = tree.query(box);
-    Vector3d distVec;
-    // std::cout << indices.size() << " segments in range\n";
-    for (int i : indices) {
+//     std::vector<double> a = { p.x-dx_, p.y-dx_, p.z-dx_ };
+//     std::vector<double> b = { p.x+dx_, p.y+dx_, p.z+dx_ };
+//     aabb::AABB box = aabb::AABB(a,b);
+//     double mdist = 1e100; // far far away
+//     auto indices = tree.query(box);
+//     Vector3d distVec;
+//     // std::cout << indices.size() << " segments in range\n";
+//     for (int i : indices) {
 
-        Vector3d x1 = nodes_[segments_[i].x];
-        Vector3d x2 = nodes_[segments_[i].y];
-        Vector3d v = x2.minus(x1);
-        Vector3d w = p.minus(x1);
+//         Vector3d x1 = nodes_[segments_[i].x];
+//         Vector3d x2 = nodes_[segments_[i].y];
+//         Vector3d v = x2.minus(x1);
+//         Vector3d w = p.minus(x1);
 
-        double c1 = v.times(w);
-        double c2 = v.times(v);
+//         double c1 = v.times(w);
+//         double c2 = v.times(v);
 
-        double l;
-        Vector3d tempdistVec;
-        if (c1<=0) {
-            l = w.length();
-            tempdistVec = x1;
-        } else if (c1>=c2) {
-            l = p.minus(x2).length();
-            tempdistVec = x2;
-        } else {
-            l = p.minus(x1.plus(v.times(c1/c2))).length();
-            if (p.minus(x1).length() < p.minus(x2).length()) {
-                tempdistVec = x1;
-            } else {
-                tempdistVec = x2;
-            }
-        }
-        l -= radii_[i];
+//         double l;
+//         Vector3d tempdistVec;
+//         if (c1<=0) {
+//             l = w.length();
+//             tempdistVec = x1;
+//         } else if (c1>=c2) {
+//             l = p.minus(x2).length();
+//             tempdistVec = x2;
+//         } else {
+//             l = p.minus(x1.plus(v.times(c1/c2))).length();
+//             if (p.minus(x1).length() < p.minus(x2).length()) {
+//                 tempdistVec = x1;
+//             } else {
+//                 tempdistVec = x2;
+//             }
+//         }
+//         l -= radii_[i];
 
-        if (l < mdist) {
-            mdist = l;
-            distVec = tempdistVec;
-        }
+//         if (l < mdist) {
+//             mdist = l;
+//             distVec = tempdistVec;
+//         }
 
-    }
-    return distVec;
-}
+//     }
+//     return distVec;
+// }
 
 } // namespace
 

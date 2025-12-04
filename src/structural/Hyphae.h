@@ -41,6 +41,8 @@ public:
     double calcLength(double age); ///< analytical length of the root
     double calcAge(double length) const; ///< analytical age of the root
 
+    int hyphalTreeIndex;
+
     /* Abbreviations */
     std::shared_ptr<HyphaeRandomParameter> getHyphaeRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const HyphaeSpecificParameter> param() const; ///< root parameter

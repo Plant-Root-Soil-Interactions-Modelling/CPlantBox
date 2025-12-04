@@ -2,6 +2,7 @@
 #include "Hyphae.h"
 #include "MycorrhizalRoot.h"
 #include "mycorrhizalrootparameter.h"
+#include "MycorrhizalPlant.h"
 #include "Root.h"
 #include "Stem.h"
 #include "Leaf.h"
@@ -58,6 +59,8 @@ Hyphae::Hyphae(std::shared_ptr<Organism> rs, int type,  double delay, std::share
     this->partialIHeading = Vector3d::rotAB(theta,beta);
     double creationTime= parent->getNodeCT(pni)+delay;//default
     addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
+    std::shared_ptr<MycorrhizalPlant> mp = std::dynamic_pointer_cast<MycorrhizalPlant>(rs);
+    hyphalTreeIndex = mp->getNextHyphalTreeIndex();
 }
 
 /**
@@ -230,6 +233,7 @@ double Hyphae::getParameter(std::string name) const
         if (name=="b") { return param()->b; } // Branching rate [1 day-1]
         if (name=="hlt") { return param()->hlt; } // Hyphal life time [day]
         if (name=="theta") { return param()->theta; } // Branching angle [rad]
+        if (name=="hyphalTreeIndex") { return hyphalTreeIndex; } // Hyphal tree index [-]
     return Organ::getParameter(name); // pass to base class
 }
 

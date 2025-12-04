@@ -35,18 +35,19 @@ namespace CPlantBox {
 
         // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
         void initCallbacks() override;
-        void addTree(); // AABB tree
+        // void addTree(); // AABB tree
 
-        std::vector<Vector3d> tips;
-        SDF_RootSystem sdf; // direction from tip towards root base
+        int getNextHyphalTreeIndex() { hyphalTreeIndex++; return hyphalTreeIndex; } 
+        // std::vector<Vector3d> tips;
+        std::shared_ptr<SDF_RootSystem> sdf; // direction from tip towards root base
 
         aabb::Tree tree = aabb::Tree(); // aabb tree for anastomosis
         
         std::vector<int> localNodes;
         std::vector<std::shared_ptr<Hyphae>> localHyphae;
-
-        void buildAnastomosisTree();
-        void updateAnastomosisTree(double dt);
+        int hyphalTreeIndex = -1;
+        // void buildAnastomosisTree();
+        // void updateAnastomosisTree(double dt);
         unsigned int getDistTree(unsigned int p,Vector3d  tip, double dist);
 
     };
