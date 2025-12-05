@@ -71,6 +71,10 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
                 # print(f, st, ot)
                 f(*params, st, ot)
 
+    def set_kr_suberize_dependent(self, kr):
+        """ sets a constant radial conductivity [1 day-1] for roots for a suberization level"""
+        self.setKrSuberized(kr)
+        
     def set_kr_const(self, kr, subType = -1, organType = int(pb.OrganTypes.root)):
         """ sets a constant radial conductivity [1 day-1] for roots for a subTypes (default: all 0-9) and organTypes (default: roots)"""
         self.set_flexible_(self.setKrConst, (kr,), subType, organType)

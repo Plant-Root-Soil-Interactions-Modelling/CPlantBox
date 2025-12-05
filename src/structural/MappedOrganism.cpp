@@ -594,7 +594,7 @@ void MappedPlant::initialize_(bool verbose, bool lengthBased) {
     reset(); // just in case (Plant::reset()) (careful, MappedPlant cannot reset, yet)
 	auto stemP = getOrganRandomParameter(Organism::ot_stem);
 	bool plantBox = stemP.size()>1; // prototype + a real parameter definition
-	if ((extraNode == -1) && (plantBox)) {
+	if (true){//(extraNode == -1) && (plantBox)) {
 		disableExtraNode(); // no meed for additional node to create the artificial stem
 	} else {
 	    enableExtraNode();
@@ -717,6 +717,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 	segVol.resize(newsegO.size()+shift);
 	bladeLength.resize(newsegO.size()+shift);
 	leafBladeSurface.resize(newsegO.size()+shift);
+	lignStatus.resize(newsegO.size()+shift);
 	this->segO.resize(newsegO.size()+shift);
 	c = 0;
 	if (verbose) {
@@ -741,6 +742,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 		radii.at(segIdx) = so->getRadius(local_segIdx);
 		organTypes.at(segIdx) = so->organType();
 		subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
+        lignStatus.at(segIdx) = so->lignificationStatus();
 		this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment
 
 		if (organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape

@@ -2,16 +2,26 @@
 Wrapper for MappedPlant, MappedSegments, or MappedOrganism 
 to add functionality that is easier implemented in Python 
 """
+import sys; sys.path.append(".."); sys.path.append("../..");
+sys.path.append("../rsml");
 import numpy as np
 from scipy import sparse
+from plantbox import MappedPlant
 
+import plantbox as pb
+from plantbox import Plant
+from rsml.rsml_data import RsmlData
+import rsml.rsml_reader as rsml_reader
 
-class MappedPlantPython():
+import numpy as np
 
-    def __init__(self, ms):
-        """ @param ms (MappedPlant, MappedSegments, or MappedOrganism) to be wrapped """
-        self.ms = ms
-
+class MappedPlantPython(MappedPlant):
+    def __init__(self, seed_num = 0):
+        super().__init__(seed_num)
+        self.static_organs = {}
+        self.data = None  # RsmlData
+        
+            
     def toNumpy(self,cpbArray):
         """ converts the cpbArray to a numpy array """
         return np.array(list(map(lambda x: np.array(x), cpbArray)))
@@ -185,4 +195,226 @@ class MappedPlantPython():
                 matrix2soil[soil2matrix[i]] = i
 
         return B, soil2matrix, matrix2soil
+
+
+    def get_nodes(self):
+        """ converts the list of Vector3d to a 2D numpy array """
+        return np.array(list(map(lambda x: np.array(x), self.getNodes())))
+
+    def get_segments(self):
+        """ converts the list of Vector2i to a 2D numpy array """
+        return np.array(list(map(lambda x: np.array(x), self.getSegments())), dtype = np.int64)
+        
+    def plot_rsml_(self, polylines:list, prop:list):
+        """Plots the polylines in y-z axis with colors given by a root property
+    
+        Args:
+        polylines(list): flat list of polylines, one polyline per root 
+        prop(list): a single property, list of scalar value, on per root 
+        """
+        f = matplotlib.colors.Normalize(vmin = min(prop), vmax = max(prop))
+        cmap = plt.get_cmap("jet", 256)
+        for i, pl in enumerate(polylines):
+            nodes = np.array(pl)
+            plt.plot(nodes[:, 1], nodes[:, 2], color = cmap(f(prop[i])))
+        plt.axis('equal')
+        plt.show()
+
+    def polyline_length_(self, i0, i1, poly):
+        """ length of poly between two indices i0 and i1 """
+        l = 0.
+        for i in range(i0, i1):
+            l += np.linalg.norm(np.array(poly[i]) - np.array(poly[i + 1]))
+        return l
+            
+    def initialize_static(self, rsml_file, initial_sub_types):
+        """ uses initial_sub_types of the rsml_file as a static initial root system, 
+        called instead of initialize(), initializeLB(), or initializeDB() """
+
+        self.reset()  # resets plant
+
+        # 1. Open the RSML file
+        self.data = RsmlData()
+        self.data.open_rsml(rsml_file)
+        radii, et, types, tag_names, _, _ = rsml_reader.get_root_parameters(self.data.polylines, self.data.functions, self.data.properties)
+        # types = self.data.properties[self.data.tagnames[2]]  # e.g 'order'
+        # print(self.data.tagnames)
+        # print(self.data.properties.keys(), len(self.data.polylines))
+
+        seed = pb.Seed(self)
+
+        # 2. Parse rsml, create self.static_organs
+        
+        parent_id = {}
+        static_polys, static_types = [], []
+        for i, root in enumerate(self.data.polylines):
+            if types[i] in initial_sub_types:
+                rp = self.getOrganRandomParameter(2, types[i])
+                parent_id = self.data.properties["parent-poly"][i]
+                pni = self.data.properties["parent-node"][i]
+
+                length = self.polyline_length_(0, len(root) - 1, root)
+                a = np.mean(radii[i])
+                a_gr = rp.a_gr
+                # print(a, len(radii[i]))
+                r = 1.e6  # planted initially, and static
+                lb = 0  # length of basal zone
+                theta = 0  # insertion angle
+                rlt = 1.e10  # root life time
+                ln_ = []
+                laterals = False
+                if types[i] > 0:
+                    p_survive = self.rand()
+                    rlt_winter = rp.lambda_survive * ((-np.log(p_survive))**(1/rp.k_survive)) * 1225. # (25. + 10. * max(min(self.randn(),1.),-1.)) * 1225. #rp.lambda_survive * ((-np.log(rp.p_survive))**(1/rp.k_survive)) * 1225.
+                else:
+                    rlt_winter = 200. * 1225.
+                print('rlt_winter',rlt_winter/1225)
+                param = pb.RootSpecificParameter(types[i], lb, length, ln_, r, a, theta, rlt, laterals, a_gr, rlt_winter)  ############## which subType
+                
+                id = self.getOrganIndex()  # next index
+                organ = pb.StaticRoot(id, param, length, pni)
+
+                organ.setOrganism(self)  # needed for adding nodes
+                self.static_organs[i] = organ
+
+                static_polys.append(self.data.polylines[i])  # for debugging
+                static_types.append(types[i])
+
+        # self.plot_rsml_(static_polys, static_types)
+
+        # 3. Add geometry
+        for i, root in enumerate(self.data.polylines):
+            # print("root", i, ":", len(self.data.polylines[i]), self.data.polylines[i])
+            if types[i] in initial_sub_types:
+                parent_id = self.data.properties["parent-poly"][i]
+                pni = self.data.properties["parent-node"][i]
+                organ = self.static_organs[i]
+                if parent_id >= 0:
+                    # print(i, "parent", parent_id, "pni", pni)
+                    parent = self.static_organs[parent_id]
+                    organ.addNode(parent.getNode(pni), parent.getNodeId(pni), 0.)
+                    # print(self.data.polylines[parent_id][pni])
+                for node in self.data.polylines[i]:
+                    organ.addNode(pb.Vector3d(node), 0.)
+
+        # 4. Create topology of static roots
+        for i, root in enumerate(self.data.polylines):
+            if types[i] in initial_sub_types:
+                parent_id = self.data.properties["parent-poly"][i]
+                organ = self.static_organs[i]
+                try:
+                    parent = self.static_organs[parent_id]
+                    # organ.setParent(parent)  # actually in addChild
+                    parent.addChild(organ)
+                    # print("Added", i, "to parent", parent_id)
+                except:
+                    print("PlantPython: initialize_static(): organ", i, "has no parent", parent_id)
+                    seed.addChild(self.static_organs[0])
+        self.addOrgan(seed)
+
+        # 4. The CPlantBox part
+        # seed.initialize() # not called i.e. no tap root or basal roots are created
+        self.oldNumberOfNodes = self.getNumberOfNodes()
+        self.initCallbacks()
+
+    def set_identical_laterals(self, initial_sub_types, lateral_subtypes, emerge_type):
+        """ places laterals as in the original rsml, all start growing at once 
+        
+        initial_sub_types             subTypes of the initial static root system 
+        lateral_subtypes              subTypes of the laterals wihtin the RSML
+        emerge_type                   subType of the model lateral (todo: could be probabilistic)        
+        """
+        # where we add laterals on tope of the statics
+        add_to_statics = np.array(initial_sub_types)[np.isin(initial_sub_types, lateral_subtypes)]
+        ld = [] #lni, lt, , [], []
+        ld1 = []
+        types = self.data.properties[self.data.tagnames[2]]
+        # print('types', types)
+        for i, root in enumerate(self.data.polylines):
+            if types[i] in lateral_subtypes:
+                parent_id = self.data.properties["parent-poly"][i]
+                # print('types[i]',types[i], 'types[parent_id]',types[parent_id], types[parent_id] in initial_sub_types)
+                if types[parent_id] in initial_sub_types:
+                    pni_init = self.data.properties["parent-node"][i] + 1 # why + 1?
+                    parent = self.static_organs[parent_id]
+                    pr = parent.getOrganRandomParameter()
+                    init_num_kids = parent.getNumberOfChildren()  
+                    #print('latId', parent.param().subType, pr.successorNo[0] , init_num_kids)
+                    ##
+                    # every time it sees a root in the rsml file, it will add pr.successorNo[0] laterals
+                    ##
+                    for latId in range(pr.successorNo[0] ):#(pr.successorNo[0] - init_num_kids)):
+                        #print('in latid', latId)
+                        pni = pni_init
+                        creation_time = abs(self.randn() * pr.ldelays) # switch to rand?
+                        # delay_mean = 0.
+                        for kid_id in range(init_num_kids):
+                            
+                            kid = parent.getChild(kid_id)
+                            if (kid.parentNI + 1 == pni) and (kid.getParameter('subType') == types[i]) and (np.isin(types[i], add_to_statics)):
+                                # delay_mean = kid.getParameter('rlt_winter') 
+                                creation_time = self.rand() * pr.ldelays
+                                #creation_time = abs( (max(min(self.randn(),3.),-3.) / 3)* pr.ldelays) # delay_mean +
+                                #print('delay1', creation_time, delay_mean,pr.ldelays,(max(min(self.randn(),3.),-3.) / 3),(max(min(self.randn(),3.),-3.) / 3))
+                                ld1.append(creation_time)
+                                pni -= 1
+                                break
+                                
+                        #parent.getLatGrowthDelay()
+                        # print('creation_time',creation_time,
+                                # pr.successorOT,
+                                # pr.successorST,
+                                # pr.successorNo,
+                                # pr.successorP,
+                                # pr.successorP_age)
+                        p_idx = 0#pr.getLateralType(pb.Vector3d(), 0, # ruleID: assumed to be 0 here
+                        #                            creation_time)
+                        #print('addlat','parent_st', parent.param().subType, 'kid_st' , pr.successorST[0][p_idx], 'pni',  pni)
+                        if(p_idx >=0) :
+                            emerge_type_ = pr.successorST[0][0][p_idx]
+                            parent.addLateral(pni, emerge_type_, creation_time)
+                            parent.param().laterals = True
+                            # lt.append(emerge_type_)
+                            # print("Root", i, ":", parent_id, pni, emerge_type, creation_time)
+                        # else:
+                        #    lt.append(p_idx)
+                        ld.append(creation_time)
+                        
+        return ld, ld1
+
+    def initialize_static_laterals(self):
+        """ Creates lateral root instances from static roots lateralDelays, lateralTypes, and lateralDelays """
+        for organ in self.static_organs.values():
+            organ.initializeLaterals()
+            # numKids = organ.getNumberOfChildren()
+            # print('organ', organ.param().subType )
+            # for numKid in range(numKids):
+                # pr = organ.getChild(numKid).getOrganRandomParameter()
+                # ps = organ.getChild(numKid).param()
+                # print(ps.getK(),ps.subType)
+            # raise Exception
+
+    def analyse_laterals(self, initial_sub_types, lateral_subtypes):
+        """ prints emergence points of laterals (for debugging)"""
+        print("Plant.analyse_laterals()")
+        laterals, tip_laterals = {}, {}
+        types = self.data.properties[self.data.tagnames[2]]
+        for i, root in enumerate(self.data.polylines):
+            if types[i] in lateral_subtypes:
+                parent_id = self.data.properties["parent-poly"][i]
+                if types[parent_id] in initial_sub_types:
+                    pni = self.data.properties["parent-node"][i]
+                    if parent_id in laterals:
+                        laterals[parent_id].append(i)
+                    else:
+                        laterals[parent_id] = [i]
+                    tip_lateral = pni == len(self.data.polylines[parent_id]) - 1
+                    if tip_lateral:
+                        if parent_id in tip_laterals:
+                            tip_laterals[parent_id].append(i)
+                        else:
+                            tip_laterals[parent_id] = [i]
+                    print("Id", i, "subType", types[i], "parent", parent_id, "parent subType", types[parent_id], "at node index", pni, "located at tip", tip_lateral)
+
+        return laterals, tip_laterals
 

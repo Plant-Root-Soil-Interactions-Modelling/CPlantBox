@@ -37,6 +37,7 @@ class XylemFluxPython(XylemFlux):
         """ @param rs is either a pb.MappedRootSystem, pb.MappedSegments, or a string containing a rsml filename"""
         if isinstance(rs, str):
             rs = self.read_rsml(rs)
+            print('my type is',rs)
             super().__init__(rs)
         else:
             super().__init__(rs)

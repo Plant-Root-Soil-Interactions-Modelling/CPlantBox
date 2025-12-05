@@ -301,6 +301,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("successorP_age", &OrganRandomParameter::successorP_age)
             .def_readwrite("ldelay", &OrganRandomParameter::ldelay)
             .def_readwrite("ldelays", &OrganRandomParameter::ldelays)
+            .def_readwrite("ldelay_v", &OrganRandomParameter::ldelay_v)
+            .def_readwrite("ldelays_v", &OrganRandomParameter::ldelays_v)
             .def_readwrite("plant",&OrganRandomParameter::plant)
             .def_readwrite("f_gf", &OrganRandomParameter::f_gf)
             .def_readwrite("f_tf", &OrganRandomParameter::f_tf);
@@ -357,7 +359,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getiHeading0", &Organ::getiHeading0)
             .def("lignificationStatus", &Organ::lignificationStatus)
             .def("getLatGrowthDelay",(double (Organ::*)(int ot_lat, int st_lat, double dt, double growthDelay)) &Organ::getLatGrowthDelay)
-            .def("getLatGrowthDelay",(double (Organ::*)() const) &Organ::getLatGrowthDelay)
+            .def("getLatGrowthDelay",(double (Organ::*)(int ruleId) const) &Organ::getLatGrowthDelay)
             .def_readwrite("parentNI", &Organ::parentNI);
 
     /*
@@ -1043,6 +1045,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def("setMode", &PlantHydraulicParameters::setMode)
             .def("setKrConst", &PlantHydraulicParameters::setKrConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root, py::arg("kr_length") = -1.)
+            .def("setKrSuberized", &PlantHydraulicParameters::setKrSuberized, py::arg("v"))
             .def("setKxConst", &PlantHydraulicParameters::setKxConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root)
             .def("setKrAgeDependent", &PlantHydraulicParameters::setKrAgeDependent, py::arg("age"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
             .def("setKxAgeDependent", &PlantHydraulicParameters::setKxAgeDependent, py::arg("age"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)

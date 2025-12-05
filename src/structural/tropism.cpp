@@ -54,7 +54,8 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
     double b = rand(nodeIdx)*2*M_PI;
     double v;
     double n_=n*sqrt(dx);
-    if (n_>0) {
+    double d = -1;//geometry.lock()->getDist(this->getPosition(pos,old,a,b,dx));
+    if ((n_>0)||((d>0)&&(o->organType()== Organism::ot_root))) {
         double dn = n_-floor(n_);
         if (rand(nodeIdx)<dn) {
             n_ = ceil(n_);
@@ -64,6 +65,8 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
         double bestA = a;
         double bestB = b;
         double bestV = this->tropismObjective(pos,old,a,b,dx,o);
+        //d = geometry.lock()->getDist(this->getPosition(pos,old,a,b,dx));
+        if((d>0)&&(o->organType()== Organism::ot_root)){n_ = std::max(n_,1.);};
         for (int i=0; i<n_; i++) {
             b = rand(nodeIdx)*2*M_PI;
             a = sigma*randn(nodeIdx)*sqrt(dx);
@@ -73,10 +76,15 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
                 bestA=a;
                 bestB=b;
             }
+            //d = geometry.lock()->getDist(this->getPosition(pos,old,a,b,dx));
+            if((d>0)&&(o->organType()== Organism::ot_root)&& (i<plant.lock()->betaN)){n_++;};
         }
         a = bestA;
         b = bestB;
     }
+    
+    //d = geometry.lock()->getDist(this->getPosition(pos,old,a,b,dx));
+    //if(d>0){throw std::runtime_error("Tropism::getUCHeading: d>0");}
     return Vector2d(a,b);
 }
 
@@ -136,6 +144,8 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
             }
 
         }
+    //d = geometry.lock()->getDist(this->getPosition(pos,old,a,b,dx));
+    //if(d>0){throw std::runtime_error("Tropism::getHeading: d>0");}
     }
     return Vector2d(a,b);
 }

@@ -125,7 +125,7 @@ public:
 	//virtual std::vector<double> getRadii() const;
 	virtual void survivalTest() {};
 	double getLatGrowthDelay(int ot_lat, int st_lat, double dt, double growthDelay);
-	double getLatGrowthDelay() const;
+	double getLatGrowthDelay(int ruleId) const;
 	
 	virtual int lignificationStatus() {return 0;};
 	

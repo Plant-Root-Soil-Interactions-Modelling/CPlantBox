@@ -23,7 +23,8 @@ from scipy.stats import gaussian_kde
 import time
 
 
-subtypes = 5
+subtypes_long = 5
+subtypes = 9
 years = 50
 ages = [i+1 for i in range(50)]
 
@@ -40,7 +41,39 @@ def compaireOutPuts(genotype, extra_name):
         
     with open('./results/outputSim/'+extra_name+'/'+ genotype   +'.pkl','rb') as f:
         output = pickle.load(f)
-        nums = [[[out['year'+str(year+1)]['num'][st] for year in range(50)] for st in range(6)] for out in output]
+        nums = [[[out['year'+str(year+1)]['num'][st] for year in range(50)] for st in range(subtypes)] for out in output]
+    
+    fig, axs = plt.subplots(2, 2, figsize=(12, 8))
+    for st_, ax in enumerate(axs.flat):
+        st = st_ + 5
+        for _, num in enumerate(nums):
+            if _ == 0:
+                ax.plot(ages, num[st], color='black', label = 'sim')
+            else:
+                ax.plot(ages, num[st], color='black')
+        ax.legend()
+        ax.grid()
+        ax.set_title(st+1)
+    fig.suptitle('Number of THIN roots per order--50yrs', fontsize=16)
+    plt.tight_layout()
+    plt.savefig("./results/part1/"+genotype+"/THINNum50"+ extra_name +".jpg")
+    plt.close()
+    print("did Number of THIN roots per order--50yrs")
+    
+    ratios = [[out['year'+str(year+1)]['ratio'] for year in range(50)] for out in output]
+    fig, ax = plt.subplots(1, 1, figsize=(10, 4))
+    for _, ratio in enumerate(ratios):
+        if _ == 0:
+            ax.plot(ages, ratio,  color='black', label = 'sim')
+        else:
+            ax.plot(ages, ratio,  color='black')
+    ax.plot([1,10,50], [0.05,0.8,0.8],  color='blue', label = 'objective')
+    ax.legend()
+    ax.grid()
+    fig.suptitle('fine:total root length ratio', fontsize=16)
+    plt.savefig("./results/part1/"+genotype+"/Ratio"+ extra_name +".jpg")
+    plt.close()
+    print("did Ratio")
     
     fig, axs = plt.subplots(2, 3, figsize=(12, 8))
     for st, ax in enumerate(axs.flat):
@@ -90,6 +123,8 @@ def compaireOutPuts(genotype, extra_name):
     plt.savefig("./results/part1/"+genotype+"/Num50"+ extra_name +".jpg")
     plt.close()
     print("did Number of roots per order--50yrs")
+    
+    
     
     lengths = [[[out['year'+str(year+1)]['length'][st-1] for year in range(50)] for st in range(1,subtypes)] for out in output]
     

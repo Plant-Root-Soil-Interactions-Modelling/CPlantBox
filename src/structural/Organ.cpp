@@ -761,7 +761,7 @@ void Organ::createLateral(double dt, bool verbose)
             {
 
                 const Vector3d& pos = nodes[nodes.size() - 1]; // att: won t work for organ with relative coordinates
-                double delay = getLatGrowthDelay();// forDelay*multiplyDelay
+                double delay = getLatGrowthDelay(i);// forDelay*multiplyDelay
 				double creation_time = nodeCTs[nodes.size() - 1] + delay;
                 std::vector<int> l_ids = rp->getLateralType(pos, i, creation_time);//if probabilistic branching
 
@@ -881,7 +881,7 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt, double growth
     }
     return growthDelay;
 }
-double Organ::getLatGrowthDelay() const //override for stems
+double Organ::getLatGrowthDelay(int ruleId) const //override for stems
 {
     auto rp = getOrganRandomParameter(); // rename
     double growthDelay = 0.; //store necessary variables to define lateral growth delay
@@ -894,7 +894,13 @@ double Organ::getLatGrowthDelay() const //override for stems
       {
 		  // same as dd_time_lat, only use rand() rather than randn
 		  // std::abs for if we start using randn again
-          growthDelay = std::max(rp->ldelay +std::abs( plant.lock()->rand())*rp->ldelays, 0.);
+            assert(rp->ldelays_v.size() == rp->ldelays_v.size() && "Organ::getLatGrowthDelay(): rp->ldelays_v.size() != rp->ldelays_v.size()");
+          if(rp->ldelays_v.size() > ruleId)
+          {
+              growthDelay = std::max(rp->ldelay_v.at(ruleId) +std::abs( plant.lock()->rand())*rp->ldelays_v.at(ruleId), 0.);
+          }else{
+              growthDelay = std::max(rp->ldelay +std::abs( plant.lock()->rand())*rp->ldelays, 0.);
+          }
 		  //std::cout<< "growthDelay " << growthDelay << std::endl;
           break;
       }

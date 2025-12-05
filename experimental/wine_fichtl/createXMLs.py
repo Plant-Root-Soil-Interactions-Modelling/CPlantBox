@@ -226,6 +226,7 @@ def create_xml(genotype):
     data.pparameters.Lmax_unsuberized = 5.
     data.pparameters.Lmax_suberized = 10.
     data.pparameters.delayDefinition = 4
+    data.pparameters.seedPos = pb.Vector3d(0.,0.,-10.)
 
     
     for ii, pp in enumerate(data.parameters):
@@ -258,7 +259,7 @@ def create_xml(genotype):
                     pp.r = r_4_min_st3 # pp.lmax * growth_beta[ii]
                 if ii == main:
                     pp.tropismT = 7
-                    pp.tropismN = 2  
+                    pp.tropismN = 0.5  
                     pp.tropismW1 = tropism[genotype][0] #0.85 #0.4 # gravitropism
                     pp.tropismW2 = tropism[genotype][1] # plagiotropism
             if ii == max(subsub):

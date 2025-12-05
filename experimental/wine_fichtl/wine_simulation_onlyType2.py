@@ -10,19 +10,15 @@ CPlantBox_dir =  "../.." # "/data2model_0807/CPlantBox"
 from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank(); max_rank = comm.Get_size()
 sys.path.append(CPlantBox_dir)
 sys.path.append( CPlantBox_dir+"/src")
-sys.path.append( CPlantBox_dir+"/gui/viewer")
 
 # sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import visualisation.vtk_plot as vp
-import viewer_conductivities
-from functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports}|
-from functional.PlantHydraulicModel import HydraulicModel_Meunier  # |\label{l42:imports_end}|
-
 
 import numpy as np
 from structural.Plant import PlantPython
+from structural.MappedOrganism import MappedPlantPython
 import matplotlib.pyplot as plt
 import copy
 import os
@@ -56,17 +52,6 @@ long_root_types = np.array([1,2,3,4,5])
 fine_root_types = np.array([6,7,8,9])
 subtypes = max(fine_root_types) #max(long_root_types)
 orders = {'main' : [2], 'sub' : [3], 'subsub' : [4,5]}
-
-
-kr =[viewer_conductivities.convert_radial(4.0e-7), 
-      viewer_conductivities.convert_radial(7.0e-8),
-      viewer_conductivities.convert_radial(4.0e-8)] # suberization status m s-1 MPa-1 => [1 / day]
-
-# for K in m4 s-1 MPa-1 => [cm3 / day]
-Kax_a =  {'B' : viewer_conductivities.convert_axial(0.04749), 
-          'D' : viewer_conductivities.convert_axial(0.1539), 
-          'E' : viewer_conductivities.convert_axial(0.02622)}
-Kax_b =  {'B' : 2.06437, 'D' : 2.2410, 'E' : 1.98847}
     
 def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
     start_time = time.time()
@@ -76,7 +61,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
 
     data_file = file_names[rep_input]
     reps = 1# len(file_names)
-    doVTP = False# (rep_input == 0)
+    doVTP = True# (rep_input == 0)
     for rep in range(reps):
         N = 50
         outputs_12 = {
@@ -106,7 +91,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
         
         
         soilSpace = pb.SDF_PlantContainer(1e6, 1e6,1e6, True)  # to avoid root growing aboveground
-        plant = PlantPython() # pb.MappedPlant() #
+        plant = MappedPlantPython() #PlantPython()
 
         # Open plant and root parameter from a file
         plant.readParameters( CPlantBox_dir + '/experimental/wine_fichtl/results/xmlFiles/' + genotype + "-wineV2.xml")
@@ -142,7 +127,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
             elif ii == 2:      
                 pp.ldelay_v  = [0,0]
                 pp.ldelays_v = [yr_to_BEDD , yr_to_BEDD*50] 
-                pp.successorNo = [1,no_thin] #[params['successorNo0']] 
+                pp.successorNo = [0,0] #[params['successorNo0']] 
                 pp.successorP = [ [[0.5],[0.5],[0.1]], thin_root_P] #, [0.1, 0]]#[[params['successorP0']]]
                 pp.successorST = [ [[ii + 1],[ii + 1],[ii + 1]], [[ii + 4],[ii + 4],[ii + 4]]] #[[ii + 1, ii + 4], [ii + 1, ii + 4]]
                 pp.successorOT = [ [[2],[2],[2]], [[2],[2],[2]]] 
@@ -151,6 +136,8 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
                 pp.lambda_survive = 9.426
                 pp.rlt_winter_max = 26.8 
                 pp.rlt_winter_min =  3.169
+                #pp.tropismW1 = 0.85 #0.85 #0.4 # gravitropism
+                #pp.tropismW2 = 1. - pp.tropismW1 # plagiotropism
                 pp.tropismN = 0.5  
             elif ii == 3:      
                 pp.ldelay_v  = [0,0]
@@ -230,8 +217,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
         # plt.show()
 
         plant.initialize_static_laterals()
-        plant.disableExtraNode()
-        #plant.betaN = 5000
+        plant.betaN = 5000
           
 
         all_real_lengths = []
@@ -246,15 +232,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
         dt = yr_to_BEDD  # ~1 yr
 
         if doVTP:
-            get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+"0", saveOnly = True)
-            
-            
-        param = PlantHydraulicParameters()
-        param.set_kr_suberize_dependent(kr)  
-        param.set_kx_radius_dependent(kx0[:, 0], kx0[:, 1], subType = [1, 4])
-        hm = HydraulicModel_Meunier(plant, param)
-            
-            
+            get3Dshape(plant,title_ = "./results/part1/vtp/"+extraName+'/'+genotype+"0", saveOnly = True)
         for i in range(N):
             print('age', i, end=", ", flush = True)
             plant.survivalTest()
@@ -321,12 +299,11 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
 
             # # get3Dshape(plant,title_ = 'wine'+str(i+1), saveOnly = True) 
             if doVTP:
-                get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+str(i+1), saveOnly = True)
+                get3Dshape(plant,title_ = "./results/part1/vtp/"+extraName+'/'+genotype+str(i+1), saveOnly = True)
                 
 
-            '''
-            SUF
-            '''
+            zzz = np.array([xyz[2] for xyz in plant.get_nodes()])
+            print('zzz[zzz > 0]',zzz[zzz > 0])
             
         # print('postprocessing')
         #print("--- %s seconds for plant development---" % (time.time() - start_time),rep)
@@ -422,6 +399,10 @@ if __name__ == '__main__':
     if rep == 0:
         directory ='./results/outputSim/'+extraName
         os.makedirs(directory, exist_ok=True)
+        print('create dirs',directory)
+        directory = "./results/part1/vtp/"+extraName
+        os.makedirs(directory, exist_ok=True)
+        print('create dirs',directory)
         
     with open(CPlantBox_dir + '/experimental/wine_fichtl/results/objectiveData/measurements'+ genotype +'InitXX.pkl','rb') as f:
         xx = pickle.load(f)

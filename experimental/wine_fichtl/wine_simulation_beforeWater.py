@@ -17,9 +17,6 @@ sys.path.append( CPlantBox_dir+"/gui/viewer")
 import plantbox as pb
 import visualisation.vtk_plot as vp
 import viewer_conductivities
-from functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports}|
-from functional.PlantHydraulicModel import HydraulicModel_Meunier  # |\label{l42:imports_end}|
-
 
 import numpy as np
 from structural.Plant import PlantPython
@@ -52,22 +49,6 @@ def get3Dshape(plant,title_ = 'wine', saveOnly = True):
     vp.plot_roots(ana, "subType",p_names = ['lignification','is_fine_root',"creationTime","id"] , win_title = title_, render = not saveOnly)
     
 
-long_root_types = np.array([1,2,3,4,5])
-fine_root_types = np.array([6,7,8,9])
-subtypes = max(fine_root_types) #max(long_root_types)
-orders = {'main' : [2], 'sub' : [3], 'subsub' : [4,5]}
-
-
-kr =[viewer_conductivities.convert_radial(4.0e-7), 
-      viewer_conductivities.convert_radial(7.0e-8),
-      viewer_conductivities.convert_radial(4.0e-8)] # suberization status m s-1 MPa-1 => [1 / day]
-
-# for K in m4 s-1 MPa-1 => [cm3 / day]
-Kax_a =  {'B' : viewer_conductivities.convert_axial(0.04749), 
-          'D' : viewer_conductivities.convert_axial(0.1539), 
-          'E' : viewer_conductivities.convert_axial(0.02622)}
-Kax_b =  {'B' : 2.06437, 'D' : 2.2410, 'E' : 1.98847}
-    
 def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
     start_time = time.time()
     output = []
@@ -106,7 +87,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
         
         
         soilSpace = pb.SDF_PlantContainer(1e6, 1e6,1e6, True)  # to avoid root growing aboveground
-        plant = PlantPython() # pb.MappedPlant() #
+        plant = PlantPython()
 
         # Open plant and root parameter from a file
         plant.readParameters( CPlantBox_dir + '/experimental/wine_fichtl/results/xmlFiles/' + genotype + "-wineV2.xml")
@@ -230,7 +211,6 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
         # plt.show()
 
         plant.initialize_static_laterals()
-        plant.disableExtraNode()
         #plant.betaN = 5000
           
 
@@ -247,14 +227,6 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
 
         if doVTP:
             get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+"0", saveOnly = True)
-            
-            
-        param = PlantHydraulicParameters()
-        param.set_kr_suberize_dependent(kr)  
-        param.set_kx_radius_dependent(kx0[:, 0], kx0[:, 1], subType = [1, 4])
-        hm = HydraulicModel_Meunier(plant, param)
-            
-            
         for i in range(N):
             print('age', i, end=", ", flush = True)
             plant.survivalTest()
@@ -322,11 +294,6 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
             # # get3Dshape(plant,title_ = 'wine'+str(i+1), saveOnly = True) 
             if doVTP:
                 get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+str(i+1), saveOnly = True)
-                
-
-            '''
-            SUF
-            '''
             
         # print('postprocessing')
         #print("--- %s seconds for plant development---" % (time.time() - start_time),rep)

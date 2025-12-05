@@ -129,6 +129,11 @@ void PlantHydraulicParameters::setKrConst(double v, int subType, int organType, 
         krMode = "const";
     }
 }
+void PlantHydraulicParameters::setKrSuberized(std::vector<double> v){
+    krValues = v;
+    kr_f  = std::bind(&PlantHydraulicParameters::kr_perSub, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    krMode = "suberized";
+}
 
 /**
  * For roots the radial conductivity is multiplied by an exchange zone coefficient (that is calculated within MappedPlant per Segment)
@@ -141,6 +146,14 @@ double PlantHydraulicParameters::kr_RootExchangeZonePerType(int si,double age, i
     return kr_values.at(organType).at(subType).at(0);
 }
 
+double PlantHydraulicParameters::kr_perSub(int si,double age, int subType, int organType) {
+    if (organType == Organism::ot_root){
+        int suberized = ms->getSubStatus(si);//% of segment length in the root exchange zone, see MappedPlant::simulate
+        return krValues.at(suberized);
+    }
+    return 0.;
+}
+    
 /**
  * Sets the axial conductivity in [cm3 day-1] for a subType and organType
  *
