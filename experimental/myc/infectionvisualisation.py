@@ -68,7 +68,12 @@ if animation:
 else:
     for i in range(0, N):
         print('step',i, '/',N)
+
+        # ana = pb.SegmentAnalyser(mycp)
+        # hti = ana.getParameter("hyphalTreeIndex")
+        # print(hti)        
         mycp.simulate(dt, False)
+
     vp.plot_plant(mycp, "organType")  
 #     print('done')
     

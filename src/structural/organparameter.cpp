@@ -90,7 +90,7 @@ double OrganRandomParameter::getParameter(std::string name) const
     if (dparam.count(name)) { // looking for a double parameter
         return *dparam.at(name);
     }
-	throw std::runtime_error("OrganRandomParameter::getParameter: parameter "+name+" not found. Send NaN as output.");
+	// std::cout << "Warning: " << "OrganRandomParameter::getParameter: parameter "+name+" not found. Send NaN as output." << "\n";
     return std::numeric_limits<double>::quiet_NaN(); // default if name is unknown
 }
 

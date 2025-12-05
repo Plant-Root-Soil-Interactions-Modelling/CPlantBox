@@ -57,9 +57,17 @@ Hyphae::Hyphae(std::shared_ptr<Organism> plant, int type,  double delay, std::sh
     this->partialIHeading = Vector3d::rotAB(theta,beta);
     double creationTime= parent->getNodeCT(pni)+delay;//default
     addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
-    std::shared_ptr<MycorrhizalPlant> mp = std::dynamic_pointer_cast<MycorrhizalPlant>(plant);
-    hyphalTreeIndex = mp->getNextHyphalTreeIndex();
 }
+
+void Hyphae::setHyphalTreeIndex(int index)
+{
+    if (index == -1) {
+        std::shared_ptr<MycorrhizalPlant> mp = std::dynamic_pointer_cast<MycorrhizalPlant>(plant.lock());
+        hyphalTreeIndex = mp->getNextHyphalTreeIndex();
+    } else {
+        hyphalTreeIndex = index;
+    }
+}   
 
 /**
  * Deep copies the organ into the new plant @param rs.

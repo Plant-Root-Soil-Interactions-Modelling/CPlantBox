@@ -52,15 +52,14 @@ SDF_RootSystem::SDF_RootSystem(const Organism& plant, double dx): dx_(dx) {
     auto ana = SegmentAnalyser(plant);
     nodes_ = ana.nodes;
     segments_ = ana.segments;
-    radii_ = ana.getParameter("radius");
+    radii_ = ana.getParameter("radius");    
     auto vd = ana.getParameter("organType");
-    organTypes_.reserve(vd.size());
-    std::transform(vd.begin(), vd.end(), organTypes_.begin(),
-                   [](double x) { return static_cast<int>(x); });
+    std::cout << "organType" << vd.size() << std::endl;   
+    organTypes_.resize(vd.size());
+    std::transform(vd.begin(), vd.end(), organTypes_.begin(), [](double x) { return static_cast<int>(x); });   
     vd = ana.getParameter("hyphalTreeIndex");
-    treeIds_.reserve(vd.size());
-    std::transform(vd.begin(), vd.end(), treeIds_.begin(),
-                   [](double x) { return static_cast<int>(x); });
+    treeIds_.resize(vd.size());
+    std::transform(vd.begin(), vd.end(), treeIds_.begin(), [](double x) { return static_cast<int>(x); });
     segO = ana.segO; // weak pointer to the organ containing the segment
     buildTree();
 }
@@ -121,7 +120,7 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
 					distIndex = i;
 				}
         	} else {
-				if ((l < mdist) && (selectedOrganType == organTypes_[i]) && (excludeTreeId != treeIds_[i]))  {
+				if ((l < mdist) && (selectedOrganType == organTypes_[i]) && (excludeTreeId != treeIds_.at(i)))  {
 					mdist = l;
 					distIndex = i;
 				}

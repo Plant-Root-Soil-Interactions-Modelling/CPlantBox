@@ -22,6 +22,8 @@ public:
 
     virtual ~Hyphae() { }; ///< no need to do anything, children are deleted in ~Organ()
 
+    void setHyphalTreeIndex(int index);
+
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree
 
     int organType() const override { return Organism::ot_hyphae; }; ///< returns the organs type
