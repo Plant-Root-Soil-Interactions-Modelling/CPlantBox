@@ -44,29 +44,41 @@ You can then change branch by doing
 git checkout <branch_to_switch_to>
 ```
 
-## Linux - with conda environment
+## Linux - using a conda or Python environment
 
-This installation method uses ```conda``` to setup the building environment for CPlantBox. It'll pull the packages from the ```conda-forge``` channel to avoid licensing restrictions from default channels. For more info on conda restrictions, check this [article](https://www.fz-juelich.de/en/rse/the_latest/the-anaconda-is-squeezing-us)
-
-1. Clone the repository:
-
+1. Clone the repository (master only) by
 ```bash
 git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
 ```
-
-2. Create the conda environment and build CPlantBox:
-
+or, to download all branches:
+```bash
+git clone https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
+```
+ Initialize the repository by
 ```bash
 cd CPlantBox
+git submodule update --init --recursive
+```
+
+2. Create the an environment
+
+For conda use
+```bash
 conda env create -f environment.yml
 conda activate cpb
-git submodule update --init --recursive
+```
+For Python use
+```
+python3 -m venv cpb
+source cpb/bin/activate
+pip install -r requirements.txt
+```
+Finally, initialize cmake and build and install CPlantBox:
+```
 cmake .
 make install
 ```
-
 3. Test the installation by running a tutorial example, e.g.:
-
 ```bash
 cd tutorial/examples/
 python example1a_small.py
