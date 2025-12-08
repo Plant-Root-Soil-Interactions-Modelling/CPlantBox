@@ -4,6 +4,8 @@
 
 #include "MappedOrganism.h"
 #include "PlantHydraulicParameters.h"
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 namespace CPlantBox {
 
@@ -21,11 +23,21 @@ public:
     PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegments> ms, std::shared_ptr<CPlantBox::PlantHydraulicParameters> params);
 
     virtual ~PlantHydraulicModel() { }
+    
+    void bc_dirichlet(Eigen::SparseMatrix<double>& mat, const std::vector<int>& n0, const std::vector<double>& d);
 
+    void linearSystemMeunierSolve(double simTime, const std::vector<double> sx, bool cells = true,
+		const std::vector<double> soil_k = std::vector<double>(), 
+        const std::vector<int> n0 = std::vector<int>(), const std::vector<double> d = std::vector<double>()); 
+
+    void linearSystemMeunier_(double simTime, const std::vector<double>& sx, bool cells = true,
+		const std::vector<double> soil_k = std::vector<double>()); 
+        
     void linearSystemMeunier(double simTime, const std::vector<double> sx, bool cells = true,
 		const std::vector<double> soil_k = std::vector<double>()); ///< builds linear system (simTime is needed for age dependent conductivities)
 
-    std::vector<double> getRadialFluxes(double simTime, const std::vector<double> rx, const std::vector<double> sx, bool approx = false, bool cells = false, const std::vector<double> soil_k = std::vector<double>()) const; // for each segment in [cm3/day]
+    std::vector<double> getRadialFluxes(double simTime, const std::vector<double> rx, const std::vector<double> sx, bool approx = false, bool cells = false, 
+                    const std::vector<double> soil_k = std::vector<double>()) const; // for each segment in [cm3/day]
     std::map<int,double> sumSegFluxes(const std::vector<double> segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
 
     std::shared_ptr<CPlantBox::MappedSegments> ms;
@@ -35,10 +47,14 @@ public:
     std::vector<int> aJ;
     std::vector<double> aV;
     std::vector<double> aB;
+    std::vector<double> psiXyl;
+	std::vector<Eigen::Triplet<double>> tripletList;
+	Eigen::VectorXd b;
 
 protected:
-
+    bool dovector = true;
     virtual size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ; ///< fills row k of Meunier matrix
+    virtual size_t fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ;
 	virtual double getPsiOut(bool cells, int si, const std::vector<double>& sx_) const; ///< get the outer water potential [cm]
 
 };

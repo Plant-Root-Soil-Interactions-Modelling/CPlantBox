@@ -9,7 +9,85 @@ namespace CPlantBox {
 PlantHydraulicModel::PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegments> ms, std::shared_ptr<CPlantBox::PlantHydraulicParameters> params):
     ms(ms), params(params) { params->ms = ms;}
 
+/** prescribes a Dirichlet boundary conditions for the system Qx=b
+    @param n0         list of node indices, where the Dirichlet bc is applied
+    @param d [cm]     list of Dirichlet values   
+    @return Q, b, the updated matrix, and rhs vector 
+ */
+void PlantHydraulicModel::bc_dirichlet(Eigen::SparseMatrix<double>& mat, const std::vector<int>& n0, const std::vector<double>& d)
+{
+    if (n0.size() != d.size())
+    {
+        throw std::runtime_error("PlantHydraulicModel::bc_dirichlet: number of nodes n0 and Dirichlet values d must be equal");
+    }
+    
+    for (size_t c = 0; c < n0.size(); ++c)
+    {
+        int i = n0[c];
 
+        // zero the row
+        for (Eigen::SparseMatrix<double>::InnerIterator it(mat, i); it; ++it)
+            it.valueRef() = 0.0;
+
+        // set diagonal
+        mat.coeffRef(i,i) = 1.0;
+
+        // set RHS
+        b[i] = d[c];
+    }
+}
+/**
+ * Solves the linear system filled by @see XylemFlux::linearSystem
+ *
+ * @param simTime[day]  	current simulation time, needed for age dependent conductivities,
+ *                  		to calculate the age from the creation times (age = sim_time - segment creation time).
+ * @param sx [cm]			soil matric potential in the cells or around the segments, given per cell or per segment
+ * @param cells 			sx per cell (true), or segments (false)
+ * @param soil_k [day-1]    optionally, soil conductivities can be prescribed per segment,
+ *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
+ */
+void PlantHydraulicModel::linearSystemMeunierSolve(double simTime, const std::vector<double> sx, bool cells, const std::vector<double> soil_k, 
+                                                   const std::vector<int> n0, const std::vector<double> d)
+{
+	dovector = false;
+	int Ns = ms->segments.size(); // number of segments
+    int N = ms->nodes.size(); // number of nodes
+    if (Ns != N - 1)
+    {
+        throw std::runtime_error("mismatch in the number of nodes and segments");
+    }
+	tripletList.clear();
+	tripletList.reserve(Ns*4);
+	b = Eigen::VectorXd(N);
+	//get "tripletList" and "b"
+	linearSystemMeunier(simTime, sx, cells, soil_k); 
+	Eigen::SparseMatrix<double> mat(N,N);
+	mat.reserve(Eigen::VectorXi::Constant(N,2));
+	mat.setFromTriplets(tripletList.begin(), tripletList.end());
+    bc_dirichlet(mat, n0, d);
+	mat.makeCompressed();
+	Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double>> solver;
+	solver.compute(mat);
+
+	if(solver.info() != Eigen::Success){
+		std::cout << "PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed: " << solver.info() << std::endl;
+		throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed" );
+	}
+
+	Eigen::VectorXd v2;
+	try{
+		v2= solver.solve(b);
+	}catch(...){
+		 throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve error when solving wat. pot. xylem with Eigen ");
+	}
+	psiXyl.assign(v2.data(), v2.data() + v2.size());
+}
+
+void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<double> sx, bool cells,
+			const std::vector<double> soil_k)
+{
+    linearSystemMeunier_(simTime, sx, cells, soil_k);
+}
 /**
  * Assembles the linear system as sparse matrix, given by public member variables,
  * indices aI, aJ, and corresponding values aV; and load aB
@@ -21,7 +99,7 @@ PlantHydraulicModel::PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegmen
  * @param soil_k    [day-1] optionally, soil conductivities can be prescribed per segment,
  *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
  */
-void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<double> sx, bool cells,
+void PlantHydraulicModel::linearSystemMeunier_(double simTime, const std::vector<double>& sx, bool cells,
 			const std::vector<double> soil_k)
 {
     int Ns = ms->segments.size(); // number of segments
@@ -85,8 +163,12 @@ void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<
             bi = kx * vz;
             psi_s = 0;//
         }
-
-		k = fillVectors(k, i, j, bi, cii, cij, psi_s);
+        if(dovector)
+        {
+            k = fillVectors(k, i, j, bi, cii, cij, psi_s);
+        }else{
+            k = fillTripletList(k, i, j, bi, cii, cij, psi_s);
+        }
     }
 }
 
@@ -196,6 +278,39 @@ std::map<int,double> PlantHydraulicModel::sumSegFluxes(const std::vector<double>
 }
 
 
+/**
+ * fill the matrices to be solved. overloads @see XylemFlux::fillVectors
+ * @param k				index for the row- and column-index vectors
+ * @param i, j			indexes of the non-zero elements of the sparse matrix
+ * @param psi_s 		outer water potential [cm]
+ * @param bi			value of variable b at row i [cm3/d]
+ * @param cii			value of variable c at row i col i [cm2/d]
+ * @param cij			value of variable c at row i col j [cm2/d]
+ * @return k			next index for the row- and column-index vectors
+ */
+size_t PlantHydraulicModel::fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) 
+{
+	typedef Eigen::Triplet<double> Tri;
+	aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
+
+	b(i) = aB[i];
+	tripletList.push_back(Tri(i,i,cii));
+	k += 1;
+	tripletList.push_back(Tri(i,j,cij));
+	k += 1;
+
+	int ii = i;
+	i = j;  j = ii; // edge ji
+	aB[i] += ( -bi + cii * psi_s +cij * psi_s) ; // (-bi) Eqn (14) with changed sign
+
+	b(i) = aB[i];
+	tripletList.push_back(Tri(i,i,cii));
+	k += 1;
+
+	tripletList.push_back(Tri(i,j,cij));
+	k += 1;
+	return k;
+}
 
 
 /**

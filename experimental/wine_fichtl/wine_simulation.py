@@ -18,11 +18,13 @@ import plantbox as pb
 import visualisation.vtk_plot as vp
 import viewer_conductivities
 from functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports}|
-from functional.PlantHydraulicModel import HydraulicModel_Meunier  # |\label{l42:imports_end}|
+from functional.PlantHydraulicModel import HydraulicModel_Meunier_large  # |\label{l42:imports_end}|
 
 
 import numpy as np
 from structural.Plant import PlantPython
+from structural.MappedOrganism import MappedPlantPython
+from functional.Perirhizal import PerirhizalPython as Perirhizal
 import matplotlib.pyplot as plt
 import copy
 import os
@@ -30,7 +32,7 @@ import pickle
 from scipy.stats import gaussian_kde
 import time
 
-def get3Dshape(plant,title_ = 'wine', saveOnly = True):        
+def get3Dshape(plant,title_ = 'wine',data={}, saveOnly = True):        
     orgs_ = plant.getOrgans(2)
     orgs_a = [1 for org in orgs_ if org.isAlive() ]
     orgs_al = [1 for org in orgs_ if (org.isAlive() and not org.getParameter('is_fine_root')) ]
@@ -48,8 +50,12 @@ def get3Dshape(plant,title_ = 'wine', saveOnly = True):
     
     ana.addData('lignification', lignification)
     ana.addData('is_fine_root', is_fine_root)
+    p_names = ['lignification','is_fine_root',"creationTime","id"] 
+    for dd in data.keys():
+        ana.addData(dd, data[dd])
+        p_names.append(dd)
     ana.filter('alive', 1)
-    vp.plot_roots(ana, "subType",p_names = ['lignification','is_fine_root',"creationTime","id"] , win_title = title_, render = not saveOnly)
+    vp.plot_roots(ana, "subType",p_names, win_title = title_, render = not saveOnly)
     
 
 long_root_types = np.array([1,2,3,4,5])
@@ -63,12 +69,13 @@ kr =[viewer_conductivities.convert_radial(4.0e-7),
       viewer_conductivities.convert_radial(4.0e-8)] # suberization status m s-1 MPa-1 => [1 / day]
 
 # for K in m4 s-1 MPa-1 => [cm3 / day]
-Kax_a =  {'B' : viewer_conductivities.convert_axial(0.04749), 
-          'D' : viewer_conductivities.convert_axial(0.1539), 
-          'E' : viewer_conductivities.convert_axial(0.02622)}
+Kax_a =  {'B' : viewer_conductivities.convert_axial(0.04749/100.), 
+          'D' : viewer_conductivities.convert_axial(0.1539/100.), 
+          'E' : viewer_conductivities.convert_axial(0.02622/100.)}
 Kax_b =  {'B' : 2.06437, 'D' : 2.2410, 'E' : 1.98847}
+
     
-def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
+def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llambdao, kko,
     start_time = time.time()
     output = []
     file_path =  CPlantBox_dir + '/experimental/wine_fichtl/rsml/RSML_year1/'
@@ -76,9 +83,11 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
 
     data_file = file_names[rep_input]
     reps = 1# len(file_names)
-    doVTP = False# (rep_input == 0)
+    doVTP = (rep_input == 0)
     for rep in range(reps):
         N = 50
+        if doProfile:
+            N = 5
         outputs_12 = {
                 'num':[0. for i in range(subtypes)],
                 'length':[0. for i in range(1,subtypes)],
@@ -106,11 +115,12 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
         
         
         soilSpace = pb.SDF_PlantContainer(1e6, 1e6,1e6, True)  # to avoid root growing aboveground
-        plant = PlantPython() # pb.MappedPlant() #
+        picker = lambda x, y, z: -int(z) 
+        plant = MappedPlantPython() #PlantPython() # pb.MappedPlant() #
 
         # Open plant and root parameter from a file
         plant.readParameters( CPlantBox_dir + '/experimental/wine_fichtl/results/xmlFiles/' + genotype + "-wineV2.xml")
-
+        plant.setSoilGrid(picker)
         plant.setGeometry(soilSpace) 
 
 
@@ -119,7 +129,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
         thin_root_P = [[0.],[0.05],[1.]]
         thin_root_Page = [0., 1225 * 5, 1225 * 10]
         ps = plant.getOrganRandomParameter(1)[0]
-        ps.seedPos = pb.Vector3d(0.,0.,-10.)
+        #ps.seedPos = pb.Vector3d(0.,0.,-10.) # useless
         for ii, pp in enumerate(plant.getOrganRandomParameter(2)):            
             if ii == 0:      
                 pp.ldelay  = 0*yr_to_BEDD
@@ -230,10 +240,9 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
         # plt.show()
 
         plant.initialize_static_laterals()
-        plant.disableExtraNode()
+        # plant.disableExtraNode() # TODO? troubleshoot the statis start for a mappedplant
         #plant.betaN = 5000
           
-
         all_real_lengths = []
         all_real_subtypes = []
         
@@ -241,20 +250,22 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
         all_ages = []
         all_subtypes = []
         all_alive = []
+        SUFs, RLDs = [], []
         # all_alive_long = []
         # all_alive_short = []
         dt = yr_to_BEDD  # ~1 yr
 
         if doVTP:
-            get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+"0", saveOnly = True)
+            get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+"0", data = {}, saveOnly = True)
             
             
         param = PlantHydraulicParameters()
-        param.set_kr_suberize_dependent(kr)  
-        param.set_kx_radius_dependent(kx0[:, 0], kx0[:, 1], subType = [1, 4])
-        hm = HydraulicModel_Meunier(plant, param)
-            
-            
+        param.set_kr_suberize_dependent(kr)          
+        param.set_kx_radius_dependent([Kax_a[genotype],Kax_b[genotype]])
+        hm = HydraulicModel_Meunier_large(plant, param)
+        #peri = Perirhizal(plant)
+        assert len(plant.get_nodes()) == (len(plant.get_segments()) +1)
+        
         for i in range(N):
             print('age', i, end=", ", flush = True)
             plant.survivalTest()
@@ -262,7 +273,6 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
             
             '''
             Ratio
-            ''' 
             orgs_all = plant.getOrgans(2, False)
             all_real_subtypes_temp =np.array([org.param().subType for org in orgs_all  if  org.isAlive()])
             all_real_lengths_temp =np.array([org.getLength() for org in orgs_all  if  org.isAlive()])
@@ -273,8 +283,37 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
             len_long = sum(all_real_lengths_temp[np.invert(is_fine_roots)]) # ignore the length of 1 as seem different between xml and xlsx
             value = len_fine/(len_long + len_fine)
             print('percent_after_winter', np.round(value*100), end=", ", flush = True)   
+            ''' 
             
             plant.simulate(dt, False) # i * 
+            assert len(plant.get_nodes()) == (len(plant.get_segments()) +1)
+            
+            
+            '''
+            SUF
+            '''
+            ana = pb.SegmentAnalyser(plant) 
+            
+            #nodeCT = ana.getParameter("creationTime")
+            #nodeCT.insert(0, 0.0)
+            #ms =  pb.MappedSegments(ana.nodes, nodeCT, ana.segments, ana.getParameter("radius"), 
+            #                        np.array(ana.getParameter("subType"),dtype = int),np.array(ana.getParameter("organType"),dtype = int))
+            #segOs = plant.getSegmentOrigins()
+            #lignification = [segO.lignificationStatus() for segO in segOs]
+            #ms.setSubStatus(lignification)
+            #hm = HydraulicModel_Meunier(ms, param)
+            minZ = np.floor(np.min(np.array([xyz[2] for xyz in plant.get_nodes()])))
+            RLDs.append(ana.distribution("length",0., minZ , int(-minZ), False)) # to compare with SUF
+
+            suf_ = hm.get_suf(i * dt)
+            ana.addData('SUF', suf_)
+            suf = ana.distribution("SUF",0., minZ , int(-minZ), False)
+            SUFs.append(suf)#[0,:]
+            #with open('./testSUF_RLD.pkl','wb') as f:
+            #     pickle.dump([SUFs,RLDs],f, protocol=pickle.HIGHEST_PROTOCOL) #
+            '''
+            other
+            '''
             
             orgs_all = plant.getOrgans(2, False)
             orgs_ = []
@@ -321,16 +360,15 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1): #llambdao, kko,
 
             # # get3Dshape(plant,title_ = 'wine'+str(i+1), saveOnly = True) 
             if doVTP:
-                get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+str(i+1), saveOnly = True)
+                get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+str(i+1),data = {'SUF': suf_}, saveOnly = True)
                 
 
-            '''
-            SUF
-            '''
+
             
         # print('postprocessing')
-        #print("--- %s seconds for plant development---" % (time.time() - start_time),rep)
-        
+        # print("--- %s seconds for plant development---" % (time.time() - start_time),rep)
+        outpouts_mean['SUF'] = SUFs
+        outpouts_mean['RLDs'] = RLDs
         for year in range(N):
             '''
             Lengths
@@ -418,6 +456,10 @@ if __name__ == '__main__':
     extraName = "default"
     if len(sys.argv) > 3:
         extraName = sys.argv[3]
+    if len(sys.argv) > 4:
+        doProfile = int(sys.argv[4])
+    else:
+        doProfile = False
     print('sys.argv',sys.argv)
     if rep == 0:
         directory ='./results/outputSim/'+extraName
@@ -426,8 +468,19 @@ if __name__ == '__main__':
     with open(CPlantBox_dir + '/experimental/wine_fichtl/results/objectiveData/measurements'+ genotype +'InitXX.pkl','rb') as f:
         xx = pickle.load(f)
         
-    output = run_benchmark(xx, genotype, rep)
-    
+    if doProfile:
+        import cProfile
+        import pstats, io
+        pr = cProfile.Profile()
+        pr.enable()
+    output = run_benchmark(xx, genotype, rep, doProfile)
+    if doProfile:
+        pr.disable()
+        filename = './results/profile'+str(rank)+'.prof' 
+        s = io.StringIO()
+        ps = pstats.Stats(pr, stream=s).sort_stats('tottime')
+        ps.dump_stats(filename)
+        
     with open(CPlantBox_dir + '/experimental/wine_fichtl/results/outputSim/'+extraName+'/'+ genotype + str(rep) +'.pkl','wb') as f:
          pickle.dump(output,f, protocol=pickle.HIGHEST_PROTOCOL)
             

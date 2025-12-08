@@ -653,6 +653,7 @@ void MappedPlant::mapSubTypes(){
 	}
 }
 
+
 /**
  * Simulates the development of the organism in a time span of @param dt days.
  *
@@ -673,6 +674,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 	for (int& i : uni) { // shift
 		i += shift;
 	}
+    /*
 	auto unodes = this->getUpdatedNodes();
 	auto uncts = this->getUpdatedNodeCTs();
 	assert(uni.size()==unodes.size() && "updated node indices and number of nodes must be equal");
@@ -685,19 +687,21 @@ void MappedPlant::simulate(double dt, bool verbose)
 	if (verbose) {
 		std::cout << "nodes moved "<< uni.size() << "\n" << std::flush;
 	}
-
-	auto newnodes = this->getNewNodes(); // add nodes
-	nodes.reserve(nodes.size()+newnodes.size());
+    */
+    nodes.clear();
+    nodeCTs.clear();
+	auto newnodes = this->getNodes(); // add nodes
+	nodes.reserve(newnodes.size());//nodes.size()+
 	for (auto& nn : newnodes) {
 		nodes.push_back(nn);
 	}
-	auto newnode_cts = this->getNewNodeCTs(); // add node cts
-	nodeCTs.reserve(nodeCTs.size()+newnode_cts.size());
+	auto newnode_cts = this->getNodeCTs(); // add node cts
+	nodeCTs.reserve(newnode_cts.size());//nodeCTs.size()+
 	for (auto& nct : newnode_cts) {
 		nodeCTs.push_back(nct);
 	}
 	if (verbose) {
-		std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
+		std::cout << "current nodes " << newnodes.size() << "\n" << std::flush;
 	}
 
 	auto newsegs = this->getSegments(); // add segments (TODO ALL) (TODO cutting, more nodes will lead to different shift???)
@@ -708,7 +712,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 		segments[ns.y-1] = ns;
 	}
 	if (verbose) {
-		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
+		std::cout << " current segments "<< newsegs.size() << "\n" << std::flush;
 	}
 	auto newsegO = this->getSegmentOrigins(); // (TODO ALL) to add radius and type (TODO cutting)
 	radii.resize(newsegO.size()+shift);
@@ -719,7 +723,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 	leafBladeSurface.resize(newsegO.size()+shift);
 	lignStatus.resize(newsegO.size()+shift);
 	this->segO.resize(newsegO.size()+shift);
-	c = 0;
+	int c = 0;
 	if (verbose) {
 		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
 	}

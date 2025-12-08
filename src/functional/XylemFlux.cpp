@@ -11,6 +11,7 @@ namespace CPlantBox {
 XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs){}
 
 
+
 /**
  * Assembles the linear system as sparse matrix, given by public member variables,
  * indices aI, aJ, and corresponding values aV; and load aB
@@ -340,7 +341,7 @@ double XylemFlux::getPsiOut(bool cells, int si, const std::vector<double>& sx_, 
 		int cellIndex = rs->seg2cell.at(si);
 		if (cellIndex>=0) {
 			if((organType ==Organism::ot_leaf) && verbose){ //add a runtime error?
-				std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
+				std::cout<<"XylemFlux::getPsiOut: Leaf segment n#"<<si<<" below ground. OrganType: ";
 				std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
 			}
 			if(sx_.size()>1) {
@@ -351,7 +352,7 @@ double XylemFlux::getPsiOut(bool cells, int si, const std::vector<double>& sx_, 
 		} else {
 			if((organType == Organism::ot_root) && verbose) //add a runtime error?
 			{
-				std::cout<<"XylemFlux::linearSystem: Root segment n#"<<si<<" aboveground. OrganType: ";
+				std::cout<<"XylemFlux::getPsiOut: Root segment n#"<<si<<" aboveground. OrganType: ";
 				std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
 			}
 			psi_s = psi_air;

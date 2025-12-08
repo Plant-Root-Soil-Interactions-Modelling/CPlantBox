@@ -76,6 +76,7 @@ public:
     std::vector<double> bladeLength;//blade length <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
     std::vector<int> lignStatus;
     int getSubStatus(int si){return lignStatus.at(si);};
+    void setSubStatus(std::vector<int> lignStatus_in){lignStatus = lignStatus_in;};
     std::vector<std::weak_ptr<Organ>> segO; ///< for SegmentAnalyser
 
     // calculated by calcExchangeZoneCoefs()

@@ -12,11 +12,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 """ Read RSML file and test whether it is OK """
-r = XylemFluxPython("../../../dumux-rosi/grids/RootSystem.rsml")
+r = XylemFluxPython("./RootSystem.rsml")
 r.test()  # here you could add the addition of artificial shoot and creation time (using the viewer as template)
 
 """Retrieve information from the RSML file"""
-polylines, props, functions, metadata = rsml.read_rsml("../../../dumux-rosi/grids/RootSystem.rsml")
+polylines, props, functions, metadata = rsml.read_rsml("./RootSystem.rsml")
 print(len(polylines), "roots")
 # print(props["parent-poly"])
 # print(props["parent-node"])

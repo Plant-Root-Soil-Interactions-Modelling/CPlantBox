@@ -71,6 +71,10 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
                 # print(f, st, ot)
                 f(*params, st, ot)
 
+    def set_kx_radius_dependent(self, kxparams):
+        """ sets params to compute kx [cm3/day] from the radius on the fly"""
+        self.setKxRadiusDependent(kxparams)
+        
     def set_kr_suberize_dependent(self, kr):
         """ sets a constant radial conductivity [1 day-1] for roots for a suberization level"""
         self.setKrSuberized(kr)

@@ -150,14 +150,20 @@ class PlantPython(Plant):
                 parent_id = self.data.properties["parent-poly"][i]
                 pni = self.data.properties["parent-node"][i]
                 organ = self.static_organs[i]
-                if parent_id >= 0:
+                if parent_id < 0: # stem organ
+                    assert types[i] == 0
+                    seed.moveNode(n = pb.Vector3d(self.data.polylines[i][-1]), lId = 0)   
+                    organ.addNode( n= pb.Vector3d(self.data.polylines[i][-1]),id = 0, t=0.)
+                    for node in self.data.polylines[i][::-1][1:]: # reverse direction as stems go in the opposit direction
+                        organ.addNode(n = pb.Vector3d(node),t =  0.)
+                else:
                     # print(i, "parent", parent_id, "pni", pni)
                     parent = self.static_organs[parent_id]
-                    organ.addNode(parent.getNode(pni), parent.getNodeId(pni), 0.)
-                    # print(self.data.polylines[parent_id][pni])
-                for node in self.data.polylines[i]:
-                    organ.addNode(pb.Vector3d(node), 0.)
-
+                    organ.addNode(n = parent.getNode(pni), id = parent.getNodeId(pni), t = 0.)
+                    # print(self.data.polylines[parent_id][pni])                  
+                    for node in self.data.polylines[i]:
+                        organ.addNode(n = pb.Vector3d(node), t = 0.)
+                        
         # 4. Create topology of static roots
         for i, root in enumerate(self.data.polylines):
             if types[i] in initial_sub_types:
@@ -170,7 +176,7 @@ class PlantPython(Plant):
                     # print("Added", i, "to parent", parent_id)
                 except:
                     print("PlantPython: initialize_static(): organ", i, "has no parent", parent_id)
-                    seed.addChild(self.static_organs[0])
+                    seed.addChild(organ)#self.static_organs[0])
         self.addOrgan(seed)
 
         # 4. The CPlantBox part

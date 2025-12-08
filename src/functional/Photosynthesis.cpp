@@ -185,15 +185,15 @@ void Photosynthesis::linearSystemSolve(double simTime_, const std::vector<double
 	lu.compute(mat);
 
 	if(lu.info() != Eigen::Success){
-		std::cout << "XylemFlux::linearSystem  matrix Compute with Eigen failed: " << lu.info() << std::endl;
-		throw std::runtime_error("XylemFlux::linearSystem  matrix Compute with Eigen failed" );
+		std::cout << "Photosynthesis::linearSystemSolve  matrix Compute with Eigen failed: " << lu.info() << std::endl;
+		throw std::runtime_error("Photosynthesis::linearSystemSolve  matrix Compute with Eigen failed" );
 	}
 
 	Eigen::VectorXd v2;
 	try{
 		v2= lu.solve(b);
 	}catch(...){
-		 throw std::runtime_error("XylemFlux::linearSystem error when solving wat. pot. xylem with Eigen ");
+		 throw std::runtime_error("Photosynthesis::linearSystemSolve error when solving wat. pot. xylem with Eigen ");
 	}
 	std::vector<double> v3(&v2[0], v2.data()+v2.cols()*v2.rows());
 	psiXyl = v3;

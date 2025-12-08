@@ -311,6 +311,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         print()
 
 
+        
 class HydraulicModel_Meunier(PlantHydraulicModel):
     """
     Meunier hybrid solver (Meunier et al. 2017) 
@@ -555,6 +556,51 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
         return b
 
 
+class HydraulicModel_Meunier_large(HydraulicModel_Meunier):
+    """
+    Meunier hybrid solver (Meunier et al. 2017), using BiCGSTAB in C to handle big problems
+    
+    For perfomance reasons building the matrix is implented in C++ (PlantHydraulicModelCPP)
+    
+    If cached is true, for each solve() call a sparse LU factorization is stored, which is used in every solve_again() call
+    (no convenient sparse cholesky implementation in scipy)
+    """
+
+    def __init__(self, ms, params, cached = False):
+        """ 
+            @param ms is of type MappedSegments (or specializations), or a string containing a rsml filename
+            @param params hydraulic conductivities described by PlantHydraulicParameters
+            @param if cached == "True" sparse factorization is cached for faster solving using solve_again() 
+        """
+        super().__init__(ms, params, cached)
+        self.usecached_ = False
+   
+    
+    def get_suf(self, sim_time):
+        """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
+        n = self.ms.getNumberOfMappedSegments()
+        rsx = np.ones((n, 1)) * (-500)
+        rsx = self.ms.total2matric(rsx)
+        rx = self.solve_dirichlet(sim_time, -15000, rsx, cells = False)
+        q = self.radial_fluxes(sim_time, rx, rsx)
+        return np.array(q) / np.sum(q)
+        
+    def solve_dirichlet(self, sim_time:float, collar_pot:list, rsx, cells:bool, soil_k = []):
+        """ solves the flux equations, with a neumann boundary condtion, see solve()
+            @param sim_time [day]           needed for age dependent conductivities (age = sim_time - segment creation time)
+            @param collar_pot [cm]          collar potential
+            @param rsx [cm]                 soil matric potentials given per segment or per soil cell            
+            @param cells                    indicates if the matric potentials are given per cell (True) or by segments (False) 
+            @param soil_k [day-1]     optionally, soil conductivities can be prescribed per segment, 
+                                      conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)   
+            @return [cm] root matric potential per root system node         
+        """
+        self.last = "dirichlet"
+        if isinstance(collar_pot, (float, int)):
+            collar_pot = [collar_pot] * len(self.dirichlet_ind)
+        self.linearSystemMeunierSolve(sim_time, rsx, cells, soil_k, n0 = self.dirichlet_ind ,d =collar_pot) # computes self.psiXyl
+        return self.psiXyl
+        
 class HydraulicModel_Doussan(PlantHydraulicModel):
     """
     Doussan solver (Doussan et al. 2006)  

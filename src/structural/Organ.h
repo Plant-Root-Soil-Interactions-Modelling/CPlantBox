@@ -74,6 +74,7 @@ public:
 	virtual double calcLength(double age){throw std::runtime_error( "calcLength() not implemented" ); }
 
 	/* geometry */
+    void moveNode(Vector3d n, int lId){nodes.at(lId) = n;}
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
     int getNumberOfSegments() const { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
     Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< absolute coordinate of the organs origin

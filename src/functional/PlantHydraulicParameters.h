@@ -42,6 +42,8 @@ public:
     double kr_f_wrapped(int si, double age, int type, int orgtype, bool cells) const; ///stops transpiration if organs are not in the correct domain
 
     void setKrSuberized(std::vector<double> v);
+    void setKxRadiusDependent(std::vector<double> params);
+    
     void setKrConst(double v, int subType, int organType = Organism::ot_root, double kr_length = -1);
     void setKxConst(double v, int subType, int organType = Organism::ot_root);
     void setKrAgeDependent(std::vector<double> age, std::vector<double> values, int subType, int organType = Organism::ot_root);
@@ -74,7 +76,7 @@ public:
 protected:
 
     double kr_perSub(int si, double age, int subType, int organType);
-    double kx_radius(int si, double age, int subType, int organType);
+    double kx_radius(int si, double age, int subType, int organType){return kxValues.at(0) * std::pow(ms->radii.at(si) * 2., kxValues.at(1));}
     
     double kr_perType(int si, double age, int subType, int organType) { return kr_values.at(organType).at(subType).at(0); }
     double kr_RootExchangeZonePerType(int si,double age, int subType, int organType);

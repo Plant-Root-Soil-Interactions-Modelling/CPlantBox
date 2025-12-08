@@ -313,6 +313,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double, int>())
             .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
             .def("copy",&Organ::copy)
+            .def("moveNode",(void (Organ::*)(Vector3d n, int lId)) &Organ::moveNode,  py::arg("n"), py::arg("lId"))
             .def("organType",&Organ::organType)
             .def("simulate",&Organ::simulate, py::arg("dt"), py::arg("verbose") = bool(false) ) // default
 			.def("getNumberOfLaterals", &Organ::getNumberOfLaterals)
@@ -919,6 +920,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getEffectiveRadius",&MappedSegments::getEffectiveRadius)
         .def("getEffectiveRadii",&MappedSegments::getEffectiveRadii)
 		.def("calcExchangeZoneCoefs",&MappedSegments::calcExchangeZoneCoefs)
+		.def("setSubStatus",&MappedSegments::setSubStatus)
         .def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
         .def_readwrite("distanceTip", &MappedPlant::distanceTip)
         .def_readwrite("nodes", &MappedSegments::nodes)
@@ -1046,6 +1048,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setMode", &PlantHydraulicParameters::setMode)
             .def("setKrConst", &PlantHydraulicParameters::setKrConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root, py::arg("kr_length") = -1.)
             .def("setKrSuberized", &PlantHydraulicParameters::setKrSuberized, py::arg("v"))
+            .def("setKxRadiusDependent", &PlantHydraulicParameters::setKxRadiusDependent, py::arg("v"))
             .def("setKxConst", &PlantHydraulicParameters::setKxConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root)
             .def("setKrAgeDependent", &PlantHydraulicParameters::setKrAgeDependent, py::arg("age"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
             .def("setKxAgeDependent", &PlantHydraulicParameters::setKxAgeDependent, py::arg("age"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
@@ -1076,6 +1079,7 @@ PYBIND11_MODULE(plantbox, m) {
         py::class_<PlantHydraulicModel, std::shared_ptr<PlantHydraulicModel>>(m, "PlantHydraulicModel")
             .def(py::init<std::shared_ptr<MappedSegments>, std::shared_ptr<PlantHydraulicParameters>>())
             .def("linearSystemMeunier",&PlantHydraulicModel::linearSystemMeunier, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true, py::arg("soil_k") = std::vector<double>())
+            .def("linearSystemMeunierSolve",&PlantHydraulicModel::linearSystemMeunierSolve, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true, py::arg("soil_k") = std::vector<double>(), py::arg("n0") = std::vector<int>(), py::arg("d") = std::vector<double>())
             .def("getRadialFluxes", &PlantHydraulicModel::getRadialFluxes)
             .def("sumSegFluxes", &PlantHydraulicModel::sumSegFluxes)
             .def_readwrite("ms", &PlantHydraulicModel::ms)
@@ -1083,7 +1087,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("aI", &PlantHydraulicModel::aI)
             .def_readwrite("aJ", &PlantHydraulicModel::aJ)
             .def_readwrite("aV", &PlantHydraulicModel::aV)
-            .def_readwrite("aB", &PlantHydraulicModel::aB);
+            .def_readwrite("aB", &PlantHydraulicModel::aB)
+            .def_readwrite("psiXyl", &PlantHydraulicModel::psiXyl);
 
 	/*
      * Photosynthesis.h
