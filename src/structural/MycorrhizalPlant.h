@@ -31,13 +31,10 @@ class MycorrhizalPlant :public Plant {
 
     // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
     void initCallbacks() override;
-    // void addTree(); // AABB tree
 
     int getNextHyphalTreeIndex() { hyphalTreeIndex++; return hyphalTreeIndex; }
-    // std::vector<Vector3d> tips;
-    std::shared_ptr<SDF_RootSystem> sdf; // direction from tip towards root base
 
-    aabb::Tree tree = aabb::Tree(); // aabb tree for anastomosis
+    std::shared_ptr<SDF_RootSystem> sdf; // direction from tip towards root base
 
     std::vector<int> localNodes;
     std::vector<std::shared_ptr<Hyphae>> localHyphae;
