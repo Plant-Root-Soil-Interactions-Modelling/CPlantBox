@@ -144,25 +144,25 @@ void Hyphae::simulate(double dt, bool verbose)
                         active = false; // if no length increment, hyphae become inactive
                     }
 
-                    // if (sdf(plant.tree).getDist(nodes.at(nodes.size()-1)) < distTT) { // for tip tip anastomosis
-                    //     makeanastomosis();
-                    // }
-                    // if (sdf(plant.tree).getDist(nodes.at(nodes.size()-1)) < distTH) { //for tip hyphae anastomosis
-                    //     makeanastomosis();
-                    // }
                 }
                 // std::cout << p.getMaxLength() << " " << getLength(false) << std::endl;
                 // std::cout << nodes.size() << std::endl;
 
-                active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
-                bool activeafter = active; // store new state
-
-                //  std::cout<< getParameter("b")*dt << std::endl;
-                if (plant.lock()->randn() < getParameter("b")*dt && (activebefore && !activeafter)) { // constructor always at last node
-                    // std::cout << "create lateral hyphae at " << nodes.size()-1 << std::endl;
+                if (getParameter("b")*age>1)
+                {
+                    active = false; // become inactive, if enough time has passed for branching
                     createLateral(nodes.size()-1); // create a lateral hyphae
                     createLateral(nodes.size()-1); // create a lateral hyphae
                 }
+                
+                // active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+                // bool activeafter = active; // store new state
+
+                // //  std::cout<< getParameter("b")*dt << std::endl;
+                // if (plant.lock()->randn() < getParameter("b")*dt && (activebefore && !activeafter)) { // constructor always at last node
+                //     // std::cout << "create lateral hyphae at " << nodes.size()-1 << std::endl;
+                    
+                // }
                 //std::cout << "Hyphae active: " << active << std::endl;
 
             } else { // NOT ACTIVE (children grow)
@@ -177,13 +177,6 @@ void Hyphae::simulate(double dt, bool verbose)
     } // if alive
 
 }
-
-// void Hyphae::makeanastomosis(std::shared_ptr<Hyphae> a, std::shared_ptr<Hyphae> b)
-// {
-//     // create new hyphae
-//     // set parents of new hyphae to be the two hyphae
-//     // set the new hyphae to be children of the two hyphae
-// }
 
 ///**
 // * Analytical length of the single root at a given age

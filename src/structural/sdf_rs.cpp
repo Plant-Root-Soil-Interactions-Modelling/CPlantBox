@@ -54,7 +54,7 @@ SDF_RootSystem::SDF_RootSystem(const Organism& plant, double dx): dx_(dx) {
     segments_ = ana.segments;
     radii_ = ana.getParameter("radius");    
     auto vd = ana.getParameter("organType");
-    std::cout << "organType" << vd.size() << std::endl;   
+    // std::cout << "organType" << vd.size() << std::endl;   
     organTypes_.resize(vd.size());
     std::transform(vd.begin(), vd.end(), organTypes_.begin(), [](double x) { return static_cast<int>(x); });   
     vd = ana.getParameter("hyphalTreeIndex");
