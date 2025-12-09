@@ -151,8 +151,10 @@ void Hyphae::simulate(double dt, bool verbose)
                 if (getParameter("b")*age>1)
                 {
                     active = false; // become inactive, if enough time has passed for branching
+                    std::cout<< "number of children: " << children.size() << "\n";
                     createLateral(nodes.size()-1); // create a lateral hyphae
                     createLateral(nodes.size()-1); // create a lateral hyphae
+                    std::cout<< "Age when a branching occurred: " << age << " days, in hyphal tree " << hyphalTreeIndex << "\n";
                 }
                 
                 // active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
