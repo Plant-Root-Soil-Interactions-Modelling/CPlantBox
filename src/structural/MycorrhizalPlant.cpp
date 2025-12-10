@@ -141,27 +141,32 @@ void MycorrhizalPlant::simulateAnastomosis() {
 
     for (const auto & h : hyphae) {
         sdf->excludeTreeId = h->getParameter("hyphalTreeIndex");
+        // if (std::dynamic_pointer_cast<Hyphae>(h)->mergedHyphae != nullptr) {
+        //     std::cout<< std::dynamic_pointer_cast<Hyphae>(h)->mergedHyphae <<std::endl;// already merged
+        // }
+        // std::cout << "Does this hypha already have merged hyphae? " << (std::dynamic_pointer_cast<Hyphae>(h)->mergedHyphae != nullptr) << "\n";
         if (h->isActive()) {
             auto tip = h->getNode(h->getNumberOfNodes()-1);
 
             dist = sdf->getDist(tip);
             // std::cout<<"Distance to nearest hyphae from tip " << tip.toString() << " is " << dist << " cm." << std::endl;
-
-            if (dist < h->getParameter("distTH"))
+            if (dist < h->getParameter("distTH") && dist >= 0) 
             {
-                auto lastIndex = sdf->distIndex;
-                std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance id: " << lastIndex << std::endl;
-                std::cout << "Hyphal tree index " << h->getParameter("hyphalTreeIndex") << "\n";
+                auto lastIndex = sdf->distIndex; 
+                // if (lastIndex == -1) {
+                //     std::cout<< "Distance index is -1 what is the distance: " << dist << std::endl;
+                //     std::cout<< "tree height: " << sdf->toString() << std::endl;
+                // }
+                // std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance id: " << lastIndex << std::endl;
+                // std::cout << "Hyphal tree index " << h->getParameter("hyphalTreeIndex") << "\n";
                 auto connected_to_hyphae = std::dynamic_pointer_cast<Hyphae>(sdf->segO.at(lastIndex).lock());                
-                std::cout << "connected to " << connected_to_hyphae->hyphalTreeIndex << "\n";
+                // std::cout << "connected to " << connected_to_hyphae->hyphalTreeIndex << "\n";
 
                 //std::cout<< "OrganID: " << h->getId() << " SDF" << sdf->treeIds_.at(distID)<< std::endl;
                 h->setActive(false); // deactivate hyphae after anastomosis
-                // std::dynamic_pointer_cast<Hyphae>(h)->setMergedHyphae(connected_to_hyphae); // set merged hyphae
+                std::dynamic_pointer_cast<Hyphae>(h)->setMergedHyphae(connected_to_hyphae); // set merged hyphae
             }
         }
-
-
 
     }
 

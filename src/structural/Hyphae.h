@@ -24,7 +24,7 @@ public:
 
     void setHyphalTreeIndex(int index);
 
-    // void setMergedHyphae(std::shared_ptr<Hyphae> merged) { mergedHyphae = merged; } ///< sets the merged hyphae after anastomosis;
+    void setMergedHyphae(std::shared_ptr<Hyphae> merged) { mergedHyphae = merged; } ///< sets the merged hyphae after anastomosis;
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree
 
@@ -46,7 +46,7 @@ public:
 
     int hyphalTreeIndex=-1;
 
-    // std::shared_ptr<Hyphae> mergedHyphae = nullptr; ///< in case of anastomosis, points to the hyphae this one merged with
+    std::shared_ptr<Hyphae> mergedHyphae = nullptr; ///< in case of anastomosis, points to the hyphae this one merged with
 
     /* Abbreviations */
     std::shared_ptr<HyphaeRandomParameter> getHyphaeRandomParameter() const;  ///< root type parameter of this root
