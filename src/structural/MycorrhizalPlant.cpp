@@ -150,13 +150,14 @@ void MycorrhizalPlant::simulateAnastomosis() {
             if (dist < h->getParameter("distTH"))
             {
                 auto lastIndex = sdf->distIndex;
-                // std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance id: " << lastIndex << std::endl;
-                // std::cout << "Hyphal tree index " << h->getParameter("hyphalTreeIndex") << "\n";
-                // auto connected_to_hyphae = std::dynamic_pointer_cast<Hyphae>(sdf->segO.at(lastIndex).lock());                
-                // std::cout << "connected to" << connected_to_hyphae->hyphalTreeIndex << "\n";
+                std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance id: " << lastIndex << std::endl;
+                std::cout << "Hyphal tree index " << h->getParameter("hyphalTreeIndex") << "\n";
+                auto connected_to_hyphae = std::dynamic_pointer_cast<Hyphae>(sdf->segO.at(lastIndex).lock());                
+                std::cout << "connected to " << connected_to_hyphae->hyphalTreeIndex << "\n";
 
                 //std::cout<< "OrganID: " << h->getId() << " SDF" << sdf->treeIds_.at(distID)<< std::endl;
-
+                h->setActive(false); // deactivate hyphae after anastomosis
+                // std::dynamic_pointer_cast<Hyphae>(h)->setMergedHyphae(connected_to_hyphae); // set merged hyphae
             }
         }
 

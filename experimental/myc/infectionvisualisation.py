@@ -41,9 +41,9 @@ mycp.initialize(True)
 # print(mycp.toString())
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-simtime = 100
+simtime = 50
 fps = 1
-anim_time = 100
+anim_time = simtime
 N = fps * anim_time
 dt = simtime / N
 

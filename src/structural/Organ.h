@@ -64,7 +64,7 @@ public:
     std::shared_ptr<OrganRandomParameter> getOrganRandomParameter() const;  ///< organ type parameter
     bool isAlive() const { return alive; } ///< checks if alive
     bool isActive() const { return active; } ///< checks if active
-    void setActive(bool a) { active = a; } ///< sets active
+    void setActive(bool a) { active = a; } ///< sets active only needed for hyphal anastomosis
     double getAge() const { return age; } ///< return age of the organ
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
     double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)

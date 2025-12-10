@@ -57,6 +57,7 @@ Hyphae::Hyphae(std::shared_ptr<Organism> plant, int type,  double delay, std::sh
     this->partialIHeading = Vector3d::rotAB(theta,beta);
     double creationTime= parent->getNodeCT(pni)+delay;//default
     addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
+    setHyphalTreeIndex(-1);
 }
 
 void Hyphae::setHyphalTreeIndex(int index)
@@ -254,7 +255,7 @@ void Hyphae::createLateral(double pni)
     int subType = 1;
     auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay, shared_from_this(), pni); // delay - dt_
     children.push_back(hyphae);
-    hyphae->setHyphalTreeIndex(hyphalTreeIndex);
+    // hyphae->setHyphalTreeIndex(hyphalTreeIndex);
     // std::cout << "********* simulate "  << ", "<< plant.lock()->getSimTime() <<", " << dt_ << "\n";
     hyphae->simulate(dt_);
     // std::cout<< "Created lateral hyphae in hyphal tree " << hyphalTreeIndex << " with hopefully on the same index: "<< hyphae->getParameter("hyphalTreeIndex") << "\n";

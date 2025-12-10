@@ -336,6 +336,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getOrganRandomParameter",&Organ::getOrganRandomParameter)
             .def("isAlive",&Organ::isAlive)
             .def("isActive",&Organ::isActive)
+        //     .def("setActive",&Organ::setActive)
             .def("getAge",&Organ::getAge)
             .def("getLength", (double (Organ::*)(bool realized) const) &Organ::getLength, py::arg("realized") = true)
             .def("getLength", (double (Organ::*)(int i) const) &Organ::getLength)

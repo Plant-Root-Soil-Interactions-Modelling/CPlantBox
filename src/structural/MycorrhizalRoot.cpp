@@ -438,7 +438,7 @@ void MycorrhizalRoot::createHyphae(int pni)
     children.push_back(hyphae);
     emergedHyphae.at(pni) += 1;
     // std::cout << "********* simulate "  << ", "<< plant.lock()->getSimTime() <<", " << dt_ << "\n";
-    hyphae->setHyphalTreeIndex(-1);
+    // hyphae->setHyphalTreeIndex(-1);
     hyphae->simulate(dt_);
 }
 
