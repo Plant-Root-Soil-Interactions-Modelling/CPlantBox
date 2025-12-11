@@ -6,8 +6,6 @@
 
 namespace CPlantBox {
 
-class RootState;
-
 /**
  * RootDelay
  *
