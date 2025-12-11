@@ -43,40 +43,6 @@ def compaireOutPuts(genotype, extra_name):
         output = pickle.load(f)
         nums = [[[out['year'+str(year+1)]['num'][st] for year in range(50)] for st in range(subtypes)] for out in output]
     
-    SUFs = [[out['SUF'][year] for out in output]  for year in range(50)]
-    SUFmean = []
-    SUFsd = []
-    for _, SUF_ in enumerate(SUFs):
-        SUFslen_ = []
-        maxlen = max([len(ss) for ss in SUF_])
-        for ss in SUF_:
-            ss_padded = np.pad(ss, (0, maxlen - len(ss)))
-            SUFslen_.append(ss_padded)
-        ss_mean = np.mean(SUFslen_, axis=0)
-        ss_sd = np.std(SUFslen_, axis=0)
-        SUFmean.append(ss_mean)
-        SUFsd.append(ss_sd)
-
-    scaling = np.unique(np.logspace(np.log10(1), np.log10(50), num=10).astype(int)) 
-    fig, ax = plt.subplots(1,1, figsize=(5,10))
-
-    for _ in scaling: #, SUF_ in enumerate(SUFmean):
-        #for year, SUF in enumerate(SUF_):
-        SUF_ = SUFmean[_]
-        if True:#(_+1)%5 == 0:
-            error = SUFsd[_]
-            ax.plot(SUF_, [-i for i in range(len(SUF_))],  label = 'year ' + str(_+1))
-            #ax.fill_betweenx( [-i for i in range(len(SUF_))], SUF_ - error, SUF_ + error,
-            #         color='blue', alpha=0.1)#, label = 'year ' + str(_+1))
-    ax.legend()
-    ax.grid() 
-    fig.suptitle('SUF', fontsize=16)
-    plt.tight_layout()
-    plt.savefig("./results/part1/"+genotype+"/SUF"+ extra_name +".jpg")
-    plt.close()
-    print("did SUF")
-    
-    
     fig, axs = plt.subplots(2, 2, figsize=(12, 8))
     for st_, ax in enumerate(axs.flat):
         st = st_ + 5

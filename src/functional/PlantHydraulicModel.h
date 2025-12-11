@@ -50,6 +50,8 @@ public:
     std::vector<double> psiXyl;
 	std::vector<Eigen::Triplet<double>> tripletList;
 	Eigen::VectorXd b;
+    bool doBiCGSTAB = false;
+    int nthreads = 1;
 
 protected:
     bool dovector = true;

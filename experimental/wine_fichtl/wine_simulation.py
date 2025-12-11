@@ -75,7 +75,7 @@ Kax_a =  {'B' : viewer_conductivities.convert_axial(0.04749/100.),
 Kax_b =  {'B' : 2.06437, 'D' : 2.2410, 'E' : 1.98847}
 
     
-def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llambdao, kko,
+def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGSTAB = False): #llambdao, kko,
     start_time = time.time()
     output = []
     file_path =  CPlantBox_dir + '/experimental/wine_fichtl/rsml/RSML_year1/'
@@ -87,7 +87,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
     for rep in range(reps):
         N = 50
         if doProfile:
-            N = 5
+            N = 15
         outputs_12 = {
                 'num':[0. for i in range(subtypes)],
                 'length':[0. for i in range(1,subtypes)],
@@ -116,7 +116,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
         
         soilSpace = pb.SDF_PlantContainer(1e6, 1e6,1e6, True)  # to avoid root growing aboveground
         picker = lambda x, y, z: -int(z) 
-        plant = MappedPlantPython() #PlantPython() # pb.MappedPlant() #
+        plant = MappedPlantPython(1) #PlantPython() # pb.MappedPlant() #
 
         # Open plant and root parameter from a file
         plant.readParameters( CPlantBox_dir + '/experimental/wine_fichtl/results/xmlFiles/' + genotype + "-wineV2.xml")
@@ -138,6 +138,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
                 pp.successorNo = [10]#[params['successorNo0']] 
                 pp.successorST = [[[2]]]
                 pp.successorOT = [[[2]]]
+                
             elif ii == 1:      
                 pp.ldelay  = 0*yr_to_BEDD
                 pp.ldelays = yr_to_BEDD *0.5 #yr_to_BEDD * params['ldelays0'] #200#*5
@@ -149,6 +150,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
                 pp.lambda_survive = 9.426
                 pp.rlt_winter_max = 26.8 
                 pp.rlt_winter_min =  3.169
+                
             elif ii == 2:      
                 pp.ldelay_v  = [0,0]
                 pp.ldelays_v = [yr_to_BEDD , yr_to_BEDD*50] 
@@ -162,6 +164,13 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
                 pp.rlt_winter_max = 26.8 
                 pp.rlt_winter_min =  3.169
                 pp.tropismN = 0.5  
+                
+                ratioChange = pp.ln / pp.dx
+                pp.ln = pp.dx
+                pp.lns = 0
+                pp.successorNo = [pp.successorNo[0],int(pp.successorNo[1]/ratioChange)] 
+                pp.successorP = [ [[0.5/ratioChange],[0.5/ratioChange],[0.1/ratioChange]], thin_root_P]
+                
             elif ii == 3:      
                 pp.ldelay_v  = [0,0]
                 pp.ldelays_v = [yr_to_BEDD , yr_to_BEDD*50]  #yr_to_BEDD * params['ldelays0'] #200#*5
@@ -177,6 +186,13 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
                 #pp.lambda_survive =  4.995 
                 pp.rlt_winter_max = 13
                 pp.rlt_winter_min =  0
+                
+                ratioChange = pp.ln / pp.dx
+                pp.ln = pp.dx
+                pp.lns = 0
+                pp.successorNo = [pp.successorNo[0],int(pp.successorNo[1]/ratioChange)] 
+                pp.successorP = [ [[0.5/ratioChange],[0.5/ratioChange],[0.5/ratioChange]], thin_root_P]
+                
             elif ii == 4:      
                 pp.ldelay_v  = [0,0]
                 pp.ldelays_v = [yr_to_BEDD , yr_to_BEDD*50] #yr_to_BEDD * params['ldelays0'] #200#*5
@@ -193,11 +209,18 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
                 pp.lambda_survive = 9.426
                 pp.rlt_winter_max = 13/2
                 pp.rlt_winter_min =  0
+                
+                ratioChange = pp.ln / pp.dx
+                pp.ln = pp.dx
+                pp.lns = 0
+                pp.successorNo = [pp.successorNo[0],int(pp.successorNo[1]/ratioChange)] 
+                pp.successorP = [ [[0.05/ratioChange]], thin_root_P]
+                
             elif ii == 5:      
                 pp.ldelay  = 0*yr_to_BEDD
                 pp.ldelays =yr_to_BEDD * 50 #yr_to_BEDD * params['ldelays0'] #200#*5
                 pp.successorP = [thin_root_P]#[[params['successorP0']]]
-                pp.successorNo = [no_thin] #[params['successorNo0']] 
+                #pp.successorNo = [no_thin] #[params['successorNo0']] 
                 pp.successorST = [[[ii + 4],[ii + 4],[ii + 4]]]
                 pp.successorOT = [[[2],[2],[2]]]
                 pp.successorP_age = [thin_root_Page]
@@ -210,9 +233,16 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
                 pp.rlt_winter_max = 13/2/2
                 pp.rlt_winter_min =  0
                 
-            if ii <= 5:   
+                ratioChange = pp.ln / pp.dx
+                pp.ln = pp.dx
+                pp.lns = 0
+                pp.successorNo = [int(no_thin/ratioChange)]
+                
+            if (ii <= 5):   
                 pp.a = 0.093
                 pp.a_gr = 0.083/yr_to_BEDD
+                
+                
             else: # fine roots
                 pp.r = 1. # don t know the value, i just want something high
                 
@@ -256,13 +286,14 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
         dt = yr_to_BEDD  # ~1 yr
 
         if doVTP:
-            get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+"0", data = {}, saveOnly = True)
+            get3Dshape(plant,title_ = "./results/part1/vtp/"+extraName+'/'+genotype+"0", data = {}, saveOnly = True)
             
             
         param = PlantHydraulicParameters()
         param.set_kr_suberize_dependent(kr)          
         param.set_kx_radius_dependent([Kax_a[genotype],Kax_b[genotype]])
         hm = HydraulicModel_Meunier_large(plant, param)
+        hm.doBiCGSTAB = doBiCGSTAB
         #peri = Perirhizal(plant)
         assert len(plant.get_nodes()) == (len(plant.get_segments()) +1)
         
@@ -291,7 +322,6 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
             
             '''
             SUF
-            '''
             ana = pb.SegmentAnalyser(plant) 
             
             #nodeCT = ana.getParameter("creationTime")
@@ -311,6 +341,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
             SUFs.append(suf)#[0,:]
             #with open('./testSUF_RLD.pkl','wb') as f:
             #     pickle.dump([SUFs,RLDs],f, protocol=pickle.HIGHEST_PROTOCOL) #
+            '''
             '''
             other
             '''
@@ -360,13 +391,14 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
 
             # # get3Dshape(plant,title_ = 'wine'+str(i+1), saveOnly = True) 
             if doVTP:
-                get3Dshape(plant,title_ = "./results/part1/vtp/"+genotype+str(i+1),data = {'SUF': suf_}, saveOnly = True)
+                get3Dshape(plant,title_ = "./results/part1/vtp/"+extraName+'/'+genotype+str(i+1),#data = {'SUF': suf_}, 
+                           saveOnly = True)
                 
 
 
             
         # print('postprocessing')
-        # print("--- %s seconds for plant development---" % (time.time() - start_time),rep)
+        print("--- %s seconds for plant development---" % (time.time() - start_time),rep)
         outpouts_mean['SUF'] = SUFs
         outpouts_mean['RLDs'] = RLDs
         for year in range(N):
@@ -421,7 +453,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False): #llamb
                 print('issue root_age',root_age)
                 raise Exception
             
-            outpouts_mean['year50']['kde_' +key] = y
+            outpouts_mean['year'+str(N)]['kde_' +key] = y
 
         def flatten_values(obj):
             if isinstance(obj, dict):
@@ -460,9 +492,15 @@ if __name__ == '__main__':
         doProfile = int(sys.argv[4])
     else:
         doProfile = False
+    if len(sys.argv) > 5:
+        doBiCGSTAB = int(sys.argv[5])
+    else:
+        doBiCGSTAB = False
     print('sys.argv',sys.argv)
     if rep == 0:
         directory ='./results/outputSim/'+extraName
+        os.makedirs(directory, exist_ok=True)
+        directory ='./results/part1/vtp/'+extraName
         os.makedirs(directory, exist_ok=True)
         
     with open(CPlantBox_dir + '/experimental/wine_fichtl/results/objectiveData/measurements'+ genotype +'InitXX.pkl','rb') as f:
@@ -473,7 +511,8 @@ if __name__ == '__main__':
         import pstats, io
         pr = cProfile.Profile()
         pr.enable()
-    output = run_benchmark(xx, genotype, rep, doProfile)
+    print('run_benchmark(xx, genotype, rep, doProfile, doBiCGSTAB)',genotype, rep, doProfile, doBiCGSTAB)
+    output = run_benchmark(xx, genotype, rep, doProfile, doBiCGSTAB)
     if doProfile:
         pr.disable()
         filename = './results/profile'+str(rank)+'.prof' 

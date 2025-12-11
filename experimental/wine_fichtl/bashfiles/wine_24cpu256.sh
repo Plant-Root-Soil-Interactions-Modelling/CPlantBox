@@ -1,12 +1,12 @@
 #!/bin/bash
 #
 #SBATCH --job-name=wine
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=8
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
 #SBATCH --partition=cpu256
 #SBATCH --time=20-00:00:00
-#SBATCH --mem=30G
+#SBATCH --mem=60G
 #SBATCH --mail-type=BEGIN,TIME_LIMIT_50,END,FAIL,ALL
 #SBATCH --mail-user=m.giraud@fz-juelich.de
 #SBATCH --output=./slurmOut/slurm-%j.out
@@ -20,4 +20,5 @@ cd $HOME/CPBLukas/CPlantBox/experimental/wine_fichtl
 
 source $HOME/cpbenv/bin/activate
 
-python3 wine_simulation.py $1 $2 $3
+export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
+OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK} python3 wine_simulation.py $1 $2 $3 $4

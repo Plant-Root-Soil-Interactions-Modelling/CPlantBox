@@ -22,4 +22,6 @@ source $HOME/cpbenv/bin/activate
 
 
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
-OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK} python3 wine_simulation.py $1 $2 $3
+OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK} py-spy record -o profile.svg -- python3 wine_simulation.py $1 $2 $3
+# perf record -g 
+# valgrind --tool=callgrind 

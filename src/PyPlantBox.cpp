@@ -1088,7 +1088,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("aJ", &PlantHydraulicModel::aJ)
             .def_readwrite("aV", &PlantHydraulicModel::aV)
             .def_readwrite("aB", &PlantHydraulicModel::aB)
-            .def_readwrite("psiXyl", &PlantHydraulicModel::psiXyl);
+            .def_readwrite("psiXyl", &PlantHydraulicModel::psiXyl)
+            .def_readwrite("doBiCGSTAB", &PlantHydraulicModel::doBiCGSTAB);
 
 	/*
      * Photosynthesis.h

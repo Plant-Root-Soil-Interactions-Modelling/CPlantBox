@@ -235,6 +235,7 @@ def create_xml(genotype):
         pp.successorNo = [1]
         pp.a_s = 0.
         pp.la = max(pp.la, 0.)
+        pp.dxMin = 0.2
         if ii <= max(subsub):
             pp.a = 0.093/2
             pp.a_gr =  0.083/2/yr_to_BEDD

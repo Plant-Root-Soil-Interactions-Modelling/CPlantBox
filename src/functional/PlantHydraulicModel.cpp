@@ -3,11 +3,25 @@
 
 #include <algorithm>
 #include <set>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 namespace CPlantBox {
 
 PlantHydraulicModel::PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegments> ms, std::shared_ptr<CPlantBox::PlantHydraulicParameters> params):
-    ms(ms), params(params) { params->ms = ms;}
+    ms(ms), params(params) 
+    { params->ms = ms;
+    #ifdef _OPENMP
+    std::cout << "OpenMP enabled, max threads: " << omp_get_max_threads()<<" "<<omp_get_num_procs() <<std::flush<< std::endl;
+    #else
+        std::cout << "OpenMP not enabled" <<std::flush<< std::endl;
+    #endif
+     Eigen::initParallel();
+     nthreads = Eigen::nbThreads( );
+     std::cout<<"PlantHydraulicModel::PlantHydraulicModel number of threads for openmp "<< nthreads <<std::flush<<std::endl;
+     Eigen::setNbThreads(1);
+    }
 
 /** prescribes a Dirichlet boundary conditions for the system Qx=b
     @param n0         list of node indices, where the Dirichlet bc is applied
@@ -36,6 +50,7 @@ void PlantHydraulicModel::bc_dirichlet(Eigen::SparseMatrix<double>& mat, const s
         b[i] = d[c];
     }
 }
+
 /**
  * Solves the linear system filled by @see XylemFlux::linearSystem
  *
@@ -57,7 +72,7 @@ void PlantHydraulicModel::linearSystemMeunierSolve(double simTime, const std::ve
         throw std::runtime_error("mismatch in the number of nodes and segments");
     }
 	tripletList.clear();
-	tripletList.reserve(Ns*4);
+	tripletList.resize(Ns*4);
 	b = Eigen::VectorXd(N);
 	//get "tripletList" and "b"
 	linearSystemMeunier(simTime, sx, cells, soil_k); 
@@ -66,21 +81,43 @@ void PlantHydraulicModel::linearSystemMeunierSolve(double simTime, const std::ve
 	mat.setFromTriplets(tripletList.begin(), tripletList.end());
     bc_dirichlet(mat, n0, d);
 	mat.makeCompressed();
-	Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double>> solver;
-	solver.compute(mat);
+	Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double>> solverBiCGSTAB;
+	Eigen::SparseLU<Eigen::SparseMatrix<double>> solverLU;
+    
+        Eigen::VectorXd v2;
+    Eigen::setNbThreads(nthreads);
+    if(doBiCGSTAB)
+    {
+        
+        solverBiCGSTAB.compute(mat);
 
-	if(solver.info() != Eigen::Success){
-		std::cout << "PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed: " << solver.info() << std::endl;
-		throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed" );
-	}
+        if(solverBiCGSTAB.info() != Eigen::Success){
+            std::cout << "PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed: " << solverBiCGSTAB.info() << std::endl;
+            throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed" );
+        }
 
-	Eigen::VectorXd v2;
-	try{
-		v2= solver.solve(b);
-	}catch(...){
-		 throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve error when solving wat. pot. xylem with Eigen ");
-	}
-	psiXyl.assign(v2.data(), v2.data() + v2.size());
+        try{
+            v2= solverBiCGSTAB.solve(b);
+        }catch(...){
+             throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve error when solving wat. pot. xylem with Eigen ");
+        }
+    }else{
+        
+        solverLU.compute(mat);
+
+        if(solverLU.info() != Eigen::Success){
+            std::cout << "PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed: " << solverLU.info() << std::endl;
+            throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed" );
+        }
+
+        try{
+            v2= solverLU.solve(b);
+        }catch(...){
+             throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve error when solving wat. pot. xylem with Eigen ");
+        }
+    }
+    Eigen::setNbThreads(1);
+        psiXyl.assign(v2.data(), v2.data() + v2.size());
 }
 
 void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<double> sx, bool cells,
@@ -113,7 +150,8 @@ void PlantHydraulicModel::linearSystemMeunier_(double simTime, const std::vector
     std::fill(aI.begin(), aI.end(), 0);
     std::fill(aJ.begin(), aJ.end(), 0);
     size_t k=0;
-
+#pragma omp parallel private(k) shared(tripletList)
+    # pragma omp for schedule(static)
     for (int si = 0; si<Ns; si++) {
 
         int i = ms->segments[si].x;
@@ -142,21 +180,26 @@ void PlantHydraulicModel::linearSystemMeunier_(double simTime, const std::vector
         auto v = n2.minus(n1);
         double l = v.length();
         if (l<1.e-5) {
-            // std::cout << "XylemFlux::linearSystem: warning segment length smaller 1.e-5 \n";
-            l = 1.e-5; // valid quick fix? (also in segFluxes)
+            std::cout << "XylemFlux::linearSystem: warning segment length smaller 1.e-5 \n";
+            //l = 1.e-5; // valid quick fix? (also in segFluxes)
         }
 		double perimeter = ms->getPerimeter(si, l);//perimeter of exchange surface
         double vz = v.z / l; // normed direction
 
         double cii, cij, bi;
 
-        if (perimeter * kr>1.e-16) {
+        if ((perimeter * kr>1.e-16) && (l > 1e-5)) {
             double tau = std::sqrt(perimeter * kr / kx); // Eqn (6)
-            double delta = std::exp(-tau * l) - std::exp(tau * l); // Eqn (12)
-            double idelta = 1. / delta;
-            cii = -kx * idelta * tau * (std::exp(-tau * l) + std::exp(tau * l)); // Eqn (23)
+            
+            double exp_tau_l = std::exp(tau * l);
+            double exp_minus_tau_l = std::exp(-tau * l);
+            double delta = exp_minus_tau_l - exp_tau_l;// Eqn (12)
+            double idelta = 1.0 / delta;
+            
+            cii = -kx * idelta * tau * (exp_minus_tau_l + exp_tau_l); // Eqn (23)
             cij = 2 * kx * idelta * tau;  // Eqn 24
             bi = kx * vz; //  # Eqn 25
+            
         } else { // solution for a=0, or kr = 0
             cii = kx/l;
             cij = -kx/l;
@@ -167,9 +210,10 @@ void PlantHydraulicModel::linearSystemMeunier_(double simTime, const std::vector
         {
             k = fillVectors(k, i, j, bi, cii, cij, psi_s);
         }else{
+            k = si * 4;
             k = fillTripletList(k, i, j, bi, cii, cij, psi_s);
         }
-    }
+    }/*end omp parallel*/ 
 }
 
 /**
@@ -291,23 +335,26 @@ std::map<int,double> PlantHydraulicModel::sumSegFluxes(const std::vector<double>
 size_t PlantHydraulicModel::fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) 
 {
 	typedef Eigen::Triplet<double> Tri;
-	aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
+    #pragma omp atomic
+	b(i) += ( bi + cii * psi_s +cij * psi_s) ;//aB[i]
 
-	b(i) = aB[i];
-	tripletList.push_back(Tri(i,i,cii));
+	//b(i) = aB[i];
+	tripletList.at(k) = Tri(i,i,cii);
 	k += 1;
-	tripletList.push_back(Tri(i,j,cij));
+	tripletList.at(k) = Tri(i,j,cij);
 	k += 1;
 
 	int ii = i;
 	i = j;  j = ii; // edge ji
-	aB[i] += ( -bi + cii * psi_s +cij * psi_s) ; // (-bi) Eqn (14) with changed sign
+    
+    #pragma omp atomic
+	b(i) += ( -bi + cii * psi_s +cij * psi_s) ; // (-bi) Eqn (14) with changed sign //aB[i]
 
-	b(i) = aB[i];
-	tripletList.push_back(Tri(i,i,cii));
+	//b(i) = aB[i];
+	tripletList.at(k) = Tri(i,i,cii);
 	k += 1;
 
-	tripletList.push_back(Tri(i,j,cij));
+	tripletList.at(k) = Tri(i,j,cij);
 	k += 1;
 	return k;
 }
