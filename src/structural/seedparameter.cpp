@@ -2,6 +2,7 @@
 #include "seedparameter.h"
 
 #include "Organism.h"
+#include "tropism.h"
 
 #include <cmath>
 #include <iostream>
@@ -37,6 +38,8 @@ SeedRandomParameter::SeedRandomParameter(std::shared_ptr<Organism> plant) :Organ
     organType = Organism::ot_seed;
     subType = 0;
     bindParameters();
+    delayDefinition = Organism::dd_distance;
+    delayDefinitionShoot = Organism::dd_distance;
 }
 
 /**

@@ -3,6 +3,7 @@
 
 #include "Organism.h"
 #include "growth.h"
+#include "tropism.h"
 
 #include <limits>
 #include <iostream>
