@@ -1,23 +1,16 @@
-# This example reproduces the infiltration example from Schnepf et al. (2023, doi.org/10.1093/insilicoplants/diad005).
-# Water infiltrates into an initially dry soil from the soil surface. Only the vertical water movement is
-# considered. A constant Neumann boundary condition is set at the upper boundary and a free drainage
-# boundary condition is set at the lower boundary. There is an analytical solution for this simple example,
-# which can optionally be plotted for comparison.
+""" This example reproduces the infiltration example from Schnepf et al. (2023, doi.org/10.1093/insilicoplants/diad005).
+Water infiltrates into an initially dry soil from the soil surface. Only the vertical water movement is
+considered. A constant Neumann boundary condition is set at the upper boundary and a free drainage
+boundary condition is set at the lower boundary. There is an analytical solution for this simple example,
+which can optionally be plotted for comparison.
 
-# This example solves the Richards equation with DuMux. The github repository "dumux-rosi" (https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git) needs to be cloned
-# into the same path level as CPlantBox.
-
-# add paths to the folders containing CPlantBox and dumux-rosi
-import sys  # |\label{l61i:paths_a}|
-
-sys.path.append("../../../dumux-rosi/python/modules")
-sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")
-sys.path.append("../../../CPlantBox/src")  # |\label{l61i:paths_e}|
+This example solves the Richards equation with DuMux. The github repository "dumux-rosi" (https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git) needs to be cloned
+into the same path level as CPlantBox. """
 
 import matplotlib.pyplot as plt  # |\label{l61i:bibs1_a}|
 import numpy as np  # |\label{l61i:bibs1_e}|
-from richards import RichardsWrapper  # Python part  |\label{l61i:bibs2_e}|
-from rosi_richards import RichardsSPnum  # C++ part (Dumux binding) |\label{l61i:bibs2_a}|
+from rosi.richards import RichardsWrapper  # Python part  |\label{l61i:bibs2_e}|
+from rosi.rosi_richards import RichardsSPnum  # C++ part (Dumux binding) |\label{l61i:bibs2_a}|
 
 # from analytic_solution import *  # plots the analytical solutions to ax1, ax2, ax3 # optional |\label{l61i:bib3}|
 

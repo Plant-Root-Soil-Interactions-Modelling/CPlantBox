@@ -1,14 +1,11 @@
 """the alpha and omega of root water uptake (Vanderborght et al. 2023) """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
-sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux python binding
-sys.path.append("../../../dumux-rosi/python/modules/")  # python wrappers
 
 import timeit
 
 import matplotlib.pyplot as plt
 import numpy as np
-from richards import RichardsWrapper  # Python part
-from rosi_richards import RichardsSP  # C++ part (Dumux binding)
+from rosi.richards import RichardsWrapper  # Python part
+from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 import plantbox as pb
 from plantbox.functional.Perirhizal import PerirhizalPython as Perirhizal

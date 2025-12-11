@@ -1,9 +1,6 @@
 """ 
 Solute transport example - nitrate in movement in soil 
 """
-import sys; sys.path.append("../"); sys.path.append("../.."); sys.path.append("../../src/")
-sys.path.append("../../../dumux-rosi/python/modules"); sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")
-
 import datetime
 
 import matplotlib
@@ -11,8 +8,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
-from richards import RichardsWrapper  # Python part, macroscopic soil model
-from rosi_richardsnc import RichardsNCSP  # C++ part (Dumux binding), macroscopic soil model
+from rosi.richards import RichardsWrapper  # Python part, macroscopic soil model
+from rosi.rosi_richardsnc import RichardsNCSP  # C++ part (Dumux binding), macroscopic soil model
 
 
 def plot_results(h, c , times, net_inf, fw, depth = -100.):
@@ -175,7 +172,7 @@ print("sum net inf", 10 * np.sum(net_inf), "mm")
 # plot_profile(s.getSolutionHead(), s.getSolution_(1))
 
 N = int(np.ceil(sim_time / dt))
-c, h, w = [], [], [] # results
+c, h, w = [], [], []  # results
 fw = np.zeros(sim_time)
 
 for i in range(0, N):  # |\label{l62:loop_loop}|
@@ -200,7 +197,7 @@ for i in range(0, N):  # |\label{l62:loop_loop}|
     h.append(s.getSolutionHead_())  # [cm]
     w.append(s.getWaterContent())  # [1]
     c.append(s.getSolution_(1))  # [g/L]
-    fw[int(t)] += s.getLowerBoundaryFluxesPerCell(0).sum() # [cm/day]  # |\label{l62:BCfluxes}| 
+    fw[int(t)] += s.getLowerBoundaryFluxesPerCell(0).sum()  # [cm/day]  # |\label{l62:BCfluxes}|
 
 print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000., "l")  # |\label{l62:results}|
 print("water content to water volume", np.sum(w[-1]) * area * 1, "cm3")

@@ -1,7 +1,4 @@
 """ coupling with DuMux as solver for the soil part, dumux-rosi must be installed & compiled """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
-sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux python binding
-sys.path.append("../../../dumux-rosi/python/modules/")  # python wrappers
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -10,8 +7,8 @@ from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
 from plantbox.functional.Perirhizal import PerirhizalPython  # |\label{l73:perirhizal}|
 import plantbox.functional.van_genuchten as vg
-from rosi_richards import RichardsSP  # C++ part (Dumux binding)
-from richards import RichardsWrapper  # Python part
+from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
+from rosi.richards import RichardsWrapper  # Python part
 import numpy as np
 import matplotlib.pyplot as plt
 import figure_style
@@ -76,7 +73,7 @@ hm.test()  # |\label{l73c:test}|
 
 """ Perirhizal initialization """
 hs = s.getSolutionHead()
-if rank == 0: 
+if rank == 0:
     peri = PerirhizalPython(hm.ms)  # |\label{l73c:peri}|
     # peri.set_soil(vg.Parameters(loam))  # |\label{l73c:perisoil}|
     home = Path.home()
@@ -92,12 +89,12 @@ if rank == 0:
     hs_ = hm.ms.getHs(hs)  # [cm] matric potential per segment  |\label{l73c:geths}|
     hsr = hs_.copy()  # initial values for fix point iteration # |\label{l73c:initial_hsr}|
 
-source_water = None 
+source_water = None
 hx = None
 N = round(sim_time / dt)
 t = 0.
 for i in range(0, N):  # |\label{l73c:loop}|
-    
+
     if rank == 0:
         hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hsr, cells = False)  # |\label{l73c:initial_hx}|
         hx_old = hx.copy()
@@ -121,7 +118,7 @@ for i in range(0, N):  # |\label{l73c:loop}|
 
         fluxes = hm.radial_fluxes(rs_age + t, hx, hsr, cells = False)  # |\label{l73c:fluxes}|
         source_water = hm.sumSegFluxes(fluxes)
-    
+
     water = s.getWaterVolume()  # |\label{l73c:domain_water}|
     source_water = comm.bcast(source_water, root = 0)
     s.setSource(source_water)  # TODO will be moved to MappedSegments # |\label{l73c:soil_fluxes}|
@@ -144,11 +141,11 @@ for i in range(0, N):  # |\label{l73c:loop}|
             vp.write_soil_mpi("results/example73_{:06d}".format(i // 10), hs, wc, min_b, max_b, cell_number)
     t += dt
 
-if rank == 0: 
+if rank == 0:
     print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l73c:timing}|
 
 """ VTK visualisation """  # |\label{l73c:plots}|
-hx = comm.bcast(hx, root = 0) 
+hx = comm.bcast(hx, root = 0)
 vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", hx, s, True, np.array(min_b), np.array(max_b), cell_number, name)
 
 if rank == 0:

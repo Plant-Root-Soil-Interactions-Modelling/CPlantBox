@@ -4,8 +4,6 @@ from Vanderborght et al. (2005)
 
 D. Leitner, 2018
 """
-import sys; sys.path.append("../modules"); sys.path.append("../../../CPlantBox");  sys.path.append("../../../CPlantBox/src")
-
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import integrate
@@ -30,10 +28,13 @@ for i, soil in enumerate([sand, loam, clay]):  # make three subplots
 
     K_sur = vg.hydraulic_conductivity(vg.pressure_head(theta_sur, soil), soil)
     K_i = vg.hydraulic_conductivity(-400, soil)
+
     def psi(theta):
         return vg.pressure_head(theta, soil)
+
     def K(psi):
         return vg.hydraulic_conductivity(psi, soil)
+
     def Dw(psi):
         return K(psi) / (vg.specific_moisture_storage(psi, soil))
 
@@ -74,16 +75,16 @@ for i, soil in enumerate([sand, loam, clay]):  # make three subplots
         x = eta + (K_sur - K_i) * t / (theta_sur - theta_i)
         ax[i].plot(theta_, -x, lineStyle[i])
 
-    ax[i].set_xlabel(r'$\theta$ (cm$^3$ cm$^{-3}$)', fontsize=20)
+    ax[i].set_xlabel(r'$\theta$ (cm$^3$ cm$^{-3}$)', fontsize = 20)
     ax[i].set_xlim(0, 0.5)
 
-ax1.set_ylabel('Depth (cm)',fontsize=20)
+ax1.set_ylabel('Depth (cm)', fontsize = 20)
 ax1.set_ylim(-150, 0)
 ax2.set_ylim(-200, 0)
 ax3.set_ylim(-120, 0)
-ax1.tick_params(axis='both', which='major', labelsize=16)
-ax2.tick_params(axis='both', which='major', labelsize=16)
-ax3.tick_params(axis='both', which='major', labelsize=16)
+ax1.tick_params(axis = 'both', which = 'major', labelsize = 16)
+ax2.tick_params(axis = 'both', which = 'major', labelsize = 16)
+ax3.tick_params(axis = 'both', which = 'major', labelsize = 16)
 
 if __name__ == "__main__":
     plt.show()

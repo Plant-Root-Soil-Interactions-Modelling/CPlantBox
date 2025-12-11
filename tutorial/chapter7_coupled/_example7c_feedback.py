@@ -1,15 +1,12 @@
 """ coupling with DuMux as solver for the soil part, dumux-rosi must be installed & compiled """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
-sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux python binding
-sys.path.append("../../../dumux-rosi/python/modules/")  # python wrappers
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver
 from plantbox.functional.root_conductivities import *  # hard coded conductivities
 
-from rosi_richards import RichardsSP  # C++ part (Dumux binding)
-from richards import RichardsWrapper  # Python part
+from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
+from rosi.richards import RichardsWrapper  # Python part
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -94,7 +91,7 @@ r.rs.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell
 
 # Manually set tropism to hydrotropism for the first ten root types
 sigma = [0.4, 1., 1., 1., 1. ] * 2
-for p in rs.getRootRandomParameter():
+for p in rs.getOrganRandomParameter():
         p.dx = 0.25  # adjust resolution
         p.tropismT = pb.TropismType.hydro
         p.tropismN = 2  # strength of tropism

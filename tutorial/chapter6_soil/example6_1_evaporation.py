@@ -1,24 +1,15 @@
-# This example reproduces the evaporation example M2.2 from Schnepf et al. (2023, doi.org/10.1093/insilicoplants/diad005).
-# Water evaporated from the surface of an initially moist soil. Only the vertical water movement is
-# considered. Atmospheric boundary conditions are set at the upper boundary and a free drainage
-# boundary condition is set at the lower boundary. There is an analytical solution for this simple example,
-# which can optionally be plotted for comparison.
+""" This example reproduces the evaporation example M2.2 from Schnepf et al. (2023, doi.org/10.1093/insilicoplants/diad005).
+Water evaporated from the surface of an initially moist soil. Only the vertical water movement is
+considered. Atmospheric boundary conditions are set at the upper boundary and a free drainage
+boundary condition is set at the lower boundary. There is an analytical solution for this simple example,
+which can optionally be plotted for comparison.
 
-# This example solves the Richards equation with DuMux. The github repository "dumux-rosi" (https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git) needs to be cloned
-# into the same path level as CPlantBox.
+This example solves the Richards equation with DuMux. The github repository "dumux-rosi" (https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git) needs to be cloned
+into the same path level as CPlantBox. """
 
-import sys; sys.path.append("../modules"); sys.path.append("../../build-cmake/cpp/python_binding/")
-# add paths to the folders containing CPlantBox and dumux-rosi
-import sys  # |\label{l61:paths_a}|
-
-sys.path.append("../../../dumux-rosi/python/modules")
-sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")
-sys.path.append("../../../CPlantBox/src")  # |\label{l61:paths_e}|
-
-# from example6_2_evaporation_analytic_solution import *  # analytical solution
 import matplotlib.pyplot as plt
-from richards import RichardsWrapper  # Python part
-from rosi_richards import RichardsSP  # C++ part (Dumux binding)
+from rosi.richards import RichardsWrapper  # Python part
+from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 # Define Van Genuchten and other parameters
 sand = [0.045, 0.43, 0.15, 3, 1000]  # |\label{l61:params_a}|
