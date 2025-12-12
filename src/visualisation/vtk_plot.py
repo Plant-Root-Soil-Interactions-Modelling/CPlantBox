@@ -639,7 +639,9 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     if sol_ind > 0:
         solute = np.array(s.getSolution(sol_ind))
 
-    from mpi4py import MPI;rank = comm.Get_rank();  # moved it here because it caused trouble for webapp server
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank();  # moved it here because it caused trouble for webapp server
 
     if rank == 0:
         if isinstance(rs, pb.SegmentAnalyser):
@@ -687,7 +689,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
     @param s             soil, of type RichardsSP, or RichardsNCSP
-    @param rp            root parameter segment data (will be added, in case SegmentAnalyser is creaeted)
+    @param rp            root parameter segment data (will be added, in case SegmentAnalyser is created)
     @param periodic      if yes the root system will be mapped into the domain
     @param min_b         minimum of domain boundaries
     @param max_b         maximum of domain boundaries
