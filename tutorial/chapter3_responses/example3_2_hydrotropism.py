@@ -1,4 +1,5 @@
 """hydrotropism in a thin layer"""
+
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
@@ -8,7 +9,7 @@ name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")  # |\label{l3_2_hydrotropism:libsend}|
 
 # Manually set tropism to hydrotropism for the first ten root types
-sigma = [0.4, 1., 1., 1., 1. ] * 2  # |\label{l3_2_hydrotropism:tsetstart}|
+sigma = [0.4, 1.0, 1.0, 1.0, 1.0] * 2  # |\label{l3_2_hydrotropism:tsetstart}|
 for p in rs.getOrganRandomParameter(pb.root):
     p.dx = 0.25  # adjust resolution
     p.tropismT = pb.TropismType.hydro

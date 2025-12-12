@@ -1,4 +1,4 @@
-""" water movement within the root (static soil) """
+"""water movement within the root (static soil)"""
 
 import numpy as np
 
@@ -33,9 +33,9 @@ hm = HydraulicModel_Doussan(plant, params)  # |\label{l41:model}|
 # Numerical solution  # |\label{l41:numerical}|
 ns = plant.getNumberOfMappedSegments()
 hsr = plant.total2matric(Hs * np.ones((ns,)))  # |\label{l41:hsr}|
-hx = hm.solve_dirichlet(initial_age, h0, hsr, cells = False)  # |\label{l41:dirichlet}|
+hx = hm.solve_dirichlet(initial_age, h0, hsr, cells=False)  # |\label{l41:dirichlet}|
 print(f"Root collar potential {hx[0]:g} [cm], transpiration {hm.get_transpiration(initial_age, hx, hsr):g} [cm3/day]")
-hx = hm.solve_neumann(initial_age, t_pot, hsr, cells = False)  # |\label{l41:neumann}|
+hx = hm.solve_neumann(initial_age, t_pot, hsr, cells=False)  # |\label{l41:neumann}|
 print(f"Root collar potential {hx[0]:g} [cm], transpiration {hm.get_transpiration(initial_age, hx, hsr):g} [cm3/day]")  # |\label{l41:numerical_end}|
 
 # Additional vtk plot
@@ -48,5 +48,7 @@ ana.addFluxes(hm, hx, hsr, initial_age)  # "axial_flux" [cm3/day], "radial_flux"
 vp.plot_plant(ana, "radial_flux")  # |\label{l41:sa_end}|
 
 # output for paraview
-ana.write("results/example4_1_roothydraulics.vtp",  # |\label{l41:paraview}|
-          types = ["radius", "subType", "age", "hx", "SUF", "kr", "kx", "axial_flux", "radial_flux"])
+ana.write(
+    "results/example4_1_roothydraulics.vtp",  # |\label{l41:paraview}|
+    types=["radius", "subType", "age", "hx", "SUF", "kr", "kx", "axial_flux", "radial_flux"],
+)

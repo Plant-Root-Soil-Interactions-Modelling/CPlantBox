@@ -1,14 +1,15 @@
-""" This example builds on the infiltration and evaporation problem M2.1 and M2.2 from Schnepf et al. (2023, 
+"""This example builds on the infiltration and evaporation problem M2.1 and M2.2 from Schnepf et al. (2023,
 doi.org/10.1093/insilicoplants/diad005) and extends the simulation to a multi-layered soil profile at the Field Minirhizotron Facilities Selhausen
-(https://www.fz-juelich.de/en/ibg/ibg-3/research-groups/modelling-terrestrial-systems/soil-root-systems-and-rhizosphere-processes/field-minirhizotron-facilities). 
-The hydraulic properties of the soil profile are taken from Bauer et al. (2011, table 3, https://doi.org/10.1007/s10533-011-9583-1). 
-The Richards equations is solved to simulate water infiltration over 1 day into an initially dry soil followed by evaporation over 2 days. Only the vertical water movement is considered. A Neumann boundary condition is set at the upper boundary and a free drainage boundary condition is set at the lower boundary. 
+(https://www.fz-juelich.de/en/ibg/ibg-3/research-groups/modelling-terrestrial-systems/soil-root-systems-and-rhizosphere-processes/field-minirhizotron-facilities).
+The hydraulic properties of the soil profile are taken from Bauer et al. (2011, table 3, https://doi.org/10.1007/s10533-011-9583-1).
+The Richards equations is solved to simulate water infiltration over 1 day into an initially dry soil followed by evaporation over 2 days. Only the vertical water movement is considered. A Neumann boundary condition is set at the upper boundary and a free drainage boundary condition is set at the lower boundary.
 
 The code solves the Richards equation with DuMux. The github repository "dumux-rosi" (https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git) needs to be cloned
-into the same path level as CPlantBox. """
+into the same path level as CPlantBox."""
 
-import matplotlib.pyplot as plt  #
-import numpy as np  #
+import matplotlib.pyplot as plt
+import numpy as np
+
 from rosi.richards import RichardsWrapper  # Python part
 from rosi.rosi_richards import RichardsSPnum  # C++ part (Dumux binding)
 
@@ -26,22 +27,22 @@ dt = 0.05  # 720 / (24 * 3600)  # time step [days]
 # Solve the Richards equation using the Python wrapper of dumux-rosi
 s = RichardsWrapper(RichardsSPnum())  #
 s.initialize()  #
-s.setTopBC("atmospheric", 0.5, [[0., 1., 1., 3.], [10., 10., -0.1, -0.1]])  #  [cm/day] atmospheric is with surface run-off   |\label{l61ies:top_bc}|
+s.setTopBC("atmospheric", 0.5, [[0.0, 1.0, 1.0, 3.0], [10.0, 10.0, -0.1, -0.1]])  #  [cm/day] atmospheric is with surface run-off   |\label{l61ies:top_bc}|
 s.setBotBC("freeDrainage")  # |\label{l61ies:bottom_bc}|
 N = 119 * 10  # use a fine grid resolution of 1 mm per grid point in z direction |\label{l61ies:grid}|
-s.createGrid([-5., -5., -120.], [5., 5., 0.], [1, 1, N])  # [cm] N   |\label{l61ies:grid}|
+s.createGrid([-5.0, -5.0, -120.0], [5.0, 5.0, 0.0], [1, 1, N])  # [cm] N   |\label{l61ies:grid}|
 # define soil layers
 layers_ID = [4, 4, 3, 3, 2, 2, 1, 1]  # |\label{l61ies:layers_s}|
-layers_pos = [-120., -57., -57., -33., -33, -20, -20, 0]  # |\label{l61ies:layers_e}|
+layers_pos = [-120.0, -57.0, -57.0, -33.0, -33, -20, -20, 0]  # |\label{l61ies:layers_e}|
 s.setLayersZ(layers_ID, layers_pos)
-s.setHomogeneousIC(-400.)  # cm pressure head    |\label{l61ies:ic}|
+s.setHomogeneousIC(-400.0)  # cm pressure head    |\label{l61ies:ic}|
 s.setVGParameters(soil)  # |\label{l61ies:set_vg}|
 s.initializeProblem()  # |\label{l61ies:initialise}|
 s.setCriticalPressure(-15000)  #
-s.ddt = 1.e-5  # initial dumux time step [days]
+s.ddt = 1.0e-5  # initial dumux time step [days]
 
-top_ind = s.pick([0., 0., -0.5])
-bot_ind = s.pick([0., 0., -119.5])  #  |\label{l61ies:bot_ind}|
+top_ind = s.pick([0.0, 0.0, -0.5])
+bot_ind = s.pick([0.0, 0.0, -119.5])  #  |\label{l61ies:bot_ind}|
 top_new, bot_new, soil_times = [], [], []
 
 N = int(np.ceil(sim_time / dt))  #
@@ -71,23 +72,23 @@ bot_new = np.array(bot_new)
 soil_times = np.array(soil_times)
 
 # define output times
-sel_idx = np.searchsorted(soil_times, [0., 0.2, 0.5, 1., 1.2, 2., 3.])
+sel_idx = np.searchsorted(soil_times, [0.0, 0.2, 0.5, 1.0, 1.2, 2.0, 3.0])
 
 # Plot solutions |\label{l61ies:plt_prof}|
-fig1, axs = plt.subplots(2, 1, sharex = 'row', figsize = (12, 12))
+fig1, axs = plt.subplots(2, 1, sharex="row", figsize=(12, 12))
 cols = ["k-", "r-", "r--", "r-.", "b-.", "b--", "b-"]
 ii = 0
 for i in sel_idx:
-    axs[0].plot(x_[i], z_[i], cols[ii], label = f'{soil_times[i]:.2f} d')
-    axs[1].plot(h_[i], z_[i], cols[ii], label = f'{soil_times[i]:.2f} d')
+    axs[0].plot(x_[i], z_[i], cols[ii], label=f"{soil_times[i]:.2f} d")
+    axs[1].plot(h_[i], z_[i], cols[ii], label=f"{soil_times[i]:.2f} d")
     ii = ii + 1
 axs[0].set_title("Infiltration 1 $d$ with 10 $cm$ $d^{-1}$ \n and evaporation 2 $d$ with 0.1 $cm$ $d^{-1}$ afterwards")
-axs[0].set_xlabel('Volumetric water content [$cm^{3}$ $cm^{-3}$]')
-axs[0].set_ylabel('Depth [cm]')
-axs[1].set_xlabel('Head [cm]')
-axs[1].set_ylabel('Depth [cm]')
-axs[0].legend(loc = "best")
-axs[1].legend(loc = "best")
+axs[0].set_xlabel("Volumetric water content [$cm^{3}$ $cm^{-3}$]")
+axs[0].set_ylabel("Depth [cm]")
+axs[1].set_xlabel("Head [cm]")
+axs[1].set_ylabel("Depth [cm]")
+axs[0].legend(loc="best")
+axs[1].legend(loc="best")
 
 plt.show()
 

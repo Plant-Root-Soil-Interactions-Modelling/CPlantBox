@@ -18,7 +18,7 @@ for i in range(0, N):  # |\label{l2_2_2:iterationpositionbegin}|
         plant.readParameters(path + name + ".xml")
         seed = plant.getOrganRandomParameter(pb.seed)[0]
         seed.seedPos = pb.Vector3d(dist * i, dist * j, -3.0)  # cm
-        plant.initialize(verbose = False)
+        plant.initialize(verbose=False)
         all_.append(plant)  # |\label{l2_2_2:iterationpositionend}|
 
 # Simulate all plants

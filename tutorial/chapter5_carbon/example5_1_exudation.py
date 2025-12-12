@@ -1,4 +1,5 @@
 """analytic computation of citrate exudation around a growing root system"""
+
 import time  # |\label{l5_2_exudation:libend}|
 
 import matplotlib as mpl  # |\label{l5_2_exudation:libstart}|
@@ -9,9 +10,9 @@ from pyevtk.hl import gridToVTK
 
 import plantbox as pb
 
-font = {'size': 20}  # TODO move to figure_style.py
-plt.rc('font', **font)
-mpl.rcParams['mathtext.default'] = 'regular'
+font = {"size": 20}  # TODO move to figure_style.py
+plt.rc("font", **font)
+mpl.rcParams["mathtext.default"] = "regular"
 
 # Root system
 rs = pb.RootSystem()  # |\label{l5_2_exudation:rsstart}|
@@ -26,13 +27,13 @@ rs.write("results/example5_2_exudation_rootsystem.vtp")  # |\label{l5_2_exudatio
 
 # Grid parameter
 nodes = np.array([np.array(n) for n in rs.getNodes()])  # |\label{l5_2_exudation:gridstart}|
-boxmin = nodes.min(axis = 0)
-boxmax = nodes.max(axis = 0)
+boxmin = nodes.min(axis=0)
+boxmax = nodes.max(axis=0)
 width = abs(max(boxmax[0], boxmax[1]) - min(boxmin[0], boxmin[1])) + 6  # cm
 depth = abs(boxmin[2]) + 3
-xres = .3
-yres = .3
-zres = .3
+xres = 0.3
+yres = 0.3
+zres = 0.3
 nx = int(width / xres)
 ny = int(width / yres)
 nz = int(depth / zres)
@@ -50,7 +51,7 @@ model.l = 5  # Citrate depositon length behind the root tip (cm)   # |\label{l5_
 # Numerical parameter
 model.type = pb.IntegrationType.mls  # mps, mps_straight, mls # |\label{l5_2_exudation:numparamstart}|
 model.n0 = 10  # integration points per cm
-model.thresh13 = 1.e-15  # threshold to neglect diffusing g (eqn 13)
+model.thresh13 = 1.0e-15  # threshold to neglect diffusing g (eqn 13)
 model.calc13 = True  # turns Eqn 13  on (True) and off (False)
 model.observationRadius = 0.8  # limits computational domain around roots [cm]  # |\label{l5_2_exudation:numparamend}|
 
@@ -64,22 +65,22 @@ C = np.reshape(C, (nx, ny, nz))  # |\label{l5_2_exudation:reshapestart}|
 X = np.linspace(-width / 2, width / 2, nx)
 Y = np.linspace(-width / 2, width / 2, ny)
 Z = np.linspace(-depth, 0, nz)
-X_, Y_, Z_ = np.meshgrid(X, Y, Z, indexing = "ij")  # |\label{l5_2_exudation:reshapeend}|
+X_, Y_, Z_ = np.meshgrid(X, Y, Z, indexing="ij")  # |\label{l5_2_exudation:reshapeend}|
 
-gridToVTK("results/./example5_2_exudation_citrate", X, Y, Z, pointData = {"Citrate concentration":C})  # |\label{l5_2_exudation:save}|
+gridToVTK("results/./example5_2_exudation_citrate", X, Y, Z, pointData={"Citrate concentration": C})  # |\label{l5_2_exudation:save}|
 
 fig1 = plt.figure()  # |\label{l5_2_exudation:plotstart}|
 ax = plt.axes()
-C_ = C[:, int(ny / 2),:]
-C_ = C_ + 10 ** -5
+C_ = C[:, int(ny / 2), :]
+C_ = C_ + 10**-5
 levels = np.linspace(np.min(np.log10(C_[:])), np.max(np.log10(C_[:])))
-cs = ax.contourf(X_[:, int(ny / 2),:], Z_[:, int(ny / 2),:], np.log10(C_), levels = levels, cmap = 'jet')
-plt.axis('equal')
-cbar = fig1.colorbar(cs, pad = -0.4)
-cbar.set_label(r'log10 Citrate concentration $(\mu g \, cm^{-3})$')
-cbar.locator = MaxNLocator(nbins = 5)
+cs = ax.contourf(X_[:, int(ny / 2), :], Z_[:, int(ny / 2), :], np.log10(C_), levels=levels, cmap="jet")
+plt.axis("equal")
+cbar = fig1.colorbar(cs, pad=-0.4)
+cbar.set_label(r"log10 Citrate concentration $(\mu g \, cm^{-3})$")
+cbar.locator = MaxNLocator(nbins=5)
 ax.set_xticks([])
 ax.set_yticks([])
-for pos in ['right', 'top', 'bottom', 'left']:
+for pos in ["right", "top", "bottom", "left"]:
     plt.gca().spines[pos].set_visible(False)
 plt.show()  # |\label{l5_2_exudation:plotend}|

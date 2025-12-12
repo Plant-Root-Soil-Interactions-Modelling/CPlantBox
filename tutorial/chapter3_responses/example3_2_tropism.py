@@ -5,7 +5,7 @@ import numpy as np
 
 import plantbox as pb
 
-fig, axes = plt.subplots(4, 4, figsize = (15, 10))
+fig, axes = plt.subplots(4, 4, figsize=(15, 10))
 
 N_ = [0, 1, 2, 4]  # strength [1] # |\label{l3_2_tropism:valuesstart}|
 sigma_ = [0, 0.1, 0.3, 0.6]  # flexibility [1/m]  # |\label{l3_2_tropism:valuesend}|
@@ -14,7 +14,7 @@ theta = 70 / 180 * np.pi  # insertion angle [1]
 
 rs = pb.Plant()
 srp = pb.SeedRandomParameter(rs)
-srp.firstB, srp.delayB, srp.maxB = 3, 3 , 100
+srp.firstB, srp.delayB, srp.maxB = 3, 3, 100
 rs.setOrganRandomParameter(srp)
 
 p0 = pb.RootRandomParameter(rs)
@@ -39,9 +39,9 @@ for i, n in enumerate(N_):  # |\label{l3_2_tropism:loopstart}|
             n1, n2 = nodes[s.x], nodes[s.y]  # |\label{l3_2_tropism:readend}|
             a.plot([n1.x, n2.x], [n1.z, n2.z], "r")  # |\label{l3_2_tropism:plotstart}|
         a.set_title(rf"$N$ = {n}, $\sigma$ = {sigma}")
-        a.axis('equal')
-        a.set_xlim([-30, 30.])
-        a.set_ylim([-40., 0.])
+        a.axis("equal")
+        a.set_xlim([-30, 30.0])
+        a.set_ylim([-40.0, 0.0])
 
 fig.tight_layout()
 fig.canvas.manager.set_window_title("Gravitropism parameters")

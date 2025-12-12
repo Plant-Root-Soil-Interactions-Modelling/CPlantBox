@@ -4,6 +4,7 @@ from Vanderborght et al. (2005)
 
 D. Leitner, 2018
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import integrate
@@ -18,7 +19,6 @@ fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
 ax = [ax1, ax2, ax3]
 
 for i, soil in enumerate([sand, loam, clay]):  # make three subplots
-
     if soil == sand:
         theta_sur = 0.2824
     else:
@@ -44,20 +44,20 @@ for i, soil in enumerate([sand, loam, clay]):  # make three subplots
     theta_a = (theta_sur + theta_i) / 2
 
     if soil == clay:  # todo: same same?
-        theta_ = np.linspace (theta_i + 1e-3, theta_sur - 1e-3, 300)
+        theta_ = np.linspace(theta_i + 1e-3, theta_sur - 1e-3, 300)
     else:
-        theta_ = np.linspace (theta_i + 1e-3, theta_sur - 1e-3, 300)
+        theta_ = np.linspace(theta_i + 1e-3, theta_sur - 1e-3, 300)
 
-    delta_eta = np.zeros(len(theta_),)
+    delta_eta = np.zeros(
+        len(theta_),
+    )
     for j in range(0, len(theta_)):
         ans, err = integrate.quad(F, theta_[j], theta_a)
         delta_eta[j] = ans
 
     delta_eta = delta_eta * (theta_sur - theta_i)
 
-    tv = [ [0.1, 0.2, 0.3],
-         [0.2, 0.5, 1.0],
-         [0.1, 0.2, 0.5]]
+    tv = [[0.1, 0.2, 0.3], [0.2, 0.5, 1.0], [0.1, 0.2, 0.5]]
 
     x_aa = [43, 41, 27.5]  # [42.14103, 35.21381052, 23.0052]; %50;  #  how to choose reference water content and its position ????
     x_a = x_aa[i]
@@ -69,22 +69,22 @@ for i, soil in enumerate([sand, loam, clay]):  # make three subplots
     eta = delta_eta + eta_a
 
     # finally, plot the thing
-    lineStyle = ['b-', 'b-', 'b-']
+    lineStyle = ["b-", "b-", "b-"]
     for j in range(0, len(tv[0])):
         t = tv[i][j]
         x = eta + (K_sur - K_i) * t / (theta_sur - theta_i)
         ax[i].plot(theta_, -x, lineStyle[i])
 
-    ax[i].set_xlabel(r'$\theta$ (cm$^3$ cm$^{-3}$)', fontsize = 20)
+    ax[i].set_xlabel(r"$\theta$ (cm$^3$ cm$^{-3}$)", fontsize=20)
     ax[i].set_xlim(0, 0.5)
 
-ax1.set_ylabel('Depth (cm)', fontsize = 20)
+ax1.set_ylabel("Depth (cm)", fontsize=20)
 ax1.set_ylim(-150, 0)
 ax2.set_ylim(-200, 0)
 ax3.set_ylim(-120, 0)
-ax1.tick_params(axis = 'both', which = 'major', labelsize = 16)
-ax2.tick_params(axis = 'both', which = 'major', labelsize = 16)
-ax3.tick_params(axis = 'both', which = 'major', labelsize = 16)
+ax1.tick_params(axis="both", which="major", labelsize=16)
+ax2.tick_params(axis="both", which="major", labelsize=16)
+ax3.tick_params(axis="both", which="major", labelsize=16)
 
 if __name__ == "__main__":
     plt.show()

@@ -49,7 +49,7 @@ plant.setOrganRandomParameter(srp)
 
 plant.initialize()
 
-fig, axes = plt.subplots(1, 3, figsize = (15, 7))
+fig, axes = plt.subplots(1, 3, figsize=(15, 7))
 simtimes = [0, 30, 60, 125]  # the last lateral will emerge at
 for i in range(0, 3):
     plant.simulate(np.diff(simtimes)[i])  #  [day]

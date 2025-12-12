@@ -1,4 +1,4 @@
-""" change parameters in the input script"""
+"""change parameters in the input script"""
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -6,7 +6,7 @@ import plantbox.visualisation.vtk_plot as vp
 path = "../../modelparameter/structural/plant/"
 
 p = pb.MappedPlant(2)
-p.readParameters(path + "example2_1_2.xml", verbose = True)
+p.readParameters(path + "example2_1_2.xml", verbose=True)
 
 rrp = p.getOrganRandomParameter(pb.root)[1]  # laterals of taproot #|\label{l2_1:arrayStart1}|
 rrp.successorOT = [[pb.root]]

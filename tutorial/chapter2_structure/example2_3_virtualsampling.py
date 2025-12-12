@@ -37,7 +37,7 @@ soilSpace = pb.SDF_PlantContainer(500, 500, 500, True)
 for i in range(0, M):  # |\label{l2_3:simulationbegin}|
     for j in range(0, N):
         plant = pb.Plant()
-        plant.readParameters(path + name + ".xml", fromFile = True, verbose = False)
+        plant.readParameters(path + name + ".xml", fromFile=True, verbose=False)
         seed = plant.getOrganRandomParameter(pb.seed)[0]
         seed.seedPos = pb.Vector3d(distp * i, distr * j, -3.0)  # cm
         plant.setGeometry(soilSpace)
@@ -59,7 +59,7 @@ for k, sc in enumerate(soilcolumns):  # |\label{l2_3:soilcolselectbegin}|
         rld[(len(times[1:]) - 1 - j) * len(soilcolumns) + k] = np.array(distrib) / layerVolume  # |\label{l2_3:soilcolselectend}|
 
 legend_lst = [str(int(t_i)) for t_i in times[1:]]  # |\label{l2_3:plotbegin}|
-fig, axes = plt.subplots(nrows = 5, ncols = int(len(soilcolumns) / 5), sharex = True, sharey = True, figsize = (8, 16))
+fig, axes = plt.subplots(nrows=5, ncols=int(len(soilcolumns) / 5), sharex=True, sharey=True, figsize=(8, 16))
 
 for k in range(len(soilcolumns)):
     axes.flat[k].set_title("Soil core" + " " + str(k + 1))
@@ -67,9 +67,9 @@ for k in range(len(soilcolumns)):
         axes.flat[k].plot(np.array(rld[len(soilcolumns) * j + k]), z_)
         axes.flat[k].set_xlim(0, 5)
 
-plt.setp(axes[-1,:], xlabel = "RLD $(cm/cm^3)$")
-plt.setp(axes[:, 0], ylabel = "Depth $(cm)$")
-plt.legend(np.asarray(legend_lst), loc = "lower center", bbox_to_anchor = (-0.8, -0.5), ncol = 8)
+plt.setp(axes[-1, :], xlabel="RLD $(cm/cm^3)$")
+plt.setp(axes[:, 0], ylabel="Depth $(cm)$")
+plt.legend(np.asarray(legend_lst), loc="lower center", bbox_to_anchor=(-0.8, -0.5), ncol=8)
 fig.subplots_adjust()
-plt.savefig("results/rld_plot.png", dpi = 300, bbox_inches = "tight")
+plt.savefig("results/rld_plot.png", dpi=300, bbox_inches="tight")
 plt.show()  # |\label{l2_3:plotend}|

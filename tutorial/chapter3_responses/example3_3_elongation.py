@@ -16,15 +16,15 @@ leftright = pb.SDF_Union(left, right)
 rs.setGeometry(leftright)
 
 # left compartment has a minimum of 0.01, 1 elsewhere
-maxS = 1.  # maximal
+maxS = 1.0  # maximal
 minS = 0.05  # minimal
-slope = 1.  # [cm] linear gradient between min and max
+slope = 1.0  # [cm] linear gradient between min and max
 leftC = pb.SDF_Complement(left)
 soilprop = pb.SoilLookUpSDF(leftC, maxS, minS, slope)
 
 # Manually set scaling function and tropism parameters
 for organ_type in [pb.root, pb.stem, pb.stem]:
-    sigma = [0.4, 1., 1., 1., 1. ] * 2
+    sigma = [0.4, 1.0, 1.0, 1.0, 1.0] * 2
     for p in rs.getOrganRandomParameter(organ_type):
         p.dx = 0.25  # adjust resolutionx
         p.tropismS = sigma[p.subType - 1]
@@ -32,8 +32,8 @@ for organ_type in [pb.root, pb.stem, pb.stem]:
 
 # simulation
 rs.initialize()
-simtime = 60.
-dt = 1.
+simtime = 60.0
+dt = 1.0
 for i in range(0, round(simtime / dt)):
     # in a dynamic setting change soilprop here
     rs.simulate(dt, False)
@@ -46,8 +46,8 @@ ll = al.getSummed("length")
 ar = pb.SegmentAnalyser(rs)
 ar.crop(right)
 lr = ar.getSummed("length")
-print(f'\nLeft  compartment total root length {ll:g} cm, {100 * ll / l:g}%')
-print(f'\nRight compartment total root length {lr:g} cm, {100 * lr / l:g}% \n')
+print(f"\nLeft  compartment total root length {ll:g} cm, {100 * ll / l:g}%")
+print(f"\nRight compartment total root length {lr:g} cm, {100 * lr / l:g}% \n")
 
 # write results
 rs.write("results/example_5a.py")  # compartment geometry

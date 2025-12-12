@@ -1,4 +1,4 @@
-""" 2D representation of a plant using Matplotlib"""
+"""2D representation of a plant using Matplotlib"""
 
 import matplotlib.pyplot as plt  # |\label{l2_1g:importStart}|
 
@@ -30,15 +30,15 @@ for idx, ot in enumerate([pb.root, pb.stem, pb.leaf]):
         ax.plot(
             org[:, 0],  # x-axis                                         |\label{l2_1g:plot}|
             org[:, 2],  # z-axis
-            c = color[idx],
-            label = name[idx] if not label_added else None,
+            c=color[idx],
+            label=name[idx] if not label_added else None,
         )
         label_added = True
 
 root_tips = pl.get_root_tips()
-ax.scatter(root_tips[:, 0], root_tips[:, 2], c = color[3], label = name[3])
+ax.scatter(root_tips[:, 0], root_tips[:, 2], c=color[3], label=name[3])
 
-ax.legend(bbox_to_anchor = (1, 0.5))
+ax.legend(bbox_to_anchor=(1, 0.5))
 ax.grid(True)
 plt.xlabel("x-axis (cm)")
 plt.ylabel("Depth (cm)")

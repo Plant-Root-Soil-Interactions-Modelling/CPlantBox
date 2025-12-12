@@ -13,7 +13,7 @@ dt = 1
 steps = round(simtime / dt)
 
 # Assuming a constant carbon source to the root system
-carbon_source = 30.  # [g(Root)/day] |\label{l3_1_carbon:SetStart}|
+carbon_source = 30.0  # [g(Root)/day] |\label{l3_1_carbon:SetStart}|
 
 # Assuming a constant specific root length
 root_SRL = 2.5  # [cm(Root)/g(Root)] |\label{l3_1_carbon:SetEnd}|
@@ -44,7 +44,6 @@ total_root_len = rs.getSummed("length")
 
 # %% Simulation loop
 for step in range(0, steps):  # |\label{l3_1_carbon:LoopStart}|
-
     print("\nSimulation step", step)
 
     # Maximal total root length increment (cm/day)
@@ -69,7 +68,7 @@ for step in range(0, steps):  # |\label{l3_1_carbon:LoopStart}|
 
     # Carbon balance check
     tol = 1.01  # 1% tolerance
-    assert used_carbon <= carbon_source * tol, f"Mismatching carbon balance, used carbon is larger than carbon source ({round((tol-1)*100,3)}% tolerance)"  # |\label{l3_1_carbon:LoopEnd}|
+    assert used_carbon <= carbon_source * tol, f"Mismatching carbon balance, used carbon is larger than carbon source ({round((tol - 1) * 100, 3)}% tolerance)"  # |\label{l3_1_carbon:LoopEnd}|
 
 # %% Write outputs and plot
 rs.write("results/example_carbon.vtp")  # |\label{l3_1_carbon:WriteStart}|
