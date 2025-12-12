@@ -18,9 +18,9 @@ strp = plant.getOrganRandomParameter(pb.stem)
 lrp = plant.getOrganRandomParameter(pb.leaf)
 
 # print(srp[0])
-srp[0].firstSB = 1.e6
-srp[0].firstB = 1.e6
-srp[0].firstTil = 1.e6
+srp[0].firstSB = 1.0e6
+srp[0].firstB = 1.0e6
+srp[0].firstTil = 1.0e6
 
 # print(rrp[1])
 # print(rrp[1].successor)

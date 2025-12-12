@@ -1,5 +1,5 @@
-""" how to create a look up table for nonlinear perirhzal resistances, 
-    run on multiple threads using: mpiexec -n 4 python3 example7_3_lookup.py """
+"""how to create a look up table for nonlinear perirhzal resistances,
+run on multiple threads using: mpiexec -n 4 python3 example7_3_lookup.py"""
 
 from plantbox.functional.Perirhizal import PerirhizalPython
 import plantbox.functional.van_genuchten as vg

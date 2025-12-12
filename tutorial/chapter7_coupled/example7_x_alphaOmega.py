@@ -1,11 +1,9 @@
-"""the alpha and omega of root water uptake (Vanderborght et al. 2023) """
+"""the alpha and omega of root water uptake (Vanderborght et al. 2023)"""
 
 import timeit
 
 import matplotlib.pyplot as plt
 import numpy as np
-from rosi.richards import RichardsWrapper  # Python part
-from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 import plantbox as pb
 from plantbox.functional.Perirhizal import PerirhizalPython as Perirhizal
@@ -13,15 +11,17 @@ from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 import plantbox.functional.van_genuchten as vg
 import plantbox.visualisation.vtk_plot as vp
+from rosi.richards import RichardsWrapper  # Python part
+from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 
 def sinusoidal(t):
-    """ sinusoidal """
-    return np.sin(2. * np.pi * np.array(t) - 0.5 * np.pi) + 1.
+    """sinusoidal"""
+    return np.sin(2.0 * np.pi * np.array(t) - 0.5 * np.pi) + 1.0
 
 
 def make_source(q, area):
-    """ converts the sink q [cm/day] into a dict [cm3/day] """
+    """converts the sink q [cm/day] into a dict [cm3/day]"""
     s = {}
     for i in range(0, len(q)):
         if not np.isnan(q[i]):
@@ -31,28 +31,28 @@ def make_source(q, area):
 
 
 # Parameters  # |\label{l7xa:param}|
-min_b = [-35., -10., -50.]  # [cm]
-max_b = [35., 10., 0.]  # [cm]
+min_b = [-35.0, -10.0, -50.0]  # [cm]
+max_b = [35.0, 10.0, 0.0]  # [cm]
 cell_number = [1, 1, 50]  # ~[4*4*1] cm3
 
 path = "../../modelparameter/structural/rootsystem/"
-name = "Zeamays_synMRI_modified"  #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
+name = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
 trans = 25  # cm3 /day (sinusoidal) = mL/day
 wilting_point = -15000  # cm
 rs_age = 21  # root system initial age [day]
 
 loam = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
 sp = vg.Parameters(loam)  # needed for Perirhizal class
-vg.create_mfp_lookup(sp, wilting_point = -16000, n = 1501)  # needed for Perirhizal class
+vg.create_mfp_lookup(sp, wilting_point=-16000, n=1501)  # needed for Perirhizal class
 initial = -400  # cm
 
 sim_time = 3.5  # [day]
-dt = 3600. / (24 * 3600)  # [days]  # |\label{l7xa:param_end}|
+dt = 3600.0 / (24 * 3600)  # [days]  # |\label{l7xa:param_end}|
 
 # Initialize macroscopic soil model
 s = RichardsWrapper(RichardsSP())  # |\label{l7xa:soil}|
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, periodic = True)  # [cm]
+s.createGrid(min_b, max_b, cell_number, periodic=True)  # [cm]
 s.setHomogeneousIC(initial, True)  # [cm] total potential
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
@@ -79,8 +79,8 @@ hm.wilting_point = wilting_point  # |\label{l7xa:hydraulic_end}|
 
 # Coupling (map indices)
 def picker(_x, _y, z):
-    """ 1d soil picker calling RichardsWrapper.pick()"""
-    return s.pick([0., 0., z])  # |\label{l7xa:coupling}|
+    """1d soil picker calling RichardsWrapper.pick()"""
+    return s.pick([0.0, 0.0, z])  # |\label{l7xa:coupling}|
 
 
 plant.setSoilGrid(picker)
@@ -112,14 +112,13 @@ h_sr = np.ones(h_bs.shape) * wilting_point
 
 # Numerical solution
 start_time = timeit.default_timer()
-t = 0.
+t = 0.0
 x_, y_ = [], []
 N = round(sim_time / dt)
 area = (plant.maxBound.x - plant.minBound.x) * (plant.maxBound.y - plant.minBound.y)  # [cm2]
 print("area", area)
 
 for i in range(0, N):  # |\label{l7xa:loop}|
-
     hm.update(sim_time)  # krs, suf, etc...
 
     h_bs = s.getSolutionHead()
@@ -174,9 +173,8 @@ for i in range(0, N):  # |\label{l7xa:loop}|
     x_.append(t)
     y_.append(-np.nansum(q) * area)  # |\label{l7xa:results}|
 
-    n = round(float(i) / float(N) * 100.)  # |\label{l7xa:progress}|
-    print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], potential {:g}, actual {:g}; [{:g}, {:g}] cm soil at {:g} days"
-            .format(tp * area, np.nansum(q) * area, np.min(h_bs), np.max(h_bs), s.simTime))
+    n = round(float(i) / float(N) * 100.0)  # |\label{l7xa:progress}|
+    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], potential {:g}, actual {:g}; [{:g}, {:g}] cm soil at {:g} days".format(tp * area, np.nansum(q) * area, np.min(h_bs), np.max(h_bs), s.simTime))
 
     if i % 10 == 0:  # |\label{l7xa:write}|
         vp.write_soil("results/example72_{:06d}".format(i // 10), s, min_b, max_b, cell_number)
@@ -185,18 +183,18 @@ for i in range(0, N):  # |\label{l7xa:loop}|
 
     t += dt  # [day]
 
-print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l7xa:timing}|
+print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l7xa:timing}|
 
 # VTK visualisation # |\label{l7xa:plots}|
 # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number)
 
 # Transpiration over time
 fig, ax1 = plt.subplots()
-ax1.plot(x_, trans * sinusoidal(x_), 'k')  # potential transpiration
-ax1.plot(x_, -np.array(y_), 'g')  # actual transpiration
+ax1.plot(x_, trans * sinusoidal(x_), "k")  # potential transpiration
+ax1.plot(x_, -np.array(y_), "g")  # actual transpiration
 ax2 = ax1.twinx()
-ax2.plot(x_, np.cumsum(-np.array(y_) * dt), 'c--')  # cumulative transpiratio
+ax2.plot(x_, np.cumsum(-np.array(y_) * dt), "c--")  # cumulative transpiratio
 ax1.set_xlabel("Time [d]")
 ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
-ax1.legend(['Potential', 'Actual', 'Cumulative'], loc = 'upper left')
+ax1.legend(["Potential", "Actual", "Cumulative"], loc="upper left")
 plt.show()

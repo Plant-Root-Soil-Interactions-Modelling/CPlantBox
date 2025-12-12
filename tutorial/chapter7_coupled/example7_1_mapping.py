@@ -1,13 +1,13 @@
-""" map root segments to a soil grid """
-
-import plantbox as pb
-import plantbox.visualisation.vtk_plot as vp
-from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
-from rosi.richards import RichardsWrapper  # Python part
+"""map root segments to a soil grid"""
 
 import numpy as np
 
-""" Root system """  # |\label{l71m:root_system_start}|
+import plantbox as pb
+import plantbox.visualisation.vtk_plot as vp
+from rosi.richards import RichardsWrapper  # Python part
+from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
+
+# Root system #  # |\label{l71m:root_system_start}|
 plant = pb.MappedPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Anagallis_femina_Leitner_2010
@@ -15,7 +15,7 @@ plant.readParameters(path + name + ".xml")
 plant.setSeed(4)  # |\label{l71m:random}|
 plant.initialize()  # |\label{l71m:root_system_end}|
 
-""" Macroscopic soil grid """  # |\label{l71m:grid_start}|
+# Macroscopic soil grid #  # |\label{l71m:grid_start}|
 min_b = np.array([-2, -2, -15])  # [cm]
 max_b = np.array([2, 2, -5])  # [cm]
 cell_number = np.array([2, 3, 6])  # [1]
@@ -29,32 +29,36 @@ s.setTopBC("noFlux")
 s.setBotBC("noFlux")
 s.initializeProblem()  # |\label{l71m:grid_end}|
 
-""" Coupling """
-picker = lambda x, y, z: s.pick([x, y, z])  # |\label{l71m:picker}|
+
+# Coupling
+def picker(x, y, z):
+    """soil grid cell index for positon (_x, _y, z)"""
+    return s.pick([x, y, z])  # |\label{l71m:picker}|
+
+
 plant.setSoilGrid(picker)  # |\label{l71m:picker_end}|
 
-""" Simulate """
-plant.simulate(10., False)  # |\label{l71m:simulate}|
+# Simulate #
+plant.simulate(10.0, False)  # |\label{l71m:simulate}|
 
-""" Find segment indices in a grid cell"""
+# Find segment indices in a grid cell#
 ci = plant.soil_index(0, 0, -7)  # grid cell index |\label{l71m:soil_index}|
 print("Cell at [0,0,-7] has index", ci)
 try:
     print(len(plant.cell2seg[ci]), "segments in this cell:")  # |\label{l71m:cell2seg}|
     print(plant.cell2seg[ci])
-except:
+except Exception:
     print("There are no segments in this cell")
 
-""" Find grid cell index for segment """
+# Find grid cell index for segment #
 segs = plant.segments  # |\label{l71m:segments}|
 x = np.array([plant.seg2cell[i] for i in range(0, len(segs))])  # |\label{l71m:seg2cell}|
 
-""" Visualize"""  # |\label{l71m:visualize}|
+# Visualize#  # |\label{l71m:visualize}|
 ana = pb.SegmentAnalyser(plant.mappedSegments())  # |\label{l71m:mappedSegments}|
 ana.addData("linear_index", x)
-pd = vp.segs_to_polydata(ana, 1., ["radius", "linear_index"])
+pd = vp.segs_to_polydata(ana, 1.0, ["radius", "linear_index"])
 rootActor, rootCBar = vp.plot_roots(pd, "linear_index", "Segment index", False)
 grid = vp.uniform_grid(min_b, max_b, cell_number)
 meshActor, meshCBar = vp.plot_mesh(grid, "", "", False)
 vp.render_window([meshActor[0], rootActor], "Test mapping", rootCBar, grid.GetBounds()).Start()
-
