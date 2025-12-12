@@ -699,7 +699,9 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     if sol_ind > 0:
         solute = np.array(s.getSolution(sol_ind))
 
-    from mpi4py import MPI; rank = comm.Get_rank();  # moved it here because it caused trouble for webapp server
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()  # moved it here because it caused trouble for webapp server
 
     if rank == 0:
         if isinstance(rs, pb.SegmentAnalyser):
