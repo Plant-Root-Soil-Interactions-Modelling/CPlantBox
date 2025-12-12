@@ -1,12 +1,13 @@
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+
 message(STATUS "Project dir: ${PROJECT_SOURCE_DIR}")
 message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "Project binary dir: ${PROJECT_BINARY_DIR}")
-
+message(STATUS "Python library path (site-packages): ${Python3_SITEARCH}")
 
 # -----------------------------
 # 1. Dependencies & Includes
 # -----------------------------
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 add_subdirectory(external/pybind11)
 
 include_directories(structural)
