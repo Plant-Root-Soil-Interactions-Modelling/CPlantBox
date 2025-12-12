@@ -79,18 +79,18 @@ programs = ['default-jre', 'libeigen3-dev' , 'python3-pip', 'openmpi-bin', 'libo
 # sudo apt install openmpi-bin libopenmpi-dev
 if not isCluster:
     programs.append('libboost-all-dev')
-    
+
     for program in programs:
         output = subprocess.run(["dpkg", "-l", program], capture_output = True)
         if ('no packages found' in str(output)):
             error.append(program)
-    
+
     if len(error) > 0:
         print("Program(s) {0} has/have not been found. try running sudo apt-get install {0}".format(" ".join(error)))
         raise Exception('import modules')
 
 # check some prerequistes
-modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'cmake','pandas', 'pybind11[global]', 'ipython']  # 'mpi4py',
+modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'cmake', 'pandas', 'pybind11[global]', 'ipython']  # 'mpi4py',
 show_message("(1/3) (b) Checking python prerequistes: " + " ".join(modules) + "...")
 
 for mymodule in modules:
@@ -158,6 +158,11 @@ subprocess.run(["./dune-common/bin/dunecontrol", "--opts=dumux-rosi/cmake.opts",
 
 print("(3/3) Step completed. Succesfully configured and built CPlantBox, dune and dumux.")
 
-print("to test installation, run \n cd dumux/dumux-rosi/python/coupled \n python3 example7b_coupling.py")
+os.chdir("dumux-rosi")
+subprocess.run(["bash", "install_modules.sh"])
+os.chdir("..")
 
+print("(3/3) installed dumux-rosi into your local or active Python environment")
+
+print("to test installation, run \n cd dumux/dumux-rosi/python/coupled \n python3 example7_2_coupling.py")
 
