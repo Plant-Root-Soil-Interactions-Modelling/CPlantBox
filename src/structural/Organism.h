@@ -68,24 +68,25 @@ public:
     double getDt() const { return dt; } ///< returns the current simulation duration/time step
 
     /* as sequential list */
-    std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1, bool all = false) const; ///< sequential list of organs
-    virtual std::vector<double> getParameter(std::string name, int ot = -1, std::vector<std::shared_ptr<Organ>> organs = std::vector<std::shared_ptr<Organ>>(0), bool all = false) const; ///< parameter value per organ
+    std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1,  bool all = true) const; ///< sequential list of organs
+    virtual std::vector<double> getParameter(std::string name, int ot = -1, std::vector<std::shared_ptr<Organ>> organs = std::vector<std::shared_ptr<Organ>>(0)) const; ///< parameter value per organ
     double getSummed(std::string name, int ot = -1) const; ///< summed up parameters
     // std::shared_ptr<Organ> pickOrgan(int nodeId); // TODO
 
     /* geometry */
-    int getNumberOfOrgans() const { return organId+1; } ///< number of nodes of the organism
-    int getNumberOfNodes() const { return nodeId+1; } ///< number of nodes of the organism
-    virtual int getNumberOfSegments(int ot=-1) const; ///< number of segments of the organism
+    int getNumberOfOrgans() const;// { return organId+1; } ///< number of nodes of the organism
+    int getNumberOfNodes() const ;//{ return nodeId+1; } ///< number of nodes of the organism
+    virtual int getNumberOfSegments(int ot=-1, bool all = true) const; ///< number of segments of the organism
     std::vector<std::vector<Vector3d>> getPolylines(int ot=-1) const; ///< nodes per organ
     std::vector<std::vector<double>> getPolylineCTs(int ot=-1) const; ///< node creation times per organ
     virtual std::vector<Vector3d> getNodes() const; ///< nodes of the organ
     virtual std::vector<double> getNodeCTs() const; ///< node creation times, corresponding to Organism::getNodes
-    virtual std::vector<Vector2i> getSegments(int ot=-1) const; ///< line segment containing two node indices, corresponding to Organism::getNodes
+    //virtual std::vector<double> getNodeIds() const;
+    virtual std::vector<Vector2i> getSegments(int ot=-1,  bool all = true) const; ///< line segment containing two node indices, corresponding to Organism::getNodes
     virtual std::vector<double> getSegmentCTs(int ot=-1) const; ///< line creation times, corresponding to Organism::getSegments
 	virtual std::vector<int> getSegmentIds(int ot=-1) const; ///< line segment indices, corresponding to Organism::getSegments
-    virtual std::vector<std::shared_ptr<Organ>> getSegmentOrigins(int ot=-1) const; ///< points to the organ which contains the segment, corresponding to Organism::getSegments
-	std::vector<double> getRadii() const;
+    virtual std::vector<std::shared_ptr<Organ>> getSegmentOrigins(int ot=-1,  bool all = true) const; ///< points to the organ which contains the segment, corresponding to Organism::getSegments
+	std::vector<double> getRadii(bool all = true) const;
 
     /* last time step */
     int getNumberOfNewNodes() const { return getNumberOfNodes()- oldNumberOfNodes; } ///< The number of new nodes created in the previous time step (same number as new segments)

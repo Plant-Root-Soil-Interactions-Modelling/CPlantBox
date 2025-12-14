@@ -174,7 +174,9 @@ void Organism::simulate(double dt, bool verbose)
     oldNumberOfNodes = getNumberOfNodes();
     oldNumberOfOrgans = getNumberOfOrgans();
     for (const auto& r : baseOrgans) {
-        r->simulate(dt, verbose);
+        if(r->isAlive()){
+            r->simulate(dt, verbose);
+        }
     }
     simtime+=dt;
 }
@@ -203,9 +205,11 @@ void Organism::survivalTest()
 std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot, bool all) const
 {
     auto organs = std::vector<std::shared_ptr<Organ>>(0);
-    organs.reserve(getNumberOfOrgans()); // just for speed up
+    if (all){    organs.reserve(getNumberOfOrgans()); }// just for speed up
     for (const auto& o : this->baseOrgans) {
-        o->getOrgans(ot, organs, all);
+        if(o->isAlive()||all){
+            o->getOrgans(ot, organs, all);
+        }
     }
     return organs;
 }
@@ -221,10 +225,10 @@ std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot, bool all) const
  * @param organs    optionally, a predefined sequential organ list can be used (@param ot is ignored in this case)
  * @return A vector of one parameter values per each organ, if unknown NaN
  */
-std::vector<double> Organism::getParameter(std::string name, int ot, std::vector<std::shared_ptr<Organ>> organs, bool all) const
+std::vector<double> Organism::getParameter(std::string name, int ot, std::vector<std::shared_ptr<Organ>> organs) const
 {
     if (organs.empty()) {
-        organs = getOrgans(ot, all);
+        organs = getOrgans(ot);
     }
     std::vector<double> p = std::vector<double>(organs.size());
     for (int i=0; i<organs.size(); i++) {
@@ -247,15 +251,37 @@ double Organism::getSummed(std::string name, int ot) const
 }
 
 /**
+ * Returns the organisms number of organ of a specific organ type
+ *
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          total number of segments in the organism of type ot
+ */
+    
+int Organism::getNumberOfOrgans() const
+{
+    return organId+1; 
+}
+/**
  * Returns the organisms number of segments of a specific organ type
  *
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          total number of segments in the organism of type ot
  */
-int Organism::getNumberOfSegments(int ot) const
+    
+int Organism::getNumberOfNodes() const
+{
+    return nodeId+1; 
+}
+/**
+ * Returns the organisms number of segments of a specific organ type
+ *
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          total number of segments in the organism of type ot
+ */
+int Organism::getNumberOfSegments(int ot, bool all) const
 {
     int s=0;
-    auto organs = getOrgans(ot);
+    auto organs = getOrgans(ot, all);
     for (const auto& o : organs) {
         s += o->getNumberOfSegments();
     }
@@ -311,6 +337,7 @@ std::vector<std::vector<double>> Organism::getPolylineCTs(int ot) const
 std::vector<Vector3d> Organism::getNodes() const
 {
     auto organs = getOrgans();
+    
     std::vector<Vector3d> nv = std::vector<Vector3d>(getNumberOfNodes()); // reserve big enough vector
     for (const auto& o : baseOrgans) { // copy initial nodes (even if organs have not developed)
         nv.at(o->getNodeId(0)) = o->getNode(0);
@@ -356,11 +383,11 @@ std::vector<double> Organism::getNodeCTs() const
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          line segments
  */
-std::vector<Vector2i> Organism::getSegments(int ot) const
+std::vector<Vector2i> Organism::getSegments(int ot, bool all) const
 {
     auto organs = getOrgans(ot);
     std::vector<Vector2i> segs = std::vector<Vector2i>(0);
-    segs.reserve(this->getNumberOfSegments(ot)); // for speed up
+    segs.reserve(this->getNumberOfSegments(ot, all)); // for speed up
     for (const auto& o : organs) {
         auto s = o->getSegments();
         segs.insert(segs.end(), s.begin(), s.end()); // append s; todo check if it works..
@@ -408,11 +435,11 @@ std::vector<int> Organism::getSegmentIds(int ot) const
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          creation times of each segment
  */
-std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
+std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot, bool all) const
     {
-    auto organs = getOrgans(ot);
+    auto organs = getOrgans(ot, all);
     auto segs = std::vector<std::shared_ptr<Organ>>(0);
-    segs.reserve(this->getNumberOfSegments(ot)); // for speed up
+    segs.reserve(this->getNumberOfSegments(ot, all)); // for speed up
     for (const auto& o : organs) {
         auto s = o->getSegments();
         for (int i=0; i<s.size(); i++) {
@@ -424,11 +451,11 @@ std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
 	
 	
 
-std::vector<double> Organism::getRadii() const
+std::vector<double> Organism::getRadii(bool all) const
 {
-    auto organs = this->getOrgans();
+    auto organs = this->getOrgans(all);
     std::vector<double> radii;//(this->getNumberOfSegments());
-	radii.reserve(this->getNumberOfSegments());
+	radii.reserve(this->getNumberOfSegments(all));
     for (const auto& o : organs) {
         auto s = o->getSegments();
         for (size_t i=0; i<s.size(); i++) { // loop over all new nodes

@@ -670,10 +670,6 @@ void MappedPlant::simulate(double dt, bool verbose)
 
 	Plant::simulate(dt,  verbose);
 
-	auto uni = this->getUpdatedNodeIndices(); // move nodes
-	for (int& i : uni) { // shift
-		i += shift;
-	}
     /*
 	auto unodes = this->getUpdatedNodes();
 	auto uncts = this->getUpdatedNodeCTs();
@@ -688,112 +684,130 @@ void MappedPlant::simulate(double dt, bool verbose)
 		std::cout << "nodes moved "<< uni.size() << "\n" << std::flush;
 	}
     */
-    nodes.clear();
-    nodeCTs.clear();
-	auto newnodes = this->getNodes(); // add nodes
-	nodes.reserve(newnodes.size());//nodes.size()+
-	for (auto& nn : newnodes) {
-		nodes.push_back(nn);
-	}
-	auto newnode_cts = this->getNodeCTs(); // add node cts
-	nodeCTs.reserve(newnode_cts.size());//nodeCTs.size()+
-	for (auto& nct : newnode_cts) {
-		nodeCTs.push_back(nct);
-	}
-	if (verbose) {
-		std::cout << "current nodes " << newnodes.size() << "\n" << std::flush;
-	}
+    //nodes.clear();
+    //nodeCTs.clear();
+    //bool all = false;
+	//auto allnodes = this->getNodes(all); 
+	//nodesGId = Plant::getNodeIds(all); 
+        
+	//nodeCTs = this->getNodeCTs(all); 
+    
+	//if (verbose) {
+	//	std::cout << "current nodes " << nodes.size() << "\n" << std::flush;
+	//}
 
-	auto newsegs = this->getSegments(); // add segments (TODO ALL) (TODO cutting, more nodes will lead to different shift???)
-	segments.resize(newsegs.size()+shift);
-	for (auto& ns : newsegs) { // shift
-	    ns.x += shift;
-	    ns.y += shift;
-		segments[ns.y-1] = ns;
-	}
+	//auto allsegments = this->getSegments(all); // add segments (TODO ALL) (TODO cutting, more nodes will lead to different shift???)
+    
+    //std::vector<Vector2i> segmentsnew;
+    //
+    //segmentsnew.resize(segments);
+    //for (int sid = 0; sid < segments.size(); sid ++)
+    //{        
+    //    assert((segments[sid].y == nodesGId[sid]) && "segments[sid].y != nodesGId[sid]");
+    //    segments[sid].y = sid + 1;
+    //    segments[sid].x = old2newnodeId[segments[sid].x];
+    //    old2newnodeId[segments[sid].y] = sid;
+    //}
+    //auto nodesinit = this->getNodes(true);
+    auto segmentsinit = this->getSegments(false);
+    segments = this->getSegments(false);
+    std::map<int, int> old2newnodeId;
+    old2newnodeId[0] = 0;
+    if(shift){
+        segments.resize(segments.size()+shift);
+        for (auto& ns : segments) { // shift
+            ns.x += shift;
+            ns.y += shift;
+            segments[ns.y-1] = ns;
+        }
+    }
 	if (verbose) {
-		std::cout << " current segments "<< newsegs.size() << "\n" << std::flush;
+		std::cout << " current segments "<< segments.size() << "\n" << std::flush;
 	}
-	auto newsegO = this->getSegmentOrigins(); // (TODO ALL) to add radius and type (TODO cutting)
-	radii.resize(newsegO.size()+shift);
-	subTypes.resize(newsegO.size()+shift);
-	organTypes.resize(newsegO.size()+shift);
-	segVol.resize(newsegO.size()+shift);
-	bladeLength.resize(newsegO.size()+shift);
-	leafBladeSurface.resize(newsegO.size()+shift);
-	lignStatus.resize(newsegO.size()+shift);
-	this->segO.resize(newsegO.size()+shift);
+	auto segOtemp = this->getSegmentOrigins(false); // (TODO ALL) to add radius and type (TODO cutting)
+	nodes.resize(segOtemp.size()+shift);
+	radii.resize(segOtemp.size()+shift);
+	subTypes.resize(segOtemp.size()+shift);
+	organTypes.resize(segOtemp.size()+shift);
+	segVol.resize(segOtemp.size()+shift);
+	bladeLength.resize(segOtemp.size()+shift);
+	leafBladeSurface.resize(segOtemp.size()+shift);
+	lignStatus.resize(segOtemp.size()+shift);
+	this->segO.resize(segOtemp.size()+shift);
+    
 	int c = 0;
-	if (verbose) {
-		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
-	}
-	for (auto& so : newsegO) {
-		int segIdx = newsegs[c].y-1; //global ID
-		int local_segIdx = -1;
-		//if(
-		int testval = newsegs[c].y - shift;
-		std::vector<int> nodeIds_ = so->getNodeIds();
-		auto it = std::find(nodeIds_.begin(), nodeIds_.end(), testval);//);
-		//	std::cout <<"test "<< *it << " " <<  newsegs[c].y ;//<<std::endl;
-		assert(int(*it) == int( newsegs[c].y- shift) && "MappedPlant::simulate: node ID not found in organ");
-		   //it != so->getNodeIds().end())
-		//{
-			local_segIdx = std::distance(nodeIds_.begin(), it) - 1;
-		//	std::cout<< " "  <<local_segIdx << std::endl;
-		//}
-		assert(local_segIdx >= 0 && "MappedPlant::simulate: node ID not found in organ");
+    
+	for (auto& so : segOtemp) {
+        if(so->isAlive()){
+            segO.at(c) = so;
+            int segIdx = c; //global ID
+            old2newnodeId[segments[c].y] = c+1;
+            segments[c].y = c+1;
+            segments[c].x = old2newnodeId[segments[c].x];
+            if(segments[c].x == 0)
+            {
+                nodes.at(segments[c].x) = so->getNode(0);
+            }
+            int local_segIdx = -1;
+            //if(
+            int testval = segmentsinit[c].y - shift;
+            std::vector<int> nodeIds_ = so->getNodeIds();
+            auto it = std::find(nodeIds_.begin(), nodeIds_.end(), testval);//);
+            //	std::cout <<"test "<< *it << " " <<  segments[c].y ;//<<std::endl;
+            assert(int(*it) == int( segments[c].y- shift) && "MappedPlant::simulate: node ID not found in organ");
+               //it != so->getNodeIds().end())
+            //{
+                local_segIdx = std::distance(nodeIds_.begin(), it) - 1;
+            //	std::cout<< " "  <<local_segIdx << std::endl;
+            //}
+            assert(local_segIdx >= 0 && "MappedPlant::simulate: node ID not found in organ");
 
-		radii.at(segIdx) = so->getRadius(local_segIdx);
-		organTypes.at(segIdx) = so->organType();
-		subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
-        lignStatus.at(segIdx) = so->lignificationStatus();
-		this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment
+            nodes.at(segmentsinit[c].y) = so->getNode(local_segIdx + 1);
+            radii.at(segIdx) = so->getRadius(local_segIdx);
+            organTypes.at(segIdx) = so->organType();
+            subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
+            lignStatus.at(segIdx) = so->lignificationStatus();
+            //this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment
 
-		if (organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
-		{
-			int index;
-			auto nodeIds = so->getNodeIds();
-		    for (int& i : nodeIds) { // shift
-		        i += shift;
-		    }
-			auto it = find(nodeIds.begin(), nodeIds.end(), newsegs[c].y);
-			if (it != nodeIds.end()){ index = it - nodeIds.begin() -1;
-			} else {
-				throw std::runtime_error("MappedPlant::simulate: global segment index not found in organ");
-			}
-			int localSegId = index;
-			bool realized = true;
-			bool withPetiole = false;
-			segVol.at(segIdx) = -1;
-			bladeLength.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafLengthAtSeg(localSegId, withPetiole);
-			leafBladeSurface.at(segIdx) =  std::static_pointer_cast<Leaf>(so)->leafAreaAtSeg(localSegId,realized, withPetiole);
-			withPetiole = true;
-			segVol.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafVolAtSeg(localSegId, realized, withPetiole);//* thickness;
-			if(segVol.at(segIdx) < 0) {
-				std::stringstream errMsg;
-				errMsg <<"MappedPlant::simulate: computation of leaf volume failed "<<segVol.at(segIdx)<<"\n";
-				throw std::runtime_error(errMsg.str().c_str());
-			}
+            if (organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
+            {
+                
+                bool realized = true;
+                bool withPetiole = false;
+                segVol.at(segIdx) = -1;
+                bladeLength.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafLengthAtSeg(local_segIdx, withPetiole);
+                leafBladeSurface.at(segIdx) =  std::static_pointer_cast<Leaf>(so)->leafAreaAtSeg(local_segIdx,realized, withPetiole);
+                withPetiole = true;
+                segVol.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafVolAtSeg(local_segIdx, realized, withPetiole);//* thickness;
+                if(segVol.at(segIdx) < 0) {
+                    std::stringstream errMsg;
+                    errMsg <<"MappedPlant::simulate: computation of leaf volume failed "<<segVol.at(segIdx)<<"\n";
+                    throw std::runtime_error(errMsg.str().c_str());
+                }
 
-		} else { //stems and roots are cylinder
-			auto s = segments.at(segIdx);
-			double length_seg = (nodes.at(s.x).minus(nodes.at(s.y))).length();
-			segVol.at(segIdx) = radii.at(segIdx) * radii.at(segIdx) * M_PI * length_seg;
-			bladeLength.at(segIdx) = 0;
-			leafBladeSurface.at(segIdx) = 0;
-		}
+            } else { //stems and roots are cylinder
+                auto s = segments.at(segIdx);
+                double length_seg = (nodes.at(s.x).minus(nodes.at(s.y))).length();
+                segVol.at(segIdx) = radii.at(segIdx) * radii.at(segIdx) * M_PI * length_seg;
+                bladeLength.at(segIdx) = 0;
+                leafBladeSurface.at(segIdx) = 0;
+            }
+        }
 		c++;
 	}
 
 	// map new segments
-	newsegs = this->getNewSegments();
-    for (auto& ns : newsegs) { // shift
-        ns.x += shift;
-        ns.y += shift;
-    }
-	this->mapSegments(newsegs);
+	//newsegs = this->getNewSegments();
+    //for (auto& ns : newsegs) { // shift
+    //    ns.x += shift;
+    //    ns.y += shift;
+    //}
+    seg2cell.clear();
+    cell2seg.clear();
+	this->mapSegments(segments);//newsegs);
 
 	// update segments of moved nodes
+    /*
 	std::vector<Vector2i> rSegs;
 	if(!constantLoc)//for 1d-3d coupling need to have segments remain in the same voxel
 	{//also, if soil_index is in parallel, this blocks the program as plant only grows on
@@ -822,10 +836,10 @@ void MappedPlant::simulate(double dt, bool verbose)
 				rSegs.push_back(s);
 			}
 		}
-	}
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
-
+	}
+    */
 	if (kr_length > 0. || rootHairs) {
 	    calcExchangeZoneCoefs();
 	}

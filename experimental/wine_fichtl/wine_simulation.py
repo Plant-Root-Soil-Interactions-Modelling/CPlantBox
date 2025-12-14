@@ -32,20 +32,14 @@ import pickle
 from scipy.stats import gaussian_kde
 import time
 
-def get3Dshape(plant,title_ = 'wine',data={}, saveOnly = True):        
-    orgs_ = plant.getOrgans(2)
-    orgs_a = [1 for org in orgs_ if org.isAlive() ]
-    orgs_al = [1 for org in orgs_ if (org.isAlive() and not org.getParameter('is_fine_root')) ]
+def get3Dshape(plant,title_ = 'wine',data={}, saveOnly = True):     
     ana = pb.SegmentAnalyser(plant) 
     segOs = plant.getSegmentOrigins()
-    
-    #vp.plot_roots(ana, "id")
-
     '''
     Lignification status, Survival, fine roots
     '''
     lignification = [segO.lignificationStatus() for segO in segOs]
-    aliveSegs = [segO.isAlive() for segO in segOs]
+    aliveSegs = [segO.isAlive() for segO in segOs] #todo: removes
     is_fine_root = [segO.getParameter('is_fine_root') for segO in segOs]
     
     ana.addData('lignification', lignification)
@@ -54,7 +48,7 @@ def get3Dshape(plant,title_ = 'wine',data={}, saveOnly = True):
     for dd in data.keys():
         ana.addData(dd, data[dd])
         p_names.append(dd)
-    ana.filter('alive', 1)
+    #ana.filter('alive', 1)
     vp.plot_roots(ana, "subType",p_names, win_title = title_, render = not saveOnly)
     
 
@@ -300,6 +294,11 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
         for i in range(N):
             print('age', i, end=", ", flush = True)
             plant.survivalTest()
+            plant.pruning() # remove dead organs. but how to insure that seg_indx = seg.Y_indx - 1 ?
+            #maybe at least a fucntion that callls get organs only for the alive one from the beginnning.
+            #check ana.filter
+            # or only do pruning within the mapped segment?
+            # or instead og getnewnodes, segments, get alive nodes-segments?
             
             
             '''
@@ -322,6 +321,8 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
             
             '''
             SUF
+            
+            '''
             ana = pb.SegmentAnalyser(plant) 
             
             #nodeCT = ana.getParameter("creationTime")
@@ -342,10 +343,8 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
             #with open('./testSUF_RLD.pkl','wb') as f:
             #     pickle.dump([SUFs,RLDs],f, protocol=pickle.HIGHEST_PROTOCOL) #
             '''
-            '''
             other
-            '''
-            
+            '''            
             orgs_all = plant.getOrgans(2, False)
             orgs_ = []
             for oo in orgs_all:
@@ -360,6 +359,9 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
                     orgs_.append(oo)      
             
             all_ages = np.array([org.getAge()/yr_to_BEDD for org in orgs_ if org.isAlive()])
+            all_agestest = np.array([org.getAge()/yr_to_BEDD for org in orgs_ ])
+            assert(len(all_ages) == len(all_agestest))
+            raise Exception
             all_alive.append(np.array([ org.isAlive() for org in orgs_  if  org.isAlive()]))
             all_subtypes.append(np.array([org.param().subType for org in orgs_  if  org.isAlive()]))
             all_lengths.append(np.array([org.getLength() for org in orgs_  if  org.isAlive()]))
@@ -393,12 +395,14 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
             if doVTP:
                 get3Dshape(plant,title_ = "./results/part1/vtp/"+extraName+'/'+genotype+str(i+1),#data = {'SUF': suf_}, 
                            saveOnly = True)
+            
+            print("--- %s seconds for plant development---" % (time.time() - start_time),rep)
                 
 
 
             
         # print('postprocessing')
-        print("--- %s seconds for plant development---" % (time.time() - start_time),rep)
+        #print("--- %s seconds for plant development---" % (time.time() - start_time),rep)
         outpouts_mean['SUF'] = SUFs
         outpouts_mean['RLDs'] = RLDs
         for year in range(N):

@@ -265,14 +265,14 @@ std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const s
         auto v = n2.minus(n1);
         double l = v.length();
         if (l<1.e-5) {
-            // std::cout << "XylemFlux::linearSystem: warning segment length smaller 1.e-5 \n";
-            l = 1.e-5; // valid quick fix? (also in segFluxes)
+            std::cout << "XylemFlux::linearSystem: warning segment length smaller 1.e-5 \n";
+            //l = 1.e-5; // valid quick fix? (also in segFluxes)
         }
 
 		double perimeter = ms->getPerimeter(si, l);//perimeter of exchange surface
 
 
-        if (perimeter * kr>1.e-16) { // only relevant for exact solution
+        if ((perimeter * kr>1.e-16)&& (l > 1e-5)) { // only relevant for exact solution
             double f = -perimeter*kr; // flux is proportional to f // *rho*g
             double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
 

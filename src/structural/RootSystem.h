@@ -70,7 +70,7 @@ public:
     ///< creates the growth function per root type, overwrite or change this method to add more tropisms
 
     /* Analysis of simulation results */
-    int getNumberOfSegments(int ot = -1) const override { return nodeId-numberOfCrowns-1; }
+    int getNumberOfSegments(int ot = -1, bool all = true) const override { return nodeId-numberOfCrowns-1; }
     ///< number of segments of the root system ((nid+1)-1) - numberOfCrowns - 1 (artificial shoot)
     int getNumberOfRoots(bool all = false) const { if (all) return organId+1; else return getRoots().size(); }
     std::vector<Vector3d> getNodes() const override;

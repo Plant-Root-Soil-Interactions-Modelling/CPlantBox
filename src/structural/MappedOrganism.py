@@ -20,7 +20,11 @@ class MappedPlantPython(MappedPlant):
         super().__init__(seed_num)
         self.static_organs = {}
         self.data = None  # RsmlData
-        
+     
+    def do_simulate(self, time):
+        self.simulate(time)
+        self.nodes_py = np.array(list(map(lambda x: np.array(x), self.getNodes())))
+        self.segments_py = np.array(list(map(lambda x: np.array(x), self.getSegments())), dtype = np.int64)
             
     def toNumpy(self,cpbArray):
         """ converts the cpbArray to a numpy array """
@@ -28,21 +32,21 @@ class MappedPlantPython(MappedPlant):
         
     def get_nodes(self):
         """ converts the list of Vector3d to a 2D numpy array """
-        return np.array(list(map(lambda x: np.array(x), self.ms.nodes)))
+        return self.nodes_py
 
     def get_segments(self):
         """ converts the list of Vector2i to a 2D numpy array """
-        return np.array(list(map(lambda x: np.array(x), self.ms.segments)), dtype = np.int64)
+        return self.segments_py
 
     def get_subtypes(self):
         """ segment sub types as numpy array """
-        return np.array(self.ms.subTypes)
+        return np.array(self.subTypes)
 
     def get_ages(self, final_age = -1.):
         """ converts the list of nodeCT to a numpy array of segment ages
         @param final_age [day]         current root system age, (default = 0 means detect maximum from nodeCT)
         """
-        cts = np.array(self.ms.nodeCTs)
+        cts = np.array(self.nodeCTs)
         if final_age == -1.:
             final_age = np.max(cts)
         node_ages = final_age * np.ones(cts.shape) - cts  # from creation time to age
@@ -77,7 +81,7 @@ class MappedPlantPython(MappedPlant):
         
     def get_organ_types(self):
         """ segment organ types as numpy array """
-        return np.array(self.ms.organTypes)
+        return np.array(self.organTypes)
 
     def get_organ_nodes_tips(self):
         """ return index of nodes at the end of each organ """
@@ -105,7 +109,7 @@ class MappedPlantPython(MappedPlant):
 
     def collar_index(self):
         """ returns the segment index of the collar segment """
-        segs = self.ms.segments
+        segs = self.segments
         for i, s in enumerate(segs):
             if s.x == 0:
                 return i
@@ -149,9 +153,9 @@ class MappedPlantPython(MappedPlant):
     def get_incidence_matrix(self):
         """ returns the incidence matrix (number of segments)x(number of nodes) of the root system in self.ms 
         """
-        segs = self.ms.segments
+        segs = self.segments
         sn = len(segs)
-        nn = len(self.ms.nodes)  # TODO write getter
+        nn = len(self.nodes)  # TODO write getter
         ii_, jj_, vv_ = [], [], []
         for i, s in enumerate(segs):  # build incidence matrix from edges
             ii_.append(i)
@@ -171,8 +175,8 @@ class MappedPlantPython(MappedPlant):
             a list matrix2soil which maps soil_matrix_index to soil_cell_index
         """
         soil2matrix = {}
-        seg2cell = self.ms.seg2cell
-        segs = self.ms.segments
+        seg2cell = self.seg2cell
+        segs = self.segments
         ns = len(segs)
         smi = 0  # soil matrix index
         ii_, jj_ = [], []
@@ -197,14 +201,6 @@ class MappedPlantPython(MappedPlant):
         return B, soil2matrix, matrix2soil
 
 
-    def get_nodes(self):
-        """ converts the list of Vector3d to a 2D numpy array """
-        return np.array(list(map(lambda x: np.array(x), self.getNodes())))
-
-    def get_segments(self):
-        """ converts the list of Vector2i to a 2D numpy array """
-        return np.array(list(map(lambda x: np.array(x), self.getSegments())), dtype = np.int64)
-        
     def plot_rsml_(self, polylines:list, prop:list):
         """Plots the polylines in y-z axis with colors given by a root property
     
@@ -322,6 +318,9 @@ class MappedPlantPython(MappedPlant):
         # seed.initialize() # not called i.e. no tap root or basal roots are created
         self.oldNumberOfNodes = self.getNumberOfNodes()
         self.initCallbacks()
+        
+        self.nodes_py = np.array(list(map(lambda x: np.array(x), self.getNodes())))
+        self.segments_py = np.array(list(map(lambda x: np.array(x), self.getSegments())), dtype = np.int64)
 
     def set_identical_laterals(self, initial_sub_types, lateral_subtypes, emerge_type):
         """ places laterals as in the original rsml, all start growing at once 
@@ -385,7 +384,9 @@ class MappedPlantPython(MappedPlant):
                         # else:
                         #    lt.append(p_idx)
                         ld.append(creation_time)
-                        
+        
+        self.nodes_py = np.array(list(map(lambda x: np.array(x), self.getNodes())))
+        self.segments_py = np.array(list(map(lambda x: np.array(x), self.getSegments())), dtype = np.int64)                
         return ld, ld1
 
     def initialize_static_laterals(self):
@@ -399,6 +400,9 @@ class MappedPlantPython(MappedPlant):
                 # ps = organ.getChild(numKid).param()
                 # print(ps.getK(),ps.subType)
             # raise Exception
+        
+        self.nodes_py = np.array(list(map(lambda x: np.array(x), self.getNodes())))
+        self.segments_py = np.array(list(map(lambda x: np.array(x), self.getSegments())), dtype = np.int64)
 
     def analyse_laterals(self, initial_sub_types, lateral_subtypes):
         """ prints emergence points of laterals (for debugging)"""

@@ -385,19 +385,22 @@ PYBIND11_MODULE(plantbox, m) {
             .def("survivalTest", &Organism::survivalTest)
 
             .def("getOrgans", &Organism::getOrgans, py::arg("ot") = -1, py::arg("allOrgs")=false) // default
-            .def("getParameter", &Organism::getParameter, py::arg("name"), py::arg("ot") = -1, py::arg("organs") = std::vector<std::shared_ptr<Organ>>(0), py::arg("all") = false) // default
+            .def("getParameter", &Organism::getParameter, py::arg("name"), py::arg("ot") = -1, py::arg("organs") = std::vector<std::shared_ptr<Organ>>(0)) // default
             .def("getSummed", &Organism::getSummed, py::arg("name"), py::arg("ot") = -1) // default
 
             .def("getNumberOfOrgans", &Organism::getNumberOfOrgans)
             .def("getNumberOfNodes", &Organism::getNumberOfNodes)
-            .def("getNumberOfSegments", &Organism::getNumberOfSegments, py::arg("ot") = -1) // default
+            .def("getNumberOfSegments", &Organism::getNumberOfSegments, py::arg("ot") = -1, 
+                 py::arg("all") = true) // default
             .def("getPolylines", &Organism::getPolylines, py::arg("ot") = -1) // default
             .def("getPolylineCTs", &Organism::getPolylineCTs, py::arg("ot") = -1) // default
             .def("getNodes", &Organism::getNodes)
             .def("getNodeCTs", &Organism::getNodeCTs)
-            .def("getSegments", &Organism::getSegments, py::arg("ot") = -1) // default
+            .def("getSegments", &Organism::getSegments, py::arg("ot") = -1, 
+                 py::arg("all") = true) // default
             .def("getSegmentCTs", &Organism::getSegmentCTs, py::arg("ot") = -1) // default
-            .def("getSegmentOrigins", &Organism::getSegmentOrigins, py::arg("ot") = -1) // default
+            .def("getSegmentOrigins", &Organism::getSegmentOrigins, py::arg("ot") = -1, 
+                 py::arg("all") = true) // default
 
             .def("getNumberOfNewNodes", &Organism::getNumberOfNewNodes)
             .def("getNumberOfNewOrgans", &Organism::getNumberOfNewOrgans)
