@@ -1,4 +1,10 @@
 """
+
+    print(np.array(c).shape)
+    print(area.shape)
+    
+    ax1.plot(np.linspace(0, sim_time, N), np.sum(np.multiply(area,c), axis = 1), color = color)
+
 Solute transport example - radially symmetric 1D model for nitrate uptake
 """
 
