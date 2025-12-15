@@ -9,8 +9,8 @@ into the same path level as CPlantBox."""
 
 import matplotlib.pyplot as plt
 
-from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 from rosi.richards import RichardsWrapper  # Python part
+from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 # Define Van Genuchten and other parameters
 sand = [0.045, 0.43, 0.15, 3, 1000]  # |\label{l61:params_a}|

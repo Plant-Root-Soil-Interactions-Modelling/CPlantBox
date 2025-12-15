@@ -116,7 +116,7 @@ plant.setSoilGrid(picker, noChanges=True)
 plant.initialize()
 plant.simulate(plant_age, False)
 
-# Perirhizal zone models #  # |\label{l74:perirhizal_models_start}|
+# Perirhizal zone models |\label{l74:perirhizal_models_start}|
 rs = RhizoMappedSegments(soilModel=s, ms=plant, hm=hm, RichardsNCCylFoam=RichardsNCCylFoam)
 
 
@@ -176,7 +176,7 @@ for i in range(N):  # |\label{l74:loop_start}|
         proposed_outer_fluxes_solute,
     )  # outer BC solute 1 # |\label{l74:perirhizal_end}|
 
-    # Bulk soil #  # |\label{l74:soil_model_start}|
+    # Bulk soil  |\label{l74:soil_model_start}|
     soil_source_water = rs.sumSegFluxes(rs.getRealisedInnerFluxes(0))  # [cm3/day]  per soil cell
     soil_source_solute = rs.sumSegFluxes(rs.getRealisedInnerFluxes(1))  # [g/day]  per soil cell
 
@@ -185,7 +185,7 @@ for i in range(N):  # |\label{l74:loop_start}|
 
     s.solve(dt, saveInnerFluxes_=True)  # |\label{l74:soil_model_end}|
 
-    # Post processing #
+    # Post processing 
     rs.check1d3dDiff()  # |\label{l74:1d3d_diff_start}|
 
     # intracell exchange
@@ -203,10 +203,10 @@ for i in range(N):  # |\label{l74:loop_start}|
 
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 
-# VTK visualisation #
+# VTK visualisation 
 vp.plot_plant_and_soil(hm.ms, "xylem pressure head (cm)", h_xylem, s, False, np.array(min_b), np.array(max_b), cell_number, name, sol_ind=1)
 
-# Transpiration over time #
+# Transpiration over time 
 fig, ax1 = plt.subplots()
 ax1.plot(x_, np.array(y_), "g")  # actual transpiration
 ax2 = ax1.twinx()

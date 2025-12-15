@@ -141,7 +141,7 @@ print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 # VTK visualisation #  # |\label{l73c:plots}|
 vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", hx, s, True, np.array(min_b), np.array(max_b), cell_number, name)
 
-# Transpiration over time #
+# Transpiration over time 
 fig, ax1 = plt.subplots()
 ax1.plot(x_, trans * sinusoidal(x_), "k")  # potential transpiration
 ax1.plot(x_, -np.array(y_), "g")  # actual transpiration (neumann)
