@@ -61,9 +61,8 @@ params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreu
 hm = HydraulicModel_Doussan(plant, params)
 hm.wilting_point = wilting_point  # |\label{l73c:hydraulic_end}|
 
+
 # Coupling (map indices) #
-
-
 def picker(x, y, z):
     """soil grid cell index for positon (_x, _y, z)"""
     return s.pick([x, y, z])  # |\label{l73c:coupling}|
@@ -128,12 +127,12 @@ for i in range(0, N):  # |\label{l73c:loop}|
     y_.append(hm.get_transpiration(rs_age + t, hx.copy(), hsr.copy()))  # cm3/day
     z_.append(soil_water)  # cm3/day |\label{l73c:results_end}|
 
-    n = round(float(i) / float(N) * 100.0)  # |\label{l73c:progress}|
-    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], {:g} iterations, soil hs [{:g}, {:g}], interface [{:g}, {:g}] cm, root [{:g}, {:g}] cm, {:g} days".format(c, np.min(hs), np.max(hs), np.min(hsr), np.max(hsr), np.min(hx), np.max(hx), s.simTime))
+    n = round(i / N * 100)  # |\label{l73c:progress}|
+    print(f"[{'*' * n}{' ' * (100 - n)}], {c:g} iterations, soil hs [{np.min(hs):g}, {np.max(hs):g}], interface [{np.min(hsr):g}, {np.max(hsr):g}] cm, root [{np.min(hx):g}, {np.max(hx):g}] cm, {s.simTime:g} days")
 
     if i % 10 == 0:  # |\label{l73c:write}|
-        vp.write_soil("results/example73_{:06d}".format(i // 10), s, min_b, max_b, cell_number)
-        vp.write_plant("results/example73_{:06d}".format(i // 10), hm.ms.plant())  # |\label{l73c:write_end}|
+        vp.write_soil(f"results/example73_{i // 10:06d}", s, min_b, max_b, cell_number)
+        vp.write_plant(f"results/example73_{i // 10:06d}", hm.ms.plant())  # |\label{l73c:write_end}|
 
     t += dt
 

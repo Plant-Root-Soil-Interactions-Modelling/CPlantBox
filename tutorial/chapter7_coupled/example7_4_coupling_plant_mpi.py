@@ -3,7 +3,6 @@
 from datetime import datetime
 import timeit
 
-import rosi.helpful as helpful  # helper functions
 import matplotlib as mpl
 from matplotlib.dates import DateFormatter, HourLocator
 import matplotlib.pyplot as plt
@@ -16,6 +15,7 @@ from plantbox.functional.Photosynthesis import PhotosynthesisPython
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 import plantbox.functional.van_genuchten as vg  # van Genuchten model for soil hydraulic properties
 import plantbox.visualisation.vtk_plot as vp
+from rosi import helpful  # helper functions
 from rosi.rhizo_models_plant import RhizoMappedSegments
 from rosi.richards_flat import RichardsFlatWrapper as RichardsWrapper  # Python part, macroscopic soil model
 from rosi.rosi_richardsnc import RichardsNCSP  # C++ part (Dumux binding)
@@ -28,18 +28,18 @@ max_rank = comm.Get_size()
 SMALL_SIZE = 20
 MEDIUM_SIZE = 20
 BIGGER_SIZE = 20
-plt.rc("font", size = SMALL_SIZE)  # controls default text sizes
-plt.rc("axes", titlesize = SMALL_SIZE)  # fontsize of the axes title
-plt.rc("axes", labelsize = MEDIUM_SIZE)  # fontsize of the x and y labels
-plt.rc("xtick", labelsize = SMALL_SIZE)  # fontsize of the tick labels
-plt.rc("ytick", labelsize = SMALL_SIZE)  # fontsize of the tick labels
-plt.rc("legend", fontsize = SMALL_SIZE)  # legend fontsize
-plt.rc("figure", titlesize = BIGGER_SIZE)  # fontsize of the figure title
+plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
+plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
+plt.rc("axes", labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
+plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
+plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 mpl.rcParams["mathtext.default"] = "regular"
 
 
 def getWeatherData(sim_time):
-    diffDt = abs(pd.to_timedelta(weatherData["time"]) - pd.to_timedelta(sim_time % 1, unit = "d"))
+    diffDt = abs(pd.to_timedelta(weatherData["time"]) - pd.to_timedelta(sim_time % 1, unit="d"))
     line_data = np.where(diffDt == min(diffDt))[0][0]
     return weatherData.iloc[line_data]  # get the weather data for the current time step
 
@@ -54,7 +54,7 @@ N = int((sim_end - plant_age) / dt)
 
 # Weather data #
 pathWeather = "../../modelparameter/functional/climate/"
-weatherData = pd.read_csv(pathWeather + "Selhausen_weather_data.txt", delimiter = "\t")
+weatherData = pd.read_csv(pathWeather + "Selhausen_weather_data.txt", delimiter="\t")
 
 # Bulk soil #
 min_b = [-4.0, -4.0, -24.0]
@@ -69,6 +69,7 @@ nitrate_initial_values = np.array([5.0e-3]) / 0.43 / 1000  #  [kg/m3] -> [g/L]
 
 
 def setSoilParams(s):
+    """sets DuMux soil parameters"""
     s.results_dir = "./results/"
     s.setParameter("Component.MolarMass", "6.2e-2")  # [kg/mol]
     s.setParameter("Component.LiquidDiffusionCoefficient", "1.9e-9")  # [m2/s]
@@ -81,13 +82,13 @@ def setSoilParams(s):
 
 s = RichardsWrapper(RichardsNCSP())
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, periodic = True)  # [cm]
+s.createGrid(min_b, max_b, cell_number, periodic=True)  # [cm]
 s.setHomogeneousIC(initial, True)  # [cm] total potential
 s.setICZ_solute(nitrate_initial_values)  # step-wise function, ascending order
 s.setTopBC("noFlux")
 s.setBotBC("freeDrainage")
 s.setTopBC_solute("noFlux")
-s.setBotBC_solute("outflow")  # todo: add mass balance contorl including outflow of W and NO3
+s.setBotBC_solute("outflow")  # todo: add mass balance control including outflow of W and NO3
 helpful.setDefault(s)  # other input parameters for the solver
 setSoilParams(s)
 s.initializeProblem()
@@ -106,24 +107,25 @@ params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_G
 hm = PhotosynthesisPython(plant, params)
 hm.wilting_point = s.wilting_point
 path = "../../modelparameter/functional/plant_photosynthesis/"
-hm.read_photosynthesis_parameters(filename = path + "photosynthesis_parameters2025")
+hm.read_photosynthesis_parameters(filename=path + "photosynthesis_parameters2025")
+
 
 # Coupling (map indices) #
-
-
 def picker(x, y, z):
+    """soil grid cell index for positon (x, y, z)"""
     return s.pick([x, y, z])
 
 
-plant.setSoilGrid(picker, noChanges = True)
+plant.setSoilGrid(picker, noChanges=True)
 plant.initialize()
 plant.simulate(plant_age, False)
 
-# Perirhizal zone models #  # |\label{l74:perirhizal_models_start}|
-rs = RhizoMappedSegments(soilModel = s, ms = plant, hm = hm, RichardsNCCylFoam = RichardsNCCylFoam)
+# Perirhizal zone models |\label{l74:perirhizal_models_start}|
+rs = RhizoMappedSegments(soilModel=s, ms=plant, hm=hm, RichardsNCCylFoam=RichardsNCCylFoam)
 
 
 def setSoilParamsCyl(s):
+    """sets soil parameters and Michaelis Menten parameters"""
     setSoilParams(s)
     RS_Uptake_Vmax = 2.7e-6  # [g cm-2 day-1], Roose and Kirk (2009)
     RS_Uptake_km = 3.1e-6  # [g cm-3], Roose and Kirk (2009)
@@ -161,21 +163,21 @@ for i in range(N):  # |\label{l74:loop_start}|
 
     if rank == 0:
         hm.solve(
-            sim_time = plant_age,
-            rsx = h_rsi,
-            cells = False,
-            ea = ea,
-            es = es,
-            PAR = weatherData_i["PAR"] * (24 * 3600) / 1e4,  # [mol photons m-2 s-1] -> [mol photons cm-2 d-1]
-            TairC = weatherData_i["Tair"],
+            sim_time=plant_age,
+            rsx=h_rsi,
+            cells=False,
+            ea=ea,
+            es=es,
+            PAR=weatherData_i["PAR"] * (24 * 3600) / 1e4,  # [mol photons m-2 s-1] -> [mol photons cm-2 d-1]
+            TairC=weatherData_i["Tair"],
         )
 
         proposed_inner_fluxes_water = hm.radial_fluxes()  # [cm3/day]
         h_xylem = hm.get_water_potential()  # |\label{l74:plant_transpi_end}|
 
     # Perirhizal zone models #  # |\label{l74:perirhizal_start}|
-    proposed_outer_fluxes_water = rs.splitSoilVals(soilVals = net_flux_water, compId = 0, dt = dt)
-    proposed_outer_fluxes_solute = rs.splitSoilVals(soilVals = net_flux_solute, compId = 1, dt = dt)
+    proposed_outer_fluxes_water = rs.splitSoilVals(soilVals=net_flux_water, compId=0, dt=dt)
+    proposed_outer_fluxes_solute = rs.splitSoilVals(soilVals=net_flux_solute, compId=1, dt=dt)
 
     rs.solve(
         dt,
@@ -188,13 +190,13 @@ for i in range(N):  # |\label{l74:loop_start}|
     realisedInnerFlows_water = rs.getRealisedInnerFluxes(0)
     realisedInnerFlows_solute = rs.getRealisedInnerFluxes(1)
 
-    soil_source_water = comm.bcast(rs.sumSeg(realisedInnerFlows_water), root = 0)  # [cm3/day]  per soil cell
-    soil_source_solute = comm.bcast(rs.sumSeg(realisedInnerFlows_solute), root = 0)  # [g/day]  per soil cell
+    soil_source_water = comm.bcast(rs.sumSeg(realisedInnerFlows_water), root=0)  # [cm3/day]  per soil cell
+    soil_source_solute = comm.bcast(rs.sumSeg(realisedInnerFlows_solute), root=0)  # [g/day]  per soil cell
 
     s.setSource(soil_source_water.copy(), 0)  # [cm3/day], in richards.py
     s.setSource(soil_source_solute.copy(), 1)  # [g/day], in richards.py
 
-    s.solve(dt, saveInnerFluxes_ = True)  # |\label{l74:soil_model_end}|
+    s.solve(dt, saveInnerFluxes_=True)  # |\label{l74:soil_model_end}|
 
     # Post processing #
     rs.check1d3dDiff()  # |\label{l74:1d3d_diff_start}|
@@ -213,18 +215,15 @@ for i in range(N):  # |\label{l74:loop_start}|
         h_rsi_soil = np.delete(h_rsi_soil, rs.airSegs)  # remove air segments
         x_.append(datetime.strptime(weatherData_i["time"], "%H:%M:%S"))
         y_.append(float(np.sum(hm.get_transpiration())))  # |\label{l74:transpi}|
-
         n = round(float(i) / float(N - 1) * 100.0)
-        print(
-            "[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], [{:g}, {:g}] cm bulk soil, [{:g}, {:g}] cm root-soil interface, [{:g}, {:g}] cm plant xylem at {}".format(np.min(h_soil), np.max(h_soil), np.min(h_rsi_soil), np.max(h_rsi_soil), np.min(h_xylem), np.max(h_xylem), weatherData_i["time"])
-        )  # |\label{l74:info}|
+        print(f"[{'*' * n}{' ' * (100 - n)}], [{np.min(h_soil):g}, {np.max(h_soil):g}] cm bulk soil, [{np.min(h_rsi_soil):g}, {np.max(h_rsi_soil):g}] cm root-soil interface, [{np.min(h_xylem):g}, {np.max(h_xylem):g}] cm plant xylem at {weatherData_i['time']}")  # |\label{l74:info}|
 
 if rank == 0:
     print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 
 # VTK visualisation #
-h_xylem = comm.bcast(h_xylem, root = 0)
-vp.plot_plant_and_soil(hm.ms, "xylem pressure head (cm)", h_xylem, s, False, np.array(min_b), np.array(max_b), cell_number, name, sol_ind = 1)
+h_xylem = comm.bcast(h_xylem, root=0)
+vp.plot_plant_and_soil(hm.ms, "xylem pressure head (cm)", h_xylem, s, False, np.array(min_b), np.array(max_b), cell_number, name, sol_ind=1)
 
 if rank == 0:
     # Transpiration over time #
@@ -233,11 +232,11 @@ if rank == 0:
     ax2 = ax1.twinx()
     ax2.plot(x_, np.cumsum(np.array(y_) * dt), "c")  # cumulative transpiration
     ax1.set_xlabel("Time [hh:mm]")
-    ax1.set_ylabel("Actual transpiration rate $[mL~d^{-1}]$", color = "g")
-    ax1.tick_params(axis = "y", colors = "g")
+    ax1.set_ylabel("Actual transpiration rate $[mL~d^{-1}]$", color="g")
+    ax1.tick_params(axis="y", colors="g")
     ax2.yaxis.label.set_color("c")
-    ax2.set_ylabel("Cumulative transpiration $[mL]$", color = "c")
-    ax2.tick_params(axis = "y", colors = "c")
+    ax2.set_ylabel("Cumulative transpiration $[mL]$", color="c")
+    ax2.tick_params(axis="y", colors="c")
     ax1.xaxis.set_major_locator(HourLocator(range(0, 25, 1)))
     ax1.xaxis.set_major_formatter(DateFormatter("%H:%M"))
     ax1.fmt_xdata = DateFormatter("%H:%M")

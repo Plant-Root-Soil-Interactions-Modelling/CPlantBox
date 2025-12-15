@@ -29,7 +29,8 @@ data73 = np.load("results/" + name + "_fp.npy")
 # Transpiration over time #
 x1_ = data72[0, :]
 y1_ = data72[1, :]
-fig, ax1 = st.subplots21()
+fig, ax = st.subplots21()
+ax1 = ax[0]
 ax1.plot(x1_, trans * sinusoidal(x1_), "k", label="Potential")
 ax1.plot(x1_, np.array(y1_), "g", label="Actual")
 ax1.set_xlabel("Time [d]")
@@ -41,13 +42,12 @@ ax2.set_ylabel("Cumulative transpirtation $[mL]$")
 ax2.legend(loc="upper right")
 plt.tight_layout()
 plt.savefig("results/figure7_2_trans.png")
-plt.show()
 
 # Transpiration over time #
 x2_ = data73[0, :]
 y2_ = data73[1, :]
 z2_ = data73[2, :]
-fig, ax1 = st.subplots21()
+ax1 = ax[1]
 ax1.plot(x2_, trans * sinusoidal(x2_), "k", label="Potential")
 ax1.plot(x2_, np.array(y2_), "g", label="Actual nonlinear")
 ax1.plot(x1_, np.array(y1_), "g:", label="Actual")

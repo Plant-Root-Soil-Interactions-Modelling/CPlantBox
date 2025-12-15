@@ -76,12 +76,10 @@ params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreu
 hm = HydraulicModel_Doussan(plant, params)
 hm.wilting_point = wilting_point  # |\label{l7xa:hydraulic_end}|
 
-
 # Coupling (map indices)
 def picker(_x, _y, z):
     """1d soil picker calling RichardsWrapper.pick()"""
     return s.pick([0.0, 0.0, z])  # |\label{l7xa:coupling}|
-
 
 plant.setSoilGrid(picker)
 plant.initialize(True)
@@ -174,11 +172,12 @@ for i in range(0, N):  # |\label{l7xa:loop}|
     y_.append(-np.nansum(q) * area)  # |\label{l7xa:results}|
 
     n = round(float(i) / float(N) * 100.0)  # |\label{l7xa:progress}|
-    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], potential {:g}, actual {:g}; [{:g}, {:g}] cm soil at {:g} days".format(tp * area, np.nansum(q) * area, np.min(h_bs), np.max(h_bs), s.simTime))
+    print(f"[{'*' * n}{' ' * (100 - n)}], potential {tp * area:g}, actual {np.nansum(q) * area:g}; "
+          f"[{np.min(h_bs):g}, {np.max(h_bs):g}] cm soil at {s.simTime:g} days")
 
     if i % 10 == 0:  # |\label{l7xa:write}|
-        vp.write_soil("results/example72_{:06d}".format(i // 10), s, min_b, max_b, cell_number)
-        vp.write_plant("results/example72_{:06d}".format(i // 10), hm.ms.plant())  # |\label{l7xa:write_end}|
+        vp.write_soil(f"results/example7x_{i // 10:06d}", s, min_b, max_b, cell_number)
+        vp.write_plant(f"results/example7x_{i // 10:06d}", hm.ms.plant()) # |\label{l7xa:write_end}|
         # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number) # BETTER output
 
     t += dt  # [day]

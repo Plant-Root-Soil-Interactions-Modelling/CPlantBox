@@ -51,7 +51,7 @@ s.setCriticalPressure(wilting_point)  # |\label{l72c:soil_end}|
 plant = pb.MappedPlant()  # |\label{l72c:soil_plant}|
 plant.enableExtraNode()
 plant.readParameters(path + name + ".xml")
-sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 0.5)  # |\label{l72c:domain}|
+sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 1.0)  # |\label{l72c:domain}|
 plant.setGeometry(sdf)  # |\label{l72c:soil_plant_end}|
 
 # root hydraulic properties #
@@ -92,11 +92,11 @@ for i in range(0, N):  # |\label{l72c:loop}|
     y_.append(float(hm.get_transpiration(rs_age + t, hx, hs, cells=True)))  # |\label{l72c:results}|
 
     n = round(float(i) / float(N) * 100.0)  # |\label{l72c:progress}|
-    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], [{:g}, {:g}] cm soil [{:g}, {:g}] cm root at {:g} days {:g}".format(np.min(hs), np.max(hs), np.min(hx), np.max(hx), s.simTime, hx[0]))
+    print(f"[{'*' * n}{' ' * (100 - n)}], [{np.min(hs):g}, {np.max(hs):g}] cm soil [{np.min(hx):g}, {np.max(hx):g}] cm root at {s.simTime:g} days {hx[0]:g}")
 
     if i % 10 == 0:  # |\label{l72c:write}|
-        vp.write_soil("results/example72_{:06d}".format(i // 10), s, min_b, max_b, cell_number)
-        vp.write_plant("results/example72_{:06d}".format(i // 10), hm.ms.plant())  # |\label{l72c:write_end}|
+        vp.write_soil(f"results/example72_{i // 10:06d}", s, min_b, max_b, cell_number)
+        vp.write_plant(f"results/example72_{i // 10:06d}", hm.ms.plant())  # |\label{l72c:write_end}|
         # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number) # BETTER output
 
     t += dt  # [day]
