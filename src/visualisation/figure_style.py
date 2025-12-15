@@ -30,6 +30,7 @@ colors = prop_cycle.by_key()["color"]
 
 
 def subplots21(nrows=2, ncols=1, **params):
+    """ 2 rows, single column """
     return plt.subplots(nrows, ncols, **params, figsize=(12, 6))
 
 
