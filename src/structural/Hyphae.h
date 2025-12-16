@@ -24,8 +24,12 @@ public:
 
     void setHyphalTreeIndex(int index);
 
-    void setMergedHyphae(std::shared_ptr<Hyphae> merged) { mergedHyphae = merged; } ///< sets the merged hyphae after anastomosis;
-
+    void setMergedHyphae(std::weak_ptr<Hyphae> merged) { mergedHyphae = merged; } ///< sets the merged hyphae after anastomosis;
+    
+    void setMergePointID(int id) { mergePointID = id; } ///< sets the node ID where the anastomosis happened
+    
+    Vector3d getMergePoint(int id);
+    
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree
 
     int organType() const override { return Organism::ot_hyphae; }; ///< returns the organs type
@@ -46,8 +50,8 @@ public:
 
     int hyphalTreeIndex=-1;
 
-    std::shared_ptr<Hyphae> mergedHyphae = nullptr; ///< in case of anastomosis, points to the hyphae this one merged with
-
+    std::weak_ptr<Hyphae> mergedHyphae; ///< in case of anastomosis, points to the hyphae this one merged with
+    int mergePointID=-1; ///< node ID where the anastomosis happened
     /* Abbreviations */
     std::shared_ptr<HyphaeRandomParameter> getHyphaeRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const HyphaeSpecificParameter> param() const; ///< root parameter

@@ -53,11 +53,10 @@ Hyphae::Hyphae(std::shared_ptr<Organism> plant, int type,  double delay, std::sh
     // std::cout << "create Hyphae\n" << std::flush;
     assert(parent!=nullptr && "Hyphae::Hyphae parent must be set");
     double beta = 2*M_PI*plant->rand(); // initial rotation
-    double theta = M_PI/2.;
+    double theta = param()->theta;
     this->partialIHeading = Vector3d::rotAB(theta,beta);
     double creationTime= parent->getNodeCT(pni)+delay;//default
     addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
-    setHyphalTreeIndex(-1);
 }
 
 void Hyphae::setHyphalTreeIndex(int index)
@@ -148,8 +147,9 @@ void Hyphae::simulate(double dt, bool verbose)
                 }
                 // std::cout << p.getMaxLength() << " " << getLength(false) << std::endl;
                 // std::cout << nodes.size() << std::endl;
+                // std::cout<< "Age: "<< age << " vs. simTime - CT first node: "<< getOrganism()->getSimTime() << "\n";
 
-                if (getParameter("b")*age>1)
+                if (this->getAge() * getParameter("b")>1.)
                 {
                     active = false; // become inactive, if enough time has passed for branching
                     // std::cout<< "number of children: " << children.size() << "\n";
@@ -257,10 +257,22 @@ void Hyphae::createLateral(double pni)
     children.push_back(hyphae);
     // hyphae->setHyphalTreeIndex(hyphalTreeIndex);
     // std::cout << "********* simulate "  << ", "<< plant.lock()->getSimTime() <<", " << dt_ << "\n";
+    hyphae->setHyphalTreeIndex(hyphalTreeIndex); // get new index
     hyphae->simulate(dt_);
     // std::cout<< "Created lateral hyphae in hyphal tree " << hyphalTreeIndex << " with hopefully on the same index: "<< hyphae->getParameter("hyphalTreeIndex") << "\n";
 }
 
+Vector3d Hyphae::getMergePoint(int id)
+{
+    for (auto i=0; i<getNumberOfNodes(); i++)
+    {
+        if (getNodeId(i) == id)
+        {
+            return getNode(i);
+        }
+    }
+    throw std::runtime_error( "Hyphae::getMergePoint() node ID not found" );
+}
 
 /**
  * @return Quick info about the object for debugging

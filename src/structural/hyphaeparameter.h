@@ -66,8 +66,8 @@ public:
     double bs=0.05;             ///< standard deviation of branching rate [1/day]
     double hlt=10;            ///< hyphal lifetime  [day]
     double hlts=0.1;           ///< standard deviation of  hyphal lifetime  [day]
-    double theta=60./180.*M_PI;          ///< branching angle [rad]
-    double thetas=6./180.*M_PI;         ///< standard deviation of branching angle  [rad]
+    double theta=30./180.*M_PI;          ///< branching angle [rad]
+    double thetas=0./180.*M_PI;         ///< standard deviation of branching angle  [rad]
     double distTT = 0.; ///< distance for tip tip anastomosis [cm]
     double distTH = 0.; ///< distance for tip hyphae anastomosis [cm]
 

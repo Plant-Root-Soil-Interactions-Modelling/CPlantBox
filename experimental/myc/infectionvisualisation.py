@@ -23,7 +23,7 @@ mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 hyphae_parameter = pb.HyphaeRandomParameter(mycp)
 hyphae_parameter.subType = 1
 hyphae_parameter.a = 0.01
-hyphae_parameter.dx = 0.1
+hyphae_parameter.dx = 0.05
 hyphae_parameter.distTH = 0.1  # distance for anastomosis
 mycp.setOrganRandomParameter(hyphae_parameter)
 # print(hyphae_parameter)
@@ -42,7 +42,7 @@ mycp.initialize(True)
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
 simtime = 50
-fps = 1
+fps = 2
 anim_time = simtime
 N = fps * anim_time
 dt = simtime / N
@@ -69,20 +69,21 @@ else:
     for i in range(0, N):
         print('step',i, '/',N)
 
-        # ana = pb.SegmentAnalyser(mycp)
-        # hti = ana.getParameter("hyphalTreeIndex")
+        
         # print(hti)        
         mycp.simulate(dt, False)
 
-    vp.plot_plant(mycp, "organType")  
+    # vp.plot_plant(mycp, "organType")  
 #     print('done')
     
-#     ana = pb.SegmentAnalyser(mycp)
-#     ana.addData("infection", mycp.getNodeInfections(2))
+ana = pb.SegmentAnalyser(mycp)
+hti = ana.getParameter("hyphalTreeIndex")
+vp.plot_plant(ana, "hyphalTreeIndex")
+# ana.addData("infection", mycp.getNodeInfections(2))
 #     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
-#     pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
+# pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
 #     vp.plot_roots(ana, "infection")
 #     # vp.plot_roots(ana, "infectionTime")
 #     # 
-#     ana.write(filename + ".vtp", ["radius", "subType", "creationTime","organType"])# "infection", "infectionTime",
+# ana.write(filename + ".vtp", ["radius", "subType", "creationTime","organType"])# "infection", "infectionTime",
 
