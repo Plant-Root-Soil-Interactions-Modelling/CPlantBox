@@ -4,6 +4,7 @@ from plantbox.visualisation.vtk_tools import *
 import time
 import numpy as np
 import vtk
+from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank(); max_rank = comm.Get_size()
 
 """
 VTK Plot, by Daniel Leitner (refurbished 06/2020)
@@ -831,6 +832,23 @@ def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
         soil_grid.GetCellData().AddArray(d)
     write_vtu(filename + ".vtu", soil_grid)
 
+def write_soil_mpi(filename, hs, wc, min_b, max_b, cell_number):  
+    """ Writes results of a macroscopic soil model (e.g. Richards, RichardsNC) as vtu file
+        @param filename      filename without extension 
+        @parma hs            pressure head
+        @parma wc            water content
+        @parma min_b         minimum of bounding box
+        @parma max_b         maximum of bounding box
+        @parma cell_number   resolution of soil grid
+    """
+    soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+    soil_water_content = vtk_data(np.array(wc))
+    soil_water_content.SetName("water content")
+    soil_grid.GetCellData().AddArray(soil_water_content)
+    soil_pressure = vtk_data(np.array(hs))
+    soil_pressure.SetName("pressure head")  # in macroscopic soil
+    soil_grid.GetCellData().AddArray(soil_pressure)
+    write_vtu(filename + ".vtu", soil_grid)                    
 
 def write_plant(filename, plant, add_params = []):
     """ write the plants organ ceneterlines and leafs into two seperate vtp files"""
