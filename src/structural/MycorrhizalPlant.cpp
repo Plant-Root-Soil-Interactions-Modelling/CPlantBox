@@ -154,10 +154,6 @@ void MycorrhizalPlant::simulateAnastomosis() {
             if (fabs(dist) < h->getParameter("distTH")) 
             {
                 auto lastIndex = sdf->distIndex; 
-                // if (lastIndex == -1) {
-                //     std::cout<< "Distance index is -1 what is the distance: " << dist << std::endl;
-                //     std::cout<< "tree height: " << sdf->toString() << std::endl;
-                // }
                 // std::cout<< "Anastomosis occurred at distance: " << dist << " cm.\n";
                 // std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance id: " << lastIndex << std::endl;
                 // std::cout << "Hyphal tree index " << h->getParameter("hyphalTreeIndex") << "\n";
