@@ -33,7 +33,10 @@ namespace py = pybind11;
 #include "XylemFlux.h"
 #include "ExudationModel.h"
 #include "Photosynthesis.h"
+
+#ifdef ENABLE_PIAFMUNCH
 #include "PiafMunch/runPM.h"
+#endif
 
 #include "PlantHydraulicParameters.h"
 #include "PlantHydraulicModel.h"
@@ -1151,6 +1154,7 @@ PYBIND11_MODULE(plantbox, m) {
             .value("C4", Photosynthesis::PhotoTypes::C4)
             .export_values();
 
+#ifdef ENABLE_PIAFMUNCH
 	/*
      * runPM.h
      */
@@ -1241,7 +1245,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rhoSucrose",&PhloemFlux::rhoSucrose)
             .def_readwrite("krm1v",&PhloemFlux::krm1v)
             .def_readwrite("krm2v",&PhloemFlux::krm2v);
-
+#endif
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
         .def(py::init<>())
         .def(py::init<std::shared_ptr<MappedPlant>>())
