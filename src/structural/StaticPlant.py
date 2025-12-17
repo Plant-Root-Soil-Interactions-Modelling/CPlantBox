@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 
-class PlantPython(Plant):
+class StaticPlant(Plant):
     """
     adds functionality to initialize with a static root system, where emerging lateral roots are predefined
     static root system has subType (57 for ST)
@@ -183,7 +183,7 @@ class PlantPython(Plant):
 
 if __name__ == '__main__':
 
-    plant = PlantPython()
+    plant = StaticPlant()
 
     # path = "../../modelparameter/structural/rootsystem/"
     # name = "Glycine_max_Moraes2020"
