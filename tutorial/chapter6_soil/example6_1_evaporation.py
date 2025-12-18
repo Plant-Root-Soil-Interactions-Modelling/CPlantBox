@@ -18,7 +18,7 @@ loam = [0.08, 0.43, 0.04, 1.6, 50]
 clay = [0.1, 0.4, 0.01, 1.1, 10]
 soil = loam  # Select soil type for simulation   |\label{l61:params_e}|
 sim_time = 10  # |\label{l61:simtime}|
-N = 2000
+N = 10*24*60//10
 dt = sim_time / N  # time step [days]    |\label{l61:timestep}|
 ic = -200  # |\label{l61:ic}|
 evap = -0.1  # cm/d       |\label{l61:evap}|
@@ -30,7 +30,7 @@ s.setTopBC("atmospheric", 0.5, [[0.0, 1.0e10], [evap, evap]])  #  [cm/day] atmos
 # s.setTopBC("flux", evap)  #  [cm/day]
 # s.setTopBC("constantPressure", -10000)
 s.setBotBC("freeDrainage")  # BC freeDrainage   |\label{l61:bot_bc}|
-NZ = 1399
+NZ = 100  #1399
 s.createGrid([-5.0, -5.0, -100.0], [5.0, 5.0, 0.0], [1, 1, NZ])  # [cm]   |\label{l61:grid}|
 # vols = (100. / NZ) * np.ones((NZ,)) * 100.  # cm3
 s.setVGParameters([soil])  # |\label{l61:set_vg}|
@@ -50,10 +50,10 @@ x_, y_ = [], []
 for i in range(0, N):  # |\label{l61:loop}|
     s.solve(dt)  # |\label{l61:solve}|
     f = s.getNeumann(idx_top)  # f = s.getSolutionHeadAt(idx_top)   |\label{l61:Neumann_a}|
-    #   current_water = s.getWaterVolume()
-    #   f = (initial_water - current_water) / dt / 1.e2
-    #   print(current_water, f)
-    #   initial_water = current_water
+    current_water = s.getWaterVolume()
+    f = (initial_water - current_water) / dt / 1.e2
+    print(i, current_water, f)
+    initial_water = current_water
     x_.append(s.simTime)
     y_.append(f)  # |\label{l61:Neumann_e}|
 

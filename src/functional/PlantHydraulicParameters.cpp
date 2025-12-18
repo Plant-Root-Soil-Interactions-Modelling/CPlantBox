@@ -281,7 +281,7 @@ std::vector<double> PlantHydraulicParameters::getKr(double simtime) {
         try {
             kr[si] = kr_f(si, age, subType, organType);
         } catch(...) {
-            std::cout << "\n XylemFlux::segFluxes: radial conductivities failed" << std::flush;
+            std::cout << "\n PlantHydraulicParameters::getKr: radial conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
         }
     }
@@ -326,7 +326,7 @@ std::vector<double> PlantHydraulicParameters::getKx(double simtime) {
         try {
             kx[si] = kx_f(si, age, subType, organType);
         } catch(...) {
-            std::cout << "\n XylemFlux::segFluxes: axial conductivities failed" << std::flush;
+            std::cout << "\n PlantHydraulicParameters::getKx: axial conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
         }
     }
