@@ -18,11 +18,11 @@ soilcore = pb.SDF_PlantContainer(5, 5, 40, False)  # |\label{l2_2_1:cylinder}|
 
 # 1. Creates a square rhizotron r*r, with height h, rotated around the x-axis
 r, h, alpha = 20, 4, 45
-rhizotron2 = pb.SDF_PlantContainer(r, r, h, True)  # |\label{l2_2_1:rectangle}|
+rhizotron = pb.SDF_PlantContainer(r, r, h, True)  # |\label{l2_2_1:rectangle}|
 posA = pb.Vector3d(0, r, -h / 2)  # origin before rotation #|\label{l2_2_1:rotationbegin}|
 A = pb.Matrix3d.rotX(alpha / 180.0 * np.pi)
 posA = A.times(posA)  # origin after rotation
-rotatedRhizotron = pb.SDF_RotateTranslate(rhizotron2, alpha, 0, posA.times(-1))  # |\label{l2_2_1:rotationend}|
+rotatedRhizotron = pb.SDF_RotateTranslate(rhizotron, alpha, 0, posA.times(-1))  # |\label{l2_2_1:rotationend}|
 
 # 2. A split pot experiment
 topBox = pb.SDF_PlantBox(22, 20, 5)  # |\label{l2_2_1:splitboxbegin}|
