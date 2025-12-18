@@ -19,7 +19,7 @@ rs = pb.RootSystem()  # |\label{l5_2_exudation:rsstart}|
 path = "../../modelparameter/structural/rootsystem/"
 name = "Faba_synMRI"
 rs.readParameters(path + name + ".xml")
-rs.setSeed(1)
+rs.setSeed(1)   # |\label{l5_2_exudation:setRandomSeed}|
 rs.initialize()
 simtime = 10
 rs.simulate(simtime, True)
