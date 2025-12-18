@@ -142,7 +142,7 @@ s.setBotBC_solute(["outflow"])
 
 # Fertilizer  # |\label{l62:init_source}|
 fertilization_time = 31  # [day] fertilisation event
-fertilization_amount = 80 * 1.e3 * 1.0e-5 * area / 1000  #  80 [kg/ha] = 80*1.e-5 [g/cm2]; -> [kg/day]
+fertilization_amount = 80 * 1.0e-5 * area  #  80 [kg/ha] = 80*1.e-5 [g/cm2]; -> [kg/day]
 
 # Initialize problem  # |\label{l62:init}|
 s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
