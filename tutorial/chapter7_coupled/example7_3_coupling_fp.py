@@ -19,7 +19,7 @@ def sinusoidal(t):
     return np.sin(2.0 * np.pi * np.array(t) - 0.5 * np.pi) + 1.0
 
 
-# Parameters #  # |\label{l73c:param}|
+# Parameters  |\label{l73c:param}|
 min_b = [-35.0, -10.0, -50.0]  # [cm]
 max_b = [35.0, 10.0, 0.0]  # [cm]
 cell_number = [17, 5, 50]  # ~[4*4*1] cm3
@@ -36,7 +36,7 @@ initial = -400  # cm
 sim_time = 7.5  # [day]
 dt = 360.0 / (24 * 3600)  # [days]  # |\label{l73c:param_end}|
 
-# Initialize macroscopic soil model #
+# Initialize macroscopic soil model 
 s = RichardsWrapper(RichardsSP())  # |\label{l73c:soil}|
 s.initialize()
 s.createGrid(min_b, max_b, cell_number, periodic=True)  # [cm]
@@ -48,13 +48,13 @@ s.setParameter("Soil.SourceSlope", "1000")  # |\label{l73c:regularisation}|
 s.initializeProblem()
 s.setCriticalPressure(wilting_point)  # |\label{l73c:soil_end}|
 
-# Initialize xylem model #
+# Initialize xylem model 
 plant = pb.MappedPlant()  # |\label{l73c:soil_plant}|
 plant.readParameters(path + name + ".xml")
 sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 0.1)  # |\label{l73c:domain}|
 plant.setGeometry(sdf)  # |\label{l73c:soil_plant_end}|
 
-# root hydraulic properties #
+# root hydraulic properties 
 params = PlantHydraulicParameters()  # |\label{l73c:hydraulic}|
 params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreur2012")
 # params.plot_conductivities(True)
@@ -107,7 +107,7 @@ for i in range(0, N):  # |\label{l73c:loop}|
         # interpolation #
         hsr = peri.soil_root_interface_potentials(hx[1:], hs_, inner_kr_, rho_)  # |\label{l73c:interpolation}|
 
-        # xylem matric potential #
+        # xylem matric potential 
         hx = hm.solve_again(rs_age + t, -trans * sinusoidal(t), hsr, cells=False)  # |\label{l73c:hydraulic_hsr}|
         err = np.linalg.norm(hx - hx_old)
         hx_old = hx.copy()
@@ -138,7 +138,7 @@ for i in range(0, N):  # |\label{l73c:loop}|
 
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l73c:timing}|
 
-# VTK visualisation #  # |\label{l73c:plots}|
+# VTK visualisation  |\label{l73c:plots}|
 vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", hx, s, True, np.array(min_b), np.array(max_b), cell_number, name)
 
 # Transpiration over time 

@@ -65,9 +65,7 @@ vg_loam = vg.Parameters(hydrus_loam)
 initial = -600  # cm
 nitrate_initial_values = np.array([5.0e-3]) / 0.43 / 1000  #  [kg/m3] -> [g/L]
 
-# Initialize macroscopic soil model #
-
-
+# Initialize macroscopic soil model 
 def setSoilParams(s):
     """sets DuMux soil parameters"""
     s.results_dir = "./results/"
@@ -95,13 +93,13 @@ s.initializeProblem()
 s.setCriticalPressure(s.wilting_point)
 s.setRegularisation(s.eps_regularization, s.eps_regularization)  # needs to be low when using sand parameters.
 
-# Initialize plant model #
+# Initialize plant model 
 plant = pb.MappedPlant(1)
 plant.readParameters(path + name + ".xml")
 sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 0.1)
 plant.setGeometry(sdf)
 
-# plant hydraulic properties #
+# plant hydraulic properties 
 params = PlantHydraulicParameters()
 params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")
 hm = PhotosynthesisPython(plant, params)
@@ -148,15 +146,15 @@ h_xylem = None
 
 for i in range(N):  # |\label{l74:loop_start}|
     
-    # Weather variables #
+    # Weather variables 
     weatherData_i = getWeatherData(plant_age)
 
-    # Plant growth #  # |\label{l74:simulate_plant_start}|
+    # Plant growth |\label{l74:simulate_plant_start}|
     plant_age += dt
     plant.simulate(dt, False)
     rs.update()  # |\label{l74:simulate_plant_end}|
 
-    # Plant transpiration #  # |\label{l74:plant_transpi_start}|
+    # Plant transpiration  |\label{l74:plant_transpi_start}|
     h_rsi = rs.get_inner_heads(weatherData_i)  # inner values of the perirhizal models [cm]
     hm.pCO2 = weatherData_i["co2"]
     es = hm.get_es(weatherData_i["Tair"])
@@ -176,7 +174,7 @@ for i in range(N):  # |\label{l74:loop_start}|
         proposed_inner_fluxes_water = hm.radial_fluxes()  # [cm3/day]
         h_xylem = hm.get_water_potential()  # |\label{l74:plant_transpi_end}|
 
-    # Perirhizal zone models #  # |\label{l74:perirhizal_start}|
+    # Perirhizal zone models  |\label{l74:perirhizal_start}|
     proposed_outer_fluxes_water = rs.splitSoilVals(soilVals=net_flux_water, compId=0, dt=dt)
     proposed_outer_fluxes_solute = rs.splitSoilVals(soilVals=net_flux_solute, compId=1, dt=dt)
 
@@ -187,7 +185,7 @@ for i in range(N):  # |\label{l74:loop_start}|
         proposed_outer_fluxes_solute,
     )  # outer BC solute 1 # |\label{l74:perirhizal_end}|
 
-    # Bulk soil #  # |\label{l74:soil_model_start}|
+    # Bulk soil  |\label{l74:soil_model_start}|
     realisedInnerFlows_water = rs.getRealisedInnerFluxes(0)
     realisedInnerFlows_solute = rs.getRealisedInnerFluxes(1)
 
@@ -199,7 +197,7 @@ for i in range(N):  # |\label{l74:loop_start}|
 
     s.solve(dt, saveInnerFluxes_=True)  # |\label{l74:soil_model_end}|
 
-    # Post processing #
+    # Post processing 
     rs.check1d3dDiff()  # |\label{l74:1d3d_diff_start}|
 
     # inter-cell exchange
@@ -227,7 +225,7 @@ h_xylem = comm.bcast(h_xylem, root=0)
 vp.plot_plant_and_soil(hm.ms, "xylem pressure head (cm)", h_xylem, s, False, np.array(min_b), np.array(max_b), cell_number, name, sol_ind=1)
 
 if rank == 0:
-    # Transpiration over time #
+    # Plot transpiration over time 
     fig, ax1 = plt.subplots()
     ax1.plot(x_, np.array(y_), "g")  # actual transpiration
     ax2 = ax1.twinx()

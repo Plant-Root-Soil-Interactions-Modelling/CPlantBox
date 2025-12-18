@@ -88,8 +88,8 @@ hm.test()  # |\label{l7xa:test}|
 
 peri = Perirhizal(plant)
 h_bs = s.getSolutionHead()
-h_sr = np.ones(h_bs.shape) * wilting_point
 
+#h_sr = np.ones(h_bs.shape) * wilting_point
 # k_prhiz = peri.perirhizal_conductance_per_layer(h_bs, h_sr, sp)  # Test 1
 # print("k_prhiz", np.nanmin(k_prhiz), np.nanmax(k_prhiz))
 # plt.plot(k_prhiz, np.linspace(-50, 0, 50))

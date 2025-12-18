@@ -40,15 +40,15 @@ def getWeatherData(sim_time):
     return weatherData.iloc[line_data]
 
 
-# Main parameters #
+# Main parameters 
 path = "../../modelparameter/structural/plant/"
 name = "Triticum_aestivum_test_2021"
 plant_age = 14.3  # root system initial age [day]
 sim_end = 14.8
-dt = 20 / 60 / 24  # d
+dt = 20 / 60 / 24  # [day]
 N = int((sim_end - plant_age) / dt)
 
-# Weather data #
+# Weather data 
 pathWeather = "../../modelparameter/functional/climate/"
 weatherData = pd.read_csv(pathWeather + "Selhausen_weather_data.txt", delimiter="\t")
 
@@ -62,8 +62,6 @@ initial = -600  # cm
 nitrate_initial_values = np.array([5.0e-3]) / 0.43 / 1000  #  [kg/m3] -> [g/L]
 
 # Initialize macroscopic soil model #
-
-
 def setSoilParams(s):
     """sets DuMux soil parameters"""
     s.results_dir = "./results/"
@@ -105,7 +103,6 @@ hm.wilting_point = s.wilting_point
 path = "../../modelparameter/functional/plant_photosynthesis/"
 hm.read_photosynthesis_parameters(filename=path + "photosynthesis_parameters2025")
 
-
 # Coupling (map indices)
 def picker(x, y, z):
     """soil grid cell index for positon (x, y, z)"""
@@ -123,11 +120,11 @@ rs = RhizoMappedSegments(soilModel=s, ms=plant, hm=hm, RichardsNCCylFoam=Richard
 def setSoilParamsCyl(s):
     """sets soil parameters and Michaelis Menten parameters"""
     setSoilParams(s)
-    RS_Uptake_Vmax = 2.7e-6  # [g cm-2 day-1], Roose and Kirk (2009)
-    RS_Uptake_km = 3.1e-6  # [g cm-3], Roose and Kirk (2009)
+    rs_uptake_vmax = 2.7e-6  # [g cm-2 day-1], Roose and Kirk (2009)
+    rs_uptake_km = 3.1e-6  # [g cm-3], Roose and Kirk (2009)
     s.setInnerBC_solute(8)  # Michaelis Menten uptake
-    s.setParameter("RootSystem.Uptake.Vmax", s.dumux_str(RS_Uptake_Vmax))  # active uptake parameters
-    s.setParameter("RootSystem.Uptake.Km", s.dumux_str(RS_Uptake_km))
+    s.setParameter("RootSystem.Uptake.Vmax", s.dumux_str(rs_uptake_vmax))  # active uptake parameters
+    s.setParameter("RootSystem.Uptake.Km", s.dumux_str(rs_uptake_km))
 
 
 rs.setSoilParam = setSoilParamsCyl  # |\label{l74:perirhizal_models_end}|
@@ -139,6 +136,7 @@ net_flux_water = np.zeros(np.prod(cell_number))
 net_flux_solute = np.zeros(np.prod(cell_number))
 
 for i in range(N):  # |\label{l74:loop_start}|
+    
     # Weather variables
     weatherData_i = getWeatherData(plant_age)
 
@@ -197,7 +195,7 @@ for i in range(N):  # |\label{l74:loop_start}|
     y_.append(float(np.sum(hm.get_transpiration())))  # |\label{l74:transpi}|
 
     n = round(float(i) / float(N - 1) * 100.0)
-    h_soil = s.getSolutionHead()  # pressure head in the soil [cm]
+    h_soil = s.getSolutionHead()  # matric potential within the soil [cm]
     h_rsi_soil = np.delete(rs.get_inner_heads(weatherData_i), rs.airSegs)  # remove air segments
     print(f"[{'*' * n}{' ' * (100 - n)}], [{np.min(h_soil):g}, {np.max(h_soil):g}] cm bulk soil, [{np.min(h_rsi_soil):g}, {np.max(h_rsi_soil):g}] cm root-soil interface, [{np.min(h_xylem):g}, {np.max(h_xylem):g}] cm plant xylem at {weatherData_i['time']}")  # |\label{l74:info}|
 
