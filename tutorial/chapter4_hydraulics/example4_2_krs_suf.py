@@ -135,7 +135,7 @@ plt.show()  # |\label{l42:plotting_suf_krs}|
 # Printing summary and saving outputs
 print("\nSummary:")  # |\label{l42:summary}|
 for i, name in enumerate(architectures):
-    print(f"{name:20s} | Total root length: {lengths[i]:8.2f} cm | Surface area: {surfaces[i]:8.2f} cm2")
+    print(f"{name:20s}, Total root length: {lengths[i]:8.2f} cm, Surface area: {surfaces[i]:8.2f} cm2")
 
 csv_file = "results/krs_length_surface.csv"  # write CSV
 with open(csv_file, mode="w", newline="", encoding="utf-8") as f:
