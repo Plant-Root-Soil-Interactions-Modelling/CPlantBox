@@ -32,4 +32,4 @@ for root_file in os.listdir(root_directory):
          print(filename)
          p = pb.Plant()
          p.readParameters(os.path.join(root_path, filename))
-         p.writeParameters(os.path.join(plant_path, filename))
+         p.writeParameters(os.path.join(root_path, filename))
