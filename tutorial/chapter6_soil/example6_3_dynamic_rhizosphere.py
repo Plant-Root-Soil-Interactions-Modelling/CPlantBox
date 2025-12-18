@@ -49,8 +49,7 @@ def plot_history(area, w, c, N):  # |\label{l63:plot_history_start}|
     _, ax1 = plt.subplots()
     c_ = np.array([np.sum(np.multiply(area, np.multiply(c[i], w[i]))) for i in range(0, N)])  # nitrate concentration per soil volume
     color = "tab:red"
-    c2_ = np.array([np.sum(np.multiply(area, c[i])) for i in range(0, N)])  # nitrate concentration per soil volume
-    ax1.plot(np.linspace(0, simtime, N), c2_, color = color)
+    ax1.plot(np.linspace(0, simtime, N), np.sum(np.multiply(area,c), axis = 1), color = color)
     ax1.set_ylabel("[g/L] liquid phase", color = color)
     ax1.set_xlabel("Time [day]")
     ax1.tick_params(axis = "y", labelcolor = color)
@@ -81,15 +80,15 @@ nitrate_initial_values = 5.0e-3 / soil[1]  # [g/L] concentration in the soil to 
 s.setICZ_solute(nitrate_initial_values)  # step-wise function, ascending order  # |\label{l63:ic_end}|
 
 # Boundary conditions  # |\label{l63:bc_start}|
-RS_Uptake_Wmax = 1.0  # [cm/day]
+rs_uptake_Wmax = 1.0  # [cm/day]
 s.setOuterBC("fluxCyl", 0.0)  #  [cm/day] Neumann boundary condition
 s.setInnerBC("fluxCyl", 0.0)  # |\label{l63:bc_end}|
 
-RS_Uptake_Vmax = 2.7e-6  # [g cm-2 day-1], Roose and Kirk (2009) # |\label{l63:MM_start}|
-RS_Uptake_km = 3.1e-6  # [g cm-3], Roose and Kirk (2009)
+rs_uptake_Vmax = 2.7e-6  # [g cm-2 day-1], Roose and Kirk (2009) # |\label{l63:MM_start}|
+rs_uptake_km = 3.1e-6  # [g cm-3], Roose and Kirk (2009)
 s.setInnerBC_solute(8)  # Michaelis Menten uptake
-s.setParameter("RootSystem.Uptake.Vmax", s.dumux_str(RS_Uptake_Vmax))  # active uptake parameters
-s.setParameter("RootSystem.Uptake.Km", s.dumux_str(RS_Uptake_km))
+s.setParameter("RootSystem.Uptake.Vmax", s.dumux_str(rs_uptake_Vmax))  # active uptake parameters
+s.setParameter("RootSystem.Uptake.Km", s.dumux_str(rs_uptake_km))
 s.setParameter("Flux.UpwindWeight", "1")  # |\label{l63:MM_end}|
 
 # Initialze problem   # |\label{l63:init_start}|
@@ -124,7 +123,7 @@ for i in range(0, N):  # |\label{l63:loop_start}|
     print(t, "days")
     if cmin < 0.0:
         raise Exception
-    s.setInnerBC("fluxCyl", -RS_Uptake_Wmax * sinusoidal(t))  # [cm/day]
+    s.setInnerBC("fluxCyl", -rs_uptake_Wmax * sinusoidal(t))  # [cm/day]
     s.solve(dt)
     h.append(s.getSolutionHead())  # [cm]
     w.append(s.getWaterContent())  # [1]
@@ -136,6 +135,7 @@ volumef = np.sum(np.multiply(theta, area))  # |\label{l63:vol}|
 print("domain water volume", volumef, "cm3/cm  = ", volumef / 1000.0, "l/cm")  # |\label{l63:results}|
 print("change in water volume", volumef - volume0, "cm3/cm = ", 1.0e-3 * (volumef - volume0), "l/cm")
 
+area = np.squeeze(area, -1)
 plot_history(area, w, c, N)  # |\label{l63:plot_history}|
 plot_profile(cc, h[-1], c[-1])  # |\label{l63:plot_profile}|
 plt.show()
