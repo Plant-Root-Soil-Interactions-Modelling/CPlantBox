@@ -20,10 +20,10 @@ print(root[1], stem[1], leaf[1], "\n")  # Print sub type 1 |\label{l14:print}|
 print(seed[0], "\n")  # Print the seed parameter  |\label{l14:print_seed}|
 
 # Change a parameter
-root[1].r = 5  # Change elongation rate (r [cm/day]) |\label{l14:change_params_r}|
-root[1].ln = 0.25  # Change inter-lateral distance (ln [cm]) |\label{l14:change_params_ln}|
-root[2].dx = 0.5  # Change axial resolution (dx [cm]) |\label{l14:change_params_dx}|
-root[2].dxMin = 0.1  # Change minimal axial resolution (dxMin [cm])
+root[1].r = 5  # Change elongation rate r (cm/day]) |\label{l14:change_params_r}|
+root[1].ln = 0.25  # Change inter-lateral distance ln (cm) |\label{l14:change_params_ln}|
+root[2].dx = 0.5  # Change axial resolution dx (cm) |\label{l14:change_params_dx}|
+root[2].dxMin = 0.1  # Change minimal axial resolution dxMin (cm)
 
 print(root[1])  # Print new root parameters |\label{l14:print_new}|
 
