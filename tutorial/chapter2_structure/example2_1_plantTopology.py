@@ -5,6 +5,7 @@ import plantbox.visualisation.vtk_plot as vp
 
 path = "../../modelparameter/structural/plant/"
 
+# Define a simple plant topology, part A
 p = pb.MappedPlant(2)
 p.readParameters(path + "example2_1_2.xml", verbose=True)
 
@@ -27,7 +28,7 @@ p.simulate(100, False)
 vp.plot_plant(p, "organType")
 p.write("results/example2_1_2a.vtp")  # |\label{l2_1:simulateEnd1}|
 
-# Several successor types, specific locations
+# Several successor types, specific locations, part B
 p = pb.MappedPlant(2)
 p.readParameters(path + "example2_1_2.xml")
 
@@ -50,7 +51,7 @@ p.simulate(100, False)
 vp.plot_plant(p, "organType")
 p.write("results/example2_1_2b.vtp")
 
-# Probabilistic branching
+# Probabilistic branching, part C
 p = pb.MappedPlant(2)
 p.readParameters(path + "example2_1_2.xml")
 
@@ -73,3 +74,4 @@ p.simulate(100, False)
 
 vp.plot_plant(p, "organType")
 p.write("results/example2_1_2c.vtp")
+
