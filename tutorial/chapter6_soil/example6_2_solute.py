@@ -30,7 +30,7 @@ def plot_results(h_, c_, times, net_inf, fw, depth = -100.0):
     cax0.axis("off")
     divider = make_axes_locatable(ax[1])
     cax = divider.append_axes("right", size = "5%", pad = 0.05)
-    cmap_reversed = matplotlib.cm.get_cmap("jet_r")
+    cmap_reversed = matplotlib.colormaps.get_cmap("jet_r")
     im = ax[1].imshow(h, cmap = cmap_reversed, aspect = "auto", vmin = -1.0e3, extent = [0, sim_time, depth, 0.0])
     cb = fig.colorbar(im, cax = cax, orientation = "vertical")
     cb.ax.get_yaxis().labelpad = 30
@@ -39,7 +39,7 @@ def plot_results(h_, c_, times, net_inf, fw, depth = -100.0):
     ax[1].set_xlabel("time [days]")
     divider = make_axes_locatable(ax[2])
     cax = divider.append_axes("right", size = "5%", pad = 0.05)
-    cmap_ = matplotlib.cm.get_cmap("jet")
+    cmap_ = matplotlib.colormaps.get_cmap("jet")
     im = ax[2].imshow(c, cmap = cmap_, aspect = "auto", extent = [0, sim_time, depth, 0.0])
     cb = fig.colorbar(im, cax = cax, orientation = "vertical")
     cb.ax.get_yaxis().labelpad = 30
@@ -136,13 +136,13 @@ s.setTopBC("atmospheric", 0.5, [times_[1:], netinf_[:-1]])  # 0.5 is dummy value
 s.setBotBC("freeDrainage")
 # s.setBotBC("noflux")
 s.setTopBC_solute(["constantFlux"], [0.0], [0.0])
-# s.setTotBC_solute(["outflow"])
+# s.setTopBC_solute(["outflow"])
 # s.setBotBC_solute(["constantFlux"], [0.])
 s.setBotBC_solute(["outflow"])
 
 # Fertilizer  # |\label{l62:init_source}|
 fertilization_time = 31  # [day] fertilisation event
-fertilization_amount = 80 * 1.0e-5 * area / 1000  #  80 [kg/ha] = 80*1.e-5 [g/cm2]; -> [kg/day]
+fertilization_amount = 80 * 1.e3 * 1.0e-5 * area / 1000  #  80 [kg/ha] = 80*1.e-5 [g/cm2]; -> [kg/day]
 
 # Initialize problem  # |\label{l62:init}|
 s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
