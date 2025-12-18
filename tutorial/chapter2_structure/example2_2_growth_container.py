@@ -55,7 +55,7 @@ rhizoTube = pb.SDF_Difference(box, rhizotubes)  # |\label{l2_2_1:boxminustubes}|
 #
 number = 0
 containers = [soilcore, rotatedRhizotron, splitBox, rhizoTube]
-for container in containers:
+for container in containers: # |\label{l2_2_1:simulateallsetups}|
     rs.setGeometry(container)
     rs.initialize()
     rs.simulate(45)  # days
@@ -66,4 +66,4 @@ for container in containers:
     # Export results (as vtp)
     rs.write("results/root_system" + str(number) + ".vtp")
     vp.write_container(container, "results/container_" + str(number) + ".vtp")  # you can pass , resolution=200 to increase resulting mesh quality, default is 100
-    number += 1
+    number += 1 # |\label{l2_2_1:simulateallsetupsend}|
