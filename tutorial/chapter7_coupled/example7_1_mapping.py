@@ -29,12 +29,10 @@ s.setTopBC("noFlux")
 s.setBotBC("noFlux")
 s.initializeProblem()  # |\label{l71m:grid_end}|
 
-
 # Coupling
 def picker(x, y, z):
     """soil grid cell index for positon (_x, _y, z)"""
     return s.pick([x, y, z])  # |\label{l71m:picker}|
-
 
 plant.setSoilGrid(picker)  # |\label{l71m:picker_end}|
 
