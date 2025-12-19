@@ -49,14 +49,10 @@ srp.delayB = 3.0  # delay between the emergence of basal roots (day)
 plant.setOrganRandomParameter(srp) # |\label{l2_1:srp}|
 
 plant.initialize()
-
-
-simtimes = [0, 30, 60, 125]  # the last lateral will emerge at last time step |\label{l2_1:simtime}|
-for i in range(0, 3): # |\label{l2_1:simloop_start}|
-    plant.simulate(np.diff(simtimes)[i])  # (day)
-    vp.plot_plant(plant, "creationTime")
+plant.simulate(50)  # |\label{l2_1:simulation_start}|
+vp.plot_plant(plant, "creationTime")
 vp.write("results/example2_1_parameters.vtp")
-plt.show() # |\label{l2_1:simloop_end}|
+plt.show() # |\label{l2_1:simulation_end}|
 
 # Some outputs....
 print(srp) # |\label{l2_1:print_srp}|
