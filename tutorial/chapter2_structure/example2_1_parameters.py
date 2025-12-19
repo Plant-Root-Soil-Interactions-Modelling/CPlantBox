@@ -51,7 +51,7 @@ plant.setOrganRandomParameter(srp) # |\label{l2_1:srp}|
 plant.initialize()
 plant.simulate(50)  # |\label{l2_1:simulation_start}|
 vp.plot_plant(plant, "creationTime")
-vp.write("results/example2_1_parameters.vtp")
+plant.write("results/example2_1_parameters.vtp")
 plt.show() # |\label{l2_1:simulation_end}|
 
 # Some outputs....
