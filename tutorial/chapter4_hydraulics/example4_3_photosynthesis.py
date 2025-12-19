@@ -66,11 +66,11 @@ hm.read_photosynthesis_parameters(filename=path + "photosynthesis_parameters")  
 results = {"transpiration": [], "gco2": [], "An": [], "Vc": [], "Vj": []}
 for i in range(N):  # |\label{l43:loop}|
     # Weather variables
-    weatherData_i = getWeatherData(plant_age)  # |\label{l52:weather}|
+    weatherData_i = getWeatherData(plant_age)  # |\label{l43:weather}|
 
     # Plant growth
     plant_age += dt
-    plant.simulate(dt, False)  # |\label{l52:plant}|
+    plant.simulate(dt, False)  # |\label{l43:plant}|
 
     # Plant transpiration and photosynthesis
     hm.pCO2 = weatherData_i["co2"]
@@ -135,3 +135,4 @@ with plt.rc_context(
         fig.autofmt_xdate()
 
     plt.show()
+
