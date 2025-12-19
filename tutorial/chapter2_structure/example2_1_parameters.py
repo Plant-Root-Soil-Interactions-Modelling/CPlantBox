@@ -58,8 +58,6 @@ for i in range(0, 3): # |\label{l2_1:simloop_start}|
 vp.write("results/example2_1_parameters.vtp")
 plt.show()
 
-plant.write("/results/topics_parameters2.vtp")
-
 # Some outputs....
 print(srp)
 print(p1)
