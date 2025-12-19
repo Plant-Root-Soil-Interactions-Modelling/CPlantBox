@@ -21,5 +21,5 @@ ana = pb.SegmentAnalyser(plant)
 ana.write("results/animation.vtp")
 
 # Export geometry as Paraview Python script
-box = pb.SDF_PlantBox(15, 10, 40)
+box = pb.SDF_PlantBox(15, 10, 40) # cm
 vp.write_container(box, "results/container.vtp")

@@ -14,7 +14,7 @@ rs.simulate(60)  # days
 
 # Export results as segments
 ana = pb.SegmentAnalyser(rs)
-ana.mapPeriodic(15, 10)  # |\label{l2_2_3:periodicity}|
+ana.mapPeriodic(15, 10)  # cm |\label{l2_2_3:periodicity}|
 ana.write("results/periodic.vtp")
 
 # Plot final (periodic) image, using vtk

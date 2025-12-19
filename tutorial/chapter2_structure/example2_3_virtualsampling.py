@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plantbox as pb
+from plantbox.visualisation import figure_style 
 
 path = "../../modelparameter/structural/rootsystem/"
 name = "wheat"
@@ -14,16 +15,16 @@ times = np.linspace(0, 30 * months, months + 1)  # |\label{l2_3:timeend}|
 # 72 cm*45 cm size plot
 M = 16  # number of plants in rows #|\label{l2_3:plantsetbegin}|
 N = 7  # number of rows
-distp = 3  # distance between the root systems along row[cm]
-distr = 12  # distance between the rows[cm]
-interrow = (M - 1) * distp  # intra-row spacing
-row = (N - 1) * distr  # row spacing #|\label{l2_3:plantsetend}|
+distp = 3  # distance between the root systems along row (cm)
+distr = 12  # distance between the rows (cm)
+interrow = (M - 1) * distp  # intra-row spacing (cm)
+row = (N - 1) * distr  # row spacing (cm) |\label{l2_3:plantsetend}|
 
 r, depth, layers = 4.2 / 2, 160.0, 32  # Soil core analysis #|\label{l2_3:soilcorebegin}|
-layerVolume = depth / layers * r * r * np.pi
+layerVolume = depth / layers * r * r * np.pi # cm3 
 z_ = np.linspace(0, -depth, layers)  # slices of soil core
 
-soilcolumn = pb.SDF_PlantContainer(r, r, depth, False)  # square = false
+soilcolumn = pb.SDF_PlantContainer(r, r, depth, False)  # square = False
 
 soilcor_x = interrow / 4
 soilcor_y = distr

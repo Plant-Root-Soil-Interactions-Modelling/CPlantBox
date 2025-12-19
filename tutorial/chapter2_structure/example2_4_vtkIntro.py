@@ -5,7 +5,7 @@ import numpy as np
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp  # |\label{3f:importvtk}|
 
-# plant  # |\label{3f:plantStart}|
+# plant  |\label{3f:plantStart}|
 plant = pb.MappedPlant(0)
 path = "../../modelparameter/structural/plant/"
 name = "fspm2023"
