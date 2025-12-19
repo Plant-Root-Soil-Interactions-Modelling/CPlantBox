@@ -7,10 +7,12 @@ from rosi.richards import RichardsWrapper  # Python part
 from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 # Define Van Genuchten and other parameters
-sand = [0.045, 0.43, 0.15, 3, 1000]  # |\label{l61:params_a}|
-loam = [0.08, 0.43, 0.04, 1.6, 50]
-clay = [0.1, 0.4, 0.01, 1.1, 10]
-soil = loam  # Select soil type for simulation   |\label{l61:params_e}|
+soils = { 
+    'sand' : [0.045, 0.43, 0.15, 3, 1000],  # |\label{l61:params_a}|
+    'loam' : [0.08, 0.43, 0.04, 1.6, 50],
+    'clay' : [0.1, 0.4, 0.01, 1.1, 10]
+}
+soil = "loam"  # Select soil type for simulation   |\label{l61:params_e}|
 sim_time = 10  # |\label{l61:simtime}|
 N = 10*24*60//10
 dt = sim_time / N  # time step [days]    |\label{l61:timestep}|
@@ -27,7 +29,7 @@ s.setBotBC("freeDrainage")  # BC freeDrainage   |\label{l61:bot_bc}|
 NZ = 100  #1399
 s.createGrid([-5.0, -5.0, -100.0], [5.0, 5.0, 0.0], [1, 1, NZ])  # [cm]   |\label{l61:grid}|
 # vols = (100. / NZ) * np.ones((NZ,)) * 100.  # cm3
-s.setVGParameters([soil])  # |\label{l61:set_vg}|
+s.setVGParameters([soils[soil]])  # |\label{l61:set_vg}|
 s.setHomogeneousIC(ic)  # cm pressure head  |\label{l61:set_ic}|
 # s.setParameter("Problem.EnableGravity", "false")
 maxDt = 1.0  # maximal Dumux time step [days]   |\label{l61:maxDT}|
@@ -43,9 +45,6 @@ for i in range(0, N):  # |\label{l61:loop}|
     print(f" {i*dt:g} days")
     s.solve(dt)  # |\label{l61:solve}|
     f = s.getNeumann(idx_top)  # f = s.getSolutionHeadAt(idx_top)   |\label{l61:Neumann_a}|
-    current_water = s.getWaterVolume()
-    f = (initial_water - current_water) / dt / 1.e2
-    initial_water = current_water
     x_.append(s.simTime)
     y_.append(f)  # |\label{l61:Neumann_e}|
 
