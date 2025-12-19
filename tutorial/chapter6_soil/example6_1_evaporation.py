@@ -3,8 +3,8 @@ This example solves the Richards equation with DuMux. The github repository "dum
 
 import matplotlib.pyplot as plt
 
-from rosi.richards import RichardsWrapper  # Python part
-from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
+from rosi.richards import RichardsWrapper  # Python part |\label{l61:paths_a}|
+from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding) |\label{paths_a}|
 
 # Define Van Genuchten and other parameters
 soils = { 
