@@ -56,8 +56,8 @@ for i in range(0, 3): # |\label{l2_1:simloop_start}|
     plant.simulate(np.diff(simtimes)[i])  # (day)
     vp.plot_plant(plant, "creationTime")
 vp.write("results/example2_1_parameters.vtp")
-plt.show()
+plt.show() # |\label{l2_1:simloop_end}|
 
 # Some outputs....
-print(srp)
-print(p1)
+print(srp) # |\label{l2_1:print_srp}|
+print(p1) # |\label{l2_1:print_p1}|
