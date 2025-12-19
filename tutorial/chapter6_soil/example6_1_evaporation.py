@@ -30,23 +30,21 @@ s.createGrid([-5.0, -5.0, -100.0], [5.0, 5.0, 0.0], [1, 1, NZ])  # [cm]   |\labe
 s.setVGParameters([soil])  # |\label{l61:set_vg}|
 s.setHomogeneousIC(ic)  # cm pressure head  |\label{l61:set_ic}|
 # s.setParameter("Problem.EnableGravity", "false")
-s.initializeProblem()  # |\label{l61:initialise}|
+maxDt = 1.0  # maximal Dumux time step [days]   |\label{l61:maxDT}|
+s.initializeProblem(maxDt)  # |\label{l61:initialise}|
 s.setCriticalPressure(-10000)  # |\label{l61:criticalPsi}|
 s.setRegularisation(1.0e-6, 0.0)  # |\label{l61:regularize}|
 idx_top = s.pickCell([0.0, 0.0, 0.0])  # index to watch surface flux  #|\label{l61:picker}|
 initial_water = s.getWaterVolume()  # |\label{l61:gettheta}|
-print(initial_water)
 s.ddt = 1.0e-5  # initial Dumux time step [days]  |\label{l61:initialDT}|
-maxDt = 1.0  # maximal Dumux time step [days]   |\label{l61:maxDT}|
-s.setMaxTimeStepSize(maxDt)
 
 x_, y_ = [], []
 for i in range(0, N):  # |\label{l61:loop}|
+    print(f" {i*dt:g} days")
     s.solve(dt)  # |\label{l61:solve}|
     f = s.getNeumann(idx_top)  # f = s.getSolutionHeadAt(idx_top)   |\label{l61:Neumann_a}|
     current_water = s.getWaterVolume()
     f = (initial_water - current_water) / dt / 1.e2
-    print(i, current_water, f)
     initial_water = current_water
     x_.append(s.simTime)
     y_.append(f)  # |\label{l61:Neumann_e}|
