@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt  # |\label{l2_1:matplotlib}|
 import numpy as np  # |\label{l2_1:numpy}|
-
+import plantbox.visualisation.vtk_plot as vp
 import plantbox as pb
 from plantbox.visualisation import figure_style
 
@@ -50,29 +50,14 @@ plant.setOrganRandomParameter(srp) # |\label{l2_1:srp}|
 
 plant.initialize()
 
-fig, axes = figure_style.subplots13()
+
 simtimes = [0, 30, 60, 125]  # the last lateral will emerge at last time step |\label{l2_1:simtime}|
 for i in range(0, 3): # |\label{l2_1:simloop_start}|
     plant.simulate(np.diff(simtimes)[i])  # (day)
-    a = axes[i]
-    a.set_xlim([-15, 15.0])  # x axis limit |\label{l2_1:x_lim}|
-    a.set_ylim([-35.0, 0.0]) # y axis limit |\label{l2_1:y_lim}|
-    a.set_title(f"after {plant.getSimTime()} days") # plot title |\label{l2_1:title}|
-    roots = plant.getPolylines() # |\label{l2_1:polylines}|
-    for root in roots: # |\label{l2_1:coord_start}|
-        for j, n in enumerate(root[:-1]): 
-            n2 = root[j + 1]
-            a.plot([n.x, n2.x], [n.z, n2.z], "g") # |\label{l2_1:simloop_end}|
-
-fig.tight_layout()
-plt.show()
-
-plant.write("/results/topics_parameters2.vtp")
+    vp.plot_plant(plant, "creationTime")
+vp.write("results/example2_1_parameters.vtp")
+plt.show() # |\label{l2_1:simloop_end}|
 
 # Some outputs....
-print(" length", plant.getParameter("length")) # get length of roots |\label{l2_1:root_len}|
-print("    age", plant.getParameter("age"))  # get age of roots |\label{l2_1:root_age}|
-print("subType", plant.getParameter("subType")) # get subTypes of roots |\label{l2_1:root_subType}|
-print("     la", plant.getParameter("la")) # get apical length of roots |\label{l2_1:root_la}|
-print("la_mean", plant.getParameter("la_mean")) # get apical length mean of roots |\label{l2_1:root_la_mean}|
-print(" radius", plant.getParameter("radius")) # get radius of roots |\label{l2_1:root_a}|
+print(srp) # |\label{l2_1:print_srp}|
+print(p1) # |\label{l2_1:print_p1}|
