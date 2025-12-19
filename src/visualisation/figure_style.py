@@ -57,6 +57,10 @@ def subplots21(nrows=2, ncols=1, **params):
     """ 2 rows, single column """
     return plt.subplots(nrows, ncols, **params, figsize=(6, 12))
 
+def subplots44(nrows=4, ncols=4, **params):
+    """ 4 rows, 4 columns """
+    return plt.subplots(nrows, ncols, **params, figsize=(12, 12))
+
 #
 # def subplots43(nrows=4, ncols=3, **params):
 #     return plt.subplots(nrows, ncols, **params, figsize=(12, 9))

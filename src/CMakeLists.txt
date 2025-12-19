@@ -45,7 +45,6 @@ add_library(CPlantBox SHARED
             structural/SegmentAnalyser.cpp            
             structural/tropism.cpp            
 			
-            functional/XylemFlux.cpp
 			functional/Photosynthesis.cpp
 			functional/Perirhizal.cpp
 			functional/PlantHydraulicParameters.cpp
