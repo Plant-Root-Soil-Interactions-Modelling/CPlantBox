@@ -13,7 +13,7 @@ sigma = [0.4, 1.0, 1.0, 1.0, 1.0] * 2  # |\label{l3_2_hydrotropism:tsetstart}|
 for p in rs.getOrganRandomParameter(pb.root):
     p.dx = 0.25  # adjust resolution
     p.tropismT = pb.TropismType.hydro
-    p.tropismN = 2  # strength of tropism
+    p.tropismN = 1.8  # strength of tropism
     p.tropismS = sigma[p.subType - 1]  # |\label{l3_2_hydrotropism:tsetend}|
 
 # Static soil property in a thin layer
@@ -46,4 +46,4 @@ rs.setGeometry(layer)  # just for vizualisation
 rs.write("results/example3_2_hydrotropism.py")
 
 # Plot, using vtk
-vp.plot_roots(rs, "type")  # |\label{l3_2_hydrotropism:resultsend}|
+vp.plot_roots_and_container(rs, layer, "type")  # |\label{l3_2_hydrotropism:resultsend}|

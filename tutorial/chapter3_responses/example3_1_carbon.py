@@ -5,28 +5,18 @@ import numpy as np
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
-# %% Configure simulations
-
-# Simulation steps
-simtime = 50  # [days]
-dt = 1
+# Configure simulation
+simtime = 50  # days
+dt = 1 # days
 steps = round(simtime / dt)
-
-# Assuming a constant carbon source to the root system
-carbon_source = 30.0  # [g(Root)/day] |\label{l3_1_carbon:SetStart}|
-
-# Assuming a constant specific root length
-root_SRL = 2.5  # [cm(Root)/g(Root)] |\label{l3_1_carbon:SetEnd}|
-
-# %% Initialize model
+carbon_source = 30.0 # Assuming a constant carbon source to the root system (g_Root/day) |\label{l3_1_carbon:SetStart}|
+root_SRL = 2.5  # Assuming a constant specific root length (cm_Root)/g_Root) |\label{l3_1_carbon:SetEnd}|
 
 # Set up depth dependent elongation scaling function
 scale_elongation = pb.EquidistantGrid1D(0, -50, 100)  # |\label{l3_1_carbon:GridStart}|
 soil_strength = np.ones(len(scale_elongation.data) - 1) * 0.9  #
 scale_elongation.data = soil_strength  # |\label{l3_1_carbon:GridEnd}|
-
-# Proportionally scale this function
-se = pb.ProportionalElongation()
+se = pb.ProportionalElongation() # Proportionally scale this function
 se.setBaseLookUp(scale_elongation)
 
 # Instantiate root system for a maize plant
@@ -42,7 +32,7 @@ rs.initialize()  # |\label{l3_1_carbon:SefEnd}|
 
 total_root_len = rs.getSummed("length")
 
-# %% Simulation loop
+# Simulation loop
 for step in range(0, steps):  # |\label{l3_1_carbon:LoopStart}|
     print("\nSimulation step", step)
 
@@ -70,7 +60,7 @@ for step in range(0, steps):  # |\label{l3_1_carbon:LoopStart}|
     tol = 1.01  # 1% tolerance
     assert used_carbon <= carbon_source * tol, f"Mismatching carbon balance, used carbon is larger than carbon source ({round((tol - 1) * 100, 3)}% tolerance)"  # |\label{l3_1_carbon:LoopEnd}|
 
-# %% Write outputs and plot
+# Write outputs and plot
 rs.write("results/example_carbon.vtp")  # |\label{l3_1_carbon:WriteStart}|
 
 ana = pb.SegmentAnalyser()

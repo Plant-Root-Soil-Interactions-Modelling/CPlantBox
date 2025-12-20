@@ -24,8 +24,8 @@ for organ_type in [pb.root, pb.stem, pb.leaf]:
         p.f_se = scale_elongation  # |\label{l3_4_scale:applyScaling}|
 
 rs.initialize()
-simtime = 30.0
-dt = 0.1  # small, for animation
+simtime = 30.0 # days
+dt = 0.1  # small, for animation (cm)
 
 anim = vp.AnimateRoots(rs)
 anim.root_name = "creationTime"
@@ -38,6 +38,7 @@ anim.res = np.array([1, 1, 1])
 anim.start()
 
 for i in range(0, round(simtime / dt)):  # Simulation
+    
     # option for dynamic scale update
     new_scales = scales  # |\label{l3_4_scale:dynamicStart}|
     scale_elongation.data = new_scales  # |\label{l3_4_scale:dynamicEnd}|

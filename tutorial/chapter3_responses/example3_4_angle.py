@@ -15,14 +15,14 @@ patch = pb.SDF_RotateTranslate(box, pb.Vector3d(-5, 0.0, -10))
 
 max_ = 1.0  # maximal
 min_ = 0.1  # minimal
-slope = 1.0  # [cm] linear gradient between min and max
+slope = 1.0  # linear gradient between min and max (cm) 
 soilprop = pb.SoilLookUpSDF(patch, max_, min_, slope)  # |\label{l34:rate2}|
 
 for organ_type in [pb.root, pb.stem, pb.leaf]:  # |\label{l34:for_start}|
     for p in plant.getOrganRandomParameter(organ_type):
         if p.subType > 2:
-            p.dx = 0.25  # adjust resolution
-            p.f_sa = soilprop  # Scale insertion angle
+            p.dx = 0.25  # adjust resolution (cm)
+            p.f_sa = soilprop  # scale insertion angle
             p.lmax = 2 * p.lmax  # increase higher order length
 
 plant.initialize()

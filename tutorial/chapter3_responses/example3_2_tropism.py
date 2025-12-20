@@ -4,13 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plantbox as pb
+from plantbox.visualisation import figure_style 
 
-fig, axes = plt.subplots(4, 4, figsize=(15, 10))
-
-N_ = [0, 1, 2, 4]  # strength [1] # |\label{l3_2_tropism:valuesstart}|
-sigma_ = [0, 0.1, 0.3, 0.6]  # flexibility [1/m]  # |\label{l3_2_tropism:valuesend}|
-dx = 1  # axial resolution # |\label{l3_2_tropism:paramsstart}|
-theta = 70 / 180 * np.pi  # insertion angle [1]
+N_ = [0, 1, 2, 4]  # strength  |\label{l3_2_tropism:valuesstart}|
+sigma_ = [0, 0.1, 0.3, 0.6]  # flexibility (1/cm)   |\label{l3_2_tropism:valuesend}|
+dx = 1  # axial resolution (cm) |\label{l3_2_tropism:paramsstart}|
+theta = 70 / 180 * np.pi  # insertion angle
 
 rs = pb.Plant()
 srp = pb.SeedRandomParameter(rs)
@@ -21,6 +20,8 @@ p0 = pb.RootRandomParameter(rs)
 p0.name, p0.subType, p0.lmax, p0.r, p0.dx, p0.theta = "taproot", 1, 100, 1, dx, theta
 p0.tropismT = 1  # gravitropism
 rs.setOrganRandomParameter(p0)  # |\label{l3_2_tropism:paramsend}|
+
+fig, axes = figure_style.subplots44()
 
 for i, n in enumerate(N_):  # |\label{l3_2_tropism:loopstart}|
     for j, sigma in enumerate(sigma_):

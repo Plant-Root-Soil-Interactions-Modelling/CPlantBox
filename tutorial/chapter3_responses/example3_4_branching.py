@@ -13,7 +13,7 @@ patch = pb.SDF_RotateTranslate(box, pb.Vector3d(-5, 0.0, -10))
 
 max_ = 1.0  # maximal
 min_ = 0.02  # minimal
-slope = 1.0  # [cm] linear gradient between min and max
+slope = 1.0  # linear gradient between min and max (cm)
 soilprop = pb.SoilLookUpSDF(patch, max_, min_, slope)  # |\label{l34:rate}|
 
 p = plant.getOrganRandomParameter(pb.root, 2)
