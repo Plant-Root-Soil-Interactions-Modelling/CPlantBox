@@ -105,14 +105,11 @@ anim = vp.AnimateRoots(plant)
 anim.min = min_
 anim.max = max_
 anim.res = [1, 1, 1]
-anim.file = "results/example_plant"
-anim.avi_name = "results/example_"
 anim.plant = True
 anim.start()
 
 for i in range(0, N):
 
     plant.simulate(dt, False)
-    anim.root_name = "organType"
     anim.update()
 

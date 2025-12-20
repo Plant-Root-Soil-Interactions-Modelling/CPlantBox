@@ -21,7 +21,7 @@ plant.simulate(simtime, verbose)  # |\label{l2_1g:defineEnd}|
 
 fig, ax = figure_style .subplots11()  # |\label{l2_1g:plotStart}|
 name = ["root", "stem", "leaf", "root tips"]
-color = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+color = ["tab:red", "tab:orange", "tab:green", "tab:blue"]
 
 for idx, ot in enumerate([pb.root, pb.stem, pb.leaf]):
     pl = plant.getPolylines(ot)  # 3D vectors with coordinates of nodes regrouped per organs  |\label{l2_1g:getPolylines}|
@@ -48,3 +48,4 @@ ax.set_aspect("equal", "box")
 plt.autoscale(tight=True)
 plt.savefig("results/example_2_4_2DVisualisation.png")
 plt.show()  # |\label{l2_1g:plotEnd}|
+
