@@ -7,15 +7,15 @@ from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan  # |\
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l41:imports}|
 import plantbox.visualisation.vtk_plot as vp
 
-# Parameters  # |\label{l41:parameters}|
-initial_age = 14  # root system age [day]
-kx = 4.32e-2  # axial conductivity [cm3/day]
-kr = 1.728e-4  # radial conductivity [1/day]
-Hs = -300  # soil total potential [cm]
-h0 = -1000  # dirichlet bc at top [cm] |\label{l41:h0}|
-t_pot = -1  # potential plant transpiration [cm3/day] |\label{l41:t_pot}|
+# Parameters  |\label{l41:parameters}|
+initial_age = 14  # root system age (day)
+kx = 4.32e-2  # axial conductivity (cm3/day)
+kr = 1.728e-4  # radial conductivity (1/day)
+Hs = -300  # soil total potential (cm)
+h0 = -1000  # dirichlet bc at top (cm) |\label{l41:h0}|
+t_pot = -1  # potential plant transpiration (cm3/day) |\label{l41:t_pot}|
 
-# Root system   # |\label{l41:rootsystem}|
+# Root system   |\label{l41:rootsystem}|
 plant = pb.MappedPlant()  # |\label{l41:mappedplant}|
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
@@ -25,8 +25,8 @@ plant.simulate(initial_age)  # |\label{l41:rootsystem_end}|
 
 # Root hydraulic properties
 params = PlantHydraulicParameters()  # |\label{l41:hydraulicparams}|
-params.set_kr_const(kr)
-params.set_kx_const(kx)
+params.set_kr_const(kr) # (1/day)
+params.set_kx_const(kx) # (cm3/day)
 hm = HydraulicModel_Doussan(plant, params)  # |\label{l41:model}|
 # hm = HydraulicModel_Meunier(plant, params)
 
@@ -40,11 +40,11 @@ print(f"Root collar potential {hx[0]:g} [cm], transpiration {hm.get_transpiratio
 
 # Additional vtk plot
 ana = pb.SegmentAnalyser(hm.ms.mappedSegments())  # |\label{l41:sa}|
-ana.addData("hx", hx)  # xylem potentials [cm]
-ana.addData("SUF", hm.get_suf(initial_age))  # standard uptake fraction [1]
-ana.addAge(initial_age)  # age [day] |\label{l41:age}|
-ana.addHydraulicConductivities(params, initial_age)  # kr [1/day], kx [cm3/day] |\label{l41:conductivities}|
-ana.addFluxes(hm, hx, hsr, initial_age)  # "axial_flux" [cm3/day], "radial_flux" [ (cm3/cm2) / day] |\label{l41:fluxes}|
+ana.addData("hx", hx)  # xylem potentials (cm)
+ana.addData("SUF", hm.get_suf(initial_age))  # standard uptake fraction 
+ana.addAge(initial_age)  # age (day) |\label{l41:age}|
+ana.addHydraulicConductivities(params, initial_age)  # kr (1/day), kx (cm3/day) |\label{l41:conductivities}|
+ana.addFluxes(hm, hx, hsr, initial_age)  # "axial_flux" (cm3/day), "radial_flux" [ (cm3/cm3) / day] |\label{l41:fluxes}|
 vp.plot_plant(ana, "radial_flux")  # |\label{l41:sa_end}|
 
 # output for paraview

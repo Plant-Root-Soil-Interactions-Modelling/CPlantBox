@@ -8,10 +8,11 @@ import numpy as np
 import plantbox as pb
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports_end}|
+from plantbox.visualisation import figure_style 
 
 # Simulation parameters   # |\label{l42:parameters}|
 simtime = 70  # simulate from day 1 to 70
-dt = 1
+dt = 1 
 
 architectures = [  # |\label{l42:architecture}|
     "Heliantus_Pages_2013",
@@ -95,8 +96,7 @@ for name in architectures:
 
 # Plotting
 n_arch = len(architectures)  # |\label{l42:plotting_krs}|
-
-fig_krs, axes_krs = plt.subplots(1, n_arch, figsize=(5 * n_arch, 4), sharey=True)
+fig_krs, axes_krs = figure_style.subplots12(1, n_arch, sharey=True)
 
 if n_arch == 1:
     axes_krs = [axes_krs]
@@ -104,16 +104,16 @@ if n_arch == 1:
 for i, ax in enumerate(axes_krs):
     ax.plot(range(0, simtime), krs_all[i])
     ax.set_title(architectures[i])
-    ax.set_xlabel("Root system age (days)")
+    ax.set_xlabel("Root system age (day)")
     ax.set_yscale("log")
     if i == 0:
-        ax.set_ylabel("Krs (cm$^2$/day)")
+        ax.set_ylabel("Krs (cm$^2$ day$^{-1}$")
     ax.grid(True)
 
 plt.tight_layout()
 plt.show()  # |\label{l42:plotting_krs_end}|
 
-fig_suf, axes_suf = plt.subplots(1, n_arch, figsize=(5 * n_arch, 5), sharey=True)  # |\label{l42:plotting_suf}|
+fig_suf, axes_suf = figure_style.subplots12(1, n_arch, sharey=True)  # |\label{l42:plotting_suf}|
 
 if n_arch == 1:
     axes_suf = [axes_suf]

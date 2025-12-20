@@ -11,7 +11,7 @@ import pandas as pd
 import plantbox as pb
 from plantbox.functional.Photosynthesis import PhotosynthesisPython  # |\label{l43:importsPhotosynthesis}|
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
-
+from plantbox.visualisation import figure_style 
 
 def getWeatherData(t):
     """get the weather data for time t"""
@@ -21,12 +21,12 @@ def getWeatherData(t):
 
 
 # Parameters and variables
-plant_age = 14  # plant age [day] # |\label{l43:Parameters}|
-sim_time = 1.0  # [day]
+plant_age = 14  # plant age (day) |\label{l43:Parameters}|
+sim_time = 1.0  # days
 dt = 10.0 / 60.0 / 24.0
 N = int(sim_time / dt)
-depth = 60  # soil depth [cm]
-Hs = -1000  #  top soil matric potential [cm]
+depth = 60  # soil depth (cm)
+Hs = -1000  # top soil matric potential (cm)
 
 # Weather data
 path = "../../modelparameter/functional/climate/"
@@ -40,7 +40,7 @@ def picker(_x, _y, z):
 
 
 soilSpace = pb.SDF_PlantContainer(np.inf, np.inf, depth, True)  # to avoid root growing aboveground
-p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer  # |\label{l43:SoilEnd}|
+p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer |\label{l43:SoilEnd}|
 
 # Plant
 plant = pb.MappedPlant()  # |\label{l43:plant}|
@@ -65,6 +65,7 @@ hm.read_photosynthesis_parameters(filename=path + "photosynthesis_parameters")  
 
 results = {"transpiration": [], "gco2": [], "An": [], "Vc": [], "Vj": []}
 for i in range(N):  # |\label{l43:loop}|
+    
     # Weather variables
     weatherData_i = getWeatherData(plant_age)  # |\label{l43:weather}|
 
@@ -83,56 +84,50 @@ for i in range(N):  # |\label{l43:loop}|
         cells=True,
         ea=ea,
         es=es,
-        PAR=weatherData["PAR"][i] * (24 * 3600) / 1e4,  # [mol/m2/s] -> [mol/cm2/d]
+        PAR=weatherData["PAR"][i] * (24 * 3600) / 1e4,  # (mol m-2 s-1) -> (mol cm-2 d-1)
         TairC=weatherData_i["Tair"],
         verbose=0,
     )  # |\label{l43:solve}|
 
     # Post processing
     hx = hm.get_water_potential()  # |\label{l43:results}|
-    results["transpiration"].append(np.sum(hm.get_transpiration()) / 18 * 1e3)  # [cm3/day] * [mol/cm3] * [mmol/mol]
+    results["transpiration"].append(np.sum(hm.get_transpiration()) / 18 * 1e3)  # (cm3 day-1) * (mol cm-3) * (mmol mol-1)
     results["An"].append(np.sum(hm.get_net_assimilation()) * 1e3)
     results["Vc"].append(np.sum(hm.get_Vc()) * 1e3)
     results["Vj"].append(np.sum(hm.get_Vj()) * 1e3)  # |\label{l43:resultsEnd}|
 
-    print(f"at {weatherData['time'][i]} ", f"mean water potential (cm) {np.mean(hx):.0f}\n\tin [mmol d-1], net assimilation: {np.sum(hm.get_net_assimilation()) * 1e3:.2f} transpiration: {np.sum(hm.get_transpiration()) / 18 * 1e3:.2f}")
+    print(f"at {weatherData['time'][i]} ", f"mean water potential (cm) {np.mean(hx):.0f}\n\tin (mmol day-1), net assimilation: {np.sum(hm.get_net_assimilation()) * 1e3:.2f} transpiration: {np.sum(hm.get_transpiration()) / 18 * 1e3:.2f}")
 
 time = [datetime.strptime(tt, "%H:%M:%S") for tt in weatherData["time"]]
-with plt.rc_context(
-    {
-        "axes.labelsize": 15,  # axis labels
-        "xtick.labelsize": 15,  # x-tick labels
-        "ytick.labelsize": 15,  # y-tick labels
-        "legend.fontsize": 14,  # legend text
-    }
-):
-    fig, axs = plt.subplots(2, 2)  # |\label{l43:plot}|
-    axs[0, 1].plot(time, weatherData["PAR"] * 1e3 * (24 * 3600) / 1e4, "k", label="PAR [mmol cm-2 d-1]")
-    axs[0, 1].plot(time, weatherData["Tair"] / 6.2, "tab:red", label="T [°C]")
-    axs[0, 1].set(ylabel="PAR\n[mmol cm-2 d-1]")
-    secax_y = axs[0, 1].secondary_yaxis("right", functions=(lambda v: v * 6.2, lambda v: v / 6.2))
-    secax_y.set_ylabel("T [°C]", color="tab:red")
-    secax_y.tick_params(axis="y", colors="tab:red")
-    secax_y.spines["right"].set_color("tab:red")
 
-    axs[0, 0].plot(time, weatherData["RH"], "tab:blue")
-    axs[0, 0].set(ylabel="Relative humidity\n[-]")
+fig, axs = figure_style.subplots11large(2, 2)  # |\label{l43:plot}|
+axs[0, 1].plot(time, weatherData["PAR"] * 1e3 * (24 * 3600) / 1e4, "k", label="PAR (mmol cm-2 d-1)")
+axs[0, 1].plot(time, weatherData["Tair"] / 6.2, "tab:red", label="T (°C)")
+axs[0, 1].set(ylabel="PAR\n(mmol cm-2 d-1)")
+secax_y = axs[0, 1].secondary_yaxis("right", functions=(lambda v: v * 6.2, lambda v: v / 6.2))
+secax_y.set_ylabel("T (°C)", color="tab:red")
+secax_y.tick_params(axis="y", colors="tab:red")
+secax_y.spines["right"].set_color("tab:red")
 
-    axs[1, 1].plot(time, results["An"], "g", lw=3, label="Net", zorder=1)
-    axs[1, 1].plot(time, results["Vj"], "k", label="Electron transport-limited")
-    axs[1, 1].plot(time, results["Vc"], "tab:red", label="Carboxilation-limited")
-    axs[1, 1].set(xlabel="Time", ylabel="Total assimilation\n[mmol CO2 d-1]")
-    axs[1, 1].legend(loc="upper left", frameon=False)
+axs[0, 0].plot(time, weatherData["RH"], "tab:blue")
+axs[0, 0].set(ylabel="Relative humidity\n(-)")
 
-    axs[1, 0].plot(time, results["transpiration"], "tab:blue")
-    axs[1, 0].set(xlabel="Time", ylabel="Total transpiration\n[mmol H2O d-1]")
-    axs[1, 0].xaxis.set_major_locator(MaxNLocator(5))
+axs[1, 1].plot(time, results["An"], "g", lw=3, label="Net", zorder=1)
+axs[1, 1].plot(time, results["Vj"], "k", label="Electron transport-limited")
+axs[1, 1].plot(time, results["Vc"], "tab:red", label="Carboxilation-limited")
+axs[1, 1].set(xlabel="Time", ylabel="Total assimilation\n(mmol CO2 day-1)")
+axs[1, 1].legend(loc="upper left", frameon=False)
 
-    for ax in axs.flatten():
-        ax.xaxis.set_major_locator(HourLocator(range(0, 25, 6)))
-        ax.xaxis.set_major_formatter(DateFormatter("%H:%M"))
-        ax.fmt_xdata = DateFormatter("%H:%M")
-        fig.autofmt_xdate()
+axs[1, 0].plot(time, results["transpiration"], "tab:blue")
+axs[1, 0].set(xlabel="Time", ylabel="Total transpiration\n(mmol H2O day-1)")
+axs[1, 0].xaxis.set_major_locator(MaxNLocator(5))
 
-    plt.show()
+for ax in axs.flatten():
+    ax.xaxis.set_major_locator(HourLocator(range(0, 25, 6)))
+    ax.xaxis.set_major_formatter(DateFormatter("%H:%M"))
+    ax.fmt_xdata = DateFormatter("%H:%M")
+    fig.autofmt_xdate()
+
+plt.tight_layout()
+plt.show()
 

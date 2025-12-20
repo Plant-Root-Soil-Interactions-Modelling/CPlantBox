@@ -8,6 +8,7 @@ import numpy as np
 import plantbox as pb
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports_end}|
+from plantbox.visualisation import figure_style 
 
 # Simulation parameters # |\label{l42:parameters}|
 simtime = 70  # simulate from day 1 to 70
@@ -73,7 +74,7 @@ for name in architectures:
 
 # Plotting   # |\label{l42:plotting}|
 n_arch = len(architectures)
-fig, axes = plt.subplots(1, n_arch, figsize=(5 * n_arch, 4), sharey=True)
+fig, axes =figure_style.subplots12(1, n_arch, sharey=True)
 
 if n_arch == 1:
     axes = [axes]
@@ -81,10 +82,10 @@ if n_arch == 1:
 for i, ax in enumerate(axes):
     ax.plot(range(0, simtime), krs_all[i])
     ax.set_title(architectures[i])
-    ax.set_xlabel("Root system age (days)")
+    ax.set_xlabel("Root system age (day)")
     ax.set_yscale("log")
     if i == 0:
-        ax.set_ylabel("Krs (cm$^2$/day)")
+        ax.set_ylabel("Krs (cm$^2$ day$^{-1}$)")
     ax.grid(True)
 
 plt.tight_layout()

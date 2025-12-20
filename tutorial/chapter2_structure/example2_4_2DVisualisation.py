@@ -45,7 +45,7 @@ plt.xlabel("X-axis (cm)")
 plt.ylabel("Depth (cm)")
 ax.relim()
 ax.set_aspect("equal", "box")
-plt.autoscale(tight=True)
+plt.tight_layout()
 plt.savefig("results/example_2_4_2DVisualisation.png")
 plt.show()  # |\label{l2_1g:plotEnd}|
 
