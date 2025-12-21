@@ -135,8 +135,20 @@ void Plant::initializeDB(bool verbose)
 
     auto seed = std::make_shared<SeedDB>(shared_from_this());
     this->addOrgan(seed);
+	auto srp = this->getPlantParameter();
+	srp->delayDefinition = Organism::dd_time_self;
+	srp->delayDefinitionShoot = Organism::dd_time_self;
+    this->setOrganRandomParameter(srp);
 	seed->initialize(verbose);
     initialize_(verbose);
+}
+
+/**
+ * @return the root system parameter
+ */
+std::shared_ptr<SeedRandomParameter> Plant::getPlantParameter()
+{
+    return std::static_pointer_cast<SeedRandomParameter>(this->getOrganRandomParameter(ot_seed,0 ));
 }
 
 /**

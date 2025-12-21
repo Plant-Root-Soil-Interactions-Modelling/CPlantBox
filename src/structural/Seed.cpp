@@ -50,8 +50,13 @@ std::shared_ptr<Organ> Seed::copy(std::shared_ptr<Organism> rs)
 void Seed::initialize(bool verbose)
 {
 	auto p = plant.lock();
-	auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
-	bool plantBox = stemP.size()>1; // prototype + a real parameter definition
+	bool plantBox;
+	try {
+		auto stemP = p->getOrganRandomParameter(Organism::ot_stem, mainStemType);
+		plantBox = true;
+	} catch(...) { 
+		plantBox = false;
+	}
 	if (verbose) {
 		if (plantBox) {
 			std::cout << "Seed::initialize: Plant \n";

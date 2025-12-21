@@ -129,7 +129,7 @@ void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p)
 {
     assert(p->plant.lock().get()==this && "OrganTypeParameter::plant should be this organism");
     organParam[p->organType][p->subType] = p;
-    // std::cout << "setting organ type " << p->organType << ", sub type " << p->subType << ", name "<< p->name << "\n";
+    //std::cout << "setting organ type " << p->organType << ", sub type " << p->subType << ", name "<< p->name << " " << organParam[p->organType].size() << "\n";
 }
 
 /**

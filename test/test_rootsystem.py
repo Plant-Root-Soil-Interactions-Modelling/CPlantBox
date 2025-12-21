@@ -54,6 +54,7 @@ class TestRootSystem(unittest.TestCase):
                 self.rs.simulate(t / subDt)
             ll = self.rs.getParameter("length")
             types = self.rs.getParameter("type")
+            print(types)
             sl = 0  # summed length of basal roots
             for i, l_ in enumerate(ll):
                 if (types[i] == 4):  # basal type
