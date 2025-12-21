@@ -60,6 +60,7 @@ public:
     double getSummed(std::string name) const; ///< Sums up the parameter
     double getSummed(std::string name, std::shared_ptr<SignedDistanceFunction> geometry) const; ///< Sums up the parameter within the geometry (e.g. for length or surface)
     std::vector<double> distribution(std::string name, double top, double bot, int n, bool exact=false) const; ///< vertical distribution of a parameter
+    std::vector<double> distributionFast(std::string name, const MappedSegments& plant) ; ///< vertical distribution of a parameter
     std::vector<SegmentAnalyser> distribution(double top, double bot, int n) const; ///< vertical distribution
     std::vector<std::vector<double>> distribution2(std::string name, double top, double bot, double left, double right, int n, int m, bool exact=false) const; ///< 2d distribution (x,z) of a parameter
     std::vector<std::vector<SegmentAnalyser>> distribution2(double top, double bot, double left, double right, int n, int m) const; ///< 2d distribution (x,z)

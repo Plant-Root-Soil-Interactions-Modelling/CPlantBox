@@ -598,7 +598,7 @@ class HydraulicModel_Meunier_large(HydraulicModel_Meunier):
         self.last = "dirichlet"
         if isinstance(collar_pot, (float, int)):
             collar_pot = [collar_pot] * len(self.dirichlet_ind)
-        self.linearSystemMeunierSolve(sim_time, rsx, cells, soil_k, n0 = self.dirichlet_ind ,d =collar_pot) # computes self.psiXyl
+        self.linearSystemMeunierSolve(sim_time, rsx, cells, soil_k, n0 = self.dirichlet_ind ,d =collar_pot, verbose = True) # computes self.psiXyl
         return self.psiXyl
         
 class HydraulicModel_Doussan(PlantHydraulicModel):

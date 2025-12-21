@@ -20,7 +20,14 @@ PlantHydraulicModel::PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegmen
      Eigen::initParallel();
      nthreads = Eigen::nbThreads( );
      std::cout<<"PlantHydraulicModel::PlantHydraulicModel number of threads for openmp "<< nthreads <<std::flush<<std::endl;
-     Eigen::setNbThreads(1);
+	 
+	 #pragma omp parallel
+{
+    int tid = omp_get_thread_num();
+    #pragma omp critical
+    std::cout << "Thread " << tid << " running on core " << sched_getcpu() << "\n";
+}
+     //Eigen::setNbThreads(1);
     }
 
 /** prescribes a Dirichlet boundary conditions for the system Qx=b
@@ -61,8 +68,10 @@ void PlantHydraulicModel::bc_dirichlet(Eigen::SparseMatrix<double>& mat, const s
  * @param soil_k [day-1]    optionally, soil conductivities can be prescribed per segment,
  *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
  */
-void PlantHydraulicModel::linearSystemMeunierSolve(double simTime, const std::vector<double> sx, bool cells, const std::vector<double> soil_k, 
-                                                   const std::vector<int> n0, const std::vector<double> d)
+void PlantHydraulicModel::linearSystemMeunierSolve(double simTime, const std::vector<double> sx, 
+													bool cells, const std::vector<double> soil_k, 
+                                                   const std::vector<int> n0, const std::vector<double> d,
+												   bool verbose)
 {
 	dovector = false;
 	int Ns = ms->segments.size(); // number of segments
@@ -75,36 +84,31 @@ void PlantHydraulicModel::linearSystemMeunierSolve(double simTime, const std::ve
 	tripletList.resize(Ns*4);
 	b = Eigen::VectorXd(N);
 	//get "tripletList" and "b"
+	auto start = std::chrono::high_resolution_clock::now();
 	linearSystemMeunier(simTime, sx, cells, soil_k); 
+	auto end = std::chrono::high_resolution_clock::now();
+	if(verbose)
+	{
+		std::cout<< "time spent in linearSystemMeunier : "<<  std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count() << " seconds\n"<<std::flush;
+	}
 	Eigen::SparseMatrix<double> mat(N,N);
 	mat.reserve(Eigen::VectorXi::Constant(N,2));
 	mat.setFromTriplets(tripletList.begin(), tripletList.end());
     bc_dirichlet(mat, n0, d);
 	mat.makeCompressed();
-	Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double>> solverBiCGSTAB;
+	//Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double>> solverBiCGSTAB;
 	Eigen::SparseLU<Eigen::SparseMatrix<double>> solverLU;
     
         Eigen::VectorXd v2;
-    Eigen::setNbThreads(nthreads);
-    if(doBiCGSTAB)
-    {
-        
-        solverBiCGSTAB.compute(mat);
-
-        if(solverBiCGSTAB.info() != Eigen::Success){
-            std::cout << "PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed: " << solverBiCGSTAB.info() << std::endl;
-            throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed" );
-        }
-
-        try{
-            v2= solverBiCGSTAB.solve(b);
-        }catch(...){
-             throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve error when solving wat. pot. xylem with Eigen ");
-        }
-    }else{
-        
+    //Eigen::setNbThreads(nthreads);
+	
+        start = std::chrono::high_resolution_clock::now();
         solverLU.compute(mat);
-
+		end = std::chrono::high_resolution_clock::now();
+		if(verbose)
+		{
+			std::cout<< "time spent in solverLU.compute(mat) : "<<  std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count() << " seconds\n"<<std::flush;
+		}
         if(solverLU.info() != Eigen::Success){
             std::cout << "PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed: " << solverLU.info() << std::endl;
             throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed" );
@@ -115,8 +119,8 @@ void PlantHydraulicModel::linearSystemMeunierSolve(double simTime, const std::ve
         }catch(...){
              throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve error when solving wat. pot. xylem with Eigen ");
         }
-    }
-    Eigen::setNbThreads(1);
+		
+    //Eigen::setNbThreads(1);
         psiXyl.assign(v2.data(), v2.data() + v2.size());
 }
 
@@ -149,9 +153,8 @@ void PlantHydraulicModel::linearSystemMeunier_(double simTime, const std::vector
     std::fill(aV.begin(), aV.end(), 0.);
     std::fill(aI.begin(), aI.end(), 0);
     std::fill(aJ.begin(), aJ.end(), 0);
-    size_t k=0;
-#pragma omp parallel private(k) shared(tripletList)
-    # pragma omp for schedule(static)
+    //size_t k=0;
+    //# pragma omp for schedule(static)
     for (int si = 0; si<Ns; si++) {
 
         int i = ms->segments[si].x;
@@ -206,13 +209,13 @@ void PlantHydraulicModel::linearSystemMeunier_(double simTime, const std::vector
             bi = kx * vz;
             psi_s = 0;//
         }
-        if(dovector)
-        {
-            k = fillVectors(k, i, j, bi, cii, cij, psi_s);
-        }else{
-            k = si * 4;
-            k = fillTripletList(k, i, j, bi, cii, cij, psi_s);
-        }
+        //if(dovector)
+        //{
+        //    k = fillVectors(k, i, j, bi, cii, cij, psi_s);
+        //}else{
+            size_t k = si * 4;
+            fillTripletList(k, i, j, bi, cii, cij, psi_s);
+        //}
     }/*end omp parallel*/ 
 }
 
@@ -332,10 +335,10 @@ std::map<int,double> PlantHydraulicModel::sumSegFluxes(const std::vector<double>
  * @param cij			value of variable c at row i col j [cm2/d]
  * @return k			next index for the row- and column-index vectors
  */
-size_t PlantHydraulicModel::fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) 
+void PlantHydraulicModel::fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) 
 {
 	typedef Eigen::Triplet<double> Tri;
-    #pragma omp atomic
+    //#pragma omp atomic
 	b(i) += ( bi + cii * psi_s +cij * psi_s) ;//aB[i]
 
 	//b(i) = aB[i];
@@ -347,7 +350,7 @@ size_t PlantHydraulicModel::fillTripletList(size_t k, int i, int j, double bi, d
 	int ii = i;
 	i = j;  j = ii; // edge ji
     
-    #pragma omp atomic
+    //#pragma omp atomic
 	b(i) += ( -bi + cii * psi_s +cij * psi_s) ; // (-bi) Eqn (14) with changed sign //aB[i]
 
 	//b(i) = aB[i];
@@ -356,7 +359,7 @@ size_t PlantHydraulicModel::fillTripletList(size_t k, int i, int j, double bi, d
 
 	tripletList.at(k) = Tri(i,j,cij);
 	k += 1;
-	return k;
+	//return k;
 }
 
 

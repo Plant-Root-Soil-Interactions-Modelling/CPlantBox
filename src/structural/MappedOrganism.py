@@ -21,8 +21,8 @@ class MappedPlantPython(MappedPlant):
         self.static_organs = {}
         self.data = None  # RsmlData
      
-    def do_simulate(self, time):
-        self.simulate(time)
+    def do_simulate(self, time, verbose):
+        self.simulate(time, verbose)
         self.nodes_py = np.array(list(map(lambda x: np.array(x), self.getNodes())))
         self.segments_py = np.array(list(map(lambda x: np.array(x), self.getSegments())), dtype = np.int64)
             

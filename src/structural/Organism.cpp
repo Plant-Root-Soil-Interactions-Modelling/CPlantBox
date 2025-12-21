@@ -10,6 +10,9 @@
 #include <fstream>
 #include <ctime>
 #include <numeric>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 namespace CPlantBox {
 
@@ -173,11 +176,19 @@ void Organism::simulate(double dt, bool verbose)
     this->dt = dt;
     oldNumberOfNodes = getNumberOfNodes();
     oldNumberOfOrgans = getNumberOfOrgans();
-    for (const auto& r : baseOrgans) {
-        if(r->isAlive()){
-            r->simulate(dt, verbose);
-        }
-    }
+	#pragma omp parallel
+	{
+		#pragma omp single
+		{
+			for (const auto& r : baseOrgans) {
+				if(r->isAlive()){
+					#pragma omp task
+					r->simulate(dt, verbose);
+				}
+			}
+		}
+	}
+	#pragma omp taskwait
     simtime+=dt;
 }
 
@@ -385,7 +396,7 @@ std::vector<double> Organism::getNodeCTs() const
  */
 std::vector<Vector2i> Organism::getSegments(int ot, bool all) const
 {
-    auto organs = getOrgans(ot);
+    auto organs = getOrgans(ot, all);
     std::vector<Vector2i> segs = std::vector<Vector2i>(0);
     segs.reserve(this->getNumberOfSegments(ot, all)); // for speed up
     for (const auto& o : organs) {

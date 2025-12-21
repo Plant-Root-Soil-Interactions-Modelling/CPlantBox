@@ -31,25 +31,37 @@ import os
 import pickle
 from scipy.stats import gaussian_kde
 import time
+import time
+from collections import defaultdict
 
-def get3Dshape(plant,title_ = 'wine',data={}, saveOnly = True):     
-    ana = pb.SegmentAnalyser(plant) 
-    segOs = plant.getSegmentOrigins()
+def tic():
+    return time.perf_counter()
+
+def toc(t0):
+    return time.perf_counter() - t0
+
+
+def get3Dshape(plant,title_ = 'wine',data={}, saveOnly = True):    
+    preparedraw = time.time() 
+    ana = pb.SegmentAnalyser(plant.mappedSegments()) 
+    segOs = plant.getSegmentOrigins(-1, all = False)
     '''
     Lignification status, Survival, fine roots
     '''
-    lignification = [segO.lignificationStatus() for segO in segOs]
-    aliveSegs = [segO.isAlive() for segO in segOs] #todo: removes
-    is_fine_root = [segO.getParameter('is_fine_root') for segO in segOs]
-    
+    lignification = [sO.lignificationStatus() for sO in segOs]
+    aliveSegs = [sO.isAlive() for sO in segOs] #todo: removes
+    is_fine_root = [sO.getParameter('is_fine_root') for sO in segOs]
+    ana.addData('aliveSegs', aliveSegs)
     ana.addData('lignification', lignification)
     ana.addData('is_fine_root', is_fine_root)
-    p_names = ['lignification','is_fine_root',"creationTime","id"] 
+    p_names = ['aliveSegs','lignification','is_fine_root',"creationTime","id"] 
     for dd in data.keys():
         ana.addData(dd, data[dd])
         p_names.append(dd)
     #ana.filter('alive', 1)
+    initdraw = time.time()
     vp.plot_roots(ana, "subType",p_names, win_title = title_, render = not saveOnly)
+    #print("drawing: %s, %s" % (int(initdraw-preparedraw), int(time.time() - initdraw)), end=", ")
     
 
 long_root_types = np.array([1,2,3,4,5])
@@ -278,7 +290,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
         # all_alive_long = []
         # all_alive_short = []
         dt = yr_to_BEDD  # ~1 yr
-
+        plant.do_simulate(0, False) # just to store data in the mapped segment
         if doVTP:
             get3Dshape(plant,title_ = "./results/part1/vtp/"+extraName+'/'+genotype+"0", data = {}, saveOnly = True)
             
@@ -290,63 +302,52 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
         hm.doBiCGSTAB = doBiCGSTAB
         #peri = Perirhizal(plant)
         assert len(plant.get_nodes()) == (len(plant.get_segments()) +1)
-        
-        for i in range(N):
-            print('age', i, end=", ", flush = True)
-            plant.survivalTest()
-            plant.pruning() # remove dead organs. but how to insure that seg_indx = seg.Y_indx - 1 ?
-            #maybe at least a fucntion that callls get organs only for the alive one from the beginnning.
-            #check ana.filter
-            # or only do pruning within the mapped segment?
-            # or instead og getnewnodes, segments, get alive nodes-segments?
-            
-            
-            '''
-            Ratio
-            orgs_all = plant.getOrgans(2, False)
-            all_real_subtypes_temp =np.array([org.param().subType for org in orgs_all  if  org.isAlive()])
-            all_real_lengths_temp =np.array([org.getLength() for org in orgs_all  if  org.isAlive()])
-            len_fine = 0
-            is_fine_roots = np.isin(all_real_subtypes_temp,fine_root_types)
-            if sum(is_fine_roots) > 0:
-                len_fine = sum(all_real_lengths_temp[is_fine_roots])
-            len_long = sum(all_real_lengths_temp[np.invert(is_fine_roots)]) # ignore the length of 1 as seem different between xml and xlsx
-            value = len_fine/(len_long + len_fine)
-            print('percent_after_winter', np.round(value*100), end=", ", flush = True)   
-            ''' 
-            
-            plant.simulate(dt, False) # i * 
-            assert len(plant.get_nodes()) == (len(plant.get_segments()) +1)
-            
-            
-            '''
-            SUF
-            
-            '''
-            ana = pb.SegmentAnalyser(plant) 
-            
-            #nodeCT = ana.getParameter("creationTime")
-            #nodeCT.insert(0, 0.0)
-            #ms =  pb.MappedSegments(ana.nodes, nodeCT, ana.segments, ana.getParameter("radius"), 
-            #                        np.array(ana.getParameter("subType"),dtype = int),np.array(ana.getParameter("organType"),dtype = int))
-            #segOs = plant.getSegmentOrigins()
-            #lignification = [segO.lignificationStatus() for segO in segOs]
-            #ms.setSubStatus(lignification)
-            #hm = HydraulicModel_Meunier(ms, param)
-            minZ = np.floor(np.min(np.array([xyz[2] for xyz in plant.get_nodes()])))
-            RLDs.append(ana.distribution("length",0., minZ , int(-minZ), False)) # to compare with SUF
+        reptimeBU = time.time()
+        timing = defaultdict(float)
+        total_loop_time = 0.0
 
+        for i in range(N):
+            iter_start = tic()
+            print('age', i, end=", ", flush=True)
+
+            # ---------------- survival test ----------------
+            t0 = tic()
+            plant.survivalTest()
+            timing['survival'] += toc(t0)
+
+            # ---------------- growth ----------------
+            t0 = tic()
+            plant.do_simulate(dt, True)
+            timing['growth'] += toc(t0)
+
+                    
+            # ---------------- RLD ----------------
+            t0 = tic()
+            ana = pb.SegmentAnalyser(plant.mappedSegments())
+            # minZ = np.floor(np.min(np.array([xyz[2] for xyz in plant.get_nodes()])))
+            # timing['rld'] += toc(t0)
+            # t0 = tic()
+            # RLDs.append(
+                # ana.distribution("length", 0., minZ, int(-minZ), False)
+            # )
+            # timing['rld2'] += toc(t0)
+
+            # ---------------- SUF ----------------
+            # t0 = tic()
             suf_ = hm.get_suf(i * dt)
+            timing['suf'] += toc(t0)
+            t0 = tic()
             ana.addData('SUF', suf_)
-            suf = ana.distribution("SUF",0., minZ , int(-minZ), False)
-            SUFs.append(suf)#[0,:]
-            #with open('./testSUF_RLD.pkl','wb') as f:
-            #     pickle.dump([SUFs,RLDs],f, protocol=pickle.HIGHEST_PROTOCOL) #
-            '''
-            other
-            '''            
+            SUFs.append(
+                ana.distributionFast("SUF", plant)
+            )
+            timing['suf_distrib'] += toc(t0)
+
+            # ---------------- processing ----------------
+            t0 = tic()
             orgs_all = plant.getOrgans(2, False)
             orgs_ = []
+
             for oo in orgs_all:
                 distance = 0.
                 ooc = oo
@@ -356,48 +357,40 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
                     ooc = ooc.getParent()
                     stc = ooc.param().subType
                 if distance < 175:
-                    orgs_.append(oo)      
-            
-            all_ages = np.array([org.getAge()/yr_to_BEDD for org in orgs_ if org.isAlive()])
-            all_agestest = np.array([org.getAge()/yr_to_BEDD for org in orgs_ ])
-            assert(len(all_ages) == len(all_agestest))
-            raise Exception
-            all_alive.append(np.array([ org.isAlive() for org in orgs_  if  org.isAlive()]))
-            all_subtypes.append(np.array([org.param().subType for org in orgs_  if  org.isAlive()]))
-            all_lengths.append(np.array([org.getLength() for org in orgs_  if  org.isAlive()]))
-            
-            
-            all_real_subtypes.append(np.array([org.param().subType for org in orgs_all  if  org.isAlive()]))
-            all_real_lengths.append(np.array([org.getLength() for org in orgs_all  if  org.isAlive()]))
-            
-            '''
-            Ratio
-            ''' 
-            len_fine = 0
-            is_fine_roots = np.isin(all_real_subtypes[i],fine_root_types)
-            if sum(is_fine_roots) > 0:
-                len_fine = sum(all_real_lengths[i][is_fine_roots])
-            len_long = sum(all_real_lengths[i][np.invert(is_fine_roots)]) # ignore the length of 1 as seem different between xml and xlsx
-            value = len_fine/(len_long + len_fine)
-            print('percent', np.round(value*100), end=", ", flush = True)    
-            '''
-            Num
-            '''
-            #nums = []
-            #for st in range(subtypes): # from 2 to 5            
-            #    nums.append(sum(all_alive[i][all_subtypes[i] == (st + 1)]))
-            #nums.append(sum(all_alive[i][all_subtypes[i] > (st + 1)]))
-            # print('num', nums, end=", ", flush = True)
-            # all_alive_long.append(np.array([org.isAlive() for org in orgs_ if org.param().subType in long_root_types]))
-            # all_alive_short.append(np.array([org.isAlive() for org in orgs_ if org.param().subType in fine_root_types]))
+                    orgs_.append(oo)
 
-            # # get3Dshape(plant,title_ = 'wine'+str(i+1), saveOnly = True) 
+            all_ages = np.array([org.getAge()/yr_to_BEDD for org in orgs_ if org.isAlive()])
+            all_alive.append(np.array([org.isAlive() for org in orgs_ if org.isAlive()]))
+            all_subtypes.append(np.array([org.param().subType for org in orgs_ if org.isAlive()]))
+            all_lengths.append(np.array([org.getLength() for org in orgs_ if org.isAlive()]))
+
+            all_real_subtypes.append(np.array([org.param().subType for org in orgs_all if org.isAlive()]))
+            all_real_lengths.append(np.array([org.getLength() for org in orgs_all if org.isAlive()]))
+
+            is_fine_roots = np.isin(all_real_subtypes[i], fine_root_types)
+            len_fine = sum(all_real_lengths[i][is_fine_roots]) if np.any(is_fine_roots) else 0.0
+            len_long = sum(all_real_lengths[i][~is_fine_roots])
+            value = len_fine / (len_long + len_fine)
+
+            timing['processing'] += toc(t0)
+
+            # ---------------- VTP ----------------
             if doVTP:
-                get3Dshape(plant,title_ = "./results/part1/vtp/"+extraName+'/'+genotype+str(i+1),#data = {'SUF': suf_}, 
-                           saveOnly = True)
-            
-            print("--- %s seconds for plant development---" % (time.time() - start_time),rep)
-                
+                t0 = tic()
+                get3Dshape(
+                    plant,
+                    title_="./results/part1/vtp/" + extraName + '/' + genotype + str(i+1),
+                    saveOnly=True
+                )
+                timing['vtp'] += toc(t0)
+
+            # ---------------- iteration total ----------------
+            iter_time = toc(iter_start)
+            timing['total'] += iter_time
+            total_loop_time += iter_time
+
+            print(f"iter_time: {iter_time:.2f}s", [(tt, np.round(timing[tt],1)) for tt in timing])
+                            
 
 
             

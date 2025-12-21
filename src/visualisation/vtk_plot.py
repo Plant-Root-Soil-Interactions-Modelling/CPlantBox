@@ -201,7 +201,7 @@ def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type
             data.SetName(n)
             pd.GetCellData().AddArray(data)
         else:
-            print("segs_to_polydata: Warning parameter " + n + " is sikpped because of wrong size", param.shape[0], "instead of", segs.shape[0])
+            print("segs_to_polydata: Warning parameter " + n + " is skipped because of wrong size", param.shape[0], "instead of", segs.shape[0])
     c2p = vtk.vtkCellDataToPointData()  # set cell and point data
     c2p.SetPassCellData(True)
     c2p.SetInputData(pd)

@@ -553,6 +553,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
            .def("getSummed", (double (SegmentAnalyser::*)(std::string) const) &SegmentAnalyser::getSummed) //overloads
            .def("getSummed", (double (SegmentAnalyser::*)(std::string, std::shared_ptr<SignedDistanceFunction>) const) &SegmentAnalyser::getSummed) //overloads
+           .def("distributionFast", &SegmentAnalyser::distributionFast)
            .def("distribution", (std::vector<double> (SegmentAnalyser::*)(std::string, double, double, int, bool) const) &SegmentAnalyser::distribution) //overloads
            .def("distribution", (std::vector<SegmentAnalyser> (SegmentAnalyser::*)(double, double, int) const) &SegmentAnalyser::distribution) //overloads
            .def("distribution2", (std::vector<std::vector<double>> (SegmentAnalyser::*)(std::string, double, double, double, double, int, int, bool) const) &SegmentAnalyser::distribution2) //overloads
@@ -1082,7 +1083,9 @@ PYBIND11_MODULE(plantbox, m) {
         py::class_<PlantHydraulicModel, std::shared_ptr<PlantHydraulicModel>>(m, "PlantHydraulicModel")
             .def(py::init<std::shared_ptr<MappedSegments>, std::shared_ptr<PlantHydraulicParameters>>())
             .def("linearSystemMeunier",&PlantHydraulicModel::linearSystemMeunier, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true, py::arg("soil_k") = std::vector<double>())
-            .def("linearSystemMeunierSolve",&PlantHydraulicModel::linearSystemMeunierSolve, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true, py::arg("soil_k") = std::vector<double>(), py::arg("n0") = std::vector<int>(), py::arg("d") = std::vector<double>())
+            .def("linearSystemMeunierSolve",&PlantHydraulicModel::linearSystemMeunierSolve, py::arg("simTime") , py::arg("sx") , 
+			py::arg("cells") = true, py::arg("soil_k") = std::vector<double>(), py::arg("n0") = std::vector<int>(), 
+			py::arg("d") = std::vector<double>(), py::arg("verbose") = false)
             .def("getRadialFluxes", &PlantHydraulicModel::getRadialFluxes)
             .def("sumSegFluxes", &PlantHydraulicModel::sumSegFluxes)
             .def_readwrite("ms", &PlantHydraulicModel::ms)

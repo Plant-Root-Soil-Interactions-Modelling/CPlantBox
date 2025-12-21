@@ -28,7 +28,8 @@ public:
 
     void linearSystemMeunierSolve(double simTime, const std::vector<double> sx, bool cells = true,
 		const std::vector<double> soil_k = std::vector<double>(), 
-        const std::vector<int> n0 = std::vector<int>(), const std::vector<double> d = std::vector<double>()); 
+        const std::vector<int> n0 = std::vector<int>(), const std::vector<double> d = std::vector<double>(),
+		bool verbose = false); 
 
     void linearSystemMeunier_(double simTime, const std::vector<double>& sx, bool cells = true,
 		const std::vector<double> soil_k = std::vector<double>()); 
@@ -56,7 +57,7 @@ public:
 protected:
     bool dovector = true;
     virtual size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ; ///< fills row k of Meunier matrix
-    virtual size_t fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ;
+    virtual void fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ;
 	virtual double getPsiOut(bool cells, int si, const std::vector<double>& sx_) const; ///< get the outer water potential [cm]
 
 };

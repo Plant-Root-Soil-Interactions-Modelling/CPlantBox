@@ -91,6 +91,7 @@ public:
 
     std::map<int, int> seg2cell; // root segment to soil cell mapper
     std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper
+	int maxCell = -1;
 
     std::function<int(double,double,double)> soil_index =
         std::bind(&MappedSegments::soil_index_, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3); ///< soil cell index call back function, (care need all MPI ranks in case of dumux)
@@ -160,7 +161,7 @@ public:
 
     int extraNode = -1; // -1 .. choose automatic, 0.. False, 1.. True
 
-	bool rootHairs = true; // todo: determine from parameters, and set within constructor
+	bool rootHairs = false; // todo: determine from parameters, and set within constructor
 
 	void initialize_(bool verbose = true, bool lengthBased = true);
 	void getSegment2leafIds(); ///< fill segment2Leaf vector

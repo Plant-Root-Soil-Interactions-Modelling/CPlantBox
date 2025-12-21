@@ -17,6 +17,9 @@
 #include <fstream>
 #include <set>
 #include <math.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 namespace CPlantBox {
 
@@ -77,8 +80,9 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
  *
  * @param plant     the the organism that is analysed
  */
-SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes), segments(plant.segments)
+SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes), segments(plant.segments) 
 {
+	//std::cout<<"PlantHydraulicModel::PlantHydraulicModel number of threads for openmp "<< nthreads <<std::flush<<std::endl;
     // std::cout << "construct from MappedSegments\n";
     assert((segments.size()==plant.radii.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     assert((segments.size()==plant.subTypes.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
@@ -86,15 +90,18 @@ SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes
     std::vector<double> segCTs(plant.segments.size());
     std::vector<double> subTypesd(plant.subTypes.size()); // convert to double
     std::vector<double> organTypesd(plant.organTypes.size()); // convert to double
+    //cellId.(plant.segments.size());
     for (size_t i=0; i<segments.size(); i++) {
         segCTs[i] = plant.nodeCTs.at(segments[i].y);
         subTypesd[i] = double(plant.subTypes[i]);
         organTypesd[i] = double(plant.organTypes[i]);
+		//cellId[i] = plant.seg2cell.at(i);
     }
     data["creationTime"] = segCTs;
     data["radius"] = plant.radii;
     data["subType"] = subTypesd;
     data["organType"] = organTypesd;
+    //data["cellId"] = cellId;
     segO = plant.segO;
 }
 
@@ -582,7 +589,10 @@ double SegmentAnalyser::getSummed(std::string name) const {
  */
 double SegmentAnalyser::getSummed(std::string name, std::shared_ptr<SignedDistanceFunction> g) const {
     std::vector<double> data = getParameter(name);
+													  
     double v = 0;
+														 
+
     for (size_t i=0; i<segments.size(); i++) {
         Vector2i s = segments.at(i);
         Vector3d mid = nodes.at(s.x).plus(nodes.at(s.y)).times(0.5);
@@ -802,6 +812,17 @@ SegmentAnalyser SegmentAnalyser::cut(const SignedDistanceFunction& plane) const
     return f;
 }
 
+std::vector<double> SegmentAnalyser::distributionFast(std::string name, const MappedSegments& plant) 
+{
+    std::vector<double> d(plant.maxCell + 1);
+	//#pragma omp parallel for schedule(static)
+    for (int i=0; i<segments.size(); i++) {
+		int cid = plant.seg2cell.at(i);
+		if(cid >= 0){d.at(cid) += data[name].at(i);}
+    }
+    return d;
+}
+
 /**
  * Creates a vertical distribution of the parameter @param name.
  *
@@ -819,6 +840,7 @@ std::vector<double> SegmentAnalyser::distribution(std::string name, double top, 
     double dz = (top-bot)/double(n);
     assert(dz > 0 && "SegmentAnalyser::distribution: top must be larger than bot" );
     std::shared_ptr<SignedDistanceFunction> layer = std::make_shared<SDF_PlantBox>(1e100,1e100,dz);
+	#pragma omp parallel for schedule(dynamic)
     for (int i=0; i<n; i++) {
         Vector3d t(0,0,top-i*dz);
         auto g = std::make_shared<SDF_RotateTranslate>(layer,t);

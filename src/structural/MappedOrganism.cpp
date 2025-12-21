@@ -148,6 +148,7 @@ void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
 		} else {
 			cell2seg[cellIdx] = std::vector<int>({segIdx});
 		}
+		if (cellIdx > maxCell){maxCell = cellIdx;}
 	}
 }
 
@@ -668,7 +669,13 @@ void MappedPlant::simulate(double dt, bool verbose)
 		throw std::invalid_argument("MappedPlant::simulate():soil was not set, use MappedPlant::simulate::setSoilGrid" );
 	}
 
-	Plant::simulate(dt,  verbose);
+	auto start = std::chrono::high_resolution_clock::now();
+	Plant::simulate(dt,  false);
+	auto end = std::chrono::high_resolution_clock::now();
+	if(verbose)
+	{
+		std::cout<< "time spent in Plant::simulate : "<< std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count() << " seconds\n"<<std::flush;
+	}
 
     /*
 	auto unodes = this->getUpdatedNodes();
@@ -709,8 +716,8 @@ void MappedPlant::simulate(double dt, bool verbose)
     //    old2newnodeId[segments[sid].y] = sid;
     //}
     //auto nodesinit = this->getNodes(true);
-    auto segmentsinit = this->getSegments(false);
-    segments = this->getSegments(false);
+    //auto segmentsinit = this->getSegments(-1, false);
+    segments = this->getSegments(-1, false);
     std::map<int, int> old2newnodeId;
     old2newnodeId[0] = 0;
     if(shift){
@@ -721,11 +728,12 @@ void MappedPlant::simulate(double dt, bool verbose)
             segments[ns.y-1] = ns;
         }
     }
-	if (verbose) {
-		std::cout << " current segments "<< segments.size() << "\n" << std::flush;
-	}
-	auto segOtemp = this->getSegmentOrigins(false); // (TODO ALL) to add radius and type (TODO cutting)
-	nodes.resize(segOtemp.size()+shift);
+	//if (verbose) {
+	//	std::cout << " current segments "<< segments.size() << "\n" << std::flush;
+	//}
+	auto segOtemp = this->getSegmentOrigins(-1,false); // (TODO ALL) to add radius and type (TODO cutting)
+	nodes.resize(segOtemp.size()+shift+1);
+	nodeCTs.resize(segOtemp.size()+shift+1);
 	radii.resize(segOtemp.size()+shift);
 	subTypes.resize(segOtemp.size()+shift);
 	organTypes.resize(segOtemp.size()+shift);
@@ -737,20 +745,22 @@ void MappedPlant::simulate(double dt, bool verbose)
     
 	int c = 0;
     
-	for (auto& so : segOtemp) {
+	start = std::chrono::high_resolution_clock::now();
+	for (int soid = 0; soid < segOtemp.size(); soid ++) {
+		auto& so = segOtemp[soid];
         if(so->isAlive()){
             segO.at(c) = so;
             int segIdx = c; //global ID
             old2newnodeId[segments[c].y] = c+1;
-            segments[c].y = c+1;
             segments[c].x = old2newnodeId[segments[c].x];
             if(segments[c].x == 0)
             {
                 nodes.at(segments[c].x) = so->getNode(0);
+                nodeCTs.at(segments[c].x) = so->getNodeCT(0);
             }
             int local_segIdx = -1;
             //if(
-            int testval = segmentsinit[c].y - shift;
+            int testval = segments[c].y - shift;
             std::vector<int> nodeIds_ = so->getNodeIds();
             auto it = std::find(nodeIds_.begin(), nodeIds_.end(), testval);//);
             //	std::cout <<"test "<< *it << " " <<  segments[c].y ;//<<std::endl;
@@ -762,7 +772,9 @@ void MappedPlant::simulate(double dt, bool verbose)
             //}
             assert(local_segIdx >= 0 && "MappedPlant::simulate: node ID not found in organ");
 
-            nodes.at(segmentsinit[c].y) = so->getNode(local_segIdx + 1);
+            segments[c].y = c+1;
+            nodes.at(segments[c].y) = so->getNode(local_segIdx + 1);
+            nodeCTs.at(segments[c].y) = so->getNodeCT(local_segIdx + 1);
             radii.at(segIdx) = so->getRadius(local_segIdx);
             organTypes.at(segIdx) = so->organType();
             subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
@@ -795,6 +807,11 @@ void MappedPlant::simulate(double dt, bool verbose)
         }
 		c++;
 	}
+		end = std::chrono::high_resolution_clock::now();
+		if(verbose)
+		{
+			std::cout<< "time spent in (auto& so : segOtemp) : "<<  std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count() << " seconds\n"<<std::flush;
+		}
 
 	// map new segments
 	//newsegs = this->getNewSegments();
@@ -802,9 +819,16 @@ void MappedPlant::simulate(double dt, bool verbose)
     //    ns.x += shift;
     //    ns.y += shift;
     //}
+	start = std::chrono::high_resolution_clock::now();
     seg2cell.clear();
     cell2seg.clear();
+	maxCell = -1;
 	this->mapSegments(segments);//newsegs);
+		end = std::chrono::high_resolution_clock::now();
+		if(verbose)
+		{
+			std::cout<< "time spent in mapSegments : "<<  std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count() << " seconds\n"<<std::flush;
+		}
 
 	// update segments of moved nodes
     /*
@@ -977,7 +1001,7 @@ std::vector<int> MappedPlant::getNodeIds(int ot) const {
  */
 double MappedPlant::getEffectiveRadius(int si) {
     int ot = organTypes.at(si);
-    if (ot == Organism::ot_root) {
+    if ((ot == Organism::ot_root)&&rootHairs) {
         int st = subTypes.at(si);
         double l = distanceTip.at(si);
         auto rrp = std::static_pointer_cast<RootRandomParameter>(this->getOrganRandomParameter(ot, st));
