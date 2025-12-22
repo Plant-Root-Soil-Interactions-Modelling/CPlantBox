@@ -97,6 +97,30 @@ std::vector<double> MycorrhizalPlant::getNodeInfectionTime(int ot) const {
     }
     return infTime;
 }
+
+std::vector<Vector3d> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
+    auto organs = this -> getOrgans(ot);
+    std::vector<Vector3d> anaPoints;
+    for (const auto& o : baseOrgans)
+    {
+        if(o->organType() == Organism::ot_hyphae)
+        {
+            auto h = std::dynamic_pointer_cast<Hyphae> (o);
+            if (h->mergePointID != -1) {
+                anaPoints.push_back(h->getMergePoint(h->mergePointID));
+            }
+        }
+    }
+
+    for (const auto & o : organs)
+    {
+        auto h = std::dynamic_pointer_cast<Hyphae> (o);
+            if (h->mergePointID != -1) {
+                anaPoints.push_back(h->getMergePoint(h->mergePointID));
+            }
+    }
+    return anaPoints;
+}
 /**
  * Simulates plant growth
  * @param dt		duration of the simulation
