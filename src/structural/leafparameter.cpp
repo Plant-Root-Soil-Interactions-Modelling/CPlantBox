@@ -348,7 +348,10 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
         }
         p = p->NextSiblingElement("parameter");
     }
-    createGeometry();
+	if (shapeType == 2)
+	{
+		createGeometry();
+	}
 }
 
 /**

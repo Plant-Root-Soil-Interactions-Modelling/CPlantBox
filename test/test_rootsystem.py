@@ -258,6 +258,10 @@ class TestRootSystem(unittest.TestCase):
         with open(name + ".vtp", "r+") as file:
             for i in range(0, 18):
                 check_str = file.readline()
+                if "creationTime" in check_str:
+                    break
+        check_str = check_str.split(">")[1]
+        check_str = check_str.split("<")[0]
         floats = [int(item) for item in check_str.split()]
         self.assertEqual(floats, [0, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58], "creation times are unexpected")
 

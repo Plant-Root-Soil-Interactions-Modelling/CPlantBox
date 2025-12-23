@@ -35,6 +35,7 @@ public:
     std::shared_ptr<const SeedSpecificParameter> param() const { return std::static_pointer_cast<const SeedSpecificParameter>(param_); }
 
     int getNumberOfRootCrowns() const { return numberOfRootCrowns; } // for rootsystem initialisation
+    double getMaxT() const { return param()->simtime; } // for rootsystem initialisation
     std::vector<std::shared_ptr<Organ>> baseOrgans() { return children; } // created by initialize
     std::vector<std::shared_ptr<Organ>> copyBaseOrgans(std::shared_ptr<Organism> plant);
 
@@ -49,7 +50,7 @@ public:
     int tillerType = 4;
 
 protected:
-
+	//const double maxT = 300.; // maximal simulation time, use the seed parameter simtime instead
     int numberOfRootCrowns = 0;
     int getParamSubType(int organtype, std::string str);
 

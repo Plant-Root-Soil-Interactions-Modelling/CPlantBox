@@ -113,7 +113,7 @@ public:
     double delayTils = 0.;   ///< Standard deviation of time delay between the basal roots [day]
 
     // Simulation parameters
-    double simtime = 30.;  ///< Mean recommended final simulation time
+    double simtime = 300.;  ///< Mean recommended final simulation time
     double simtimes = 0.;  ///< Standard deviation of recommended final simulation time
 
 protected:
