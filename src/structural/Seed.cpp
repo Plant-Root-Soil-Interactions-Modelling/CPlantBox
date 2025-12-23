@@ -68,7 +68,7 @@ void Seed::initialize(bool verbose)
 	/*
 	 * Create roots
 	 */
-	const double maxT = 300.; // maximal simulation time
+	
 	auto sp = this->param(); // rename (SeedSpecificParameter)
 
 	// Taproot
@@ -98,11 +98,13 @@ void Seed::initialize(bool verbose)
 			if (verbose) {
 				std::cout << "Seed::initialize: Basal root type #" << basalType << " was not defined, using tap root parameters instead\n" << std::flush;
 			}
-			basalType = tapType;
+			auto brtp = p->getOrganRandomParameter(Organism::ot_root, tapType)->copy(plant.lock());
+			brtp->subType = basalType;
+			p->setOrganRandomParameter(brtp);
 		}
 		int maxB = (sp->maxB);
 		if (sp->delayB > 0) { // limit if possible
-			maxB = std::min(maxB,int(ceil((maxT-sp->firstB)/sp->delayB))); // maximal for simtime maxT
+			maxB = std::min(maxB,int(ceil((getMaxT()-sp->firstB)/sp->delayB))); // maximal for simtime getMaxT()
 		}
 		double delay = sp->firstB;
 		for (int i=0; i<maxB; i++) {
@@ -118,7 +120,7 @@ void Seed::initialize(bool verbose)
     if (st>0) {
         shootborneType = st;
     } // otherwise stick with default
-    if ((sp->nC>0) && (sp->firstSB+sp->delaySB<maxT)) { // only if there are any shootborne roots
+    if ((sp->nC>0) && (sp->firstSB+sp->delaySB<getMaxT())) { // only if there are any shootborne roots
         std::cout << "Seed::initialize: Shoot borne definition is DEPRICATED, shoot borne roots will be handeled like basal roots \n";
         try {
             p->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
@@ -126,9 +128,11 @@ void Seed::initialize(bool verbose)
             if (verbose) {
                 std::cout << "Seed::initialize: Shootborne root type #" << shootborneType << " was not defined, using tap root parameters instead\n";
             }
-            shootborneType = tapType;
+            auto srtp =  p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
+			srtp->subType = shootborneType;
+			p->setOrganRandomParameter(srtp);
         }
-		numberOfRootCrowns = ceil((maxT-sp->firstSB)/sp->delayRC); // maximal number of root crowns
+		numberOfRootCrowns = ceil((getMaxT()-sp->firstSB)/sp->delayRC); // maximal number of root crowns
 //        Vector3d sbpos = sp->seedPos;
 //        sbpos.z=sbpos.z/2.; // half way up the mesocotyl
 		double delay = sp->firstSB;

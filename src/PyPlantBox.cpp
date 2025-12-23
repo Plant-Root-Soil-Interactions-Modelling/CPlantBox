@@ -797,6 +797,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("initialize", &Seed::initialize, py::arg("verbose") = true)
             .def("param", &Seed::param)
             .def("getNumberOfRootCrowns", &Seed::getNumberOfRootCrowns)
+            .def("getMaxT", &Seed::getMaxT)
             .def("baseOrgans", &Seed::baseOrgans)
             .def("copyBaseOrgans", &Seed::copyBaseOrgans)
             .def("createRoot", &Seed::createRoot)
