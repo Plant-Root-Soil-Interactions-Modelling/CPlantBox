@@ -24,4 +24,4 @@ done
 # Submit the final job that depends on all previous jobs
 dep=$(IFS=:; echo "${all_jobs[*]}")  # join job IDs with colon
 echo "Dependency string: $dep"
-sbatch --nodelist=node16 --dependency=afterok:$dep gatherAndPlotOutputs.sh $1
+sbatch --nodelist=node16 --dependency=afterany:$dep gatherAndPlotOutputs.sh $1

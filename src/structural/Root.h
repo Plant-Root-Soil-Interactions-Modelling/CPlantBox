@@ -59,7 +59,7 @@ public:
 	
 	void deactivateChildren() ;
 	void killChildren() ;
-	int lignificationStatus() override;
+	int lignificationStatus() const override;
 	int getDecayStatus();
 //protected:
     //std::vector<double> segRadii; ///< node creation times [days]
@@ -91,7 +91,7 @@ public:
     }
 
 	//void survivalTest() override;
-	int lignificationStatus() override {return 2;};
+	int lignificationStatus() const override {return 2;};
 	
 //protected:
 	void survivalTest() override;

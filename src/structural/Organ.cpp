@@ -361,6 +361,7 @@ double Organ::getParameter(std::string name) const {
     if (name=="oldNumberOfNodes") { return getOldNumberOfNodes(); }
     if (name=="numberOfLaterals") { return getNumberOfLaterals(); }
     // further
+    if (name=="lignification") { return lignificationStatus(); }
     if (name=="creationTime") { return getNodeCT(0); }
     if (name=="order") { // count how often it is possible to move up
         int o = 0;
@@ -438,7 +439,10 @@ void Organ::writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) 
         organ->InsertEndChild(properties);
         /* laterals roots */
         for (size_t i = 0; i<children.size(); i+=nn) {
-            children[i]->writeRSML(doc, organ);
+            if(children[i]->isAlive())
+            {
+                children[i]->writeRSML(doc, organ);
+            }
         }
         // functions
         tinyxml2::XMLElement* fcts = doc.NewElement("functions");
@@ -460,8 +464,19 @@ void Organ::writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) 
             p->SetAttribute("value", nid);
             fun2->InsertEndChild(p);
         }
+        
+        tinyxml2::XMLElement* fun3 = doc.NewElement("function");
+        fun3->SetAttribute("domain","polyline");
+        fun3->SetAttribute("name","segment_radius");
+        for (int i = o; i<getNumberOfSegments(); i+=nn) {
+            double a = getRadius(i);
+            tinyxml2::XMLElement* p = doc.NewElement("sample");
+            p->SetAttribute("value", a);
+            fun3->InsertEndChild(p);
+        }
         fcts->InsertEndChild(fun1);
         fcts->InsertEndChild(fun2);
+        fcts->InsertEndChild(fun3);
         organ->InsertEndChild(fcts);
         parent->InsertEndChild(organ);
     }

@@ -153,7 +153,7 @@ protected:
     int oldNumberOfNodes = 0;
     int oldNumberOfOrgans = 0;
 
-    std::vector<std::string> rsmlProperties = { "organType", "subType", "length", "age", "parent-node", "diameter" };
+    std::vector<std::string> rsmlProperties = { "organType", "subType", "length", "age", "parent-node", "lignification" };
     int rsmlSkip = 0; // skips points
     double minDx = 1.e-6; ///< threshold value, smaller segments will be skipped, otherwise root tip direction can become NaN
 

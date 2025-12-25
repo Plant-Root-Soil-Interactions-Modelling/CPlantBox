@@ -43,7 +43,6 @@ def compaireOutPuts(genotype, extra_name):
         output = pickle.load(f)
         nums = [[[out['year'+str(year+1)]['num'][st] for year in range(50)] for st in range(subtypes)] for out in output]
     
-    '''
     SUFs = [[out['SUF'][year] for out in output]  for year in range(50)]
     SUFmean = []
     SUFsd = []
@@ -75,7 +74,6 @@ def compaireOutPuts(genotype, extra_name):
     plt.savefig("./results/part1/"+genotype+"/SUF"+ extra_name +".jpg")
     plt.close()
     print("did SUF")
-    '''
     
     fig, axs = plt.subplots(2, 2, figsize=(12, 8))
     for st_, ax in enumerate(axs.flat):
@@ -234,10 +232,12 @@ if __name__ == "__main__":
         os.makedirs(directory, exist_ok=True)
         output = []
         for rep in range(8):
-
-            with open( './results/outputSim/'+extra_name+'/'+ genotype + str(rep) +'.pkl','rb') as f:
-                temp = pickle.load(f)
-                output.append(temp)
+            try:
+                with open( './results/outputSim/'+extra_name+'/'+ genotype + str(rep) +'.pkl','rb') as f:
+                    temp = pickle.load(f)
+                    output.append(temp)
+            except:
+                print("\nskip",genotype, rep)
             print(genotype, rep, len(output))
 
         with open(  './results/outputSim/'+extra_name+'/'+ genotype + '.pkl','wb') as f:

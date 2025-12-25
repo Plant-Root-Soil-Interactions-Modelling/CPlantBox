@@ -57,7 +57,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         self.neumann_ind = [0]  # node indices for Neumann flux
         self.dirichlet_ind = [0]  # node indices for Dirichlet flux
         self.collar_index_ = self.collar_index()  # segment index of the collar segement
-        self.wilting_point = -15000  # [cm]
+        self.wilting_point = -150000  # [cm]
 
     def solve_dirichlet(self, sim_time:float, collar_pot:list, rsx, cells:bool):
         """ solves the flux equations, with a neumann boundary condtion, see solve()            
@@ -151,7 +151,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         """ returns the segment index of the collar segment, node index of the collar node is always 0 """
         segs = self.ms.segments
         for i, s in enumerate(segs):
-            if s.x == 0:
+            if s.x == self.dirichlet_ind[0]:
                 return i
 
     @staticmethod
@@ -229,9 +229,10 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
     def get_suf(self, sim_time):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         n = self.ms.getNumberOfMappedSegments()
-        rsx = np.ones((n, 1)) * (-500)
+        rsx = np.ones((n, 1)) * (-15000)
         rsx = self.ms.total2matric(rsx)
-        rx = self.solve_dirichlet(sim_time, -15000, rsx, cells = False)
+        rx = self.solve_dirichlet(sim_time, -150000, rsx, cells = False)
+        self.psiXyl = rx
         q = self.radial_fluxes(sim_time, rx, rsx)
         return np.array(q) / np.sum(q)
 
@@ -263,16 +264,21 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         segments = self.get_segments()
         nodes = self.get_nodes()
         types = self.ms.subTypes
+        nodesX = []
+        nodesY = []
         for i, s_ in enumerate(segments):
             if i != s_[1] - 1:
                 raise "Error: Segment indices are mixed up!"
-        print(len(nodes), "nodes:")
-        for i in range(0, min(5, len(nodes))):
-            print("Node", i, nodes[i])
-        print(len(segments), "segments:")
+            nodesX.append(s_[0])
+            nodesY.append(s_[1])
+        print( "nodes:",len(nodes),"segments:",len(segments))
+        #for i in range(0, min(5, len(nodes))):
+        #    print("Node", i, nodes[i])
+        assert (len(segments) + 1 == len(nodes) )
+        
         # 1b check if there are multiple basal roots (TODO)
-        for i in range(0, min(5, len(segments))):
-            print("Segment", i, segments[i], "subType", types[i])
+        #for i in range(0, min(5, len(segments))):
+        #    print("Segment", i, segments[i], "subType", types[i])
         ci = self.collar_index()
         self.collar_index_ = ci
         print("Collar segment index", ci)
@@ -284,6 +290,26 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
                     first = False
                 else:
                     print("Warning: multiple segments emerge from collar node (always node index 0)", ci, s)
+                    
+        # 1c check that all the segments are connected correctly: 
+        #   all nodes are Y of max 1 node, all X nodes are Y of 1 node except for node 0
+        nodesX = np.array(nodesX)
+        nodesY = np.array(nodesY)
+        nodesY_u, counts = np.unique(nodesY, return_counts=True)
+        if len(nodesY_u) != len(nodesY):
+            print("some nodes are Y of more than one segment",len(nodesY_u) , len(nodesY))
+            print(nodesY[counts > 1])
+            raise Exception
+        else:
+            print("all nodes are Y of max one segment",len(nodesY_u) , len(nodesY), len(nodesX))
+        diffNode = [item for item in nodesX if ((item not in nodesY_u) and (item != 0))]
+        if len(diffNode) > 0:
+            print("some non-seed nodes are X of a segment but Y of no segments",len(diffNode) , diffNode)
+            raise Exception
+        else:
+            print("all non-seed nodes that are X of a segment are also Y of at least one other segment")
+            
+        
         # 2 check for very small segments
         seg_length = self.ms.segLength()
         c = 0
@@ -351,6 +377,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
         Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, collar_pot)
 
         if self.usecached_:  # TODO only self.aB is needed;  building rhs b could be improved
+            raise Exception
             return self.dirichletB.solve(np.array(b))
         else:
             return LA.spsolve(Q, b, use_umfpack = True)
@@ -579,10 +606,21 @@ class HydraulicModel_Meunier_large(HydraulicModel_Meunier):
     def get_suf(self, sim_time):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         n = self.ms.getNumberOfMappedSegments()
-        rsx = np.ones((n, 1)) * (-500)
+        minpsi = -15000 #lower mean psi as the roots can go quite deep
+        rsx = np.ones((n, 1)) * (minpsi)
         rsx = self.ms.total2matric(rsx)
-        rx = self.solve_dirichlet(sim_time, -15000, rsx, cells = False)
+        assert min(rsx) <= 0.
+        rx = self.solve_dirichlet(sim_time, -150000, rsx, cells = False)
+        #print('rx',np.where(rx> 0), rx[np.where(rx> 0)], len(rx))
+        #print(np.array(rsx).max(), np.array(rsx).min(), 'rx',np.array(rx).min(), np.array(rx).max())
+        #assert max(rx) <= 0.
+        if np.isnan(np.sum(rx)):
+            print('solve_dirichlet' ,failed,np.sum(rx),np.sum(self.psiXyl), len(self.psiXyl))
+            print(' rx[:10], rsx[:10]', rx[:10], rsx[:10])
+            raise Exception
         q = self.radial_fluxes(sim_time, rx, rsx)
+        #print("rx",rx)
+        #print('radial_fluxes',q, np.array(q).max(), np.array(q).min(),np.sum(q), )
         return np.array(q) / np.sum(q)
         
     def solve_dirichlet(self, sim_time:float, collar_pot:list, rsx, cells:bool, soil_k = []):
@@ -598,8 +636,8 @@ class HydraulicModel_Meunier_large(HydraulicModel_Meunier):
         self.last = "dirichlet"
         if isinstance(collar_pot, (float, int)):
             collar_pot = [collar_pot] * len(self.dirichlet_ind)
-        self.linearSystemMeunierSolve(sim_time, rsx, cells, soil_k, n0 = self.dirichlet_ind ,d =collar_pot, verbose = True) # computes self.psiXyl
-        return self.psiXyl
+        self.linearSystemMeunierSolve(sim_time, rsx, cells, soil_k, n0 = self.dirichlet_ind ,d =collar_pot, verbose = False) # computes self.psiXyl
+        return np.array(self.psiXyl)
         
 class HydraulicModel_Doussan(PlantHydraulicModel):
     """

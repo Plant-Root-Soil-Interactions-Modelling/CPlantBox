@@ -264,9 +264,12 @@ class MappedPlantPython(MappedPlant):
                     rlt_winter = rp.lambda_survive * ((-np.log(p_survive))**(1/rp.k_survive)) * 1225. # (25. + 10. * max(min(self.randn(),1.),-1.)) * 1225. #rp.lambda_survive * ((-np.log(rp.p_survive))**(1/rp.k_survive)) * 1225.
                 else:
                     rlt_winter = 200. * 1225.
-                print('rlt_winter',rlt_winter/1225)
+                print('rlt_winter',rlt_winter/1225)#, "pni",pni,"parent_id",parent_id,"types[i]",types[i])
                 param = pb.RootSpecificParameter(types[i], lb, length, ln_, r, a, theta, rlt, laterals, a_gr, rlt_winter)  ############## which subType
                 
+                if parent_id == 0:
+                    pni = 0 # the stem is upside-down, so need to update the pni
+                    
                 id = self.getOrganIndex()  # next index
                 organ = pb.StaticRoot(id, param, length, pni)
 
@@ -294,6 +297,8 @@ class MappedPlantPython(MappedPlant):
                 else:
                     # print(i, "parent", parent_id, "pni", pni)
                     parent = self.static_organs[parent_id]
+                    if parent_id == 0:
+                        pni = 0 # the stem is upside-down, so need to update the pni
                     organ.addNode(n = parent.getNode(pni), id = parent.getNodeId(pni), t = 0.)
                     # print(self.data.polylines[parent_id][pni])                  
                     for node in self.data.polylines[i]:
@@ -313,7 +318,6 @@ class MappedPlantPython(MappedPlant):
                     print("PlantPython: initialize_static(): organ", i, "has no parent", parent_id)
                     seed.addChild(organ)#self.static_organs[0])
         self.addOrgan(seed)
-
         # 4. The CPlantBox part
         # seed.initialize() # not called i.e. no tap root or basal roots are created
         self.oldNumberOfNodes = self.getNumberOfNodes()
@@ -321,6 +325,7 @@ class MappedPlantPython(MappedPlant):
         
         self.nodes_py = np.array(list(map(lambda x: np.array(x), self.getNodes())))
         self.segments_py = np.array(list(map(lambda x: np.array(x), self.getSegments())), dtype = np.int64)
+        #print("seed node",self.nodes_py[0], np.array(list(map(lambda x: np.array(x), seed.getNodes()))))
 
     def set_identical_laterals(self, initial_sub_types, lateral_subtypes, emerge_type):
         """ places laterals as in the original rsml, all start growing at once 
@@ -340,7 +345,10 @@ class MappedPlantPython(MappedPlant):
                 parent_id = self.data.properties["parent-poly"][i]
                 # print('types[i]',types[i], 'types[parent_id]',types[parent_id], types[parent_id] in initial_sub_types)
                 if types[parent_id] in initial_sub_types:
-                    pni_init = self.data.properties["parent-node"][i] + 1 # why + 1?
+                    pni_init = self.data.properties["parent-node"][i] #+ 1 # why + 1?
+                    #print("pni_init",pni_init)
+                    if parent_id == 0:
+                        pni_init = 0# + 1 # the stem is upside-down, so need to update the pni # why + 1?
                     parent = self.static_organs[parent_id]
                     pr = parent.getOrganRandomParameter()
                     init_num_kids = parent.getNumberOfChildren()  
@@ -356,13 +364,13 @@ class MappedPlantPython(MappedPlant):
                         for kid_id in range(init_num_kids):
                             
                             kid = parent.getChild(kid_id)
-                            if (kid.parentNI + 1 == pni) and (kid.getParameter('subType') == types[i]) and (np.isin(types[i], add_to_statics)):
+                            if (kid.parentNI  == pni) and (kid.getParameter('subType') == types[i]) and (np.isin(types[i], add_to_statics)):#+ 1
                                 # delay_mean = kid.getParameter('rlt_winter') 
                                 creation_time = self.rand() * pr.ldelays
                                 #creation_time = abs( (max(min(self.randn(),3.),-3.) / 3)* pr.ldelays) # delay_mean +
                                 #print('delay1', creation_time, delay_mean,pr.ldelays,(max(min(self.randn(),3.),-3.) / 3),(max(min(self.randn(),3.),-3.) / 3))
                                 ld1.append(creation_time)
-                                pni -= 1
+                                #pni -= 1
                                 break
                                 
                         #parent.getLatGrowthDelay()
@@ -374,7 +382,7 @@ class MappedPlantPython(MappedPlant):
                                 # pr.successorP_age)
                         p_idx = 0#pr.getLateralType(pb.Vector3d(), 0, # ruleID: assumed to be 0 here
                         #                            creation_time)
-                        #print('addlat','parent_st', parent.param().subType, 'kid_st' , pr.successorST[0][p_idx], 'pni',  pni)
+                        #print('addlat','parent_st',parent_id, parent.param().subType, 'kid_st' , pr.successorST[0][p_idx], 'pni',  pni)
                         if(p_idx >=0) :
                             emerge_type_ = pr.successorST[0][0][p_idx]
                             parent.addLateral(pni, emerge_type_, creation_time)

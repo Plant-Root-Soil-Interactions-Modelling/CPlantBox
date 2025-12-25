@@ -323,7 +323,7 @@ std::vector<double> Root::getRadii() // Y use this? could instead update dynamic
 }
 
 
-int Root::lignificationStatus() 
+int Root::lignificationStatus() const 
 {
     
     int is_fine_root = getParameter("is_fine_root");

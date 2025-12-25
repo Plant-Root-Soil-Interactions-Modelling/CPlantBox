@@ -195,6 +195,13 @@ void Photosynthesis::linearSystemSolve(double simTime_, const std::vector<double
 	}catch(...){
 		 throw std::runtime_error("Photosynthesis::linearSystemSolve error when solving wat. pot. xylem with Eigen ");
 	}
+    
+	if(lu.info() != Eigen::Success){
+		std::cout << "Photosynthesis::linearSystemSolve error when solving wat. pot. xylem with Eigen: " << lu.info() << std::endl;
+		 throw std::runtime_error("Photosynthesis::linearSystemSolve error when solving wat. pot. xylem with Eigen ");
+	}
+
+    
 	std::vector<double> v3(&v2[0], v2.data()+v2.cols()*v2.rows());
 	psiXyl = v3;
 }

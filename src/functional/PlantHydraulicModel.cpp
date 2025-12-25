@@ -3,30 +3,30 @@
 
 #include <algorithm>
 #include <set>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
+//#ifdef _OPENMP
+//#include <omp.h>
+//#endif
 
 namespace CPlantBox {
 
 PlantHydraulicModel::PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegments> ms, std::shared_ptr<CPlantBox::PlantHydraulicParameters> params):
     ms(ms), params(params) 
     { params->ms = ms;
-    #ifdef _OPENMP
-    std::cout << "OpenMP enabled, max threads: " << omp_get_max_threads()<<" "<<omp_get_num_procs() <<std::flush<< std::endl;
-    #else
-        std::cout << "OpenMP not enabled" <<std::flush<< std::endl;
-    #endif
-     Eigen::initParallel();
-     nthreads = Eigen::nbThreads( );
-     std::cout<<"PlantHydraulicModel::PlantHydraulicModel number of threads for openmp "<< nthreads <<std::flush<<std::endl;
+    //#ifdef _OPENMP
+    //std::cout << "OpenMP enabled, max threads: " << omp_get_max_threads()<<" "<<omp_get_num_procs() <<std::flush<< std::endl;
+    //#else
+    //    std::cout << "OpenMP not enabled" <<std::flush<< std::endl;
+    //#endif
+     //Eigen::initParallel();
+     //nthreads = Eigen::nbThreads( );
+     //std::cout<<"PlantHydraulicModel::PlantHydraulicModel number of threads for openmp "<< nthreads <<std::flush<<std::endl;
 	 
-	 #pragma omp parallel
-{
-    int tid = omp_get_thread_num();
-    #pragma omp critical
-    std::cout << "Thread " << tid << " running on core " << sched_getcpu() << "\n";
-}
+	 //#pragma omp parallel
+//{
+  //  int tid = omp_get_thread_num();
+    //#pragma omp critical
+    //std::cout << "Thread " << tid << " running on core " << sched_getcpu() << "\n";
+//}
      //Eigen::setNbThreads(1);
     }
 
@@ -37,24 +37,31 @@ PlantHydraulicModel::PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegmen
  */
 void PlantHydraulicModel::bc_dirichlet(Eigen::SparseMatrix<double>& mat, const std::vector<int>& n0, const std::vector<double>& d)
 {
-    if (n0.size() != d.size())
-    {
-        throw std::runtime_error("PlantHydraulicModel::bc_dirichlet: number of nodes n0 and Dirichlet values d must be equal");
-    }
-    
     for (size_t c = 0; c < n0.size(); ++c)
     {
         int i = n0[c];
+        double di = d[c];
 
-        // zero the row
+        // subtract column contribution from RHS
+        for (Eigen::SparseMatrix<double>::InnerIterator it(mat, i); it; ++it)
+        {
+            int j = it.row();
+            if (j != i)
+                b[j] -= it.value() * di;
+        }
+
+        // zero column i
+        for (int k = 0; k < mat.outerSize(); ++k)
+            for (Eigen::SparseMatrix<double>::InnerIterator it(mat, k); it; ++it)
+                if (it.col() == i)
+                    it.valueRef() = 0.0;
+
+        // zero row i
         for (Eigen::SparseMatrix<double>::InnerIterator it(mat, i); it; ++it)
             it.valueRef() = 0.0;
 
-        // set diagonal
         mat.coeffRef(i,i) = 1.0;
-
-        // set RHS
-        b[i] = d[c];
+        b[i] = di;
     }
 }
 
@@ -80,17 +87,23 @@ void PlantHydraulicModel::linearSystemMeunierSolve(double simTime, const std::ve
     {
         throw std::runtime_error("mismatch in the number of nodes and segments");
     }
+    psiXyl.clear();
 	tripletList.clear();
-	tripletList.resize(Ns*4);
-	b = Eigen::VectorXd(N);
+	tripletList.reserve(Ns*4);
+	b = Eigen::VectorXd::Zero(N);
 	//get "tripletList" and "b"
 	auto start = std::chrono::high_resolution_clock::now();
 	linearSystemMeunier(simTime, sx, cells, soil_k); 
+    for (int i = 0; i < N; ++i){  b(i) = aB[i];}
 	auto end = std::chrono::high_resolution_clock::now();
 	if(verbose)
 	{
 		std::cout<< "time spent in linearSystemMeunier : "<<  std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count() << " seconds\n"<<std::flush;
 	}
+    if (!b.allFinite()) {
+        throw std::runtime_error("RHS vector b contains NaN or Inf");
+    }
+    
 	Eigen::SparseMatrix<double> mat(N,N);
 	mat.reserve(Eigen::VectorXi::Constant(N,2));
 	mat.setFromTriplets(tripletList.begin(), tripletList.end());
@@ -104,6 +117,11 @@ void PlantHydraulicModel::linearSystemMeunierSolve(double simTime, const std::ve
 	
         start = std::chrono::high_resolution_clock::now();
         solverLU.compute(mat);
+    
+	if(solverLU.info() != Eigen::Success){
+		std::cout << "PlantHydraulicModel::linearSystemMeunierSolve  matrix Compute with Eigen failed: " << solverLU.info() << std::endl;
+		throw std::runtime_error("Photosynthesis::linearSystemSolve  matrix Compute with Eigen failed" );
+	}
 		end = std::chrono::high_resolution_clock::now();
 		if(verbose)
 		{
@@ -119,9 +137,27 @@ void PlantHydraulicModel::linearSystemMeunierSolve(double simTime, const std::ve
         }catch(...){
              throw std::runtime_error("PlantHydraulicModel::linearSystemMeunierSolve error when solving wat. pot. xylem with Eigen ");
         }
-		
+    if(verbose)
+		{
+        std::cout << "Matrix norm: " << mat.norm()<<  "Matrix rows: " <<mat.rows()  <<" minDelta "<<minDelta << "\n";
+        double normMat = mat.norm();            // Frobenius norm
+        double normInvApprox = v2.norm() / b.norm(); // crude estimate of ||A^{-1}|| via solution
+        double condEstimate = normMat * normInvApprox;
+        std::cout << "Estimated condition number: " << condEstimate << "\n";
+    }
     //Eigen::setNbThreads(1);
         psiXyl.assign(v2.data(), v2.data() + v2.size());
+	if(solverLU.info() != Eigen::Success){
+		std::cout << "PlantHydraulicModel::linearSystemSolve error when solving wat. pot. xylem with Eigen: " << solverLU.info() << std::endl;
+		 throw std::runtime_error("Photosynthesis::linearSystemSolve error when solving wat. pot. xylem with Eigen ");
+	}
+    for (int si = 0; si<ms->segments.size(); si++) {//todo: remove afterwards maybe
+        if (!std::isfinite(psiXyl.at(si)))
+        {
+            std::cout<<"PlantHydraulicModel::linearSystemSolve nan of Inf psiXyl.at(si): " <<si <<" "<< psiXyl.at(si) << std::endl;
+             throw std::runtime_error("Photosynthesis::linearSystemSolve nan of Inf ");
+        }
+    }
 }
 
 void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<double> sx, bool cells,
@@ -153,7 +189,8 @@ void PlantHydraulicModel::linearSystemMeunier_(double simTime, const std::vector
     std::fill(aV.begin(), aV.end(), 0.);
     std::fill(aI.begin(), aI.end(), 0);
     std::fill(aJ.begin(), aJ.end(), 0);
-    //size_t k=0;
+    minDelta = 1e6;
+    size_t k=0;
     //# pragma omp for schedule(static)
     for (int si = 0; si<Ns; si++) {
 
@@ -169,9 +206,9 @@ void PlantHydraulicModel::linearSystemMeunier_(double simTime, const std::vector
 
         try {
             kx = params->kx_f(si, age, subType, organType);
-            kr = params->kr_f(si, age, subType, organType);
+            kr = params->kr_f_wrapped(si, age, subType, organType, cells);
         } catch(...) {
-            std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
+            std::cout << "\n PlantHydraulicModel::linearSystem: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
         }
         if (soil_k.size()>0) {
@@ -183,42 +220,112 @@ void PlantHydraulicModel::linearSystemMeunier_(double simTime, const std::vector
         auto v = n2.minus(n1);
         double l = v.length();
         if (l<1.e-5) {
-            std::cout << "XylemFlux::linearSystem: warning segment length smaller 1.e-5 \n";
+            std::cout << "PlantHydraulicModel::linearSystem: warning segment "<< si <<" length smaller 1.e-5 \n";
             //l = 1.e-5; // valid quick fix? (also in segFluxes)
         }
 		double perimeter = ms->getPerimeter(si, l);//perimeter of exchange surface
         double vz = v.z / l; // normed direction
 
         double cii, cij, bi;
+        double tau = -1;
+        double exp_tau_l = -1;
+        double exp_minus_tau_l = -1;
+        double delta = -1;
+        double idelta = -1;
 
         if ((perimeter * kr>1.e-16) && (l > 1e-5)) {
-            double tau = std::sqrt(perimeter * kr / kx); // Eqn (6)
+            tau = std::sqrt(perimeter * kr / kx); // Eqn (6)
             
-            double exp_tau_l = std::exp(tau * l);
-            double exp_minus_tau_l = std::exp(-tau * l);
-            double delta = exp_minus_tau_l - exp_tau_l;// Eqn (12)
-            double idelta = 1.0 / delta;
-            
+            exp_tau_l = std::exp(tau * l);
+            exp_minus_tau_l = std::exp(-tau * l);
+            delta = exp_minus_tau_l - exp_tau_l;// Eqn (12)
+            idelta = 1.0 / delta;
+            if (minDelta > delta){minDelta = delta;}
             cii = -kx * idelta * tau * (exp_minus_tau_l + exp_tau_l); // Eqn (23)
             cij = 2 * kx * idelta * tau;  // Eqn 24
             bi = kx * vz; //  # Eqn 25
+            if (!std::isfinite(bi) || !std::isfinite(cij) || !std::isfinite(cii) ) {
+            	std::cout << "PlantHydraulicModel::linearSystemMeunier_: nan or Inf bi, cii, or cij. segIdx "<<si<<" organType "<<organType<<" subType "<<subType;
+				std::cout <<" bi " << bi << ", cii " << cii << ", cij "<< cij <<" perimeter "<<perimeter<<" kr "<<kr<<" kx "<<kx;
+				std::cout<< ", delta "<<delta << ", tau "<< tau << ", psi_s " << psi_s << ", exp_tau_l " << exp_tau_l
+                    << ", exp_minus_tau_l " << exp_minus_tau_l<< "\n";
+				throw std::runtime_error("PlantHydraulicModel::linearSystemMeunier_: nan or Inf bi, cii, or cij");
+			}
             
         } else { // solution for a=0, or kr = 0
             cii = kx/l;
             cij = -kx/l;
             bi = kx * vz;
             psi_s = 0;//
+            if (!std::isfinite(bi) || !std::isfinite(cij) || !std::isfinite(cii) ) {
+            	std::cout << "PlantHydraulicModel::linearSystemMeunier_: nan or Inf bi, cii, or cij for small seg. segIdx "<<si<<" organType "<<organType<<" subType "<<subType << ", psi_s " << psi_s ;
+				std::cout <<" bi " << bi << ", cii " << cii << ", cij "<< cij <<" perimeter "<<perimeter<<" kr "<<kr<<" kx "<<kx<< "\n";
+				throw std::runtime_error("PlantHydraulicModel::linearSystemMeunier_: nan or Inf bi, cii, or cij");
+			}
         }
-        //if(dovector)
-        //{
-        //    k = fillVectors(k, i, j, bi, cii, cij, psi_s);
-        //}else{
-            size_t k = si * 4;
-            fillTripletList(k, i, j, bi, cii, cij, psi_s);
-        //}
+        if(dovector)
+        {
+            k = fillVectors(k, i, j, bi, cii, cij, psi_s);
+        }else{
+            //k = si * 4;
+         try{
+            k = fillTripletList(k, i, j, bi, cii, cij, psi_s);
+        }catch(...){
+             std::cout << "PlantHydraulicModel::linearSystemMeunier_ error when fillTripletList "<<si<<" organType "<<organType<<" subType "<<subType;
+				std::cout <<" bi " << bi << ", cii " << cii << ", cij "<< cij <<" perimeter "<<perimeter<<" kr "<<kr<<" kx "<<kx;
+				std::cout<< ", delta "<<delta << ", tau "<< tau << ", psi_s " << psi_s << ", exp_tau_l " << exp_tau_l
+                    << ", exp_minus_tau_l " << exp_minus_tau_l << " minDelta " <<minDelta << " l "<<l <<" perimeter * kr " <<perimeter * kr<< "\n";
+             throw std::runtime_error("PlantHydraulicModel::linearSystemMeunier_ error when fillTripletList");
+        }
+            
+        }
     }/*end omp parallel*/ 
 }
 
+
+/**
+ * fill the matrices to be solved. overloads @see XylemFlux::fillVectors
+ * @param k				index for the row- and column-index vectors
+ * @param i, j			indexes of the non-zero elements of the sparse matrix
+ * @param psi_s 		outer water potential [cm]
+ * @param bi			value of variable b at row i [cm3/d]
+ * @param cii			value of variable c at row i col i [cm2/d]
+ * @param cij			value of variable c at row i col j [cm2/d]
+ * @return k			next index for the row- and column-index vectors
+ */
+size_t PlantHydraulicModel::fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) 
+{
+	typedef Eigen::Triplet<double> Tri;
+	aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
+
+	//b(i) = aB[i];
+	tripletList.push_back(Tri(i,i,cii));
+	k += 1;
+	tripletList.push_back(Tri(i,j,cij));
+	k += 1;
+
+	int ii = i;
+	i = j;  j = ii; // edge ji
+	aB[i] += ( -bi + cii * psi_s +cij * psi_s) ; // (-bi) Eqn (14) with changed sign
+
+	//b(i) = aB[i];
+
+            if (!std::isfinite(aB[i])) {
+            	std::cout << "PlantHydraulicModel::fillTripletList: nan or Inf 2nd b(i). i "<<i<< " aB.size() " << aB.size() <<" k "<<k<<" j "<<j
+                   <<" aB[i] "<<aB[i] <<" bi "<<bi<<" cii "<<cii;
+				std::cout <<" psi_s " << psi_s << ", cij " << cij<<" cii * psi_s "<< cii * psi_s << " cij * psi_s "
+                    << cij * psi_s<<" tot "<< -bi + cii * psi_s +cij * psi_s << "\n";
+				throw std::runtime_error("PlantHydraulicModel::segFluxes: nan or Inf 2nd b(i)");
+			}
+    
+	tripletList.push_back(Tri(i,i,cii));
+	k += 1;
+
+	tripletList.push_back(Tri(i,j,cij));
+	k += 1;
+	return k;
+}
+    
 /**
  * Volumetric radial fluxes for each segment according to a given solution @param rx and @param sx
  *
@@ -254,9 +361,9 @@ std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const s
         double kr = 0.;
         try {
             kx = params->kx_f(si, age, subType, organType);
-            kr = params->kr_f(si, age, subType, organType);
+            kr = params->kr_f_wrapped(si, age, subType, organType, cells);
         } catch(...) {
-            std::cout << "\n XylemFlux::segFluxes: conductivities failed" << std::flush;
+            std::cout << "\n PlantHydraulicModel::segFluxes: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
         }
         if (soil_k.size()>0) {
@@ -268,7 +375,7 @@ std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const s
         auto v = n2.minus(n1);
         double l = v.length();
         if (l<1.e-5) {
-            std::cout << "XylemFlux::linearSystem: warning segment length smaller 1.e-5 \n";
+            std::cout << "PlantHydraulicModel::segFluxes: warning segment length smaller 1.e-5 \n";
             //l = 1.e-5; // valid quick fix? (also in segFluxes)
         }
 
@@ -283,10 +390,10 @@ std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const s
             double d = std::exp(-tau*l)-std::exp(tau*l); // det
             double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
             if (!std::isfinite(fExact)) {
-            	std::cout << "XylemFlux::segFluxes: nan or Inf fExact. segIdx "<<si<<" organType "<<organType<<" subType "<<subType;
-				std::cout <<" tau " << tau << ", l " << l << ", d "<<" perimeter "<<perimeter<<" kr "<<kr;
-				std::cout<< d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
-				throw std::runtime_error("XylemFlux::segFluxes: nan or Inf fExact");
+            	std::cout << "PlantHydraulicModel::segFluxes: nan or Inf fExact. segIdx "<<si<<" organType "<<organType<<" subType "<<subType;
+				std::cout <<" tau " << tau << ", l " << l <<" perimeter "<<perimeter<<" kr "<<kr<<" kx "<<kx;
+				std::cout<< ", d "<<d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
+				throw std::runtime_error("PlantHydraulicModel::segFluxes: nan or Inf fExact");
 			}
             double flux = fExact*(!approx)+approx*fApprox;
             fluxes[si] = flux;
@@ -324,43 +431,6 @@ std::map<int,double> PlantHydraulicModel::sumSegFluxes(const std::vector<double>
     return fluxes;
 }
 
-
-/**
- * fill the matrices to be solved. overloads @see XylemFlux::fillVectors
- * @param k				index for the row- and column-index vectors
- * @param i, j			indexes of the non-zero elements of the sparse matrix
- * @param psi_s 		outer water potential [cm]
- * @param bi			value of variable b at row i [cm3/d]
- * @param cii			value of variable c at row i col i [cm2/d]
- * @param cij			value of variable c at row i col j [cm2/d]
- * @return k			next index for the row- and column-index vectors
- */
-void PlantHydraulicModel::fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) 
-{
-	typedef Eigen::Triplet<double> Tri;
-    //#pragma omp atomic
-	b(i) += ( bi + cii * psi_s +cij * psi_s) ;//aB[i]
-
-	//b(i) = aB[i];
-	tripletList.at(k) = Tri(i,i,cii);
-	k += 1;
-	tripletList.at(k) = Tri(i,j,cij);
-	k += 1;
-
-	int ii = i;
-	i = j;  j = ii; // edge ji
-    
-    //#pragma omp atomic
-	b(i) += ( -bi + cii * psi_s +cij * psi_s) ; // (-bi) Eqn (14) with changed sign //aB[i]
-
-	//b(i) = aB[i];
-	tripletList.at(k) = Tri(i,i,cii);
-	k += 1;
-
-	tripletList.at(k) = Tri(i,j,cij);
-	k += 1;
-	//return k;
-}
 
 
 /**
@@ -434,6 +504,16 @@ double PlantHydraulicModel::getPsiOut(bool cells, int si, const std::vector<doub
 	} else {
 		psi_s = sx_.at(si); // j-1 = segIdx = s.y-1
 	}
+    if((psi_s >0) || (!std::isfinite(psi_s)))
+    {
+        std::cout << "PlantHydraulicModel::getPsiOut: nan or Inf or > 0 psi_s. segIdx "<<si<<" organType "<<organType;
+				std::cout <<" psi_s "<<psi_s<<" cells " << cells ;
+        if (cells) { 
+				std::cout<< ", cellIndex "<<ms->seg2cell.at(si) << ", params->psi_air "<< params->psi_air ;
+        }else{std::cout <<" sx_.at(si) " << sx_.at(si) << " " <<sx_.at(0);}
+        std::cout << "\n";
+				throw std::runtime_error("PlantHydraulicModel::getPsiOut: nan or Inf or > 0 psi_s");
+    }
 	return psi_s;
 }
 

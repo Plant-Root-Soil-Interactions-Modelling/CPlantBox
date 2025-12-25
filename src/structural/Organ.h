@@ -128,7 +128,7 @@ public:
 	double getLatGrowthDelay(int ot_lat, int st_lat, double dt, double growthDelay);
 	double getLatGrowthDelay(int ruleId) const;
 	
-	virtual int lignificationStatus() {return 0;};
+	virtual int lignificationStatus() const {return 0;};
 	
 
 protected:

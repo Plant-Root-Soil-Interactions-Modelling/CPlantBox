@@ -18,7 +18,7 @@ import plantbox as pb
 import visualisation.vtk_plot as vp
 import viewer_conductivities
 from functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports}|
-from functional.PlantHydraulicModel import HydraulicModel_Meunier_large  # |\label{l42:imports_end}|
+from functional.PlantHydraulicModel import HydraulicModel_Meunier_large, HydraulicModel_Meunier   # |\label{l42:imports_end}|
 
 
 import numpy as np
@@ -41,7 +41,7 @@ def toc(t0):
     return time.perf_counter() - t0
 
 
-def get3Dshape(plant,title_ = 'wine',data={}, saveOnly = True):    
+def get3Dshape(plant,title_ = 'wine',data={}, saveOnly = True, show = "subType"):    
     preparedraw = time.time() 
     ana = pb.SegmentAnalyser(plant.mappedSegments()) 
     segOs = plant.getSegmentOrigins(-1, all = False)
@@ -54,13 +54,13 @@ def get3Dshape(plant,title_ = 'wine',data={}, saveOnly = True):
     ana.addData('aliveSegs', aliveSegs)
     ana.addData('lignification', lignification)
     ana.addData('is_fine_root', is_fine_root)
-    p_names = ['aliveSegs','lignification','is_fine_root',"creationTime","id"] 
+    p_names = ['subType','aliveSegs','lignification','is_fine_root',"creationTime","id"] 
     for dd in data.keys():
         ana.addData(dd, data[dd])
         p_names.append(dd)
     #ana.filter('alive', 1)
     initdraw = time.time()
-    vp.plot_roots(ana, "subType",p_names, win_title = title_, render = not saveOnly)
+    vp.plot_roots(ana, show,p_names, win_title = title_, render = not saveOnly)
     #print("drawing: %s, %s" % (int(initdraw-preparedraw), int(time.time() - initdraw)), end=", ")
     
 
@@ -267,7 +267,6 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
 
         # the static laterals 2 and 3 are replaced with the growing lateral 2
         ld, ld1 = plant.set_identical_laterals([0, 1], [1, 2, 3], 2)
-        
         # plt.hist(np.array(ld1)/yr_to_BEDD, density = False, bins=30)
         # plt.title("Creation time of the main roots")
         # plt.show()
@@ -294,11 +293,12 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
         if doVTP:
             get3Dshape(plant,title_ = "./results/part1/vtp/"+extraName+'/'+genotype+"0", data = {}, saveOnly = True)
             
-            
         param = PlantHydraulicParameters()
+        #param.set_kr_const(1.728e-4)          
+        #param.set_kx_const(4.32e-2 )
         param.set_kr_suberize_dependent(kr)          
         param.set_kx_radius_dependent([Kax_a[genotype],Kax_b[genotype]])
-        hm = HydraulicModel_Meunier_large(plant, param)
+        hm = HydraulicModel_Meunier(plant, param) # _large
         hm.doBiCGSTAB = doBiCGSTAB
         #peri = Perirhizal(plant)
         assert len(plant.get_nodes()) == (len(plant.get_segments()) +1)
@@ -320,7 +320,6 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
             plant.do_simulate(dt, True)
             timing['growth'] += toc(t0)
 
-                    
             # ---------------- RLD ----------------
             t0 = tic()
             ana = pb.SegmentAnalyser(plant.mappedSegments())
@@ -334,7 +333,21 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
 
             # ---------------- SUF ----------------
             # t0 = tic()
-            suf_ = hm.get_suf(i * dt)
+            try:
+                suf_ = hm.get_suf(i * dt)
+                assert suf_.min() >= 0 
+            except:
+                print("issue with suf computation")
+                get3Dshape(
+                    plant,
+                    title_="./results/part1/vtp/" + extraName + '/' + genotype + str(i+1) +"_"+ str(rep_input) +"_error",
+                    saveOnly=True,data ={'SUF': suf_,'psiXyl':hm.psiXyl},show = 'SUF',# 
+                )
+                print('np.unique(hm.psiXyl)',np.unique(hm.psiXyl))
+                #hm.test()
+                plant.writeRSML("./results/outputSim/" + extraName + '/' + genotype + str(i+1) +"_"+ str(rep_input) +"_error.rsml")
+                raise Exception
+                
             timing['suf'] += toc(t0)
             t0 = tic()
             ana.addData('SUF', suf_)
@@ -380,7 +393,8 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
                 get3Dshape(
                     plant,
                     title_="./results/part1/vtp/" + extraName + '/' + genotype + str(i+1),
-                    saveOnly=True
+                    saveOnly=True, show = 'SUF',
+                    data ={'SUF': suf_, 'psiXyl':hm.psiXyl}
                 )
                 timing['vtp'] += toc(t0)
 

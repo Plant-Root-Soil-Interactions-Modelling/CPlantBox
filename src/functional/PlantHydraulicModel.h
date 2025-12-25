@@ -53,11 +53,12 @@ public:
 	Eigen::VectorXd b;
     bool doBiCGSTAB = false;
     int nthreads = 1;
+    double minDelta;
 
 protected:
     bool dovector = true;
     virtual size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ; ///< fills row k of Meunier matrix
-    virtual void fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ;
+    virtual size_t fillTripletList(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ;
 	virtual double getPsiOut(bool cells, int si, const std::vector<double>& sx_) const; ///< get the outer water potential [cm]
 
 };

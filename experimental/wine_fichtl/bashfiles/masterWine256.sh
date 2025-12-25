@@ -5,7 +5,7 @@ all_jobs=()
 
 # Submit B jobs
 for i in {0..7}; do
-    jid=$(sbatch --nodelist=node04 --parsable wine_24cpu256.sh B "$i" "$1" "$2" "$3")
+    jid=$(sbatch --nodelist=node03 --parsable wine_24cpu256.sh B "$i" "$1" "$2" "$3")
     all_jobs+=($jid)
 done
 
