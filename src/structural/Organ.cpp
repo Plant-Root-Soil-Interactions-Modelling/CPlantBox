@@ -482,7 +482,7 @@ void Organ::rel2abs()
 	if(hasRelCoord())
 	{
 		nodes[0] = Vector3d(getOrigin()); //recompute position of the first node
-
+		this->has_rel_coord = false;
 		for(size_t i=1; i<nodes.size(); i++)
 		{
 			//nodes[i] = nodes[i-1].plus(nodes[i]);
@@ -534,6 +534,7 @@ void Organ::abs2rel()
 			//nodes.at(j-1) = nodes_j_1;
 		}
 		nodes[0] = Vector3d(0.,0.,0.);
+		this->has_rel_coord = true;
 		moved = true; //update position of existing nodes in MappedSegments
 	}
 
@@ -687,7 +688,7 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
 		bool notChildBaseNode = (children.empty() || (nn-1 != std::static_pointer_cast<Organ>(children.back())->parentNI));
 		// don't move a child base node unless you have phytomere expansion
         if (notFirstNode && (notChildBaseNode || stemElongation) ) {
-std::cout << "\n=== Segment Debug === " << getId()<<" "<<nn-1 << std::endl;
+//std::cout << "\n=== Segment Debug === " << getId()<<" "<<nn-1 << std::endl;
 
 			Vector3d h;
 			//getPlant()->rel2abs();
@@ -695,11 +696,11 @@ std::cout << "\n=== Segment Debug === " << getId()<<" "<<nn-1 << std::endl;
 			if(hasRelCoord())
 			{
 				h = Vector3d(nodes.at(nn-1));
-    std::cout << "Relative coord active → h (from n1 rel): " << h.toString() << std::endl;
+    //std::cout << "Relative coord active => h (from n1 rel): " << h.toString() << std::endl;
 			}else{
 				Vector3d n1 = nodes.at(nn-1);
 				h = n1.minus(n2);
-    std::cout << "Absolute coord active → h (n1 - n2): " << h.toString() << std::endl;
+    //std::cout << "Absolute coord active => h (n1 - n2): " << h.toString() << std::endl;
 			}
 			double olddx = h.length(); // length of last segment
             if (olddx<dx()*(1 - 1e-10)) { // shift node instead of creating a new node
@@ -708,7 +709,7 @@ std::cout << "\n=== Segment Debug === " << getId()<<" "<<nn-1 << std::endl;
                 // Vector3d newdxv = getIncrement(n2, sdx);
 
 				h.normalize();
-std::cout << "h length: " << h.length() << std::endl;
+//std::cout << "h length: " << h.length() << std::endl;
 				if(hasRelCoord())
 				{
 					nodes.at(nn-1) =  h.times(sdx);
@@ -813,16 +814,19 @@ void Organ::createLateral(double dt, bool verbose)
 					switch(ot){
 						case Organism::ot_root:{
 							auto lateral = std::make_shared<Root>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
+							lateral->has_rel_coord = this->has_rel_coord;
 							children.push_back(lateral);
 							lateral->simulate(growth_dt,verbose);
 							break;}
 						case Organism::ot_stem:{
 							auto lateral = std::make_shared<Stem>(plant.lock(), st, delay, shared_from_this(),  nodes.size() - 1);
+							lateral->has_rel_coord = this->has_rel_coord;
 							children.push_back(lateral);
 							lateral->simulate(growth_dt,verbose);
 							break;}
 						case Organism::ot_leaf:{
 							auto lateral = std::make_shared<Leaf>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
+							lateral->has_rel_coord = this->has_rel_coord;
 							children.push_back(lateral);
 							lateral->simulate(growth_dt,verbose);//age-ageLN,verbose);
 							break;}
@@ -928,17 +932,19 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
 }
 /**
  * Check if the organ has relative coordinates.
- * meaning: organ is not a basal/tap root and first node is at (0,0,0) but
+ * meaning: organ is not a basal/tap root and first node is at (0,0,0) 
+ * update: the organ has a stem or leaf among its parents and first node is at (1e3,1e3,1e3) 
  */
 bool Organ::hasRelCoord() const
 {
-	bool nullNode0 = (nodes.at(0) == Vector3d(0.,0.,0.)); // rel coordinate for node 0?
-	bool isSeed = organType() == Organism::ot_seed;
-	bool basalOrgan = true;
-	if (getParent()) { // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created manually have no parent
-		basalOrgan = (isSeed||(getParent()->organType() == Organism::ot_seed));
-	}
-	bool isBasalRoot = ((organType() == Organism::ot_root)&&basalOrgan);
-	return (nullNode0&&(!isBasalRoot)&&(!isSeed));
+	return has_rel_coord;
+	// bool nullNode0 = (nodes.at(0) == Vector3d(0.,0.,0.)); // rel coordinate for node 0?
+	// bool isSeed = organType() == Organism::ot_seed;
+	// bool basalOrgan = true;
+	// if (getParent()) { // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created manually have no parent
+		// basalOrgan = (isSeed||(getParent()->organType() == Organism::ot_seed));
+	// }
+	// bool isBasalRoot = ((organType() == Organism::ot_root)&&basalOrgan);
+	// return (nullNode0&&(!isBasalRoot)&&(!isSeed));
 }
 }
