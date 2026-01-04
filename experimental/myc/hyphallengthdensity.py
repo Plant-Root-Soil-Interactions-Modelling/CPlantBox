@@ -5,12 +5,11 @@ import matplotlib.pyplot as plt
 import plantbox as pb
 
 # Path to your maize XML parameter file
-path = "../../modelparameter/structural/rootsystem/"
-name = "Glycine_max"
+names = ["TomatoJohanna_WildType", "TomatoJohanna_RMC"]
 
 # Initialize the root system
 mycp = pb.MycorrhizalPlant()
-mycp.readParameters(path + name + ".xml")
+mycp.readParameters(names[0] + ".xml")
 mycp.initialize(True)
 
 # Simulation parameters
