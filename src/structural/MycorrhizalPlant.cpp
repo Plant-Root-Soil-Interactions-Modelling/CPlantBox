@@ -105,18 +105,18 @@ std::vector<Vector3d> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
     {
         if(o->organType() == Organism::ot_hyphae)
         {
-            auto h = std::dynamic_pointer_cast<Hyphae> (o);
+            auto h = std::dynamic_pointer_cast<Hyphae>(o);
             if (h->mergePointID != -1) {
-                anaPoints.push_back(h->getMergePoint(h->mergePointID));
+                anaPoints.push_back(h->getNodes().at(h->getNumberOfNodes()-1));
             }
         }
     }
 
     for (const auto & o : organs)
     {
-        auto h = std::dynamic_pointer_cast<Hyphae> (o);
+        auto h = std::dynamic_pointer_cast<Hyphae>(o);
             if (h->mergePointID != -1) {
-                anaPoints.push_back(h->getMergePoint(h->mergePointID));
+                anaPoints.push_back(h->getNodes().at(h->getNumberOfNodes()-1));
             }
     }
     return anaPoints;
@@ -179,8 +179,8 @@ void MycorrhizalPlant::simulateAnastomosis() {
             {
                 auto lastIndex = sdf->distIndex; 
                 // std::cout<< "Anastomosis occurred at distance: " << dist << " cm.\n";
-                // std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance id: " << lastIndex << std::endl;
-                // std::cout << "Hyphal tree index " << h->getParameter("hyphalTreeIndex") << "\n";
+                std::cout <<"Anastomosis at tip: " << tip.toString() <<" with distance id: " << lastIndex << std::endl;
+                std::cout << "Hyphal tree index " << h->getParameter("hyphalTreeIndex") << "\n";
                 auto connected_to_hyphae = std::dynamic_pointer_cast<Hyphae>(sdf->segO.at(lastIndex).lock());                
                 // std::cout << "connected to " << connected_to_hyphae->hyphalTreeIndex << "\n";
 
