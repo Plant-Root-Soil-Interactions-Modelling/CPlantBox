@@ -8,7 +8,7 @@ import rsml.rsml_reader as rsml
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = "results/"
+path = "tomatoparameters/"
 name_new = "WurzelAtlasTomate_parameters_out"
 name_Johanna_WildType = "TomatoJohanna_WildType"
 name_Johanna_RMC = "TomatoJohanna_RMC"
@@ -64,6 +64,7 @@ def make_RLD_plot(rs, depth, layers,radius,name):
     fig, axes = plt.subplots(figsize = (6, 8))
     # Make a root length distribution
     ana = pb.SegmentAnalyser(rs)
+    # ana.write("results/" + name + "_108days_allroots.vtp",["radius", "subType", "creationTime","organType"])
     rad = ana.getParameter("radius")
     rad = sum(rad)/len(rad)
     rltot = ana.getSummed("length")
@@ -85,8 +86,8 @@ def make_RLD_plot(rs, depth, layers,radius,name):
     axes.set_xlabel('$\dfrac{1}{10}$ RLD (cm/cm^3)')
     axes.set_ylabel('Depth (cm)')
     axes.legend(["35 days", "50 days", "80 days", "108 days"], loc = 'upper right')
-    #axes.set_xlim(0,2)
-    #axes.set_ylim(-31,0)
+    # axes.set_xlim(xmin=0,xmax=2)
+    axes.set_ylim(ymin =-(depth+2), ymax=0)
     fig.subplots_adjust()
     plt.savefig("results/" + name + "10th_RLD.pdf", dpi = 300)
 
@@ -98,14 +99,14 @@ def make_RLD_plot(rs, depth, layers,radius,name):
     ax.set_xlabel('RLD (cm/cm^3)')
     ax.set_ylabel('Depth (cm)')
     ax.legend(["35 days", "50 days", "80 days", "108 days"], loc = 'upper right')
-    # ax.set_ylim(-31,0)
+    axes.set_ylim(ymin =-(depth+2), ymax=0)
     fig.subplots_adjust()
     plt.savefig("results/" + name + "_RLD.pdf", dpi = 300)
 
     # plt.show()
 make_RLD_plot(tomato_WAT, 30, 60, radius, name_new)
-make_RLD_plot(tomato_J_WT, 110, 220, radius, name_Johanna_WildType)
-make_RLD_plot(tomato_J_RMC, 110, 220, radius, name_Johanna_RMC)
+make_RLD_plot(tomato_J_WT, 30, 60, radius, name_Johanna_WildType)
+make_RLD_plot(tomato_J_RMC, 30, 60, radius, name_Johanna_RMC)
 
 # ana = pb.SegmentAnalyser(mycp)
 # rad = ana.getParameter("radius")
