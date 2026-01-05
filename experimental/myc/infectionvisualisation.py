@@ -24,7 +24,7 @@ hyphae_parameter = pb.HyphaeRandomParameter(mycp)
 hyphae_parameter.subType = 1
 hyphae_parameter.a = 0.01
 hyphae_parameter.dx = 0.05
-hyphae_parameter.distTH = 0.1  # distance for anastomosis
+hyphae_parameter.distTH = 0.05  # distance for anastomosis
 mycp.setOrganRandomParameter(hyphae_parameter)
 # print(hyphae_parameter)
 
@@ -41,7 +41,7 @@ mycp.initialize(True)
 # print(mycp.toString())
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-simtime = 50
+simtime = 10
 fps = 2
 anim_time = simtime
 N = fps * anim_time
@@ -78,7 +78,8 @@ else:
     
 ana = pb.SegmentAnalyser(mycp)
 hti = ana.getParameter("hyphalTreeIndex")
-vp.plot_plant(ana, "hyphalTreeIndex")
+vp.plot_plant(ana,"hyphalTreeIndex")
+ana.write(filename + "_hyphalTrees" + ".vtp", ["radius", "subType", "creationTime","organType","hyphalTreeIndex"])
 # ana.addData("infection", mycp.getNodeInfections(2))
 #     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
 # pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
