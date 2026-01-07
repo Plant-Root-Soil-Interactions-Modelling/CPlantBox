@@ -3,17 +3,17 @@
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
-rs = pb.Plant()
+plant = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"
-rs.readParameters(path + name + ".xml")
+filename = "Anagallis_femina_Leitner_2010"
+plant.readParameters(path + filename + ".xml")
 
 # box with a left and a right compartment for analysis
 sideBox = pb.SDF_PlantBox(10, 20, 50)
 left = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(-4.99, 0, 0))
 right = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(4.99, 0, 0))
 leftright = pb.SDF_Union(left, right)
-rs.setGeometry(leftright)
+plant.setGeometry(leftright)
 
 # left compartment has a minimum of 0.01, 1 elsewhere
 maxS = 1.0  # maximal
@@ -25,33 +25,33 @@ soilprop = pb.SoilLookUpSDF(leftC, maxS, minS, slope)
 # Manually set scaling function and tropism parameters
 for organ_type in [pb.root, pb.stem, pb.stem]:
     sigma = [0.4, 1.0, 1.0, 1.0, 1.0] * 2
-    for p in rs.getOrganRandomParameter(organ_type):
+    for p in plant.getOrganRandomParameter(organ_type):
         p.dx = 0.25  # adjust resolutionx
         p.tropismS = sigma[p.subType - 1]
         p.f_se = soilprop  # 1. Scale elongation
 
 # simulation
-rs.initialize()
+plant.initialize()
 sim_time = 60.0
 dt = 1.0
 for i in range(0, round(sim_time / dt)):
     # in a dynamic setting change soilprop here
-    rs.simulate(dt, False)
+    plant.simulate(dt, False)
 
 # analysis
-l = rs.getSummed("length")
-al = pb.SegmentAnalyser(rs)
+l = plant.getSummed("length")
+al = pb.SegmentAnalyser(plant)
 al.crop(left)
 ll = al.getSummed("length")
-ar = pb.SegmentAnalyser(rs)
+ar = pb.SegmentAnalyser(plant)
 ar.crop(right)
 lr = ar.getSummed("length")
 print(f"\nLeft  compartment total root length {ll:g} cm, {100 * ll / l:g}%")
 print(f"\nRight compartment total root length {lr:g} cm, {100 * lr / l:g}% \n")
 
 # write results
-rs.write("results/example_5a.py")  # compartment geometry
-rs.write("results/example_5a.vtp")  # root system
+plant.write("results/example_5a.py")  # compartment geometry
+plant.write("results/example_5a.vtp")  # root system
 
 # plot, using vtk
-vp.plot_roots(rs, "rootLength")  # press 'y'
+vp.plot_roots(plant, "rootLength")  # press 'y'

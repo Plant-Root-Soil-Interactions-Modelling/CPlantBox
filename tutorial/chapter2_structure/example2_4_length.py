@@ -7,15 +7,15 @@ import plantbox as pb  # |\label{l2_2d:importEnd}|
 from plantbox.visualisation import figure_style
 
 path = "../../modelparameter/structural/rootsystem/"  # |\label{l2_2d:defineStart}|
-name = "Brassica_napus_a_Leitner_2010"
+filename = "Brassica_napus_a_Leitner_2010"
 
 rs = pb.Plant()
-rs.readParameters(path + name + ".xml")
+rs.readParameters(path + filename + ".xml")
 rs.initialize()
 
 sim_time = 60.0  # days
 dt = 1.0  # days
-n_steps = round(sim_time / dt)  # n_steps  |\label{l2_2d:defineEnd}|
+n_steps = round(sim_time / dt)  # number of iterations  |\label{l2_2d:defineEnd}|
 
 # Plot some scalar value over time
 stype = "length"  # |\label{l2_2d:plotStart}|

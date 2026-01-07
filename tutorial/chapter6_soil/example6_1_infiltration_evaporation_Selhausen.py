@@ -13,56 +13,59 @@ import numpy as np
 from rosi.richards import RichardsWrapper  # Python part
 from rosi.rosi_richards import RichardsSPnum  # C++ part (Dumux binding)
 
+from plantbox.visualisation import figure_style
+
 # Define Mualem van Genuchten parameters for Selhausen soil profile according to Bauer et al. (2011, table 3, \url{https://doi.org/10.1007/s10533-011-9583-1}) |\label{l61ies:genuchten_a}|
-# theta_r (-), theta_s (-), alpha (1/cm), n (-), Ks (cm d-1)
+# theta_r (-), theta_s (-), alpha (cm-1), n (-), Ks (cm day-1)
 l1 = [0.008, 0.389, 0.012, 1.97, 91.68]  # 0-20 cm |\label{l61ies:hyprop_s}|
 l2 = [0.008, 0.389, 0.023, 1.23, 63.36]  # 20-33 cm
 l3 = [0.008, 0.389, 0.01, 1.1, 10]  # 33-57 cm
 l4 = [0.008, 0.389, 0.01, 1.1, 10]  # 57-120 cm
+
 # Combine the hydraulic conductivity vectors from all soil layers to define soil type for simulation
 soil = [l1, l2, l3, l4]  # |\label{l61ies:hyprop_e}|
 sim_time = 3.05  #
-dt = 0.05  # 720 / (24 * 3600)  # time step [days]
+dt = 0.05  # time step (day)
 
 # Solve the Richards equation using the Python wrapper of dumux-rosi
 s = RichardsWrapper(RichardsSPnum())  #
 s.initialize()  #
-s.setTopBC("atmospheric", 0.5, [[0.0, 1.0, 1.0, 3.0], [10.0, 10.0, -0.1, -0.1]])  #  [cm/day] atmospheric is with surface run-off   |\label{l61ies:top_bc}|
+s.setTopBC("atmospheric", 0.5, [[0.0, 1.0, 1.0, 3.0], [10.0, 10.0, -0.1, -0.1]])  # atmospheric is with surface run-off (cm day-1) |\label{l61ies:top_bc}|
 s.setBotBC("freeDrainage")  # |\label{l61ies:bottom_bc}|
 n_steps = 119 * 10  # use a fine grid resolution of 1 mm per grid point in z direction |\label{l61ies:grid}|
-s.createGrid([-5.0, -5.0, -120.0], [5.0, 5.0, 0.0], [1, 1, n_steps])  # [cm] n_steps   |\label{l61ies:grid}|
+s.createGrid([-5.0, -5.0, -120.0], [5.0, 5.0, 0.0], [1, 1, n_steps])  #  |\label{l61ies:grid}|
 # define soil layers
 layers_ID = [4, 4, 3, 3, 2, 2, 1, 1]  # |\label{l61ies:layers_s}|
 layers_pos = [-120.0, -57.0, -57.0, -33.0, -33, -20, -20, 0]  # |\label{l61ies:layers_e}|
 s.setLayersZ(layers_ID, layers_pos)
-s.setHomogeneousIC(-400.0)  # cm pressure head    |\label{l61ies:ic}|
+s.setHomogeneousIC(-400.0)  # cm pressure head |\label{l61ies:ic}|
 s.setVGParameters(soil)  # |\label{l61ies:set_vg}|
 s.initializeProblem()  # |\label{l61ies:initialise}|
-s.setCriticalPressure(-15000)  #
-s.ddt = 1.0e-5  # initial dumux time step [days]
+s.setCriticalPressure(-15000)
+s.ddt = 1.0e-5  # initial Dumux time step (days)
 
 top_ind = s.pick([0.0, 0.0, -0.5])
 bot_ind = s.pick([0.0, 0.0, -119.5])  #  |\label{l61ies:bot_ind}|
 top_new, bot_new, times = [], [], []
 
 n_steps = int(np.ceil(sim_time / dt))  #
-z_, x_, h_ = [], [], []  # initialite solution vectors
+z_, x_, h_ = [], [], []  # initialize solution vectors
 for i in range(0, n_steps):
     t = i * dt  # current simulation time
     times.append(t)
     s.solve(dt)
     if i / 2 == np.ceil(i / 2):
-        print("***** external time step", dt, " d, simulation time", s.sim_time, "d, internal time step", s.ddt, "d")
+        print("***** external time step", dt, " days, simulation time", s.simTime, "days, internal time step", s.ddt, "days")
 
     # ---- TO DO: replace getVelocity function update code to new functions for getting fluxes
-    # velocities = s.getVelocities_()
-    # top_new.append(velocities[top_ind])
-    # bot_new.append(velocities[bot_ind])
-    # extract numerical solution
+    velocities = s.getVelocities_()
+    top_new.append(velocities[top_ind])
+    bot_new.append(velocities[bot_ind])
 
-    points = s.getDofCoordinates()  # coordinates
+    # extract numerical solution
+    points = s.getDofCoordinates()  # coordinates (cm)
     theta = s.getWaterContent()  # volumetric water content
-    h = s.getSolutionHead()  # head
+    h = s.getSolutionHead()  # soil matric potential (cm)
     z_.append(points[:, 2])
     x_.append(theta)
     h_.append(h)
@@ -75,27 +78,26 @@ times = np.array(times)
 sel_idx = np.searchsorted(times, [0.0, 0.2, 0.5, 1.0, 1.2, 2.0, 3.0])
 
 # Plot solutions |\label{l61ies:plt_prof}|
-fig1, axs = plt.subplots(2, 1, sharex = "row", figsize = (12, 12))
+fig1, ax_ = figure_style.subplots11large(2, 1, sharex = "row")
 cols = ["k-", "r-", "r--", "r-.", "b-.", "b--", "b-"]
 ii = 0
 for i in sel_idx:
-    axs[0].plot(x_[i], z_[i], cols[ii], label = f"{times[i]:.2f} d")
-    axs[1].plot(h_[i], z_[i], cols[ii], label = f"{times[i]:.2f} d")
+    ax_[0].plot(x_[i], z_[i], cols[ii], label = f"{times[i]:.2f} days")
+    ax_[1].plot(h_[i], z_[i], cols[ii], label = f"{times[i]:.2f} days")
     ii = ii + 1
-axs[0].set_title("Infiltration 1 $d$ with 10 $cm$ $d^{-1}$ \n and evaporation 2 $d$ with 0.1 $cm$ $d^{-1}$ afterwards")
-axs[0].set_xlabel("Volumetric water content [$cm^{3}$ $cm^{-3}$]")
-axs[0].set_ylabel("Depth [cm]")
-axs[1].set_xlabel("Head [cm]")
-axs[1].set_ylabel("Depth [cm]")
-axs[0].legend(loc = "best")
-axs[1].legend(loc = "best")
-
+# ax_[0].set_title("Infiltration 1 $day$ with 10 $cm$ $day^{-1}$ \n and evaporation 2 $days$ with 0.1 $cm$ $d^{-1}$ afterwards")
+ax_[0].set_xlabel("Volumetric water content (cm$^{3}$ cm$^{-3}$)")
+ax_[0].set_ylabel("Depth (cm)")
+ax_[1].set_xlabel("Matric potential (cm)")
+ax_[1].set_ylabel("Depth (cm)")
+ax_[0].legend()
+ax_[1].legend()
 plt.show()
 
-# plt.figure(1)
-# plt.plot(times, top_new[:, 2], label = "surface flux")
-# plt.plot(times, bot_new[:, 2], label = "bottom flux")
-# plt.xlabel('Time (days)', fontsize = 18)
-# plt.ylabel('Vertical water flux (cm/day)', fontsize = 18)
-# plt.legend(fontsize = 14)
-# plt.show()
+fig, ax = figure_style.subplots11()
+ax.plot(times, top_new[:, 2], label = "surface flux")
+ax.plot(times, bot_new[:, 2], label = "bottom flux")
+ax.set_xlabel('Time (day)')
+ax.set_ylabel('Vertical water flux (cm day$^{-1}$)')
+ax.legend(fontsize = 14)
+plt.show()

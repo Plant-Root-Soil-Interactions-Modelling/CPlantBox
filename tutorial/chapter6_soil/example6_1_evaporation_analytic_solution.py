@@ -25,7 +25,7 @@ t = np.linspace(0, 10, n_steps)  # days
 for i, soil in enumerate([sand, loam, loam, clay]):
     head_i = head_i_[i]
     theta_i = vg.water_content(head_i, soil)  # initial theta
-    theta_sur = vg.water_content(-10000, soil)  # critical vaule
+    theta_sur = vg.water_content(-10000, soil)  # critical value
     jwpot = jwpot_[i]
 
     # TH = (theta-theta_sur)/(theta_i-theta_sur)

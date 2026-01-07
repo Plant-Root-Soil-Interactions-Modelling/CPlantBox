@@ -6,8 +6,8 @@ import plantbox.visualisation.vtk_plot as vp  # |\label{3f:importvtk}|
 # plant  |\label{3f:plantStart}|
 plant = pb.MappedPlant(0)
 path = "../../modelparameter/structural/plant/"
-name = "fspm2023"
-plant.readParameters(path + name + ".xml")
+filename = "fspm2023"
+plant.readParameters(path + filename + ".xml")
 sim_time = 60.0  # days
 
 # Parameters for animation

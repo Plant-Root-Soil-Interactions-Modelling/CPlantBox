@@ -3,14 +3,14 @@
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
-rs = pb.Plant()
+plant = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"  # |\label{l3_2_hydrotropism:libsstart}|
-name = "Anagallis_femina_Leitner_2010"
-rs.readParameters(path + name + ".xml")  # |\label{l3_2_hydrotropism:libsend}|
+filename = "Anagallis_femina_Leitner_2010"
+plant.readParameters(path + filename + ".xml")  # |\label{l3_2_hydrotropism:libsend}|
 
 # Manually set tropism to hydrotropism for the first ten root types
 sigma = [0.4, 1.0, 1.0, 1.0, 1.0] * 2  # |\label{l3_2_hydrotropism:tsetstart}|
-for p in rs.getOrganRandomParameter(pb.root):
+for p in plant.getOrganRandomParameter(pb.root):
     p.dx = 0.25  # adjust resolution
     p.tropismT = pb.TropismType.hydro
     p.tropismN = 1.8  # strength of tropism
@@ -25,10 +25,10 @@ layer = pb.SDF_RotateTranslate(box, pb.Vector3d(0, 0, -16))
 soil_prop = pb.SoilLookUpSDF(layer, maxS, minS, slope)  # |\label{l3_2_hydrotropism:soilpropend}|
 
 # Set the soil properties before calling initialize
-rs.setSoil(soil_prop)  # |\label{l3_2_hydrotropism:set&simstart}|
+plant.setSoil(soil_prop)  # |\label{l3_2_hydrotropism:set&simstart}|
 
 # Initialize
-rs.initialize()
+plant.initialize()
 
 # Simulate
 sim_time = 100  # e.g. 30 or 60 days
@@ -36,14 +36,14 @@ dt = 1
 n_steps = round(sim_time / dt)
 for _ in range(0, n_steps):
     # in a dynamic soil setting you would need to update the soil properties (soil_prop)
-    rs.simulate(dt)  # |\label{l3_2_hydrotropism:set&simend}|
+    plant.simulate(dt)  # |\label{l3_2_hydrotropism:set&simend}|
 
 # Export results (as vtp) # |\label{l3_2_hydrotropism:resultsstart}|
-rs.write("results/example3_2_hydrotropism.vtp")
+plant.write("results/example3_2_hydrotropism.vtp")
 
 # Export geometry of static soil
-rs.setGeometry(layer)  # just for vizualisation
-rs.write("results/example3_2_hydrotropism.py")
+plant.setGeometry(layer)  # just for vizualisation
+plant.write("results/example3_2_hydrotropism.py")
 
 # Plot, using vtk
-vp.plot_roots_and_container(rs, layer, "type")  # |\label{l3_2_hydrotropism:resultsend}|
+vp.plot_roots_and_container(plant, layer, "type")  # |\label{l3_2_hydrotropism:resultsend}|

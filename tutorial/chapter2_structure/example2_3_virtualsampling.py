@@ -7,7 +7,7 @@ import plantbox as pb
 from plantbox.visualisation import figure_style
 
 path = "../../modelparameter/structural/rootsystem/"
-name = "wheat"
+filename = "wheat"
 
 months = 8  # |\label{l2_3:timebegin}|
 times = np.linspace(0, 30 * months, months + 1)  # |\label{l2_3:timeend}|
@@ -38,7 +38,7 @@ soilSpace = pb.SDF_PlantContainer(500, 500, 500, True)
 for i in range(0, n_plants):  # |\label{l2_3:simulationbegin}|
     for j in range(0, n_colums):
         plant = pb.Plant()
-        plant.readParameters(path + name + ".xml", fromFile = True, verbose = False)
+        plant.readParameters(path + filename + ".xml", fromFile = True, verbose = False)
         seed = plant.getOrganRandomParameter(pb.seed)[0]
         seed.seedPos = pb.Vector3d(distp * i, distr * j, -3.0)  # cm
         plant.setGeometry(soilSpace)

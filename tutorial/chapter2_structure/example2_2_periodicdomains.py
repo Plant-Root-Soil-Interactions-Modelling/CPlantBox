@@ -5,8 +5,8 @@ import plantbox.visualisation.vtk_plot as vp
 
 rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"
-rs.readParameters(path + name + ".xml")
+filename = "Anagallis_femina_Leitner_2010"
+rs.readParameters(path + filename + ".xml")
 
 # Simulate
 rs.initialize()

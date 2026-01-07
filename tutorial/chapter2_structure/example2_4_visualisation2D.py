@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt  # |\label{l2_1g:importStart}|
 
 import plantbox as pb
 from plantbox.structural.MappedOrganism import MappedPlantPython  # |\label{l2_1g:importEnd}|
-from plantbox.visualisation import figure_style 
+from plantbox.visualisation import figure_style
 
 sim_time = 14  # [day]  # |\label{l2_1g:defineStart}|
 plant = MappedPlantPython()  # |\label{l2_1g:MappedPlantPython}|
 path = "../../modelparameter/structural/plant/"
-name = "fspm2023"
-plant.readParameters(path + name + ".xml")
+filename = "fspm2023"
+plant.readParameters(path + filename + ".xml")
 
 soilSpace = pb.SDF_PlantContainer(500, 500, 500, True)  # to avoid root growing aboveground
 plant.setGeometry(soilSpace)  # creates soil space to stop roots from growing out of the soil
@@ -20,7 +20,7 @@ plant.initialize(verbose)
 plant.simulate(sim_time, verbose)  # |\label{l2_1g:defineEnd}|
 
 fig, ax = figure_style .subplots11()  # |\label{l2_1g:plotStart}|
-name = ["root", "stem", "leaf", "root tips"]
+organ_name = ["root", "stem", "leaf", "root tips"]
 color = ["tab:red", "tab:orange", "tab:green", "tab:blue"]
 
 for idx, ot in enumerate([pb.root, pb.stem, pb.leaf]):
@@ -31,15 +31,15 @@ for idx, ot in enumerate([pb.root, pb.stem, pb.leaf]):
         ax.plot(
             node[:, 0],  # x-axis                                         |\label{l2_1g:plot}|
             node[:, 2],  # z-axis
-            c=color[idx],
-            label=name[idx] if not label_added else None,
+            c = color[idx],
+            label = organ_name[idx] if not label_added else None,
         )
         label_added = True
 
 root_tips = plant.get_root_tips()
-ax.scatter(root_tips[:, 0], root_tips[:, 2], c=color[3], label=name[3])
+ax.scatter(root_tips[:, 0], root_tips[:, 2], c = color[3], label = organ_name[3])
 
-ax.legend(bbox_to_anchor=(1, 0.5))
+ax.legend(bbox_to_anchor = (1, 0.5))
 ax.grid(True)
 plt.xlabel("X-axis (cm)")
 plt.ylabel("Depth (cm)")

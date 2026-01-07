@@ -5,8 +5,8 @@ import plantbox.visualisation.vtk_plot as vp
 
 plant = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
-name = "Glycine_max_Moraes2020"
-plant.readParameters(path + name + ".xml")
+filename = "Glycine_max_Moraes2020"
+plant.readParameters(path + filename + ".xml")
 
 box = pb.SDF_PlantBox(10, 10, 30)  # nutrient rich patch  # |\label{l34:patch}|
 patch = pb.SDF_RotateTranslate(box, pb.Vector3d(-5, 0.0, -10))

@@ -16,15 +16,15 @@ plant.setSeed(4)  # |\label{l71m:random}|
 plant.initialize()  # |\label{l71m:root_system_end}|
 
 # Macroscopic soil grid  |\label{l71m:grid_start}|
-min_b = np.array([-2, -2, -15])  # [cm]
-max_b = np.array([2, 2, -5])  # [cm]
-cell_number = np.array([2, 3, 6])  # [1]
+min_b = np.array([-2, -2, -15])  # cm
+max_b = np.array([2, 2, -5])  # cm
+cell_number = np.array([2, 3, 6])  # 1
 s = RichardsWrapper(RichardsSP())
 s.initialize()
-periodic = True  # # |\label{l71m:periodic}|
+periodic = True  # |\label{l71m:periodic}|
 s.createGrid(min_b, max_b, cell_number, periodic)
 s.setVGParameters([[0.08, 0.43, 0.04, 1.6, 50]])
-s.setHomogeneousIC(-300, True)  # cm pressure head, equilibrium
+s.setHomogeneousIC(-300, True)  # cm pressure head
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
 s.initializeProblem()  # |\label{l71m:grid_end}|
@@ -32,13 +32,13 @@ s.initializeProblem()  # |\label{l71m:grid_end}|
 
 # Coupling
 def picker(x, y, z):
-    """soil grid cell index for positon (_x, _y, z)"""
+    """soil grid cell index for position (x, y, z)"""
     return s.pick([x, y, z])  # |\label{l71m:picker}|
 
 
 plant.setSoilGrid(picker)  # |\label{l71m:picker_end}|
 
-# Simulate #
+# Simulate
 plant.simulate(10.0, False)  # |\label{l71m:simulate}|
 
 # Find segment indices in a grid cell#

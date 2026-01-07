@@ -16,9 +16,9 @@ from plantbox.visualisation import figure_style
 
 def getWeatherData(t):
     """get the weather data for time t"""
-    diffDt = abs(pd.to_timedelta(weatherData["time"]) - pd.to_timedelta(t % 1, unit = "d"))
+    diffDt = abs(pd.to_timedelta(weather_data["time"]) - pd.to_timedelta(t % 1, unit = "d"))
     line_data = np.where(diffDt == min(diffDt))[0][0]
-    return weatherData.iloc[line_data]
+    return weather_data.iloc[line_data]
 
 
 # Parameters and variables
@@ -31,7 +31,7 @@ Hs = -1000  # top soil matric potential (cm)
 
 # Weather data
 path = "../../modelparameter/functional/climate/"
-weatherData = pd.read_csv(path + "Selhausen_weather_data.txt", delimiter = "\t")  # |\label{l43:Tereno}|
+weather_data = pd.read_csv(path + "Selhausen_weather_data.txt", delimiter = "\t")  # |\label{l43:Tereno}|
 
 
 # Soil
@@ -85,7 +85,7 @@ for i in range(n_steps):  # |\label{l43:loop}|
         cells = True,
         ea = ea,
         es = es,
-        PAR = weatherData["PAR"][i] * (24 * 3600) / 1e4,  # (mol m-2 s-1) -> (mol cm-2 d-1)
+        PAR = weather_data["PAR"][i] * (24 * 3600) / 1e4,  # (mol m-2 s-1) -> (mol cm-2 d-1)
         TairC = weatherData_i["Tair"],
         verbose = 0,
     )  # |\label{l43:solve}|
@@ -97,20 +97,20 @@ for i in range(n_steps):  # |\label{l43:loop}|
     results["Vc"].append(np.sum(hm.get_Vc()) * 1e3)
     results["Vj"].append(np.sum(hm.get_Vj()) * 1e3)  # |\label{l43:resultsEnd}|
 
-    print(f"at {weatherData['time'][i]} ", f"mean water potential (cm) {np.mean(hx):.0f}\n\tin (mmol day-1), net assimilation: {np.sum(hm.get_net_assimilation()) * 1e3:.2f} transpiration: {np.sum(hm.get_transpiration()) / 18 * 1e3:.2f}")
+    print(f"at {weather_data['time'][i]} ", f"mean water potential (cm) {np.mean(hx):.0f}\n\tin (mmol day-1), net assimilation: {np.sum(hm.get_net_assimilation()) * 1e3:.2f} transpiration: {np.sum(hm.get_transpiration()) / 18 * 1e3:.2f}")
 
-time = [datetime.strptime(tt, "%H:%M:%S") for tt in weatherData["time"]]
+time = [datetime.strptime(tt, "%H:%M:%S") for tt in weather_data["time"]]
 
 fig, axs = figure_style.subplots11large(2, 2)  # |\label{l43:plot}|
-axs[0, 1].plot(time, weatherData["PAR"] * 1e3 * (24 * 3600) / 1e4, "k", label = "PAR (mmol cm-2 d-1)")
-axs[0, 1].plot(time, weatherData["Tair"] / 6.2, "tab:red", label = "T (°C)")
+axs[0, 1].plot(time, weather_data["PAR"] * 1e3 * (24 * 3600) / 1e4, "k", label = "PAR (mmol cm-2 d-1)")
+axs[0, 1].plot(time, weather_data["Tair"] / 6.2, "tab:red", label = "T (°C)")
 axs[0, 1].set(ylabel = "PAR\n(mmol cm-2 d-1)")
 secax_y = axs[0, 1].secondary_yaxis("right", functions = (lambda v: v * 6.2, lambda v: v / 6.2))
 secax_y.set_ylabel("T (°C)", color = "tab:red")
 secax_y.tick_params(axis = "y", colors = "tab:red")
 secax_y.spines["right"].set_color("tab:red")
 
-axs[0, 0].plot(time, weatherData["RH"], "tab:blue")
+axs[0, 0].plot(time, weather_data["RH"], "tab:blue")
 axs[0, 0].set(ylabel = "Relative humidity\n(-)")
 
 axs[1, 1].plot(time, results["An"], "g", lw = 3, label = "Net", zorder = 1)
