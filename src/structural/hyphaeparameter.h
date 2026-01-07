@@ -68,8 +68,7 @@ public:
     double hlts=0.1;           ///< standard deviation of  hyphal lifetime  [day]
     double theta=30./180.*M_PI;          ///< branching angle [rad]
     double thetas=0./180.*M_PI;         ///< standard deviation of branching angle  [rad]
-    double distTT = 0.; ///< distance for tip tip anastomosis [cm] 
-    //TODO update the distance for anastomsis completely including new model from hackathon half day
+    // double distTT = 0.; ///< distance for tip tip anastomosis [cm] 
     double distTH = 0.; ///< distance for tip hyphae anastomosis [cm]
 
     int tropismT = 2;       ///< Root tropism parameter (Type)

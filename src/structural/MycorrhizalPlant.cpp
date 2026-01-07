@@ -255,34 +255,4 @@ void MycorrhizalPlant::initCallbacks() {
 
 
 
-// void MycorrhizalPlant::updateAnastomosisTree(double dt) {
-//     // tree = aabb::Tree();
-//     double currentSimTime = this->getSimTime();
-//     double previousSimTime = currentSimTime - dt;
-//     Vector3d pos;
-//     std::vector<double> posVec;
-//     double radius;
-//     double creationTime;
-
-//     auto hyphae = this->getOrgans(Organism::ot_hyphae);
-//     for (const auto& h : hyphae) {
-//         for (unsigned int i=0; i < h->getNumberOfNodes(); i++) {
-//             pos = h->getNode(i);
-//             posVec = {pos.x, pos.y, pos.z};
-//             radius = h->getParameter("a");
-//             creationTime = h->getNodeCT(i);
-//             if (creationTime <= currentSimTime && creationTime > previousSimTime) {
-//                 // node is new if creation time is within current sim time and sim time - dt
-//                 tree.insertParticle(h->getNodeId(i), posVec, radius);
-//             } else {
-//                 tree.updateParticle(h->getNodeId(i), posVec, radius);
-//             }
-//         }
-//     }
-//     tree.rebuild();
-// }
-
-
-
-
 }
