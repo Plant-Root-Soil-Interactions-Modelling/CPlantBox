@@ -7,7 +7,7 @@ CPlantBox is a functional-structural plant model that is built in a modular way 
 # Installation
 
 ## Linux - with Python script
-This installation method requires Ubuntu >= 20.04 and Python >= 3.7. For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox.py", and run it:
+This installation method requires Ubuntu >= 20.04 and Python (>= 3.7, <3.14). For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox.py", and run it:
 ```bash
 sudo apt-get update
 sudo apt-get upgrade

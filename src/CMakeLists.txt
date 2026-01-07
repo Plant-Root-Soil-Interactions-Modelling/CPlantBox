@@ -22,6 +22,52 @@ include_directories(external/) # for PiafMunch
 # -----------------------------
 # Shared Library
 # -----------------------------
+add_library(CPlantBox SHARED
+            structural/organparameter.cpp
+            structural/rootparameter.cpp
+			structural/seedparameter.cpp
+			structural/leafparameter.cpp
+			structural/stemparameter.cpp
+            structural/Organ.cpp
+            structural/Root.cpp
+            structural/RootDelay.cpp            
+            structural/Seed.cpp
+			structural/Stem.cpp
+			structural/Leaf.cpp
+			structural/Plant.cpp
+            structural/Organism.cpp
+            structural/Plant.cpp            
+            structural/RootSystem.cpp
+            structural/MappedOrganism.cpp
+     		structural/sdf.cpp
+            structural/SegmentAnalyser.cpp            
+            structural/tropism.cpp            
+			
+			functional/Photosynthesis.cpp
+			functional/Perirhizal.cpp
+			functional/PlantHydraulicParameters.cpp
+			functional/PlantHydraulicModel.cpp			
+
+			visualisation/Quaternion.h
+			visualisation/CatmullRomSpline.h
+			visualisation/PlantVisualiser.h
+			visualisation/PlantVisualiser.cpp
+            
+			external/tinyxml2/tinyxml2.cpp		
+			external/aabbcc/AABB.cc
+            external/gauss_legendre/gauss_legendre.cpp
+			external/PiafMunch/runPM.cpp     
+			external/PiafMunch/PiafMunch2.cpp     
+			external/PiafMunch/index_vector.cpp
+			external/PiafMunch/initialize.cpp
+			external/PiafMunch/odepack.cpp
+			external/PiafMunch/PM_KLU.cpp
+			external/PiafMunch/PM_matrix.cpp
+			external/PiafMunch/PM_vector.cpp
+			external/PiafMunch/solve.cpp
+			external/PiafMunch/sparse_matrix.cpp            
+)
+
 
 set(CPLANTBOX_SOURCES
     structural/organparameter.cpp

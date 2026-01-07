@@ -12,8 +12,8 @@ plant.readParameters(path + name + ".xml")  # |\label{l13:readparameters}|
 
 plant.initialize()  # Initialize |\label{l13:initialize}|
 
-simtime = 40  # days
-plant.simulate(simtime)  # Simulate|\label{l13:simulate}|
+sim_time = 40  # days
+plant.simulate(sim_time)  # Simulate|\label{l13:simulate}|
 
 # Export final result (as vtp)
 plant.write("results/example_plant.vtp")  # using polylines |\label{l13:write_poly}|

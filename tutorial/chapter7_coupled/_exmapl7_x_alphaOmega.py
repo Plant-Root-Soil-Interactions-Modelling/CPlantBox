@@ -32,32 +32,32 @@ def make_source(q, area):
 # Parameters    # |\label{l7xa:param}|
 depth = -100
 N = 100
-min_b = [-10.0, -10.0, depth]  # [cm]
-max_b = [10.0, 10.0, 0.0]  # [cm]
+min_b = [-10.0, -10.0, depth]  # cm
+max_b = [10.0, 10.0, 0.0]  # cm
 cell_number = [1, 1, N]  # ~[4*4*1] cm3
 
-kx = 10 * 4.32e-2  # axial conductivity [cm3/day]
-kr = 1.728e-4  # radial conductivity [1/day]
+kx = 10 * 4.32e-2  # axial conductivity (cm3 day-1)
+kr = 1.728e-4  # radial conductivity (1 day-1)
 
 path = "../../modelparameter/structural/rootsystem/"
-name = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
-trans = 1.5 * 400  # cm3 /day (sinusoidal) = mL/day
+name = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml
+trans = 1.5 * 400  # cm3 day-1 (sinusoidal) = mL day-1
 wilting_point = -15000  # cm
-rs_age = 60  # root system initial age [day]
+rs_age = 60  # root system initial age (day)
 
-loam = [0.01, 0.43, 0.0083, 1.2539, 2.272]  # jan paper
+loam = [0.01, 0.43, 0.0083, 1.2539, 2.272]
 sp = vg.Parameters(loam)  # needed for Perirhizal class
-vg.create_mfp_lookup(sp, wilting_point=-16000, n=1501)  # needed for Perirhizal class
-initial = -500  # cm (-330 )
+vg.create_mfp_lookup(sp, wilting_point = -16000, n = 1501)  # needed for Perirhizal class
+initial = -500  # cm
 
-sim_time = 7  # [day]
-dt = 3600.0 / (24 * 3600)  # [days]  # |\label{l7xa:param_end}|
+sim_time = 7  # days
+dt = 3600.0 / (24 * 3600)  # days  # |\label{l7xa:param_end}|
 
 # Initialize macroscopic soil model
 s = RichardsWrapper(RichardsSP())  # |\label{l7xa:soil}|
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, periodic=True)  # [cm]
-s.setHomogeneousIC(initial, False)  # [cm] False = matrix, True, = total potential
+s.createGrid(min_b, max_b, cell_number, periodic = True)  # cm
+s.setHomogeneousIC(initial, False)  # cm False = matrix, True, = total potential
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
 s.setVGParameters([loam])
@@ -146,7 +146,7 @@ for i in range(0, N):  # |\label{l7xa:loop}|
     # Omega: root system averaged stress factor
     # suf_ = hm.get_suf(rs_age + sim_time)
     suf_ = hm.suf
-    suf = peri.aggregate(suf_[0, :])
+    suf = peri.aggregate(suf_[0,:])
     # print(suf)
     # print("suf", np.min(suf), np.max(suf), np.sum(suf))
     alphaSUF = np.multiply(alpha, suf)
@@ -194,7 +194,7 @@ for i in range(0, N):  # |\label{l7xa:loop}|
     y_.append(-np.nansum(q) * area)  # |\label{l7xa:results}|
 
     n = round(float(i) / float(N) * 100.0)  # |\label{l7xa:progress}|
-    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], potential {:g}, actual {:g}; [{:g}, {:g}] cm soil at {:g} days".format(tp * area, np.nansum(q) * area, np.min(h_bs), np.max(h_bs), s.simTime))
+    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], potential {:g}, actual {:g}; [{:g}, {:g}] cm soil at {:g} days".format(tp * area, np.nansum(q) * area, np.min(h_bs), np.max(h_bs), s.sim_time))
 
     print("wall times:", (start_time_ao - start_time_soil) / (start_time_ao - final_time), (start_time_soil - final_time) / (start_time_ao - final_time))
 
@@ -218,5 +218,5 @@ ax2 = ax1.twinx()
 ax2.plot(x_, np.cumsum(-np.array(y_) * dt), "c--")  # cumulative transpiratio
 ax1.set_xlabel("Time [d]")
 ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
-ax1.legend(["Potential", "Actual", "Cumulative"], loc="upper left")
+ax1.legend(["Potential", "Actual", "Cumulative"], loc = "upper left")
 plt.show()

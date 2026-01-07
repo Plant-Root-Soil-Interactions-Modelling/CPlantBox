@@ -132,7 +132,7 @@ for i in range(0, N):
 
     min_sx, min_rx, max_sx, max_rx = np.min(sx), np.min(rx), np.max(sx), np.max(rx)
     n = round(float(i) / float(N) * 100.0)
-    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], [{:g}, {:g}] cm soil [{:g}, {:g}] cm root at {:g} days {:g}".format(min_sx, max_sx, min_rx, max_rx, s.simTime, rx[0]))
+    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], [{:g}, {:g}] cm soil [{:g}, {:g}] cm root at {:g} days {:g}".format(min_sx, max_sx, min_rx, max_rx, s.sim_time, rx[0]))
     t += dt
 
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")

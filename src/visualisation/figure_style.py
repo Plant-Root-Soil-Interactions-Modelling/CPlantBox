@@ -29,34 +29,45 @@ prop_cycle = plt.rcParams["axes.prop_cycle"]
 colors = prop_cycle.by_key()["color"]
 
 
-def subplots21(nrows=2, ncols=1, **params):
-    """ 2 rows, single column """
-    return plt.subplots(nrows, ncols, **params, figsize=(12, 6))
-
-
-def subplots12(nrows=1, ncols=2, **params):
-    return plt.subplots(nrows, ncols, **params, figsize=(6, 12))
-
-
-def subplots43(nrows=4, ncols=3, **params):
-    return plt.subplots(nrows, ncols, **params, figsize=(12, 9))
-
-
-def subplots34(nrows=3, ncols=4, **params):
-    return plt.subplots(nrows, ncols, **params, figsize=(9, 12))
-
-
 def subplots11(nrows=1, ncols=1, **params):  # equals medium
+    """ single figure medium size """
     return plt.subplots(nrows, ncols, **params, figsize=(9, 9))
-
 
 def subplots11small(nrows=1, ncols=1, **params):
+    """ single figure small size (font will appear bigger at fixed lenght)"""
     return plt.subplots(nrows, ncols, **params, figsize=(6, 6))
 
-
 def subplots11medium(nrows=1, ncols=1, **params):
+    """ single figure medium size """
     return plt.subplots(nrows, ncols, **params, figsize=(9, 9))
 
-
 def subplots11large(nrows=1, ncols=1, **params):
+    """ single figure large size (font will appear smaller at fixed length)"""
     return plt.subplots(nrows, ncols, **params, figsize=(12, 12))
+
+def subplots12(nrows=1, ncols=2, **params):
+    """ single row, two columns """
+    return plt.subplots(nrows, ncols, **params, figsize=(12, 6))
+
+def subplots13(nrows=1, ncols=3, **params):
+    """ single row, three columns """
+    return plt.subplots(nrows, ncols, **params, figsize=(12, 6))
+
+def subplots21(nrows=2, ncols=1, **params):
+    """ 2 rows, single column """
+    return plt.subplots(nrows, ncols, **params, figsize=(6, 12))
+
+def subplots44(nrows=4, ncols=4, **params):
+    """ 4 rows, 4 columns """
+    return plt.subplots(nrows, ncols, **params, figsize=(12, 12))
+
+#
+# def subplots43(nrows=4, ncols=3, **params):
+#     return plt.subplots(nrows, ncols, **params, figsize=(12, 9))
+#
+# def subplots34(nrows=3, ncols=4, **params):
+#     return plt.subplots(nrows, ncols, **params, figsize=(9, 12))
+
+
+
+

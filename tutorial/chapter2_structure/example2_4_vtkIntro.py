@@ -5,15 +5,15 @@ import numpy as np
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp  # |\label{3f:importvtk}|
 
-# plant  # |\label{3f:plantStart}|
+# plant  |\label{3f:plantStart}|
 plant = pb.MappedPlant(0)
 path = "../../modelparameter/structural/plant/"
-name = "fspm2023"
-plant.readParameters(path + name + ".xml")
-simtime = 60.0  # days
+filename = "fspm2023"
+plant.readParameters(path + filename + ".xml")
+sim_time = 60.0  # days
 
 plant.initialize()
-plant.simulate(simtime)  # |\label{3f:plantEnd}|
+plant.simulate(sim_time)  # |\label{3f:plantEnd}|
 
 # plot results
 vp.plot_plant(plant, "subType")  # |\label{3f:option1}|
@@ -28,10 +28,10 @@ vp.plot_plant(ana, "random_array")
 # root system  # |\label{3f:rootsystem}|
 plant = pb.MappedPlant()
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"
-plant.readParameters(path + name + ".xml")
+filename = "Anagallis_femina_Leitner_2010"
+plant.readParameters(path + filename + ".xml")
 plant.initialize()
-plant.simulate(simtime)  # |\label{3f:rootsystem_end}|
+plant.simulate(sim_time)  # |\label{3f:rootsystem_end}|
 
 # periodic representation
 ana = pb.SegmentAnalyser(plant.mappedSegments())

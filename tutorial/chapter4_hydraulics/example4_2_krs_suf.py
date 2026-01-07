@@ -8,9 +8,10 @@ import numpy as np
 import plantbox as pb
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports_end}|
+from plantbox.visualisation import figure_style
 
-# Simulation parameters   # |\label{l42:parameters}|
-simtime = 70  # simulate from day 1 to 70
+# Simulation parameters |\label{l42:parameters}|
+sim_time = 70  # simulate from day 1 to 70
 dt = 1
 
 architectures = [  # |\label{l42:architecture}|
@@ -22,20 +23,20 @@ architectures = [  # |\label{l42:architecture}|
 
 path = "../../modelparameter/structural/rootsystem/"  # |\label{l42:architecture_end}|
 
-# Root hydraulic properties  # |\label{l42:roothydraulics}|
+# Root hydraulic properties |\label{l42:roothydraulics}|
 param = PlantHydraulicParameters()
 
 kr0 = np.array([[0.0, 2.2e-4], [12.5, 2.2e-4], [20.9, 8.0e-5], [44.6, 8.0e-5], [62.7, 1.9e-5], [100, 1.9e-5]])
 kr1 = np.array([[0.0, 1.8e-4], [10, 1.8e-4], [15, 1.7e-5], [25, 1.7e-5]])
-param.set_kr_age_dependent(kr0[:, 0], kr0[:, 1], subType=[1, 4])
-param.set_kr_age_dependent(kr1[:, 0], kr1[:, 1], subType=[2, 3])
+param.set_kr_age_dependent(kr0[:, 0], kr0[:, 1], subType = [1, 4])
+param.set_kr_age_dependent(kr1[:, 0], kr1[:, 1], subType = [2, 3])
 
 kx0 = np.array([[0, 2.7e-2], [18.3, 2.7e-2], [21, 3.3e-1], [47, 3.3e-1], [61, 4.2], [100, 4.2]])
 kx1 = np.array([[0, 1.0e-4], [9, 2.0e-4], [13, 6.0e-4], [20, 1.73e-3], [25, 1.73e-3]])
-param.set_kx_age_dependent(kx0[:, 0], kx0[:, 1], subType=[1, 4])
-param.set_kx_age_dependent(kx1[:, 0], kx1[:, 1], subType=[2, 3])  # |\label{l42:roothydraulics_end}|
+param.set_kx_age_dependent(kx0[:, 0], kx0[:, 1], subType = [1, 4])
+param.set_kx_age_dependent(kx1[:, 0], kx1[:, 1], subType = [2, 3])  # |\label{l42:roothydraulics_end}|
 
-# Simulation loop # |\label{l42:sim_start}|
+# Simulation loop |\label{l42:sim_start}|
 krs_all = []
 lengths = []
 surfaces = []
@@ -55,7 +56,7 @@ for name in architectures:
     arch_lengths = []
     arch_surfaces = []
 
-    for t in range(0, simtime):
+    for t in range(0, sim_time):
         plant.simulate(dt)
         ns = plant.getNumberOfMappedSegments()  # segments extracted
         krs, _ = hm.get_krs(t)  # krs calculated
@@ -72,7 +73,7 @@ for name in architectures:
     lengths.append(arch_lengths[-1])  # final length
     surfaces.append(arch_surfaces[-1])  # final surface |\label{l42:sim_end}|
 
-    suf = hm.get_suf(simtime)  # |\label{l42:suf}|
+    suf = hm.get_suf(sim_time)  # |\label{l42:suf}|
     ana = pb.SegmentAnalyser(plant)
     ana.addData("SUF", suf)  # suf at each segment in the 3d space
 
@@ -95,25 +96,24 @@ for name in architectures:
 
 # Plotting
 n_arch = len(architectures)  # |\label{l42:plotting_krs}|
-
-fig_krs, axes_krs = plt.subplots(1, n_arch, figsize=(5 * n_arch, 4), sharey=True)
+fig_krs, axes_krs = figure_style.subplots12(1, n_arch, sharey = True)
 
 if n_arch == 1:
     axes_krs = [axes_krs]
 
 for i, ax in enumerate(axes_krs):
-    ax.plot(range(0, simtime), krs_all[i])
+    ax.plot(range(0, sim_time), krs_all[i])
     ax.set_title(architectures[i])
-    ax.set_xlabel("Root system age (days)")
+    ax.set_xlabel("Root system age (day)")
     ax.set_yscale("log")
     if i == 0:
-        ax.set_ylabel("Krs (cm$^2$/day)")
+        ax.set_ylabel("Krs (cm$^2$ day$^{-1}$)")
     ax.grid(True)
 
 plt.tight_layout()
 plt.show()  # |\label{l42:plotting_krs_end}|
 
-fig_suf, axes_suf = plt.subplots(1, n_arch, figsize=(5 * n_arch, 5), sharey=True)  # |\label{l42:plotting_suf}|
+fig_suf, axes_suf = figure_style.subplots12(1, n_arch, sharey = True)  # |\label{l42:plotting_suf}|
 
 if n_arch == 1:
     axes_suf = [axes_suf]
@@ -121,9 +121,9 @@ if n_arch == 1:
 for i, ax in enumerate(axes_suf):
     suf, depth = suf_profiles[i]
     ax.plot(suf, depth, "k")
-    ax.set_xlabel("SUF [-]")
+    ax.set_xlabel("SUF (-)")
     if i == 0:
-        ax.set_ylabel("Depth [cm]")
+        ax.set_ylabel("Depth (cm)")
     ax.grid(True)
     ax.set_title(architectures[i])
     if len(depth) > 0:
@@ -135,10 +135,10 @@ plt.show()  # |\label{l42:plotting_suf_krs}|
 # Printing summary and saving outputs
 print("\nSummary:")  # |\label{l42:summary}|
 for i, name in enumerate(architectures):
-    print(f"{name:20s} | Total root length: {lengths[i]:8.2f} cm | Surface area: {surfaces[i]:8.2f} cm2")
+    print(f"{name:20s}, Total root length: {lengths[i]:8.2f} cm, Surface area: {surfaces[i]:8.2f} cm2")
 
 csv_file = "results/krs_length_surface.csv"  # write CSV
-with open(csv_file, mode="w", newline="", encoding="utf-8") as f:
+with open(csv_file, mode = "w", newline = "", encoding = "utf-8") as f:
     writer = csv.writer(f)
     writer.writerow(["architecture", "day", "krs", "length", "surface"])
     writer.writerows(csv_data)
