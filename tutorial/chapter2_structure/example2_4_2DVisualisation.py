@@ -6,7 +6,7 @@ import plantbox as pb
 from plantbox.structural.MappedOrganism import MappedPlantPython  # |\label{l2_1g:importEnd}|
 from plantbox.visualisation import figure_style 
 
-simtime = 14  # [day]  # |\label{l2_1g:defineStart}|
+sim_time = 14  # [day]  # |\label{l2_1g:defineStart}|
 plant = MappedPlantPython()  # |\label{l2_1g:MappedPlantPython}|
 path = "../../modelparameter/structural/plant/"
 name = "fspm2023"
@@ -17,7 +17,7 @@ plant.setGeometry(soilSpace)  # creates soil space to stop roots from growing ou
 
 verbose = False
 plant.initialize(verbose)
-plant.simulate(simtime, verbose)  # |\label{l2_1g:defineEnd}|
+plant.simulate(sim_time, verbose)  # |\label{l2_1g:defineEnd}|
 
 fig, ax = figure_style .subplots11()  # |\label{l2_1g:plotStart}|
 name = ["root", "stem", "leaf", "root tips"]

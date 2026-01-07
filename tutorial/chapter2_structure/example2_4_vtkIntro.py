@@ -10,10 +10,10 @@ plant = pb.MappedPlant(0)
 path = "../../modelparameter/structural/plant/"
 name = "fspm2023"
 plant.readParameters(path + name + ".xml")
-simtime = 60.0  # days
+sim_time = 60.0  # days
 
 plant.initialize()
-plant.simulate(simtime)  # |\label{3f:plantEnd}|
+plant.simulate(sim_time)  # |\label{3f:plantEnd}|
 
 # plot results
 vp.plot_plant(plant, "subType")  # |\label{3f:option1}|
@@ -31,7 +31,7 @@ path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 plant.readParameters(path + name + ".xml")
 plant.initialize()
-plant.simulate(simtime)  # |\label{3f:rootsystem_end}|
+plant.simulate(sim_time)  # |\label{3f:rootsystem_end}|
 
 # periodic representation
 ana = pb.SegmentAnalyser(plant.mappedSegments())

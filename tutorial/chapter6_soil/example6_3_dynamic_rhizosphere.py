@@ -44,18 +44,18 @@ def plot_profile(cc, h, c):  # |\label{l63:plot_profile_start}|
     plt.tight_layout()  # |\label{l63:plot_profile_end}|
 
 
-def plot_history(area, w, c, N):  # |\label{l63:plot_history_start}|
+def plot_history(area, w, c, n_steps):  # |\label{l63:plot_history_start}|
     """plots concentration per liquid phase and concentration per soil volume"""
     _, ax1 = plt.subplots()
     c_ = np.array([np.sum(np.multiply(area, np.multiply(c[i], w[i]))) for i in range(0, N)])  # nitrate concentration per soil volume
     color = "tab:red"
-    ax1.plot(np.linspace(0, simtime, N), np.sum(np.multiply(area,c), axis = 1), color = color)
+    ax1.plot(np.linspace(0, sim_time, N), np.sum(np.multiply(area, c), axis = 1), color = color)
     ax1.set_ylabel("[g/L] liquid phase", color = color)
     ax1.set_xlabel("Time [day]")
     ax1.tick_params(axis = "y", labelcolor = color)
     ax2 = ax1.twinx()
     color = "tab:blue"
-    ax2.plot(np.linspace(0, simtime, N), c_, color = color)
+    ax2.plot(np.linspace(0, sim_time, N), c_, color = color)
     ax2.set_ylabel("[kg/m$^3$] soil", color = color)
     ax2.set_xlabel("Time [day]")
     ax2.tick_params(axis = "y", labelcolor = color)
@@ -104,7 +104,7 @@ s.setCriticalPressure(wilting_point)
 s.ddt = 1e-4  # [day] initial Dumux time step # |\label{l63:init_end}|
 
 # Simulation loop   # |\label{l63:simt_start}|
-simtime = 3
+sim_time = 3
 dt = 3600.0 / (24.0 * 3600)
 cc = np.array(s.getCellCenters())  # [cm]
 points = np.array(s.getPoints())  # [cm] cell faces
@@ -115,7 +115,7 @@ volume0 = np.sum(np.multiply(theta, area))
 print("\ndomain water volume", volume0, "cm3/cm  = ", volume0 / 1000, "l/cm")
 print("water content to water volume", volume0, "cm3/cm")  # |\label{l63:simt_end}|
 
-N = int(np.ceil(simtime / dt))  # |\label{l63:param_start}|
+N = int(np.ceil(sim_time / dt))  # |\label{l63:param_start}|
 c, h, w = [], [], []  # results
 cmin = 0.0  # |\label{l63:param_end}|
 for i in range(0, N):  # |\label{l63:loop_start}|

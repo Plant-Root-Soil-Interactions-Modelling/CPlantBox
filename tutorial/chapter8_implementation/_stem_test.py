@@ -63,8 +63,8 @@ lrp[1].dx = 0.05
 plant.writeParameters(name + "_modified.xml")
 
 plant.initialize()  # Initialize |\label{l13:initialize}|
-simtime = 80  # days
-plant.simulate(simtime)  # Simulate|\label{l13:simulate}|
+sim_time = 80  # days
+plant.simulate(sim_time)  # Simulate|\label{l13:simulate}|
 
 ana = pb.SegmentAnalyser(plant)
 vp.plot_plant(ana, "subType")  # e.g. organType, subType, age |\label{l13:plot_plant}|

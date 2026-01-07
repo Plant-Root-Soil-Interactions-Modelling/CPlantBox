@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plantbox as pb
-from plantbox.visualisation import figure_style 
+from plantbox.visualisation import figure_style
 
 path = "../../modelparameter/structural/rootsystem/"
 name = "wheat"
@@ -13,15 +13,15 @@ months = 8  # |\label{l2_3:timebegin}|
 times = np.linspace(0, 30 * months, months + 1)  # |\label{l2_3:timeend}|
 
 # 72 cm*45 cm size plot
-M = 16  # number of plants in rows #|\label{l2_3:plantsetbegin}|
-N = 7  # number of rows
+n_plants = 16  # number of plants in rows #|\label{l2_3:plantsetbegin}|
+n_colums = 7  # number of rows
 distp = 3  # distance between the root systems along row (cm)
 distr = 12  # distance between the rows (cm)
-interrow = (M - 1) * distp  # intra-row spacing (cm)
-row = (N - 1) * distr  # row spacing (cm) |\label{l2_3:plantsetend}|
+interrow = (n_plants - 1) * distp  # intra-row spacing (cm)
+row = (n_colums - 1) * distr  # row spacing (cm) |\label{l2_3:plantsetend}|
 
 r, depth, layers = 4.2 / 2, 160.0, 32  # Soil core analysis #|\label{l2_3:soilcorebegin}|
-layerVolume = depth / layers * r * r * np.pi # cm3 
+layerVolume = depth / layers * r * r * np.pi  # cm3
 z_ = np.linspace(0, -depth, layers)  # slices of soil core
 
 soilcolumn = pb.SDF_PlantContainer(r, r, depth, False)  # square = False
@@ -35,10 +35,10 @@ soilcolumns = [pb.SDF_RotateTranslate(soilcolumn, vi) for vi in soilcolumns_]  #
 
 soilSpace = pb.SDF_PlantContainer(500, 500, 500, True)
 
-for i in range(0, M):  # |\label{l2_3:simulationbegin}|
-    for j in range(0, N):
+for i in range(0, n_plants):  # |\label{l2_3:simulationbegin}|
+    for j in range(0, n_colums):
         plant = pb.Plant()
-        plant.readParameters(path + name + ".xml", fromFile=True, verbose=False)
+        plant.readParameters(path + name + ".xml", fromFile = True, verbose = False)
         seed = plant.getOrganRandomParameter(pb.seed)[0]
         seed.seedPos = pb.Vector3d(distp * i, distr * j, -3.0)  # cm
         plant.setGeometry(soilSpace)
@@ -60,7 +60,7 @@ for k, sc in enumerate(soilcolumns):  # |\label{l2_3:soilcolselectbegin}|
         rld[(len(times[1:]) - 1 - j) * len(soilcolumns) + k] = np.array(distrib) / layerVolume  # |\label{l2_3:soilcolselectend}|
 
 legend_lst = [str(int(t_i)) for t_i in times[1:]]  # |\label{l2_3:plotbegin}|
-fig, axes = plt.subplots(nrows=5, ncols=int(len(soilcolumns) / 5), sharex=True, sharey=True, figsize=(8, 16))
+fig, axes = plt.subplots(nrows = 5, ncols = int(len(soilcolumns) / 5), sharex = True, sharey = True, figsize = (8, 16))
 
 for k in range(len(soilcolumns)):
     axes.flat[k].set_title("Soil core" + " " + str(k + 1))
@@ -68,9 +68,9 @@ for k in range(len(soilcolumns)):
         axes.flat[k].plot(np.array(rld[len(soilcolumns) * j + k]), z_)
         axes.flat[k].set_xlim(0, 5)
 
-plt.setp(axes[-1, :], xlabel="RLD $(cm/cm^3)$")
-plt.setp(axes[:, 0], ylabel="Depth $(cm)$")
-plt.legend(np.asarray(legend_lst), loc="lower center", bbox_to_anchor=(-0.8, -0.5), ncol=8)
+plt.setp(axes[-1,:], xlabel = "RLD $(cm/cm^3)$")
+plt.setp(axes[:, 0], ylabel = "Depth $(cm)$")
+plt.legend(np.asarray(legend_lst), loc = "lower center", bbox_to_anchor = (-0.8, -0.5), ncol = 8)
 fig.subplots_adjust()
-plt.savefig("results/rld_plot.png", dpi=300, bbox_inches="tight")
+plt.savefig("results/rld_plot.png", dpi = 300, bbox_inches = "tight")
 plt.show()  # |\label{l2_3:plotend}|

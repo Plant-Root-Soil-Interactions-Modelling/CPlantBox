@@ -505,7 +505,9 @@ std::vector<double> MappedSegments::getSegmentZ() const {
  */
 std::vector<double> MappedSegments::matric2total(std::vector<double> sx) const {
     std::vector<double> b = this->getSegmentZ();
-    assert(sx.size() == b.size());
+   if (sx.size() != b.size()) {
+        throw std::runtime_error("MappedSegments::matric2total: Size mismatch");
+    }
     std::transform(sx.begin( ), sx.end( ), b.begin( ), sx.begin( ),std::plus<double>( ));
     return sx;
 }
@@ -515,7 +517,9 @@ std::vector<double> MappedSegments::matric2total(std::vector<double> sx) const {
  */
 std::vector<double> MappedSegments::total2matric(std::vector<double> sx) const{
     std::vector<double> b = this->getSegmentZ();
-    assert(sx.size() == b.size());
+    if (sx.size() != b.size()) {
+        throw std::runtime_error("MappedSegments::total2matric: Size mismatch");
+    }
     std::transform(sx.begin( ), sx.end( ), b.begin( ), sx.begin( ),std::minus<double>( ));
     return sx;
 }

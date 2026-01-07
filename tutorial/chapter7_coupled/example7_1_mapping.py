@@ -10,8 +10,8 @@ from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 # Root system  |\label{l71m:root_system_start}|
 plant = pb.MappedPlant()
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Anagallis_femina_Leitner_2010
-plant.readParameters(path + name + ".xml")
+filename = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Anagallis_femina_Leitner_2010
+plant.readParameters(path + filename + ".xml")
 plant.setSeed(4)  # |\label{l71m:random}|
 plant.initialize()  # |\label{l71m:root_system_end}|
 
@@ -29,10 +29,12 @@ s.setTopBC("noFlux")
 s.setBotBC("noFlux")
 s.initializeProblem()  # |\label{l71m:grid_end}|
 
+
 # Coupling
 def picker(x, y, z):
     """soil grid cell index for positon (_x, _y, z)"""
     return s.pick([x, y, z])  # |\label{l71m:picker}|
+
 
 plant.setSoilGrid(picker)  # |\label{l71m:picker_end}|
 
@@ -48,7 +50,7 @@ try:
 except Exception:
     print("There are no segments in this cell")
 
-# Find grid cell index for segment 
+# Find grid cell index for segment
 segs = plant.segments  # |\label{l71m:segments}|
 x = np.array([plant.seg2cell[i] for i in range(0, len(segs))])  # |\label{l71m:seg2cell}|
 

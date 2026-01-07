@@ -70,17 +70,17 @@ def plot_profile(h, c, depth = -100.0):
     plt.show()
 
 
-def plot_history(w, c, N):
+def plot_history(w, c, n_steps):
     """plots concentration per liquid phase and concentration per soil volume"""
-    c_ = np.array([np.sum(np.multiply(c[i], w[i])) for i in range(0, N)])  # nitrate concentration per soil volume
+    c_ = np.array([np.sum(np.multiply(c[i], w[i])) for i in range(0, n_steps)])  # nitrate concentration per soil volume
     _, ax1 = plt.subplots()
     color = "tab:red"
-    ax1.plot(np.linspace(0, sim_time, N), np.sum(c, axis = 1), color = color)
+    ax1.plot(np.linspace(0, sim_time, n_steps), np.sum(c, axis = 1), color = color)
     ax1.set_ylabel("[g/L] liquid phase", color = color)
     ax1.set_xlabel("Time [day]")
     ax2 = ax1.twinx()
     color = "tab:blue"
-    ax2.plot(np.linspace(0, sim_time, N), c_, color = color)
+    ax2.plot(np.linspace(0, sim_time, n_steps), c_, color = color)
     ax2.set_ylabel("[kg/m$^3$] soil", color = color)
     ax2.set_xlabel("Time [day]")
     plt.tight_layout()
@@ -173,11 +173,11 @@ print("water content to water volume", np.sum(theta) * 1, "cm3/cm  = ", np.sum(t
 print("sum net inf", 10 * np.sum(net_inf), "mm")
 # plot_profile(s.getSolutionHead(), s.getSolution_(1))
 
-N = int(np.ceil(sim_time / dt))
+n_steps = int(np.ceil(sim_time / dt))
 c, h, w = [], [], []  # results
 fw = np.zeros(sim_time)
 
-for i in range(0, N):  # |\label{l62:loop_loop}|
+for i in range(0, n_steps):  # |\label{l62:loop_loop}|
     t = i * dt  # current simulation time
     print(f" {t:g} days")
 
@@ -202,6 +202,6 @@ print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() /
 print("water content to water volume", np.sum(w[-1]) * area * 1, "cm3")
 print("change in water volume", s.getWaterVolume() - volume0, "cm3 = ", 1.0e-3 * (s.getWaterVolume() - volume0), "l")
 
-plot_history(w, c, N)
+plot_history(w, c, n_steps)
 plot_profile(h[-1], c[-1])
 plot_results(h, c, times_, netinf_, fw, min_b[2])

@@ -32,9 +32,9 @@ for organ_type in [pb.root, pb.stem, pb.stem]:
 
 # simulation
 rs.initialize()
-simtime = 60.0
+sim_time = 60.0
 dt = 1.0
-for i in range(0, round(simtime / dt)):
+for i in range(0, round(sim_time / dt)):
     # in a dynamic setting change soilprop here
     rs.simulate(dt, False)
 

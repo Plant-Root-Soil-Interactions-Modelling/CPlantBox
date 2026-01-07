@@ -6,9 +6,9 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 # Configure simulation
-simtime = 50  # days
+sim_time = 50  # days
 dt = 1 # days
-steps = round(simtime / dt)
+n_steps = round(sim_time / dt)
 carbon_source = 30.0 # Assuming a constant carbon source to the root system (g_Root/day) |\label{l3_1_carbon:SetStart}|
 root_SRL = 2.5  # Assuming a constant specific root length (cm_Root)/g_Root) |\label{l3_1_carbon:SetEnd}|
 
@@ -33,7 +33,7 @@ rs.initialize()  # |\label{l3_1_carbon:SefEnd}|
 total_root_len = rs.getSummed("length")
 
 # Simulation loop
-for step in range(0, steps):  # |\label{l3_1_carbon:LoopStart}|
+for step in range(0, n_steps):  # |\label{l3_1_carbon:LoopStart}|
     print("\nSimulation step", step)
 
     # Maximal total root length increment (cm/day)
