@@ -132,7 +132,7 @@ for i in range(0, N):  # |\label{l63:loop_start}|
 
 theta = w[-1]  # |\label{l63:wc}|
 volumef = np.sum(np.multiply(theta, area))  # |\label{l63:vol}|
-print("domain water volume", volumef, "cm3/cm  = ", volumef / 1000.0, "l/cm")  # |\label{l63:results}|
+print(f"domain water volume", volumef, "cm3/cm  = ", volumef / 1000.0, "l/cm")  # |\label{l63:results}|
 print("change in water volume", volumef - volume0, "cm3/cm = ", 1.0e-3 * (volumef - volume0), "l/cm")
 
 area = np.squeeze(area, -1)
