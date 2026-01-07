@@ -22,7 +22,7 @@ from SimplacePlantbox.util import checkRuns, getRootOutputs
 # Simulation configuration
 gram_per_cm = 0.000035  # specific root length density used to calculate the maximum root increment in a timestep [g/cm]
 area = 6 * 12.5  # plant area [cm * cm]
-simtime = 600  # maximum simulation time-steps [days]
+sim_time = 600  # maximum simulation time-n_steps [days]
 dt = 1  # simulation timestep [days]
 plot = False  # plot root system at the end ?
 
@@ -102,7 +102,7 @@ init_pb_switch = False  # |\label{l7_5_simplace:InitEnd}|
 warns = [str(datetime.datetime.now())]
 
 # Simulation loop
-for s in range(0, simtime):  # |\label{l7_5_simplace:LoopStart}|
+for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
     # simulate simplace step to get maxinc and re_reduction dinamically
     (date, maxinc, doharvest, tranrf, yld, rld_s, re_reduction, re_q, re_w, h, init_pb, frr_s, md95_s) = sp_int.getSimplaceValuesExtended(sim, gram_per_cm, h1, h2, h3, h4, area=area)  # |\label{l7_5_simplace:MaxInc_simplace}|
 

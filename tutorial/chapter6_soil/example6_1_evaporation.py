@@ -7,15 +7,15 @@ from rosi.richards import RichardsWrapper  # Python part |\label{l61:paths_a}|
 from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding) |\label{paths_e}|
 
 # Define Van Genuchten and other parameters
-soils = { 
-    'sand' : [0.045, 0.43, 0.15, 3, 1000],  # |\label{l61:params_a}|
-    'loam' : [0.08, 0.43, 0.04, 1.6, 50],
-    'clay' : [0.1, 0.4, 0.01, 1.1, 10]
+soils = {
+    'sand': [0.045, 0.43, 0.15, 3, 1000],  # |\label{l61:params_a}|
+    'loam': [0.08, 0.43, 0.04, 1.6, 50],
+    'clay': [0.1, 0.4, 0.01, 1.1, 10]
 }
 soil = "loam"  # Select soil type for simulation   |\label{l61:params_e}|
-sim_time = 10  # |\label{l61:simtime}|
-N = 10*24*60//10
-dt = sim_time / N  # time step [days]    |\label{l61:timestep}|
+sim_time = 10  # |\label{l61:sim_time}|
+n_steps = 10 * 24 * 60 // 10
+dt = sim_time / n_steps  # time step [days]    |\label{l61:timestep}|
 ic = -200  # |\label{l61:ic}|
 evap = -0.1  # cm/d       |\label{l61:evap}|
 
@@ -26,7 +26,7 @@ s.setTopBC("atmospheric", 0.5, [[0.0, 1.0e10], [evap, evap]])  #  [cm/day] atmos
 # s.setTopBC("flux", evap)  #  [cm/day]
 # s.setTopBC("constantPressure", -10000)
 s.setBotBC("freeDrainage")  # BC freeDrainage   |\label{l61:bot_bc}|
-NZ = 100  #1399
+NZ = 100  # 1399
 s.createGrid([-5.0, -5.0, -100.0], [5.0, 5.0, 0.0], [1, 1, NZ])  # [cm]   |\label{l61:grid}|
 # vols = (100. / NZ) * np.ones((NZ,)) * 100.  # cm3
 s.setVGParameters([soils[soil]])  # |\label{l61:set_vg}|
@@ -41,11 +41,11 @@ initial_water = s.getWaterVolume()  # |\label{l61:gettheta}|
 s.ddt = 1.0e-5  # initial Dumux time step [days]  |\label{l61:initialDT}|
 
 x_, y_ = [], []
-for i in range(0, N):  # |\label{l61:loop}|
+for i in range(0, n_steps):  # |\label{l61:loop}|
     print(f" {i*dt:g} days")
     s.solve(dt)  # |\label{l61:solve}|
     f = s.getNeumann(idx_top)  # f = s.getSolutionHeadAt(idx_top)   |\label{l61:Neumann_a}|
-    x_.append(s.simTime)
+    x_.append(s.sim_time)
     y_.append(f)  # |\label{l61:Neumann_e}|
 
 # Extract and plot numerical solution

@@ -33,8 +33,8 @@ class TestPlant(unittest.TestCase):
     def test_parameter(self):
         """tests some parameters on sequential organ list"""
         self.root_example_rrp()  # |\label{l9_1:callSelf}|
-        simtime = 30.0
-        self.root.simulate(simtime, False)  # |\label{l9_1:parasbegin}|
+        sim_time = 30.0
+        self.root.simulate(sim_time, False)  # |\label{l9_1:parasbegin}|
         organs = self.root.getOrgans()
         age, ct = [], []
         for o in organs:
@@ -43,7 +43,7 @@ class TestPlant(unittest.TestCase):
 
         nol = round(self.root.getParameter("numberOfLaterals"))  # |\label{l9_1:parasend}|
         for i in range(0, nol):
-            self.assertAlmostEqual(age[i], simtime - ct[i], 10, "getParameter: age and creation time does not agree")  # |\label{l9_1:AssertAlmostEqual}|
+            self.assertAlmostEqual(age[i], sim_time - ct[i], 10, "getParameter: age and creation time does not agree")  # |\label{l9_1:AssertAlmostEqual}|
 
     def test_copy(self):
         """checks if the root system can be copied, and if randomness works"""

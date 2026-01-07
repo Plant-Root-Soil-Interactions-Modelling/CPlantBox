@@ -11,11 +11,12 @@ import pandas as pd
 import plantbox as pb
 from plantbox.functional.Photosynthesis import PhotosynthesisPython  # |\label{l43:importsPhotosynthesis}|
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
-from plantbox.visualisation import figure_style 
+from plantbox.visualisation import figure_style
+
 
 def getWeatherData(t):
     """get the weather data for time t"""
-    diffDt = abs(pd.to_timedelta(weatherData["time"]) - pd.to_timedelta(t % 1, unit="d"))
+    diffDt = abs(pd.to_timedelta(weatherData["time"]) - pd.to_timedelta(t % 1, unit = "d"))
     line_data = np.where(diffDt == min(diffDt))[0][0]
     return weatherData.iloc[line_data]
 
@@ -24,13 +25,13 @@ def getWeatherData(t):
 plant_age = 14  # plant age (day) |\label{l43:Parameters}|
 sim_time = 1.0  # days
 dt = 10.0 / 60.0 / 24.0
-N = int(sim_time / dt)
+n_steps = int(sim_time / dt)
 depth = 60  # soil depth (cm)
 Hs = -1000  # top soil matric potential (cm)
 
 # Weather data
 path = "../../modelparameter/functional/climate/"
-weatherData = pd.read_csv(path + "Selhausen_weather_data.txt", delimiter="\t")  # |\label{l43:Tereno}|
+weatherData = pd.read_csv(path + "Selhausen_weather_data.txt", delimiter = "\t")  # |\label{l43:Tereno}|
 
 
 # Soil
@@ -60,12 +61,12 @@ params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_G
 hm = PhotosynthesisPython(plant, params)  # |\label{l43:PhotosynthesisPython}|
 
 path = "../../modelparameter/functional/plant_photosynthesis/"
-hm.read_photosynthesis_parameters(filename=path + "photosynthesis_parameters")  # |\label{l43:read}|
+hm.read_photosynthesis_parameters(filename = path + "photosynthesis_parameters")  # |\label{l43:read}|
 # hm.write_photosynthesis_parameters(filename=path+"photosynthesis_parametersNew")   # |\label{l43:write}|
 
 results = {"transpiration": [], "gco2": [], "An": [], "Vc": [], "Vj": []}
-for i in range(N):  # |\label{l43:loop}|
-    
+for i in range(n_steps):  # |\label{l43:loop}|
+
     # Weather variables
     weatherData_i = getWeatherData(plant_age)  # |\label{l43:weather}|
 
@@ -79,14 +80,14 @@ for i in range(N):  # |\label{l43:loop}|
     ea = es * weatherData_i["RH"]
 
     hm.solve(
-        sim_time=plant_age,
-        rsx=p_s,
-        cells=True,
-        ea=ea,
-        es=es,
-        PAR=weatherData["PAR"][i] * (24 * 3600) / 1e4,  # (mol m-2 s-1) -> (mol cm-2 d-1)
-        TairC=weatherData_i["Tair"],
-        verbose=0,
+        sim_time = plant_age,
+        rsx = p_s,
+        cells = True,
+        ea = ea,
+        es = es,
+        PAR = weatherData["PAR"][i] * (24 * 3600) / 1e4,  # (mol m-2 s-1) -> (mol cm-2 d-1)
+        TairC = weatherData_i["Tair"],
+        verbose = 0,
     )  # |\label{l43:solve}|
 
     # Post processing
@@ -101,25 +102,25 @@ for i in range(N):  # |\label{l43:loop}|
 time = [datetime.strptime(tt, "%H:%M:%S") for tt in weatherData["time"]]
 
 fig, axs = figure_style.subplots11large(2, 2)  # |\label{l43:plot}|
-axs[0, 1].plot(time, weatherData["PAR"] * 1e3 * (24 * 3600) / 1e4, "k", label="PAR (mmol cm-2 d-1)")
-axs[0, 1].plot(time, weatherData["Tair"] / 6.2, "tab:red", label="T (°C)")
-axs[0, 1].set(ylabel="PAR\n(mmol cm-2 d-1)")
-secax_y = axs[0, 1].secondary_yaxis("right", functions=(lambda v: v * 6.2, lambda v: v / 6.2))
-secax_y.set_ylabel("T (°C)", color="tab:red")
-secax_y.tick_params(axis="y", colors="tab:red")
+axs[0, 1].plot(time, weatherData["PAR"] * 1e3 * (24 * 3600) / 1e4, "k", label = "PAR (mmol cm-2 d-1)")
+axs[0, 1].plot(time, weatherData["Tair"] / 6.2, "tab:red", label = "T (°C)")
+axs[0, 1].set(ylabel = "PAR\n(mmol cm-2 d-1)")
+secax_y = axs[0, 1].secondary_yaxis("right", functions = (lambda v: v * 6.2, lambda v: v / 6.2))
+secax_y.set_ylabel("T (°C)", color = "tab:red")
+secax_y.tick_params(axis = "y", colors = "tab:red")
 secax_y.spines["right"].set_color("tab:red")
 
 axs[0, 0].plot(time, weatherData["RH"], "tab:blue")
-axs[0, 0].set(ylabel="Relative humidity\n(-)")
+axs[0, 0].set(ylabel = "Relative humidity\n(-)")
 
-axs[1, 1].plot(time, results["An"], "g", lw=3, label="Net", zorder=1)
-axs[1, 1].plot(time, results["Vj"], "k", label="Electron transport-limited")
-axs[1, 1].plot(time, results["Vc"], "tab:red", label="Carboxilation-limited")
-axs[1, 1].set(xlabel="Time", ylabel="Total assimilation\n(mmol CO2 day-1)")
-axs[1, 1].legend(loc="upper left", frameon=False)
+axs[1, 1].plot(time, results["An"], "g", lw = 3, label = "Net", zorder = 1)
+axs[1, 1].plot(time, results["Vj"], "k", label = "Electron transport-limited")
+axs[1, 1].plot(time, results["Vc"], "tab:red", label = "Carboxilation-limited")
+axs[1, 1].set(xlabel = "Time", ylabel = "Total assimilation\n(mmol CO2 day-1)")
+axs[1, 1].legend(loc = "upper left", frameon = False)
 
 axs[1, 0].plot(time, results["transpiration"], "tab:blue")
-axs[1, 0].set(xlabel="Time", ylabel="Total transpiration\n(mmol H2O day-1)")
+axs[1, 0].set(xlabel = "Time", ylabel = "Total transpiration\n(mmol H2O day-1)")
 axs[1, 0].xaxis.set_major_locator(MaxNLocator(5))
 
 for ax in axs.flatten():

@@ -18,9 +18,9 @@ clay = vg.Parameters([0.1, 0.4, 0.01, 1.1, 1.1574e-06 * 100 * 3600 * 24])
 jwpot_ = [-0.1, -0.1, -0.3, -0.3]
 head_i_ = [-40, -200, -200, -200]
 
-N = 1000
-y = np.zeros((N, 4))
-t = np.linspace(0, 10, N)  # days
+n_steps = 1000
+y = np.zeros((n_steps, 4))
+t = np.linspace(0, 10, n_steps)  # days
 
 for i, soil in enumerate([sand, loam, loam, clay]):
     head_i = head_i_[i]
@@ -66,29 +66,29 @@ for i, soil in enumerate([sand, loam, loam, clay]):
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
 
 ax1.plot(t, abs(y[:, 0]), "b")
-ax1.set_ylabel("$E_{act}$ (cm day$^{-1}$)", fontsize=20)
+ax1.set_ylabel("$E_{act}$ (cm day$^{-1}$)", fontsize = 20)
 ax1.set_xlim(0, 1)
-ax1.set_title("Sand", fontsize=20)
+ax1.set_title("Sand", fontsize = 20)
 
 ax2.plot(t, abs(y[:, 1]), "b")
 ax2.set_xlim(0, 10)
-ax2.set_title("Loam", fontsize=20)
+ax2.set_title("Loam", fontsize = 20)
 
 ax3.plot(t, abs(y[:, 2]), "b")
-ax3.set_xlabel("$t$ (days)", fontsize=20)
-ax3.set_ylabel("$E_{act}$ (cm day$^{-1}$)", fontsize=20)
+ax3.set_xlabel("$t$ (days)", fontsize = 20)
+ax3.set_ylabel("$E_{act}$ (cm day$^{-1}$)", fontsize = 20)
 ax3.set_xlim(0, 2)
-ax3.set_title("Loam", fontsize=20)
+ax3.set_title("Loam", fontsize = 20)
 
 ax4.plot(t, abs(y[:, 3]), "b")
-ax4.set_xlabel("$t$ (days)", fontsize=20)
+ax4.set_xlabel("$t$ (days)", fontsize = 20)
 ax4.set_xlim(0, 6)
-ax4.set_title("Clay", fontsize=20)
+ax4.set_title("Clay", fontsize = 20)
 
-ax1.tick_params(axis="both", which="major", labelsize=16)
-ax2.tick_params(axis="both", which="major", labelsize=16)
-ax3.tick_params(axis="both", which="major", labelsize=16)
-ax4.tick_params(axis="both", which="major", labelsize=16)
+ax1.tick_params(axis = "both", which = "major", labelsize = 16)
+ax2.tick_params(axis = "both", which = "major", labelsize = 16)
+ax3.tick_params(axis = "both", which = "major", labelsize = 16)
+ax4.tick_params(axis = "both", which = "major", labelsize = 16)
 
 if __name__ == "__main__":
     plt.show()

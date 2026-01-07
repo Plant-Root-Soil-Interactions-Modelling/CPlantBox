@@ -38,7 +38,7 @@ dt = 360.0 / (24 * 3600)  # [days]  # |\label{l72c:param_end}|
 # Initialize macroscopic soil model #
 s = RichardsWrapper(RichardsSP())  # |\label{l72c:soil}|
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, periodic=True)  # [cm]
+s.createGrid(min_b, max_b, cell_number, periodic = True)  # [cm]
 s.setHomogeneousIC(initial, True)  # [cm] total potential
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
@@ -77,22 +77,22 @@ hm.test()  # |\label{l72c:test}|
 start_time = timeit.default_timer()
 t = 0.0
 x_, y_ = [], []
-N = round(sim_time / dt)
+n_steps = round(sim_time / dt)
 
-for i in range(0, N):  # |\label{l72c:loop}|
+for i in range(0, n_steps):  # |\label{l72c:loop}|
     plant.simulate(dt)  # |\label{l72c:plant}|
     hs = s.getSolutionHead()  # |\label{l72c:hs}|
-    hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hs, cells=True)  # |\label{l72c:hx}|
+    hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hs, cells = True)  # |\label{l72c:hx}|
 
     fluxes = hm.soil_fluxes(rs_age + t, hx, hs)  # |\label{l72c:soil_model}|
     s.setSource(fluxes)
     s.solve(dt)  # |\label{l72c:soil_model_end}|
 
     x_.append(t)
-    y_.append(float(hm.get_transpiration(rs_age + t, hx, hs, cells=True)))  # |\label{l72c:results}|
+    y_.append(float(hm.get_transpiration(rs_age + t, hx, hs, cells = True)))  # |\label{l72c:results}|
 
-    n = round(float(i) / float(N) * 100.0)  # |\label{l72c:progress}|
-    print(f"[{'*' * n}{' ' * (100 - n)}], [{np.min(hs):g}, {np.max(hs):g}] cm soil [{np.min(hx):g}, {np.max(hx):g}] cm root at {s.simTime:g} days {hx[0]:g}")
+    n = round(float(i) / float(n_steps) * 100.0)  # |\label{l72c:progress}|
+    print(f"[{'*' * n}{' ' * (100 - n)}], [{np.min(hs):g}, {np.max(hs):g}] cm soil [{np.min(hx):g}, {np.max(hx):g}] cm root at {s.sim_time:g} days {hx[0]:g}")
 
     if i % 10 == 0:  # |\label{l72c:write}|
         vp.write_soil(f"results/example72_{i // 10:06d}", s, min_b, max_b, cell_number)
@@ -114,6 +114,6 @@ ax2 = ax1.twinx()
 ax2.plot(x_, np.cumsum(-np.array(y_) * dt), "c--")  # cumulative transpiratio
 ax1.set_xlabel("Time [d]")
 ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
-ax1.legend(["Potential", "Actual", "Cumulative"], loc="upper left")
+ax1.legend(["Potential", "Actual", "Cumulative"], loc = "upper left")
 np.save("results/" + name, np.vstack((x_, -np.array(y_))))  # |\label{l72c:npsave}|
 plt.show()

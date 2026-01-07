@@ -21,8 +21,8 @@ name = "Faba_synMRI"
 rs.readParameters(path + name + ".xml")
 rs.setSeed(1)   # |\label{l5_2_exudation:setRandomSeed}|
 rs.initialize()
-simtime = 10
-rs.simulate(simtime, True)
+sim_time = 10
+rs.simulate(sim_time, True)
 rs.write("results/example5_2_exudation_rootsystem.vtp")  # |\label{l5_2_exudation:rsend}|
 
 # Grid parameter
@@ -56,7 +56,7 @@ model.calc13 = True  # turns Eqn 13  on (True) and off (False)
 model.observationRadius = 0.8  # limits computational domain around roots [cm]  # |\label{l5_2_exudation:numparamend}|
 
 t = time.time()  # |\label{l5_2_exudation:runstart}|
-C = model.calculate(simtime)
+C = model.calculate(sim_time)
 elapsed = time.time() - t
 print(f"Computation took {elapsed} s")  # |\label{l5_2_exudation:runend}|
 

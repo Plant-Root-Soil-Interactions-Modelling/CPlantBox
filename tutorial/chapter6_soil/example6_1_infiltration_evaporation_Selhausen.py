@@ -29,8 +29,8 @@ s = RichardsWrapper(RichardsSPnum())  #
 s.initialize()  #
 s.setTopBC("atmospheric", 0.5, [[0.0, 1.0, 1.0, 3.0], [10.0, 10.0, -0.1, -0.1]])  #  [cm/day] atmospheric is with surface run-off   |\label{l61ies:top_bc}|
 s.setBotBC("freeDrainage")  # |\label{l61ies:bottom_bc}|
-N = 119 * 10  # use a fine grid resolution of 1 mm per grid point in z direction |\label{l61ies:grid}|
-s.createGrid([-5.0, -5.0, -120.0], [5.0, 5.0, 0.0], [1, 1, N])  # [cm] N   |\label{l61ies:grid}|
+n_steps = 119 * 10  # use a fine grid resolution of 1 mm per grid point in z direction |\label{l61ies:grid}|
+s.createGrid([-5.0, -5.0, -120.0], [5.0, 5.0, 0.0], [1, 1, n_steps])  # [cm] n_steps   |\label{l61ies:grid}|
 # define soil layers
 layers_ID = [4, 4, 3, 3, 2, 2, 1, 1]  # |\label{l61ies:layers_s}|
 layers_pos = [-120.0, -57.0, -57.0, -33.0, -33, -20, -20, 0]  # |\label{l61ies:layers_e}|
@@ -43,16 +43,16 @@ s.ddt = 1.0e-5  # initial dumux time step [days]
 
 top_ind = s.pick([0.0, 0.0, -0.5])
 bot_ind = s.pick([0.0, 0.0, -119.5])  #  |\label{l61ies:bot_ind}|
-top_new, bot_new, soil_times = [], [], []
+top_new, bot_new, times = [], [], []
 
-N = int(np.ceil(sim_time / dt))  #
+n_steps = int(np.ceil(sim_time / dt))  #
 z_, x_, h_ = [], [], []  # initialite solution vectors
-for i in range(0, N):
+for i in range(0, n_steps):
     t = i * dt  # current simulation time
-    soil_times.append(t)
+    times.append(t)
     s.solve(dt)
     if i / 2 == np.ceil(i / 2):
-        print("***** external time step", dt, " d, simulation time", s.simTime, "d, internal time step", s.ddt, "d")
+        print("***** external time step", dt, " d, simulation time", s.sim_time, "d, internal time step", s.ddt, "d")
 
     # ---- TO DO: replace getVelocity function update code to new functions for getting fluxes
     # velocities = s.getVelocities_()
@@ -69,34 +69,33 @@ for i in range(0, N):
 
 top_new = np.array(top_new)
 bot_new = np.array(bot_new)
-soil_times = np.array(soil_times)
+times = np.array(times)
 
 # define output times
-sel_idx = np.searchsorted(soil_times, [0.0, 0.2, 0.5, 1.0, 1.2, 2.0, 3.0])
+sel_idx = np.searchsorted(times, [0.0, 0.2, 0.5, 1.0, 1.2, 2.0, 3.0])
 
 # Plot solutions |\label{l61ies:plt_prof}|
-fig1, axs = plt.subplots(2, 1, sharex="row", figsize=(12, 12))
+fig1, axs = plt.subplots(2, 1, sharex = "row", figsize = (12, 12))
 cols = ["k-", "r-", "r--", "r-.", "b-.", "b--", "b-"]
 ii = 0
 for i in sel_idx:
-    axs[0].plot(x_[i], z_[i], cols[ii], label=f"{soil_times[i]:.2f} d")
-    axs[1].plot(h_[i], z_[i], cols[ii], label=f"{soil_times[i]:.2f} d")
+    axs[0].plot(x_[i], z_[i], cols[ii], label = f"{times[i]:.2f} d")
+    axs[1].plot(h_[i], z_[i], cols[ii], label = f"{times[i]:.2f} d")
     ii = ii + 1
 axs[0].set_title("Infiltration 1 $d$ with 10 $cm$ $d^{-1}$ \n and evaporation 2 $d$ with 0.1 $cm$ $d^{-1}$ afterwards")
 axs[0].set_xlabel("Volumetric water content [$cm^{3}$ $cm^{-3}$]")
 axs[0].set_ylabel("Depth [cm]")
 axs[1].set_xlabel("Head [cm]")
 axs[1].set_ylabel("Depth [cm]")
-axs[0].legend(loc="best")
-axs[1].legend(loc="best")
+axs[0].legend(loc = "best")
+axs[1].legend(loc = "best")
 
 plt.show()
 
 # plt.figure(1)
-# plt.plot(soil_times, top_new[:, 2], label = "surface flux")
-# plt.plot(soil_times, bot_new[:, 2], label = "bottom flux")
+# plt.plot(times, top_new[:, 2], label = "surface flux")
+# plt.plot(times, bot_new[:, 2], label = "bottom flux")
 # plt.xlabel('Time (days)', fontsize = 18)
 # plt.ylabel('Vertical water flux (cm/day)', fontsize = 18)
-# plt.xticks(fontsize = 14); plt.yticks(fontsize = 14)
 # plt.legend(fontsize = 14)
 # plt.show()

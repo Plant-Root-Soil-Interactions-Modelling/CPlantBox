@@ -26,9 +26,9 @@ for organ_type in [pb.root, pb.stem, pb.leaf]:  # |\label{l34:for_start}|
             p.lmax = 2 * p.lmax  # increase higher order length
 
 plant.initialize()
-simtime = 15.0
+sim_time = 15.0
 dt = 1.0
-for i in range(0, round(simtime / dt)):
+for i in range(0, round(sim_time / dt)):
     plant.simulate(dt)
 
 ana = pb.SegmentAnalyser(plant)  # |\label{l34:analysis2}|

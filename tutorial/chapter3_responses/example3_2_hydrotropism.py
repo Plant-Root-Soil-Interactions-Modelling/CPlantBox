@@ -4,7 +4,7 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 rs = pb.Plant()
-path = "../../modelparameter/structural/rootsystem/" # |\label{l3_2_hydrotropism:libsstart}|
+path = "../../modelparameter/structural/rootsystem/"  # |\label{l3_2_hydrotropism:libsstart}|
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")  # |\label{l3_2_hydrotropism:libsend}|
 
@@ -31,10 +31,10 @@ rs.setSoil(soil_prop)  # |\label{l3_2_hydrotropism:set&simstart}|
 rs.initialize()
 
 # Simulate
-simtime = 100  # e.g. 30 or 60 days
+sim_time = 100  # e.g. 30 or 60 days
 dt = 1
-N = round(simtime / dt)
-for _ in range(0, N):
+n_steps = round(sim_time / dt)
+for _ in range(0, n_steps):
     # in a dynamic soil setting you would need to update the soil properties (soil_prop)
     rs.simulate(dt)  # |\label{l3_2_hydrotropism:set&simend}|
 

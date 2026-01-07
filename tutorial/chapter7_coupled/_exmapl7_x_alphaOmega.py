@@ -194,7 +194,7 @@ for i in range(0, N):  # |\label{l7xa:loop}|
     y_.append(-np.nansum(q) * area)  # |\label{l7xa:results}|
 
     n = round(float(i) / float(N) * 100.0)  # |\label{l7xa:progress}|
-    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], potential {:g}, actual {:g}; [{:g}, {:g}] cm soil at {:g} days".format(tp * area, np.nansum(q) * area, np.min(h_bs), np.max(h_bs), s.simTime))
+    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], potential {:g}, actual {:g}; [{:g}, {:g}] cm soil at {:g} days".format(tp * area, np.nansum(q) * area, np.min(h_bs), np.max(h_bs), s.sim_time))
 
     print("wall times:", (start_time_ao - start_time_soil) / (start_time_ao - final_time), (start_time_soil - final_time) / (start_time_ao - final_time))
 

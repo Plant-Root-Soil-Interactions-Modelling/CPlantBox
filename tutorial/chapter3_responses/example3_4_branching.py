@@ -22,9 +22,9 @@ p = plant.getOrganRandomParameter(pb.root, 3)
 p.f_sbp = soilprop  # set branching probability for subType 3 # |\label{l34:prob}|
 
 plant.initialize()  # |\label{l34:loop}|
-simtime = 15.0
+sim_time = 15.0
 dt = 1.0
-for i in range(0, round(simtime / dt)):
+for i in range(0, round(sim_time / dt)):
     plant.simulate(dt)  # |\label{l34:loop_end}|
 
 l = plant.getSummed("length")  # |\label{l34:analysis}|

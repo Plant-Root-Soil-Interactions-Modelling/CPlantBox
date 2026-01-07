@@ -11,7 +11,7 @@ from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameter
 from plantbox.visualisation import figure_style 
 
 # Simulation parameters   # |\label{l42:parameters}|
-simtime = 70  # simulate from day 1 to 70
+sim_time = 70  # simulate from day 1 to 70
 dt = 1 
 
 architectures = [  # |\label{l42:architecture}|
@@ -56,7 +56,7 @@ for name in architectures:
     arch_lengths = []
     arch_surfaces = []
 
-    for t in range(0, simtime):
+    for t in range(0, sim_time):
         plant.simulate(dt)
         ns = plant.getNumberOfMappedSegments()  # segments extracted
         krs, _ = hm.get_krs(t)  # krs calculated
@@ -73,7 +73,7 @@ for name in architectures:
     lengths.append(arch_lengths[-1])  # final length
     surfaces.append(arch_surfaces[-1])  # final surface |\label{l42:sim_end}|
 
-    suf = hm.get_suf(simtime)  # |\label{l42:suf}|
+    suf = hm.get_suf(sim_time)  # |\label{l42:suf}|
     ana = pb.SegmentAnalyser(plant)
     ana.addData("SUF", suf)  # suf at each segment in the 3d space
 
@@ -102,7 +102,7 @@ if n_arch == 1:
     axes_krs = [axes_krs]
 
 for i, ax in enumerate(axes_krs):
-    ax.plot(range(0, simtime), krs_all[i])
+    ax.plot(range(0, sim_time), krs_all[i])
     ax.set_title(architectures[i])
     ax.set_xlabel("Root system age (day)")
     ax.set_yscale("log")

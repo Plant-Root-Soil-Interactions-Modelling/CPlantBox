@@ -28,7 +28,7 @@ root[2].dxMin = 0.1  # Change minimal axial resolution dxMin (cm)
 print(root[1])  # Print new root parameters |\label{l14:print_new}|
 
 plant.initialize()  # Initialize |\label{l14:initialize}|
-simtime = 40  # days
-plant.simulate(simtime)  # Simulate|\label{l14:simulate}|
+sim_time = 40  # days
+plant.simulate(sim_time)  # Simulate|\label{l14:simulate}|
 
 vp.plot_plant(plant, "organType")  # Plot
