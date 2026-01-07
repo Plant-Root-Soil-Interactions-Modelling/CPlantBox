@@ -159,7 +159,7 @@ vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", hx, s, True, np.
 
 if rank == 0:
     # Transpiration over time
-    fig, ax1 = figure_style.subplots11()
+    fig, ax1 = figure_style.subplots11(1, 1)
     ax1.plot(x_, trans * sinusoidal(x_), "k")  # potential transpiration
     ax1.plot(x_, -np.array(y_), "g")  # actual transpiration (neumann)
     ax2 = ax1.twinx()

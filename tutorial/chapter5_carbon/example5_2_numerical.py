@@ -24,7 +24,7 @@ def getWeatherData(t):
 plant_age = 7.3  # initial plant age (day)
 sim_time = 0.5  # days
 dt = 1.0 / 24.0
-N = int(sim_time / dt)
+n_steps = int(sim_time / dt)
 depth = 60
 p_mean = -600  # mean soil water potential (cm)
 
@@ -73,7 +73,7 @@ cumulTranspiration = 0.0
 Q_Rm_is, Q_Gr_is, Q_Exud_is, Q_Water_is = [], [], [], []
 
 # Simulation loop
-for i in range(N):
+for i in range(n_steps):
     # Weather variables
     weatherData_i = getWeatherData(plant_age)  # |\label{l52:weather}|
 
@@ -104,7 +104,7 @@ for i in range(N):
     Q_Gr_i = hm.get_phloem_data(data = "growth", last = True, doSum = True)
     Q_out_i = Q_Rm_i + Q_Exud_i + Q_Gr_i
 
-    n = round(float(i) / float(N - 1) * 100.0)
+    n = round(float(i) / float(n_steps - 1) * 100.0)
     print(f"\n[{'*' * n}{' ' * (100 - n)}]")
     print(f"\t\tat {int(np.floor(plant_age))}d {int((plant_age % 1) * 24)}h, PAR: {round(weatherData_i['PAR'] * 1e6)} mumol m-2 s-1")
     print(f"cumulative: transpiration {cumulTranspiration:5.2e} [cm3]\tnet assimilation {cumulAssimilation:5.2e} [mol]")

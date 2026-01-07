@@ -35,13 +35,13 @@ def plot_profile(cc, h, c):  # |\label{l63:plot_profile_start}|
 def plot_history(area, w, c, n_steps):  # |\label{l63:plot_history_start}|
     """plots concentration per liquid phase and concentration per soil volume"""
     _, ax1 = figure_style.subplots11()
-    c_ = np.array([np.sum(np.multiply(area, np.multiply(c[i], w[i]))) for i in range(0, N)])  # nitrate concentration per soil volume
-    ax1.plot(np.linspace(0, sim_time, N), np.sum(np.multiply(area, c), axis = 1), color = "tab:red")
+    c_ = np.array([np.sum(np.multiply(area, np.multiply(c[i], w[i]))) for i in range(0, n_steps)])  # nitrate concentration per soil volume
+    ax1.plot(np.linspace(0, sim_time, n_steps), np.sum(np.multiply(area, c), axis = 1), color = "tab:red")
     ax1.set_ylabel("Liquid phase (g L$^{-1}$)", color = "tab:red")
     ax1.set_xlabel("Time (day)")
     ax1.tick_params(axis = "y", labelcolor = "tab:red")
     ax2 = ax1.twinx()
-    ax2.plot(np.linspace(0, sim_time, N), c_, color = "tab:blue")
+    ax2.plot(np.linspace(0, sim_time, n_steps), c_, color = "tab:blue")
     ax2.set_ylabel("Soil (kg m$^{-3}$)", color = "tab:blue")
     ax2.set_xlabel("Time (day)")
     ax2.tick_params(axis = "y", labelcolor = "tab:blue")
@@ -101,10 +101,10 @@ volume0 = np.sum(np.multiply(theta, area))
 print("\ndomain water volume", volume0, "cm3 cm-1 = ", volume0 / 1000, "l/cm")
 print("water content to water volume", volume0, "cm3 cm-1")  # |\label{l63:simt_end}|
 
-N = int(np.ceil(sim_time / dt))  # |\label{l63:param_start}|
+n_steps = int(np.ceil(sim_time / dt))  # |\label{l63:param_start}|
 c, h, w = [], [], []  # results
 cmin = 0.0  # |\label{l63:param_end}|
-for i in range(0, N):  # |\label{l63:loop_start}|
+for i in range(0, n_steps):  # |\label{l63:loop_start}|
     t = i * dt  # current simulation time
     print(t, "days")
     if cmin < 0.0:
@@ -122,6 +122,6 @@ print("domain water volume", volumef, "cm3 cm-1  = ", volumef / 1000.0, "l cm-1"
 print("change in water volume", volumef - volume0, "cm3 cm-1 = ", 1.0e-3 * (volumef - volume0), "l cm-1")
 
 area = np.squeeze(area, -1)
-plot_history(area, w, c, N)  # |\label{l63:plot_history}|
+plot_history(area, w, c, n_steps)  # |\label{l63:plot_history}|
 plot_profile(cc, h[-1], c[-1])  # |\label{l63:plot_profile}|
 plt.show()

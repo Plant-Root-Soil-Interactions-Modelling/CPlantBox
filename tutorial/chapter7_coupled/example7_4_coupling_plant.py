@@ -197,7 +197,7 @@ print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 vp.plot_plant_and_soil(hm.ms, "Xylem potential (cm)", h_xylem, s, False, np.array(min_b), np.array(max_b), cell_number, filename, sol_ind = 1)
 
 # Transpiration over time
-fig, ax1 = figure_style.subplots12()
+fig, ax1 = figure_style.subplots12(1, 1)
 ax1.plot(x_, np.array(y_), "g")  # actual transpiration
 ax2 = ax1.twinx()
 ax2.plot(x_, np.cumsum(np.array(y_) * dt), "c")  # cumulative transpiration
