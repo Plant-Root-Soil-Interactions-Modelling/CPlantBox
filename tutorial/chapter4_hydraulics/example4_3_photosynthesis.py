@@ -46,8 +46,8 @@ p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer |\lab
 # Plant
 plant = pb.MappedPlant()  # |\label{l43:plant}|
 path = "../../modelparameter/structural/plant/"
-name = "Triticum_aestivum_test_2021"
-plant.readParameters(path + name + ".xml")
+filename = "Triticum_aestivum_test_2021"
+plant.readParameters(path + filename + ".xml")
 
 plant.setGeometry(soilSpace)  # creates soil space to stop roots from growing out of the soil
 plant.setSoilGrid(picker)

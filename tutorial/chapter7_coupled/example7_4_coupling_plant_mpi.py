@@ -39,22 +39,22 @@ mpl.rcParams["mathtext.default"] = "regular"
 
 
 def getWeatherData(t):
-    diffDt = abs(pd.to_timedelta(weatherData["time"]) - pd.to_timedelta(t % 1, unit = "d"))
+    diffDt = abs(pd.to_timedelta(weather_data["time"]) - pd.to_timedelta(t % 1, unit = "d"))
     line_data = np.where(diffDt == min(diffDt))[0][0]
-    return weatherData.iloc[line_data]  # get the weather data for the current time step
+    return weather_data.iloc[line_data]  # get the weather data for the current time step
 
 
 # Main parameters #
 path = "../../modelparameter/structural/plant/"
-name = "Triticum_aestivum_test_2021"
+filename = "Triticum_aestivum_test_2021"
 plant_age = 14.3  # root system initial age [day]
 sim_time = 14.8
 dt = 20 / 60 / 24  # d
 n_steps = int((sim_time - plant_age) / dt)
 
 # Weather data #
-pathWeather = "../../modelparameter/functional/climate/"
-weatherData = pd.read_csv(pathWeather + "Selhausen_weather_data.txt", delimiter = "\t")
+path_weather = "../../modelparameter/functional/climate/"
+weather_data = pd.read_csv(path_weather + "Selhausen_weather_data.txt", delimiter = "\t")
 
 # Bulk soil #
 min_b = [-4.0, -4.0, -24.0]
@@ -96,7 +96,7 @@ s.setRegularisation(s.eps_regularization, s.eps_regularization)  # needs to be l
 
 # Initialize plant model
 plant = pb.MappedPlant(1)
-plant.readParameters(path + name + ".xml")
+plant.readParameters(path + filename + ".xml")
 sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 0.1)
 plant.setGeometry(sdf)
 
@@ -223,7 +223,7 @@ if rank == 0:
 
 # VTK visualisation #
 h_xylem = comm.bcast(h_xylem, root = 0)
-vp.plot_plant_and_soil(hm.ms, "xylem pressure head (cm)", h_xylem, s, False, np.array(min_b), np.array(max_b), cell_number, name, sol_ind = 1)
+vp.plot_plant_and_soil(hm.ms, "xylem pressure head (cm)", h_xylem, s, False, np.array(min_b), np.array(max_b), cell_number, filename, sol_ind = 1)
 
 if rank == 0:
     # Plot transpiration over time

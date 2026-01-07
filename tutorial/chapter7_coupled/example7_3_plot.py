@@ -13,7 +13,7 @@ def sinusoidal(t):
     return np.sin(2.0 * np.pi * np.array(t) - 0.5 * np.pi) + 1.0
 
 
-name = "Zeamays_synMRI_modified"
+filename = "Zeamays_synMRI_modified"
 trans = 250  # cm3 /day (sinusoidal) = mL/day
 sim_time = 7.5  # [day]
 dt = 360.0 / (24 * 3600)
@@ -23,8 +23,8 @@ ind = int((2.5 / sim_time * n_steps) // 10)
 
 # vp.plot_roots_and_soil_files("example72_{:06d}".format(ind), "pressure head", "subType")  # "water content", "pressure head"
 
-data72 = np.load("results/" + name + ".npy")
-data73 = np.load("results/" + name + "_fp.npy")
+data72 = np.load("results/" + filename + ".npy")
+data73 = np.load("results/" + filename + "_fp.npy")
 
 # Transpiration over time #
 x1_ = data72[0,:]

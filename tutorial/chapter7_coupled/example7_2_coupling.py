@@ -24,7 +24,7 @@ max_b = [35.0, 10.0, 0.0]  # [cm]
 cell_number = [17, 5, 50]  # ~[4*4*1] cm3
 
 path = "../../modelparameter/structural/rootsystem/"
-name = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
+filename = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
 trans = 250  # cm3 /day (sinusoidal) = mL/day
 wilting_point = -15000  # cm
 rs_age = 21  # root system initial age [day]
@@ -50,7 +50,7 @@ s.setCriticalPressure(wilting_point)  # |\label{l72c:soil_end}|
 # Initialize xylem model #
 plant = pb.MappedPlant()  # |\label{l72c:soil_plant}|
 plant.enableExtraNode()
-plant.readParameters(path + name + ".xml")
+plant.readParameters(path + filename + ".xml")
 sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 1.0)  # |\label{l72c:domain}|
 plant.setGeometry(sdf)  # |\label{l72c:soil_plant_end}|
 
@@ -115,5 +115,5 @@ ax2.plot(x_, np.cumsum(-np.array(y_) * dt), "c--")  # cumulative transpiratio
 ax1.set_xlabel("Time [d]")
 ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
 ax1.legend(["Potential", "Actual", "Cumulative"], loc = "upper left")
-np.save("results/" + name, np.vstack((x_, -np.array(y_))))  # |\label{l72c:npsave}|
+np.save("results/" + filename, np.vstack((x_, -np.array(y_))))  # |\label{l72c:npsave}|
 plt.show()

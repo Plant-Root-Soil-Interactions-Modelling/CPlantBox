@@ -31,15 +31,15 @@ def make_source(q, area):
 
 
 # Parameters  # |\label{l7xa:param}|
-min_b = [-35.0, -10.0, -50.0]  # [cm]
-max_b = [35.0, 10.0, 0.0]  # [cm]
-cell_number = [1, 1, 50]  # ~[4*4*1] cm3
+min_b = [-35.0, -10.0, -50.0]  # cm
+max_b = [35.0, 10.0, 0.0]  # cm
+cell_number = [1, 1, 50]  # ~4*4*1 cm3
 
 path = "../../modelparameter/structural/rootsystem/"
-name = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
-trans = 25  # cm3 /day (sinusoidal) = mL/day
+filename = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
+trans = 25  # cm3 day-1 (sinusoidal) = mL day-1
 wilting_point = -15000  # cm
-rs_age = 21  # root system initial age [day]
+rs_age = 21  # root system initial age (day)
 
 loam = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
 sp = vg.Parameters(loam)  # needed for Perirhizal class
@@ -64,7 +64,7 @@ s.setCriticalPressure(wilting_point)  # |\label{l7xa:soil_end}|
 # Initialize xylem model
 plant = pb.MappedPlant()  # |\label{l7xa:soil_plant}|
 plant.enableExtraNode()
-plant.readParameters(path + name + ".xml")
+plant.readParameters(path + filename + ".xml")
 sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 0.5)  # |\label{l7xa:domain}|
 plant.setGeometry(sdf)  # |\label{l7xa:soil_plant_end}|
 plant.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), False, False)  # needed for Perirhizal class
@@ -122,7 +122,7 @@ for i in range(0, n_steps):  # |\label{l7xa:loop}|
     hm.update(sim_time)  # krs, suf, etc...
 
     h_bs = s.getSolutionHead()
-    h_bs = np.array(plant.matric2total(h_bs))  # to total potential
+    # h_bs = np.array(plant.matric2total(h_bs))  # to total potential
 
     # Alpha: root system averaged stress factor
     krs, _ = hm.get_krs(sim_time)  # [cm2/day] (could be precomputed for static case)
@@ -175,7 +175,7 @@ for i in range(0, n_steps):  # |\label{l7xa:loop}|
 
     n = round(float(i) / float(n_steps) * 100.0)  # |\label{l7xa:progress}|
     print(f"[{'*' * n}{' ' * (100 - n)}], potential {tp * area:g}, actual {np.nansum(q) * area:g}; "
-          f"[{np.min(h_bs):g}, {np.max(h_bs):g}] cm soil at {s.sim_time:g} days")
+          f"[{np.min(h_bs):g}, {np.max(h_bs):g}] cm soil at {s.simTime:g} days")
 
     if i % 10 == 0:  # |\label{l7xa:write}|
         vp.write_soil(f"results/example7x_{i // 10:06d}", s, min_b, max_b, cell_number)

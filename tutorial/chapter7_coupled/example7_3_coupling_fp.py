@@ -25,7 +25,7 @@ max_b = [35.0, 10.0, 0.0]  # [cm]
 cell_number = [17, 5, 50]  # ~[4*4*1] cm3
 
 path = "../../modelparameter/structural/rootsystem/"
-name = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
+filename = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
 trans = 250  # cm3 /day (sinusoidal) = mL/day
 wilting_point = -15000  # cm
 rs_age = 21  # root system initial age [day]
@@ -50,7 +50,7 @@ s.setCriticalPressure(wilting_point)  # |\label{l73c:soil_end}|
 
 # Initialize xylem model
 plant = pb.MappedPlant()  # |\label{l73c:soil_plant}|
-plant.readParameters(path + name + ".xml")
+plant.readParameters(path + filename + ".xml")
 sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 0.1)  # |\label{l73c:domain}|
 plant.setGeometry(sdf)  # |\label{l73c:soil_plant_end}|
 
@@ -139,7 +139,7 @@ for i in range(0, n_steps):  # |\label{l73c:loop}|
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l73c:timing}|
 
 # VTK visualisation  |\label{l73c:plots}|
-vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", hx, s, True, np.array(min_b), np.array(max_b), cell_number, name)
+vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", hx, s, True, np.array(min_b), np.array(max_b), cell_number, filename)
 
 # Transpiration over time
 fig, ax1 = plt.subplots()
@@ -150,5 +150,5 @@ ax2.plot(x_, np.cumsum(-np.array(y_) * dt), "c--")  # cumulative transpiration (
 ax1.set_xlabel("Time [d]")
 ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
 ax1.legend(["Potential", "Actual", "Cumulative"], loc = "upper left")
-np.save("results/" + name + "_fp", np.vstack((x_, -np.array(y_), np.array(z_))))  # |\label{l72c:npsave}|
+np.save("results/" + filename + "_fp", np.vstack((x_, -np.array(y_), np.array(z_))))  # |\label{l72c:npsave}|
 plt.show()
