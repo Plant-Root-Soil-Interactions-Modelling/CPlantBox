@@ -2,7 +2,7 @@
 #ifndef MAPPED_ROOTSYSTEM_H_
 #define MAPPED_ROOTSYSTEM_H_
 
-//  #include "RootSystem.h"
+#include "RootSystem.h"
 #include "Plant.h"
 
 #include <functional>
@@ -41,6 +41,7 @@ public:
     void mapSegments(const std::vector<Vector2i>& segs);
     void cutSegments(); // cut and add segments
     int getNumberOfMappedSegments() const { return segments.size(); };  // for the python binding, != getNumberOfSegments (because of shoot roots or cutting)
+    int getNumberOfMappedNodes() const { return nodes.size(); }; // might contain extra nodes
     std::vector<int> getSegmentMapper() const;  // seg2cell mapper as vector
 
     void sort(); ///< sorts segments, each segment belongs to position s.y-1
@@ -58,9 +59,13 @@ public:
     virtual int getSegment2leafId(int si_);
     virtual void calcExchangeZoneCoefs() { throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object"); }; // calcExchangeZoneCoefs() only usefull for carbon-limited growth i.e., with a MappedPlant
 
-    Vector3d getMinBounds();
     void setRadius(double a); ///< sets a constant radius for all segments
     void setSubTypes(int t); ///< sets a constant sub type for all segments
+
+    Vector3d getMinBounds(); ///< minimum bounds of plant nodes
+    Vector3d getMaxBounds(); ///< maximum bounds of plant nodes
+    Vector3d getDomainWidth() { return maxBound.minus(minBound); } ///< grid domain width
+    double getDomainSurface() { auto w = getDomainWidth(); return w.x*w.y; } ///< grid domain surface
 
     // nodes
     std::vector<Vector3d> nodes; ///< nodes [cm]

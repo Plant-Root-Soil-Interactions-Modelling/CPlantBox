@@ -145,22 +145,22 @@ std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const s
 
 		double perimeter = ms->getPerimeter(si, l);//perimeter of exchange surface
 
-
         if (perimeter * kr>1.e-16) { // only relevant for exact solution
             double f = -perimeter*kr; // flux is proportional to f // *rho*g
-            double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
-
-            double tau = std::sqrt(perimeter*kr/kx); // sqrt(c) [cm-1]
-            double d = std::exp(-tau*l)-std::exp(tau*l); // det
-            double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
-            if (!std::isfinite(fExact)) {
-            	std::cout << "XylemFlux::segFluxes: nan or Inf fExact. segIdx "<<si<<" organType "<<organType<<" subType "<<subType;
-				std::cout <<" tau " << tau << ", l " << l << ", d "<<" perimeter "<<perimeter<<" kr "<<kr;
-				std::cout<< d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
-				throw std::runtime_error("XylemFlux::segFluxes: nan or Inf fExact");
-			}
-            double flux = fExact*(!approx)+approx*fApprox;
-            fluxes[si] = flux;
+            if (approx) {
+                fluxes[si] = f*l*(psi_s - rx[j]); // cm3 / day
+            } else {
+                double tau = std::sqrt(perimeter*kr/kx); // sqrt(c) [cm-1]
+                double d = std::exp(-tau*l)-std::exp(tau*l); // det
+                double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
+                if (!std::isfinite(fExact)) {
+                    std::cout << "XylemFlux::segFluxes: nan or Inf fExact. segIdx "<<si<<" organType "<<organType<<" subType "<<subType;
+                    std::cout <<" tau " << tau << ", l " << l << ", d "<<" perimeter "<<perimeter<<" kr "<<kr;
+                    std::cout<< d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
+                    throw std::runtime_error("XylemFlux::segFluxes: nan or Inf fExact");
+                }
+                fluxes[si] = fExact;
+            }
         } else {
             fluxes[si] = 0.;
         }

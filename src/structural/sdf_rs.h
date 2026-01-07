@@ -37,8 +37,6 @@ public:
 
     virtual double getDist(const Vector3d& p) const override;
 
-    // Vector3d getDistVec(const Vector3d& p) const;
-
     virtual std::string toString() const override { return "SDF_RootSystem"; }
 
     std::vector<Vector3d> nodes_;

@@ -44,9 +44,10 @@ jobs:
         run: |
           source "${HOME}/miniforge3/etc/profile.d/conda.sh"
           conda activate cpb
+          which python
           git submodule update --init --recursive
-          cmake .
-          make
+          cmake -DPython3_EXECUTABLE=$CONDA_PREFIX/bin/python .
+          make install
           echo "Run a simple test"
           cd tutorial/examples/
           python example1a_small_noplot.py

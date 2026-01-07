@@ -3,6 +3,7 @@
 
 #include "Organism.h"
 #include "growth.h"
+#include "tropism.h"
 
 #include <limits>
 #include <iostream>
@@ -90,7 +91,7 @@ double OrganRandomParameter::getParameter(std::string name) const
     if (dparam.count(name)) { // looking for a double parameter
         return *dparam.at(name);
     }
-	// std::cout << "Warning: " << "OrganRandomParameter::getParameter: parameter "+name+" not found. Send NaN as output." << "\n";
+	throw std::runtime_error("OrganRandomParameter::getParameter: parameter "+name+" not found. Send NaN as output.");
     return std::numeric_limits<double>::quiet_NaN(); // default if name is unknown
 }
 
@@ -368,8 +369,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 
 template <class IntOrDouble>
 void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
-	bool replaceByDefault,
-	std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key)
+	bool replaceByDefault, std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key)
 {
 	int success = -1;
 	std::vector<IntOrDouble> dummy;
@@ -390,6 +390,7 @@ void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> key
 	if(vToFill.size() == 0){
 	    vToFill = dummy;
 	} else {
+	    vToFill.reserve(dummy.size());
 		vToFill.insert( vToFill.end(), dummy.begin(), dummy.end() );
 	}
 

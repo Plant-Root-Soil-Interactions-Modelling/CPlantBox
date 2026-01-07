@@ -1,9 +1,9 @@
 import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
 
 import plantbox as pb
-import functional.xylem_flux as xylem_flux
-import rsml.rsml_reader as rsml_reader
-from rsml.rsml_data import RsmlData
+import plantbox.functional.xylem_flux as xylem_flux
+import plantbox.rsml.rsml_reader as rsml_reader
+from plantbox.rsml.rsml_data import RsmlData
 
 import numpy as np
 

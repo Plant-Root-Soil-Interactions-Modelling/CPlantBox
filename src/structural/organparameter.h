@@ -9,8 +9,8 @@
 #include <vector>
 #include <string>
 
+#include "mymath.h"
 #include "tinyxml2.h"
-#include "tropism.h"
 
 /**
  * This file describes the classes OrganSpecificParameter and OrganRandomParameter.
@@ -22,6 +22,7 @@ namespace CPlantBox {
 class Organism; // forward declaration
 class GrowthFunction;
 class ExponentialGrowth;
+class Tropism;
 
 /**
  * Parameters for a specific organ

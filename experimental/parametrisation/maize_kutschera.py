@@ -4,7 +4,7 @@ import sys;  sys.path.append("../..")
 import numpy as np
 import matplotlib.pyplot as plt
 
-import rsml_reader as rsml
+import plantbox.rsml_reader as rsml
 import estimate_root_params as es
 
 time = [75]  # measurement times (not in the rsml)

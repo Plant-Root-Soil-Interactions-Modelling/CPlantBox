@@ -1,4 +1,4 @@
-import rsml.rsml_reader as rsml_reader
+import plantbox.rsml.rsml_reader as rsml_reader
 
 import numpy as np
 
@@ -17,10 +17,10 @@ class RsmlData:
 
     def __init__(self):
         self.fname = None  # file name (str)
-        self.polylines = None  # from rsml (list of list of list)
-        self.properties = None  # from rsml (dict of list) value per root
-        self.functions = None  # from rsml (dict of list of list) value per node
-        self.metadata = None  # from rsml (rsml_writer.Metadata)
+        self.polylines = None  # from plantbox.rsml (list of list of list)
+        self.properties = None  # from plantbox.rsml (dict of list) value per root
+        self.functions = None  # from plantbox.rsml (dict of list of list) value per node
+        self.metadata = None  # from plantbox.rsml (rsml_writer.Metadata)
         self.radii = None  # list of list (per node)
         self.cts = None  # creation times, list of list (per node)
         self.max_ct = 0.  # maximal creation time

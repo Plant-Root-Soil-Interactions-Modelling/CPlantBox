@@ -3,7 +3,7 @@ import sys; sys.path.append(".."); sys.path.append("../..");
 import plantbox as pb
 from plantbox import Perirhizal
 from plantbox import MappedSegments
-import functional.van_genuchten as vg
+import plantbox.functional.van_genuchten as vg
 
 import numpy as np
 

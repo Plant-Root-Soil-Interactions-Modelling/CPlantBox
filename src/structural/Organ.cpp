@@ -301,7 +301,7 @@ int Organ::getNumberOfLaterals() const {
     int nol = 0;
     for (auto& c : children)  {
         if (c->getAge()>0) { // born
-            nol ++;
+            nol++;
         }
     }
     return nol;
@@ -318,7 +318,6 @@ int Organ::getNumberOfLaterals() const {
  * @return The parameter value, if unknown NaN
  */
 double Organ::getParameter(std::string name) const {
-    
     // specific parameters
     if (name=="subType") { return this->param_->subType; }
     if (name=="a") { return param_->a; } // root radius [cm]

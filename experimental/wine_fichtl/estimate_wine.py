@@ -3,7 +3,7 @@ specialized scipt for the wine rsml data
 """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 sys.path.append("../../gui/estimate/")
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 from estimate_data import EstimateDataModel
 import estimate_plots as ep
 

@@ -3,6 +3,7 @@
 
 #include "Organism.h"
 #include "Seed.h"
+#include "tropism.h"
 
 #include <cmath>
 #include <iostream>
@@ -101,30 +102,29 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 
     } else {
     lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
-	la_ = std::max(la + p->randn()*las, 0.); // length of apical zone		  
-	res = lb_ - floor(lb_/dx)* dx;	
+	la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
+	res = lb_ - floor(lb_/dx)* dx;
 	if((res < dxMin) && (res != 0)){
 		if(res <= dxMin/2){ lb_ -= res;
 		}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
-	}	
-	
-	bool hasSeed = (p->baseOrgans.size()>0)&&(p->baseOrgans.at(0)->organType()==Organism::ot_seed); 
+	}
+
+	bool hasSeed = (p->baseOrgans.size()>0)&&(p->baseOrgans.at(0)->organType()==Organism::ot_seed);
 	if(hasSeed&&(lb_< dxMin*2)&&(p->getSeed()->param()->nC >0))//lb must be longer than nZ. TODO:remove when root laterals is implemented
 	{
 		lb_ = dxMin*2;
 	}
-	
-    res = la_-floor(la_ / dx)*dx;	
+
+    res = la_-floor(la_ / dx)*dx;
 	if(res < dxMin && res != 0){
 		if(res <= dxMin/2){ la_ -= res;
 		}else{la_ =  floor(la_ / dx)*dx + dxMin;}
-	}	
+	}
 	double ln_mean = ln;
 	if(ln < dxMin*0.99 && ln !=0){
 		std::cout<<"\nStemRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
 		ln_mean = dxMin;
 	}
-	
 	//adapt number of laterals by branching point to keep same total number of lats
 	//in spite of dxMin
 	int nob1 = std::max((lmax-la_-lb_)/ln_mean+1, 1.);//use new la_, lb_ and ln_mean
@@ -133,11 +133,11 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 	int latExtra1 = floor(latMissing/nob_);//mean number of extra laterals per branching point to keep correct number
 	int latExtra2 = latMissing - latExtra1*(nob_);
 	int latExtra2_ = latExtra2;
-		
+
 		//at end of basal zone
 		for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
 		if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
-		
+
 		switch(lnf) {
 		case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
@@ -146,12 +146,12 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
+
 				} //make ln compatible with dx() and dxMin().
-			
+
 			ln_.push_back(d);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
-			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}  
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
 
 
 		};break;
@@ -162,9 +162,9 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
+
 				} //make ln compatible with dx() and dxMin().
-			
+
 			ln_.push_back(d);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
 			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}
@@ -180,9 +180,9 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
+
 				} //make ln compatible with dx() and dxMin().
-			
+
 			ln_.push_back(d);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
 			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
@@ -195,9 +195,9 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
+
 				} //make ln compatible with dx() and dxMin().
-			
+
 			ln_.push_back(d);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
 			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
@@ -211,15 +211,15 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
+
 				} //make ln compatible with dx() and dxMin().
-			
+
 			ln_.push_back(d);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
 			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}
 			ln_.push_back(0);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
-			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}			
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}
 		}; break;
 		case 5://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
@@ -228,15 +228,15 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
+
 				} //make ln compatible with dx() and dxMin().
-				
+
 			ln_.push_back(d);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
-			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}	
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
 		};break;
 default:
-		throw std::runtime_error("StemRandomParameter::realize type of inter-branching distance not recognized"); 
+		throw std::runtime_error("StemRandomParameter::realize type of inter-branching distance not recognized");
 }}
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
     double a_ = std::max(a + p->randn()*as, 0.); // radius
@@ -250,11 +250,11 @@ default:
 		delayNGEnd_ = delayNGStart_;
 	}
 	double ldelay_ = std::max(ldelay + p->randn()*ldelays, 0.);
-																		  
-									   
-	
-							  
-									 
+
+
+
+
+
     return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,hasLaterals, this->nodalGrowth, delayNGStart_, delayNGEnd_, ldelay_);
 }
 

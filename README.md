@@ -2,12 +2,12 @@
 
 # Introduction
 
-CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and provides gerneral tools to build plant soil-interaction models. To solve partial differential equations CPlantBox can use the finite volume solver DuMu<sup>x</sup> and offers simplified Python interfaces in the repository _dumux-rosi_.   
+CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and provides general tools to build plant soil-interaction models. To solve partial differential equations CPlantBox can use the finite volume solver DuMu<sup>x</sup> and offers simplified Python interfaces in the repository [_dumux-rosi_](https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi).   
 
 # Installation
 
 ## Linux - with Python script
-This installation method requires Ubuntu >= 20.04 and Python >= 3.7. For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox.py", and run it:
+This installation method requires Ubuntu >= 20.04 and Python (>= 3.7, <3.14). For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox.py", and run it:
 ```bash
 sudo apt-get update
 sudo apt-get upgrade
@@ -15,7 +15,7 @@ sudo apt-get upgrade
 wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installCPlantBox.py
 python3 installCPlantBox.py
 ```
-For CPlantBox with _dumux-rosi_, download and run the Python file "installDumuxRosi_Ubuntu.py" (the file is based on the DuMu$^x$ installation file).
+For CPlantBox with _dumux-rosi_, download and run the Python file "installDumuxRosi_Ubuntu.py" (the file is based on the DuMu<sup>x</sup> installation file).
 ```bash
 sudo apt-get update
 sudo apt-get upgrade
@@ -30,49 +30,59 @@ source cpbenv/bin/activate
 ```
 The scripts might work on other Linux OS but has not been tested.
 
-## Linux - with conda environment
+By default, your local repository will only track the master branch. This allows for a quicker download and lower use of memory. In case you would like to switch between branches, you have two options:
+1. Use the switch_branch.py script:
+```bash
+python3 switch_branch.py <branch_to_switch_to>
+```
+2. Install all the branches initially, by running
+```bash
+python3 installDumuxRosi_Ubuntu.py full
+```
+You can then change branch by doing 
+```bash
+git checkout <branch_to_switch_to>
+```
 
-This installation method uses ```conda``` to setup the building environment for CPlantBox. It'll pull the packages from the ```conda-forge``` channel to avoid licensing restrictions from default channels. For more info on conda restrictions, check this [article](https://www.fz-juelich.de/en/rse/the_latest/the-anaconda-is-squeezing-us)
+## Linux - using a conda or Python environment
 
-1. Clone the repository:
-
+1. Clone the repository (master only) by
 ```bash
 git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
 ```
-
-2. Create the conda environment and build CPlantBox:
-
+or, to download all branches:
+```bash
+git clone https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
+```
+ Initialize the repository by
 ```bash
 cd CPlantBox
-conda env create -f environment.yml
-conda activate cpb
 git submodule update --init --recursive
-cmake .
-make
 ```
 
-3. Test the installation by running a tutorial example, e.g.:
+2. Create the an environment
 
+For conda use
+```bash
+conda env create -f environment.yml
+conda activate cpb
+```
+For Python use
+```
+python3 -m venv cpb
+source cpb/bin/activate
+pip install -r requirements.txt
+```
+Finally, initialize cmake and build and install CPlantBox:
+```
+cmake .
+make install
+```
+3. Test the installation by running a tutorial example, e.g.:
 ```bash
 cd tutorial/examples/
 python example1a_small.py
 ```
-
-## Linux - manual installation 
-Clone the repository by running
-```bash
-git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
-```
-and use CMake to configure and compile the CPlantBox libraries 
-```bash
-cmake . && make
-```
-To test the installation run a tutorial example, e.g
-```bash
-cd tutorial/examples/python
-python3 example1a.py
-```
-Dependecies are listed in the requirements.txt file.
 
 ## Windows
 CPlantBox is currently not available on windows. Some pointers to setup a Linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).

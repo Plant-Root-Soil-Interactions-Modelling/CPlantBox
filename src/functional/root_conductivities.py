@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import interpolate
 
-from functional.PlantHydraulicParameters import PlantHydraulicParameters
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 
 """
 Helper to define age depent tabular values for root conductivities for XylemFluxPython (values are hard coded)

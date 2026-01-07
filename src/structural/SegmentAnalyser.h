@@ -14,7 +14,6 @@ namespace CPlantBox {
 
 class Organism;
 class MappedSegments;
-class XylemFlux;
 class PlantHydraulicParameters;
 class PlantHydraulicModel;
 
@@ -38,9 +37,8 @@ public:
     void addSegments(const SegmentAnalyser& a); ///< adds the segments
     void addSegment(Vector2i seg, double ct, double radius, bool insert = false); ///< adds a single segment
 
-    // to visualize results
+    // to user data to later visualize results
     void addAge(double simtime);  // "age"
-    void addConductivities(const XylemFlux& xylem, double simtime, double kr_max = 1.e6, double kx_max = 1.e6); // "kr", "kx"
     void addHydraulicConductivities(const PlantHydraulicParameters& xylem, double simtime, double kr_max = 1.e6, double kx_max = 1.e6); // "kr", "kx"
     void addFluxes(const PlantHydraulicModel& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime); // "axial_flux", "radial_flux"
     void addCellIds(const MappedSegments& plant); // "cell_id"

@@ -1,6 +1,14 @@
-#
-# 1. Make CPlantBox library
-#
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+
+message(STATUS "Project dir: ${PROJECT_SOURCE_DIR}")
+message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "Project binary dir: ${PROJECT_BINARY_DIR}")
+message(STATUS "Python library path (site-packages): ${Python3_SITEARCH}")
+
+# -----------------------------
+# 1. Dependencies & Includes
+# -----------------------------
+add_subdirectory(external/pybind11)
 
 include_directories(structural)
 include_directories(functional)
@@ -38,10 +46,8 @@ add_library(CPlantBox SHARED
             structural/MappedOrganism.cpp
      		structural/sdf.cpp
             structural/SegmentAnalyser.cpp            
-            structural/tropism.cpp  
-            structural/sdf_rs.cpp                         
+            structural/tropism.cpp            
 			
-            functional/XylemFlux.cpp
 			functional/Photosynthesis.cpp
 			functional/Perirhizal.cpp
 			functional/PlantHydraulicParameters.cpp
@@ -138,26 +144,45 @@ target_include_directories(
                         ${PROJECT_BINARY_DIR}/src/external/sundials/include
                         ${PROJECT_BINARY_DIR}/src/external/suitsparse/include
 )
-#
-# 2. Make CPlantBox Pyhthon binding
-#
 
-# find_package(pybind11 REQUIRED) 
-#set(PYBIND11_PYTHON_VERSION 3.7)
-#find_package( PythonInterp 3.7 REQUIRED )
-#find_package( PythonLibs 3.7 REQUIRED )
-add_subdirectory(external/pybind11)
+# Set library output directory
+set_target_properties(CPlantBox PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    BUILD_WITH_INSTALL_RPATH TRUE
+    INSTALL_RPATH "$ORIGIN"
+)
 
-pybind11_add_module(plantbox SHARED 
-			PyPlantBox.cpp   								
-			)
-target_link_libraries(plantbox PUBLIC 
-			CPlantBox)
-			
-set_target_properties(plantbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
+# -----------------------------
+# Python binding
+# -----------------------------
 
+pybind11_add_module(plantbox PyPlantBox.cpp)
+target_link_libraries(plantbox PRIVATE CPlantBox Python3::Module)
 
+set_target_properties(plantbox PROPERTIES
+    INSTALL_RPATH "$ORIGIN"
+)
 
+# Install plantbox module into Python site-packages
+install(TARGETS CPlantBox LIBRARY DESTINATION "${Python3_SITEARCH}/plantbox") 
+install(TARGETS plantbox LIBRARY DESTINATION "${Python3_SITEARCH}/plantbox")
 
+install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${Python3_SITEARCH}/plantbox)
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/visualisation DESTINATION ${Python3_SITEARCH}/plantbox
+		FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "__pycache__" EXCLUDE)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rsml DESTINATION ${Python3_SITEARCH}/plantbox
+		FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "__pycache__" EXCLUDE)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/structural DESTINATION ${Python3_SITEARCH}/plantbox
+		FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "__pycache__" EXCLUDE)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/functional DESTINATION ${Python3_SITEARCH}/plantbox
+		FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "__pycache__" EXCLUDE)
 

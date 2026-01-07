@@ -4,7 +4,7 @@ from vtk.util import numpy_support
 import numpy as np
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 from vtk_conversions import *
 
@@ -15,21 +15,13 @@ tropism_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "N
 def get_parameter_names():  # parameter xml file names
     """ returns a list of plant parameter names with two values each, first a short name, second exact filename """
     parameter_names = [
+        ("Maize", "P0.xml"),
+        ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
+        ("FSPM", "fspm2023.xml"),
         ("Demo Leaf", "leaf_only.xml"),
         ("Demo Root", "root_only.xml"),
         ("Demo Stem", "stem_only.xml"),
-        # ("Maize2014", "Zea_mays_4_Leitner_2014.xml"),
-        # ("Maize_", "new_maize.xml"),
-        # # ("Maize2", "maize.xml"),
-        # ("Maize", "P3.xml"),
-        ("Maize", "P0.xml"),
-        # ("Anagallis", "Anagallis_femina_Leitner_2010.xml"),
-        # ("Morning Glory9", "morning_glory_14m_d.xml"),
-        # ("Morning Glory14", "morning_glory_14m_d.xml"),
-        # ("Wheat11", "Triticum_aestivum_a_Bingham_2011.xml"),
-        # ("Wheat21", "Triticum_aestivum_adapted_2021.xml"),
-        ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
-        ("FSPM", "fspm2023.xml") ]
+        ]
     return parameter_names
 
 # Felix Maximilian Bauer, Dirk Norbert Baker, Mona Giraud, Juan Carlos Baca Cabrera, Jan Vanderborght, Guillaume Lobet, Andrea Schnepf, Root system architecture reorganization under decreasing soil phosphorus lowers root system conductance of Zea mays, Annals of Botany, 2024;, mcae198, https://doi.org/10.1093/aob/mcae198
@@ -88,8 +80,8 @@ def get_leaf_slider_names():  # see set_data, apply_sliders
     parameter_sliders = {
         "Maximal length [cm]": (1, 50),
         "Growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0, 180.),
-        "Petiole length [cm]": (1, 10),  # lb
+        "Initial angle [°]": (0, 180),
+        "Petiole length [cm]": (0.1, 10),  # lb
         "Fixed Rotation [°]": (0, 180),
         "Tropism strength [1]": (0, 6),
         "Tropism tortuosity [1]": (0, 1),
@@ -119,13 +111,14 @@ def set_leaf_geometry(shapename, p):
         p.areaMax = 50
         p.la, p.lmax = 5, 11
         phi = np.array([-90, -45, 0., 45, 67.5, 70, 90]) / 180. * np.pi
-        l = np.array([2, 2, 2, 4, 1, 1, 4])  # distance from leaf center
+        l = np.array([5, 2, 2, 4, 1, 1, 5])  # distance from leaf center
     elif shapename == "Flower":
         p.lb = 1  # length of leaf stem
-        p.areaMax = 100
+        p.areaMax = 50
         p.la, p.lb, p.lmax = 5, 1, 11
         phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
-        l = np.array([5., 1, 5, 1, 5, 1, 5, 1, 5])
+        l = np.array([5., 1, 4.5, 1, 4, 1, 4.5, 1, 5])
+    p.createLeafRadialGeometry(phi, l, 100)
 
 
 def set_leaf_sliders(slider_values):
@@ -146,13 +139,13 @@ def fix_dx(rrp, strp, lrp):
         r.nodalGrowth = 1  # <------- !
         # r.initBeta = 0.
         # r.betaDev = 0.
-        print("delayNGStarts", r.delayNGStarts)
-        print("delayNGEnds", r.delayNGEnds)
-        #print("initBeta", r.initBeta)
-        #print("betaDev", r.betaDev)
-        #print("rotBeta", r.rotBeta)
+        # print("delayNGStarts", r.delayNGStarts)
+        # print("delayNGEnds", r.delayNGEnds)
+        # print("initBeta", r.initBeta)
+        # print("betaDev", r.betaDev)
+        # print("rotBeta", r.rotBeta)
         # r.rotBeta = 0.5
-        #r.betaDev = 10
+        # r.betaDev = 10
     for r in lrp:
         # print(r.subType, ":", r.dx, r.dxMin)
         r.dx = 0.25
@@ -162,7 +155,7 @@ def fix_dx(rrp, strp, lrp):
         r.rotBeta = 0.5
 
 
-def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, leaf_data):
+def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_data):
     """ simulates the plant xml parameter set with slider values """
     print("simulate_plant()")
     # 1. open base xml
@@ -188,12 +181,13 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     print("delayRC", srp[0].delayRC)
     print("nC", srp[0].nC)
     # 3. simulate
-    N = 50
-    t_ = np.linspace(0., time_slider_value, N + 1)
+    N = 25
+    t_ = np.linspace(0., time_slider, N + 1)
     root_length = np.zeros((number_r, N))
     stem_length = np.zeros((number_s, N))
     leaf_length = np.zeros((N,))
     plant.initialize()
+    rld_, z_ = [], []
     for i, dt in enumerate(np.diff(t_)):
         plant.simulate(dt)
         ot = np.array(plant.getParameter("organType"))
@@ -204,32 +198,43 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
         for j in range(number_s):
             stem_length[j, i] = np.sum(l[np.logical_and(st == j + 1, ot == pb.stem)])
         leaf_length[i] = np.sum(l[ot == pb.leaf])
-    # 4. make depth profiles
-    ana = pb.SegmentAnalyser(plant)
-    length = ana.getSummed("length")
-    max_ = ana.getMaxBounds().z
-    min_ = ana.getMinBounds().z
-    rld = np.array(ana.distribution("length", max_, min_, int(np.round(max_ - min_)), True)) / length
-    z_ = np.linspace(max_, min_, int(np.round(max_ - min_)))
+        if i in [4, 9, 14, 19, 24]:  # 4. make depth profiles
+            ana = pb.SegmentAnalyser(plant)
+            length = ana.getSummed("length")
+            max_ = ana.getMaxBounds().z
+            min_ = ana.getMinBounds().z
+            rld_.append(np.array(ana.distribution("length", max_, min_, int(np.round(max_ - min_)), True)))
+            z_.append(np.linspace(max_, min_, int(np.round(max_ - min_))))
+
     # 5. make results store compatible (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
     pd = vp.segs_to_polydata(plant, 1., ["subType", "organType", "radius", "creationTime"])  # poly-data, "radius",
     tube = apply_tube_filter(pd)  # polydata + tube filter
-    vtk_data = vtk_polydata_to_dashvtk_dict(tube)
+    vtk_data = vtk_polydata_to_dashvtk_dict(tube) # addd "points" and "polys"
+
+    from pympler import asizeof
+    print("***********************************************************************************************************************************")
+    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+
     cellData = pd.GetCellData()
     cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
-    vtk_data["creationTime"] = cT  ################################################################### TODO somehow creationTime and Age are mixed up
+    vtk_data["creationTime"] = encode_array(cT)  ################################################################### TODO somehow creationTime and Age are mixed up
+    for i in range(0, len(rld_)):
+        vtk_data[f"rld{i}"] = encode_array(rld_[i] / length)
+        vtk_data[f"z{i}"] = encode_array(z_[i])
+
+    print("***********************************************************************************************************************************")
+    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+
     # vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
     organType = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))  #
-    vtk_data["subType"] = numpy_support.vtk_to_numpy(cellData.GetArray("subType")) + 5 * (organType - np.ones(organType.shape) * 2)
-    vtk_data["radius"] = numpy_support.vtk_to_numpy(cellData.GetArray("radius"))
-    vtk_data["time"] = t_[1:]
+    vtk_data["subType"] = encode_array(numpy_support.vtk_to_numpy(cellData.GetArray("subType")) + 5 * (organType - np.ones(organType.shape) * 2))
+    vtk_data["radius"] = encode_array(numpy_support.vtk_to_numpy(cellData.GetArray("radius")))
+    vtk_data["time"] = encode_array(t_[1:])
     for j in range(number_r):
-        vtk_data[f"root_length-{j+1}"] = list(root_length[j,:])
+        vtk_data[f"root_length-{j+1}"] = encode_array(root_length[j,:])
     for j in range(number_s):
-        vtk_data[f"stem_length-{j+1}"] = list(stem_length[j,:])
-    vtk_data["leaf_length"] = list(leaf_length[:])
-    vtk_data["rld"] = rld
-    vtk_data["z"] = z_
+        vtk_data[f"stem_length-{j+1}"] = encode_array(stem_length[j,:])
+    vtk_data["leaf_length"] = encode_array(leaf_length[:])
     # leaf geometry
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
@@ -238,11 +243,14 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
         vp.create_leaf_(l, leaf_points, leaf_polys)
     pts_array = vtk.util.numpy_support.vtk_to_numpy(leaf_points.GetData()).astype(np.float32)
     polys_data = vtk.util.numpy_support.vtk_to_numpy(leaf_polys.GetData())
-    vtk_data["leaf_points"] = pts_array.flatten().tolist()
-    vtk_data["leaf_polys"] = polys_data.tolist()
+    vtk_data["leaf_points"] = encode_array(pts_array)
+    vtk_data["leaf_polys"] = encode_array(polys_data)
     # general
     vtk_data["number_r"] = number_r
     vtk_data["number_s"] = number_s
+
+    print("***********************************************************************************************************************************")
+    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
 
     return vtk_data
 
@@ -292,7 +300,7 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         p.a = d[4]
         p.delayNGStart = d[5]
         p.delayNGEnd = d[5] + d[6]
-        p.rotBeta = d[7]/ 180.
+        p.rotBeta = d[7] / 180.
         p.tropismN = d[8]
         p.tropismS = d[9]
         p.tropismT = tropism_names[d[10]]
@@ -376,6 +384,7 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
 
 
 def param_to_dict(orp):
+    """ todo """
 
     print(orp.ogranType)
     if organType == pb.root:
@@ -386,6 +395,7 @@ def param_to_dict(orp):
 
 
 def debug_params(plant_):
+    """ todo """
     fname = get_parameter_names()[int(plant_)][1]  # xml filename
     plant = pb.Plant()
     plant.readParameters("params/" + fname)

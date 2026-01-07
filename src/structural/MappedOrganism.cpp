@@ -505,7 +505,9 @@ std::vector<double> MappedSegments::getSegmentZ() const {
  */
 std::vector<double> MappedSegments::matric2total(std::vector<double> sx) const {
     std::vector<double> b = this->getSegmentZ();
-    assert(sx.size() == b.size());
+   if (sx.size() != b.size()) {
+        throw std::runtime_error("MappedSegments::matric2total: Size mismatch");
+    }
     std::transform(sx.begin( ), sx.end( ), b.begin( ), sx.begin( ),std::plus<double>( ));
     return sx;
 }
@@ -515,7 +517,9 @@ std::vector<double> MappedSegments::matric2total(std::vector<double> sx) const {
  */
 std::vector<double> MappedSegments::total2matric(std::vector<double> sx) const{
     std::vector<double> b = this->getSegmentZ();
-    assert(sx.size() == b.size());
+    if (sx.size() != b.size()) {
+        throw std::runtime_error("MappedSegments::total2matric: Size mismatch");
+    }
     std::transform(sx.begin( ), sx.end( ), b.begin( ), sx.begin( ),std::minus<double>( ));
     return sx;
 }
@@ -557,6 +561,27 @@ Vector3d MappedSegments::getMinBounds() {
         }
     }
     return min_;
+}
+
+/**
+ * Calculates the maximum of node coordinates
+ * (e.g. maximum corner of bounding box)
+ * value not cached
+ */
+Vector3d MappedSegments::getMaxBounds() {
+    Vector3d max_ = Vector3d(nodes[0].x, nodes[0].y, nodes[0].z);
+    for (const auto& n : nodes) {
+        if (n.x > max_.x) {
+            max_.x = n.x;
+        }
+        if (n.y > max_.y) {
+            max_.y = n.y;
+        }
+        if (n.z > max_.z) {
+            max_.z = n.z;
+        }
+    }
+    return max_;
 }
 
 int MappedSegments::getSegment2leafId(int si_){

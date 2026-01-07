@@ -1,7 +1,14 @@
+<<<<<<< HEAD
 import sys;sys.path.append("../..");sys.path.append("../../src/")  # |\label{l14:path}|
 
 import plantbox as pb  # |\label{l14:cplantbox}|
 import visualisation.vtk_plot as vp  # |\label{l14:vtk_plot}|
+=======
+"""How to modify parameters"""
+
+import plantbox as pb  # |\label{l14:cplantbox}|
+import plantbox.visualisation.vtk_plot as vp  # |\label{l14:vtk_plot}|
+>>>>>>> origin/master
 
 plant = pb.Plant()  # Create a new plant |\label{l14:plant}|
 
@@ -16,6 +23,7 @@ stem = plant.getOrganRandomParameter(pb.stem)  # |\label{l14:stem}|
 leaf = plant.getOrganRandomParameter(pb.leaf)  # |\label{l14:leaf}|
 seed = plant.getOrganRandomParameter(pb.seed)  # |\label{l14:seed}|
 
+<<<<<<< HEAD
 print(root[1], stem[1], leaf[1], "\n")  # Print parameters of subType 1 of root, stem, and leaf  |\label{l14:print}|
 print(seed[0], "\n")  # Print the seed parameter  |\label{l14:print_seed}|
 
@@ -24,13 +32,30 @@ root[1].r = 5  # Change elongation rate (r [cm/day]) |\label{l14:change_params_r
 root[1].ln = 0.25  # Change inter-lateral distance (ln [cm]) |\label{l14:change_params_ln}|
 root[2].dx = 0.5  # Change axial resolution (dx [cm]) |\label{l14:change_params_dx}|
 root[2].dxMin = 0.1  # Change minimal axial resolution (dxMin [cm])
+=======
+print(root[1], stem[1], leaf[1], "\n")  # Print sub type 1 |\label{l14:print}|
+print(seed[0], "\n")  # Print the seed parameter  |\label{l14:print_seed}|
+
+# Change a parameter
+root[1].r = 5  # Change elongation rate r (cm/day]) |\label{l14:change_params_r}|
+root[1].ln = 0.25  # Change inter-lateral distance ln (cm) |\label{l14:change_params_ln}|
+root[2].dx = 0.5  # Change axial resolution dx (cm) |\label{l14:change_params_dx}|
+root[2].dxMin = 0.1  # Change minimal axial resolution dxMin (cm)
+>>>>>>> origin/master
 
 print(root[1])  # Print new root parameters |\label{l14:print_new}|
 
 plant.initialize()  # Initialize |\label{l14:initialize}|
+<<<<<<< HEAD
 
 simtime = 40  # days
 plant.simulate(simtime)  # Simulate|\label{l14:simulate}|
 
 # Plot
 vp.plot_plant(plant, "organType")
+=======
+simtime = 40  # days
+plant.simulate(simtime)  # Simulate|\label{l14:simulate}|
+
+vp.plot_plant(plant, "organType")  # Plot
+>>>>>>> origin/master

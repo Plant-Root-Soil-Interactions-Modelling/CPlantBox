@@ -4,7 +4,6 @@
 #include "Organ.h"
 #include "Organism.h"
 #include "MappedOrganism.h"
-#include "XylemFlux.h"
 #include "PlantHydraulicParameters.h"
 #include "PlantHydraulicModel.h"
 
@@ -189,28 +188,6 @@ void SegmentAnalyser::addAge(double simTime)
 }
 
 /**
- * Adds kr and kx to the user data for vizualisation ("kr", "kx"),
- *
- * @param rs    XylemFlux for determination of radial and axial conductivities (kr, and kx)
- */
-void SegmentAnalyser::addConductivities(const XylemFlux& rs, double simTime, double kr_max, double kx_max)
-{
-    // std::cout << "creationTime " << data["creationTime"].size() << ", " << data["subType"].size() << ", " << data["organType"].size() << "\n";
-
-    std::vector<double> kr(segments.size());
-    std::vector<double> kx(segments.size());
-    for (size_t i=0; i<kr.size(); i++) {
-        double age = simTime - data["creationTime"].at(i);
-        int subType = (int) data["subType"].at(i);
-        int organType = (int) data["organType"].at(i);
-        kr.at(i) = std::min(rs.kr_f(i, age, subType, organType), kr_max);
-        kx.at(i) = std::min(rs.kx_f(i, age, subType, organType), kx_max);
-    }
-    this->addData("kr",kr);
-    this->addData("kx",kx);
-}
-
-/**
  * Evaluates kr and kx using PlantHydraulicParameters
  * and adds kr and kx per segment to the user data for vizualisation ("kr", "kx"),
  *
@@ -321,7 +298,10 @@ std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) 
         return d;
     }
     for (size_t i=0; i<segO.size(); i++) { // else pass to Organs
+<<<<<<< HEAD
         // std::cout << "SegmentAnalyser::getParameter passing to Organs" << std::flush << "\n";
+=======
+>>>>>>> origin/master
         if (!segO.at(i).expired()) {
             d.at(i) = segO.at(i).lock()->getParameter(name);
         } else { // in case the segment has no origin

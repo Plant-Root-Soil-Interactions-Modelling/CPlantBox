@@ -2,7 +2,7 @@
 import numpy as np
 from scipy import sparse
 import scipy.sparse.linalg as LA
-from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver
 # from plantbox import PhloemFlux
 
 

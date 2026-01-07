@@ -1,0 +1,29 @@
+[tool.ruff]
+lint.select = ["E", "F", "I"]
+line-length = 320
+fix = true
+unsafe-fixes = true
+lint.ignore = ["E741", "E742", "E743"]
+exclude = ["examples", "figures", "jupyter", "latex", "__pycache__"]
+
+
+[tool.ruff.lint.isort]
+# Combine imports from the same module (e.g., "from x import a, b")
+combine-as-imports = true
+# combine-star = true
+known-first-party = ["rosi", "plantbox","my_project"]
+# known-third-party = ["matplotlib", "numpy", "pyevtk"]
+section-order = ["standard-library", "third-party", "first-party", "local-folder"]
+# Keep all imports together (no blank lines between stdlib, third-party, local)
+# no-sections = true
+# Don’t leave blank lines between different import types
+lines-between-types = 0
+# Sort imports alphabetically within their section
+force-sort-within-sections = true
+
+
+#
+# run ruff: 
+#
+# ruff check . --fix
+# ruff format . 

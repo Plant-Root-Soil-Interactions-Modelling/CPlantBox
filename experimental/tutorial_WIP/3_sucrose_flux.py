@@ -6,10 +6,10 @@ import sys; sys.path.append(sourcedir); sys.path.append(sourcedir+"/src")
 sys.path.append(sourcedir+"/modelparameter/functional")
 import importlib
 import plantbox as pb
-import visualisation.vtk_plot as vp # for quick 3d vizualisations
+import plantbox.visualisation.vtk_plot as vp # for quick 3d vizualisations
 import matplotlib.pyplot as plt # for 2d plots
 import numpy as np
-from functional.phloem_flux import PhloemFluxPython  
+from plantbox.functional.phloem_flux import PhloemFluxPython  
 from plant_photosynthesis.wheat_FcVB_Giraud2023adapted import *
 from plant_hydraulics.wheat_Giraud2023adapted import *
 from plant_sucrose.wheat_phloem_Giraud2023adapted import *

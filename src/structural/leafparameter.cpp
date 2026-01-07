@@ -2,6 +2,7 @@
 #include "leafparameter.h"
 
 #include "Organism.h"
+#include "tropism.h"
 
 #include <cmath>
 #include <iostream>

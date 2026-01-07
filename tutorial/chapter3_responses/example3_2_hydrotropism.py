@@ -1,4 +1,5 @@
 """hydrotropism in a thin layer"""
+<<<<<<< HEAD
 import sys; sys.path.append("../.."); sys.path.append("../../src/") # |\label{l3_2_hydrotropism:libsstart}|
 
 import plantbox as pb
@@ -16,6 +17,24 @@ for p in rs.getOrganRandomParameter(pb.root):
         p.tropismT = pb.TropismType.hydro
         p.tropismN = 2  # strength of tropism
         p.tropismS = sigma[p.subType - 1] # |\label{l3_2_hydrotropism:tsetend}|
+=======
+
+import plantbox as pb
+import plantbox.visualisation.vtk_plot as vp
+
+rs = pb.Plant()
+path = "../../modelparameter/structural/rootsystem/" # |\label{l3_2_hydrotropism:libsstart}|
+name = "Anagallis_femina_Leitner_2010"
+rs.readParameters(path + name + ".xml")  # |\label{l3_2_hydrotropism:libsend}|
+
+# Manually set tropism to hydrotropism for the first ten root types
+sigma = [0.4, 1.0, 1.0, 1.0, 1.0] * 2  # |\label{l3_2_hydrotropism:tsetstart}|
+for p in rs.getOrganRandomParameter(pb.root):
+    p.dx = 0.25  # adjust resolution
+    p.tropismT = pb.TropismType.hydro
+    p.tropismN = 1.8  # strength of tropism
+    p.tropismS = sigma[p.subType - 1]  # |\label{l3_2_hydrotropism:tsetend}|
+>>>>>>> origin/master
 
 # Static soil property in a thin layer
 maxS = 0.7  # maximal # |\label{l3_2_hydrotropism:soilpropstart}|
@@ -23,10 +42,17 @@ minS = 0.1  # minimal
 slope = 5  # linear gradient between min and max (cm)
 box = pb.SDF_PlantBox(30, 30, 2)  # cm
 layer = pb.SDF_RotateTranslate(box, pb.Vector3d(0, 0, -16))
+<<<<<<< HEAD
 soil_prop = pb.SoilLookUpSDF(layer, maxS, minS, slope) # |\label{l3_2_hydrotropism:soilpropend}|
 
 # Set the soil properties before calling initialize
 rs.setSoil(soil_prop) # |\label{l3_2_hydrotropism:set&simstart}|
+=======
+soil_prop = pb.SoilLookUpSDF(layer, maxS, minS, slope)  # |\label{l3_2_hydrotropism:soilpropend}|
+
+# Set the soil properties before calling initialize
+rs.setSoil(soil_prop)  # |\label{l3_2_hydrotropism:set&simstart}|
+>>>>>>> origin/master
 
 # Initialize
 rs.initialize()
@@ -37,7 +63,11 @@ dt = 1
 N = round(simtime / dt)
 for _ in range(0, N):
     # in a dynamic soil setting you would need to update the soil properties (soil_prop)
+<<<<<<< HEAD
     rs.simulate(dt) # |\label{l3_2_hydrotropism:set&simend}|
+=======
+    rs.simulate(dt)  # |\label{l3_2_hydrotropism:set&simend}|
+>>>>>>> origin/master
 
 # Export results (as vtp) # |\label{l3_2_hydrotropism:resultsstart}|
 rs.write("results/example3_2_hydrotropism.vtp")
@@ -47,4 +77,8 @@ rs.setGeometry(layer)  # just for vizualisation
 rs.write("results/example3_2_hydrotropism.py")
 
 # Plot, using vtk
+<<<<<<< HEAD
 vp.plot_roots(rs, "type") # |\label{l3_2_hydrotropism:resultsend}|
+=======
+vp.plot_roots_and_container(rs, layer, "type")  # |\label{l3_2_hydrotropism:resultsend}|
+>>>>>>> origin/master

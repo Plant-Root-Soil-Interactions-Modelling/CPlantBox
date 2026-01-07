@@ -1,6 +1,6 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
-import rsml.rsml_reader as rsml
+import plantbox.rsml.rsml_reader as rsml
 
 import numpy as np
 from scipy.optimize import minimize

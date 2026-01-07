@@ -488,10 +488,6 @@ void Stem::storeLinkingNodeLocalId(int numCreatedLN, bool verbose)
 		throw std::runtime_error("wrong number of linking nodes in stem: "+std::to_string(numCreatedLN)
 		+" against "+std::to_string(localId_linking_nodes.size()));
 	}
-	if(verbose)
-	{
-		std::cout<<"Stem::storeLinkingNodeLocalId "<<numCreatedLN<<" "<<(nodes.size()-1)<<" "<<localId_linking_nodes.size()<<std::endl;
-	}
 }
 
 /**
@@ -574,3 +570,7 @@ std::string Stem::toString() const
 }
 
 } // namespace CPlantBox
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master

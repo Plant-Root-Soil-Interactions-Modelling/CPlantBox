@@ -5,11 +5,18 @@ original source: tutorial/examples/example1a_small.py
 m.vianna@fz-juelich.de
 Jun-2025
 """
+<<<<<<< HEAD
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 
 import plantbox as pb
 #import visualisation.vtk_plot as vp
+=======
+
+
+import plantbox as pb
+#import plantbox.visualisation.vtk_plot as vp
+>>>>>>> origin/master
 
 rs = pb.Plant()
 

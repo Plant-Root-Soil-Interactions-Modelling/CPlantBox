@@ -8,7 +8,11 @@ sys.path.append("..")
 import plantbox as pb
 import matplotlib.pyplot as plt
 from rb_tools import *
+<<<<<<< HEAD
 from rsml import *
+=======
+from plantbox.rsml import *
+>>>>>>> origin/master
 from cmath import pi
 
 dx = 1

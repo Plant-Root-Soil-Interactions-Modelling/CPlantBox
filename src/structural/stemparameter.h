@@ -78,11 +78,12 @@ public:
      */
     double lb = 0.; 	    ///< Basal zone [cm]
     double lbs = 0.;        ///< Standard deviation basal zone [cm]
-    double la = 10.;	    ///< Apical zone [cm];
+    double la = 0.;	    ///< Apical zone [cm];
     double las = 0.;    	///< Standard deviation apical zone [cm];
     double ln = 1; 		    ///< Inter-lateral distance [cm]
     double lns = 0.;    	///< Standard deviation inter-lateral distance [cm]
     int lnf = 0;            ///< type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)
+
     double lmax = 0.;       ///< Maximal stem length [cm]
     double lmaxs = 0.;      ///< Standard deviation of maximal stem length [cm]
     double r = 1;		    ///< Initial growth rate [cm day-1]
@@ -92,10 +93,10 @@ public:
     double initBeta = 0.2;	///< Initial RevRotation
     int tropismT = 1;	    ///< Stem tropism parameter (Type) tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_antigravi = 4, tt_twist = 5,  tt_antigravi2gravi = 6
     double tropismN = 1.;   ///< Stem tropism parameter (number of trials)
-    double tropismS = 0.2;  ///< Stem tropism parameter (mean value of expected changeg) [1/cm]
+    double tropismS = 0.;  ///< Stem tropism parameter (mean value of expected changeg) [1/cm]
 	double tropismAge = 0.;	///< Leaf tropism parameter (age when switch tropism)
 	double tropismAges = 0.;///< Leaf tropism parameter (age when switch tropism, standard deviation)
-    double theta = 1.22; 	///< Angle between stem and parent stem (rad)
+    double theta = 0.; 	///< Angle between stem and parent stem (rad)
     double thetas= 0.; 	    ///< Standard deviation angle between stem and parent stem (rad)
     double rlt = 1e9;		///< Stem life time (days)
     double rlts = 0.;	    ///< Standard deviation stem life time (days)

@@ -2,7 +2,11 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
+<<<<<<< HEAD
 import visualisation.vtk_plot as vp
+=======
+import plantbox.visualisation.vtk_plot as vp
+>>>>>>> origin/master
 
 rs = pb.Plant()
 

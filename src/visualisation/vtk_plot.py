@@ -1,11 +1,10 @@
 import plantbox as pb
-from visualisation.vtk_tools import *
+from plantbox.visualisation.vtk_tools import *
 
 import time
 import numpy as np
 import vtk
 from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank(); max_rank = comm.Get_size()
-# from IPython.display import Image, display
 
 """
 VTK Plot, by Daniel Leitner (refurbished 06/2020)
@@ -20,7 +19,7 @@ def plot_leaf(leaf):
     """
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
-    create_leaf(leaf, leaf_points, leaf_polys)
+    create_leaf_(leaf, leaf_points, leaf_polys)
     polyData = vtk.vtkPolyData()
     polyData.SetPoints(leaf_points)
     polyData.SetPolys(leaf_polys)
@@ -98,7 +97,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
 
 
 def create_leaf_(leaf, leaf_points, leaf_polys):
-    """ used by plot plant """
+    """ used by plot plant, and cplantbox dash gui; adds to leaf_points, and leaf_polys """
     offs = leaf_points.GetNumberOfPoints()
     globalIdx_y = []  # index of y node
     for i in range(0, leaf.getNumberOfNodes() - 1):  #
@@ -330,8 +329,8 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
         writer.SetInputConnection(windowToImageFilter.GetOutputPort())
         writer.Write()
 
-        # move this somewhere else?
-        im = Image(writer.GetResult(), format = "jpeg")
+        from IPython.display import Image, display
+        im = Image(writer.GetResult(), format = "jpeg")  # move this somewhere else?
         display(im)
 
 
@@ -641,6 +640,10 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     if sol_ind > 0:
         solute = np.array(s.getSolution(sol_ind))
 
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank();  # moved it here because it caused trouble for webapp server
+
     if rank == 0:
         if isinstance(rs, pb.SegmentAnalyser):
             ana = rs
@@ -682,13 +685,12 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
             write_vtu(path + filename + ".vtu", soil_grid)
 
 
-
 def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
     @param s             soil, of type RichardsSP, or RichardsNCSP
-    @param rp            root parameter segment data (will be added, in case SegmentAnalyser is creaeted)
+    @param rp            root parameter segment data (will be added, in case SegmentAnalyser is created)
     @param periodic      if yes the root system will be mapped into the domain
     @param min_b         minimum of domain boundaries
     @param max_b         maximum of domain boundaries
@@ -699,6 +701,11 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     pHead = np.array(s.getSolutionHead())
     if sol_ind > 0:
         solute = np.array(s.getSolution(sol_ind))
+
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()  # moved it here because it caused trouble for webapp server
+
     if rank == 0:
         if isinstance(rs, pb.SegmentAnalyser):
             ana = rs
@@ -825,6 +832,23 @@ def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
         soil_grid.GetCellData().AddArray(d)
     write_vtu(filename + ".vtu", soil_grid)
 
+def write_soil_mpi(filename, hs, wc, min_b, max_b, cell_number):  
+    """ Writes results of a macroscopic soil model (e.g. Richards, RichardsNC) as vtu file
+        @param filename      filename without extension 
+        @parma hs            pressure head
+        @parma wc            water content
+        @parma min_b         minimum of bounding box
+        @parma max_b         maximum of bounding box
+        @parma cell_number   resolution of soil grid
+    """
+    soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+    soil_water_content = vtk_data(np.array(wc))
+    soil_water_content.SetName("water content")
+    soil_grid.GetCellData().AddArray(soil_water_content)
+    soil_pressure = vtk_data(np.array(hs))
+    soil_pressure.SetName("pressure head")  # in macroscopic soil
+    soil_grid.GetCellData().AddArray(soil_pressure)
+    write_vtu(filename + ".vtu", soil_grid)                    
 
 def write_plant(filename, plant, add_params = []):
     """ write the plants organ ceneterlines and leafs into two seperate vtp files"""

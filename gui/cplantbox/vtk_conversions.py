@@ -1,38 +1,33 @@
-from vtk.util import numpy_support
+import base64 
+import json
+import zlib
+
 import vtk
+
 import numpy as np
-
 import plotly.graph_objs as go
+from vtk.util import numpy_support
 
 
-def vtk_polyline_to_dict(polydata):
-    """ converts polylines to a dict """
-    points = polydata.GetPoints()
-    lines = polydata.GetLines()
 
-    n_points = points.GetNumberOfPoints()
-    n_lines = lines.GetNumberOfCells()
-
-    # Points array
-    pts = np.array([points.GetPoint(i) for i in range(n_points)], dtype = np.float32)
-    pts = pts.flatten().tolist()
-
-    # Lines connectivity array
-    lines.InitTraversal()
-    id_list = vtk.vtkIdList()
-    conn = []
-
-    for _ in range(n_lines):
-        lines.GetNextCell(id_list)
-        conn.append(id_list.GetNumberOfIds())
-        for j in range(id_list.GetNumberOfIds()):
-            conn.append(id_list.GetId(j))
-
-    return {
-        "points": pts,
-        "lines": conn,
+def encode_array(arr: np.ndarray) -> str:
+    """ numpy -> json string """
+    payload = {
+        "data": base64.b64encode(zlib.compress(arr.tobytes())).decode("ascii"),
+        "dtype": str(arr.dtype),
+        "shape": arr.shape,
     }
+    return json.dumps(payload)
 
+
+def decode_array(json_str: str) -> np.ndarray:
+    """ json string -> numpy"""
+    payload = json.loads(json_str)
+    arr = np.frombuffer(
+        zlib.decompress(base64.b64decode(payload["data"])),
+        dtype=payload["dtype"],
+    ).reshape(payload["shape"])
+    return arr
 
 def vtk_polydata_to_dashvtk_dict(polydata):
     """Converts vtkPolyData to a dictionary with optimized handling for large arrays."""
@@ -41,19 +36,17 @@ def vtk_polydata_to_dashvtk_dict(polydata):
 
     n_points = points.GetNumberOfPoints()
     n_polys = polys.GetNumberOfCells()
-    print(f"Number of points: {n_points}, polys: {n_polys}")
+    print(f"vtk_polydata_to_dashvtk_dict(): Number of points: {n_points}, polys: {n_polys}")
 
     # Efficiently extract points to a numpy array
-    pts_array = vtk.util.numpy_support.vtk_to_numpy(points.GetData()).astype(np.float32)
-    pts = pts_array.flatten().tolist()
+    pts_array = vtk.util.numpy_support.vtk_to_numpy(points.GetData()).astype(np.float16)
 
     # Efficiently extract polygon connectivity
-    polys_data = vtk.util.numpy_support.vtk_to_numpy(polys.GetData())
-    conn = polys_data.tolist()
+    polys_array = vtk.util.numpy_support.vtk_to_numpy(polys.GetData()).astype(np.int32)
 
     vtk_data = {
-        "points": pts,
-        "polys": conn,
+        "points": encode_array(pts_array),
+        "polys": encode_array(polys_array)
     }
 
     return vtk_data
@@ -112,7 +105,7 @@ def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, widt
     fig.update_layout(
         width = width,
         height = height,
-        margin = dict(l = 10, r = 0, t = 10, b = 10),  # for the text
+        margin = dict(l = 10, r = 0, t = 0, b = 0),  # for the text
         yaxis = dict(
             showticklabels = False,
             showgrid = False,
@@ -122,3 +115,30 @@ def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, widt
     )
     return fig
 
+# def vtk_polyline_to_dict(polydata):
+#     """ converts polylines to a dict """
+#     points = polydata.GetPoints()
+#     lines = polydata.GetLines()
+#
+#     n_points = points.GetNumberOfPoints()
+#     n_lines = lines.GetNumberOfCells()
+#
+#     # Points array
+#     pts = np.array([points.GetPoint(i) for i in range(n_points)], dtype = np.float32)
+#     pts = pts.flatten().tolist()
+#
+#     # Lines connectivity array
+#     lines.InitTraversal()
+#     id_list = vtk.vtkIdList()
+#     conn = []
+#
+#     for _ in range(n_lines):
+#         lines.GetNextCell(id_list)
+#         conn.append(id_list.GetNumberOfIds())
+#         for j in range(id_list.GetNumberOfIds()):
+#             conn.append(id_list.GetId(j))
+#
+#     return {
+#         "points": pts,
+#         "lines": conn,
+#     }

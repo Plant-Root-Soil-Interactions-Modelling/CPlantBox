@@ -9,8 +9,6 @@
 
 namespace CPlantBox {
 
-class RootState;
-
 /**
  * Root
  *
@@ -20,8 +18,6 @@ class RootState;
  */
 class Root :public Organ
 {
-
-    friend RootState;
 
 public:
 

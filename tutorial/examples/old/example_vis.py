@@ -2,8 +2,13 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/"); sys.path.append("./"); sys.path.append("./src/")
 
 import plantbox as pb
+<<<<<<< HEAD
 import visualisation.vtk_plot as vp
 import visualisation.vis_tools as cpbvis
+=======
+import plantbox.visualisation.vtk_plot as vp
+import plantbox.visualisation.vis_tools as cpbvis
+>>>>>>> origin/master
 
 import numpy as np
 

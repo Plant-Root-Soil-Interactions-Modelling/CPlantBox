@@ -1,0 +1,210 @@
+<plant>
+    <seed name="undefined" subType="0">
+        <parameter name="delayDefinition" value="0"/>
+        <!--method implemented to evaluate lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
+        <parameter name="maxTil" value="0"/>
+        <!--Maximal number of tillers [1]-->
+        <parameter name="a" value="0.1"/>
+        <!--radius [cm]-->
+        <parameter name="delayB" value="1e+09"/>
+        <!--Time delay between the basal roots [day]-->
+        <parameter name="delayRC" value="1e+09"/>
+        <!--Delay between the root crowns [day]-->
+        <parameter name="delaySB" value="1e+09"/>
+        <!--Time delay between the shoot borne roots [day]-->
+        <parameter name="delayTil" value="1e+09"/>
+        <!--Time delay between the tillers [day]-->
+        <parameter name="dx" value="0.25"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="1e-06"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="firstB" value="1e+09"/>
+        <!--Emergence of first basal root [day]-->
+        <parameter name="firstSB" value="1e+09"/>
+        <!--First emergence of a shoot borne root [day]-->
+        <parameter name="firstTil" value="1e+09"/>
+        <!--Emergence of first tiller [day]-->
+        <parameter name="ldelay" value="-1"/>
+        <!--Lateral emergence delay [day]-->
+        <parameter name="maxB" value="0"/>
+        <!--Maximal number of basal roots [1]-->
+        <parameter name="nC" value="0"/>
+        <!--Maximal number of roots per root crown [1]-->
+        <parameter name="nz" value="1"/>
+        <!--Distance between the root crowns along the shoot [cm]-->
+        <parameter name="seedPos.x" value="0"/>
+        <!--X-Coordinate of seed position [cm]-->
+        <parameter name="seedPos.y" value="0"/>
+        <!--Y-Coordinate of seed position [cm]-->
+        <parameter name="seedPos.z" value="-3"/>
+        <!--Z-Coordinate of seed position [cm]-->
+        <parameter name="simulationTime" value="30"/>
+        <!--Recommended final simulation time  [day]-->
+    </seed>
+    <root name="Tap" subType="1">
+        <parameter name="gf" value="1"/>
+        <!--Growth function number [1]-->
+        <parameter name="tropismT" value="1"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.1"/>
+        <!--radius [cm]-->
+        <parameter name="colorB" value="0.2"/>
+        <!--Root color, blue component [0.-1.]-->
+        <parameter name="colorG" value="0.2"/>
+        <!--Root color, green component [0.-1.]-->
+        <parameter name="colorR" value="0.60000002"/>
+        <!--Root color, red component [0.-1.]-->
+        <parameter name="dx" value="0.25"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="1e-06"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="hairsElongation" value="0"/>
+        <!--Zone behind the tip without root hairs  [cm]-->
+        <parameter name="hairsLength" value="0"/>
+        <!--Root hair length [cm]-->
+        <parameter name="hairsZone" value="0"/>
+        <!--Length of the root hair zone [cm]-->
+        <parameter name="la" value="0"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lb" value="1"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="-1"/>
+        <!--Lateral root emergence delay [day]-->
+        <parameter name="lmax" value="3"/>
+        <!--Maximal root length [cm]-->
+        <parameter name="ln" value="0"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="lnk" value="0"/>
+        <!--Slope of inter-lateral distances [1]-->
+        <parameter name="r" value="1"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Root life time [day]-->
+        <parameter name="theta" value="0"/>
+        <!--Angle between root and parent root [rad]-->
+        <parameter name="tropismN" value="1"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.2"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+    </root>
+    <stem name="Stem" subType="1">
+        <parameter name="gf" value="1"/>
+        <!--Growth function number [1]-->
+        <parameter name="lnf" value="0"/>
+        <!--Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)-->
+        <parameter name="nodalGrowth" value="0"/>
+        <!--nodal growth function (sequential = 0, equal = 0)-->
+        <parameter name="tropismT" value="1"/>
+        <!--Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="BetaDev" value="0.2"/>
+        <!--RevRotation deviation-->
+        <parameter name="InitBeta" value="0.2"/>
+        <!--Initial RevRotation-->
+        <parameter name="RotBeta" value="0.60000002"/>
+        <!--RevRotation of the stem-->
+        <parameter name="a" value="0.1"/>
+        <!--Stem radius [cm]-->
+        <parameter name="delayNGEnd" value="0"/>
+        <!--delay between stem creation and start of nodal growth-->
+        <parameter name="delayNGStart" value="0"/>
+        <!--delay between stem creation and start of nodal growth-->
+        <parameter name="dx" value="0.25"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="1e-06"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="la" value="3"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lb" value="2"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="-1"/>
+        <!--delay between latteral creation and start of nodal growth-->
+        <parameter name="lmax" value="20"/>
+        <!--Maximal stem length [cm]-->
+        <parameter name="ln" value="3"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="r" value="1"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Stem life time [day]-->
+        <parameter name="theta" value="0"/>
+        <!--Angle between stem and parent stem [rad]-->
+        <parameter name="tropismAge" value="0"/>
+        <!--Age at which organ switch tropism-->
+        <parameter name="tropismN" value="1"/>
+        <!--Number of trials of stem tropism-->
+        <parameter name="tropismS" value="0.2"/>
+        <!--Mean value of expected change of stem tropism [1/cm]-->
+        <parameter name="successor" ruleId="0" subType="1" organType="4" percentage="1"/>
+        <!--Sub type of lateral -->
+    </stem>
+    <leaf name="Leaf" subType="1">
+        <parameter name="geometryN" value="100"/>
+        <!--leaf geometry resolution-->
+        <parameter name="gf" value="1"/>
+        <!--Growth function number [1]-->
+        <parameter name="isPseudostem" value="0"/>
+        <!--Do the leaf sheaths make a pseudostem?-->
+        <parameter name="lnf" value="0"/>
+        <!--Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)-->
+        <parameter name="parametrisationType" value="0"/>
+        <!--Leaf geometry parametrisation type-->
+        <parameter name="shapeType" value="2"/>
+        <!--leaf shape type for definition of area and volume (cylinder = 0, cuboid = 1, user-defined 2D shape= 2)-->
+        <parameter name="tropismT" value="1"/>
+        <!--Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="BetaDev" value="0.2"/>
+        <!--RevRotation deviation-->
+        <parameter name="InitBeta" value="0.2"/>
+        <!--Initial RevRotation-->
+        <parameter name="RotBeta" value="0.60000002"/>
+        <!--RevRotation of the leaf-->
+        <parameter name="Width_blade" value="0"/>
+        <!--width blade [cm]-->
+        <parameter name="Width_petiole" value="0"/>
+        <!--width petiole [cm]-->
+        <parameter name="a" value="0.1"/>
+        <!--radius [cm]-->
+        <parameter name="areaMax" value="78.625"/>
+        <!--Maximal leaf area [cm2]-->
+        <parameter name="dx" value="0.25"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="1e-06"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="la" value="5"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lb" value="1"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="-1"/>
+        <!--Lateral emergence delay [day]-->
+        <parameter name="lmax" value="11"/>
+        <!--Maximal leaf length [cm]-->
+        <parameter name="ln" value="1"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="r" value="1"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Leaf life time [day]-->
+        <parameter name="theta" value="1.22"/>
+        <!--Angle between leaf and parent leaf [rad]-->
+        <parameter name="tropismAge" value="0"/>
+        <!--Age at which organ switch tropism-->
+        <parameter name="tropismN" value="1"/>
+        <!--Number of trials of leaf tropism-->
+        <parameter name="tropismS" value="0.2"/>
+        <!--Mean value of expected change of leaf tropism [1/cm]-->
+        <parameter name="leafGeometry" phi="-1.5707963267948966" x="5"/>
+        <!--Leaf geometry parametrisation parameter-->
+        <parameter name="leafGeometry" phi="-0.78539816339744828" x="5"/>
+        <!--Leaf geometry parametrisation parameter-->
+        <parameter name="leafGeometry" phi="0" x="5"/>
+        <!--Leaf geometry parametrisation parameter-->
+        <parameter name="leafGeometry" phi="0.78539816339744828" x="5"/>
+        <!--Leaf geometry parametrisation parameter-->
+        <parameter name="leafGeometry" phi="1.1780972450961724" x="5"/>
+        <!--Leaf geometry parametrisation parameter-->
+        <parameter name="leafGeometry" phi="1.2217304763960306" x="5"/>
+        <!--Leaf geometry parametrisation parameter-->
+        <parameter name="leafGeometry" phi="1.5707963267948966" x="5"/>
+        <!--Leaf geometry parametrisation parameter-->
+    </leaf>
+</plant>
