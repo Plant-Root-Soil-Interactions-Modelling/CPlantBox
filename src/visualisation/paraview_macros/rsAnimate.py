@@ -72,11 +72,7 @@ threshold1Display.SetScalarBarVisibility(renderView1, True)
 renderView1.ResetCamera()
 
 # get animation track
-<<<<<<< HEAD
-threshold1ThresholdBetweenTrack = GetAnimationTrack('ThresholdBetween', index=1, proxy=threshold1)
-=======
 threshold1ThresholdBetweenTrack = GetAnimationTrack('UpperThreshold', proxy=threshold1)
->>>>>>> master
 
 # create keyframes for this animation track
 

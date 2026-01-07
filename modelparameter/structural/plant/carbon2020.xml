@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Plant name="maize" filetype="parameters">
 <organ type="seed" subType="0">
-<<<<<<< HEAD
-    <parameter name="seedPos.x" value="0"/>
-=======
     <parameter name="seedPos.x" value="0.1"/>
->>>>>>> master
     <parameter name="seedPos.y" value="0"/>
     <parameter name="seedPos.z" value="-2"/>
     <parameter name="plantingdepth" value="3"/>
@@ -117,11 +113,7 @@
     <parameter name="theta" value="0" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
-<<<<<<< HEAD
-    <parameter name="successor" number="0" type="2" percentage="1"/>
-=======
     <parameter name="successor" number="0" organType="4" subType="2" percentage="1"/>
->>>>>>> master
 </organ>
 
 <organ type="stem" name="setleaf" subType="2">
@@ -171,11 +163,7 @@
     <parameter name="theta" value="2" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
-<<<<<<< HEAD
-    <parameter name="successor" number="0" type="2" percentage="1"/>
-=======
     <parameter name="successor" number="0" organType="4" subType="2" percentage="1"/>
->>>>>>> master
 </organ>
 
 <organ type="leaf" name="lateral1" subType="2">

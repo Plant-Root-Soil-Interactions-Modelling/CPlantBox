@@ -11,10 +11,6 @@ def setPhotosynthesisParameters(r,weatherInit):
     r.theta = 0.6            #effect of light on photon flux rate
     r.pCO2 = weatherInit["cs"] #external CO2 partial rpessure
     SPAD= 41.0
-<<<<<<< HEAD
     chl_ = (0.114 *(SPAD**2)+ 7.39 *SPAD+ 10.6)/10
-=======
-    chl_ = (0.114 *(SPAD**2)+ 7.39 *SPAD+ 10.6) # Quian 2021, doi: 10.1029/2020JG006076
->>>>>>> master
     r.Chl = np.array( [chl_]) #leaf chlorophyle content (mean value or defined per leaf segment)
     return r

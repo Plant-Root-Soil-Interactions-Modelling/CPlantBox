@@ -5,7 +5,6 @@ import sys; sys.path.append(".."); sys.path.append("../src/")
 import plantbox as pb
 
 
-<<<<<<< HEAD
 # plant_path = "structural/plant"
 root_path = "structural/rootsystem"
 # plant_file = ""
@@ -14,15 +13,6 @@ root_path = "structural/rootsystem"
 # p = pb.Plant()
 # p.readParameters(root_path +"/"+ root_file +".xml")
 # p.writeParameters(root_file+".xml")
-=======
-plant_path = "structural/plant"
-root_path = "structural/rootsystem"
-filename = "Anagallis_femina_Leitner_2010"
-
-plant = pb.Plant()
-plant.readParameters(root_path +"/"+ filename +".xml",verbose = True)
-plant.writeParameters(filename +".xml")
->>>>>>> master
 
 
 # plant_directory = os.fsencode(plant_path)
@@ -37,7 +27,6 @@ root_directory = os.fsencode(root_path)
 #          p.writeParameters(filename)
 
 
-<<<<<<< HEAD
 for root_file in os.listdir(root_directory):
     filename = os.fsdecode(root_file)
     if filename.endswith(".xml") and not os.path.isfile(filename):
@@ -45,13 +34,4 @@ for root_file in os.listdir(root_directory):
          p = pb.Plant()
          p.readParameters(os.path.join(root_path, filename))
          p.writeParameters(filename)
-=======
-# for root_file in os.listdir(root_directory):
-#     filename = os.fsdecode(root_file)
-#     if filename.endswith(".xml") and not os.path.isfile(filename):
-#          print(filename)
-#          p = pb.Plant()
-#          p.readParameters(os.path.join(root_path, filename))
-#          p.writeParameters(filename)
->>>>>>> master
 

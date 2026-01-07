@@ -118,11 +118,7 @@
     <!--parameter name="RotBeta" value="1" dev="0"/-->
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
-<<<<<<< HEAD
-    <parameter name="successor" number="0" type="2" percentage="1"/>
-=======
     <parameter name="successor" number="0" organType="4" subType="1" percentage="1"/>
->>>>>>> master
 </organ>
 
 

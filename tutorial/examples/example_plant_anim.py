@@ -93,11 +93,7 @@ for p in plant.getOrganRandomParameter(pb.root):
 # Initialize
 plant.initialize()
 
-<<<<<<< HEAD
-dt = 0.1
-=======
 dt = 1
->>>>>>> master
 N = 400
 min_ = np.array([-20, -20, -50])
 max_ = np.array([20, 20, 30.])

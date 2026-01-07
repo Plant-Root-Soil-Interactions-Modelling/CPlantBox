@@ -122,15 +122,9 @@
     <!--parameter name="RotBeta" value="1" dev="0"/-->
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
-<<<<<<< HEAD
-    <parameter name="successor" 		   type="2" 			  percentage="1"  where="-0,-3"/>
-    <parameter name="successor" numLat="2" type="1" organType="4" probability="1" where="0"/>
-    <parameter name="successor" numLat="1" type="1" organType="2" percentage="1"  where="3"/>
-=======
     <parameter name="successor" number="0" type="2" percentage="1" where="-0,-3"/>
     <parameter name="successor" number="1" numLat="2" type="1" organType="4" percentage="1" where="0"/>
     <parameter name="successor" number="2" numLat="1" type="1" organType="2" percentage="1"  where="3"/>
->>>>>>> master
 </organ>
 
 <organ type="leaf" name="lateral1" subType="1">
