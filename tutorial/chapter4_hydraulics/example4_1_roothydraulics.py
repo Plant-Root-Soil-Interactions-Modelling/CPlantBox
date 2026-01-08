@@ -13,7 +13,7 @@ kx = 4.32e-2  # axial conductivity (cm3 day-1)
 kr = 1.728e-4  # radial conductivity (day-1)
 Hs = -300  # soil total potential (cm)
 h0 = -1000  # dirichlet bc at top (cm) |\label{l41:h0}|
-t_pot = -1  # potential plant transpiration (cm3/day) |\label{l41:t_pot}|
+t_pot = -1  # potential plant transpiration (cm3 day-1) |\label{l41:t_pot}|
 
 # Root system |\label{l41:rootsystem}|
 plant = pb.MappedPlant()  # |\label{l41:mappedplant}|
@@ -44,7 +44,7 @@ ana.addData("hx", hx)  # xylem potentials (cm)
 ana.addData("SUF", hm.get_suf(initial_age))  # standard uptake fraction
 ana.addAge(initial_age)  # age (day) |\label{l41:age}|
 ana.addHydraulicConductivities(params, initial_age)  # kr (day-1), kx (cm3 day-1) |\label{l41:conductivities}|
-ana.addFluxes(hm, hx, hsr, initial_age)  # "axial_flux" (cm3 day-1), "radial_flux" [ (cm3 cm-3) / day] |\label{l41:fluxes}|
+ana.addFluxes(hm, hx, hsr, initial_age)  # "axial_flux" (cm3 day-1), "radial_flux" (cm3 cm-3 day-1) |\label{l41:fluxes}|
 vp.plot_plant(ana, "radial_flux")  # |\label{l41:sa_end}|
 
 # Output for Paraview

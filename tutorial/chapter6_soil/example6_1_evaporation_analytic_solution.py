@@ -1,9 +1,4 @@
-"""
-produces the analytical solution Figure 4abc
-from Vanderborght et al. (2005)
-
-D. Leitner, 2018
-"""
+"""analytical solution Figure 4abc from Vanderborght et al. (2005) """
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -1,6 +1,4 @@
-"""
-Solute transport example - nitrate in movement in soil
-"""
+"""solute transport example - nitrate in movement in soil """
 
 import datetime
 
@@ -178,7 +176,7 @@ for i in range(0, n_steps):  # |\label{l62:loop_loop}|
     t = i * dt  # current simulation time
     print(f" {t:g} days")
 
-    if fertilization_time <= t < fertilization_time + 1:
+    if fertilization_time <= t < fertilization_time + 1:  # |\label{l62:fert_start}|
         multiplier = 0.7
     elif t <= 1:
         multiplier = 0.3

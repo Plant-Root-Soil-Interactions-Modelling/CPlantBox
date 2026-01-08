@@ -38,11 +38,11 @@ print(f"Width {width}, Depth {depth} at a Resolution {nx}*{ny}*{nz}")  # |\label
 
 # Model parameter
 model = pb.ExudationModel(width, width, depth, nx, ny, nz, rs)  # |\label{l5_2_exudation:paramstart}|
-model.Q = 18.4  # Citrate exudation rate (mu g/d/cm root)
+model.Q = 18.4  # Citrate exudation rate (mu g day-1 cm-1 root)
 model.Dl = 0.171  # Citrate liquid diffusion coefficient (cm2/d)
-model.theta = 0.3  # Soil water content (cm^3/cm^3)
+model.theta = 0.3  # Soil water content (cm3 cm-3)
 model.R = 16.7  # Retardation factor, (-)
-model.k = 1.42  # Citrate decomposition rate  (d^-1)
+model.k = 1.42  # Citrate decomposition rate  (day-1)
 model.l = 5  # Citrate depositon length behind the root tip (cm)   # |\label{l5_2_exudation:paramend}|
 
 # Numerical parameter

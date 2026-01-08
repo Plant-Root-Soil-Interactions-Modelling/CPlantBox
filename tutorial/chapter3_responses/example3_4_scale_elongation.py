@@ -1,4 +1,4 @@
-"""Scale root elongation based on EquidistantGrid1D"""
+"""scale root elongation based on EquidistantGrid1D"""
 
 import numpy as np
 

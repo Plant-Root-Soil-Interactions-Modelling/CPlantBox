@@ -1,6 +1,4 @@
-"""
-Solute transport example - radially symmetric 1D model for nitrate uptake
-"""
+""" solute transport example - radially symmetric 1D model for nitrate uptake """
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt

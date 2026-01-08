@@ -4,7 +4,7 @@ import plantbox as pb
 from plantbox.rsml.rsml_reader import *
 
 
-class TestPlant(unittest.TestCase):
+class TestPlant(unittest.TestCase):  # |\label{l9_1:TestPlant}|
 
     def root_example_rrp(self):
         """an example used in the tests below, a main root with laterals"""
