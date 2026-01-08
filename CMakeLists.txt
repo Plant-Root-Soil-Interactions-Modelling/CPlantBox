@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.5)
 project (CPlantBox LANGUAGES CXX)
 
+option(PIAFMUNCH "Enable optional PIAFMUNCH code" ON)
 # set compiler options
 set(RELEASE_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare  ")
 set(DEBUG_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare ")
