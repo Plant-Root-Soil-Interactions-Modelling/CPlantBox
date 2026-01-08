@@ -61,7 +61,7 @@ for step in range(0, n_steps):  # |\label{l3_1_carbon:LoopStart}|
     assert used_carbon <= carbon_source * tol, f"Mismatching carbon balance, used carbon is larger than carbon source ({round((tol - 1) * 100, 3)}% tolerance)"  # |\label{l3_1_carbon:LoopEnd}|
 
 # Write outputs and plot
-plant.write("results/example_carbon.vtp")  # |\label{l3_1_carbon:WriteStart}|
+plant.write("results/example3_1_carbon.vtp")  # |\label{l3_1_carbon:WriteStart}|
 
 ana = pb.SegmentAnalyser()
 ana.addSegments(plant)

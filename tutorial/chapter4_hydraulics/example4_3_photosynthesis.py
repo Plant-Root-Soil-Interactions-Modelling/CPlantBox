@@ -25,7 +25,7 @@ def getWeatherData(t):
 plant_age = 14  # plant age (day) |\label{l43:Parameters}|
 sim_time = 1.0  # days
 dt = 10.0 / 60.0 / 24.0
-n_steps = int(sim_time / dt)
+n_steps = round(sim_time / dt)
 depth = 60  # soil depth (cm)
 Hs = -1000  # top soil matric potential (cm)
 
@@ -40,7 +40,7 @@ def picker(_x, _y, z):
     return max(int(np.floor(-z)), -1)  # aboveground nodes get index -1
 
 
-soilSpace = pb.SDF_PlantContainer(np.inf, np.inf, depth, True)  # to avoid root growing aboveground
+soil_domain = pb.SDF_PlantContainer(np.inf, np.inf, depth, True)  # to avoid root growing aboveground
 p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer |\label{l43:SoilEnd}|
 
 # Plant
@@ -49,7 +49,7 @@ path = "../../modelparameter/structural/plant/"
 filename = "Triticum_aestivum_test_2021"
 plant.readParameters(path + filename + ".xml")
 
-plant.setGeometry(soilSpace)  # creates soil space to stop roots from growing out of the soil
+plant.setGeometry(soil_domain)  # creates soil space to stop roots from growing out of the soil
 plant.setSoilGrid(picker)
 
 plant.initialize(False)

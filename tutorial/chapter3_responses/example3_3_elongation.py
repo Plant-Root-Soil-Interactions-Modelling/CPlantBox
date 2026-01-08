@@ -50,8 +50,8 @@ print(f"\nLeft  compartment total root length {ll:g} cm, {100 * ll / l:g}%")
 print(f"\nRight compartment total root length {lr:g} cm, {100 * lr / l:g}% \n")
 
 # write results
-plant.write("results/example_5a.py")  # compartment geometry
-plant.write("results/example_5a.vtp")  # root system
+plant.write("results/example_3_3_elongation.py")  # compartment geometry
+plant.write("results/example_3_3_elongation.vtp")  # root system
 
 # plot, using vtk
 vp.plot_roots(plant, "rootLength")  # press 'y'

@@ -12,8 +12,8 @@ path = "../../modelparameter/structural/plant/"
 filename = "fspm2023"
 plant.readParameters(path + filename + ".xml")
 
-soilSpace = pb.SDF_PlantContainer(500, 500, 500, True)  # to avoid root growing aboveground
-plant.setGeometry(soilSpace)  # creates soil space to stop roots from growing out of the soil
+soil_domain = pb.SDF_PlantContainer(500, 500, 500, True)  # to avoid root growing aboveground
+plant.setGeometry(soil_domain)  # creates soil space to stop roots from growing out of the soil
 
 verbose = False
 plant.initialize(verbose)

@@ -21,11 +21,11 @@ p0.name, p0.subType, p0.lmax, p0.r, p0.dx, p0.theta = "taproot", 1, 100, 1, dx, 
 p0.tropismT = 1  # gravitropism
 plant.setOrganRandomParameter(p0)  # |\label{l3_2_tropism:paramsend}|
 
-fig, axes = figure_style.subplots11large(4, 4)
+fig, ax_ = figure_style.subplots11large(4, 4)
 
 for i, n in enumerate(N_):  # |\label{l3_2_tropism:loopstart}|
     for j, sigma in enumerate(sigma_):
-        a = axes[i][j]
+        ax = ax_[i][j]
         plant.reset()  # does not delete parameters
 
         p0.tropismN = n
@@ -38,11 +38,11 @@ for i, n in enumerate(N_):  # |\label{l3_2_tropism:loopstart}|
         segs = plant.getSegments()
         for s in segs:
             n1, n2 = nodes[s.x], nodes[s.y]  # |\label{l3_2_tropism:readend}|
-            a.plot([n1.x, n2.x], [n1.z, n2.z], "r")  # |\label{l3_2_tropism:plotstart}|
-        a.set_title(rf"$N$ = {n}, $\sigma$ = {sigma}")
-        a.axis("equal")
-        a.set_xlim([-30, 30.0])
-        a.set_ylim([-40.0, 0.0])
+            ax.plot([n1.x, n2.x], [n1.z, n2.z], "r")  # |\label{l3_2_tropism:plotstart}|
+        ax.set_title(rf"$N$ = {n}, $\sigma$ = {sigma}")
+        ax.axis("equal")
+        ax.set_xlim([-30, 30.0])
+        ax.set_ylim([-40.0, 0.0])
 
 fig.tight_layout()
 fig.canvas.manager.set_window_title("Gravitropism parameters")

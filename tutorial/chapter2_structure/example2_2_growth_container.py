@@ -6,12 +6,12 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 # This example loops through a number of SDFs (cylinder etc.) and saves/plots them together with the root system
-rs = pb.Plant()
+plant = pb.Plant()
 
 # Open plant and root parameter from a file
 path = path = "../../modelparameter/structural/rootsystem/"
 filename = "Zea_mays_4_Leitner_2014"
-rs.readParameters(path + filename + ".xml")
+plant.readParameters(path + filename + ".xml")
 
 # 0. creates a cylindrical soil core with top radius 5 cm, bot radius 5 cm, height 50 cm, not square but circular
 soilcore = pb.SDF_PlantContainer(5, 5, 40, False)  # |\label{l2_2_1:cylinder}|
@@ -57,14 +57,14 @@ c = 0
 containers = [soilcore, rotatedRhizotron, splitBox, rhizoTube]
 for container in containers:  # |\label{l2_2_1:simulateallsetups}|
 
-    rs.setGeometry(container)
-    rs.initialize()
-    rs.simulate(45)  # days
+    plant.setGeometry(container)
+    plant.initialize()
+    plant.simulate(45)  # days
 
     # Plot, using vtk
-    vp.plot_roots_and_container(rs, container)
+    vp.plot_roots_and_container(plant, container)
 
     # Export results (as vtp)
-    rs.write(f"results/root_system{c}.vtp")
+    plant.write(f"results/root_system{c}.vtp")
     vp.write_container(container, f"results/container_{c}.vtp")  # you can pass , resolution=200 to increase resulting mesh quality, default is 100
     c += 1  # |\label{l2_2_1:simulateallsetupsend}|

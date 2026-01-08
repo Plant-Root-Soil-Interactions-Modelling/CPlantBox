@@ -1,13 +1,13 @@
-ipython==8.18.1
-matplotlib==3.8.2
-matplotlib-inline==0.1.6
-mpi4py==3.1.5
-numpy==1.26.2
-pandas==2.1.4
-pybind11==2.11.1
-pybind11-global==2.11.1
-scipy==1.11.4
-vtk==9.3.0
+ipython
+matplotlib
+mpi4py
+numpy
+pandas
+pybind11
+scipy
+vtk
+pylint
+pyevtk
 
 # other requirements:
 # default-jre

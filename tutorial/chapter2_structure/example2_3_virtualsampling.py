@@ -33,7 +33,7 @@ y_ = [66.0, 66.0, 66.0, 54.0, 54.0, 54.0, 42.0, 42.0, 42.0, 30.0, 30.0, 30.0, 18
 soilcolumns_ = [pb.Vector3d(x_ij, y_ij, 0) for x_ij, y_ij in zip(x_, y_)]
 soilcolumns = [pb.SDF_RotateTranslate(soilcolumn, vi) for vi in soilcolumns_]  # |\label{l2_3:soilcoreend}|
 
-soilSpace = pb.SDF_PlantContainer(500, 500, 500, True)
+soil_domain = pb.SDF_PlantContainer(500, 500, 500, True)
 
 for i in range(0, n_plants):  # |\label{l2_3:simulationbegin}|
     for j in range(0, n_colums):
@@ -41,7 +41,7 @@ for i in range(0, n_plants):  # |\label{l2_3:simulationbegin}|
         plant.readParameters(path + filename + ".xml", fromFile = True, verbose = False)
         seed = plant.getOrganRandomParameter(pb.seed)[0]
         seed.seedPos = pb.Vector3d(distance_plants * i, distance_rows * j, -3.0)  # cm
-        plant.setGeometry(soilSpace)
+        plant.setGeometry(soil_domain)
         plant.initialize(False)
         plant.simulate(30 * months, False)
         if i + j == 0:

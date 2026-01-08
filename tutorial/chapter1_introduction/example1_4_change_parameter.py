@@ -29,6 +29,6 @@ print(root[1])  # Print new root parameters |\label{l14:print_new}|
 
 plant.initialize()  # Initialize |\label{l14:initialize}|
 sim_time = 40  # days
-plant.simulate(sim_time)  # Simulate|\label{l14:simulate}|
+plant.simulate(sim_time)  # Simulate |\label{l14:simulate}|
 
-vp.plot_plant(plant, "organType")  # Plot
+vp.plot_plant(plant, "organType")  # Plot |\label{l14:plot_plant}|

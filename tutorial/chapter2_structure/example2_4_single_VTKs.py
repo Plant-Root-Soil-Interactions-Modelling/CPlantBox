@@ -3,7 +3,7 @@
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp  # |\label{3f:importvtk}|
 
-# plant  |\label{3f:plantStart}|
+# Plant parameters |\label{3f:plantStart}|
 plant = pb.MappedPlant(0)
 path = "../../modelparameter/structural/plant/"
 filename = "fspm2023"
