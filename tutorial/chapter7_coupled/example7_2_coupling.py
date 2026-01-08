@@ -21,8 +21,8 @@ def sinusoidal(t):
 
 
 # Parameters |\label{l72c:param}|
-min_b = [-35.0, -10.0, -50.0]  # cm
-max_b = [35.0, 10.0, 0.0]  # cm
+box_min = [-35.0, -10.0, -50.0]  # cm
+box_max = [35.0, 10.0, 0.0]  # cm
 cell_number = [17, 5, 50]  # ~4*4*1 cm3
 
 path = "../../modelparameter/structural/rootsystem/"
@@ -40,7 +40,7 @@ dt = 360.0 / (24 * 3600)  # days  # |\label{l72c:param_end}|
 # Initialize macroscopic soil model #
 s = RichardsWrapper(RichardsSP())  # |\label{l72c:soil}|
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, periodic = True)  # cm
+s.createGrid(box_min, box_max, cell_number, periodic = True)  # cm
 s.setHomogeneousIC(initial, True)  # cm total potential
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
@@ -53,7 +53,7 @@ s.setCriticalPressure(wilting_point)  # |\label{l72c:soil_end}|
 plant = pb.MappedPlant()  # |\label{l72c:soil_plant}|
 plant.enableExtraNode()
 plant.readParameters(path + filename + ".xml")
-sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 2.)  # |\label{l72c:domain}|
+sdf = pb.SDF_PlantBox(np.inf, np.inf, box_max[2] - box_min[2] - 2.)  # |\label{l72c:domain}|
 plant.setGeometry(sdf)  # |\label{l72c:soil_plant_end}|
 
 # root hydraulic properties #
@@ -97,16 +97,16 @@ for i in range(0, n_steps):  # |\label{l72c:loop}|
     print(f"[{'*' * n}{' ' * (100 - n)}], [{np.min(hs):g}, {np.max(hs):g}] cm soil [{np.min(hx):g}, {np.max(hx):g}] cm root at {s.simTime:g} days {hx[0]:g}")
 
     if i % 10 == 0:  # |\label{l72c:write}|
-        vp.write_soil(f"results/example72_{i // 10:06d}", s, min_b, max_b, cell_number)
+        vp.write_soil(f"results/example72_{i // 10:06d}", s, box_min, box_max, cell_number)
         vp.write_plant(f"results/example72_{i // 10:06d}", hm.ms.plant())  # |\label{l72c:write_end}|
-        # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number) # BETTER output
+        # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(box_min), np.array(box_max), cell_number) # BETTER output
 
     t += dt  # [day]
 
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l72c:timing}|
 
 # VTK visualisation |\label{l72c:plots}|
-vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number)
+vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(box_min), np.array(box_max), cell_number)
 
 # Transpiration over time
 fig, ax1 = figure_style.subplots12(1, 1)

@@ -16,13 +16,13 @@ plant.setSeed(4)  # |\label{l71m:random}|
 plant.initialize()  # |\label{l71m:root_system_end}|
 
 # Macroscopic soil grid  |\label{l71m:grid_start}|
-min_b = np.array([-2, -2, -15])  # cm
-max_b = np.array([2, 2, -5])  # cm
+box_min = np.array([-2, -2, -15])  # cm
+box_max = np.array([2, 2, -5])  # cm
 cell_number = np.array([2, 3, 6])  # 1
 s = RichardsWrapper(RichardsSP())
 s.initialize()
 periodic = True  # |\label{l71m:periodic}|
-s.createGrid(min_b, max_b, cell_number, periodic)
+s.createGrid(box_min, box_max, cell_number, periodic)
 s.setVGParameters([[0.08, 0.43, 0.04, 1.6, 50]])
 s.setHomogeneousIC(-300, True)  # cm pressure head
 s.setTopBC("noFlux")
@@ -59,6 +59,6 @@ ana = pb.SegmentAnalyser(plant.mappedSegments())  # |\label{l71m:mappedSegments}
 ana.addData("linear_index", x)
 pd = vp.segs_to_polydata(ana, 1.0, ["radius", "linear_index"])
 rootActor, rootCBar = vp.plot_roots(pd, "linear_index", "Segment index", False)
-grid = vp.uniform_grid(min_b, max_b, cell_number)
+grid = vp.uniform_grid(box_min, box_max, cell_number)
 meshActor, meshCBar = vp.plot_mesh(grid, "", "", False)
 vp.render_window([meshActor[0], rootActor], "Test mapping", rootCBar, grid.GetBounds()).Start()

@@ -24,10 +24,10 @@ rs.write("results/example5_2_exudation_rootsystem.vtp")  # |\label{l5_2_exudatio
 
 # Grid parameter
 nodes = np.array([np.array(n) for n in rs.getNodes()])  # |\label{l5_2_exudation:gridstart}|
-boxmin = nodes.min(axis = 0)
-boxmax = nodes.max(axis = 0)
-width = abs(max(boxmax[0], boxmax[1]) - min(boxmin[0], boxmin[1])) + 6  # cm
-depth = abs(boxmin[2]) + 3
+box_min = nodes.min(axis = 0)
+box_max = nodes.max(axis = 0)
+width = abs(max(box_max[0], box_max[1]) - min(box_min[0], box_min[1])) + 6  # cm
+depth = abs(box_min[2]) + 3
 xres = 0.3
 yres = 0.3
 zres = 0.3

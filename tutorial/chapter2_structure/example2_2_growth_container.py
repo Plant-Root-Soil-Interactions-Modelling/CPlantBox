@@ -50,7 +50,7 @@ for i, y in enumerate(y_):
     rhizotubes_.append(tube[i])
 
 rhizotubes = pb.SDF_Union(rhizotubes_)  # |\label{l2_2_1:tubesmultend}|
-rhizoTube = pb.SDF_Difference(box, rhizotubes)  # |\label{l2_2_1:boxminustubes}|
+rhizoTube = pb.SDF_Difference(box, rhizotubes)  # |\label{l2_2_1:box_minustubes}|
 
 #
 c = 0

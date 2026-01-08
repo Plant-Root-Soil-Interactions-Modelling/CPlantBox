@@ -102,15 +102,15 @@ def net_infiltration_csv(filename, start_date, end_date):
 
 # Soil |\label{l62:init_soil}|
 s = RichardsWrapper(RichardsNCSP())  # water & single solute
-min_b = [-35.0, -10.0, -100.0]  # cm
-max_b = [35.0, 10.0, 0.0]  # cm
+box_min = [-35.0, -10.0, -100.0]  # cm
+box_max = [35.0, 10.0, 0.0]  # cm
 cell_number = [1, 1, 100]  # spatial resolution (1D model)
-area = (max_b[0] - min_b[0]) * (max_b[1] - min_b[1])  # cm2
-vol = area * (max_b[2] - min_b[2])  # cm3
+area = (box_max[0] - box_min[0]) * (box_max[1] - box_min[1])  # cm2
+vol = area * (box_max[2] - box_min[2])  # cm3
 soil = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
 print("Area", area, "cm2,", "volume", vol, "cm3")
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, False)
+s.createGrid(box_min, box_max, cell_number, False)
 s.setVGParameters([soil])
 
 # Inital conditions   # |\label{l62:init_ic}|
@@ -201,4 +201,4 @@ print("change in water volume", s.getWaterVolume() - volume0, "cm3 = ", 1.0e-3 *
 
 plot_history(w, c, n_steps)
 plot_profile(h[-1], c[-1])
-plot_results(h, c, times_, netinf_, fw, min_b[2])
+plot_results(h, c, times_, netinf_, fw, box_min[2])

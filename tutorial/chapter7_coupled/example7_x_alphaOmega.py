@@ -32,8 +32,8 @@ def make_source(q, area):
 
 
 # Parameters  # |\label{l7xa:param}|
-min_b = [-35.0, -10.0, -50.0]  # cm
-max_b = [35.0, 10.0, 0.0]  # cm
+box_min = [-35.0, -10.0, -50.0]  # cm
+box_max = [35.0, 10.0, 0.0]  # cm
 cell_number = [1, 1, 50]  # ~4*4*1 cm3
 
 path = "../../modelparameter/structural/rootsystem/"
@@ -53,7 +53,7 @@ dt = 3600.0 / (24 * 3600)  # days |\label{l7xa:param_end}|
 # Initialize macroscopic soil model
 s = RichardsWrapper(RichardsSP())  # |\label{l7xa:soil}|
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, periodic = True)  # cm
+s.createGrid(box_min, box_max, cell_number, periodic = True)  # cm
 s.setHomogeneousIC(initial, True)  # total potential (cm)
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
@@ -66,9 +66,9 @@ s.setCriticalPressure(wilting_point)  # |\label{l7xa:soil_end}|
 plant = pb.MappedPlant()  # |\label{l7xa:soil_plant}|
 plant.enableExtraNode()
 plant.readParameters(path + filename + ".xml")
-sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 2.)  # |\label{l7xa:domain}|
+sdf = pb.SDF_PlantBox(np.inf, np.inf, box_max[2] - box_min[2] - 2.)  # |\label{l7xa:domain}|
 plant.setGeometry(sdf)  # |\label{l7xa:soil_plant_end}|
-plant.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), False, False)  # needed for Perirhizal class
+plant.setRectangularGrid(pb.Vector3d(box_min), pb.Vector3d(box_max), pb.Vector3d(cell_number), False, False)  # needed for Perirhizal class
 
 # root hydraulic properties
 params = PlantHydraulicParameters()  # |\label{l7xa:hydraulic}|
@@ -179,16 +179,16 @@ for i in range(0, n_steps):  # |\label{l7xa:loop}|
           f"[{np.min(h_bs):g}, {np.max(h_bs):g}] cm soil at {s.simTime:g} days")
 
     if i % 10 == 0:  # |\label{l7xa:write}|
-        vp.write_soil(f"results/example7x_{i // 10:06d}", s, min_b, max_b, cell_number)
+        vp.write_soil(f"results/example7x_{i // 10:06d}", s, box_min, box_max, cell_number)
         vp.write_plant(f"results/example7x_{i // 10:06d}", hm.ms.plant())  # |\label{l7xa:write_end}|
-        # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number) # BETTER output
+        # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(box_min), np.array(box_max), cell_number) # BETTER output
 
     t += dt  # days
 
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l7xa:timing}|
 
 # VTK visualisation # |\label{l7xa:plots}|
-# vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number)
+# vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(box_min), np.array(box_max), cell_number)
 
 # Transpiration over time
 fig, ax1 = figure_style.subplots11()

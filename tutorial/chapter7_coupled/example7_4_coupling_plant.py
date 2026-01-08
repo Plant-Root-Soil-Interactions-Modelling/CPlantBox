@@ -43,8 +43,8 @@ path_weather = "../../modelparameter/functional/climate/"
 weather_data = pd.read_csv(path_weather + "Selhausen_weather_data.txt", delimiter = "\t")
 
 # Bulk soil
-min_b = [-4.0, -4.0, -24.0]
-max_b = [4.0, 4.0, 0.0]
+box_min = [-4.0, -4.0, -24.0]
+box_max = [4.0, 4.0, 0.0]
 cell_number = [4, 4, 12]  # spatial resolution
 hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
 vg_loam = vg.Parameters(hydrus_loam)
@@ -67,7 +67,7 @@ def setSoilParams(s):
 
 s = RichardsWrapper(RichardsNCSP())
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, periodic = True)  # cm
+s.createGrid(box_min, box_max, cell_number, periodic = True)  # cm
 s.setHomogeneousIC(initial, True)  # total potential (cm)
 s.setICZ_solute(nitrate_initial_values)  # step-wise function, ascending order
 s.setTopBC("noFlux")
@@ -83,7 +83,7 @@ s.setRegularisation(s.eps_regularization, s.eps_regularization)  # needs to be l
 # Initialize plant model
 plant = pb.MappedPlant(1)
 plant.readParameters(path + filename + ".xml")
-sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 2.)
+sdf = pb.SDF_PlantBox(np.inf, np.inf, box_max[2] - box_min[2] - 2.)
 plant.setGeometry(sdf)
 
 # plant hydraulic properties
@@ -194,7 +194,7 @@ for i in range(n_steps):  # |\label{l74:loop_start}|
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 
 # VTK visualisation
-vp.plot_plant_and_soil(hm.ms, "Xylem potential (cm)", h_xylem, s, False, np.array(min_b), np.array(max_b), cell_number, filename, sol_ind = 1)
+vp.plot_plant_and_soil(hm.ms, "Xylem potential (cm)", h_xylem, s, False, np.array(box_min), np.array(box_max), cell_number, filename, sol_ind = 1)
 
 # Transpiration over time
 fig, ax1 = figure_style.subplots12(1, 1)
