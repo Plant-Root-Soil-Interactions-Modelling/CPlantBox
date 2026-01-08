@@ -7,15 +7,15 @@ import plantbox.visualisation.vtk_plot as vp
 from rosi.richards import RichardsWrapper  # Python part
 from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
-# Root system  |\label{l71m:root_system_start}|
+# Root system |\label{l71m:root_system_start}|
 plant = pb.MappedPlant()
 path = "../../modelparameter/structural/rootsystem/"
-filename = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Anagallis_femina_Leitner_2010
+filename = "Anagallis_femina_Leitner_2010"
 plant.readParameters(path + filename + ".xml")
 plant.setSeed(4)  # |\label{l71m:random}|
 plant.initialize()  # |\label{l71m:root_system_end}|
 
-# Macroscopic soil grid  |\label{l71m:grid_start}|
+# Macroscopic soil grid |\label{l71m:grid_start}|
 box_min = np.array([-2, -2, -15])  # cm
 box_max = np.array([2, 2, -5])  # cm
 cell_number = np.array([2, 3, 6])  # 1
@@ -41,7 +41,7 @@ plant.setSoilGrid(picker)  # |\label{l71m:picker_end}|
 # Simulate
 plant.simulate(10.0, False)  # |\label{l71m:simulate}|
 
-# Find segment indices in a grid cell#
+# Find segment indices in a grid cell
 ci = plant.soil_index(0, 0, -7)  # grid cell index |\label{l71m:soil_index}|
 print("Cell at [0,0,-7] has index", ci)
 try:
