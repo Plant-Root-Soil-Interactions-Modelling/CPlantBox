@@ -220,6 +220,8 @@ void RootSystem::initializeDB(int basal, int shootborne, bool verbose)
     };
 
     seed = std::make_shared<SeedDB>(shared_from_this());
+	auto srp = std::static_pointer_cast<SeedRandomParameter>(this->getOrganRandomParameter(Organism::ot_seed,0 ));
+	srp->delayDefinition = Organism::dd_time_self;
     initialize_(basal, shootborne, verbose);
 }
 

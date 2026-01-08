@@ -57,14 +57,14 @@ class TestStem(unittest.TestCase):
         self.plant.setOrganRandomParameter(p1)
 
         srp = pb.SeedRandomParameter(self.plant)
-        srp.delayDefinition = delay_definition #organ carries the delay of its laterals
+        srp.delayDefinitionShoot = delay_definition #organ carries the delay of its laterals
         self.plant.setOrganRandomParameter(srp)
         # creates seed and root organ (otherwise throws error in plant::simulate())
         p0r = pb.RootRandomParameter(self.plant)
         p0r.name, p0r.subType, p0r.la, p0r.lb, p0r.lmax, p0r.ln, p0r.r, p0r.dx = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5
         self.plant.setOrganRandomParameter(p0r)  # the organism manages the type parameters and takes ownership
-        # test == True => no need to give root parameter
-        self.plant.initialize(verbose = False)#, test = True)
+        
+        self.plant.initialize(verbose = False)
         paramS = srp.realize()
         self.seed = self.plant.getSeed()  #
 
@@ -342,7 +342,7 @@ class TestStem(unittest.TestCase):
         self.plant.setOrganRandomParameter(p1)
 
         srp = pb.SeedRandomParameter(self.plant)
-        srp.delayDefinition = delay_definition #organ carries the delay of its laterals
+        srp.delayDefinitionShoot = delay_definition #organ carries the delay of its laterals
         self.plant.setOrganRandomParameter(srp)
         # creates seed and root organ (otherwise throws error in plant::simulate())
         p0r = pb.RootRandomParameter(self.plant)
