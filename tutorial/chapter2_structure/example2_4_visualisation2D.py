@@ -19,7 +19,7 @@ verbose = False
 plant.initialize(verbose)
 plant.simulate(sim_time, verbose)  # |\label{l2_1g:defineEnd}|
 
-fig, ax = figure_style .subplots11()  # |\label{l2_1g:plotStart}|
+fig, ax = figure_style.subplots11()  # |\label{l2_1g:plotStart}|
 organ_name = ["root", "stem", "leaf", "root tips"]
 color = ["tab:red", "tab:orange", "tab:green", "tab:blue"]
 
@@ -31,15 +31,15 @@ for idx, ot in enumerate([pb.root, pb.stem, pb.leaf]):
         ax.plot(
             node[:, 0],  # x-axis                                         |\label{l2_1g:plot}|
             node[:, 2],  # z-axis
-            c = color[idx],
-            label = organ_name[idx] if not label_added else None,
+            c=color[idx],
+            label=organ_name[idx] if not label_added else None,
         )
         label_added = True
 
 root_tips = plant.get_root_tips()
-ax.scatter(root_tips[:, 0], root_tips[:, 2], c = color[3], label = organ_name[3])
+ax.scatter(root_tips[:, 0], root_tips[:, 2], c=color[3], label=organ_name[3])
 
-ax.legend(bbox_to_anchor = (1, 0.5))
+ax.legend(bbox_to_anchor=(1, 0.5))
 ax.grid(True)
 plt.xlabel("X-axis (cm)")
 plt.ylabel("Depth (cm)")
@@ -48,4 +48,3 @@ ax.set_aspect("equal", "box")
 plt.tight_layout()
 plt.savefig("results/example_2_4_2DVisualisation.png")
 plt.show()  # |\label{l2_1g:plotEnd}|
-

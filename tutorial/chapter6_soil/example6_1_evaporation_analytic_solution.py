@@ -1,4 +1,4 @@
-"""analytical solution Figure 4abc from Vanderborght et al. (2005) """
+"""analytical solution Figure 4abc from Vanderborght et al. (2005)"""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -61,29 +61,29 @@ for i, soil in enumerate([sand, loam, loam, clay]):
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
 
 ax1.plot(t, abs(y[:, 0]), "b")
-ax1.set_ylabel("$E_{act}$ (cm day$^{-1}$)", fontsize = 20)
+ax1.set_ylabel("$E_{act}$ (cm day$^{-1}$)", fontsize=20)
 ax1.set_xlim(0, 1)
-ax1.set_title("Sand", fontsize = 20)
+ax1.set_title("Sand", fontsize=20)
 
 ax2.plot(t, abs(y[:, 1]), "b")
 ax2.set_xlim(0, 10)
-ax2.set_title("Loam", fontsize = 20)
+ax2.set_title("Loam", fontsize=20)
 
 ax3.plot(t, abs(y[:, 2]), "b")
-ax3.set_xlabel("$t$ (days)", fontsize = 20)
-ax3.set_ylabel("$E_{act}$ (cm day$^{-1}$)", fontsize = 20)
+ax3.set_xlabel("$t$ (days)", fontsize=20)
+ax3.set_ylabel("$E_{act}$ (cm day$^{-1}$)", fontsize=20)
 ax3.set_xlim(0, 2)
-ax3.set_title("Loam", fontsize = 20)
+ax3.set_title("Loam", fontsize=20)
 
 ax4.plot(t, abs(y[:, 3]), "b")
-ax4.set_xlabel("$t$ (days)", fontsize = 20)
+ax4.set_xlabel("$t$ (days)", fontsize=20)
 ax4.set_xlim(0, 6)
-ax4.set_title("Clay", fontsize = 20)
+ax4.set_title("Clay", fontsize=20)
 
-ax1.tick_params(axis = "both", which = "major", labelsize = 16)
-ax2.tick_params(axis = "both", which = "major", labelsize = 16)
-ax3.tick_params(axis = "both", which = "major", labelsize = 16)
-ax4.tick_params(axis = "both", which = "major", labelsize = 16)
+ax1.tick_params(axis="both", which="major", labelsize=16)
+ax2.tick_params(axis="both", which="major", labelsize=16)
+ax3.tick_params(axis="both", which="major", labelsize=16)
+ax4.tick_params(axis="both", which="major", labelsize=16)
 
 if __name__ == "__main__":
     plt.show()

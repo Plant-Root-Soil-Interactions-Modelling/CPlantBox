@@ -38,7 +38,6 @@ anim.res = np.array([1, 1, 1])
 anim.start()
 
 for i in range(0, round(sim_time / dt)):  # Simulation
-
     # option for dynamic scale update
     new_scales = scales  # |\label{l3_4_scale:dynamicStart}|
     scale_elongation.data = new_scales  # |\label{l3_4_scale:dynamicEnd}|

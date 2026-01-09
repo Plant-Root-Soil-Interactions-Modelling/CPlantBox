@@ -11,11 +11,10 @@ import plantbox as pb
 from plantbox.functional.Perirhizal import PerirhizalPython  # |\label{l73:perirhizal}|
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
+from plantbox.visualisation import figure_style
 import plantbox.visualisation.vtk_plot as vp
 from rosi.richards import RichardsWrapper  # Python part
 from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
-
-from plantbox.visualisation import figure_style
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -47,7 +46,7 @@ dt = 360.0 / (24 * 3600)  # days |\label{l73c:param_end}|
 # Initialize macroscopic soil model
 s = RichardsWrapper(RichardsSP())  # |\label{l73c:soil}|
 s.initialize()
-s.createGrid(box_min, box_max, cell_number, periodic = True)  # cm
+s.createGrid(box_min, box_max, cell_number, periodic=True)  # cm
 s.setHomogeneousIC(initial, True)  # total potential (cm)
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
@@ -59,7 +58,7 @@ s.setCriticalPressure(wilting_point)  # |\label{l73c:soil_end}|
 # Initialize xylem model
 plant = pb.MappedPlant(1)  # |\label{l73c:soil_plant}|
 plant.readParameters(path + filename + ".xml")
-sdf = pb.SDF_PlantBox(np.inf, np.inf, box_max[2] - box_min[2] - 2.)  # |\label{l73c:domain}|
+sdf = pb.SDF_PlantBox(np.inf, np.inf, box_max[2] - box_min[2] - 2.0)  # |\label{l73c:domain}|
 plant.setGeometry(sdf)  # |\label{l73c:soil_plant_end}|
 
 # root hydraulic properties
@@ -106,7 +105,7 @@ n_steps = round(sim_time / dt)
 t = 0.0
 for i in range(0, n_steps):  # |\label{l73c:loop}|
     if rank == 0:
-        hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hsr, cells = False)  # |\label{l73c:initial_hx}|
+        hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hsr, cells=False)  # |\label{l73c:initial_hx}|
         hx_old = hx.copy()
 
         kr_ = hm.params.getKr(rs_age + t)  # |\label{l73c:update_kr}|
@@ -115,22 +114,21 @@ for i in range(0, n_steps):  # |\label{l73c:loop}|
         err = 1.0e6
         c = 0
         while err > 100.0 and c < 100:  # |\label{l73c:fixpoint}|
-
             # interpolation #
             hsr = peri.soil_root_interface_potentials(hx[1:], hs_, inner_kr_, rho_)  # |\label{l73c:interpolation}|
 
             # xylem matric potential
-            hx = hm.solve_again(rs_age + t, -trans * sinusoidal(t), hsr, cells = False)  # |\label{l73c:hydraulic_hsr}|
+            hx = hm.solve_again(rs_age + t, -trans * sinusoidal(t), hsr, cells=False)  # |\label{l73c:hydraulic_hsr}|
             err = np.linalg.norm(hx - hx_old)
             hx_old = hx.copy()
 
             c += 1  # |\label{l73c:fixpoint_end}|
 
-        fluxes = hm.radial_fluxes(rs_age + t, hx, hsr, cells = False)  # |\label{l73c:fluxes}|
+        fluxes = hm.radial_fluxes(rs_age + t, hx, hsr, cells=False)  # |\label{l73c:fluxes}|
         source_water = hm.sumSegFluxes(fluxes)
 
     water = s.getWaterVolume()  # |\label{l73c:domain_water}|
-    source_water = comm.bcast(source_water, root = 0)
+    source_water = comm.bcast(source_water, root=0)
     s.setSource(source_water)  # TODO will be moved to MappedSegments # |\label{l73c:soil_fluxes}|
     s.solve(dt)
     soil_water = (s.getWaterVolume() - water) / dt  # |\label{l73c:domain_water_end}|
@@ -154,7 +152,7 @@ if rank == 0:
     print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l73c:timing}|
 
 # VTK visualisation |\label{l73c:plots}|
-hx = comm.bcast(hx, root = 0)
+hx = comm.bcast(hx, root=0)
 vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", hx, s, True, np.array(box_min), np.array(box_max), cell_number, filename)
 
 if rank == 0:
@@ -166,6 +164,6 @@ if rank == 0:
     ax2.plot(x_, np.cumsum(-np.array(y_) * dt), "c--")  # cumulative transpiration (neumann)
     ax1.set_xlabel("Time (day)")
     ax1.set_ylabel("Transpiration (mL day$^{-1}$) per plant")
-    ax1.legend(["Potential", "Actual", "Cumulative"], loc = "upper left")
+    ax1.legend(["Potential", "Actual", "Cumulative"], loc="upper left")
     np.save("results/" + filename + "_fp", np.vstack((x_, -np.array(y_), np.array(z_))))  # |\label{l72c:npsave}|
     plt.show()

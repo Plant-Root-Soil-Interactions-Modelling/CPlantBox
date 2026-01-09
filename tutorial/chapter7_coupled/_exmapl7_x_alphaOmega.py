@@ -47,7 +47,7 @@ rs_age = 60  # root system initial age (day)
 
 loam = [0.01, 0.43, 0.0083, 1.2539, 2.272]
 sp = vg.Parameters(loam)  # needed for Perirhizal class
-vg.create_mfp_lookup(sp, wilting_point = -16000, n = 1501)  # needed for Perirhizal class
+vg.create_mfp_lookup(sp, wilting_point=-16000, n=1501)  # needed for Perirhizal class
 initial = -500  # cm
 
 sim_time = 7  # days
@@ -56,7 +56,7 @@ dt = 3600.0 / (24 * 3600)  # days  # |\label{l7xa:param_end}|
 # Initialize macroscopic soil model
 s = RichardsWrapper(RichardsSP())  # |\label{l7xa:soil}|
 s.initialize()
-s.createGrid(box_min, box_max, cell_number, periodic = True)  # cm
+s.createGrid(box_min, box_max, cell_number, periodic=True)  # cm
 s.setHomogeneousIC(initial, False)  # cm False = matrix, True, = total potential
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
@@ -146,7 +146,7 @@ for i in range(0, N):  # |\label{l7xa:loop}|
     # Omega: root system averaged stress factor
     # suf_ = hm.get_suf(rs_age + sim_time)
     suf_ = hm.suf
-    suf = peri.aggregate(suf_[0,:])
+    suf = peri.aggregate(suf_[0, :])
     # print(suf)
     # print("suf", np.min(suf), np.max(suf), np.sum(suf))
     alphaSUF = np.multiply(alpha, suf)
@@ -218,5 +218,5 @@ ax2 = ax1.twinx()
 ax2.plot(x_, np.cumsum(-np.array(y_) * dt), "c--")  # cumulative transpiratio
 ax1.set_xlabel("Time [d]")
 ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
-ax1.legend(["Potential", "Actual", "Cumulative"], loc = "upper left")
+ax1.legend(["Potential", "Actual", "Cumulative"], loc="upper left")
 plt.show()

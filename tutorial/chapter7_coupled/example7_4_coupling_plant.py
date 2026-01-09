@@ -13,6 +13,7 @@ import plantbox as pb
 from plantbox.functional.Photosynthesis import PhotosynthesisPython
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 import plantbox.functional.van_genuchten as vg  # van Genuchten model for soil hydraulic properties
+from plantbox.visualisation import figure_style
 import plantbox.visualisation.vtk_plot as vp
 from rosi import helpful
 from rosi.rhizo_models_plant import RhizoMappedSegments
@@ -20,12 +21,10 @@ from rosi.richards_flat import RichardsFlatWrapper as RichardsWrapper  # Python 
 from rosi.rosi_richardsnc import RichardsNCSP  # C++ part (Dumux binding)
 from rosi.rosi_richardsnc_cyl import RichardsNCCylFoam  # C++ part (Dumux binding), macroscopic soil model
 
-from plantbox.visualisation import figure_style
-
 
 def getWeatherData(t):
     """retrieves the weather data for the current sim_time"""
-    diffDt = abs(pd.to_timedelta(weather_data["time"]) - pd.to_timedelta(t % 1, unit = "d"))
+    diffDt = abs(pd.to_timedelta(weather_data["time"]) - pd.to_timedelta(t % 1, unit="d"))
     line_data = np.where(diffDt == min(diffDt))[0][0]
     return weather_data.iloc[line_data]
 
@@ -40,7 +39,7 @@ n_steps = int((sim_time - plant_age) / dt)
 
 # Weather data
 path_weather = "../../modelparameter/functional/climate/"
-weather_data = pd.read_csv(path_weather + "Selhausen_weather_data.txt", delimiter = "\t")
+weather_data = pd.read_csv(path_weather + "Selhausen_weather_data.txt", delimiter="\t")
 
 # Bulk soil
 box_min = [-4.0, -4.0, -24.0]
@@ -67,7 +66,7 @@ def setSoilParams(s):
 
 s = RichardsWrapper(RichardsNCSP())
 s.initialize()
-s.createGrid(box_min, box_max, cell_number, periodic = True)  # cm
+s.createGrid(box_min, box_max, cell_number, periodic=True)  # cm
 s.setHomogeneousIC(initial, True)  # total potential (cm)
 s.setICZ_solute(nitrate_initial_values)  # step-wise function, ascending order
 s.setTopBC("noFlux")
@@ -83,7 +82,7 @@ s.setRegularisation(s.eps_regularization, s.eps_regularization)  # needs to be l
 # Initialize plant model
 plant = pb.MappedPlant(1)
 plant.readParameters(path + filename + ".xml")
-sdf = pb.SDF_PlantBox(np.inf, np.inf, box_max[2] - box_min[2] - 2.)
+sdf = pb.SDF_PlantBox(np.inf, np.inf, box_max[2] - box_min[2] - 2.0)
 plant.setGeometry(sdf)
 
 # plant hydraulic properties
@@ -92,7 +91,7 @@ params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_G
 hm = PhotosynthesisPython(plant, params)
 hm.wilting_point = s.wilting_point
 path = "../../modelparameter/functional/plant_photosynthesis/"
-hm.read_photosynthesis_parameters(filename = path + "photosynthesis_parameters2025")
+hm.read_photosynthesis_parameters(filename=path + "photosynthesis_parameters2025")
 
 
 # Coupling (map indices)
@@ -101,12 +100,12 @@ def picker(x, y, z):
     return s.pick([x, y, z])
 
 
-plant.setSoilGrid(picker, noChanges = True)
+plant.setSoilGrid(picker, noChanges=True)
 plant.initialize()
 plant.simulate(plant_age, False)
 
 # Perirhizal zone models |\label{l74:perirhizal_models_start}|
-rs = RhizoMappedSegments(soilModel = s, ms = plant, hm = hm, RichardsNCCylFoam = RichardsNCCylFoam)
+rs = RhizoMappedSegments(soilModel=s, ms=plant, hm=hm, RichardsNCCylFoam=RichardsNCCylFoam)
 
 
 def setSoilParamsCyl(s):
@@ -128,7 +127,6 @@ net_flux_water = np.zeros(np.prod(cell_number))
 net_flux_solute = np.zeros(np.prod(cell_number))
 
 for i in range(n_steps):  # |\label{l74:loop_start}|
-
     # Weather variables
     weatherData_i = getWeatherData(plant_age)
 
@@ -144,21 +142,21 @@ for i in range(n_steps):  # |\label{l74:loop_start}|
     ea = es * weatherData_i["RH"]
 
     hm.solve(
-        sim_time = plant_age,
-        rsx = h_rsi,
-        cells = False,
-        ea = ea,
-        es = es,
-        PAR = weatherData_i["PAR"] * (24 * 3600) / 1e4,  # mol photons m-2 s-1 -> mol photons cm-2 d-1
-        TairC = weatherData_i["Tair"],
+        sim_time=plant_age,
+        rsx=h_rsi,
+        cells=False,
+        ea=ea,
+        es=es,
+        PAR=weatherData_i["PAR"] * (24 * 3600) / 1e4,  # mol photons m-2 s-1 -> mol photons cm-2 d-1
+        TairC=weatherData_i["Tair"],
     )
 
     proposed_inner_fluxes_water = hm.radial_fluxes()  # cm3 day-1
     h_xylem = hm.get_water_potential()  # |\label{l74:plant_transpi_end}|
 
     # Perirhizal zone models  |\label{l74:perirhizal_start}|
-    proposed_outer_fluxes_water = rs.splitSoilVals(soilVals = net_flux_water, compId = 0, dt = dt)
-    proposed_outer_fluxes_solute = rs.splitSoilVals(soilVals = net_flux_solute, compId = 1, dt = dt)
+    proposed_outer_fluxes_water = rs.splitSoilVals(soilVals=net_flux_water, compId=0, dt=dt)
+    proposed_outer_fluxes_solute = rs.splitSoilVals(soilVals=net_flux_solute, compId=1, dt=dt)
     rs.solve(
         dt,
         proposed_inner_fluxes_water,  # inner BC water
@@ -173,7 +171,7 @@ for i in range(n_steps):  # |\label{l74:loop_start}|
     s.setSource(soil_source_water, 0)  # cm3 day-1, in richards.py
     s.setSource(soil_source_solute, 1)  # g day-1, in richards.py
 
-    s.solve(dt, saveInnerFluxes_ = True)  # |\label{l74:soil_model_end}|
+    s.solve(dt, saveInnerFluxes_=True)  # |\label{l74:soil_model_end}|
 
     # Post processing
     rs.check1d3dDiff()  # |\label{l74:1d3d_diff_start}|
@@ -194,7 +192,7 @@ for i in range(n_steps):  # |\label{l74:loop_start}|
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 
 # VTK visualisation
-vp.plot_plant_and_soil(hm.ms, "Xylem potential (cm)", h_xylem, s, False, np.array(box_min), np.array(box_max), cell_number, filename, sol_ind = 1)
+vp.plot_plant_and_soil(hm.ms, "Xylem potential (cm)", h_xylem, s, False, np.array(box_min), np.array(box_max), cell_number, filename, sol_ind=1)
 
 # Transpiration over time
 fig, ax1 = figure_style.subplots12(1, 1)
@@ -202,11 +200,11 @@ ax1.plot(x_, np.array(y_), "g")  # actual transpiration
 ax2 = ax1.twinx()
 ax2.plot(x_, np.cumsum(np.array(y_) * dt), "c")  # cumulative transpiration
 ax1.set_xlabel("Time (hh:mm)")
-ax1.set_ylabel("Actual transpiration rate (mL day$^{-1}$)", color = "g")
-ax1.tick_params(axis = "y", colors = "g")
+ax1.set_ylabel("Actual transpiration rate (mL day$^{-1}$)", color="g")
+ax1.tick_params(axis="y", colors="g")
 ax2.yaxis.label.set_color("c")
-ax2.set_ylabel("Cumulative transpiration (mL)", color = "c")
-ax2.tick_params(axis = "y", colors = "c")
+ax2.set_ylabel("Cumulative transpiration (mL)", color="c")
+ax2.tick_params(axis="y", colors="c")
 ax1.xaxis.set_major_locator(HourLocator(range(0, 25, 1)))
 ax1.xaxis.set_major_formatter(DateFormatter("%H:%M"))
 ax1.fmt_xdata = DateFormatter("%H:%M")

@@ -27,6 +27,7 @@ rotatedRhizotron = pb.SDF_RotateTranslate(rhizotron, alpha, 0, posA.times(-1))  
 # 2. A split pot experiment
 topBox = pb.SDF_PlantBox(22, 20, 5)  # |\label{l2_2_1:splitboxbegin}|
 sideBox = pb.SDF_PlantBox(10, 20, 35)
+
 left = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(-6, 0, -5))
 right = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(6, 0, -5))
 box_ = []
@@ -52,11 +53,8 @@ for i, y in enumerate(y_):
 rhizotubes = pb.SDF_Union(rhizotubes_)  # |\label{l2_2_1:tubesmultend}|
 rhizoTube = pb.SDF_Difference(box, rhizotubes)  # |\label{l2_2_1:box_minustubes}|
 
-#
-c = 0
 containers = [soilcore, rotatedRhizotron, splitBox, rhizoTube]
-for container in containers:  # |\label{l2_2_1:simulateallsetups}|
-
+for i, container in enumerate(containers):  # |\label{l2_2_1:simulateallsetups}|
     plant.setGeometry(container)
     plant.initialize()
     plant.simulate(45)  # days
@@ -65,6 +63,5 @@ for container in containers:  # |\label{l2_2_1:simulateallsetups}|
     vp.plot_roots_and_container(plant, container)
 
     # Export results (as vtp)
-    plant.write(f"results/root_system{c}.vtp")
-    vp.write_container(container, f"results/container_{c}.vtp")  # you can pass , resolution=200 to increase resulting mesh quality, default is 100
-    c += 1  # |\label{l2_2_1:simulateallsetupsend}|
+    plant.write(f"results/root_system{i}.vtp")
+    vp.write_container(container, f"results/container_{i}.vtp")  # you can pass , resolution=200 to increase resulting mesh quality, default is 100 |\label{l2_2_1:simulateallsetupsend}|

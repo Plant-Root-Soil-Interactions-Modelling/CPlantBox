@@ -55,7 +55,7 @@ layerthickness = float(sp_int.get_SolutionVariable(sol_lines, "transform", "laye
 
 # read soil depth and layers for vertical grid from the soil file used in the simplace solution
 vSoilFile_path = str(vSoilFile_path).replace("${_WORKDIR_}/", wd).replace("${vSoilFile}", vSoilFile)
-SoilFile = pd.read_csv(vSoilFile_path, sep = ";")
+SoilFile = pd.read_csv(vSoilFile_path, sep=";")
 soildepth = max(SoilFile.loc[SoilFile["soilname"] == vSoilName, "depth"]) * 100  # cm
 layers = soildepth / layerthickness  # number of soil layers
 
@@ -104,7 +104,7 @@ warns = [str(datetime.datetime.now())]
 # Simulation loop
 for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
     # simulate simplace step to get maxinc and re_reduction dinamically
-    (date, maxinc, doharvest, tranrf, yld, rld_s, re_reduction, re_q, re_w, h, init_pb, frr_s, md95_s) = sp_int.getSimplaceValuesExtended(sim, gram_per_cm, h1, h2, h3, h4, area = area)  # |\label{l7_5_simplace:MaxInc_simplace}|
+    (date, maxinc, doharvest, tranrf, yld, rld_s, re_reduction, re_q, re_w, h, init_pb, frr_s, md95_s) = sp_int.getSimplaceValuesExtended(sim, gram_per_cm, h1, h2, h3, h4, area=area)  # |\label{l7_5_simplace:MaxInc_simplace}|
 
     # if not using re_reduction from simplace set args.elongationrestriction == 0
     if elongationrestriction == 0:
@@ -116,7 +116,6 @@ for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
     print("Simulating: ", date, " MaxIncr:", round(maxinc, 2), " Tranrf:", round(tranrf, 2), " Yield:", round(yld, 2), " Step:", s)
     # run CPlantBox if there's any root increment
     if maxinc > 0:  # |\label{l7_5_simplace:RunCPB}|
-
         # simulate root system
         rs.simulate(dt, maxinc, se, True)
 
@@ -140,7 +139,7 @@ for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
     if s == 0:
         out_pb = getRootOutputs.asDataFrame(rs, date)
     else:
-        out_pb = out_pb.append(getRootOutputs.asDataFrame(rs, date), ignore_index = True)
+        out_pb = out_pb.append(getRootOutputs.asDataFrame(rs, date), ignore_index=True)
 
     # Initialize PB in next timestep
     if init_pb:
@@ -153,7 +152,7 @@ for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
 
 # write pb outputs |\label{l7_5_simplace:OutStart}|
 rs.write(od + "/milena/PyPlantBox/lintul5/Lintul5Slim_PlantBox.vtp")
-out_pb.to_csv(od + "/milena/PyPlantBox/lintul5/PlantBox_outputs.csv", index = False)
+out_pb.to_csv(od + "/milena/PyPlantBox/lintul5/PlantBox_outputs.csv", index=False)
 
 # plot on screen?
 if plot:

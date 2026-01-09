@@ -1,13 +1,12 @@
-""" solute transport example - radially symmetric 1D model for nitrate uptake """
+"""solute transport example - radially symmetric 1D model for nitrate uptake"""
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
+from plantbox.visualisation import figure_style
 from rosi.richards_flat import RichardsFlatWrapper  # Python part of cylindrcial
 from rosi.rosi_richardsnc_cyl import RichardsNCCylFoam  # C++ part (Dumux binding), macroscopic soil model
-
-from plantbox.visualisation import figure_style
 
 
 def sinusoidal(t):
@@ -18,15 +17,15 @@ def sinusoidal(t):
 def plot_profile(cc, h, c):  # |\label{l63:plot_profile_start}|
     """shows soil matric potential and concentration in the profile"""
     _, ax1 = figure_style.subplots11()
-    ax1.plot(cc, h, color = "tab:red")
-    ax1.set_ylabel("Soil water potential (hPa)", color = "tab:red")
+    ax1.plot(cc, h, color="tab:red")
+    ax1.set_ylabel("Soil water potential (hPa)", color="tab:red")
     ax1.set_xlabel("Distance from root surface (cm)")
-    ax1.tick_params(axis = "y", labelcolor = "tab:red")
+    ax1.tick_params(axis="y", labelcolor="tab:red")
     ax2 = ax1.twinx()
-    ax2.plot(cc, c, color = "tab:blue")
-    ax2.set_ylabel("Nitrate concentration (g L$^{-1}$)", color = "tab:blue")
+    ax2.plot(cc, c, color="tab:blue")
+    ax2.set_ylabel("Nitrate concentration (g L$^{-1}$)", color="tab:blue")
     ax2.set_xlabel("Distance from root surface (cm)")
-    ax2.tick_params(axis = "y", labelcolor = "tab:blue")
+    ax2.tick_params(axis="y", labelcolor="tab:blue")
     plt.tight_layout()  # |\label{l63:plot_profile_end}|
 
 
@@ -34,15 +33,15 @@ def plot_history(area, w, c, n_steps):  # |\label{l63:plot_history_start}|
     """plots concentration per liquid phase and concentration per soil volume"""
     _, ax1 = figure_style.subplots11()
     c_ = np.array([np.sum(np.multiply(area, np.multiply(c[i], w[i]))) for i in range(0, n_steps)])  # nitrate concentration per soil volume
-    ax1.plot(np.linspace(0, sim_time, n_steps), np.sum(np.multiply(area, c), axis = 1), color = "tab:red")
-    ax1.set_ylabel("Liquid phase (g L$^{-1}$)", color = "tab:red")
+    ax1.plot(np.linspace(0, sim_time, n_steps), np.sum(np.multiply(area, c), axis=1), color="tab:red")
+    ax1.set_ylabel("Liquid phase (g L$^{-1}$)", color="tab:red")
     ax1.set_xlabel("Time (day)")
-    ax1.tick_params(axis = "y", labelcolor = "tab:red")
+    ax1.tick_params(axis="y", labelcolor="tab:red")
     ax2 = ax1.twinx()
-    ax2.plot(np.linspace(0, sim_time, n_steps), c_, color = "tab:blue")
-    ax2.set_ylabel("Soil (kg m$^{-3}$)", color = "tab:blue")
+    ax2.plot(np.linspace(0, sim_time, n_steps), c_, color="tab:blue")
+    ax2.set_ylabel("Soil (kg m$^{-3}$)", color="tab:blue")
     ax2.set_xlabel("Time (day)")
-    ax2.tick_params(axis = "y", labelcolor = "tab:blue")
+    ax2.tick_params(axis="y", labelcolor="tab:blue")
     plt.tight_layout()  # |\label{l63:plot_history_end}|
 
 
@@ -52,7 +51,7 @@ logbase = 0.5
 NC = 10  # spatial resolution (1D model)
 a_in = 0.02  # cm
 a_out = 0.6  # cm
-points = np.logspace(np.log(a_in) / np.log(logbase), np.log(a_out) / np.log(logbase), NC, base = logbase)
+points = np.logspace(np.log(a_in) / np.log(logbase), np.log(a_out) / np.log(logbase), NC, base=logbase)
 soil = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
 s.initialize()
 s.createGrid1d(points)
@@ -116,13 +115,8 @@ for i in range(0, n_steps):  # |\label{l63:loop_start}|
 
 theta = w[-1]  # |\label{l63:wc}|
 volumef = np.sum(np.multiply(theta, area))  # |\label{l63:vol}|
-<<<<<<< HEAD
-print(f"domain water volume", volumef, "cm3/cm  = ", volumef / 1000.0, "l/cm")  # |\label{l63:results}|
-print("change in water volume", volumef - volume0, "cm3/cm = ", 1.0e-3 * (volumef - volume0), "l/cm")
-=======
 print("domain water volume", volumef, "cm3 cm-1  = ", volumef / 1000.0, "l cm-1")  # |\label{l63:results}|
 print("change in water volume", volumef - volume0, "cm3 cm-1 = ", 1.0e-3 * (volumef - volume0), "l cm-1")
->>>>>>> 69bcb513b8979608c5f052b22f8b37f063e12dfb
 
 area = np.squeeze(area, -1)
 plot_history(area, w, c, n_steps)  # |\label{l63:plot_history}|

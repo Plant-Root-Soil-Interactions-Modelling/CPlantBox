@@ -70,16 +70,16 @@ for i, soil in enumerate([sand, loam, clay]):  # make three subplots
         x = eta + (K_sur - K_i) * t / (theta_sur - theta_i)
         ax[i].plot(theta_, -x, lineStyle[i])
 
-    ax[i].set_xlabel(r"$\theta$ (cm$^3$ cm$^{-3}$)", fontsize = 20)
+    ax[i].set_xlabel(r"$\theta$ (cm$^3$ cm$^{-3}$)", fontsize=20)
     ax[i].set_xlim(0, 0.5)
 
-ax1.set_ylabel("Depth (cm)", fontsize = 20)
+ax1.set_ylabel("Depth (cm)", fontsize=20)
 ax1.set_ylim(-150, 0)
 ax2.set_ylim(-200, 0)
 ax3.set_ylim(-120, 0)
-ax1.tick_params(axis = "both", which = "major", labelsize = 16)
-ax2.tick_params(axis = "both", which = "major", labelsize = 16)
-ax3.tick_params(axis = "both", which = "major", labelsize = 16)
+ax1.tick_params(axis="both", which="major", labelsize=16)
+ax2.tick_params(axis="both", which="major", labelsize=16)
+ax3.tick_params(axis="both", which="major", labelsize=16)
 
 if __name__ == "__main__":
     plt.show()

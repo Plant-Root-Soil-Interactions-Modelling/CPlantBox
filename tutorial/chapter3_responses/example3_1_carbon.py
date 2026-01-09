@@ -51,10 +51,10 @@ for step in range(0, n_steps):  # |\label{l3_1_carbon:LoopStart}|
     used_carbon = root_len_increment / root_SRL
     unnused_carbon = carbon_source - used_carbon
 
-    print("Max roots elongation is:", round(maxinc, 1), " [cm]")
-    print("Roots elongated:", round(root_len_increment, 1), " [cm]")
-    print("Carbon provided:", round(carbon_source, 1), " [g]")
-    print("Carbon used for growth:", round(used_carbon, 1), " [g]")
+    print("Max roots elongation is:", round(maxinc, 1), " (cm)")
+    print("Roots elongated:", round(root_len_increment, 1), " (cm)")
+    print("Carbon provided:", round(carbon_source, 1), " (g)")
+    print("Carbon used for growth:", round(used_carbon, 1), " (g)")
 
     # Carbon balance check
     tol = 1.01  # 1% tolerance
@@ -65,4 +65,4 @@ plant.write("results/example3_1_carbon.vtp")  # |\label{l3_1_carbon:WriteStart}|
 
 ana = pb.SegmentAnalyser()
 ana.addSegments(plant)
-vp.plot_roots(ana, "type")  # press g to save the jpg |\label{l3_1_carbon:WriteEnd}|
+vp.plot_roots(ana, "subType")  # press g to save the jpg |\label{l3_1_carbon:WriteEnd}|

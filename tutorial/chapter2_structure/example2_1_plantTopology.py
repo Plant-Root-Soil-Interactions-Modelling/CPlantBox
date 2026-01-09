@@ -7,7 +7,7 @@ path = "../../modelparameter/structural/plant/"
 
 # Define a simple plant topology, part A
 plant = pb.MappedPlant(2)
-plant.readParameters(path + "example2_1_2.xml", verbose = True)
+plant.readParameters(path + "example2_1_2.xml", verbose=True)
 
 rrp = plant.getOrganRandomParameter(pb.root)[1]  # laterals of taproot #|\label{l2_1:arrayStart1}|
 rrp.successorOT = [[pb.root]]
@@ -74,4 +74,3 @@ plant.simulate(100, False)
 
 vp.plot_plant(plant, "organType")
 plant.write("results/example2_1_2c.vtp")
-

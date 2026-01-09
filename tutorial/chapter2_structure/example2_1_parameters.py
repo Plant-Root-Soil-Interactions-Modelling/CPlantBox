@@ -2,9 +2,10 @@
 
 import matplotlib.pyplot as plt  # |\label{l2_1:matplotlib}|
 import numpy as np  # |\label{l2_1:numpy}|
-import plantbox.visualisation.vtk_plot as vp
+
 import plantbox as pb
 from plantbox.visualisation import figure_style
+import plantbox.visualisation.vtk_plot as vp
 
 plant = pb.Plant()
 p0 = pb.RootRandomParameter(plant)  # |\label{l2_1:p0}|
@@ -59,11 +60,11 @@ l1.subType = 1  # radius (cm)
 l1.ldelay = -1  # delay between lateral creation and start of growth
 l1.r = 5  # growth rate (cm)
 l1.a = 0.05
-l1.la, l1.lb, l1.lmax, l1.ln = 3.5, 1., 7.5, 3
+l1.la, l1.lb, l1.lmax, l1.ln = 3.5, 1.0, 7.5, 3
 l1.shapeType = 2
 l1.areaMax = 10
-l1.leafGeometryPhi = np.array([-90., -45, 0., 45., 90.]) / 180. * np.pi
-l1.leafGeometryX = np.array([3., 2.2, 1.7, 2., 3.5])
+l1.leafGeometryPhi = np.array([-90.0, -45, 0.0, 45.0, 90.0]) / 180.0 * np.pi
+l1.leafGeometryX = np.array([3.0, 2.2, 1.7, 2.0, 3.5])
 N = 101
 l1.createLeafRadialGeometry(l1.leafGeometryPhi, l1.leafGeometryX, N)  # |\label{l2_1:leaf_end}|
 

@@ -24,8 +24,8 @@ rs.write("results/example5_2_exudation_rootsystem.vtp")  # |\label{l5_2_exudatio
 
 # Grid parameter
 nodes = np.array([np.array(n) for n in rs.getNodes()])  # |\label{l5_2_exudation:gridstart}|
-box_min = nodes.min(axis = 0)
-box_max = nodes.max(axis = 0)
+box_min = nodes.min(axis=0)
+box_max = nodes.max(axis=0)
 width = abs(max(box_max[0], box_max[1]) - min(box_min[0], box_min[1])) + 6  # cm
 depth = abs(box_min[2]) + 3
 xres = 0.3
@@ -62,19 +62,19 @@ C = np.reshape(C, (nx, ny, nz))  # |\label{l5_2_exudation:reshapestart}|
 X = np.linspace(-width / 2, width / 2, nx)
 Y = np.linspace(-width / 2, width / 2, ny)
 Z = np.linspace(-depth, 0, nz)
-X_, Y_, Z_ = np.meshgrid(X, Y, Z, indexing = "ij")  # |\label{l5_2_exudation:reshapeend}|
+X_, Y_, Z_ = np.meshgrid(X, Y, Z, indexing="ij")  # |\label{l5_2_exudation:reshapeend}|
 
-gridToVTK("results/./example5_2_exudation_citrate", X, Y, Z, pointData = {"Citrate concentration": C})  # |\label{l5_2_exudation:save}|
+gridToVTK("results/./example5_2_exudation_citrate", X, Y, Z, pointData={"Citrate concentration": C})  # |\label{l5_2_exudation:save}|
 
 fig, ax = figure_style.subplots11()  # |\label{l5_2_exudation:plotstart}|
-C_ = C[:, int(ny / 2),:]
-C_ = C_ + 10 ** -5
+C_ = C[:, int(ny / 2), :]
+C_ = C_ + 10**-5
 levels = np.linspace(np.min(np.log10(C_[:])), np.max(np.log10(C_[:])))
-cs = ax.contourf(X_[:, int(ny / 2),:], Z_[:, int(ny / 2),:], np.log10(C_), levels = levels, cmap = "jet")
+cs = ax.contourf(X_[:, int(ny / 2), :], Z_[:, int(ny / 2), :], np.log10(C_), levels=levels, cmap="jet")
 plt.axis("equal")
-cbar = fig.colorbar(cs, pad = -0.4)
+cbar = fig.colorbar(cs, pad=-0.4)
 cbar.set_label(r"log10 Citrate concentration $(\mu g \, cm^{-3})$")
-cbar.locator = MaxNLocator(nbins = 5)
+cbar.locator = MaxNLocator(nbins=5)
 ax.set_xticks([])
 ax.set_yticks([])
 for pos in ["right", "top", "bottom", "left"]:

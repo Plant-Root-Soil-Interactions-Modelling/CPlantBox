@@ -10,10 +10,9 @@ into the same path level as CPlantBox."""
 import matplotlib.pyplot as plt
 import numpy as np
 
+from plantbox.visualisation import figure_style
 from rosi.richards import RichardsWrapper  # Python part
 from rosi.rosi_richards import RichardsSPnum  # C++ part (Dumux binding)
-
-from plantbox.visualisation import figure_style
 
 # Define Mualem van Genuchten parameters for Selhausen soil profile according to Bauer et al. (2011, table 3, \url{https://doi.org/10.1007/s10533-011-9583-1}) |\label{l61ies:genuchten_a}|
 # theta_r (-), theta_s (-), alpha (cm-1), n (-), Ks (cm day-1)
@@ -78,12 +77,12 @@ times = np.array(times)
 sel_idx = np.searchsorted(times, [0.0, 0.2, 0.5, 1.0, 1.2, 2.0, 3.0])
 
 # Plot solutions |\label{l61ies:plt_prof}|
-fig1, ax_ = figure_style.subplots11large(2, 1, sharex = "row")
+fig1, ax_ = figure_style.subplots11large(2, 1, sharex="row")
 cols = ["k-", "r-", "r--", "r-.", "b-.", "b--", "b-"]
 ii = 0
 for i in sel_idx:
-    ax_[0].plot(x_[i], z_[i], cols[ii], label = f"{times[i]:.2f} days")
-    ax_[1].plot(h_[i], z_[i], cols[ii], label = f"{times[i]:.2f} days")
+    ax_[0].plot(x_[i], z_[i], cols[ii], label=f"{times[i]:.2f} days")
+    ax_[1].plot(h_[i], z_[i], cols[ii], label=f"{times[i]:.2f} days")
     ii = ii + 1
 # ax_[0].set_title("Infiltration 1 $day$ with 10 $cm$ $day^{-1}$ \n and evaporation 2 $days$ with 0.1 $cm$ $d^{-1}$ afterwards")
 ax_[0].set_xlabel("Volumetric water content (cm$^{3}$ cm$^{-3}$)")
@@ -95,9 +94,9 @@ ax_[1].legend()
 plt.show()
 
 fig, ax = figure_style.subplots11()
-ax.plot(times, top_new[:, 2], label = "surface flux")
-ax.plot(times, bot_new[:, 2], label = "bottom flux")
-ax.set_xlabel('Time (day)')
-ax.set_ylabel('Vertical water flux (cm day$^{-1}$)')
-ax.legend(fontsize = 14)
+ax.plot(times, top_new[:, 2], label="surface flux")
+ax.plot(times, bot_new[:, 2], label="bottom flux")
+ax.set_xlabel("Time (day)")
+ax.set_ylabel("Vertical water flux (cm day$^{-1}$)")
+ax.legend(fontsize=14)
 plt.show()

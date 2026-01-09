@@ -3,16 +3,15 @@ This example solves the Richards equation with DuMux. The github repository "dum
 
 import matplotlib.pyplot as plt
 
+from plantbox.visualisation import figure_style
 from rosi.richards import RichardsWrapper  # Python part |\label{l61:paths_a}|
 from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding) |\label{paths_e}|
 
-from plantbox.visualisation import figure_style
-
 # Define Van Genuchten and other parameters
 soils = {
-    'Sand': [0.045, 0.43, 0.15, 3, 1000],  # |\label{l61:params_a}|
-    'Loam': [0.08, 0.43, 0.04, 1.6, 50],
-    'Clay': [0.1, 0.4, 0.01, 1.1, 10]
+    "Sand": [0.045, 0.43, 0.15, 3, 1000],  # |\label{l61:params_a}|
+    "Loam": [0.08, 0.43, 0.04, 1.6, 50],
+    "Clay": [0.1, 0.4, 0.01, 1.1, 10],
 }
 soil = "Loam"  # Select soil type for simulation   |\label{l61:params_e}|
 sim_time = 10  # |\label{l61:sim_time}|
@@ -44,7 +43,7 @@ s.ddt = 1.0e-5  # initial Dumux time step (days)  |\label{l61:initialDT}|
 
 x_, y_ = [], []
 for i in range(0, n_steps):  # |\label{l61:loop}|
-    print(f" {i*dt:g} days")
+    print(f" {i * dt:g} days")
     s.solve(dt)  # |\label{l61:solve}|
     f = s.getNeumann(idx_top)  # f = s.getSolutionHeadAt(idx_top)   |\label{l61:Neumann_a}|
     x_.append(s.simTime)
@@ -57,5 +56,5 @@ ax.set_xlim(0, 10)
 ax.set_title(soil)
 ax.set_xlabel("Time (day)")
 ax.set_ylabel("Actual evaporation (cm day$^{-1}$)")
-ax.tick_params(axis = "both", which = "major")
+ax.tick_params(axis="both", which="major")
 plt.show()  # |\label{l61:plot_fluxes_e}|

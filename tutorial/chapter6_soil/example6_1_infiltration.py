@@ -10,10 +10,9 @@ into the same path level as CPlantBox."""
 import matplotlib.pyplot as plt  # |\label{l61i:bibs1_a}|
 import numpy as np  # |\label{l61i:bibs1_e}|
 
+from plantbox.visualisation import figure_style
 from rosi.richards import RichardsWrapper  # Python part  |\label{l61i:bibs2_e}|
 from rosi.rosi_richards import RichardsSPnum  # C++ part (Dumux binding) |\label{l61i:bibs2_a}|
-
-from plantbox.visualisation import figure_style
 
 # Define van Genuchten parameters for sand, loam and clay  |\label{l61i:genuchten_a}|
 # theta_r (-), theta_s (-), alpha (cm-1), n (-), Ks (cm day-1)
@@ -68,8 +67,8 @@ ax.set_ylabel("Depth (cm)")
 plt.show()  # |\label{l61i:plot_profile_e}|
 
 fig, ax = figure_style.subplots11()  # |\label{l61i:plot_fluxes_a}|
-ax.plot(times, top_new[:, 2], label = "surface flux")
-ax.plot(times, bot_new[:, 2], label = "bottom flux")
+ax.plot(times, top_new[:, 2], label="surface flux")
+ax.plot(times, bot_new[:, 2], label="bottom flux")
 ax.set_xlabel("Time (day)")
 ax.set_ylabel("Vertical water flux (cm day$^{-1}$)")
 ax.legend()

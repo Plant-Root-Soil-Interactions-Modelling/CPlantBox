@@ -1,4 +1,4 @@
-"""solute transport example - nitrate in movement in soil """
+"""solute transport example - nitrate in movement in soil"""
 
 import datetime
 
@@ -8,42 +8,41 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
 
+from plantbox.visualisation import figure_style
 from rosi.richards import RichardsWrapper  # Python part, macroscopic soil model
 from rosi.rosi_richardsnc import RichardsNCSP  # C++ part (Dumux binding), macroscopic soil model
 
-from plantbox.visualisation import figure_style
 
-
-def plot_results(h_, c_, times, net_inf, fw, depth = -100.0):
+def plot_results(h_, c_, times, net_inf, fw, depth=-100.0):
     """creates a figures presenting soil water matric potential and
     nitrate concentration over time"""
     c = np.transpose(c_)
-    c = c[::-1,:]
+    c = c[::-1, :]
     h = np.transpose(h_)
-    h = h[::-1,:]
-    fig, ax = figure_style.subplots12large(3, 1, gridspec_kw = {"height_ratios": [1.5, 3, 3]})
+    h = h[::-1, :]
+    fig, ax = figure_style.subplots12large(3, 1, gridspec_kw={"height_ratios": [1.5, 3, 3]})
     ax[0].bar(times[::2], -10 * (net_inf[::2] - np.array(fw)), 0.8)  # cm -> mm
     ax[0].set_ylabel("Net inf (mm day$^{-1}$)")
     ax[0].set_xlim(times[0] - 0.5, times[-1] + 0.5)
     divider = make_axes_locatable(ax[0])
-    cax0 = divider.append_axes("right", size = "5%", pad = 0.05)
+    cax0 = divider.append_axes("right", size="5%", pad=0.05)
     cax0.axis("off")
     divider = make_axes_locatable(ax[1])
-    cax = divider.append_axes("right", size = "5%", pad = 0.05)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
     cmap_reversed = matplotlib.colormaps.get_cmap("jet_r")
-    im = ax[1].imshow(h, cmap = cmap_reversed, aspect = "auto", vmin = -1.0e3, extent = [0, sim_time, depth, 0.0])
-    cb = fig.colorbar(im, cax = cax, orientation = "vertical")
+    im = ax[1].imshow(h, cmap=cmap_reversed, aspect="auto", vmin=-1.0e3, extent=[0, sim_time, depth, 0.0])
+    cb = fig.colorbar(im, cax=cax, orientation="vertical")
     cb.ax.get_yaxis().labelpad = 30
-    cb.set_label("Soil matric potential (cm)", rotation = 270)
+    cb.set_label("Soil matric potential (cm)", rotation=270)
     ax[1].set_ylabel("Depth (cm)")
     ax[1].set_xlabel("Time (day)")
     divider = make_axes_locatable(ax[2])
-    cax = divider.append_axes("right", size = "5%", pad = 0.05)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
     cmap_ = matplotlib.colormaps.get_cmap("jet")
-    im = ax[2].imshow(c, cmap = cmap_, aspect = "auto", extent = [0, sim_time, depth, 0.0])
-    cb = fig.colorbar(im, cax = cax, orientation = "vertical")
+    im = ax[2].imshow(c, cmap=cmap_, aspect="auto", extent=[0, sim_time, depth, 0.0])
+    cb = fig.colorbar(im, cax=cax, orientation="vertical")
     cb.ax.get_yaxis().labelpad = 30
-    cb.set_label("Nitrate concentration (g L$^{-1}$)", rotation = 270)
+    cb.set_label("Nitrate concentration (g L$^{-1}$)", rotation=270)
     ax[2].set_ylabel("Depth (cm)")
     ax[2].set_xlabel("Time (day)")
     print("range", np.min(h), np.max(h), "cm")
@@ -52,18 +51,18 @@ def plot_results(h_, c_, times, net_inf, fw, depth = -100.0):
     plt.show()
 
 
-def plot_profile(h, c, depth = -100.0):
+def plot_profile(h, c, depth=-100.0):
     """shows soil matric potential and concentration in the profile"""
     _, ax1 = figure_style.subplots11()
-    ax1.plot(h, np.linspace(depth, 0.0, h.shape[0]), color = "tab:red")
-    ax1.set_xlabel("Soil matric potential (cm)", color = "tab:red")
+    ax1.plot(h, np.linspace(depth, 0.0, h.shape[0]), color="tab:red")
+    ax1.set_xlabel("Soil matric potential (cm)", color="tab:red")
     ax1.set_ylabel("Depth (cm)")
-    ax1.tick_params(axis = "x", labelcolor = "tab:red")
+    ax1.tick_params(axis="x", labelcolor="tab:red")
     ax2 = ax1.twiny()
-    ax2.plot(c, np.linspace(depth, 0.0, c.shape[0]), ":", color = "tab:blue")
-    ax2.set_xlabel("Nitrate concentration (g L$^{-1}$)", color = "tab:blue")
+    ax2.plot(c, np.linspace(depth, 0.0, c.shape[0]), ":", color="tab:blue")
+    ax2.set_xlabel("Nitrate concentration (g L$^{-1}$)", color="tab:blue")
     ax2.set_ylabel("Depth (cm)")
-    ax2.tick_params(axis = "x", labelcolor = "tab:blue")
+    ax2.tick_params(axis="x", labelcolor="tab:blue")
     plt.tight_layout()
     plt.show()
 
@@ -72,12 +71,12 @@ def plot_history(w, c, n_steps):
     """plots concentration per liquid phase and concentration per soil volume"""
     c_ = np.array([np.sum(np.multiply(c[i], w[i])) for i in range(0, n_steps)])  # nitrate concentration per soil volume
     _, ax1 = figure_style.subplots11()
-    ax1.plot(np.linspace(0, sim_time, n_steps), np.sum(c, axis = 1), color = "tab:red")
-    ax1.set_ylabel("Liquid phase (g$^{-1}$)", color = "tab:red")
+    ax1.plot(np.linspace(0, sim_time, n_steps), np.sum(c, axis=1), color="tab:red")
+    ax1.set_ylabel("Liquid phase (g$^{-1}$)", color="tab:red")
     ax1.set_xlabel("Time (day)")
     ax2 = ax1.twinx()
-    ax2.plot(np.linspace(0, sim_time, n_steps), c_, color = "tab:blue")
-    ax2.set_ylabel("Soil (kg m$^{-3}$)", color = "tab:blue")
+    ax2.plot(np.linspace(0, sim_time, n_steps), c_, color="tab:blue")
+    ax2.set_ylabel("Soil (kg m$^{-3}$)", color="tab:blue")
     ax2.set_xlabel("Time (day)")
     plt.tight_layout()
     plt.show()
@@ -185,9 +184,9 @@ for i in range(0, n_steps):  # |\label{l62:loop_loop}|
 
     ind = s.pick([0, 0, -0.5])
     soil_sol_fluxes = {ind: multiplier * fertilization_amount}
-    s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
+    s.setSource(soil_sol_fluxes.copy(), eq_idx=1)
 
-    s.solve(dt, saveInnerFluxes_ = True)
+    s.solve(dt, saveInnerFluxes_=True)
     h.append(s.getSolutionHead_())  # cm
     w.append(s.getWaterContent())  # 1
     c.append(s.getSolution_(1))  # g L-1

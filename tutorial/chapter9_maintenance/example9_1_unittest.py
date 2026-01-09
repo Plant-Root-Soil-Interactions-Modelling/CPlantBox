@@ -5,7 +5,6 @@ from plantbox.rsml.rsml_reader import *
 
 
 class TestPlant(unittest.TestCase):  # |\label{l9_1:TestPlant}|
-
     def root_example_rrp(self):
         """an example used in the tests below, a main root with laterals"""
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter) #|\label{l9_1:defRootBegin}|
@@ -52,7 +51,7 @@ class TestPlant(unittest.TestCase):  # |\label{l9_1:TestPlant}|
         path = "../../modelparameter/structural/plant/"
         filename = "Brassica_oleracea_Vansteenkiste_2014"
         rs = pb.Plant()  # the original
-        rs.readParameters(path + filename + ".xml", verbose = False)
+        rs.readParameters(path + filename + ".xml", verbose=False)
         rs.setSeed(seed)
         rs.initialize(False)
         rs2 = rs.copy()  # copy root system #|\label{l9_1:copy}|
