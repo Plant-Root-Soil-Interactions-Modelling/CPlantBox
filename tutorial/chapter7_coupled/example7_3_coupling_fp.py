@@ -84,19 +84,19 @@ outer_r = peri.get_outer_radii("length")  # |\label{l73c:outer}|
 inner_r = peri.ms.radii
 rho_ = np.divide(outer_r, np.array(inner_r))  # |\label{l73c:rho}|
 
-# Numerical solution (a)
+# Numerical solution 
 start_time = timeit.default_timer()
 sim_times_, t_act_, q_soil_ = [], [], []
 
 h_s = s.getSolutionHead_()  # matric potential (cm) |\label{l73c:initial_hs}|
 h_s_ = hm.ms.getHs(h_s)  # matric potential per segment (cm) |\label{l73c:geths}|
-hsr = h_s_.copy()  # h_s_initial values for fix point iteration # |\label{l73c:initial_hsr}|
+h_sr = h_s_.copy()  # h_s_initial values for fix point iteration # |\label{l73c:initial_hsr}|
 
 n_steps = round(sim_time / dt)
 t = 0.0
 
 for i in range(0, n_steps):  # |\label{l73c:loop}|
-    h_x = hm.solve(plant_age + t, -t_pot * sinusoidal(t), hsr, cells=False)  # |\label{l73c:initial_hx}|
+    h_x = hm.solve(plant_age + t, -t_pot * sinusoidal(t), h_sr, cells=False)  # |\label{l73c:initial_hx}|
     h_x_old = h_x.copy()
 
     kr_ = hm.params.getKr(plant_age + t)  # |\label{l73c:update_kr}|
@@ -105,18 +105,19 @@ for i in range(0, n_steps):  # |\label{l73c:loop}|
     err = 1.0e6
     c = 0
     while err > 100.0 and c < 100:  # |\label{l73c:fixpoint}|
+        
         # interpolation
-        hsr = peri.soil_root_interface_potentials(h_x[1:], h_s_, inner_kr_, rho_)  # |\label{l73c:interpolation}|
+        h_sr = peri.soil_root_interface_potentials(h_x[1:], h_s_, inner_kr_, rho_)  # |\label{l73c:interpolation}|
 
         # xylem matric potential
-        h_x = hm.solve_again(plant_age + t, -t_pot * sinusoidal(t), hsr, cells=False)  # |\label{l73c:hydraulic_hsr}|
+        h_x = hm.solve_again(plant_age + t, -t_pot * sinusoidal(t), h_sr, cells=False)  # |\label{l73c:hydraulic_hsr}|
         err = np.linalg.norm(h_x - h_x_old)
         h_x_old = h_x.copy()
 
         c += 1  # |\label{l73c:fixpoint_end}|
 
     water = s.getWaterVolume()  # |\label{l73c:domain_water}|
-    fluxes = hm.radial_fluxes(plant_age + t, h_x, hsr, cells=False)  # |\label{l73c:fluxes}|
+    fluxes = hm.radial_fluxes(plant_age + t, h_x, h_sr, cells=False)  # |\label{l73c:fluxes}|
     s.setSource(hm.sumSegFluxes(fluxes))  # TODO will be moved to MappedSegments # |\label{l73c:soil_fluxes}|
     s.solve(dt)
     soil_water = (s.getWaterVolume() - water) / dt  # |\label{l73c:domain_water_end}|
@@ -125,11 +126,11 @@ for i in range(0, n_steps):  # |\label{l73c:loop}|
     h_s_ = hm.ms.getHs(h_s)  # per segment |\label{l73c:new_hs2}|
 
     sim_times_.append(t)  # |\label{l73c:results}|
-    t_act_.append(hm.get_transpiration(plant_age + t, h_x.copy(), hsr.copy()))  # cm3/day
+    t_act_.append(hm.get_transpiration(plant_age + t, h_x.copy(), h_sr.copy()))  # cm3/day
     q_soil_.append(soil_water)  # cm3/day |\label{l73c:results_end}|
 
     n = round(i / n_steps * 100)  # |\label{l73c:progress}|
-    print(f"[{'*' * n}{' ' * (100 - n)}], {c:g} iterations, soil h_s [{np.min(h_s):g}, {np.max(h_s):g}], interface [{np.min(hsr):g}, {np.max(hsr):g}] cm, root [{np.min(h_x):g}, {np.max(h_x):g}] cm, {s.simTime:g} days")
+    print(f"[{'*' * n}{' ' * (100 - n)}], {c:g} iterations, soil h_s [{np.min(h_s):g}, {np.max(h_s):g}], interface [{np.min(h_sr):g}, {np.max(h_sr):g}] cm, root [{np.min(h_x):g}, {np.max(h_x):g}] cm, {s.simTime:g} days")
 
     if i % 10 == 0:  # |\label{l73c:write}|
         vp.write_soil(f"results/example73_{i // 10:06d}", s, box_min, box_max, cell_number)

@@ -152,7 +152,7 @@ for i in range(n_steps):  # |\label{l74:loop_start}|
     )
 
     proposed_inner_fluxes_water = hm.radial_fluxes()  # cm3 day-1
-    h_xylem = hm.get_water_potential()  # |\label{l74:plant_transpi_end}|
+    h_x = hm.get_water_potential()  # |\label{l74:plant_transpi_end}|
 
     # Perirhizal zone models  |\label{l74:perirhizal_start}|
     proposed_outer_fluxes_water = rs.splitSoilVals(soilVals=net_flux_water, compId=0, dt=dt)
@@ -187,12 +187,12 @@ for i in range(n_steps):  # |\label{l74:loop_start}|
     n = round(float(i) / float(n_steps - 1) * 100.0)
     h_soil = s.getSolutionHead()  # matric potential within the soil (cm)
     h_rsi_soil = np.delete(rs.get_inner_heads(weatherData_i), rs.airSegs)  # remove air segments
-    print(f"[{'*' * n}{' ' * (100 - n)}], [{np.min(h_soil):g}, {np.max(h_soil):g}] cm bulk soil, [{np.min(h_rsi_soil):g}, {np.max(h_rsi_soil):g}] cm root-soil interface, [{np.min(h_xylem):g}, {np.max(h_xylem):g}] cm plant xylem at {weatherData_i['time']}")  # |\label{l74:info}|
+    print(f"[{'*' * n}{' ' * (100 - n)}], [{np.min(h_soil):g}, {np.max(h_soil):g}] cm bulk soil, [{np.min(h_rsi_soil):g}, {np.max(h_rsi_soil):g}] cm root-soil interface, [{np.min(h_x):g}, {np.max(h_x):g}] cm plant xylem at {weatherData_i['time']}")  # |\label{l74:info}|
 
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 
 # VTK visualisation
-vp.plot_plant_and_soil(hm.ms, "Xylem potential (cm)", h_xylem, s, False, np.array(box_min), np.array(box_max), cell_number, filename, sol_ind=1)
+vp.plot_plant_and_soil(hm.ms, "Xylem potential (cm)", h_x, s, False, np.array(box_min), np.array(box_max), cell_number, filename, sol_ind=1)
 
 # Transpiration over time
 fig, ax1 = figure_style.subplots12(1, 1)
