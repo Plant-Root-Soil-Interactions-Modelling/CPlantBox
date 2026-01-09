@@ -61,16 +61,17 @@ class TestPlant(unittest.TestCase):
 
         p.initialize(False)
         p.simulate(76, False)
-        p.write("morningglory.vtp")
+        p.write("Heliantus_Pagès_2013.vtp")
 
     def test_CPlantBox_analysis(self):
         """tests the functions needed by CPlantBox_analysis defined in CPlantBox_PiafMunch.py"""
         p = pb.Plant()
         p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
+            
         p.initialize(False)
         p.simulate(76)
         ana = pb.SegmentAnalyser(p)
-        ana.write("morningglory_ama.vtp")
+        ana.write("Heliantus_Pagès_2013_ana.vtp")
 
     def test_convert(self):
         """tests the functions needed by the convert function of CPlantBox_PiafMunch.py"""
@@ -93,17 +94,19 @@ class TestPlant(unittest.TestCase):
 
     def test_CPlantBox_step(self):
         """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
+        time = 76
         p1 = pb.MappedPlant(2)
-        p1.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
-        p1.initialize(verbose = False, stochastic = False)
-        p1.simulate(76, False)
+        p1.readParameters(path + "fspm2023.xml", fromFile = True, verbose = False) # use file with only growth probability of 1
+            
+        p1.initialize(verbose = False)#, stochastic = False)
+        p1.simulate(time, False)
         p1.write("test_CPlantBox_1step.vtp")
 
         p2 = pb.MappedPlant(2)
-        p2.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
-        p2.initialize(verbose = False, stochastic = False)
+        p2.readParameters(path + "fspm2023.xml", fromFile = True, verbose = False)
+        p2.initialize(verbose = False)#, stochastic = False)
         for i in range(100):
-            p2.simulate(76 / 100, False)
+            p2.simulate(time / 100, False)
         p2.write("test_CPlantBox_100step.vtp")
         root1 = p1.getOrgans(2)
         root2 = p2.getOrgans(2)
@@ -120,6 +123,7 @@ class TestPlant(unittest.TestCase):
         p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
 
         p.initializeDB()
+        srp = p.getOrganRandomParameter(1)[0]
         time = 76
 
         rrp = p.getOrganRandomParameter(pb.root)[1]

@@ -3,17 +3,17 @@
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
-rs = pb.Plant()
+plant = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"
-rs.readParameters(path + name + ".xml")
+filename = "Anagallis_femina_Leitner_2010"
+plant.readParameters(path + filename + ".xml")
 
 # Simulate
-rs.initialize()
-rs.simulate(60)  # days
+plant.initialize()
+plant.simulate(60)  # days
 
 # Export results as segments
-ana = pb.SegmentAnalyser(rs)
+ana = pb.SegmentAnalyser(plant)
 ana.mapPeriodic(15, 10)  # cm |\label{l2_2_3:periodicity}|
 ana.write("results/periodic.vtp")
 

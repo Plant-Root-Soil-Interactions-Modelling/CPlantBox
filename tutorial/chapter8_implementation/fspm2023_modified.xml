@@ -1,7 +1,9 @@
 <plant>
     <seed name="true" subType="0">
         <parameter name="delayDefinition" value="0"/>
-        <!--method implemented to evaluate lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
+        <!--method implemented to evaluate root lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
+        <parameter name="delayDefinitionShoot" value="0"/>
+        <!--method implemented to evaluate shoot lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
         <parameter name="maxTil" value="0"/>
         <!--Maximal number of tillers [1]-->
         <parameter name="a" value="0.1"/>
@@ -48,12 +50,6 @@
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
         <parameter name="a" value="0.050000001"/>
         <!--radius [cm]-->
-        <parameter name="colorB" value="0.2"/>
-        <!--Root color, blue component [0.-1.]-->
-        <parameter name="colorG" value="0.2"/>
-        <!--Root color, green component [0.-1.]-->
-        <parameter name="colorR" value="0.60000002"/>
-        <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="3"/>
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1"/>
@@ -96,12 +92,6 @@
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
         <parameter name="a" value="0.02"/>
         <!--radius [cm]-->
-        <parameter name="colorB" value="0.2"/>
-        <!--Root color, blue component [0.-1.]-->
-        <parameter name="colorG" value="0.2"/>
-        <!--Root color, green component [0.-1.]-->
-        <parameter name="colorR" value="0.60000002"/>
-        <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="3"/>
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1"/>
@@ -144,12 +134,6 @@
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
         <parameter name="a" value="0.02"/>
         <!--radius [cm]-->
-        <parameter name="colorB" value="0.2"/>
-        <!--Root color, blue component [0.-1.]-->
-        <parameter name="colorG" value="0.2"/>
-        <!--Root color, green component [0.-1.]-->
-        <parameter name="colorR" value="0.60000002"/>
-        <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="3"/>
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1"/>
@@ -192,7 +176,7 @@
         <!--nodal growth function (sequential = 0, equal = 0)-->
         <parameter name="tropismT" value="1"/>
         <!--Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="BetaDev" value="10"/>
+        <parameter name="BetaDev" value="0"/>
         <!--RevRotation deviation-->
         <parameter name="InitBeta" value="0"/>
         <!--Initial RevRotation-->

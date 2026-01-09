@@ -4,20 +4,20 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 path = path = "../../modelparameter/structural/plant/"
-name = "fspm2023"
+filename = "fspm2023"
 
 sim_time = 30  # days
 n_colums = 3  # number of columns and rows #|\label{l2_2_2:Ncolsrows}|
-dist = 40  # distance between the plants [cm] #|\label{l2_2_2:dist}|
+distance = 40  # distance between the plants (cm) #|\label{l2_2_2:dist}|
 
 # Initializes n_colums*n_colums plants
 all_ = []
 for i in range(0, n_colums):  # |\label{l2_2_2:iterationpositionbegin}|
     for j in range(0, n_colums):
         plant = pb.Plant()
-        plant.readParameters(path + name + ".xml")
+        plant.readParameters(path + filename + ".xml")
         seed = plant.getOrganRandomParameter(pb.seed)[0]
-        seed.seedPos = pb.Vector3d(dist * i, dist * j, -3.0)  # cm
+        seed.seedPos = pb.Vector3d(distance * i, distance * j, -3.0)  # cm
         plant.initialize(verbose = False)
         all_.append(plant)  # |\label{l2_2_2:iterationpositionend}|
 

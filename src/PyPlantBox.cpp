@@ -32,7 +32,10 @@ namespace py = pybind11;
 #include "Perirhizal.h"
 #include "ExudationModel.h"
 #include "Photosynthesis.h"
+
+#ifdef ENABLE_PIAFMUNCH
 #include "PiafMunch/runPM.h"
+#endif
 
 #include "PlantHydraulicParameters.h"
 #include "PlantHydraulicModel.h"
@@ -365,7 +368,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getOrganRandomParameter", (std::vector<std::shared_ptr<OrganRandomParameter>> (Organism::*)(int) const) &Organism::getOrganRandomParameter) //overloads
             .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)
             .def("getSeed", &Organism::getSeed)
-
+            .def("setStochastic",&Organism::setStochastic)
             .def("addOrgan", &Organism::addOrgan)
             .def("initialize", &Organism::initialize, py::arg("verbose") = true)
             .def("simulate", &Organism::simulate, py::arg("dt"), py::arg("verbose") = false) //default
@@ -797,6 +800,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("initialize", &Seed::initialize, py::arg("verbose") = true)
             .def("param", &Seed::param)
             .def("getNumberOfRootCrowns", &Seed::getNumberOfRootCrowns)
+            .def("getMaxT", &Seed::getMaxT)
             .def("baseOrgans", &Seed::baseOrgans)
             .def("copyBaseOrgans", &Seed::copyBaseOrgans)
             .def("createRoot", &Seed::createRoot)
@@ -923,8 +927,8 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<Plant, Organism, std::shared_ptr<Plant>>(m, "Plant")
             .def(py::init<unsigned int>(),  py::arg("seednum")=0)
             .def("initialize", &Plant::initialize, py::arg("verbose") = true)
-			.def("initializeLB", &Plant::initialize, py::arg("verbose") = true)
-            .def("initializeDB", &Plant::initialize, py::arg("verbose") = true)
+			.def("initializeLB", &Plant::initializeLB, py::arg("verbose") = true)
+            .def("initializeDB", &Plant::initializeDB, py::arg("verbose") = true)
 			.def("setGeometry", &Plant::setGeometry)
             .def("setSoil", &Plant::setSoil)
             .def("reset", &Plant::reset)
@@ -947,6 +951,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("mappedSegments", &MappedPlant::mappedSegments)
 			.def("printNodes",  &MappedPlant::printNodes)
 			.def("plant", &MappedPlant::plant)
+			.def("initializeLB", &MappedPlant::initializeLB, py::arg("verbose") = true)
+			.def("initializeDB", &MappedPlant::initializeDB, py::arg("verbose") = true)
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
 			.def("disableExtraNode",&MappedPlant::disableExtraNode)
             .def("enableExtraNode",&MappedPlant::enableExtraNode)
@@ -1105,6 +1111,7 @@ PYBIND11_MODULE(plantbox, m) {
             .value("C4", Photosynthesis::PhotoTypes::C4)
             .export_values();
 
+#ifdef ENABLE_PIAFMUNCH
 	/*
      * runPM.h
      */
@@ -1195,7 +1202,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rhoSucrose",&PhloemFlux::rhoSucrose)
             .def_readwrite("krm1v",&PhloemFlux::krm1v)
             .def_readwrite("krm2v",&PhloemFlux::krm2v);
-
+#endif
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
         .def(py::init<>())
         .def(py::init<std::shared_ptr<MappedPlant>>())

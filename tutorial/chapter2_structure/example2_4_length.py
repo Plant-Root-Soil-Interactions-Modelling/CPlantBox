@@ -7,23 +7,23 @@ import plantbox as pb  # |\label{l2_2d:importEnd}|
 from plantbox.visualisation import figure_style
 
 path = "../../modelparameter/structural/rootsystem/"  # |\label{l2_2d:defineStart}|
-name = "Brassica_napus_a_Leitner_2010"
+filename = "Brassica_napus_a_Leitner_2010"
 
-rs = pb.Plant()
-rs.readParameters(path + name + ".xml")
-rs.initialize()
+plant = pb.Plant()
+plant.readParameters(path + filename + ".xml")
+plant.initialize()
 
 sim_time = 60.0  # days
 dt = 1.0  # days
-n_steps = round(sim_time / dt)  # n_steps  |\label{l2_2d:defineEnd}|
+n_steps = round(sim_time / dt)  # number of iterations  |\label{l2_2d:defineEnd}|
 
 # Plot some scalar value over time
 stype = "length"  # |\label{l2_2d:plotStart}|
 v_, v1_, v2_, v3_ = np.zeros(n_steps), np.zeros(n_steps), np.zeros(n_steps), np.zeros(n_steps)
 for i in range(0, n_steps):
-    rs.simulate(dt)
-    t = np.array(rs.getParameter("subType"))  # |\label{l2_2d:getParam1}|
-    v = np.array(rs.getParameter(stype))  # |\label{l2_2d:getParam2}|
+    plant.simulate(dt)
+    t = np.array(plant.getParameter("subType"))  # |\label{l2_2d:getParam1}|
+    v = np.array(plant.getParameter(stype))  # |\label{l2_2d:getParam2}|
     v_[i] = np.sum(v)
     v1_[i] = np.sum(v[t == 1])
     v2_[i] = np.sum(v[t == 2])

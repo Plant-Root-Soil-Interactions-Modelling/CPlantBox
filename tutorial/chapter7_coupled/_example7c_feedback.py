@@ -42,8 +42,8 @@ def sinusoidal(t):
 
 
 """ Parameters """
-min_b = [-4.0, -4.0, -25.0]
-max_b = [4.0, 4.0, 0.0]
+box_min = [-4.0, -4.0, -25.0]
+box_max = [4.0, 4.0, 0.0]
 cell_number = [8, 8, 25]  # [16, 16, 30]  # [32, 32, 60]
 periodic = False
 
@@ -63,7 +63,7 @@ dt = 120.0 / (24 * 3600)  # [days] Time step must be very small
 """ Initialize macroscopic soil model """
 s = RichardsWrapper(RichardsSP())
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, periodic)  # [cm]
+s.createGrid(box_min, box_max, cell_number, periodic)  # [cm]
 s.setHomogeneousIC(initial, True)  # cm pressure head, equilibrium
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
@@ -75,9 +75,9 @@ s.setCriticalPressure(wilting_point)
 rs = pb.MappedPlant()
 rs.readParameters(path + name + ".xml")
 if not periodic:
-    sdf = pb.SDF_PlantBox(0.99 * (max_b[0] - min_b[0]), 0.99 * (max_b[1] - min_b[1]), max_b[2] - min_b[2])
+    sdf = pb.SDF_PlantBox(0.99 * (box_max[0] - box_min[0]), 0.99 * (box_max[1] - box_min[1]), box_max[2] - box_min[2])
 else:
-    sdf = pb.SDF_PlantBox(np.Inf, np.Inf, max_b[2] - min_b[2])
+    sdf = pb.SDF_PlantBox(np.Inf, np.Inf, box_max[2] - box_min[2])
 rs.setGeometry(sdf)
 r = XylemFluxPython(rs)
 init_conductivities(r, age_dependent)
@@ -90,7 +90,7 @@ def picker(x, y, z):
 
 
 r.rs.setSoilGrid(picker)  # maps segments
-r.rs.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), True)
+r.rs.setRectangularGrid(pb.Vector3d(box_min), pb.Vector3d(box_max), pb.Vector3d(cell_number), True)
 
 # Manually set tropism to hydrotropism for the first ten root types
 sigma = [0.4, 1.0, 1.0, 1.0, 1.0] * 2
@@ -138,7 +138,7 @@ for i in range(0, N):
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 
 """ VTK visualisation """
-vp.plot_roots_and_soil(r.rs, "pressure head", rx, s, periodic, np.array(min_b), np.array(max_b), cell_number, name)
+vp.plot_roots_and_soil(r.rs, "pressure head", rx, s, periodic, np.array(box_min), np.array(box_max), cell_number, name)
 
 """ transpiration over time """
 fig, ax1 = plt.subplots()

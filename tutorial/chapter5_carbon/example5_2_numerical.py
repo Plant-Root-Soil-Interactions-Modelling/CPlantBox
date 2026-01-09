@@ -10,22 +10,23 @@ import pandas as pd
 import plantbox as pb
 from plantbox.functional.phloem_flux import PhloemFluxPython  # |\label{l52:importLib}|
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
+from plantbox.visualisation import figure_style
 
 
 def getWeatherData(t):
-    """get the weather data for time t"""
+    """get the weather data for time t (days)"""
     diffDt = abs(pd.to_timedelta(weatherData["time"]) - pd.to_timedelta(t % 1, unit = "d"))
     line_data = np.where(diffDt == min(diffDt))[0][0]
     return weatherData.iloc[line_data]
 
 
 # Parameters and variables
-plant_age = 7.3  # [day] init sim_time
-sim_time = 0.5  # [day]
+plant_age = 7.3  # initial plant age (day)
+sim_time = 0.5  # days
 dt = 1.0 / 24.0
-N = int(sim_time / dt)
+n_steps = int(sim_time / dt)
 depth = 60
-p_mean = -600  # mean soil water potential [cm]
+p_mean = -600  # mean soil water potential (cm)
 
 # Weather data
 path = "../../modelparameter/functional/climate/"
@@ -34,8 +35,8 @@ weatherData = pd.read_csv(path + "Selhausen_weather_data.txt", delimiter = "\t")
 # Plant
 plant = pb.MappedPlant(seednum = 2)
 path = "../../modelparameter/structural/plant/"
-name = "Triticum_aestivum_test_2021"  # "Triticum_aestivum_adapted_2023"
-plant.readParameters(path + name + ".xml")
+filename = "Triticum_aestivum_test_2021"  # "Triticum_aestivum_adapted_2023"
+plant.readParameters(path + filename + ".xml")
 
 sdf = pb.SDF_PlantBox(np.inf, np.inf, depth)
 plant.setGeometry(sdf)
@@ -46,7 +47,7 @@ plant.simulate(plant_age, verbose)
 
 # Soil
 def picker(_x, _y, z):
-    """soil grid cell index for positon (_x, _y, z)"""
+    """soil grid cell index for position (_x, _y, z)"""
     return max(int(np.floor(-z)), -1)  # aboveground nodes get index -1
 
 
@@ -72,7 +73,7 @@ cumulTranspiration = 0.0
 Q_Rm_is, Q_Gr_is, Q_Exud_is, Q_Water_is = [], [], [], []
 
 # Simulation loop
-for i in range(N):
+for i in range(n_steps):
     # Weather variables
     weatherData_i = getWeatherData(plant_age)  # |\label{l52:weather}|
 
@@ -103,7 +104,7 @@ for i in range(N):
     Q_Gr_i = hm.get_phloem_data(data = "growth", last = True, doSum = True)
     Q_out_i = Q_Rm_i + Q_Exud_i + Q_Gr_i
 
-    n = round(float(i) / float(N - 1) * 100.0)
+    n = round(float(i) / float(n_steps - 1) * 100.0)
     print(f"\n[{'*' * n}{' ' * (100 - n)}]")
     print(f"\t\tat {int(np.floor(plant_age))}d {int((plant_age % 1) * 24)}h, PAR: {round(weatherData_i['PAR'] * 1e6)} mumol m-2 s-1")
     print(f"cumulative: transpiration {cumulTranspiration:5.2e} [cm3]\tnet assimilation {cumulAssimilation:5.2e} [mol]")
@@ -118,16 +119,16 @@ for i in range(N):
     Q_Water_is.append(np.sum(hm.get_transpiration()))
 
 # Plot results
-fig, axs = plt.subplots(2, 2)
-axs[0, 0].plot(time, Q_Water_is, "tab:blue")
-axs[0, 0].set(xlabel = "Time [hh:mm]", ylabel = "Total transpiration rate\n[cm3/day]")
-axs[1, 0].plot(time, Q_Gr_is, "tab:red")
-axs[1, 0].set(xlabel = "Time [hh:mm]", ylabel = "Total growth rate\n[mol/day]")
-axs[0, 1].plot(time, Q_Exud_is, "tab:brown")
-axs[0, 1].set(xlabel = "Time [hh:mm]", ylabel = "Total exudation rate\n[mol/day]")
-axs[1, 1].plot(time, Q_Rm_is, "k")
-axs[1, 1].set(xlabel = "Time [hh:mm]", ylabel = "Total respiration rate\n[mol/day]")
-for ax in axs.flatten():
+fig, ax_ = figure_style.subplots11large(2, 2)
+ax_[0, 0].plot(time, Q_Water_is, "tab:blue")
+ax_[0, 0].set(xlabel = "Time (hh:mm)", ylabel = "Total transpiration rate (cm3 day-1)")
+ax_[1, 0].plot(time, Q_Gr_is, "tab:red")
+ax_[1, 0].set(xlabel = "Time (hh:mm)", ylabel = "Total growth rate (mol day-1)")
+ax_[0, 1].plot(time, Q_Exud_is, "tab:brown")
+ax_[0, 1].set(xlabel = "Time (hh:mm)", ylabel = "Total exudation rate (mol day-1)")
+ax_[1, 1].plot(time, Q_Rm_is, "k")
+ax_[1, 1].set(xlabel = "Time (hh:mm)", ylabel = "Total respiration rate (mol day-1)")
+for ax in ax_.flatten():
     ax.xaxis.set_major_locator(HourLocator(range(0, 25, 1)))
     ax.xaxis.set_major_formatter(DateFormatter("%H:%M"))
     ax.fmt_xdata = DateFormatter("%H:%M")

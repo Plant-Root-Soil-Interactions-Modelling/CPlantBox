@@ -20,11 +20,11 @@ from SimplacePlantbox.simplace import lintulslim_interact as sp_int
 from SimplacePlantbox.util import checkRuns, getRootOutputs
 
 # Simulation configuration
-gram_per_cm = 0.000035  # specific root length density used to calculate the maximum root increment in a timestep [g/cm]
-area = 6 * 12.5  # plant area [cm * cm]
-sim_time = 600  # maximum simulation time-n_steps [days]
-dt = 1  # simulation timestep [days]
-plot = False  # plot root system at the end ?
+gram_per_cm = 0.000035  # specific root length density used to calculate the maximum root increment in a timestep (g cm-1)
+area = 6 * 12.5  # plant area (cm2)
+sim_time = 600  # maximum simulation time-n_steps (days)
+dt = 1  # simulation timestep (days)
+plot = False  # plot root system at the end
 
 # Feddes parameters for root elongation restriction due to soil water potential
 # Eq. 10 of https://doi.org/10.3389/fpls.2022.865188
@@ -57,7 +57,7 @@ layerthickness = float(sp_int.get_SolutionVariable(sol_lines, "transform", "laye
 vSoilFile_path = str(vSoilFile_path).replace("${_WORKDIR_}/", wd).replace("${vSoilFile}", vSoilFile)
 SoilFile = pd.read_csv(vSoilFile_path, sep = ";")
 soildepth = max(SoilFile.loc[SoilFile["soilname"] == vSoilName, "depth"]) * 100  # cm
-layers = soildepth / layerthickness  # number of soil layers [#]
+layers = soildepth / layerthickness  # number of soil layers
 
 soildepth = int(soildepth)
 layers = int(layers)
@@ -116,6 +116,7 @@ for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
     print("Simulating: ", date, " MaxIncr:", round(maxinc, 2), " Tranrf:", round(tranrf, 2), " Yield:", round(yld, 2), " Step:", s)
     # run CPlantBox if there's any root increment
     if maxinc > 0:  # |\label{l7_5_simplace:RunCPB}|
+
         # simulate root system
         rs.simulate(dt, maxinc, se, True)
 
