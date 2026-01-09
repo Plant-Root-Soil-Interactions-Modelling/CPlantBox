@@ -516,14 +516,14 @@ void Stem::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 		nodeCTs.push_back(t); // exact creation time
 	}
 	else{//could be quite slow  to insert, but we won t have that many (node-)tillers (?)
-		nodes.insert(nodes.begin() + index-1, n);//add the node at index
+		nodes.insert(nodes.begin() + index, n);//add the node at index
 		//add a global index.
 		//no need for the nodes to keep the same global index and makes the update of the nodes position for MappedPlant object more simple)
 		//if(verbose){
 			//			std::cout<<"Organ::addNode "<<organType()<<" "<<id<<" "<<index<<std::endl<<std::flush;
 		//}
 		nodeIds.push_back(id);
-		nodeCTs.insert(nodeCTs.begin() + index-1, t);
+		nodeCTs.insert(nodeCTs.begin() + index, t);
 		for(auto kid : children){//if carries children after the added node, update their "parent node index"
 
 			if((kid->parentNI >= index-1 )&&(kid->parentNI > 0)){
