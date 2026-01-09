@@ -26,7 +26,7 @@ box_max = [35.0, 10.0, 0.0]  # cm
 cell_number = [17, 5, 50]  # ~4*4*1 cm3
 
 path = "../../modelparameter/structural/rootsystem/"
-filename = "Zeamays_synMRI_modified"  
+filename = "Zeamays_synMRI_modified"
 t_pot = 250  # cm3 /day = mL day-1
 wilting_point = -15000  # cm
 plant_age = 21  # root system h_s_initial age (day)
@@ -84,7 +84,7 @@ outer_r = peri.get_outer_radii("length")  # |\label{l73c:outer}|
 inner_r = peri.ms.radii
 rho_ = np.divide(outer_r, np.array(inner_r))  # |\label{l73c:rho}|
 
-# Numerical solution 
+# Numerical solution
 start_time = timeit.default_timer()
 sim_times_, t_act_, q_soil_ = [], [], []
 
@@ -105,7 +105,6 @@ for i in range(0, n_steps):  # |\label{l73c:loop}|
     err = 1.0e6
     c = 0
     while err > 100.0 and c < 100:  # |\label{l73c:fixpoint}|
-        
         # interpolation
         h_sr = peri.soil_root_interface_potentials(h_x[1:], h_s_, inner_kr_, rho_)  # |\label{l73c:interpolation}|
 

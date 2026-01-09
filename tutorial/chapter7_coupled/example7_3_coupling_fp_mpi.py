@@ -32,7 +32,7 @@ box_max = [35.0, 10.0, 0.0]  # cm
 cell_number = [17, 5, 50]  # ~4*4*1 cm3
 
 path = "../../modelparameter/structural/rootsystem/"
-filename = "Zeamays_synMRI_modified"  
+filename = "Zeamays_synMRI_modified"
 t_pot = 250  # cm3 day-1 = mL day-1
 wilting_point = -15000  # cm
 plant_age = 21  # root system h_s_initial age (day)
@@ -155,7 +155,7 @@ if rank == 0:
 h_x = comm.bcast(h_x, root=0)
 vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", h_x, s, True, np.array(box_min), np.array(box_max), cell_number, filename)
 
-if rank == 0: # Transpiration over time    
+if rank == 0:  # Transpiration over time
     fig, ax1 = figure_style.subplots11(1, 1)
     ax1.plot(sim_times_, t_pot * sinusoidal(sim_times_), "k")  # potential transpiration
     ax1.plot(sim_times_, -np.array(t_act_), "g")  # actual transpiration (neumann)

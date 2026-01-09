@@ -25,7 +25,7 @@ box_max = [35.0, 10.0, 0.0]  # cm
 cell_number = [17, 5, 50]  # ~4*4*1 cm3
 
 path = "../../modelparameter/structural/rootsystem/"
-filename = "Zeamays_synMRI_modified" 
+filename = "Zeamays_synMRI_modified"
 t_pot = 250  # cm3 day-1 = mL day-1
 wilting_point = -15000  # cm
 plant_age = 21  # h_s_initial plant age (day)
@@ -36,8 +36,8 @@ h_s_initial = -400  # cm
 sim_time = 7.5  # days
 dt = 360.0 / (24 * 3600)  # days |\label{l72c:param_end}|
 
-# Initialize macroscopic soil model 
-s = RichardsWrapper(RichardsSP()) # |\label{l72c:soil}|
+# Initialize macroscopic soil model
+s = RichardsWrapper(RichardsSP())  # |\label{l72c:soil}|
 s.initialize()
 s.createGrid(box_min, box_max, cell_number, periodic=True)  # cm
 s.setHomogeneousIC(h_s_initial, True)  # cm total potential
@@ -48,17 +48,17 @@ s.setParameter("Soil.SourceSlope", "100")  # |\label{l72c:regularisation}|
 s.initializeProblem()
 s.setCriticalPressure(wilting_point)  # |\label{l72c:soil_end}|
 
-# Initialize xylem model 
+# Initialize xylem model
 plant = pb.MappedPlant()  # |\label{l72c:soil_plant}|
 plant.enableExtraNode()
 plant.readParameters(path + filename + ".xml")
 sdf = pb.SDF_PlantBox(np.inf, np.inf, box_max[2] - box_min[2])  # |\label{l72c:domain}|
 plant.setGeometry(sdf)  # |\label{l72c:soil_plant_end}|
 
-# Root hydraulic properties 
+# Root hydraulic properties
 params = PlantHydraulicParameters()  # |\label{l72c:hydraulic}|
 params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreur2012")
-#params.plot_conductivities(True) # |\label{l72c:plot_conductivities}|
+# params.plot_conductivities(True) # |\label{l72c:plot_conductivities}|
 hm = HydraulicModel_Doussan(plant, params)
 hm.wilting_point = wilting_point  # |\label{l72c:hydraulic_end}|
 
@@ -74,9 +74,9 @@ plant.initialize(True)
 plant.simulate(plant_age, True)
 hm.test()  # |\label{l72c:test}|
 
-# Numerical solution 
+# Numerical solution
 start_time = timeit.default_timer()
-t = 0.
+t = 0.0
 sim_times_, t_act_ = [], []
 n_steps = round(sim_time / dt)
 
