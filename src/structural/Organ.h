@@ -113,6 +113,7 @@ public:
     virtual Vector3d heading(int n)  const ; ///< current (absolute) heading of the organs at node n
     Vector3d getiHeading0() const ;///< the initial coordinate system of the root, when it was created
 	bool hasRelCoord() const; //check if organ has relative coordinates
+	bool has_rel_coord = false;
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
@@ -154,6 +155,7 @@ protected:
     bool moved = false; ///< nodes moved during last time step
     int oldNumberOfNodes = 0; ///< number of nodes at the end of previous time step
     bool firstCall = true;
+	std::vector<int> addIncrement;
 };
 
 } // namespace CPlantBox

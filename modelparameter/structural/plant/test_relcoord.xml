@@ -48,7 +48,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.30000001"/>
+        <parameter name="a" value="0.02"/>
         <!--radius [cm]-->
         <parameter name="dx" value="0.5"/>
         <!--Axial resolution [cm] (maximal segment size)-->
@@ -66,13 +66,13 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="10"/>
-        <!--Maximal root length [cm]-->
+        <parameter name="lmax" value="3"/>
+        <!--Maximal root length 10 [cm]-->
         <parameter name="ln" value="1"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="100"/>
+        <parameter name="r" value="1"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
@@ -80,7 +80,7 @@
         <!--Angle between root and parent root [rad]-->
         <parameter name="tropismN" value="1"/>
         <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="0"/>
+        <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
@@ -90,7 +90,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.029999999"/>
+        <parameter name="a" value="0.02"/>
         <!--radius [cm]-->
         <parameter name="dx" value="0.5"/>
         <!--Axial resolution [cm] (maximal segment size)-->
@@ -114,11 +114,11 @@
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="140"/>
+        <parameter name="r" value="1"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
-        <parameter name="theta" value="1"/>
+        <parameter name="theta" value="0.5"/>
         <!--Angle between root and parent root [rad]-->
         <parameter name="tropismN" value="1"/>
         <!--Number of trials of root tropism-->
@@ -132,7 +132,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.029999999"/>
+        <parameter name="a" value="0.02"/>
         <!--radius [cm]-->
         <parameter name="dx" value="0.5"/>
         <!--Axial resolution [cm] (maximal segment size)-->
@@ -156,7 +156,7 @@
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="140"/>
+        <parameter name="r" value="1"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
@@ -173,7 +173,7 @@
         <parameter name="lnf" value="0"/>
         <!--Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)-->
         <parameter name="nodalGrowth" value="1"/>
-        <!--nodal growth function (sequential = 0, equal = 0)-->
+        <!--nodal growth function (sequential = 0, equal = 1)-->
         <parameter name="tropismT" value="1"/>
         <!--Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
         <parameter name="BetaDev" value="0"/>
@@ -182,7 +182,7 @@
         <!--Initial RevRotation-->
         <parameter name="RotBeta" value="0"/>
         <!--RevRotation of the stem-->
-        <parameter name="a" value="0.30000001"/>
+        <parameter name="a" value="0.02"/>
         <!--Stem radius [cm]-->
         <parameter name="delayNGEnd" value="0"/>
         <!--delay between stem creation and start of nodal growth-->
@@ -198,11 +198,11 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--delay between latteral creation and start of nodal growth-->
-        <parameter name="lmax" value="10"/>
+        <parameter name="lmax" value="3"/>
         <!--Maximal stem length [cm]-->
         <parameter name="ln" value="1"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="r" value="100"/>
+        <parameter name="r" value="1"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Stem life time [day]-->
@@ -210,77 +210,29 @@
         <!--Angle between stem and parent stem [rad]-->
         <parameter name="tropismAge" value="0"/>
         <!--Age at which organ switch tropism-->
-        <parameter name="tropismN" value="1"/>
+        <parameter name="tropismN" value="20"/>
         <!--Number of trials of stem tropism-->
-        <parameter name="tropismS" value="0"/>
+        <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of stem tropism [1/cm]-->
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="3" organType="3" percentage="1"/>
         <!--Sub type of lateral -->
-    </stem>
-    <stem name="bulb" subType="2">
-        <parameter name="gf" value="1"/>
-        <!--Growth function number [1]-->
-        <parameter name="lnf" value="0"/>
-        <!--Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)-->
-        <parameter name="nodalGrowth" value="1"/>
-        <!--nodal growth function (sequential = 0, equal = 0)-->
-        <parameter name="tropismT" value="3"/>
-        <!--Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="BetaDev" value="0"/>
-        <!--RevRotation deviation-->
-        <parameter name="InitBeta" value="0"/>
-        <!--Initial RevRotation-->
-        <parameter name="RotBeta" value="0"/>
-        <!--RevRotation of the stem-->
-        <parameter name="a" value="0.5"/>
-        <!--Stem radius [cm]-->
-        <parameter name="delayNGEnd" value="0"/>
-        <!--delay between stem creation and start of nodal growth-->
-        <parameter name="delayNGStart" value="0"/>
-        <!--delay between stem creation and start of nodal growth-->
-        <parameter name="dx" value="1"/>
-        <!--Axial resolution [cm] (maximal segment size)-->
-        <parameter name="dxMin" value="1e-06"/>
-        <!--Axial resolution [cm] (minimal segment size)-->
-        <parameter name="la" value="0"/>
-        <!--Apical zone [cm]-->
-        <parameter name="lb" value="0"/>
-        <!--Basal zone [cm]-->
-        <parameter name="ldelay" value="-1"/>
-        <!--delay between latteral creation and start of nodal growth-->
-        <parameter name="lmax" value="0"/>
-        <!--Maximal stem length [cm]-->
-        <parameter name="ln" value="0"/>
-        <!--Inter-lateral distance [cm]-->
-        <parameter name="r" value="2"/>
-        <!--Initial growth rate [cm day-1]-->
-        <parameter name="rlt" value="1e+09"/>
-        <!--Stem life time [day]-->
-        <parameter name="theta" value="0.2"/>
-        <!--Angle between stem and parent stem [rad]-->
-        <parameter name="tropismAge" value="0"/>
-        <!--Age at which organ switch tropism-->
-        <parameter name="tropismN" value="1"/>
-        <!--Number of trials of stem tropism-->
-        <parameter name="tropismS" value="0"/>
-        <!--Mean value of expected change of stem tropism [1/cm]-->
     </stem>
     <stem name="branch" subType="3">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
         <parameter name="lnf" value="0"/>
         <!--Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)-->
-        <parameter name="nodalGrowth" value="1"/>
+        <parameter name="nodalGrowth" value="0"/>
         <!--nodal growth function (sequential = 0, equal = 0)-->
         <parameter name="tropismT" value="1"/>
         <!--Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="BetaDev" value="0"/>
+        <parameter name="BetaDev" value="2"/>
         <!--RevRotation deviation-->
-        <parameter name="InitBeta" value="1"/>
+        <parameter name="InitBeta" value="0"/>
         <!--Initial RevRotation-->
         <parameter name="RotBeta" value="0"/>
         <!--RevRotation of the stem-->
-        <parameter name="a" value="0.30000001"/>
+        <parameter name="a" value="0.02"/>
         <!--Stem radius [cm]-->
         <parameter name="delayNGEnd" value="0"/>
         <!--delay between stem creation and start of nodal growth-->
@@ -300,11 +252,11 @@
         <!--Maximal stem length [cm]-->
         <parameter name="ln" value="1"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="r" value="100"/>
+        <parameter name="r" value="1"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Stem life time [day]-->
-        <parameter name="theta" value="1"/>
+        <parameter name="theta" value="0.5"/>
         <!--Angle between stem and parent stem [rad]-->
         <parameter name="tropismAge" value="0"/>
         <!--Age at which organ switch tropism-->
@@ -328,7 +280,7 @@
         <!--Leaf geometry parametrisation type-->
         <parameter name="shapeType" value="2"/>
         <!--leaf shape type for definition of area and volume (cylinder = 0, cuboid = 1, user-defined 2D shape= 2)-->
-        <parameter name="tropismT" value="1"/>
+        <parameter name="tropismT" value="5"/>
         <!--Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
         <parameter name="BetaDev" value="0"/>
         <!--RevRotation deviation-->
@@ -340,7 +292,7 @@
         <!--width blade [cm]-->
         <parameter name="Width_petiole" value="0"/>
         <!--width petiole [cm]-->
-        <parameter name="a" value="0.029999999"/>
+        <parameter name="a" value="0.02"/>
         <!--radius [cm]-->
         <parameter name="areaMax" value="10"/>
         <!--Maximal leaf area [cm2]-->
@@ -358,7 +310,7 @@
         <!--Maximal leaf length [cm]-->
         <parameter name="ln" value="0"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="r" value="400"/>
+        <parameter name="r" value="1"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Leaf life time [day]-->
