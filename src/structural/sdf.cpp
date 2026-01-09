@@ -20,15 +20,15 @@ std::string SignedDistanceFunction::writePVPScript() const
  */
 double SDF_PlantBox::getDist(const Vector3d& v) const
 {
-    double z = v.z+dim.z; //  translate
+    double z = v.z+dim.z+eps; //  translate
     return -std::min(std::min(std::min(std::min(std::min(dim.z+z,dim.z-z),dim.y+v.y),dim.y-v.y),dim.x+v.x),dim.x-v.x);
 }
 
 /**
- * Writes a ParaView Phython script explicitly representing the implicit geometry
+ * Writes a ParaView Python script explicitly representing the implicit geometry
  *
  * @param cout      e.g. a file output stream
- * @param c         python object counter for the script (to avoid duplicate names)
+ * @param c         Python object counter for the script (to avoid duplicate names)
  * \return          object counter
  */
 int SDF_PlantBox::writePVPScript(std::ostream & cout, int c) const

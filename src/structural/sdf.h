@@ -80,7 +80,7 @@ class SDF_PlantBox : public SignedDistanceFunction
 public:
 
     /**
-     * Creates a rectangular box: [-x/2,-y/2,0] - [x/2,y/2,-z]
+     * Creates a rectangular box: [-x/2,-y/2,-z-eps] - [x/2,y/2,-eps]
      *
      * @param x  length
      * @param y  width
@@ -93,6 +93,8 @@ public:
     virtual std::string toString() const override { return "SDF_PlantBox"; } ///< @see SignedDistanceFunction::toString
 
     virtual int writePVPScript(std::ostream & cout, int c=1) const override;  ///< @see SignedDistanceFunction::writePVPScript
+
+    double eps = 0.25; // cm
 
 private:
 

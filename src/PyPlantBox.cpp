@@ -235,6 +235,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getGradient",  &SignedDistanceFunction::getGradient, py::arg("p"), py::arg("eps") = 5.e-4) // defaults
             .def("__str__",&SignedDistanceFunction::toString);
     py::class_<SDF_PlantBox, SignedDistanceFunction, std::shared_ptr<SDF_PlantBox>>(m, "SDF_PlantBox")
+			.def_readwrite("eps", &SDF_PlantBox::eps)
             .def(py::init<double,double,double>());
     py::class_<SDF_Cuboid, SignedDistanceFunction, std::shared_ptr<SDF_Cuboid>>(m, "SDF_Cuboid")
             .def(py::init<Vector3d,Vector3d>());
