@@ -58,7 +58,7 @@ x = np.array([plant.seg2cell[i] for i in range(0, len(segs))])  # |\label{l71m:s
 ana = pb.SegmentAnalyser(plant.mappedSegments())  # |\label{l71m:mappedSegments}|
 ana.addData("linear_index", x)
 pd = vp.segs_to_polydata(ana, 1.0, ["radius", "linear_index"])
-rootActor, rootCBar = vp.plot_roots(pd, "linear_index", "Segment index", False)
+root_actor, root_cbar = vp.plot_roots(pd, "linear_index", "Segment index", False)
 grid = vp.uniform_grid(box_min, box_max, cell_number)
-meshActor, meshCBar = vp.plot_mesh(grid, "", "", False)
-vp.render_window([meshActor[0], rootActor], "Test mapping", rootCBar, grid.GetBounds()).Start()
+mesh_actor, mesh_cbar = vp.plot_mesh(grid, "", "", False)
+vp.render_window([mesh_actor[0], root_actor], "Test mapping", root_cbar, grid.GetBounds()).Start()

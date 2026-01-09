@@ -32,7 +32,7 @@ def getWeatherData(t):
 # Main parameters
 path = "../../modelparameter/structural/plant/"
 filename = "Triticum_aestivum_test_2021"
-plant_age = 14.3  # root system initial age (day)
+plant_age = 14.3  # root system h_s_initial age (day)
 sim_time = 14.8
 dt = 20 / 60 / 24  # days
 n_steps = int((sim_time - plant_age) / dt)
@@ -47,7 +47,7 @@ box_max = [4.0, 4.0, 0.0]
 cell_number = [4, 4, 12]  # spatial resolution
 hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
 vg_loam = vg.Parameters(hydrus_loam)
-initial = -600  # cm
+h_s_initial = -600  # cm
 nitrate_initial_values = np.array([5.0e-3]) / 0.43 / 1000  #  kg m-3 -> g L-1
 
 
@@ -67,7 +67,7 @@ def setSoilParams(s):
 s = RichardsWrapper(RichardsNCSP())
 s.initialize()
 s.createGrid(box_min, box_max, cell_number, periodic=True)  # cm
-s.setHomogeneousIC(initial, True)  # total potential (cm)
+s.setHomogeneousIC(h_s_initial, True)  # total potential (cm)
 s.setICZ_solute(nitrate_initial_values)  # step-wise function, ascending order
 s.setTopBC("noFlux")
 s.setBotBC("freeDrainage")
@@ -122,7 +122,7 @@ rs.setSoilParam = setSoilParamsCyl  # |\label{l74:perirhizal_models_end}|
 
 # Simulation loop
 start_time = timeit.default_timer()
-x_, y_ = [], []
+sim_times_, t_act_ = [], []
 net_flux_water = np.zeros(np.prod(cell_number))
 net_flux_solute = np.zeros(np.prod(cell_number))
 
@@ -181,8 +181,8 @@ for i in range(n_steps):  # |\label{l74:loop_start}|
     net_flux_water = net_fluxes[0] - rs.alldiff1d3dCNW[0] / dt  # per soil cell (cm3 day-1)
     net_flux_solute = net_fluxes[1] - rs.alldiff1d3dCNW[1] / dt  # per soil cell (g day-1)  |\label{l74:1d3d_diff_end}|
 
-    x_.append(datetime.strptime(weatherData_i["time"], "%H:%M:%S"))
-    y_.append(float(np.sum(hm.get_transpiration())))  # |\label{l74:transpi}|
+    sim_times_.append(datetime.strptime(weatherData_i["time"], "%H:%M:%S"))
+    t_act_.append(float(np.sum(hm.get_transpiration())))  # |\label{l74:transpi}|
 
     n = round(float(i) / float(n_steps - 1) * 100.0)
     h_soil = s.getSolutionHead()  # matric potential within the soil (cm)
@@ -196,9 +196,9 @@ vp.plot_plant_and_soil(hm.ms, "Xylem potential (cm)", h_xylem, s, False, np.arra
 
 # Transpiration over time
 fig, ax1 = figure_style.subplots12(1, 1)
-ax1.plot(x_, np.array(y_), "g")  # actual transpiration
+ax1.plot(sim_times_, np.array(t_act_), "g")  # actual transpiration
 ax2 = ax1.twinx()
-ax2.plot(x_, np.cumsum(np.array(y_) * dt), "c")  # cumulative transpiration
+ax2.plot(sim_times_, np.cumsum(np.array(t_act_) * dt), "c")  # cumulative transpiration
 ax1.set_xlabel("Time (hh:mm)")
 ax1.set_ylabel("Actual transpiration rate (mL day$^{-1}$)", color="g")
 ax1.tick_params(axis="y", colors="g")

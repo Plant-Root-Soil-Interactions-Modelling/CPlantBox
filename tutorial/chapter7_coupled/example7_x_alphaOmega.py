@@ -38,14 +38,14 @@ cell_number = [1, 1, 50]  # ~4*4*1 cm3
 
 path = "../../modelparameter/structural/rootsystem/"
 filename = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml
-trans = 25  # cm3 day-1 (sinusoidal) = mL day-1
+t_pot = 25  # cm3 day-1 (sinusoidal) = mL day-1
 wilting_point = -15000  # cm
-rs_age = 21  # root system initial age (day)
+plant_age = 21  # root system h_s_initial age (day)
 
 loam = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
 sp = vg.Parameters(loam)  # needed for Perirhizal class
 vg.create_mfp_lookup(sp, wilting_point=-16000, n=1501)  # needed for Perirhizal class
-initial = -400  # cm
+h_s_initial = -400  # cm
 
 sim_time = 3.5  # days
 dt = 3600.0 / (24 * 3600)  # days |\label{l7xa:param_end}|
@@ -54,7 +54,7 @@ dt = 3600.0 / (24 * 3600)  # days |\label{l7xa:param_end}|
 s = RichardsWrapper(RichardsSP())  # |\label{l7xa:soil}|
 s.initialize()
 s.createGrid(box_min, box_max, cell_number, periodic=True)  # cm
-s.setHomogeneousIC(initial, True)  # total potential (cm)
+s.setHomogeneousIC(h_s_initial, True)  # total potential (cm)
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
 s.setVGParameters([loam])
@@ -86,7 +86,7 @@ def picker(_x, _y, z):
 
 plant.setSoilGrid(picker)
 plant.initialize(True)
-plant.simulate(rs_age, True)
+plant.simulate(plant_age, True)
 hm.test()  # |\label{l7xa:test}|
 
 peri = Perirhizal(plant)
@@ -114,7 +114,7 @@ h_bs = s.getSolutionHead()
 # Numerical solution
 start_time = timeit.default_timer()
 t = 0.0
-x_, y_ = [], []
+sim_times_, t_act_ = [], []
 n_steps = round(sim_time / dt)
 area = (plant.maxBound.x - plant.minBound.x) * (plant.maxBound.y - plant.minBound.y)  # cm2
 print("area", area)
@@ -141,7 +141,7 @@ for i in range(0, n_steps):  # |\label{l7xa:loop}|
     # print("alphaSUF", np.nanmin(alphaSUF), np.nanmax(alphaSUF))
 
     # Omega_c: critical stress factor
-    tp = trans * sinusoidal(t) / area  # potential transpiration (cm3 day-1) -> (cm day-1)
+    tp = t_pot * sinusoidal(t) / area  # potential transpiration (cm3 day-1) -> (cm day-1)
     # print("tp", tp)
     omega_c = tp / (-wilting_point * krs)
     print("pot transpiration", tp, "max uptake", (-wilting_point * krs), tp)
@@ -171,8 +171,8 @@ for i in range(0, n_steps):  # |\label{l7xa:loop}|
     s.setSource(fluxes)
     s.solve(dt)  # |\label{l7xa:soil_model_end}|
 
-    x_.append(t)
-    y_.append(-np.nansum(q) * area)  # |\label{l7xa:results}|
+    sim_times_.append(t)
+    t_act_.append(-np.nansum(q) * area)  # |\label{l7xa:results}|
 
     n = round(float(i) / float(n_steps) * 100.0)  # |\label{l7xa:progress}|
     print(f"[{'*' * n}{' ' * (100 - n)}], potential {tp * area:g}, actual {np.nansum(q) * area:g}; [{np.min(h_bs):g}, {np.max(h_bs):g}] cm soil at {s.simTime:g} days")
@@ -180,21 +180,21 @@ for i in range(0, n_steps):  # |\label{l7xa:loop}|
     if i % 10 == 0:  # |\label{l7xa:write}|
         vp.write_soil(f"results/example7x_{i // 10:06d}", s, box_min, box_max, cell_number)
         vp.write_plant(f"results/example7x_{i // 10:06d}", hm.ms.plant())  # |\label{l7xa:write_end}|
-        # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(box_min), np.array(box_max), cell_number) # BETTER output
+        # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", h_x, s, True, np.array(box_min), np.array(box_max), cell_number) # BETTER output
 
     t += dt  # days
 
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l7xa:timing}|
 
-# VTK visualisation # |\label{l7xa:plots}|
-# vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(box_min), np.array(box_max), cell_number)
+# VTK visualisation |\label{l7xa:plots}|
+# vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", h_x, s, True, np.array(box_min), np.array(box_max), cell_number)
 
 # Transpiration over time
 fig, ax1 = figure_style.subplots11()
-ax1.plot(x_, trans * sinusoidal(x_), "k")  # potential transpiration
-ax1.plot(x_, -np.array(y_), "g")  # actual transpiration
+ax1.plot(sim_times_, t_pot * sinusoidal(sim_times_), "k")  # potential transpiration
+ax1.plot(sim_times_, -np.array(t_act_), "g")  # actual transpiration
 ax2 = ax1.twinx()
-ax2.plot(x_, np.cumsum(-np.array(y_) * dt), "c--")  # cumulative transpiration
+ax2.plot(sim_times_, np.cumsum(-np.array(t_act_) * dt), "c--")  # cumulative transpiration
 ax1.set_xlabel("Time (day)")
 ax1.set_ylabel("Transpiration (mL day$^{-1}$) per plant")
 ax1.legend(["Potential", "Actual", "Cumulative"], loc="upper left")
