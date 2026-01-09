@@ -108,6 +108,7 @@ void Leaf::simulate(double dt, bool verbose)
 {
 	firstCall = true;
 	oldNumberOfNodes = nodes.size();
+	maxIncrementedNode = getNumberOfNodes();
 
 	const LeafSpecificParameter& p = *param(); // rename
 
@@ -362,7 +363,7 @@ double Leaf::leafAreaAtSeg(int localSegId, bool realized, bool withPetiole)
 		double lengthAt_x = getLength(localSegId);
 		double lengthInPetiole = std::min(length_,std::max(param()->lb - lengthAt_x,0.));//petiole or sheath
 		double lengthInBlade = std::max(length_ - lengthInPetiole, 0.);
-		assert(((lengthInBlade+lengthInPetiole)==length_)&&"leafAreaAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
+		assert((abs(lengthInBlade+lengthInPetiole-length_)<1e-13)&&"leafAreaAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
 		switch(shapeType)
 		{
 			case LeafRandomParameter::shape_cuboid:{
@@ -430,7 +431,7 @@ double Leaf::leafLengthAtSeg(int localSegId, bool withPetiole)
 		double lengthAt_x = getLength(localSegId);
 		double lengthInPetiole = std::min(length_,std::max(param()->lb - lengthAt_x,0.));//petiole or sheath
 		double lengthInBlade = std::max(length_ - lengthInPetiole, 0.);
-		assert(((lengthInBlade+lengthInPetiole)==length_)&&"leafAreaAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
+		assert((abs(lengthInBlade+lengthInPetiole-length_)< 1e-13)&&"leafLengthAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
 		length_out = lengthInBlade;
 		if(withPetiole){length_out += lengthInPetiole;}
 	}
@@ -453,7 +454,7 @@ double Leaf::leafVolAtSeg(int localSegId,bool realized, bool withPetiole)
 {
 	if(hasRelCoord())
 	{
-		throw std::runtime_error("Leaf::leafLengthAtSeg, leaf still has relative coordinates");
+		throw std::runtime_error("Leaf::leafVolAtSeg, leaf still has relative coordinates");
 	}
 	double vol_ = 0.;
 	if (param()->laterals) {
@@ -468,7 +469,7 @@ double Leaf::leafVolAtSeg(int localSegId,bool realized, bool withPetiole)
 		double lengthInPetiole = std::min(length_,std::max(param()->lb - lengthAt_x,0.));//petiole or sheath
 		double lengthInBlade = std::max(length_ - lengthInPetiole, 0.);
 		double a = getParameter("a") ;//radius or thickness
-		assert(((lengthInBlade+lengthInPetiole)==length_)&&"leafVolAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
+		assert((abs(lengthInBlade+lengthInPetiole-length_)<1e-13)&&"leafVolAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
 		switch(shapeType)
 		{
 			case LeafRandomParameter::shape_cuboid:{
@@ -530,7 +531,7 @@ double Leaf::orgVolume(double length_, bool realized) const
 {
 	if(hasRelCoord())
 	{
-		throw std::runtime_error("Leaf::leafLengthAtSeg, leaf still has relative coordinates");
+		throw std::runtime_error("Leaf::orgVolume, leaf still has relative coordinates");
 	}
 	double vol_;
 	const LeafSpecificParameter& p = *param();
@@ -578,7 +579,7 @@ double Leaf::orgVolume2Length(double volume_)
 {
 	if(hasRelCoord())
 	{
-		throw std::runtime_error("Leaf::leafLengthAtSeg, leaf still has relative coordinates");
+		throw std::runtime_error("Leaf::orgVolume2Length, leaf still has relative coordinates");
 	}
 	const LeafSpecificParameter& p = *param();
 	double length_;
@@ -783,7 +784,14 @@ Vector3d Leaf::heading(int n ) const
 	if ((nodes.size()>1)&&(n>0)) {
 
 		n = std::min(int(nodes.size()),n);
-		Vector3d h = getNode(n).minus(getNode(n-1));
+		Vector3d h;// = getNode(n).minus(getNode(n-1));
+		if(hasRelCoord())
+		{
+			throw std::runtime_error("Leaf::heading, leaf still has relative coordinates");
+			//h = Vector3d(getNode(n));
+		}else{
+			h = getNode(n).minus(getNode(n-1));
+		}
 		h.normalize();
 		if(pseudostem && firstBladeNode)
 		{//add bending at the start of the blade
@@ -818,16 +826,32 @@ Vector3d Leaf::heading(int n ) const
 Vector3d Leaf::getIncrement(const Vector3d& p, double sdx, int n)
 {
 
+	// auto parent_ = getParent();
+	// auto ot_parent = -1;
+	// while((ot_parent != 0) && (parent_ != nullptr)) // we reach either a seed (finished going up parents) or shoot organ (need to be in relative coordinates)
+	// {
+		// parent_ = parent_->getParent();
+		// if(parent_ != nullptr){
+			// ot_parent = parent_->organType();
+		// }
+	// }
+	// parent_->rel2abs();
     Vector3d h = heading(n);
     Matrix3d ons = Matrix3d::ons(h);
 	bool isPseudoStem = getParameter("isPseudostem");
 	bool isSheath = ( getLength(n) - getParameter("lb") < -1e-10);
 	if(isPseudoStem && isSheath){getLeafRandomParameter()->f_tf->setSigma(0.);}
-    Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this(), n+1);
+    Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(),shared_from_this());
 	if(isPseudoStem && isSheath){getLeafRandomParameter()->f_tf->setSigma(getLeafRandomParameter()->tropismS);}
 	//for leaves: necessary?
 	//Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(),shared_from_this());
-    Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+	Vector3d sv;
+	// parent_->abs2rel();
+	// if(hasRelCoord()){
+		// sv = Vector3d::rotAB(ab.x,ab.y);
+	// }else{ //will normally not happen unless we have a leaf growing out of a root or seed
+		sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+	// }
     return sv.times(sdx);
 }
 

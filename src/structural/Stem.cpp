@@ -116,6 +116,7 @@ void Stem::simulate(double dt, bool verbose)
 	const StemSpecificParameter& p = *param(); // rename
 	firstCall = true;
 	oldNumberOfNodes = nodes.size();
+	maxIncrementedNode = getNumberOfNodes();
 	auto p_all = plant.lock();
 	auto p_stem = p_all->getOrganRandomParameter(Organism::ot_stem);
 
@@ -358,6 +359,10 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overri
  */
 void Stem::internodalGrowth(double dl,double dt, bool verbose)
 {
+	if(getId()==4)
+	{
+		std::cout<<"Stem::internodalGrowth(double dl,double dt "<<dl<<" "<<dt<<std::endl;
+	}
 	const StemSpecificParameter& p = *param(); // rename
 	std::vector<double> toGrow(p.ln.size());
 	double dl_;
@@ -369,6 +374,14 @@ void Stem::internodalGrowth(double dl,double dt, bool verbose)
 	if(p.nodalGrowth ==1)
 	{//equal growth
 		std::fill(toGrow.begin(),toGrow.end(),dl/(p.ln.size()-ln_0)) ;
+	}
+	if(getId()==4)
+	{
+		std::cout<<"toGrow ";
+		for (int ii = 0; ii < toGrow.size(); ii++) {
+				std::cout<<toGrow.at(ii) <<" ";
+			}
+		std::cout<<std::endl;
 	}
 	int loopId = 0;
 	size_t phytomerId = 0;
@@ -388,6 +401,13 @@ void Stem::internodalGrowth(double dl,double dt, bool verbose)
 			throw std::runtime_error(errMsg.str().c_str());
 		}
 		dl_ = std::max(0.,std::min(std::min(toGrow[phytomerId],availableForGrowth), dl));
+		if(getId()==4)
+		{
+			std::cout<<"internodalGrowth "<<dl<<" "<<dl_<<" loopId "<<loopId<<
+			" nn1 "<<nn1<<" nn2 "<<nn2<<" phytomerId "<<phytomerId<<
+			" length1 "<<length1<<" getLength(nn2) "<<getLength(nn2)<<
+			" availableForGrowth "<<availableForGrowth<<std::endl;
+		}
 		if(dl_ > 0)
 		{
 			createSegments(dl_,dt,verbose, nn2 ); dl -= dl_;
@@ -507,7 +527,7 @@ void Stem::storeLinkingNodeLocalId(int numCreatedLN, bool verbose)
  */
 void Stem::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 {
-	bool verbose = false;
+	bool verbose = ((organType() == 3)&&(getId()==4));
 	if(verbose)
 	{
 		std::cout<<"Organ::addNode "<<id<<" "<<getId()<<" "<<organType()<<" "<<getParameter("subType")<<std::endl;
@@ -520,14 +540,14 @@ void Stem::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 		nodeCTs.push_back(t); // exact creation time
 	}
 	else{//could be quite slow  to insert, but we won t have that many (node-)tillers (?)
-		nodes.insert(nodes.begin() + index-1, n);//add the node at index
+		nodes.insert(nodes.begin() + index, n);//add the node at index
 		//add a global index.
 		//no need for the nodes to keep the same global index and makes the update of the nodes position for MappedPlant object more simple)
 		//if(verbose){
 			//			std::cout<<"Organ::addNode "<<organType()<<" "<<id<<" "<<index<<std::endl<<std::flush;
 		//}
 		nodeIds.push_back(id);
-		nodeCTs.insert(nodeCTs.begin() + index-1, t);
+		nodeCTs.insert(nodeCTs.begin() + index, t);
 		for(auto kid : children){//if carries children after the added node, update their "parent node index"
 
 			if((kid->parentNI >= index-1 )&&(kid->parentNI > 0)){

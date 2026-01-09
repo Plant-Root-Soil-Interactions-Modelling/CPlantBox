@@ -53,7 +53,7 @@ Root::Root(std::shared_ptr<Organism> plant_, int subType,  double delay, std::sh
     }
     insertionAngle = theta;
 	this->partialIHeading = Vector3d::rotAB(theta,beta);
-
+	
 	if(!(parent->organType()==Organism::ot_seed))
 	{
 			double creationTime= parent->getNodeCT(pni)+delay;//default
@@ -103,6 +103,7 @@ void Root::simulate(double dt, bool verbose)
     firstCall = true;
     moved = false;
     oldNumberOfNodes = nodes.size();
+	maxIncrementedNode = getNumberOfNodes();
 
     const RootSpecificParameter& p = *param(); // rename
 

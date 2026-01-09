@@ -120,20 +120,26 @@ for i in range(0, N):  # |\label{l7xa:loop}|
     hm.update(sim_time)  # krs, suf, etc...
 
     h_bs = s.getSolutionHead()
+    print('len(h_bs),len(plant.segments)',h_bs,len(h_bs),len(plant.segments))
     h_bs = np.array(plant.matric2total(h_bs))  # to total potential
+    print('len(h_bs_new)',h_bs,len(h_bs),len(plant.segments))
 
     # Alpha: root system averaged stress factor
     krs, _ = hm.get_krs(sim_time)  # [cm2/day] (could be precomputed for static case)
     krs = krs / area
     k_srs = hm.get_soil_rootsystem_conductance(sim_time, h_bs, wilting_point, sp)
+    print('len(k_srs)',len(k_srs))
     h_bs_diff = h_bs - np.ones(h_bs.shape) * wilting_point
     alpha = np.multiply(k_srs, h_bs_diff) / (-krs * wilting_point)  # [1]
+    print('len(alpha)',len(alpha))
     # print("alpha", np.nanmin(alpha), np.nanmax(alpha))
 
     # Omega: root system averaged stress factor
     suf_ = hm.get_suf(sim_time)
     suf = peri.aggregate(suf_)
     alphaSUF = np.multiply(alpha, suf)
+    print('len(alphaSUF)',len(suf_),len(suf),len(alphaSUF))
+    raise Exception
     omega = np.nansum(alphaSUF)  # note that nan are treated as 0
     # print("alphaSUF", np.nanmin(alphaSUF), np.nanmax(alphaSUF))
 

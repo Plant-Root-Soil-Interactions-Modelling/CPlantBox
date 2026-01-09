@@ -365,6 +365,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getOrganRandomParameter", (std::vector<std::shared_ptr<OrganRandomParameter>> (Organism::*)(int) const) &Organism::getOrganRandomParameter) //overloads
             .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)
             .def("getSeed", &Organism::getSeed)
+            .def("setStochastic", &Organism::setStochastic)
 
             .def("addOrgan", &Organism::addOrgan)
             .def("initialize", &Organism::initialize, py::arg("verbose") = true)

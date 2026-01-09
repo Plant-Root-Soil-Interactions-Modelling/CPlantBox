@@ -480,18 +480,49 @@ void Organ::rel2abs()
 {
     if(hasRelCoord())
     {
-        nodes[0] = getOrigin(); //recompute position of the first node
-
-        for(size_t i=1; i<nodes.size(); i++)
-        {
-            double sdx = nodes[i].length();
-            Vector3d newdx = getIncrement(nodes[i-1], sdx, i-1); //add tropism
-            nodes[i] = nodes[i-1].plus(newdx); //replace relative by absolute position
-        }
+		if((organType() == 3)&&(getId()==4))
+		{
+			 std::cout<<"hello i am a stem rel2abs addIncrement ";
+			
+				for (int ii = 0; ii < addIncrement.size(); ii++) {
+					std::cout<<addIncrement.at(ii) <<" ";
+				}
+			std::cout<<std::endl;
+				for (int ii = 0; ii < nodes.size(); ii++) {
+					std::cout<<nodes.at(ii).toString() <<" ";
+				}
+			std::cout<<std::endl;
+				for (int ii = 0; ii < nodes.size(); ii++) {
+					std::cout<<nodes.at(ii).length() <<" ";
+				}
+			std::cout<<std::endl;
+		}
+		nodes[0] = Vector3d(getOrigin()); //recompute position of the first node
+		this->has_rel_coord = false;
+		for(size_t i=1; i<nodes.size(); i++)
+		{
+			bool doAddIncrement = false;
+			if(addIncrement.size()> 0)
+			{				
+				//int gId = getNodeId(i);
+				auto it = find(addIncrement.begin(), addIncrement.end(), i);
+				if (it != addIncrement.end()){ doAddIncrement = true;}
+			}
+			//std::cout<<"Organ::rel2abs "<<organType()<<" "<<getParameter("subType")<<" "<<getOldNumberOfNodes()<<" "<<nodes.size()<<std::endl;
+			if(doAddIncrement)//(i >= maxIncrementedNode)||
+			{
+				Vector3d newdx = getIncrement(nodes.at(i-1), nodes.at(i).length(),i-1);
+				nodes[i] = Vector3d(nodes.at(i-1).plus(newdx));
+			}else{	
+				Vector3d h = heading(i-1);
+				Matrix3d ons = Matrix3d::ons(h);
+				nodes[i] = nodes[i-1].plus(ons.times(nodes[i]));
+			}
+		}
         moved = true; //update position of existing nodes in MappedSegments
     }
+	addIncrement.clear();
     //if carry children, update their pos
-
     for(size_t i=0; i<children.size(); i++){
         (children[i])->rel2abs();//even if parent does not have relCoordinate, the laterals might
     }
@@ -502,22 +533,42 @@ void Organ::rel2abs()
  */
 void Organ::abs2rel()
 {
-    bool isShoot = ((organType()==Organism::ot_stem)||(organType()==Organism::ot_leaf));
-    if(isShoot||(getParent()->hasRelCoord()))//convert to relative coordinate if is shoot organ or carried by shoot organs
-    {
-        for (int j = nodes.size(); j>1; j--) {
-            double sdx = (nodes.at(j-1).minus(nodes.at(j-2))).length();
-            nodes.at(j-1) = Vector3d(sdx,0.,0.);
-            //nodes.at(j-1) = nodes.at(j-1).minus(nodes.at(j-2));
-        }
-        nodes[0] = Vector3d(0.,0.,0.);
-        moved = true; //update position of existing nodes in MappedSegments
-    }
-    for(size_t i=0; i<children.size(); i++){
-        //if((children[i])->organType()!=Organism::ot_root){
-        (children[i])->abs2rel();
-        //}
-    }//if carry children, update their pos
+	for(size_t i=0; i<children.size(); i++){
+		//if((children[i])->organType()!=Organism::ot_root){
+			(children[i])->abs2rel();
+		//}
+	}//if carry children, update their pos	
+	bool isShoot = ((organType()==Organism::ot_stem)||(organType()==Organism::ot_leaf));
+	//bool notBaseOrgan = !(getParent()->organType()==Organism::ot_seed);
+	bool hasShootParent = false;
+	if(!isShoot)
+	{
+		auto ot_parent = -1;
+		auto parent_ = getParent();
+		while((ot_parent != 0) && (ot_parent <= 2) && (parent_ != nullptr)) // we reach either a seed (finished going up parents) or shoot organ (need to be in relative coordinates)
+		{
+			ot_parent = parent_->organType();
+			parent_ = parent_->getParent();
+		}
+		
+		hasShootParent = ot_parent > 2;
+	}
+
+	if((isShoot||hasShootParent)&&(!hasRelCoord()))//convert to relative coordinate if is shoot organ or carried by shoot organs
+	{	 
+		for (int j = nodes.size(); j>1; j--) {
+			auto nodes_j_1 = nodes.at(j-1).minus(nodes.at(j-2));
+			Vector3d h = heading(j-2);
+			Matrix3d onsinv = Matrix3d::ons(h).inverse();
+			//Matrix3d tempMatrix = Matrix3d::ons(h);
+			//tempMatrix.times(Matrix3d::ons(h).inverse());
+			nodes.at(j-1) = onsinv.times(nodes_j_1);
+			//nodes.at(j-1) = nodes_j_1;
+		}
+		nodes[0] = Vector3d(0.,0.,0.);
+		this->has_rel_coord = true;
+		moved = true; //update position of existing nodes in MappedSegments
+	}
 
 }
 
@@ -539,8 +590,9 @@ Vector3d Organ::getiHeading0()  const
     Matrix3d parentHeading;
     bool isBaseOrgan = (getParent()->organType()==Organism::ot_seed);
     bool isShootBornRoot = ((getParent()->organType()==Organism::ot_stem)&&(organType()==Organism::ot_root));
-    if (isBaseOrgan||isShootBornRoot) { // from seed?
-        if (organType()==Organism::ot_root) {
+	bool isRootBornShoot = ((getParent()->organType()==Organism::ot_root)&&((organType()==Organism::ot_stem)||(organType()==Organism::ot_leaf) ));
+	if (isBaseOrgan||isShootBornRoot||isRootBornShoot) { // from seed?
+	    if (organType()==Organism::ot_root) {
             parentHeading = Matrix3d(Vector3d(0, 0, -1), Vector3d(0, -1, 0), Vector3d(-1, 0, 0));
         }else{
             parentHeading = Matrix3d(Vector3d(0, 0, 1), Vector3d(0, 1, 0), Vector3d(1, 0, 0));
@@ -551,7 +603,7 @@ Vector3d Organ::getiHeading0()  const
     }
     auto heading = parentHeading.column(0);
     Vector3d new_heading = Matrix3d::ons(heading).times(this->partialIHeading);
-    return Matrix3d::ons(new_heading).column(0);
+	return Matrix3d::ons(new_heading).column(0);
 }
 /**
  * @return Current absolute heading of the organ at node n, based on initial heading, or direction of the segment going from node n-1 to node n
@@ -562,7 +614,14 @@ Vector3d Organ::heading(int n ) const
     if(n<0){n=nodes.size()-1 ;}
     if ((nodes.size()>1)&&(n>0)) {
         n = std::min(int(nodes.size()),n);
-        Vector3d h = getNode(n).minus(getNode(n-1));
+		Vector3d h ;
+		if(hasRelCoord())
+		{ 
+			throw std::runtime_error("Organ::heading, leaf still has relative coordinates");
+		}else{
+			//Vector3d n1 = nodes.at(nn-1);
+			h =  getNode(n).minus(getNode(n-1));
+		}
         h.normalize();
         return h;
     } else {
@@ -593,12 +652,28 @@ double Organ::orgVolume(double length_,  bool realized) const
  */
 Vector3d Organ::getIncrement(const Vector3d& p, double sdx, int n)
 {
+	
+	// auto parent_ = getParent();
+	// auto ot_parent = -1;
+	// while((ot_parent != 0) && (parent_ != nullptr)) // we reach either a seed (finished going up parents) or shoot organ (need to be in relative coordinates)
+	// {
+		// parent_ = parent_->getParent();
+		// if(parent_ != nullptr){
+			// ot_parent = parent_->organType();
+		// }
+	// }
+	// parent_->rel2abs();
+	
     Vector3d h = heading(n);
     Matrix3d ons = Matrix3d::ons(h);
-    Vector2d ab = getOrganRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this(), n+1); // << THIS causes segmentation fault if f_tf->plant is expired
-    //for leaves: necessary?
-    //Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(),shared_from_this());
-    Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+    Vector2d ab = getOrganRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this());
+	Vector3d sv;
+	// parent_->abs2rel();
+	// if(hasRelCoord()){
+		// sv = Vector3d::rotAB(ab.x,ab.y); // ons added in @see Organ::rel2abs()
+	// }else{
+		sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+	// }
     return sv.times(sdx);
 }
 
@@ -648,6 +723,19 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
         nn = PhytoIdx +1;
     }
     if (firstCall||stemElongation) { // first call of createSegments (in Organ::simulate)
+		
+		if((organType() == 3)&&(getId()==4))
+		{
+			std::cout<<"hello i am a stem stemElongation "<<nn<<" "<<PhytoIdx<<" l "<<l<<" nodes ";
+				// for (int ii = 0; ii < addIncrement.size(); ii++) {
+					// std::cout<<addIncrement.at(ii) <<" ";
+				// }
+				for (int ii = 0; ii < nodes.size(); ii++) {
+					std::cout<<nodes.at(ii).length() <<" ";
+				}
+			std::cout<<std::endl;
+		}
+		
         if (!stemElongation) {
             firstCall = false;
         }
@@ -660,7 +748,7 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
             Vector3d n2 = nodes.at(nn-2);
 
             if (hasRelCoord()) {
-                h = nodes.at(nn-1);
+                h = Vector3d(nodes.at(nn-1));
             } else {
                 Vector3d n1 = nodes.at(nn-1);
                 h = n1.minus(n2);
@@ -671,12 +759,15 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
                 double sdx = olddx + shiftl; // length of new segment
                 // Vector3d newdxv = getIncrement(n2, sdx);
 
-                if(hasRelCoord()) {
-                    nodes.at(nn-1) =  Vector3d(sdx,0.,0.);//h.times(sdx);
-                }else{
                     h.normalize();
-                    nodes.at(nn-1) = Vector3d(n2.plus(h.times(sdx))); // n2.plus(newdxv)
-                }
+				if(hasRelCoord())
+				{
+					nodes.at(nn-1) =  h.times(sdx);
+					
+				}else{
+				   
+					nodes.at(nn-1) = Vector3d(n2.plus(h.times(sdx))); 
+				}
                 double et = this->calcCreationTime(getLength(true)+shiftl, dt);
                 nodeCTs.at(nn-1) = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
@@ -715,17 +806,63 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
         }
         sl += sdx;
         Vector3d newnode;
-        if (hasRelCoord()) {
-            newnode = Vector3d(sdx, 0., 0.);
-        } else {
-            Vector3d newdx = getIncrement(nodes.back(), sdx);
-            newnode = Vector3d(nodes.back().plus(newdx));
-        }
-
+		//Vector3d newdx = getIncrement(nodes.at(nn+i-1), sdx,nn+i-1);
+		
+		// if(organType() == 3)
+		// {
+			// std::cout<<"hello i am a stem createSegments_elongate nn "<<nn<<" i "<<i<<" gId "
+			// <<plant.lock()->getNumberOfNodes() - 1<<", stemElongation "<<stemElongation<<" "<<hasRelCoord()<<", addIncrement ";
+				// for (int ii = 0; ii < addIncrement.size(); ii++) {
+					// std::cout<<addIncrement.at(ii) <<" ";
+				// }
+			// std::cout<<std::endl;
+		// }
+		if(hasRelCoord())
+		{
+			if(stemElongation)
+			{
+				// this->rel2abs();
+				// Vector3d newdx = getIncrement(nodes.at(nn+i-1), sdx,nn+i-1);
+				// //newnode = newdx;//Vector3d(nodes.at(nn+i-1).plus(newdx));
+				// Vector3d h = heading(i-2);
+				// Matrix3d onsinv = Matrix3d::ons(h).inverse();
+				// newnode = onsinv.times(newdx);
+				// this->abs2rel();
+				
+				newnode = Vector3d(0., 0., sdx);//newdx;
+				for (int ii = 0; ii < addIncrement.size(); ii++) {
+					if(addIncrement.at(ii) >= nn+i){addIncrement.at(ii) += 1;}
+				}
+				addIncrement.push_back(nn+i);//-1
+				//maxIncrementedNode += 1;
+			}else{
+				
+				newnode = Vector3d(0., 0., sdx);//newdx;
+				addIncrement.push_back(nn+i);
+			}
+		}else{		
+			Vector3d newdx = getIncrement(nodes.at(nn+i-1), sdx,nn+i-1);
+			newnode = Vector3d(nodes.at(nn+i-1).plus(newdx));
+				addIncrement.push_back(nn+i);
+		}
         double et = this->calcCreationTime(getLength(true)+shiftl+sl, dt);//here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
         // in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
+		
         addNode(newnode, et,size_t(nn+i),stemElongation);
+		if((organType() == 3)&&(getId()==4))
+		{
+			std::cout<<"hello i am a stem createSegments_add node addIncrement ";
+				 for (int ii = 0; ii < addIncrement.size(); ii++) {
+					std::cout<<addIncrement.at(ii) <<" ";
+				 }
+			std::cout<<std::endl;
+				for (int ii = 0; ii < nodes.size(); ii++) {
+					std::cout<<nodes.at(ii).toString() <<" ";
+				}
+			std::cout<<std::endl;
+		}
+
     }
 }
 
@@ -770,17 +907,20 @@ void Organ::createLateral(double dt, bool verbose)
                     switch(ot){
                     case Organism::ot_root:{
                         auto lateral = std::make_shared<Root>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
-                        children.push_back(lateral);
+						lateral->has_rel_coord = this->has_rel_coord;
+						children.push_back(lateral);
                         lateral->simulate(growth_dt,verbose);
                         break;}
                     case Organism::ot_stem:{
                         auto lateral = std::make_shared<Stem>(plant.lock(), st, delay, shared_from_this(),  nodes.size() - 1);
-                        children.push_back(lateral);
+						lateral->has_rel_coord = this->has_rel_coord;
+						children.push_back(lateral);
                         lateral->simulate(growth_dt,verbose);
                         break;}
                     case Organism::ot_leaf:{
                         auto lateral = std::make_shared<Leaf>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
-                        children.push_back(lateral);
+						lateral->has_rel_coord = this->has_rel_coord;
+						children.push_back(lateral);
                         lateral->simulate(growth_dt,verbose);//age-ageLN,verbose);
                         break;}
                     }
@@ -889,14 +1029,7 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
  */
 bool Organ::hasRelCoord() const
 {
-    bool nullNode0 = (nodes.at(0) == Vector3d(0.,0.,0.)); // rel coordinate for node 0?
-    bool isSeed = organType() == Organism::ot_seed;
-    bool basalOrgan = true;
-    if (getParent()) { // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created manually have no parent
-        basalOrgan = (isSeed||(getParent()->organType() == Organism::ot_seed));
-    }
-    bool isBasalRoot = ((organType() == Organism::ot_root)&&basalOrgan);
-    return (nullNode0&&(!isBasalRoot)&&(!isSeed));
+	return has_rel_coord;
 }
 
 

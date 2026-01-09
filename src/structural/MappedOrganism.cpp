@@ -505,7 +505,7 @@ std::vector<double> MappedSegments::getSegmentZ() const {
  */
 std::vector<double> MappedSegments::matric2total(std::vector<double> sx) const {
     std::vector<double> b = this->getSegmentZ();
-    assert(sx.size() == b.size());
+	assert(sx.size() == b.size());
     std::transform(sx.begin( ), sx.end( ), b.begin( ), sx.begin( ),std::plus<double>( ));
     return sx;
 }
@@ -723,6 +723,14 @@ void MappedPlant::simulate(double dt, bool verbose)
 
 	auto newsegs = this->getSegments(); // add segments (TODO ALL) (TODO cutting, more nodes will lead to different shift???)
 	segments.resize(newsegs.size()+shift);
+	
+	if(segments.size() != (nodes.size() -1))
+	{
+		std::cout<<"MappedPlant::simulate: segments.size() != (nodes.size() -1) "
+		<<segments.size() <<" "<< nodes.size() <<std::endl;
+		throw std::runtime_error("MappedPlant::simulate: segments.size() != (nodes.size() -1)");
+	}
+	
 	for (auto& ns : newsegs) { // shift
 	    ns.x += shift;
 	    ns.y += shift;
