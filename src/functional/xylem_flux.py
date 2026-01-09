@@ -76,7 +76,6 @@ class XylemFluxPython(XylemFlux):
         """ returns [mol/day]
         self.Exu [kg/(m2 day)]
         """
-        
         g_per_molC = 12
 
         tip = kex[0][1]
@@ -92,25 +91,16 @@ class XylemFluxPython(XylemFlux):
         radii = self.rs.getParameter("radius")
         types = self.rs.getParameter("type")
         polylines = self.rs.getPolylines()
-
-                         
-                               
+                       
         sf = []
         kex_all = []
 
         for i in range(0, len(polylines)):
             a = radii[i]
-            roottype = int(types[i])
-                      
-                                      
+            roottype = int(types[i])                  
                                    
             l_ = 0
             for k in range(0, len(polylines[i])-1):
-                                                                                                 
-                               
-                                           
-                             
-
                 m = polylines[i][-1-k]
                 n = polylines[i][-2-k]
                 p0 = np.array([m.x, m.y, m.z])
