@@ -16,13 +16,6 @@ def sinusoidal(t):
 filename = "Zeamays_synMRI_modified"
 t_pot = 250  # cm3 day-1 (sinusoidal) = mL day-1
 
-sim_time = 7.5  # day
-dt = 360.0 / (24 * 3600)
-n_steps = round(sim_time / dt)
-# ind = int((2.5 / sim_time * n_steps) // 10)
-# vp.plot_roots_and_soil_files("example72_{:06d}".format(ind), "pressure head", "subType")  # "water content", "pressure head"
-# vp.plot_roots_and_soil_files("example73_{:06d}".format(ind), "pressure head", "subType")  # "water content", "pressure head"
-
 data72 = np.load("results/" + filename + ".npy")
 sim_times72_ = data72[0, :]
 t_act72_ = data72[1, :]
@@ -49,3 +42,10 @@ ax2.legend(loc="upper right")
 plt.tight_layout()
 plt.savefig("results/figure7_3_trans.png")
 plt.show()
+
+# sim_time = 7.5  # day
+# dt = 360.0 / (24 * 3600)
+# n_steps = round(sim_time / dt)
+# ind = int((2.5 / sim_time * n_steps) // 10) # only every 10th time step is written
+# vp.plot_roots_and_soil_files("example72_{:06d}".format(ind), "pressure head", "subType")  # "water content", "pressure head"
+# vp.plot_roots_and_soil_files("example73_{:06d}".format(ind), "pressure head", "subType")  # "water content", "pressure head"

@@ -13,7 +13,8 @@ import pandas as pd
 import plantbox as pb
 from plantbox.functional.Photosynthesis import PhotosynthesisPython
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
-import plantbox.functional.van_genuchten as vg  # van Genuchten model for soil hydraulic properties
+import plantbox.functional.van_genuchten as vg
+from plantbox.visualisation import figure_style
 import plantbox.visualisation.vtk_plot as vp
 from rosi import helpful  # helper functions
 from rosi.rhizo_models_plant import RhizoMappedSegments
@@ -226,7 +227,7 @@ vp.plot_plant_and_soil(hm.ms, "xylem pressure head (cm)", h_x, s, False, np.arra
 
 if rank == 0:
     # Plot transpiration over time
-    fig, ax1 = plt.subplots()
+    fig, ax1 = figure_style.subplots12(1, 1)
     ax1.plot(sim_times_, np.array(t_act_), "g")  # actual transpiration
     ax2 = ax1.twinx()
     ax2.plot(sim_times_, np.cumsum(np.array(t_act_) * dt), "c")  # cumulative transpiration

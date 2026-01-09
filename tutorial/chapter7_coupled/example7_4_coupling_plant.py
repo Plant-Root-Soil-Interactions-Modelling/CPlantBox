@@ -12,7 +12,7 @@ import pandas as pd
 import plantbox as pb
 from plantbox.functional.Photosynthesis import PhotosynthesisPython
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
-import plantbox.functional.van_genuchten as vg  # van Genuchten model for soil hydraulic properties
+import plantbox.functional.van_genuchten as vg
 from plantbox.visualisation import figure_style
 import plantbox.visualisation.vtk_plot as vp
 from rosi import helpful
