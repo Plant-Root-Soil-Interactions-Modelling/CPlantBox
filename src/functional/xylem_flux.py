@@ -134,7 +134,7 @@ class XylemFluxPython(XylemFlux):
         """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 
         """
         segs = self.rs.segments
-        sn = len(segs)day
+        sn = len(segs)
         nn = len(self.rs.nodes)
         ii_, jj_, vv_ = [], [], []
         for i, s in enumerate(segs):  # build incidence matrix from edges
