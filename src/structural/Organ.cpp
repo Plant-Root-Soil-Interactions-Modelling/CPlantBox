@@ -301,7 +301,7 @@ int Organ::getNumberOfLaterals() const {
     int nol = 0;
     for (auto& c : children)  {
         if (c->getAge()>0) { // born
-            nol++;
+            nol ++;
         }
     }
     return nol;
