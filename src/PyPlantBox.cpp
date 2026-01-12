@@ -41,6 +41,7 @@ namespace py = pybind11;
 #include "ExudationModel.h"
 #include "Photosynthesis.h"
 #include "PiafMunch/runPM.h"
+#include "SegmentAnalyser.h"
 
 #include "PlantHydraulicParameters.h"
 #include "PlantHydraulicModel.h"
