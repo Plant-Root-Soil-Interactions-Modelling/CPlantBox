@@ -16,22 +16,25 @@ namespace py = pybind11;
 #include "tropism.h"
 
 #include "rootparameter.h"
-#include "mycorrhizalrootparameter.h" // name?
 #include "seedparameter.h"
 #include "leafparameter.h"
 #include "stemparameter.h"
+
+#include "mycorrhizalrootparameter.h"
 #include "hyphaeparameter.h"
+
 #include "Root.h"
-#include "MycorrhizalRoot.h"
 #include "Hyphae.h"
 #include "Seed.h"
 #include "Leaf.h"
 #include "Stem.h"
 
+#include "MycorrhizalRoot.h"
+
 #include "RootSystem.h"
 #include "Plant.h"
-#include "MycorrhizalPlant.h"
 #include "MappedOrganism.h"
+#include "MycorrhizalPlant.h"
 
 // functional
 #include "Perirhizal.h"
@@ -648,11 +651,6 @@ PYBIND11_MODULE(plantbox, m) {
              .def_readwrite("b", &HyphaeSpecificParameter::b)
              .def_readwrite("hlt", &HyphaeSpecificParameter::hlt)
              .def_readwrite("theta", &HyphaeSpecificParameter::theta);
-
-
-     /*
-            .def("getK",&RootSpecificParameter::getK)
-            .def("nob", &RootSpecificParameter::nob);
     /*
      * seedparameter.h
      */

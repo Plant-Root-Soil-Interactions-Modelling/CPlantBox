@@ -570,7 +570,3 @@ std::string Stem::toString() const
 }
 
 } // namespace CPlantBox
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/master

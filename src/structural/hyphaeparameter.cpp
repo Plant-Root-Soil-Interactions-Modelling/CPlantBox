@@ -2,6 +2,7 @@
 #include "hyphaeparameter.h"
 
 #include "Organism.h"
+#include "tropism.h"
 
 #include <cmath>
 #include <iostream>
@@ -51,6 +52,7 @@ HyphaeRandomParameter::HyphaeRandomParameter(std::shared_ptr<Organism> plant) :O
 std::shared_ptr<OrganRandomParameter> HyphaeRandomParameter::copy(std::shared_ptr<Organism> p)
 {
     auto r = std::make_shared<HyphaeRandomParameter>(*this); // copy constructor breaks class introspection
+    r->plant = std::weak_ptr<Organism>(p);
     r->plant = p;
     r->bindParameters(); // fix class introspection
     r->f_tf = f_tf->copy(p); // copy call back function classes
