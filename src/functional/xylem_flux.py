@@ -126,15 +126,15 @@ class XylemFluxPython(XylemFlux):
                     c = 0
 
                 kex_all.append(kexu* 1.e-4* 1.e3) #g/day
-                sf.append(2 * np.pi * a * l * 1.e-4 * kexu * 1.e3 / g_per_molC * dt) # mol/segment/dt
+                sf.append(2 * np.pi * a * l * 1.e-4 * kexu * 1.e3 / g_per_molC) # mol/segment/day
             
-        return sf #  mol / segment /dt
+        return sf #  mol / segment /day
 
     def get_incidence_matrix(self):
         """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 
         """
         segs = self.rs.segments
-        sn = len(segs)
+        sn = len(segs)day
         nn = len(self.rs.nodes)
         ii_, jj_, vv_ = [], [], []
         for i, s in enumerate(segs):  # build incidence matrix from edges
@@ -294,7 +294,7 @@ class XylemFluxPython(XylemFlux):
                 else:
                     p_s = sxx[0]
             else:
-                p_s = self.airPressure
+                p_s = -15000 #self.airPressure
         else:
             p_s = sxx[seg_ind]
 
