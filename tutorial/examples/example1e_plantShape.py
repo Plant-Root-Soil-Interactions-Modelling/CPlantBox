@@ -18,10 +18,10 @@ adaptSeed = False
 adaptLeaf = False
 adaptStem = False
 leafRadial = False  # radial or not
-anim = False
-zoomLeafShape = True
+anim = True
+zoomLeafShape = False
 export = False
-getImage = True
+getImage = False
 
 # #create plant:
 plant = pb.Plant()
@@ -122,13 +122,13 @@ if anim:
     anim.min = min_
     anim.max = max_
     anim.res = [1, 1, 1]
-    anim.file = "results/example_plant"
-    anim.avi_name = "results/example_"
+    #anim.file = "results/example_plant"
+    #anim.avi_name = "results/example_"
     anim.plant = True
     anim.start()
     for i in range(0, N_):
         plant.simulate(dt, False)
-        anim.root_name = "subType"
+        #anim.root_name = "subType"
         anim.update()
 
 if getImage:
@@ -169,5 +169,6 @@ if getImage:
     plt.xlim([-a - 1, a + 1])
     plt.axis('scaled')
     plt.show()
+
 
 
