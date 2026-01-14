@@ -131,6 +131,7 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     auto organs = getOrgans();
     abs2rel();
     Organism::simulate(dt, verbose);
+    std::cout<< "MycorrhizalPlant::simulate called"<< std::endl;
     sdf = std::make_shared<SDF_RootSystem>(*this);
     sdf->selectedOrganType = Organism::ot_hyphae;
     simulateAnastomosis();
@@ -150,6 +151,7 @@ void MycorrhizalPlant::simulateSecondaryInfection(double dt, bool verbose) {
 
 void MycorrhizalPlant::simulateHyphalGrowth(double dt)
 {
+    std::cout<< "MycorrhizalPlant::simulateHyphalGrowth called"<< std::endl;
     oldNumberOfOrgans = getNumberOfOrgans();
     auto organs = getOrgans(); // TODO  getOrgans(Organism::ot_root) empty list????
     for (const auto & o : organs) {
@@ -164,6 +166,7 @@ void MycorrhizalPlant::simulateAnastomosis() {
     double dist = 1000;
 
     for (const auto & h : hyphae) {
+        std::cout << "***********************************************" << std::endl;
         sdf->excludeTreeId = h->getParameter("hyphalTreeIndex");
         // if (std::dynamic_pointer_cast<Hyphae>(h)->mergedHyphae != nullptr) {
         //     std::cout<< std::dynamic_pointer_cast<Hyphae>(h)->mergedHyphae <<std::endl;// already merged

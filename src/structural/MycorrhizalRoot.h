@@ -52,7 +52,7 @@ public:
 
 protected:
     void createHyphae(int pni);
-
+    int hyphalTreeIndex = -1;
     double prob(double  t, double segLength, double p);
     void primaryInfection(double dt, bool silence);
     void secondaryInfection(bool silence, double dt);

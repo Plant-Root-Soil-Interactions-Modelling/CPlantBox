@@ -274,6 +274,7 @@ std::shared_ptr<const RootSpecificParameter> Root::param() const
  */
 double Root::getParameter(std::string name) const
 {
+    std::cout << "Root::getParameter called for " << name << "\n";
     // specific parameters
     if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
     if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]

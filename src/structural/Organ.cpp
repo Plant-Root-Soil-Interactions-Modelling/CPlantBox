@@ -318,6 +318,7 @@ int Organ::getNumberOfLaterals() const {
  * @return The parameter value, if unknown NaN
  */
 double Organ::getParameter(std::string name) const {
+    std::cout << "Organ::getParameter called for " << name << "\n";
     // specific parameters
     if (name=="subType") { return this->param_->subType; }
     if (name=="a") { return param_->a; } // root radius [cm]

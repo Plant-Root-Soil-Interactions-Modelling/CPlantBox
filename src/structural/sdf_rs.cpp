@@ -54,14 +54,16 @@ SDF_RootSystem::SDF_RootSystem(const Organism& plant, double dx): dx_(dx) {
     segments_ = ana.segments;
     radii_ = ana.getParameter("radius");    
     auto vd = ana.getParameter("organType");
-    // std::cout << "organType" << vd.size() << std::endl;   
     organTypes_.resize(vd.size());
     std::transform(vd.begin(), vd.end(), organTypes_.begin(), [](double x) { return static_cast<int>(x); });   
     vd = ana.getParameter("hyphalTreeIndex");
+    std::cout<< "Coocoo!"<< std::endl;
     treeIds_.resize(vd.size());
     std::transform(vd.begin(), vd.end(), treeIds_.begin(), [](double x) { return static_cast<int>(x); });
     segO = ana.segO; // weak pointer to the organ containing the segment
+    std::cout<<"Marco!"<< std::endl;
     buildTree();
+    std::cout<<"Polo!"<< std::endl;
 }
 
 SDF_RootSystem::SDF_RootSystem(std::vector<Vector3d> nodes, const std::vector<Vector2i> segments, const std::vector<double> radii, double dx)
@@ -159,7 +161,7 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
 //             tempdistVec = x1;
 //         } else if (c1>=c2) {
 //             l = p.minus(x2).length();
-//             tempdistVec = x2;
+//             tempdistVec = x2; 
 //         } else {
 //             l = p.minus(x1.plus(v.times(c1/c2))).length();
 //             if (p.minus(x1).length() < p.minus(x2).length()) {

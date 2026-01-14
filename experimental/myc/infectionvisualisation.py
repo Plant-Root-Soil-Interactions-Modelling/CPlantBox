@@ -71,13 +71,13 @@ else:
 
         
         # print(hti)        
-        mycp.simulate(dt, False)
+        mycp.simulate(dt, True)
 
     # vp.plot_plant(mycp, "organType")  
 #     print('done')
     
 ana = pb.SegmentAnalyser(mycp)
-hti = ana.getParameter("hyphalTreeIndex")
+# hti = ana.getParameter("hyphalTreeIndex")
 vp.plot_plant(ana,"hyphalTreeIndex")
 ana.write(filename + "_hyphalTrees" + ".vtp", ["radius", "subType", "creationTime","organType","hyphalTreeIndex"])
 # ana.addData("infection", mycp.getNodeInfections(2))
