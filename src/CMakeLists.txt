@@ -45,6 +45,7 @@ add_library(CPlantBox SHARED
             structural/RootSystem.cpp
             structural/MappedOrganism.cpp
      		structural/sdf.cpp
+			structural/sdf_rs.cpp
             structural/SegmentAnalyser.cpp            
             structural/tropism.cpp            
 			
