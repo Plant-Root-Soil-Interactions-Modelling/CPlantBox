@@ -72,7 +72,7 @@ class XylemFluxPython(XylemFlux):
         sf = np.minimum(sf, 0.)
         return sf * 1.e3  # kg/day -> g/day
 
-    def exudate_fluxes(self, dt, kex, stopgr = False):
+    def exudate_fluxes(self, kex, stopgr = False):
         """ returns [mol/day]
         self.Exu [kg/(m2 day)]
         """
@@ -93,7 +93,6 @@ class XylemFluxPython(XylemFlux):
         polylines = self.rs.getPolylines()
                        
         sf = []
-        kex_all = []
 
         for i in range(0, len(polylines)):
             a = radii[i]
@@ -125,7 +124,6 @@ class XylemFluxPython(XylemFlux):
                     kexu = 0
                     c = 0
 
-                kex_all.append(kexu* 1.e-4* 1.e3) #g/day
                 sf.append(2 * np.pi * a * l * 1.e-4 * kexu * 1.e3 / g_per_molC) # mol/segment/day
             
         return sf #  mol / segment /day
