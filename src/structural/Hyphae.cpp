@@ -96,7 +96,6 @@ std::shared_ptr<Organ> Hyphae::copy(std::shared_ptr<Organism> rs)
  */
 void Hyphae::simulate(double dt, bool verbose)
 {
-    std::cout<< "Hyphae::simulate called for hyphal tree index "<< hyphalTreeIndex << std::endl;
 
 //    firstCall = true;
 //    moved = false;
@@ -230,7 +229,6 @@ std::shared_ptr<const HyphaeSpecificParameter> Hyphae::param() const
 double Hyphae::getParameter(std::string name) const
 {
     // specific parameters
-    std::cout << "Hyphae::getParameter called for " << name << "\n";
         if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
         if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
         if (name=="v") { return param()->v; } // Tip elongation rate [cm day-1]

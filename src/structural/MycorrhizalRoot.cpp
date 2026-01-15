@@ -226,7 +226,6 @@ void MycorrhizalRoot::simulatePrimaryInfection(double dt) {
 }
 
 void MycorrhizalRoot::simulateHyphalGrowth() {
-    std::cout<< "MycorrhizalRoot::simulateHyphalGrowth called"<< std::endl;
     if (getRootRandomParameter()->highresolution >= 1) { // Version where at every node there is one hypha created
         for (size_t i = 1; i < nodes.size(); i++) {
             if (infected.at(i) > 0 && emergedHyphae.at(i) == 0){ // if the current node is infected and the number of hyphae to be created is reached
@@ -273,7 +272,6 @@ void MycorrhizalRoot::simulateHyphalGrowth() {
 
 
 void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
-    std::cout<< "MycorrhizalRoot::simulateInfection called"<< std::endl;
 
     if (this->nodes.size()>1) {
 
@@ -303,7 +301,6 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
-    std::cout<< "MycorrhizalRoot::simulate called"<< std::endl;
     // std::cout << "\nstart " << getId() <<  std::flush;
     Root::simulate(dt,verbose);
     simulateInfection(dt,verbose);
@@ -325,7 +322,6 @@ std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomPa
 }
 
 double MycorrhizalRoot::getParameter(std::string name) const {
-    std::cout << "MycorrhizalRoot::getParameter called" << std::endl;
     if (name == "primaryInfection")
     {
         double primaryInfectedLength = 0;

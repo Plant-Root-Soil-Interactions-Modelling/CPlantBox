@@ -299,7 +299,6 @@ std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) 
     }
     for (size_t i=0; i<segO.size(); i++) { // else pass to Organs
         if (!segO.at(i).expired()) {
-            std::cout<< segO.at(i).lock()->getParameter("organType")<< std::endl;
             d.at(i) = segO.at(i).lock()->getParameter(name);
         } else { // in case the segment has no origin
             if (std::isnan(def)) {
