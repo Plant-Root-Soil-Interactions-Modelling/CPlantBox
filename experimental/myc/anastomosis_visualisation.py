@@ -1,8 +1,7 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-import math
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 import numpy as np
 
 mycp = pb.MycorrhizalPlant()
@@ -23,14 +22,14 @@ for rp in root:
     rp.hyphalEmergenceDensity = 1
     rp.highresolution = 0
     rp.dx = 0.2
-
+    mycp.setOrganRandomParameter(rp)
 
 mycp.initialize(True)
 # print(mycp.toString())
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
 simtime = 50
-fps = 2
+fps = 1
 anim_time = simtime
 N = fps * anim_time
 dt = simtime / N
@@ -38,12 +37,13 @@ dt = simtime / N
 filename = "anastomosis_" + str(simtime)
 
 
-for i in range(0, N):
+for i in range(1, N+1):
     print('step',i, '/',N)
     # print(hti)        
     mycp.simulate(dt, False)
 
-ana = pb.SegmentAnalyser(mycp)
+print(mycp.getAnastomosisPoints(5)[0])
+# ana = pb.SegmentAnalyser(mycp)
 # ana.addData("AnastomosisPoints", mycp.getAnastomosisPoints(5)) TODO Does not work bc addData does not support 3D Vectors
-ana.write(filename + ".vtp", True)
+# ana.write(filename + ".vtp", True)
 

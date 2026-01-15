@@ -91,6 +91,7 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
 
         Vector3d x1 = nodes_[segments_[i].x];
         Vector3d x2 = nodes_[segments_[i].y];
+
         Vector3d v = x2.minus(x1);
         Vector3d w = p.minus(x1);
 
@@ -122,6 +123,10 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
 				if ((l < mdist) && (selectedOrganType == organTypes_[i]) && (excludeTreeId != treeIds_.at(i)))  {
 					mdist = l;
 					distIndex = i;
+                    if (segments_[i].x != segments_[i].y -1) {// TODO this is odd we are treating i later as if it is the global node index but it is not? I think segments_[i].x is the global node index of the first node in the segment?
+                        std::cout<< "Segments not properly sequentially numbered!" << std::endl;
+                        std::cout<< "x1: " << segments_[i].x << ", x2: " << segments_[i].y << std::endl;
+                    }
 				}
         	}
 
@@ -130,53 +135,6 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
     }
     return -mdist;
 }
-
-
-// Vector3d SDF_RootSystem::getDistVec(const Vector3d& p) const {
-
-//     std::vector<double> a = { p.x-dx_, p.y-dx_, p.z-dx_ };
-//     std::vector<double> b = { p.x+dx_, p.y+dx_, p.z+dx_ };
-//     aabb::AABB box = aabb::AABB(a,b);
-//     double mdist = 1e100; // far far away
-//     auto indices = tree.query(box);
-//     Vector3d distVec;
-//     // std::cout << indices.size() << " segments in range\n";
-//     for (int i : indices) {
-
-//         Vector3d x1 = nodes_[segments_[i].x];
-//         Vector3d x2 = nodes_[segments_[i].y];
-//         Vector3d v = x2.minus(x1);
-//         Vector3d w = p.minus(x1);
-
-//         double c1 = v.times(w);
-//         double c2 = v.times(v);
-
-//         double l;
-//         Vector3d tempdistVec;
-//         if (c1<=0) {
-//             l = w.length();
-//             tempdistVec = x1;
-//         } else if (c1>=c2) {
-//             l = p.minus(x2).length();
-//             tempdistVec = x2; 
-//         } else {
-//             l = p.minus(x1.plus(v.times(c1/c2))).length();
-//             if (p.minus(x1).length() < p.minus(x2).length()) {
-//                 tempdistVec = x1;
-//             } else {
-//                 tempdistVec = x2;
-//             }
-//         }
-//         l -= radii_[i];
-
-//         if (l < mdist) {
-//             mdist = l;
-//             distVec = tempdistVec;
-//         }
-
-//     }
-//     return distVec;
-// }
 
 } // namespace
 

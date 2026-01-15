@@ -256,6 +256,7 @@ Vector3d Hyphae::getMergePoint(int id)
 {
     for (auto i=0; i<getNumberOfNodes(); i++)
     {
+        std::cout << "Node ID: " << id << std::endl;
         if (getNodeId(i) == id) {
             return getNode(i);
         }

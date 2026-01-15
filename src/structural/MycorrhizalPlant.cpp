@@ -106,6 +106,9 @@ std::vector<Vector3d> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
                 }
             }
     }
+    if (anaPoints.size() == 0) {
+        throw std::runtime_error("No anastomosis points found!");
+    }
     return anaPoints;
 }
 /**
