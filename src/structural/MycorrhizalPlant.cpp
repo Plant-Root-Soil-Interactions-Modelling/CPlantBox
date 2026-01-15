@@ -55,22 +55,16 @@ void MycorrhizalPlant::initializeLB(bool verbose)
 std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
     auto organs = this -> getOrgans(ot);
     std::vector<int> infs = std::vector<int>(getNumberOfNodes());
-    for (const auto& o : baseOrgans)
-    {
-        if(o->organType() == Organism::ot_root)
-        {
-
+    for (const auto& o : baseOrgans) {
+        if(o->organType() == Organism::ot_root) {
             infs.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfection(0);
         }
     }
 
-    for (const auto & o : organs)
-    {
-        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++)
-        {
+    for (const auto & o : organs) {
+        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++) {
             infs.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfection(i);
         }
-
     }
     return infs;
 }
@@ -78,22 +72,16 @@ std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
 std::vector<double> MycorrhizalPlant::getNodeInfectionTime(int ot) const {
     auto organs = this -> getOrgans(ot);
     std::vector<double> infTime = std::vector<double>(getNumberOfNodes());
-    for (const auto& o : baseOrgans)
-    {
-        if(o->organType() == Organism::ot_root)
-        {
-
+    for (const auto& o : baseOrgans) {
+        if(o->organType() == Organism::ot_root){
             infTime.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfectionTime(0);
         }
     }
 
-    for (const auto & o : organs)
-    {
-        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++)
-        {
+    for (const auto & o : organs){
+        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++){
             infTime.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfectionTime(i);
         }
-
     }
     return infTime;
 }
@@ -101,10 +89,8 @@ std::vector<double> MycorrhizalPlant::getNodeInfectionTime(int ot) const {
 std::vector<Vector3d> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
     auto organs = this -> getOrgans(ot);
     std::vector<Vector3d> anaPoints;
-    for (const auto& o : baseOrgans)
-    {
-        if(o->organType() == Organism::ot_hyphae)
-        {
+    for (const auto& o : baseOrgans) {
+        if(o->organType() == Organism::ot_hyphae) {
             auto h = std::dynamic_pointer_cast<Hyphae>(o);
             if (h->mergePointID != -1) {
                 anaPoints.push_back(h->getNodes().at(h->getNumberOfNodes()-1));
@@ -112,11 +98,12 @@ std::vector<Vector3d> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
         }
     }
 
-    for (const auto & o : organs)
-    {
+    for (const auto & o : organs) {
         auto h = std::dynamic_pointer_cast<Hyphae>(o);
-            if (h->mergePointID != -1) {
-                anaPoints.push_back(h->getNodes().at(h->getNumberOfNodes()-1));
+            if (o->organType() == Organism::ot_hyphae) {
+                if (h->mergePointID != -1) {
+                    anaPoints.push_back(h->getNodes().at(h->getNumberOfNodes()-1));
+                }
             }
     }
     return anaPoints;
@@ -133,43 +120,59 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     Organism::simulate(dt, verbose);
     sdf = std::make_shared<SDF_RootSystem>(*this);
     sdf->selectedOrganType = Organism::ot_hyphae;
-    simulateAnastomosis();
+    simulateAnastomosis(dt, verbose);
     rel2abs();
 }
-
+/*
+ * Simulates primary infection for all mycorrhizal roots
+ * @param dt		duration of the simulation
+ * @param verbose	whether to print information
+*/
 void MycorrhizalPlant::simulatePrimaryInfection(double dt, bool verbose) {
     for (const auto& r : baseOrgans) {
         std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryInfection(dt);
     }
 }
+
+/*
+ * Simulates secondary infection for all mycorrhizal roots
+ * @param dt		duration of the simulation
+ * @param verbose	whether to print information
+ */
 void MycorrhizalPlant::simulateSecondaryInfection(double dt, bool verbose) {
     for (const auto& r : baseOrgans) {
         std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryInfection(dt);
     }
 }
 
-void MycorrhizalPlant::simulateHyphalGrowth(double dt)
+/*
+ * Simulates hyphal growth
+ * @param dt		duration of the simulation
+ * @param verbose	whether to print information
+ */
+void MycorrhizalPlant::simulateHyphalGrowth(double dt, bool verbose)
 {
-    std::cout<< "MycorrhizalPlant::simulateHyphalGrowth called"<< std::endl;
     oldNumberOfOrgans = getNumberOfOrgans();
-    auto organs = getOrgans(); // TODO  getOrgans(Organism::ot_root) empty list????
+    auto organs = getOrgans();
     for (const auto & o : organs) {
         if (o->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(o) -> simulateHyphalGrowth();
+            std::dynamic_pointer_cast<MycorrhizalRoot>(o) -> simulateHyphalGrowth(dt,verbose);
         }
     }
 };
 
-void MycorrhizalPlant::simulateAnastomosis() {
+/*
+ * Simulates anastomosis for all hyphae
+ * @param dt		duration of the simulation
+ * @param verbose	whether to print information
+ */
+void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
     auto hyphae = this->getOrgans(Organism::ot_hyphae);
     double dist = 1000;
 
     for (const auto & h : hyphae) {
         sdf->excludeTreeId = h->getParameter("hyphalTreeIndex");
-        // if (std::dynamic_pointer_cast<Hyphae>(h)->mergedHyphae != nullptr) {
-        //     std::cout<< std::dynamic_pointer_cast<Hyphae>(h)->mergedHyphae <<std::endl;// already merged
-        // }
-        // std::cout << "Does this hypha already have merged hyphae? " << (std::dynamic_pointer_cast<Hyphae>(h)->mergedHyphae != nullptr) << "\n";
+
         if (h->isActive()) {
             auto tip = h->getNode(h->getNumberOfNodes()-1);
 

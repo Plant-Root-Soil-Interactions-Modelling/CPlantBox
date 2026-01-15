@@ -29,7 +29,7 @@ public:
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
     void simulatePrimaryInfection(double dt);
     void simulateSecondaryInfection(double dt);
-    void simulateHyphalGrowth();
+    void simulateHyphalGrowth(double dt, bool verbose);
 
 
     void simulateInfection(double dt, bool silence = false);

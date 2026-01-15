@@ -23,8 +23,8 @@ class MycorrhizalPlant :public Plant {
     void simulate(double dt, bool verbose) override;
     void simulatePrimaryInfection(double dt, bool verbose);
     void simulateSecondaryInfection(double dt, bool verbose);
-    void simulateHyphalGrowth(double dt);
-    void simulateAnastomosis();
+    void simulateHyphalGrowth(double dt, bool verbose);
+    void simulateAnastomosis(double dt, bool verbose);
 
     virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
     virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
@@ -40,7 +40,6 @@ class MycorrhizalPlant :public Plant {
     std::vector<int> localNodes;
     std::vector<std::shared_ptr<Hyphae>> localHyphae;
     int hyphalTreeIndex = -1;
-    // void updateAnastomosisTree(double dt);
 
     };
 

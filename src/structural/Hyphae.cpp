@@ -103,7 +103,7 @@ void Hyphae::simulate(double dt, bool verbose)
 
     const HyphaeSpecificParameter& p = *param(); // rename
 
-    if (alive) { // dead hypaes won't grow
+    if (alive) { // dead hypae won't grow
 
         // increase age
         if (age+dt>p.hlt) { // hyphal life time
@@ -121,7 +121,7 @@ void Hyphae::simulate(double dt, bool verbose)
                 if (active) {
 					double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
 					double dt_; // time step
-					if (age<dt) { // the root emerged in this time step, adjust time step
+					if (age<dt) { // the hypha emerged in this time step, adjust time step
 						dt_= age;
 					} else {
 						dt_=dt;
@@ -130,14 +130,12 @@ void Hyphae::simulate(double dt, bool verbose)
 					double targetlength = calcLength(age_+dt_);//+ this->epsilonDx;
 					// TODO: maybe add later the epsilonDx. could be usefull for flow computation + in case of length errors created by anastomosis
 
-                    //double targetlength = p.v*(age); // Warum hier age + dt wenn oben schon dt an age angerechnet wurde?
-
                     double e = targetlength-length; // unimpeded elongation in time step dt
                     double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                     double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
                     length = getLength();
                     createSegments(dl,dt,verbose);
-                    // std::cout << "*";
+                    // TODO: if relevant add lateral branching here but wait until feburary Team up Meeting
                     length+=dl;
                     if (dl == 0.)
                     {
@@ -149,7 +147,7 @@ void Hyphae::simulate(double dt, bool verbose)
                 // std::cout << nodes.size() << std::endl;
                 // std::cout<< "Age: "<< age << " vs. simTime - CT first node: "<< getOrganism()->getSimTime() << "\n";
 
-                if (this->getAge() * getParameter("b")>1.)
+                if (this->getAge() * getParameter("b")>1.) // TODO check if this is really correct
                 {
                     active = false; // become inactive, if enough time has passed for branching
                     // std::cout<< "number of children: " << children.size() << "\n";
@@ -158,14 +156,6 @@ void Hyphae::simulate(double dt, bool verbose)
                     // std::cout<< "Age when a branching occurred: " << age << " days, in hyphal tree " << hyphalTreeIndex << "\n";
                 }
                 
-                // active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
-                // bool activeafter = active; // store new state
-
-                // //  std::cout<< getParameter("b")*dt << std::endl;
-                // if (plant.lock()->randn() < getParameter("b")*dt && (activebefore && !activeafter)) { // constructor always at last node
-                //     // std::cout << "create lateral hyphae at " << nodes.size()-1 << std::endl;
-                    
-                // }
                 //std::cout << "Hyphae active: " << active << std::endl;
 
             } else { // NOT ACTIVE (children grow)

@@ -2,10 +2,10 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import math
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 import numpy as np
 
-mycp = pb.MycorrhizalPlant(1)
+mycp = pb.MycorrhizalPlant()
 path = "tomatoparameters/"
 name = "TomatoJohanna_WildType"
 
@@ -66,7 +66,7 @@ if animation:
         print("Frame " + str(i) + " of " + str(N))
 
 else:
-    for i in range(0, N):
+    for i in range(1, N+1):
         print('step',i, '/',N)
 
         

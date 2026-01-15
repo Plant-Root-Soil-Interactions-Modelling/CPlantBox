@@ -225,7 +225,7 @@ void MycorrhizalRoot::simulatePrimaryInfection(double dt) {
     primaryInfection(dt,false);
 }
 
-void MycorrhizalRoot::simulateHyphalGrowth() {
+void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
     if (getRootRandomParameter()->highresolution >= 1) { // Version where at every node there is one hypha created
         for (size_t i = 1; i < nodes.size(); i++) {
             if (infected.at(i) > 0 && emergedHyphae.at(i) == 0){ // if the current node is infected and the number of hyphae to be created is reached
@@ -304,7 +304,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     // std::cout << "\nstart " << getId() <<  std::flush;
     Root::simulate(dt,verbose);
     simulateInfection(dt,verbose);
-    simulateHyphalGrowth();
+    simulateHyphalGrowth(dt,verbose);
     // std::cout << getRootRandomParameter()->la << std::endl;
     // std::cout << "\nend " << getId() <<  std::flush;
 }
