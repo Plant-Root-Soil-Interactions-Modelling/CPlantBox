@@ -57,13 +57,10 @@ SDF_RootSystem::SDF_RootSystem(const Organism& plant, double dx): dx_(dx) {
     organTypes_.resize(vd.size());
     std::transform(vd.begin(), vd.end(), organTypes_.begin(), [](double x) { return static_cast<int>(x); });   
     vd = ana.getParameter("hyphalTreeIndex");
-    std::cout<< "Coocoo!"<< std::endl;
     treeIds_.resize(vd.size());
     std::transform(vd.begin(), vd.end(), treeIds_.begin(), [](double x) { return static_cast<int>(x); });
     segO = ana.segO; // weak pointer to the organ containing the segment
-    std::cout<<"Marco!"<< std::endl;
     buildTree();
-    std::cout<<"Polo!"<< std::endl;
 }
 
 SDF_RootSystem::SDF_RootSystem(std::vector<Vector3d> nodes, const std::vector<Vector2i> segments, const std::vector<double> radii, double dx)
