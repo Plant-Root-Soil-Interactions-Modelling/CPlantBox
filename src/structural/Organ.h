@@ -128,7 +128,15 @@ public:
 	double getLatGrowthDelay(int ot_lat, int st_lat, double dt, double growthDelay);
 	double getLatGrowthDelay(int ruleId) const;
 	
-	virtual int lignificationStatus() const {return 0;};
+	virtual int lignificationStatus(double diff_len = -1.) const {return 0;};
+
+    virtual std::vector<int> lignificationStatusPerSegment() const
+    {
+        
+        std::vector<int> lPerSeg(getNumberOfSegments(), lignificationStatus());
+        return lPerSeg;
+    }
+	virtual int lignificationStatusPerSegment(int seg_indx) const {return lignificationStatus();};
 	
 
 protected:

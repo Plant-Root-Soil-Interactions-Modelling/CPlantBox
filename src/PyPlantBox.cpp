@@ -359,6 +359,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("orgVolume2Length",&Organ::orgVolume2Length)
             .def("getiHeading0", &Organ::getiHeading0)
             .def("lignificationStatus", &Organ::lignificationStatus)
+            //.def("lignificationStatusPerSegment", &Organ::lignificationStatusPerSegment)
             .def("getLatGrowthDelay",(double (Organ::*)(int ot_lat, int st_lat, double dt, double growthDelay)) &Organ::getLatGrowthDelay)
             .def("getLatGrowthDelay",(double (Organ::*)(int ruleId) const) &Organ::getLatGrowthDelay)
             .def_readwrite("parentNI", &Organ::parentNI);
@@ -554,6 +555,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def("getSummed", (double (SegmentAnalyser::*)(std::string) const) &SegmentAnalyser::getSummed) //overloads
            .def("getSummed", (double (SegmentAnalyser::*)(std::string, std::shared_ptr<SignedDistanceFunction>) const) &SegmentAnalyser::getSummed) //overloads
            .def("distributionFast", &SegmentAnalyser::distributionFast)
+           .def("distributionFastv", &SegmentAnalyser::distributionFastv)
            .def("distribution", (std::vector<double> (SegmentAnalyser::*)(std::string, double, double, int, bool) const) &SegmentAnalyser::distribution) //overloads
            .def("distribution", (std::vector<SegmentAnalyser> (SegmentAnalyser::*)(double, double, int) const) &SegmentAnalyser::distribution) //overloads
            .def("distribution2", (std::vector<std::vector<double>> (SegmentAnalyser::*)(std::string, double, double, double, double, int, int, bool) const) &SegmentAnalyser::distribution2) //overloads
@@ -811,7 +813,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
             .def("param", &Root::param)
             .def("getRadius", &Root::getRadius)
-            .def("getRadii", &Root::getRadii);
+            .def("getRadii", &Root::getRadii)
+            //.def("lignificationStatusPerSegment", &Root::lignificationStatusPerSegment)
+            .def("lignificationStatus", &Root::lignificationStatus);
     py::class_<StaticRoot, Root, std::shared_ptr<StaticRoot>>(m, "StaticRoot")
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, double, int>())
             .def("initializeLaterals", &StaticRoot::initializeLaterals)
@@ -925,6 +929,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getEffectiveRadii",&MappedSegments::getEffectiveRadii)
 		.def("calcExchangeZoneCoefs",&MappedSegments::calcExchangeZoneCoefs)
 		.def("setSubStatus",&MappedSegments::setSubStatus)
+		.def("getSubStatus",&MappedSegments::getSubStatus_all)
         .def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
         .def_readwrite("distanceTip", &MappedPlant::distanceTip)
         .def_readwrite("nodes", &MappedSegments::nodes)

@@ -90,6 +90,8 @@ SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes
     std::vector<double> segCTs(plant.segments.size());
     std::vector<double> subTypesd(plant.subTypes.size()); // convert to double
     std::vector<double> organTypesd(plant.organTypes.size()); // convert to double
+    std::vector<double> lengths = plant.segLength(); // convert to double
+    std::vector<double> segmentZ = plant.getSegmentZ(); // convert to double
     //cellId.(plant.segments.size());
     for (size_t i=0; i<segments.size(); i++) {
         segCTs[i] = plant.nodeCTs.at(segments[i].y);
@@ -101,6 +103,8 @@ SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes
     data["radius"] = plant.radii;
     data["subType"] = subTypesd;
     data["organType"] = organTypesd;
+    data["lengths"] = lengths;
+    data["segmentZ"] = segmentZ;
     //data["cellId"] = cellId;
     segO = plant.segO;
 }
@@ -308,10 +312,10 @@ std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) 
     }
     std::vector<double> d(segments.size()); // make return vector
     if (name == "length") {
-        for (size_t i=0; i<d.size(); i++) {
-            d.at(i) = getSegmentLength(i);
-        }
-        return d;
+        //for (size_t i=0; i<d.size(); i++) {
+        //    d.at(i) = getSegmentLength(i);
+        //}
+        return data.at("lengths");
     }
     if (name == "surface") {
         for (size_t i=0; i<d.size(); i++) {
@@ -349,8 +353,8 @@ std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) 
  */
 double SegmentAnalyser::getSegmentLength(int i) const
 {
-    Vector2i s = segments.at(i);
-    return (nodes.at(s.x).minus(nodes.at(s.y))).length();
+    return data.at("lengths").at(i); //Vector2i s = segments.at(i);
+    //return (nodes.at(s.x).minus(nodes.at(s.y))).length();
 }
 
 /**
@@ -818,11 +822,21 @@ std::vector<double> SegmentAnalyser::distributionFast(std::string name, const Ma
 	//#pragma omp parallel for schedule(static)
     for (int i=0; i<segments.size(); i++) {
 		int cid = plant.seg2cell.at(i);
-		if(cid >= 0){d.at(cid) += data[name].at(i);}
+		if(cid >= 0){d.at(cid) += data.at(name).at(i);}
     }
     return d;
 }
 
+std::vector<double> SegmentAnalyser::distributionFastv(std::vector<double> name, const MappedSegments& plant) 
+{
+    std::vector<double> d(plant.maxCell + 1);
+	//#pragma omp parallel for schedule(static)
+    for (int i=0; i<segments.size(); i++) {
+		int cid = plant.seg2cell.at(i);
+		if(cid >= 0){d.at(cid) += name.at(i);}
+    }
+    return d;
+}
 /**
  * Creates a vertical distribution of the parameter @param name.
  *

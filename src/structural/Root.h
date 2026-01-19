@@ -59,7 +59,9 @@ public:
 	
 	void deactivateChildren() ;
 	void killChildren() ;
-	int lignificationStatus() const override;
+	int lignificationStatus(double diff_len = -1.) const override;
+	std::vector<int> lignificationStatusPerSegment() const override;
+	int lignificationStatusPerSegment(int seg_indx) const override;
 	int getDecayStatus();
 //protected:
     //std::vector<double> segRadii; ///< node creation times [days]
@@ -91,8 +93,16 @@ public:
     }
 
 	//void survivalTest() override;
-	int lignificationStatus() const override {return 2;};
+	int lignificationStatus(double diff_len = -1.) const override {return 2;};
 	
+    virtual std::vector<int> lignificationStatusPerSegment() const override
+    {
+        
+        std::vector<int> lPerSeg(getNumberOfSegments(), lignificationStatus());
+        return lPerSeg;
+    }
+	virtual int lignificationStatusPerSegment(int seg_indx) const override {return lignificationStatus();};
+    
 //protected:
 	void survivalTest() override;
 

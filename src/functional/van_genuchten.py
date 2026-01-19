@@ -34,9 +34,10 @@ class Parameters:
         self.n = p[3]
         self.m = 1. - 1. / self.n
         self.Ksat = p[4]
+        self.l = p[5]
 
     def __iter__(self):  # for conversion to list with list(soil)
-        return (i for i in [self.theta_R, self.theta_S, self.alpha, self.n, self.Ksat])
+        return (i for i in [self.theta_R, self.theta_S, self.alpha, self.n, self.Ksat, self.l])
 
 
 def plot_retention_curve(param, label_ = ""):
@@ -92,6 +93,7 @@ def specific_moisture_storage(h, sp):  # soil water retention function (Cw(h))
 
 def water_diffusivity(TH, theta_i, theta_sur, sp):
     """ returns the water diffusivity (Eqn 11) """
+    raise Exception("to check")
     theta = TH * (theta_i - theta_sur) + theta_sur
     Se = (theta - sp.theta_R) / (sp.theta_S - sp.theta_R)
     m = sp.m
@@ -125,7 +127,7 @@ def effective_saturation(h, sp):
 def hydraulic_conductivity(h, sp):
     """ returns the hydraulic conductivity [cm/day] at a given matric potential [cm] according to the van genuchten model (Eqn 8) """
     se = effective_saturation(h, sp)
-    K = sp.Ksat * (se ** 0.5) * ((1. - pow(1. - pow(se, 1. / sp.m), sp.m)) ** 2)
+    K = sp.Ksat * (se ** sp.l) * ((1. - pow(1. - pow(se, 1. / sp.m), sp.m)) ** 2)
     return K
 
 
@@ -145,20 +147,19 @@ def matric_potential_mfp(mfp, sp):
     return h
 
 
-fast_mfp = {}
-""" fast_mfp[sp](h):returns the matric flux potential [cm2/day] for a matric potential [cm], 
-    call create_mfp_lookup first, once for each soil parameter @param sp"""
-
-fast_imfp = {}
-""" fast_imfp[sp](mfp): returns the matric potential [cm] from the matric flux potential [cm2/day], 
-    call create_mfp_lookup first, once for each soil parameter @param sp"""
 
 
 def create_mfp_lookup(sp, wilting_point = -16000, n = 16001):
     """ initializes the look up tables for soil parameter to use fast_mfp, and fast_imfp """
     print("initializing look up tables")
-    global fast_mfp
-    global fast_imfp
+
+    fast_mfp = {}
+    """ fast_mfp[sp](h):returns the matric flux potential [cm2/day] for a matric potential [cm], 
+        call create_mfp_lookup first, once for each soil parameter @param sp"""
+
+    fast_imfp = {}
+    """ fast_imfp[sp](mfp): returns the matric potential [cm] from the matric flux potential [cm2/day], 
+        call create_mfp_lookup first, once for each soil parameter @param sp"""
 
     h_ = -np.logspace(np.log10(1.), np.log10(np.abs(wilting_point)), n)
     h_ = h_ + np.ones((n,))
@@ -177,6 +178,7 @@ def create_mfp_lookup(sp, wilting_point = -16000, n = 16001):
     fast_imfp[sp] = interpolate.interp1d(mfp, imfp, bounds_error = False, fill_value = (imfp[0], imfp[-1]))  #
 
     print("done")
+    return fast_imfp, fast_mfp
 
 # fast_specific_moisture_storage = {}
 # fast_water_content = {}

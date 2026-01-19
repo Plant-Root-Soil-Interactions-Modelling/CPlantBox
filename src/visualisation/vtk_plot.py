@@ -529,7 +529,7 @@ def plot_roots(pd, p_name:str,p_names = [], win_title:str = "", render:bool = Tr
         ren = render_window(plantActor, win_title, scalar_bar, pd.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
-    else:# filename:
+    if win_title:
         #path = "./results/"
         write_vtp(win_title + ".vtp", pd)
 
@@ -687,11 +687,11 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         if filename:
             path = "results/"
             write_vtp(path + filename + ".vtp", pd)
-            write_vtu(path + filename + ".vtu", soil_grid)
+            write_vtu(path + filename + ".vti", soil_grid)
 
 
 
-def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True):
+def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True, dorender = True):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
@@ -732,17 +732,18 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
             d.SetName(pname_mesh)  # in macroscopic soil
             soil_grid.GetCellData().AddArray(d)
 
-        rootActor, rootCBar = plot_roots(pd, pname, "", False)
+        rootActor, rootCBar = plot_roots(pd, pname, "", False, render =dorender)
         meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
         meshActors.extend([rootActor])
-        ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
-        if interactiveImage:
-            ren.Start()
+        if dorender:
+            ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
+            if interactiveImage:
+                ren.Start()
 
         if filename:
             path = "results/"
             write_vtp(path + filename + ".vtp", pd)
-            write_vtu(path + filename + ".vtu", soil_grid)
+            write_vtu(path + filename + ".vti", soil_grid)
 
 
 def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = "", interactiveImage = True):
@@ -777,7 +778,7 @@ def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1,
     if filename:
         path = "results/"
         write_vtp(path + filename + ".vtp", pd)
-        write_vtu(path + filename + ".vtu", soil_grid)
+        write_vtu(path + filename + ".vti", soil_grid)
 
 
 def plot_soil(s, pname_mesh, min_b, max_b, cell_number, solutes = [], filename:str = "", interactiveImage = True):
@@ -808,7 +809,7 @@ def plot_soil(s, pname_mesh, min_b, max_b, cell_number, solutes = [], filename:s
 
     if filename:
         path = "results/"
-        write_vtu(path + filename + ".vtu", soil_grid)
+        write_vtu(path + filename + ".vti", soil_grid)
 
 
 def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
@@ -831,7 +832,7 @@ def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
         d = vtk_data(np.array(s.getSolution(i + 1)))
         d.SetName(s_)  # in macroscopic soil
         soil_grid.GetCellData().AddArray(d)
-    write_vtu(filename + ".vtu", soil_grid)
+    write_vtu(filename + ".vti", soil_grid)
 
 
 def write_plant(filename, plant, add_params = []):

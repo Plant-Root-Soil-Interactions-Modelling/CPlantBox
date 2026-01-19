@@ -511,18 +511,31 @@ tinyxml2::XMLElement* OrganRandomParameter::writeXML(tinyxml2::XMLDocument& doc,
 			if(successorWhere.size()>j){p->SetAttribute("Where", vector2string(successorWhere.at(j)).c_str());}
 			p->SetAttribute("subType", vector2string(successorST.at(j).at(k)).c_str());
 			if(successorOT.size()>j){p->SetAttribute("organType", vector2string(successorOT.at(j).at(k)).c_str());}
-			p->SetAttribute("percentage", vector2string(successorP.at(j).at(k)).c_str());
 			organ->InsertEndChild(p);
 			if (comments) {
 				std::string str = description.at("successorST");
 				tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
 				organ->InsertEndChild(c);
 			}
-			p_ += std::accumulate(successorP.at(j).at(k).begin(), successorP.at(j).at(k).end(), 0.);
-			if (p_>1) {
-				std::cout << "OrganRandomParameter::writeXML: Warning! percentages "<< p_ <<"  > 1.\n";
-			}
         }
+	}
+	for (int j = 0; j<successorP.size(); j++) {
+        for (int k = 0; k<successorP.at(j).size(); k++) {
+			tinyxml2::XMLElement* p = doc.NewElement("parameter");
+			p->SetAttribute("name", "successor");
+			p->SetAttribute("ruleId",j);
+			p->SetAttribute("percentage", vector2string(successorP.at(j).at(k)).c_str());
+			organ->InsertEndChild(p);
+        }
+	}
+	for (int j = 0; j<successorP_age.size(); j++) {
+        //for (int k = 0; k<successorP_age.at(j).size(); k++) {
+			tinyxml2::XMLElement* p = doc.NewElement("parameter");
+			p->SetAttribute("name", "successor");
+			p->SetAttribute("ruleId",j);
+			p->SetAttribute("percentage_age", vector2string(successorP_age.at(j)).c_str());
+			organ->InsertEndChild(p);
+        //}
 	}
     return organ;
 }

@@ -11,6 +11,7 @@ from plantbox import PlantHydraulicModel as PlantHydraulicModelCPP
 from structural.MappedOrganism import MappedPlantPython
 from functional.Perirhizal import PerirhizalPython as Perirhizal
 
+import functional.van_genuchten as vg
 import rsml.rsml_reader as rsml
 
 
@@ -57,7 +58,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         self.neumann_ind = [0]  # node indices for Neumann flux
         self.dirichlet_ind = [0]  # node indices for Dirichlet flux
         self.collar_index_ = self.collar_index()  # segment index of the collar segement
-        self.wilting_point = -150000  # [cm]
+        self.wilting_point = -15000  # [cm]
 
     def solve_dirichlet(self, sim_time:float, collar_pot:list, rsx, cells:bool):
         """ solves the flux equations, with a neumann boundary condtion, see solve()            
@@ -671,7 +672,8 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         b[self.ci] += self.kx0 * collar_pot
         rx_ = self.A_d_splu.solve(b)
         rx = self.ms.total2matric(rx_)
-        return np.append(collar_pot, rx)
+        self.psiXyl = np.append(collar_pot, rx)
+        return self.psiXyl
 
     def solve_neumann(self, sim_time:float, t_act:list, rsx, cells:bool):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
@@ -692,7 +694,8 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         b = self.Kr.dot(rsx_)
         b[self.ci] += self.kx0 * collar_pot
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
-        return np.append(collar_pot, rx)
+        self.psiXyl = np.append(collar_pot, rx)
+        return self.psiXyl
 
     def solve(self, sim_time:float, t_act:list, rsx, cells:bool):
         """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
@@ -712,7 +715,8 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         b = self.Kr.dot(rsx_)
         b[self.ci] += self.kx0 * collar
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
-        return np.append(collar, rx)
+        self.psiXyl = np.append(collar_pot, rx)
+        return self.psiXyl
 
     def solve_again(self, sim_time:float, t_act:list, rsx, cells:bool):
         """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
@@ -734,7 +738,8 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         b = self.Kr.dot(rsx_)
         b[self.ci] += self.kx0 * collar
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
-        return np.append(collar, rx)
+        self.psiXyl = np.append(collar_pot, rx)
+        return self.psiXyl
 
     # def get_transpiration(self, sim_time, rx, rsx, cells = False):
     #     """ actual transpiration [cm3 day-1], calculated as the sum of all radial fluxes"""
@@ -745,7 +750,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
 
-        return -self.Kr.dot(rsx - rx[1:])  #   equals -q_root of Eqn (6) Leitner et al. (tba)
+        return -self.Kr.dot(n.array(rsx) - np.array(rx[1:]))  #   equals -q_root of Eqn (6) Leitner et al. (tba)
 
     def axial_fluxes(self, sim_time, rx, rsx = None, cells = None):
         """ returns the axial fluxes (independent of rsx in case of Doussan)
@@ -775,35 +780,93 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         f = -kx * (dpdz0 - 1)
         return f
 
-# int si, double age, int type, int orgtype
 
     def doussan_system_matrix(self, sim_time):
         """ """
         # print("doussan_system_matrix")
-        IM = MappedPlantPython(self.ms).get_incidence_matrix()
+        IM = self.ms.get_incidence_matrix()
         IMt = IM.transpose()
-        kx_ = np.divide(self.params.getKx(sim_time), self.ms.segLength())  # / dl
+        kx_ = np.divide(self.params.getKx(sim_time), self.lengths)  # / dl
+        assert min(kx_) > 0.
         Kx = sparse.diags(kx_)
         kr = np.array(self.params.getEffKr(sim_time))
+        assert min(kr) >= 0.
         # kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)
         Kr = sparse.diags(kr)
         L = IMt @ Kx @ IM  # Laplacian
         L_ = L[1:, 1:].tocsc()
         return  L_ + Kr, Kr, kx_[self.ci]  # L_{N-1} + Kr, se Hess paper
 
-    def update(self, sim_time):
+    
+    def update(self, sim_time, dz, n, ana, volumes, fast_imfp, fast_mfp):
         """ call before solve(), get_collar_potential(), and get_Heff() """
         self.ci = self.collar_index()  # segment index of the collar segment
+        self.lengths = np.array(self.ms.segLength())
         A_d, self.Kr, self.kx0 = self.doussan_system_matrix(sim_time)
         self.A_d_splu = LA.splu(A_d)
-        self.krs, _ = self.get_krs_(sim_time)
         self.suf = np.transpose(self.get_suf_())
+        self.krs, _ = self.get_krs_(sim_time)
+        
+        self.effectiveRadii = self.ms.getEffectiveRadii()
+        self.r_root = self.average(self.effectiveRadii, n)  # average radius over layer [cm]
+        length =  np.array(ana.distributionFastv(self.lengths, self.ms))
+        self.rld = length / volumes # root length density per layer [cm-2] = [cm/cm3]
+        self.r_phriz = np.divide(1., np.sqrt(np.pi * self.rld))  # outer perirhizal radii per layer [cm]
+        self.rho = np.divide(self.r_phriz, self.r_root)  # [1], see Vanderborght et al. (2023), Eqn [9]
+        self.rho2 = np.square(self.rho)  # [1]
+        self.b = np.divide(2 * (self.rho2 - np.ones(self.rho2.shape)) , np.ones(self.rho2.shape) - 0.53 * 0.53 * self.rho2 + 2 * self.rho2 * (np.log(self.rho) + np.log(0.53)))  # [1], see Eqn [8]
+        self.dz = dz #(self.ms.maxBound.z - self.ms.minBound.z) / self.ms.resolution.z  # [cm]
+        self.l_root = self.rld * dz  # [cm-1]
+        self.fast_imfp = fast_imfp 
+        self.fast_mfp = fast_mfp
 
     def get_collar_potential(self, t_act, rsx):
         """ collar potential for an actual transpiration (call update() before) """
         return (self.krs * self.get_heff_(rsx) - (-t_act)) / self.krs
 
-    def get_soil_rootsystem_conductance(self, sim_time, h_bs, h_sr, sp):  # Vanderborgth et al. (2023), Eqn (12)
+    def perirhizal_conductance_per_layer(self, h_bs, h_sr, sp):
+        """ 
+        The perirhizal conductance in a soil layer (or cell) (Vanderborght et al. 2023, Eqn [6]) [day-1], 
+        see also PlantHydraulicModel.get_soil_rootsystem_concductance().
+        If there are no roots in a layer nan is returned
+        
+        h_bs           bulk soil matric potential
+        h_sr           matric potential at the soil root interface   
+        sp             soil parameter: van Genuchten parameter set (type vg.Parameters)        
+        """
+        
+        k_prhiz = lambda h_bs, h_sr: (self.fast_mfp[sp](h_bs) - self.fast_mfp[sp](h_sr)) / (h_bs - h_sr)  # an effective conductivity [cm/day]
+        return 2 * np.pi * np.multiply(self.l_root, np.multiply(self.b, k_prhiz(h_bs, h_sr)))  # [day-1], see Vanderborght et al. (2023), Eqn [6]
+    
+    def aggregate(self, seg_param, n):
+        """ sums up params over the grid cells (parrams is given per segment)
+        """
+        ms = self.ms  # rename
+        cell2seg = ms.cell2seg  # rename
+        d = np.zeros((n,))
+        for i in range(0, n):
+            if i in cell2seg:
+                for si in cell2seg[i]:
+                    d[i] += seg_param[si]
+        return d
+
+    def average(self, seg_param, n):
+        """ averages params over the grid cells (parrams is given per segment)
+        """
+        ms = self.ms  # rename
+        cell2seg = ms.cell2seg  # rename
+        d = np.zeros((n,))
+        for i in range(0, n):
+            if i in cell2seg:
+                c = len(cell2seg[i])
+                for si in cell2seg[i]:
+                    d[i] += seg_param[si] / c
+        return d
+    
+    def get_krs_forsoil():
+        return np.flip(self.krs)
+    
+    def get_soil_rootsystem_conductance(self, sim_time, area, suf, h_bs, h_sr, sp):  # Vanderborgth et al. (2023), Eqn (12)
         """ The soil root system conductance per soil layer [day-1]
         
         sim_time             simulation time in days
@@ -812,17 +875,16 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         sp             soil parameter: van Genuchten parameter set (type vg.Parameters)           
         """
         # krs, _ = self.get_krs(sim_time)  # [cm2/day]
-        krs = self.krs
-        area = (self.ms.maxBound.x - self.ms.minBound.x) * (self.ms.maxBound.y - self.ms.minBound.y)  # [cm2]
+        krs = self.krs #get_krs_forsoil()
+        #area = (self.ms.maxBound.x - self.ms.minBound.x) * (self.ms.maxBound.y - self.ms.minBound.y)  # [cm2]
         # print("area", area)  #
         krs = krs / area  # [day-1]
-        peri = Perirhizal(self.ms)  # helper class, wrap mappedSegments
-        k_prhiz = peri.perirhizal_conductance_per_layer(h_bs, h_sr, sp)  # [day-1], Vanderborght et al. 2023, Eqn (6)
+        #peri = Perirhizal(self.ms)  # helper class, wrap mappedSegments
+        k_prhiz = self.perirhizal_conductance_per_layer(h_bs, h_sr, sp)  # [day-1], Vanderborght et al. 2023, Eqn (6)
         # print("k_prhiz", np.nanmin(k_prhiz), np.nanmax(k_prhiz))
         # suf_ = self.get_suf(sim_time)  # [1]
-        suf_ = self.suf
-        suf = peri.aggregate(suf_[0,:])  # [1]
-        # print("suf", np.min(suf), np.max(suf), np.sum(suf))
+        #suf_ = self.suf
+        #suf = peri.aggregate(suf_[0,:])  # [1]
         return np.divide(krs * k_prhiz, suf * krs + k_prhiz)  # [day-1], see Vanderborgth et al. (2023), Eqn (12)
 
     def get_krs_(self, sim_time):
@@ -830,7 +892,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         # print("krs", sim_time)
         n = self.ms.getNumberOfMappedSegments()
         s = self.ms.segments[self.ci]
-        n2 = self.ms.nodes[s.y]
+        #n2 = self.ms.nodes[s.y]
         rsx_ = np.ones((n, 1)) * (-500)  # total matric potential
         b = self.Kr.dot(rsx_)
         b[self.ci, 0] += self.kx0 * -15000
@@ -840,16 +902,21 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         # print("get_krs() rx[0]", rx[self.ci, 0])
         # krs = -t_act / ((-500) - (rx[self.ci, 0] - n2.z))
         krs = -t_act / ((-500) - (-15000))
+        assert krs > 0
         return krs, t_act
 
+    def get_suf(self):
+        return self.suf.flatten()
+    
     def get_suf_(self):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         # print("suf")
         n = self.ms.getNumberOfMappedSegments()
         rsx = np.ones((n, 1)) * (-500)  # total matric potential
         b = self.Kr.dot(rsx)
+        s = np.array(self.ms.segments)[self.ci]
         b[self.ci, 0] += self.kx0 * -15000
-        rx = self.A_d_splu.solve(b)  # total matric potential
+        rx = np.array( self.A_d_splu.solve(b) ) # total matric potential
         q = -self.Kr.dot(rsx - rx)
         return np.array(q) / np.sum(q)
 

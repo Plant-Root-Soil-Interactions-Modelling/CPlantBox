@@ -18,13 +18,14 @@ import plantbox as pb
 import visualisation.vtk_plot as vp
 import viewer_conductivities
 from functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports}|
-from functional.PlantHydraulicModel import HydraulicModel_Meunier_large, HydraulicModel_Meunier   # |\label{l42:imports_end}|
+from functional.PlantHydraulicModel import HydraulicModel_Meunier_large, HydraulicModel_Meunier, HydraulicModel_Doussan   # |\label{l42:imports_end}|
 
 
 import numpy as np
 from structural.Plant import PlantPython
 from structural.MappedOrganism import MappedPlantPython
 from functional.Perirhizal import PerirhizalPython as Perirhizal
+import functional.van_genuchten as vg
 import matplotlib.pyplot as plt
 import copy
 import os
@@ -48,7 +49,7 @@ def get3Dshape(plant,title_ = 'wine',data={}, saveOnly = True, show = "subType")
     '''
     Lignification status, Survival, fine roots
     '''
-    lignification = [sO.lignificationStatus() for sO in segOs]
+    lignification = plant.getSubStatus() #[sO.lignificationStatus() for sO in segOs]
     aliveSegs = [sO.isAlive() for sO in segOs] #todo: removes
     is_fine_root = [sO.getParameter('is_fine_root') for sO in segOs]
     ana.addData('aliveSegs', aliveSegs)
@@ -80,6 +81,12 @@ Kax_a =  {'B' : viewer_conductivities.convert_axial(0.04749/100.),
           'E' : viewer_conductivities.convert_axial(0.02622/100.)}
 Kax_b =  {'B' : 2.06437, 'D' : 2.2410, 'E' : 1.98847}
 
+
+length_x = 100
+length_y = 200
+area = length_x * length_y  # [cm2], TODO: check
+dz = 1. # resolution
+volumes = dz * area
     
 def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGSTAB = False): #llambdao, kko,
     start_time = time.time()
@@ -135,7 +142,8 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
         thin_root_P = [[0.],[0.05],[1.]]
         thin_root_Page = [0., 1225 * 5, 1225 * 10]
         ps = plant.getOrganRandomParameter(1)[0]
-        #ps.seedPos = pb.Vector3d(0.,0.,-10.) # useless
+        ps.Lmax_unsuberized = 4.
+        ps.Lmax_suberized = 10.
         for ii, pp in enumerate(plant.getOrganRandomParameter(2)):            
             if ii == 0:      
                 pp.ldelay  = 0*yr_to_BEDD
@@ -245,8 +253,8 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
                 pp.successorNo = [int(no_thin/ratioChange)]
                 
             if (ii <= 5):   
-                pp.a = 0.093
-                pp.a_gr = 0.083/yr_to_BEDD
+                pp.a = 0.93/2
+                pp.a_gr = 0.83/2/yr_to_BEDD
                 
                 
             else: # fine roots
@@ -257,8 +265,12 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
                 pp.ldelays =yr_to_BEDD  #yr_to_BEDD * params['ldelays0'] #200#*5
                 pp.successorP = [[[1.]]]#[[params['successorP0']]]
                 pp.successorNo = [1]#no_thin] #[params['successorNo0']] 
+
+        wilting_point = -15000  # cm
+        loam = [0.1406, 0.4148, 0.04052, 1.32416, 38.43, -2.067]  
+        sp = vg.Parameters(loam)  # needed for Perirhizal class
             
-            
+        fast_imfp, fast_mfp = vg.create_mfp_lookup(sp, wilting_point = wilting_point, n = 1501)  # needed for Perirhizal class
         '''
         start simulation
         '''
@@ -290,7 +302,9 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
         # all_alive_short = []
         dt = yr_to_BEDD  # ~1 yr
         plant.do_simulate(0, False) # just to store data in the mapped segment
+        
         if doVTP:
+            plant.writeParameters("./results/xmlFiles/"+genotype + "-wineV3.xml")
             get3Dshape(plant,title_ = "./results/part1/vtp/"+extraName+'/'+genotype+"0", data = {}, saveOnly = True)
             
         param = PlantHydraulicParameters()
@@ -298,7 +312,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
         #param.set_kx_const(4.32e-2 )
         param.set_kr_suberize_dependent(kr)          
         param.set_kx_radius_dependent([Kax_a[genotype],Kax_b[genotype]])
-        hm = HydraulicModel_Meunier(plant, param) # _large
+        hm = HydraulicModel_Doussan(plant, param) # _large
         hm.doBiCGSTAB = doBiCGSTAB
         #peri = Perirhizal(plant)
         assert len(plant.get_nodes()) == (len(plant.get_segments()) +1)
@@ -317,31 +331,34 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
 
             # ---------------- growth ----------------
             t0 = tic()
-            plant.do_simulate(dt, True)
+            plant.do_simulate(dt, False)
             timing['growth'] += toc(t0)
 
             # ---------------- RLD ----------------
             t0 = tic()
             ana = pb.SegmentAnalyser(plant.mappedSegments())
-            # minZ = np.floor(np.min(np.array([xyz[2] for xyz in plant.get_nodes()])))
-            # timing['rld'] += toc(t0)
-            # t0 = tic()
-            # RLDs.append(
-                # ana.distribution("length", 0., minZ, int(-minZ), False)
-            # )
-            # timing['rld2'] += toc(t0)
+            minZ = max(np.fromiter(hm.ms.cell2seg.keys(), dtype=int)) + 1
+            timing['rld'] += toc(t0)
+            t0 = tic()
+            RLDs.append(
+                ana.distributionFast("lengths", plant) #("length", 0., minZ, int(-minZ), False)
+            )
+            timing['rld2'] += toc(t0)
 
             # ---------------- SUF ----------------
             # t0 = tic()
             try:
-                suf_ = hm.get_suf(i * dt)
+                hm.update(i * dt, dz, abs(int(minZ)), ana, volumes, fast_imfp, fast_mfp)
+                suf_ = hm.get_suf() #get_suf(i * dt)
+                                                              
                 assert suf_.min() >= 0 
             except:
                 print("issue with suf computation")
                 get3Dshape(
                     plant,
                     title_="./results/part1/vtp/" + extraName + '/' + genotype + str(i+1) +"_"+ str(rep_input) +"_error",
-                    saveOnly=True,data ={'SUF': suf_,'psiXyl':hm.psiXyl},show = 'SUF',# 
+                    saveOnly=True,data ={'SUF': suf_,#'psiXyl':hm.psiXyl
+                                        },show = 'SUF',# 
                 )
                 print('np.unique(hm.psiXyl)',np.unique(hm.psiXyl))
                 #hm.test()
@@ -351,9 +368,10 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
             timing['suf'] += toc(t0)
             t0 = tic()
             ana.addData('SUF', suf_)
-            SUFs.append(
-                ana.distributionFast("SUF", plant)
-            )
+            #ana.addData('SUF_meunier', suf_meunier)
+            suf1d = np.array(ana.distributionFast("SUF", plant))
+            #suf1d_meunier = np.array(ana.distributionFast("SUF_meunier", plant))
+            SUFs.append(suf1d)
             timing['suf_distrib'] += toc(t0)
 
             # ---------------- processing ----------------
@@ -394,7 +412,8 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
                     plant,
                     title_="./results/part1/vtp/" + extraName + '/' + genotype + str(i+1),
                     saveOnly=True, show = 'SUF',
-                    data ={'SUF': suf_, 'psiXyl':hm.psiXyl}
+                    data ={'SUF': suf_#, 'psiXyl':hm.psiXyl
+                          }
                 )
                 timing['vtp'] += toc(t0)
 
@@ -496,7 +515,7 @@ if __name__ == '__main__':
     genotype = sys.argv[1]
     rep = int(sys.argv[2])
     
-    extraName = "default"
+    extraName = "defaultplant"
     if len(sys.argv) > 3:
         extraName = sys.argv[3]
     if len(sys.argv) > 4:
@@ -522,7 +541,7 @@ if __name__ == '__main__':
         import pstats, io
         pr = cProfile.Profile()
         pr.enable()
-    print('run_benchmark(xx, genotype, rep, doProfile, doBiCGSTAB)',genotype, rep, doProfile, doBiCGSTAB)
+    print('run_benchmark(xx, genotype, rep, doProfile, doBiCGSTAB)',genotype, rep,extraName, doProfile, doBiCGSTAB)
     output = run_benchmark(xx, genotype, rep, doProfile, doBiCGSTAB)
     if doProfile:
         pr.disable()

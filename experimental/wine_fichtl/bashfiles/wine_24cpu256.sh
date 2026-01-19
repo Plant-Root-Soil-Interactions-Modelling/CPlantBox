@@ -1,12 +1,12 @@
 #!/bin/bash
 #
 #SBATCH --job-name=wine
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=1
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
 #SBATCH --partition=cpu256
 #SBATCH --time=20-00:00:00
-#SBATCH --mem=60G
+#SBATCH --mem=9G
 #SBATCH --mail-type=BEGIN,TIME_LIMIT_50,END,FAIL,ALL
 #SBATCH --mail-user=m.giraud@fz-juelich.de
 #SBATCH --output=./slurmOut/slurm-%j.out

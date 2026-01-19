@@ -223,7 +223,7 @@ def create_xml(genotype):
     """
     
     ## seed data
-    data.pparameters.Lmax_unsuberized = 5.
+    data.pparameters.Lmax_unsuberized = 4.
     data.pparameters.Lmax_suberized = 10.
     data.pparameters.delayDefinition = 4
     data.pparameters.seedPos = pb.Vector3d(0.,0.,-10.)

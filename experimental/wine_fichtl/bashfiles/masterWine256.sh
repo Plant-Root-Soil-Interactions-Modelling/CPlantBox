@@ -5,19 +5,19 @@ all_jobs=()
 
 # Submit B jobs
 for i in {0..7}; do
-    jid=$(sbatch --nodelist=node03 --parsable wine_24cpu256.sh B "$i" "$1" "$2" "$3")
+    jid=$(sbatch --nodelist=node01 --parsable wine_24cpu256.sh B "$i" "$1" "$2" "$3")
     all_jobs+=($jid)
 done
 
 # Submit D jobs
 for i in {0..7}; do
-    jid=$(sbatch --nodelist=node05 --parsable wine_24cpu256.sh D "$i" "$1" "$2" "$3")
+    jid=$(sbatch --nodelist=node01 --parsable wine_24cpu256.sh D "$i" "$1" "$2" "$3")
     all_jobs+=($jid)
 done
 
 # Submit E jobs
 for i in {0..7}; do
-    jid=$(sbatch --nodelist=node06 --parsable wine_24cpu256.sh E "$i" "$1" "$2" "$3")
+    jid=$(sbatch --nodelist=node01 --parsable wine_24cpu256.sh E "$i" "$1" "$2" "$3")
     all_jobs+=($jid)
 done
 

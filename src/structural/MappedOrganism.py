@@ -267,8 +267,8 @@ class MappedPlantPython(MappedPlant):
                 print('rlt_winter',rlt_winter/1225)#, "pni",pni,"parent_id",parent_id,"types[i]",types[i])
                 param = pb.RootSpecificParameter(types[i], lb, length, ln_, r, a, theta, rlt, laterals, a_gr, rlt_winter)  ############## which subType
                 
-                if parent_id == 0:
-                    pni = 0 # the stem is upside-down, so need to update the pni
+                #if parent_id == 0:
+                #    pni = 0 # the stem is upside-down, so need to update the pni
                     
                 id = self.getOrganIndex()  # next index
                 organ = pb.StaticRoot(id, param, length, pni)
@@ -290,15 +290,19 @@ class MappedPlantPython(MappedPlant):
                 organ = self.static_organs[i]
                 if parent_id < 0: # stem organ
                     assert types[i] == 0
-                    seed.moveNode(n = pb.Vector3d(self.data.polylines[i][-1]), lId = 0)   
-                    organ.addNode( n= pb.Vector3d(self.data.polylines[i][-1]),id = 0, t=0.)
-                    for node in self.data.polylines[i][::-1][1:]: # reverse direction as stems go in the opposit direction
+                    seed.moveNode(n = pb.Vector3d(self.data.polylines[i][0]), lId = 0)
+                    organ.addNode( n= pb.Vector3d(self.data.polylines[i][0]),id = 0, t=0.)
+                    for node in self.data.polylines[i][1:]: # reverse direction as stems go in the opposit direction
                         organ.addNode(n = pb.Vector3d(node),t =  0.)
+                    #seed.moveNode(n = pb.Vector3d(self.data.polylines[i][-1]), lId = 0)   
+                    #organ.addNode( n= pb.Vector3d(self.data.polylines[i][-1]),id = 0, t=0.)
+                    #for node in self.data.polylines[i][::-1][1:]: # reverse direction as stems go in the opposit direction
+                    #    organ.addNode(n = pb.Vector3d(node),t =  0.)
                 else:
                     # print(i, "parent", parent_id, "pni", pni)
                     parent = self.static_organs[parent_id]
-                    if parent_id == 0:
-                        pni = 0 # the stem is upside-down, so need to update the pni
+                    #if parent_id == 0:
+                    #    pni = 0 # the stem is upside-down, so need to update the pni
                     organ.addNode(n = parent.getNode(pni), id = parent.getNodeId(pni), t = 0.)
                     # print(self.data.polylines[parent_id][pni])                  
                     for node in self.data.polylines[i]:
@@ -347,8 +351,8 @@ class MappedPlantPython(MappedPlant):
                 if types[parent_id] in initial_sub_types:
                     pni_init = self.data.properties["parent-node"][i] #+ 1 # why + 1?
                     #print("pni_init",pni_init)
-                    if parent_id == 0:
-                        pni_init = 0# + 1 # the stem is upside-down, so need to update the pni # why + 1?
+                    #if parent_id == 0:
+                    #    pni_init = 0# + 1 # the stem is upside-down, so need to update the pni # why + 1?
                     parent = self.static_organs[parent_id]
                     pr = parent.getOrganRandomParameter()
                     init_num_kids = parent.getNumberOfChildren()  

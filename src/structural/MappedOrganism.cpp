@@ -506,8 +506,12 @@ std::vector<double> MappedSegments::getSegmentZ() const {
  */
 std::vector<double> MappedSegments::matric2total(std::vector<double> sx) const {
     std::vector<double> b = this->getSegmentZ();
-    assert(sx.size() == b.size());
+    
+    if (sx.size() != b.size()) {
+        throw std::runtime_error("Size mismatch in matric2total");
+    }
     std::transform(sx.begin( ), sx.end( ), b.begin( ), sx.begin( ),std::plus<double>( ));
+    
     return sx;
 }
 
@@ -516,7 +520,9 @@ std::vector<double> MappedSegments::matric2total(std::vector<double> sx) const {
  */
 std::vector<double> MappedSegments::total2matric(std::vector<double> sx) const{
     std::vector<double> b = this->getSegmentZ();
-    assert(sx.size() == b.size());
+    if (sx.size() != b.size()) {
+        throw std::runtime_error("Size mismatch in total2matric");
+    }
     std::transform(sx.begin( ), sx.end( ), b.begin( ), sx.begin( ),std::minus<double>( ));
     return sx;
 }
@@ -778,7 +784,7 @@ void MappedPlant::simulate(double dt, bool verbose)
             radii.at(segIdx) = so->getRadius(local_segIdx);
             organTypes.at(segIdx) = so->organType();
             subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
-            lignStatus.at(segIdx) = so->lignificationStatus();
+            lignStatus.at(segIdx) = so->lignificationStatusPerSegment(local_segIdx);
             //this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment
 
             if (organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape

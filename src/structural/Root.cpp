@@ -93,6 +93,7 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
     return r;
 }
 
+    
 /**
  * Simulates the development of the organ in a time span of @param dt days.
  *
@@ -323,20 +324,46 @@ std::vector<double> Root::getRadii() // Y use this? could instead update dynamic
 }
 
 
-int Root::lignificationStatus() const 
+int Root::lignificationStatusPerSegment(int seg_indx) const 
 {
-    
-    int is_fine_root = getParameter("is_fine_root");
-    bool lignified = getParameter("lengthTh") >= getPlant()->getSeed()->getParameter("Lmax_unsuberized");
-    bool woody = (getParameter("lengthTh") >= getPlant()->getSeed()->getParameter("Lmax_suberized")&&(!is_fine_root));
-    
-	if(lignified)
+    if (seg_indx < getNumberOfSegments() - 1)
     {
-        return 1;
+        double init_length = getLength(seg_indx + 1);
+        double final_length = getParameter("lengthTh");
+        double diff_len = final_length - init_length;
+        return lignificationStatus(diff_len);
+    }else{
+        return 0;
     }
-    if(woody)
+}
+    
+std::vector<int> Root::lignificationStatusPerSegment() const 
+{
+    std::vector<int> lPerSeg(getNumberOfSegments());
+    for (int i = 0; i < getNumberOfSegments(); i ++)
+    {
+        lPerSeg.at(i) = lignificationStatusPerSegment(i);
+    }
+    return lPerSeg;
+}
+    
+int Root::lignificationStatus(double diff_len) const 
+{
+    if ( diff_len <0.)
+    {
+        diff_len = getParameter("lengthTh");
+    }
+    int is_fine_root = getParameter("is_fine_root");
+    bool suberized = diff_len >= getPlant()->getSeed()->getParameter("Lmax_unsuberized");
+    bool lignified = (diff_len >= getPlant()->getSeed()->getParameter("Lmax_suberized")&&(!is_fine_root));
+    
+    if(lignified)
     {
         return 2;
+    }
+	if(suberized)
+    {
+        return 1;
     }
     
 	return 0;
@@ -353,8 +380,8 @@ void Root::survivalTest()
 	if (isAlive() && (getAge() > 0.))
 	{
 		int is_fine_root = getParameter("is_fine_root");
-		bool not_lignified = getParameter("lengthTh") < getPlant()->getSeed()->getParameter("Lmax_unsuberized");
-		if(is_fine_root || not_lignified)
+		bool not_suberized = lignificationStatus() < 1;//getParameter("lengthTh") < getPlant()->getSeed()->getParameter("Lmax_unsuberized");
+		if(is_fine_root || not_suberized)
 		{
 			alive = false; // this root is dead
 			killChildren();

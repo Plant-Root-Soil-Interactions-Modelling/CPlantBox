@@ -43,6 +43,57 @@ def compaireOutPuts(genotype, extra_name):
         output = pickle.load(f)
         nums = [[[out['year'+str(year+1)]['num'][st] for year in range(50)] for st in range(subtypes)] for out in output]
     
+    RLDs = [[out['RLDs'][year] for out in output]  for year in range(50)]
+    RLDmean = []
+    RLDsd = []
+    for _, RLD_ in enumerate(RLDs):
+        RLDslen_ = []
+        maxlen = max([len(ss) for ss in RLD_])
+        for ss in RLD_:
+            ss_padded = np.pad(ss, (0, maxlen - len(ss)))
+            RLDslen_.append(ss_padded)
+        ss_mean = np.mean(RLDslen_, axis=0)
+        ss_sd = np.std(RLDslen_, axis=0)
+        RLDmean.append(ss_mean)
+        RLDsd.append(ss_sd)
+        
+    scaling = np.array([ 1,  2,  3,  5,  8, 13, 20, 32, 50]) - 1
+    
+    fig, ax = plt.subplots(1,1, figsize=(5,10))
+    for _ in scaling: #, RLD_ in enumerate(RLDmean):
+        #for year, RLD in enumerate(RLD_):
+        RLD_ = RLDmean[_]
+        if True:#(_+1)%5 == 0:
+            error = RLDsd[_]
+            ax.plot(RLD_, [-i for i in range(len(RLD_))],  label = 'year ' + str(_+1))
+            #ax.fill_betweenx( [-i for i in range(len(RLD_))], RLD_ - error, RLD_ + error,
+            #         color='blue', alpha=0.1)#, label = 'year ' + str(_+1))
+    ax.legend()
+    ax.grid() 
+    fig.suptitle('RLD', fontsize=16)
+    plt.tight_layout()
+    plt.savefig("./results/part1/"+genotype+"/RLD"+ extra_name +".jpg")
+    plt.close()
+    print("did RLD")
+    
+   
+    fig, ax = plt.subplots(1,1, figsize=(5,10))
+    for _ in scaling: #, RLD_ in enumerate(RLDmean):
+        #for year, RLD in enumerate(RLD_):
+        RLD_ = RLDmean[_]
+        if True:#(_+1)%5 == 0:
+            error = RLDsd[_]
+            ax.plot(RLD_/sum(RLD_), [-i for i in range(len(RLD_))],  label = 'year ' + str(_+1))
+            #ax.fill_betweenx( [-i for i in range(len(RLD_))], RLD_ - error, RLD_ + error,
+            #         color='blue', alpha=0.1)#, label = 'year ' + str(_+1))
+    ax.legend()
+    ax.grid() 
+    fig.suptitle('RLD fraction', fontsize=16)
+    plt.tight_layout()
+    plt.savefig("./results/part1/"+genotype+"/RLDfraction"+ extra_name +".jpg")
+    plt.close()
+    print("did RLD fraction")
+    
     SUFs = [[out['SUF'][year] for out in output]  for year in range(50)]
     SUFmean = []
     SUFsd = []
@@ -56,7 +107,7 @@ def compaireOutPuts(genotype, extra_name):
         ss_sd = np.std(SUFslen_, axis=0)
         SUFmean.append(ss_mean)
         SUFsd.append(ss_sd)
-    scaling = np.unique(np.logspace(np.log10(1), np.log10(50), num=10).astype(int)) 
+        
     fig, ax = plt.subplots(1,1, figsize=(5,10))
 
     for _ in scaling: #, SUF_ in enumerate(SUFmean):
@@ -74,6 +125,8 @@ def compaireOutPuts(genotype, extra_name):
     plt.savefig("./results/part1/"+genotype+"/SUF"+ extra_name +".jpg")
     plt.close()
     print("did SUF")
+    
+    
     
     fig, axs = plt.subplots(2, 2, figsize=(12, 8))
     for st_, ax in enumerate(axs.flat):
@@ -225,8 +278,11 @@ def compaireOutPuts(genotype, extra_name):
   
 
 if __name__ == "__main__":
-    extra_name = sys.argv[1]
 
+    extra_name = "defaultplant"
+    if len(sys.argv) > 1:
+        extra_name = sys.argv[1]
+        
     for genotype in ['B', 'D', 'E']:
         directory = "./results/part1/"+genotype
         os.makedirs(directory, exist_ok=True)
