@@ -111,18 +111,21 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
         if (selectedOrganType == -1) {
 			if (l < mdist) {
 				mdist = l;
-				distIndex = i;
+                distIndex = i;
+				// distIndex = segments_[i].y;
 			}
         } else {
         	if (excludeTreeId == -1) {
 				if ((l < mdist) && (selectedOrganType == organTypes_[i]))  {
 					mdist = l;
-					distIndex = i;
+                    distIndex = i;
+					// distIndex = segments_[i].y;
 				}
         	} else {
 				if ((l < mdist) && (selectedOrganType == organTypes_[i]) && (excludeTreeId != treeIds_.at(i)))  {
 					mdist = l;
-					distIndex = i;
+                    distIndex = i;
+					// distIndex = segments_[i].y;
                     if (segments_[i].x != segments_[i].y -1) {// TODO this is odd we are treating i later as if it is the global node index but it is not? I think segments_[i].x is the global node index of the first node in the segment?
                         std::cout<< "Segments not properly sequentially numbered!" << std::endl;
                         std::cout<< "x1: " << segments_[i].x << ", x2: " << segments_[i].y << std::endl;

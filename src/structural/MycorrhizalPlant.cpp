@@ -93,7 +93,9 @@ std::vector<Vector3d> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
         if(o->organType() == Organism::ot_hyphae) {
             auto h = std::dynamic_pointer_cast<Hyphae>(o);
             if (h->mergePointID != -1) {
-                anaPoints.push_back(h->mergedHyphae.lock()->getMergePoint(h->mergePointID));
+                std::cout << h ->getNode(h->getNumberOfNodes()-1).toString() << std::endl;
+                std::cout << "Anastomosis point: " << h->mergePointID << std::endl;
+                anaPoints.push_back((h->mergedHyphae.lock())->getMergePoint(h->mergePointID));
             }
         }
     }
@@ -102,7 +104,8 @@ std::vector<Vector3d> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
         auto h = std::dynamic_pointer_cast<Hyphae>(o);
             if (o->organType() == Organism::ot_hyphae) {
                 if (h->mergePointID != -1) {
-                    anaPoints.push_back(h->mergedHyphae.lock()->getMergePoint(h->mergePointID));
+                    std::cout << "Anastomosis point: " << h->mergePointID << std::endl;
+                    anaPoints.push_back((h->mergedHyphae.lock())->getMergePoint(h->mergePointID));
                 }
             }
     }
@@ -193,7 +196,7 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
 
                 //std::cout<< "OrganID: " << h->getId() << " SDF" << sdf->treeIds_.at(distID)<< std::endl;
                 h->setActive(false); // deactivate hyphae after anastomosis
-                std::dynamic_pointer_cast<Hyphae>(h)->setMergePointID(lastIndex+1); // set node ID where anastomosis happened
+                std::dynamic_pointer_cast<Hyphae>(h)->setMergePointID(lastIndex + 1); // set node ID where anastomosis happened
                 std::dynamic_pointer_cast<Hyphae>(h)->setMergedHyphae(connected_to_hyphae); // set merged hyphae
             }
         }
@@ -201,10 +204,6 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
     }
 
 };
-
-
-
-
 
 void MycorrhizalPlant::initCallbacks() {
 

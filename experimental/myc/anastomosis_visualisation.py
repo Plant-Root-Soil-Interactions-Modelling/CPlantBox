@@ -41,10 +41,9 @@ for i in range(1, N+1):
     print('step',i, '/',N)
     # print(hti)        
     mycp.simulate(dt, False)
-
 print(mycp.getAnastomosisPoints(5)[0])
-points = pb.SegmentPoints(mycp.getAnastomosisPoints(5))
 
+points = pb.SegmentPoints(mycp.getAnastomosisPoints(5))
 points.write("anastomosis_points.vtp", True)
 # ana = pb.SegmentAnalyser(mycp)
 # ana.addData("AnastomosisPoints", mycp.getAnastomosisPoints(5)) TODO Does not work bc addData does not support 3D Vectors
