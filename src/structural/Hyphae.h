@@ -25,6 +25,8 @@ public:
     void setHyphalTreeIndex(int index);
 
     void setMergedHyphae(std::weak_ptr<Hyphae> merged) { mergedHyphae = merged; } ///< sets the merged hyphae after anastomosis;
+    std::shared_ptr<Hyphae>  getMergedHyphae() { return mergedHyphae.lock(); }
+
     
     void setMergePointID(int id) { mergePointID = id; } ///< sets the node ID where the anastomosis happened
     

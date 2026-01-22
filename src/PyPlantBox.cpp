@@ -436,7 +436,8 @@ PYBIND11_MODULE(plantbox, m) {
             .value("root", Organism::OrganTypes::ot_root)
             .value("stem", Organism::OrganTypes::ot_stem)
             .value("leaf", Organism::OrganTypes::ot_leaf)
-            .export_values();
+			.value("hyphae", Organism::OrganTypes::ot_hyphae)
+			.export_values();
     /*
      * soil.h
      */
@@ -559,7 +560,8 @@ PYBIND11_MODULE(plantbox, m) {
            .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SignedDistanceFunction&) const) &SegmentAnalyser::cut)
            .def("addData", &SegmentAnalyser::addData)
            .def("write", &SegmentAnalyser::write, py::arg("name"), py::arg("types") = std::vector<std::string>({"radius", "subType", "creationTime", "organType"}))
-           .def_readwrite("nodes", &SegmentAnalyser::nodes)
+		   .def("getSharedSegO", &SegmentAnalyser::getSharedSegO)
+		   .def_readwrite("nodes", &SegmentAnalyser::nodes)
            .def_readwrite("segments", &SegmentAnalyser::segments)
            .def_readwrite("segO", &SegmentAnalyser::segO)
            .def_readwrite("data", &SegmentAnalyser::data);
@@ -857,6 +859,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("toString", &Hyphae::toString)
             .def("getHyphaeRandomParameter", &Hyphae::getHyphaeRandomParameter)
             .def("createLateral", &Hyphae::createLateral)
+			.def_readwrite("mergePointID", &Hyphae::mergePointID)
+			.def("getMergedHyphae", &Hyphae::getMergedHyphae)
             .def("param", &Hyphae::param);
     /**
      * Seed.h

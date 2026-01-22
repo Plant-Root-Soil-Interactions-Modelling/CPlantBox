@@ -49,7 +49,8 @@ public:
 
     int selectedOrganType = -1; // getDist will compare only to this organTypes, -1 for all
     int excludeTreeId = -1; // getDist will exclude this hyphal tree from the search (only if selectedOrganType >=0)
-    mutable int distIndex = -1; // last segment index of getDist call, -1 if
+    mutable int distIndex = -1; // last apical node index (s.y) of getDist call (connected to segment [s.x, s.y]) , -1 if
+    mutable std::weak_ptr<Organ> lastOrgan;
 
 protected:
 

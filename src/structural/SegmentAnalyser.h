@@ -89,6 +89,17 @@ public:
     std::vector<std::weak_ptr<Organ>> segO; ///< to look up things
     std::map<std::string, std::vector<double>> data; ///< user data attached to the segments (for vtp file), e.g. flux, pressure, etc.	
 
+    std::vector<std::shared_ptr<Organ>> getSharedSegO() const {
+        std::vector<std::shared_ptr<Organ>> result;
+        result.reserve(segO.size());
+
+        for (const auto& wptr : segO) {
+            result.push_back(wptr.lock()); // may be nullptr
+        }
+
+        return result;
+    }
+
 protected:
 
     void mapPeriodic_(double xx, Vector3d axis, double eps);
