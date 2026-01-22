@@ -28,7 +28,7 @@ class MycorrhizalPlant :public Plant {
 
     virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
     virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
-    virtual std::vector<Vector3d> getAnastomosisPoints(int ot) const; // returns Anastomosis Points
+    virtual std::vector<int> getAnastomosisPoints(int ot) const; // returns Anastomosis Points
 
     // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
     void initCallbacks() override;

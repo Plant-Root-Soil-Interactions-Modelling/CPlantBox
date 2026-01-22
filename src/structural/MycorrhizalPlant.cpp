@@ -86,16 +86,20 @@ std::vector<double> MycorrhizalPlant::getNodeInfectionTime(int ot) const {
     return infTime;
 }
 
-std::vector<Vector3d> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
+std::vector<int> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
     auto organs = this -> getOrgans(ot);
-    std::vector<Vector3d> anaPoints;
+    std::vector<int> anaPoints = std::vector<int>(getNumberOfNodes());
     for (const auto& o : baseOrgans) {
         if(o->organType() == Organism::ot_hyphae) {
             auto h = std::dynamic_pointer_cast<Hyphae>(o);
             if (h->mergePointID != -1) {
-                std::cout << h ->getNode(h->getNumberOfNodes()-1).toString() << std::endl;
-                std::cout << "Anastomosis point: " << h->mergePointID << std::endl;
-                anaPoints.push_back((h->mergedHyphae.lock())->getMergePoint(h->mergePointID));
+                // std::cout << h ->getNode(h->getNumberOfNodes()-1).toString() << std::endl;
+                // std::cout << "Anastomosis point: " << h->mergePointID << std::endl;
+                anaPoints.at(o->getNodeId(h->getNumberOfNodes()-1)) = 1;
+                std::cout << "Anastomosis at base organ" << std::endl;
+            }
+            else {
+                anaPoints.at(o->getNodeId(h->getNumberOfNodes()-1)) = 0;
             }
         }
     }
@@ -104,14 +108,37 @@ std::vector<Vector3d> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
         auto h = std::dynamic_pointer_cast<Hyphae>(o);
             if (o->organType() == Organism::ot_hyphae) {
                 if (h->mergePointID != -1) {
-                    std::cout << "Anastomosis point: " << h->mergePointID << std::endl;
-                    anaPoints.push_back((h->mergedHyphae.lock())->getMergePoint(h->mergePointID));
+                    anaPoints.at(o->getNodeId(h->getNumberOfNodes()-1)) = 1;
+                }
+                else {
+                    anaPoints.at(o->getNodeId(h->getNumberOfNodes()-1)) = 0;
                 }
             }
     }
-    if (anaPoints.size() == 0) {
-        throw std::runtime_error("No anastomosis points found!");
-    }
+    // std::vector<Vector3d> anaPoints;
+    // for (const auto& o : baseOrgans) {
+    //     if(o->organType() == Organism::ot_hyphae) {
+    //         auto h = std::dynamic_pointer_cast<Hyphae>(o);
+    //         if (h->mergePointID != -1) {
+    //             std::cout << h ->getNode(h->getNumberOfNodes()-1).toString() << std::endl;
+    //             std::cout << "Anastomosis point: " << h->mergePointID << std::endl;
+    //             anaPoints.push_back((h->mergedHyphae.lock())->getMergePoint(h->mergePointID));
+    //         }
+    //     }
+    // }
+
+    // for (const auto & o : organs) {
+    //     auto h = std::dynamic_pointer_cast<Hyphae>(o);
+    //         if (o->organType() == Organism::ot_hyphae) {
+    //             if (h->mergePointID != -1) {
+    //                 std::cout << "Anastomosis point: " << h->mergePointID << std::endl;
+    //                 anaPoints.push_back((h->mergedHyphae.lock())->getMergePoint(h->mergePointID));
+    //             }
+    //         }
+    // }
+    // if (anaPoints.size() == 0) {
+    //     throw std::runtime_error("No anastomosis points found!");
+    // }
     return anaPoints;
 }
 /**
