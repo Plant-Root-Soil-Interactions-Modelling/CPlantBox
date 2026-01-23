@@ -2,15 +2,9 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-<<<<<<< HEAD
-import visualisation.vtk_plot as vp
-from functional.xylem_flux import XylemFluxPython
-from functional.Leuning import Leuning
-=======
 import plantbox.visualisation.vtk_plot as vp
 from plantbox.functional.xylem_flux import XylemFluxPython
 from plantbox.functional.Leuning import Leuning
->>>>>>> origin/master
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator

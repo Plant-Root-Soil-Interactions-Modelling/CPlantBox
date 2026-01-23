@@ -10,21 +10,12 @@ sys.path.append("../../")
 sys.path.append("../../src/");
 sys.path.append("../../gui/viewer/");
 import plantbox as pb
-<<<<<<< HEAD
-from functional.xylem_flux import XylemFluxPython 
-import visualisation.vtk_plot as vp
-from viewer_data import ViewerDataModel
-from visualisation.vtk_tools import *
-import rsml.rsml_writer
-import rsml.rsml_reader as rsml
-=======
 from plantbox.functional.xylem_flux import XylemFluxPython 
 import plantbox.visualisation.vtk_plot as vp
 from viewer_data import ViewerDataModel
 from plantbox.visualisation.vtk_tools import *
 import plantbox.rsml.rsml_writer
 import plantbox.rsml.rsml_reader as rsml
->>>>>>> origin/master
 import numpy as np
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt

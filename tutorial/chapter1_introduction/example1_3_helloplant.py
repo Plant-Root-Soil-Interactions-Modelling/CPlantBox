@@ -1,14 +1,7 @@
-<<<<<<< HEAD
-import sys;sys.path.append("../..");sys.path.append("../../src/")  # |\label{l13:path}|
-
-import plantbox as pb  # |\label{l13:cplantbox}|
-import visualisation.vtk_plot as vp  # |\label{l13:vtk_plot}|
-=======
 """Small example"""
 
 import plantbox as pb  # |\label{l13:cplantbox}|
 import plantbox.visualisation.vtk_plot as vp  # |\label{l13:vtk_plot}|
->>>>>>> origin/master
 
 plant = pb.Plant()  # Create a new plant |\label{l13:plant}|
 
@@ -28,9 +21,5 @@ plant.write("results/example_plant.vtp")  # using polylines |\label{l13:write_po
 ana = pb.SegmentAnalyser(plant)
 ana.write("results/example_plant_segs.vtp")  # using segments |\label{l13:write_segs}|
 
-<<<<<<< HEAD
-# Interactive plot, using vtk, press x, y, z to change view, r to reset view, g to save png
-=======
 # Interactive plot, using vtk
->>>>>>> origin/master
 vp.plot_plant(plant, "age")  # e.g. organType, subType, age |\label{l13:plot_plant}|

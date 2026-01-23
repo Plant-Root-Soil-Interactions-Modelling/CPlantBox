@@ -1,17 +1,10 @@
 import sys; sys.path.append("../../..");  sys.path.append("../../../src")
 
 import plantbox as pb
-<<<<<<< HEAD
-from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
-import rsml.rsml_reader as rsml
-import visualisation.vtk_tools as vt
-import visualisation.vtk_plot as vp
-=======
 from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver
 import plantbox.rsml.rsml_reader as rsml
 import plantbox.visualisation.vtk_tools as vt
 import plantbox.visualisation.vtk_plot as vp
->>>>>>> origin/master
 
 import matplotlib.pyplot as plt
 import numpy as np

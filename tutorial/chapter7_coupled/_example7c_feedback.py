@@ -1,25 +1,3 @@
-<<<<<<< HEAD
-""" coupling with DuMux as solver for the soil part, dumux-rosi must be installed & compiled """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
-sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux python binding
-sys.path.append("../../../dumux-rosi/python/modules/")  # python wrappers
-
-import plantbox as pb
-import visualisation.vtk_plot as vp
-from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
-from functional.root_conductivities import *  # hard coded conductivities
-
-from rosi_richards import RichardsSP  # C++ part (Dumux binding)
-from richards import RichardsWrapper  # Python part
-
-import numpy as np
-import matplotlib.pyplot as plt
-import timeit
-
-
-class SoilNN(pb.SoilLookUp):
-
-=======
 """coupling with DuMux as solver for the soil part, dumux-rosi must be installed & compiled"""
 
 import timeit
@@ -36,7 +14,6 @@ from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 
 class SoilNN(pb.SoilLookUp):
->>>>>>> origin/master
     def __init__(self, soil):
         super(SoilNN, self).__init__()
         self.soil = soil
@@ -46,48 +23,27 @@ class SoilNN(pb.SoilLookUp):
 
 
 class SoilLinear(pb.SoilLookUp):
-<<<<<<< HEAD
-
-    def __init__(self, soil):
-        super(SoilLinear, self).__init__()
-        self.soil = soil
-        self.points = self.soil.getDofCoordinates() / 100.
-=======
     def __init__(self, soil):
         super(SoilLinear, self).__init__()
         self.soil = soil
         self.points = self.soil.getDofCoordinates() / 100.0
->>>>>>> origin/master
         self.update()
 
     def update(self):
         self.sol = self.soil.getSolution()
 
     def getValue(self, pos, organ):
-<<<<<<< HEAD
-        p = np.expand_dims(np.array(pos), axis = 0)  # make 1x3
-=======
         p = np.expand_dims(np.array(pos), axis=0)  # make 1x3
->>>>>>> origin/master
         return self.soil.interpolate_(p, self.points, self.sol)
 
 
 def sinusoidal(t):
-<<<<<<< HEAD
-    return np.sin(2. * np.pi * np.array(t) - 0.5 * np.pi) + 1.
-
-
-""" Parameters """
-min_b = [-4., -4., -25.]
-max_b = [4., 4., 0.]
-=======
     return np.sin(2.0 * np.pi * np.array(t) - 0.5 * np.pi) + 1.0
 
 
 """ Parameters """
 min_b = [-4.0, -4.0, -25.0]
 max_b = [4.0, 4.0, 0.0]
->>>>>>> origin/master
 cell_number = [8, 8, 25]  # [16, 16, 30]  # [32, 32, 60]
 periodic = False
 
@@ -102,11 +58,7 @@ wilting_point = -15000  # cm
 sim_time = 7  # [day] for task b
 rs_age = 3  # root system initial age
 age_dependent = False  # conductivities
-<<<<<<< HEAD
-dt = 120. / (24 * 3600)  # [days] Time step must be very small
-=======
 dt = 120.0 / (24 * 3600)  # [days] Time step must be very small
->>>>>>> origin/master
 
 """ Initialize macroscopic soil model """
 s = RichardsWrapper(RichardsSP())
@@ -131,35 +83,22 @@ r = XylemFluxPython(rs)
 init_conductivities(r, age_dependent)
 
 """ Coupling (map indices) """
-<<<<<<< HEAD
-picker = lambda x, y, z: s.pick([x, y, z])
-=======
 
 
 def picker(x, y, z):
     return s.pick([x, y, z])
 
 
->>>>>>> origin/master
 r.rs.setSoilGrid(picker)  # maps segments
 r.rs.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), True)
 
 # Manually set tropism to hydrotropism for the first ten root types
-<<<<<<< HEAD
-sigma = [0.4, 1., 1., 1., 1. ] * 2
-for p in rs.getRootRandomParameter():
-        p.dx = 0.25  # adjust resolution
-        p.tropismT = pb.TropismType.hydro
-        p.tropismN = 2  # strength of tropism
-        p.tropismS = sigma[p.subType - 1]
-=======
 sigma = [0.4, 1.0, 1.0, 1.0, 1.0] * 2
 for p in rs.getOrganRandomParameter():
     p.dx = 0.25  # adjust resolution
     p.tropismT = pb.TropismType.hydro
     p.tropismN = 2  # strength of tropism
     p.tropismS = sigma[p.subType - 1]
->>>>>>> origin/master
 
 soil = SoilNN(s)  # SoilLinear(s)
 rs.setSoil(soil)
@@ -175,16 +114,9 @@ start_time = timeit.default_timer()
 x_, y_ = [], []
 sx = s.getSolutionHead()  # inital condition, solverbase.py
 N = round(sim_time / dt)
-<<<<<<< HEAD
-t = 0.
-
-for i in range(0, N):
-
-=======
 t = 0.0
 
 for i in range(0, N):
->>>>>>> origin/master
     if isinstance(soil, SoilLinear):
         soil.update()  # for hydrotropism look up
     rs.simulate(dt)
@@ -199,38 +131,17 @@ for i in range(0, N):
     sx = s.getSolutionHead()  # richards.py
 
     min_sx, min_rx, max_sx, max_rx = np.min(sx), np.min(rx), np.max(sx), np.max(rx)
-<<<<<<< HEAD
-    n = round(float(i) / float(N) * 100.)
-    print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], [{:g}, {:g}] cm soil [{:g}, {:g}] cm root at {:g} days {:g}"
-            .format(min_sx, max_sx, min_rx, max_rx, s.simTime, rx[0]))
-    t += dt
-
-print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
-=======
     n = round(float(i) / float(N) * 100.0)
     print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], [{:g}, {:g}] cm soil [{:g}, {:g}] cm root at {:g} days {:g}".format(min_sx, max_sx, min_rx, max_rx, s.simTime, rx[0]))
     t += dt
 
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
->>>>>>> origin/master
 
 """ VTK visualisation """
 vp.plot_roots_and_soil(r.rs, "pressure head", rx, s, periodic, np.array(min_b), np.array(max_b), cell_number, name)
 
 """ transpiration over time """
 fig, ax1 = plt.subplots()
-<<<<<<< HEAD
-ax1.plot(x_, trans * sinusoidal(x_), 'k')  # potential transpiration
-ax1.plot(x_, -np.array(y_), 'g')  # actual transpiration (neumann)
-ax2 = ax1.twinx()
-ax2.plot(x_, np.cumsum(-np.array(y_) * dt), 'c--')  # cumulative transpiration (neumann)
-ax1.set_xlabel("Time [d]")
-ax1.set_ylabel("Transpiration $[cm^3 d^{-1}]$")
-ax1.legend(['Potential', 'Actual', 'Cumulative'], loc = 'upper left')
-np.savetxt(name, np.vstack((x_, -np.array(y_))), delimiter = ';')
-plt.show()
-
-=======
 ax1.plot(x_, trans * sinusoidal(x_), "k")  # potential transpiration
 ax1.plot(x_, -np.array(y_), "g")  # actual transpiration (neumann)
 ax2 = ax1.twinx()
@@ -240,4 +151,3 @@ ax1.set_ylabel("Transpiration $[cm^3 d^{-1}]$")
 ax1.legend(["Potential", "Actual", "Cumulative"], loc="upper left")
 np.savetxt(name, np.vstack((x_, -np.array(y_))), delimiter=";")
 plt.show()
->>>>>>> origin/master

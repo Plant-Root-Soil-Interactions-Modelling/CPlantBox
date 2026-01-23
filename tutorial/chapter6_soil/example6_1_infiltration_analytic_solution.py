@@ -4,22 +4,12 @@ from Vanderborght et al. (2005)
 
 D. Leitner, 2018
 """
-<<<<<<< HEAD
-import sys; sys.path.append("../modules"); sys.path.append("../../../CPlantBox");  sys.path.append("../../../CPlantBox/src")
-
-import functional.van_genuchten as vg
-
-import numpy as np
-from scipy import integrate
-import matplotlib.pyplot as plt
-=======
 
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import integrate
 
 import plantbox.functional.van_genuchten as vg
->>>>>>> origin/master
 
 sand = vg.Parameters([0.045, 0.43, 0.15, 3, 1000])
 loam = vg.Parameters([0.08, 0.43, 0.04, 1.6, 50])
@@ -29,26 +19,11 @@ fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
 ax = [ax1, ax2, ax3]
 
 for i, soil in enumerate([sand, loam, clay]):  # make three subplots
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/master
     if soil == sand:
         theta_sur = 0.2824
     else:
         theta_sur = soil.theta_S
 
-<<<<<<< HEAD
-    theta_i = vg.water_content(-400, soil);
-
-    K_sur = vg.hydraulic_conductivity(vg.pressure_head(theta_sur, soil), soil);
-    K_i = vg.hydraulic_conductivity(-400, soil)
-    psi = lambda theta: vg.pressure_head(theta, soil)
-    K = lambda psi: vg.hydraulic_conductivity(psi, soil)
-    Dw = lambda psi: K(psi) / (vg.specific_moisture_storage(psi, soil))
-
-    F = lambda theta: Dw(psi(theta)) / ((K_sur - K_i) * (theta - theta_i) - (K(psi(theta)) - K_i) * (theta_sur - theta_i))
-=======
     theta_i = vg.water_content(-400, soil)
 
     K_sur = vg.hydraulic_conductivity(vg.pressure_head(theta_sur, soil), soil)
@@ -65,18 +40,10 @@ for i, soil in enumerate([sand, loam, clay]):  # make three subplots
 
     def F(theta):
         return Dw(psi(theta)) / ((K_sur - K_i) * (theta - theta_i) - (K(psi(theta)) - K_i) * (theta_sur - theta_i))
->>>>>>> origin/master
 
     theta_a = (theta_sur + theta_i) / 2
 
     if soil == clay:  # todo: same same?
-<<<<<<< HEAD
-        theta_ = np.linspace (theta_i + 1e-3, theta_sur - 1e-3, 300)
-    else:
-        theta_ = np.linspace (theta_i + 1e-3, theta_sur - 1e-3, 300)
-
-    delta_eta = np.zeros(len(theta_),)
-=======
         theta_ = np.linspace(theta_i + 1e-3, theta_sur - 1e-3, 300)
     else:
         theta_ = np.linspace(theta_i + 1e-3, theta_sur - 1e-3, 300)
@@ -84,20 +51,13 @@ for i, soil in enumerate([sand, loam, clay]):  # make three subplots
     delta_eta = np.zeros(
         len(theta_),
     )
->>>>>>> origin/master
     for j in range(0, len(theta_)):
         ans, err = integrate.quad(F, theta_[j], theta_a)
         delta_eta[j] = ans
 
     delta_eta = delta_eta * (theta_sur - theta_i)
 
-<<<<<<< HEAD
-    tv = [ [0.1, 0.2, 0.3],
-         [0.2, 0.5, 1.0],
-         [0.1, 0.2, 0.5]]
-=======
     tv = [[0.1, 0.2, 0.3], [0.2, 0.5, 1.0], [0.1, 0.2, 0.5]]
->>>>>>> origin/master
 
     x_aa = [43, 41, 27.5]  # [42.14103, 35.21381052, 23.0052]; %50;  #  how to choose reference water content and its position ????
     x_a = x_aa[i]
@@ -109,24 +69,6 @@ for i, soil in enumerate([sand, loam, clay]):  # make three subplots
     eta = delta_eta + eta_a
 
     # finally, plot the thing
-<<<<<<< HEAD
-    lineStyle = ['b-', 'b-', 'b-']
-    for j in range(0, len(tv[0])):
-        t = tv[i][j]
-        x = eta + (K_sur - K_i) * t / (theta_sur - theta_i);
-        ax[i].plot(theta_, -x, lineStyle[i])
-
-    ax[i].set_xlabel(r'$\theta$ (cm$^3$ cm$^{-3}$)', fontsize=20)
-    ax[i].set_xlim(0, 0.5)
-
-ax1.set_ylabel('Depth (cm)',fontsize=20)
-ax1.set_ylim(-150, 0)
-ax2.set_ylim(-200, 0)
-ax3.set_ylim(-120, 0)
-ax1.tick_params(axis='both', which='major', labelsize=16)
-ax2.tick_params(axis='both', which='major', labelsize=16)
-ax3.tick_params(axis='both', which='major', labelsize=16)
-=======
     lineStyle = ["b-", "b-", "b-"]
     for j in range(0, len(tv[0])):
         t = tv[i][j]
@@ -143,7 +85,6 @@ ax3.set_ylim(-120, 0)
 ax1.tick_params(axis="both", which="major", labelsize=16)
 ax2.tick_params(axis="both", which="major", labelsize=16)
 ax3.tick_params(axis="both", which="major", labelsize=16)
->>>>>>> origin/master
 
 if __name__ == "__main__":
     plt.show()

@@ -6,11 +6,7 @@ TODO we could add how to create avi form png (e.g. on linux), and remove files a
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-<<<<<<< HEAD
-import visualisation.vtk_plot as vp
-=======
 import plantbox.visualisation.vtk_plot as vp
->>>>>>> origin/master
 
 import numpy as np
 
@@ -109,20 +105,11 @@ anim = vp.AnimateRoots(plant)
 anim.min = min_
 anim.max = max_
 anim.res = [1, 1, 1]
-<<<<<<< HEAD
-anim.file = "results/example_plant"
-anim.avi_name = "results/example_"
-=======
->>>>>>> origin/master
 anim.plant = True
 anim.start()
 
 for i in range(0, N):
 
     plant.simulate(dt, False)
-<<<<<<< HEAD
-    anim.root_name = "organType"
-=======
->>>>>>> origin/master
     anim.update()
 

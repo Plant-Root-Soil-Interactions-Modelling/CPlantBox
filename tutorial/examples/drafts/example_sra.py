@@ -13,17 +13,6 @@ for a growing root system
 """
 import plantbox as pb
 
-<<<<<<< HEAD
-from functional.PlantHydraulicParameters import PlantHydraulicParameters
-from functional.PlantHydraulicModel import PlantHydraulicModel
-from functional.PlantHydraulicModel import HydraulicModel_Doussan
-from functional.PlantHydraulicModel import HydraulicModel_Meunier
-from functional.Perirhizal import PerirhizalPython  # Steady rate helper
-from functional.root_conductivities import *  # hard coded conductivities
-import functional.van_genuchten as vg
-
-import visualisation.vtk_plot as vp
-=======
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 from plantbox.functional.PlantHydraulicModel import PlantHydraulicModel
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
@@ -33,7 +22,6 @@ from plantbox.functional.root_conductivities import *  # hard coded conductiviti
 import plantbox.functional.van_genuchten as vg
 
 import plantbox.visualisation.vtk_plot as vp
->>>>>>> origin/master
 
 from rosi_richards import RichardsSP  # RichardsSP  # C++ part (Dumux binding)
 from richards import RichardsWrapper  # Python part

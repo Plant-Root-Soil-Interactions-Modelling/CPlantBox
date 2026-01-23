@@ -2,15 +2,6 @@ import sys; sys.path.append("../../..");  sys.path.append("../../../src")
 
 import plantbox as pb
 
-<<<<<<< HEAD
-from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
-from functional.PlantHydraulicModel import HydraulicModel_Doussan
-from functional.PlantHydraulicModel import HydraulicModel_Meunier
-from functional.PlantHydraulicParameters import PlantHydraulicParameters
-from functional.Perirhizal import PerirhizalPython as Perirhizal
-
-import visualisation.vtk_plot as vp
-=======
 from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
@@ -18,7 +9,6 @@ from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameter
 from plantbox.functional.Perirhizal import PerirhizalPython as Perirhizal
 
 import plantbox.visualisation.vtk_plot as vp
->>>>>>> origin/master
 
 import matplotlib.pyplot as plt
 import numpy as np
