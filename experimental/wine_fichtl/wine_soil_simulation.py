@@ -74,7 +74,7 @@ def make_source(q_plant, area, ncell_soil):
 yr_to_BEDD = 1225 # BEDD/yr
 day_to_BEDD = yr_to_BEDD/365. # BEDD/day
 periodic = True
-trans = 2000 / day_to_BEDD  # cm3 /BEDD (sinusoidal) = mL/BEDD
+trans = 2000 # mL/day (sinusoidal)
 wilting_point = -15000  # cm
 loam = [0.1406, 0.4148, 0.04052, 1.32416, 38.43, -2.067]  
 sp = vg.Parameters(loam)  # needed for Perirhizal class
@@ -92,9 +92,9 @@ volumes = dz * area
 picker = lambda x, y, z: -int(z) 
 ####
 
-def do_soil_simulation(plant, hm, depth, suf, #plant_ordered
+def do_soil_simulation(plant, hm, hm_meunier, depth, suf, #plant_ordered
                        name_str, scenario, simSoil):
-    is_E0_50 = (scenario == 0) and (simSoil == 50)
+    is_E0_50 = False#(scenario == 0) and (simSoil == 50)
     if is_E0_50:
         from rosi_richards import RichardsSPnum as RichardsSP # C++ part (Dumux binding) RichardsSPnum as
     else:
@@ -112,9 +112,9 @@ def do_soil_simulation(plant, hm, depth, suf, #plant_ordered
     s.createGrid(min_b, max_b, cell_number, periodic)  # [cm]
     
     if scenario == 0:
-        initial =  -330  # cm # cf https://www.sciencedirect.com/science/article/pii/S0304380015002343#fig0010
+        initial =  -330  
     elif scenario == 1:
-        initial = -5000         
+        initial = -5000         # cm # cf https://www.sciencedirect.com/science/article/pii/S0304380015002343#fig0010
     else:
         raise Exception
         
@@ -177,6 +177,7 @@ def do_soil_simulation(plant, hm, depth, suf, #plant_ordered
     top_new = []
     torain = 0.
     verbose = False
+    first_error = True
     for i in range(0, N_soil): 
         start_time_ao = timeit.default_timer()
 
@@ -267,33 +268,7 @@ def do_soil_simulation(plant, hm, depth, suf, #plant_ordered
         else:
             s.setTopBC("noFlux")            
         torain -= (24.*dt_soil)
-        try:
-            s.solve(dt_soil)  # [day]
-        except:
-            print('np.flip( s.getSolutionHead())[:len(suf)]',np.flip( s.getSolutionHead())[:len(suf)])
-            fig, ax1 = plt.subplots()
-            ax1.plot(h_bs, depth_array, label="Soil water potential [cm]",color='g')  
-            ax1.set_xlabel("h_bs")
-            ax1.set_ylabel("Depth [cm]")
-            plt.savefig("./error1.jpg")
-            plt.close()
-            #plt.show()
-            fig, ax1 = plt.subplots()
-            if(np.nansum(q) != 0):
-                ax1.plot(q/np.nansum(q), depth_array,label = "RWU fraction [-]", linewidth=6 , color='k')  
-            ax1.plot(suf, depth_array, label = "SUF [-]",color='b')
-            ax2 = ax1.twiny()
-            ax2.plot(h_bs, depth_array, label="Soil water potential [cm]",color='g')  
-            ax2.plot(np.flip( s.getSolutionHead())[:len(suf)] , depth_array, label="Soil matric potential [cm]",color='r')  
-            ax1.set_xlabel("Fraction [-]")
-            ax1.set_ylabel("Depth [cm]")
-            plt.savefig("./error2.jpg")
-            plt.close()
-            print('getSolutionHead',s.getSolutionHead())
-            print('fluxes',fluxes)
-            print('h_bs',h_bs)
-            #plt.show()
-            raise Exception
+        s.solve(dt_soil)  # [day]
         
         topflux = s.getNeumann(top_ind)
         top_new.append(topflux)
@@ -315,7 +290,9 @@ def do_soil_simulation(plant, hm, depth, suf, #plant_ordered
         #print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l7xa:timing}|
         if verbose:
             print("qq",q)
-    
+    h_bs -= depth_array # total 2 matric
+    rx = hm.solve_again(dt_soil,  -trans * sinusoidal2(t_day, dt_soil), hm.get_hs(h_bs), cells = False)
+    #rx_meunier = hm_meunier.solve(dt_soil,  trans * sinusoidal2(t_day, dt_soil), hm.get_hs(h_bs), cells = False)
     '''
     """ Transpiration over time """
     fig, ax1 = plt.subplots()
@@ -328,12 +305,9 @@ def do_soil_simulation(plant, hm, depth, suf, #plant_ordered
     ax1.legend(['Potential', 'Actual', 'Cumulative'], loc = 'upper left')
     plt.show()
     
-
-    vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", hm.get_hs(h_bs), s, periodic, min_b, max_b, 
-                           cell_number, interactiveImage = False)  # VTK vizualisation
     
     '''
-    vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", hm.get_hs(h_bs), s, periodic, min_b, max_b, 
+    vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head",rx, s, periodic, min_b, max_b, 
                            cell_number, filename = name_str, interactiveImage = False, dorender = False)  # VTK vizualisation
     
     plant_soil = {
@@ -553,8 +527,8 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, simSoil = 50, extraName = 
                 pp.successorNo = [int(no_thin/ratioChange)]
                 
             if (ii <= 5):   
-                pp.a = 0.93/2
-                pp.a_gr = 0.83/2/yr_to_BEDD
+                pp.a = 0.093/2
+                pp.a_gr = 0.083/2/yr_to_BEDD
                 
                 
             else: # fine roots
@@ -611,7 +585,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, simSoil = 50, extraName = 
         param.set_kr_suberize_dependent(kr)          
         param.set_kx_radius_dependent([Kax_a[genotype],Kax_b[genotype]])
         hm = HydraulicModel_Doussan(plant, param) #HydraulicModel_Meunier(plant, param) # _large
-        #hm_meunier = HydraulicModel_Meunier(plant, param)
+        hm_meunier = HydraulicModel_Meunier(plant, param)
         hm.doBiCGSTAB = doBiCGSTAB
         #hm_meunier.doBiCGSTAB = doBiCGSTAB
         #peri = Perirhizal(plant)
@@ -735,7 +709,7 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, simSoil = 50, extraName = 
             t0 = tic()
             if (( i + 1 ) == simSoil): 
                 name_str = "part1/vtp/" + extraName + '/' + genotype + '_soil_' + str(scenario) + "_"  + str(i+1) #'outputSim/'+extraName+'/'+ genotype + str(rep) +'_soil' + str(i + 1) 
-                soil_simulation = do_soil_simulation(plant, hm, minZ, suf1d, #np.flip(), #flip suf, as the plant picker is ordered opposit to the soil picker
+                soil_simulation = do_soil_simulation(plant, hm, hm_meunier,minZ, suf1d, #np.flip(), #flip suf, as the plant picker is ordered opposit to the soil picker
                                                      name_str, scenario, simSoil)
                 print('/results/outputSim/'+extraName+'/'+ genotype + str(rep) + '_soil_' + str(scenario) + "_"  + str(i + 1) +'.pkl')
                 with open(CPlantBox_dir + '/experimental/wine_fichtl/results/outputSim/'+extraName+'/'+ genotype + str(rep) + '_soil_' + str(scenario) + "_"  + str(i + 1) +'.pkl','wb') as f:
@@ -850,51 +824,50 @@ if __name__ == '__main__':
         simSoil = 50
     scaling = np.array([ 1,  2,  3,  5,  8, 13, 20, 32, 50]) # 9
     
-    if True:#simSoil in scaling:
-        scenario = 0
-        if len(sys.argv) > 4:
-            scenario = int(sys.argv[4])
+    scenario = 0
+    if len(sys.argv) > 4:
+        scenario = int(sys.argv[4])
 
-        extraName = "defaultsoil"
-        if len(sys.argv) > 5:
-            extraName = sys.argv[5]
+    extraName = "defaultsoil"
+    if len(sys.argv) > 5:
+        extraName = sys.argv[5]
 
 
-        print('sys.argv',sys.argv, genotype, rep, simSoil,scenario, extraName, flush = True)
+    print('sys.argv',sys.argv, genotype, rep, simSoil,scenario, extraName, flush = True)
 
-        if ((simSoil == 50) and (scenario == 0)):   
-            directory ='./results/outputSim/'+extraName
-            os.makedirs(directory, exist_ok=True)
-            directory ='./results/part1/vtp/'+extraName
-            os.makedirs(directory, exist_ok=True)
+    if ((simSoil == 50) and (scenario == 0)):   
+        directory ='./results/outputSim/'+extraName
+        os.makedirs(directory, exist_ok=True)
+        directory ='./results/part1/vtp/'+extraName
+        os.makedirs(directory, exist_ok=True)
 
-            with open(CPlantBox_dir + '/experimental/wine_fichtl/results/objectiveData/measurements'+ genotype +'InitXX.pkl','rb') as f:
-                xx = pickle.load(f)
-        else:
-            xx = None 
+        with open(CPlantBox_dir + '/experimental/wine_fichtl/results/objectiveData/measurements'+ genotype +'InitXX.pkl','rb') as f:
+            xx = pickle.load(f)
+    else:
+        xx = None 
 
-        doProfile = False
-        if doProfile:
-            import cProfile
-            import pstats, io
-            pr = cProfile.Profile()
-            pr.enable()
+    doProfile = False
+    if doProfile:
+        import cProfile
+        import pstats, io
+        pr = cProfile.Profile()
+        pr.enable()
 
-        output = run_benchmark(xx, genotype, rep, simSoil, extraName,scenario)
-        if doProfile:
-            pr.disable()
-            filename = './results/profile'+str(rank)+'.prof' 
-            s = io.StringIO()
-            ps = pstats.Stats(pr, stream=s).sort_stats('tottime')
-            ps.dump_stats(filename)
+    output = run_benchmark(xx, genotype, rep, simSoil, extraName,scenario)
+    if doProfile:
+        pr.disable()
+        filename = './results/profile'+str(rank)+'.prof' 
+        s = io.StringIO()
+        ps = pstats.Stats(pr, stream=s).sort_stats('tottime')
+        ps.dump_stats(filename)
 
-        saveall = False #((simSoil == 50) and (scenario == 0))
-        if False :#((simSoil == 50) and (scenario == 0)):     
-            with open(CPlantBox_dir + '/experimental/wine_fichtl/results/outputSim/'+extraName+'/'+ genotype + str(rep) +'.pkl','wb') as f:
-                 pickle.dump(output,f, protocol=pickle.HIGHEST_PROTOCOL)
+    saveall = ((simSoil == 50) and (scenario == 0))
+    if ((simSoil == 50) and (scenario == 0)):     
+        with open(CPlantBox_dir + '/experimental/wine_fichtl/results/outputSim/'+extraName+'/'+ genotype + str(rep) +'.pkl','wb') as f:
+             pickle.dump(output,f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        #comm.Barrier()
-        #if rank == 0:
-        #    import gatherAndPlotOutputs
-        #    gatherAndPlotOutputs.plot_all()
-    
+    #comm.Barrier()
+    #if rank == 0:
+    #    import gatherAndPlotOutputs
+    #    gatherAndPlotOutputs.plot_all()
+

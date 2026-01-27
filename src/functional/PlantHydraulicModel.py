@@ -738,7 +738,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         b = self.Kr.dot(rsx_)
         b[self.ci] += self.kx0 * collar
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
-        self.psiXyl = np.append(collar_pot, rx)
+        self.psiXyl = np.append(collar, rx)
         return self.psiXyl
 
     # def get_transpiration(self, sim_time, rx, rsx, cells = False):

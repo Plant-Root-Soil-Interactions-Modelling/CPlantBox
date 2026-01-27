@@ -253,8 +253,8 @@ def run_benchmark(xx, genotype = 'B', rep_input = -1, doProfile = False, doBiCGS
                 pp.successorNo = [int(no_thin/ratioChange)]
                 
             if (ii <= 5):   
-                pp.a = 0.93/2
-                pp.a_gr = 0.83/2/yr_to_BEDD
+                pp.a = 0.093/2
+                pp.a_gr = 0.083/2/yr_to_BEDD
                 
                 
             else: # fine roots
@@ -518,14 +518,10 @@ if __name__ == '__main__':
     extraName = "defaultplant"
     if len(sys.argv) > 3:
         extraName = sys.argv[3]
-    if len(sys.argv) > 4:
-        doProfile = int(sys.argv[4])
-    else:
-        doProfile = False
-    if len(sys.argv) > 5:
-        doBiCGSTAB = int(sys.argv[5])
-    else:
-        doBiCGSTAB = False
+    
+    doProfile = False
+    doBiCGSTAB = False
+    
     print('sys.argv',sys.argv)
     if rep == 0:
         directory ='./results/outputSim/'+extraName
