@@ -1,7 +1,7 @@
 import plantbox as pb
 from plantbox.visualisation.vtk_tools import *
 
-import time
+import os
 import numpy as np
 import vtk
 from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank(); max_rank = comm.Get_size()
@@ -866,7 +866,10 @@ def write_plant(filename, plant, add_params = []):
     pd_leafs = vtk.vtkPolyData()
     pd_leafs.SetPoints(leaf_points)
     pd_leafs.SetPolys(leaf_polys)
-    write_vtp(filename + "_leafs.vtp", pd_leafs)
+
+    dirname = os.path.dirname(filename)  # Gets the directory part
+    filename = os.path.basename(filename)  # Gets the filename part
+    write_vtp(dirname+"/leaf_"+filename + ".vtp", pd_leafs)
 
 
 def plot_roots_and_soil_files(filename: str, pname_mesh:str, pname:str, path = "results/", interactiveImage = True):
