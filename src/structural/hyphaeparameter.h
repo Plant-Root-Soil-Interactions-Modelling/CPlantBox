@@ -70,6 +70,7 @@ public:
     double thetas=0./180.*M_PI;         ///< standard deviation of branching angle  [rad]
     // double distTT = 0.; ///< distance for tip tip anastomosis [cm] 
     double distTH = 0.; ///< distance for tip hyphae anastomosis [cm]
+    double ana= 1.0; ///< Probability of anastomosis occuring if tip is close enough
 
     int tropismT = 2;       ///< Root tropism parameter (Type)
     double tropismN = 1.;   ///< Root tropism parameter (number of trials)

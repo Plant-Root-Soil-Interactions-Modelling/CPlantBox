@@ -212,7 +212,7 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
             dist = sdf->getDist(tip);
 
             // std::cout<<"Distance to nearest hyphae from tip " << tip.toString() << " is " << dist << " cm." << std::endl;
-            if (fabs(dist) < h->getParameter("distTH")) 
+            if (fabs(dist) < h->getParameter("distTH") && rand() < h->getParameter("ana")) 
             {
                 auto lastIndex = sdf->distIndex; 
                 // std::cout<< "Anastomosis occurred at distance: " << dist << " cm.\n";
