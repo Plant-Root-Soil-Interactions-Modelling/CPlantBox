@@ -64,7 +64,7 @@ Open Windows PowerShell and choose a workspace. Example:
     mkdir CPlantBox-windows
     cd CPlantBox-windows
 
-    git clone https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox
+    git clone -b feature/windows-build-no-piafmunch https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox
     git clone https://github.com/microsoft/vcpkg
 
 
@@ -169,4 +169,5 @@ NOTES
   dont need to install Visual C++ Redistributable separately.
 * PhloemFlux / PiafMunch is disabled by default. Enabling it requires a legacy
   SUNDIALS/KLU build (not included here, this is very very painful to do with vcpkg).
+
 
