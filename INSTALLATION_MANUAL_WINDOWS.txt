@@ -99,6 +99,7 @@ STEP 3: BUILD CPlantBox
 
     cd ../CPlantBox
 	mkdir build
+	cd build
 
 2. Configure the project with CMake. Replace the toolchain path if your vcpkg
    is located elsewhere:
@@ -118,6 +119,8 @@ STEP 3: BUILD CPlantBox
 
 	Alternatively for linux if Ninja is not available or not desired:
 	cmake -S .. -B . -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux
+
+	If needed change the version of the required Eiugen library, to fit the one you have on your computer: open the file src/CMakeLists.txt and update line 7
 
 3. Build the Release configuration:
 
@@ -169,5 +172,6 @@ NOTES
   dont need to install Visual C++ Redistributable separately.
 * PhloemFlux / PiafMunch is disabled by default. Enabling it requires a legacy
   SUNDIALS/KLU build (not included here, this is very very painful to do with vcpkg).
+
 
 
