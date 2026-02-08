@@ -21,12 +21,12 @@ app.layout = dbc.Container([
     dcc.Store(id = 'seed-store', data = {"scenarios": ['baseline','lateDry'],"variable":'psiXyl', "pSets": [44] }),
     dcc.Store(id = 'root-store', data = {"time": 22,"variable_plant0":'psiXyl', "scenarios0": 'baseline', "pSets0": 44,"soil0":0,"rsi0":-1,
                                             "variable_plant1":'psiXyl', "scenarios1": 'lateDry', "pSets1": 44,"soil1":0,"rsi1":-1}),
-    dcc.Store(id = 'stem-store', data = {"time": 12,"variable0":1, "variableC0":6, "scenarios0": 'baseline', "pSets0": 5,"doLog0":[1],#"doLogC0":[],
+    dcc.Store(id = 'stem-store', data = {"time": 22,"variable0":1, "variableC0":6, "scenarios0": 'baseline', "pSets0": 5,"doLog0":[1],#"doLogC0":[],
                                             "LimC0":[],"LimV0":[0,1],
                                             "variable1":1, "variableC1":6,  "scenarios1": 'lateDry', "pSets1": 5,"doLog1": [1],#"doLogC1": [],
                                             "LimC1":[],"LimV1":[0,1]}),
     dcc.Store(id = 'typename-store', data = {f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),
-    dcc.Store(id = 'create-button', data = {'value':0}),
+    #dcc.Store(id = 'create-button', data = {'value':0}),
     dcc.Store(id = 'result-store', data = {}),
 
     dbc.Row([
@@ -130,7 +130,7 @@ def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data):
                 html.H5("Simulation time [day]", style={"paddingBottom":"0px", "paddingTop":"20px"}),
                 dcc.Slider(
                     id='time-slider-1d',
-                    min=10.013889, max=25, step=0.013889, value=12,
+                    min=10.013889, max=25, step=0.013889, value=22,
                     marks={10.013889: "10", 25: "25"},
                     tooltip={"always_visible": False}
                 ),
@@ -522,4 +522,4 @@ def render_result_tab(n_clicks,tab,rootdata,seeddata, stemdata):# scenarios, pSe
 
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = False)
