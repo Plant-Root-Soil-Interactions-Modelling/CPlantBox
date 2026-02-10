@@ -1,5 +1,3 @@
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
-
 from vtk.util import numpy_support
 import numpy as np
 
@@ -211,9 +209,9 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     tube = apply_tube_filter(pd)  # polydata + tube filter
     vtk_data = vtk_polydata_to_dashvtk_dict(tube) # addd "points" and "polys"
 
-    from pympler import asizeof
-    print("***********************************************************************************************************************************")
-    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+    # from pympler import asizeof
+    # print("***********************************************************************************************************************************")
+    # print(asizeof.asizeof(vtk_data) / 1e6, "MB")
 
     cellData = pd.GetCellData()
     cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
@@ -222,8 +220,8 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
         vtk_data[f"rld{i}"] = encode_array(rld_[i] / length)
         vtk_data[f"z{i}"] = encode_array(z_[i])
 
-    print("***********************************************************************************************************************************")
-    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+    # print("***********************************************************************************************************************************")
+    # print(asizeof.asizeof(vtk_data) / 1e6, "MB")
 
     # vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
     organType = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))  #
@@ -249,8 +247,8 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     vtk_data["number_r"] = number_r
     vtk_data["number_s"] = number_s
 
-    print("***********************************************************************************************************************************")
-    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+    # print("***********************************************************************************************************************************")
+    # print(asizeof.asizeof(vtk_data) / 1e6, "MB")
 
     return vtk_data
 

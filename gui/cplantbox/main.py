@@ -1,8 +1,8 @@
 """ CPlantBox Webapp (using Python dash), D. Leitner 2025 """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
-
 import numpy as np
 import vtk
+import webbrowser
+from threading import Timer
 
 import dash
 from dash import html, dcc, Input, Output, State, ctx
@@ -10,6 +10,9 @@ import dash_bootstrap_components as dbc
 
 from conversions import *  # auxiliary stuff
 from plots import *  # figures
+
+def open_browser():
+    webbrowser.open_new("http://127.0.0.1:8050")
 
 """ INITIALIZE """
 app = dash.Dash(__name__, suppress_callback_exceptions = True, external_stylesheets = [dbc.themes.SANDSTONE])  # SANDSTONE, MINTY, MORPH
@@ -602,10 +605,10 @@ def update_leaf_store(slider_values, store_data):
 )
 def render_result_tab(tab, vtk_data, typename_data):
     print("render_result_tab()", tab)
-    from pympler import asizeof
-    print("***********************************************************************************************************************************")
-    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
-    print("***********************************************************************************************************************************")
+    # from pympler import asizeof
+    # print("***********************************************************************************************************************************")
+    # print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+    # print("***********************************************************************************************************************************")
     if not vtk_data:
         print("no data")
         return html.Div([html.H6("press the create button")])
@@ -626,4 +629,5 @@ def render_result_tab(tab, vtk_data, typename_data):
 
 
 if __name__ == '__main__':
+    Timer(1, open_browser).start()
     app.run(debug = True)
