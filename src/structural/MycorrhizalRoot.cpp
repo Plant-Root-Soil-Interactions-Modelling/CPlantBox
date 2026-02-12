@@ -57,7 +57,6 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
         infectionTime.push_back(-1);
     }
     else {
-        //Organ::addNode(n, id,  t,  index, shift);
 		nodes.insert(nodes.begin() + index-1, n);//add the node at index
 		nodeIds.push_back(id);
 		nodeCTs.insert(nodeCTs.begin() + index-1, t);
@@ -92,6 +91,8 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 void MycorrhizalRoot::primaryInfection(double dt, bool silence){
     double lmbd;
     double highres = getRootRandomParameter()->highresolution;
+
+    // Determine the appropriate colonization rate for each node based on soil properties and age  
     for (size_t i = 1; i < nodes.size(); i++){
         if (getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()) != 1.)
         {
@@ -103,6 +104,9 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         }
         if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {lmbd = 0;}//account for minimal age in rate
         lmbd = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * lmbd; // account for maximal age in rate
+        
+        // Determine the probability for colonization of the current node and infect if successful
+        // Also refine the root if the segment is too long and a new node is inserted, which inherits the infection status based on parent node
         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
         if (infected.at(i) == 0 && plant.lock()->rand() < lmbd*cursegLength*dt)
         {
