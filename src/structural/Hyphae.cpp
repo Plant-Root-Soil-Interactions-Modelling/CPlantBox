@@ -97,6 +97,8 @@ std::shared_ptr<Organ> Hyphae::copy(std::shared_ptr<Organism> rs)
 void Hyphae::simulate(double dt, bool verbose)
 {
 
+// TODO BAS dichotomous branching?
+// TODO runner hyphae lateral branching?
 //    firstCall = true;
 //    moved = false;
     oldNumberOfNodes = nodes.size();
