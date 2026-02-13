@@ -11,7 +11,7 @@ name = "TomatoJohanna_WildType"
 
 # name = "Heliantus_Pagès_2013"
 
-animation = False
+animation = True
 local = False
 infbox = pb.SDF_PlantBox(4, 4, 4)
 # infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
@@ -31,7 +31,7 @@ mycp.setOrganRandomParameter(hyphae_parameter)
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
     rp.hyphalEmergenceDensity = 1
-    rp.highresolution = 0
+    rp.highresolution = 1
     if local:
         rp.f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
     rp.dx = 0.2
@@ -41,7 +41,7 @@ mycp.initialize(True)
 # print(mycp.toString())
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-simtime = 10
+simtime = 20
 fps = 2
 anim_time = simtime
 N = fps * anim_time
@@ -62,7 +62,7 @@ if animation:
         ana = pb.SegmentAnalyser(mycp)
         ana.addData("infection", mycp.getNodeInfections(2))
         ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
-        ana.write(filename + "{:04d}".format(i) + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
+        ana.write("results/" +filename + "{:04d}".format(i) + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
         print("Frame " + str(i) + " of " + str(N))
 
 else:
