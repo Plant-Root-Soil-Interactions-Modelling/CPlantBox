@@ -17,13 +17,16 @@ h6, .checkbox-label { /* panel font */
 }
 
 .spacer { /* vertical space between panel 1 elements */
-    height: 20px; 
+    height: 10px; 
 }
 
 .largeSpacer { /* vertical margin for panel 3, e.g. h5 + margins + something */
     height: 70px; 
 }
 
+.smallSpacer { /* vertical margin for panel 3, e.g. h5 + margins + something */
+    height: 5px; 
+}
   
 .customDropdown {    
     font-size: 12px !important;

@@ -8,6 +8,10 @@ scipy
 vtk
 pylint
 pyevtk
+dash
+dash_vtk
+dash_bootstrap_components
+pympler
 
 # other requirements:
 # default-jre

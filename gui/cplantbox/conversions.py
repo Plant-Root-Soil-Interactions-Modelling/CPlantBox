@@ -22,8 +22,6 @@ def get_parameter_names():  # parameter xml file names
         ]
     return parameter_names
 
-# Felix Maximilian Bauer, Dirk Norbert Baker, Mona Giraud, Juan Carlos Baca Cabrera, Jan Vanderborght, Guillaume Lobet, Andrea Schnepf, Root system architecture reorganization under decreasing soil phosphorus lowers root system conductance of Zea mays, Annals of Botany, 2024;, mcae198, https://doi.org/10.1093/aob/mcae198
-
 
 def get_seed_slider_names():  # see set_data, apply_sliders
     """ return slider names as keys of dict and bounds as values"""
@@ -153,7 +151,7 @@ def fix_dx(rrp, strp, lrp):
         r.rotBeta = 0.5
 
 
-def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_data):
+def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_data, random_seed):
     """ simulates the plant xml parameter set with slider values """
     print("simulate_plant()")
     # 1. open base xml
@@ -179,11 +177,13 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     print("delayRC", srp[0].delayRC)
     print("nC", srp[0].nC)
     # 3. simulate
-    N = 25
+    N = time_slider  # makes dt = 1
     t_ = np.linspace(0., time_slider, N + 1)
+    print(t_)
     root_length = np.zeros((number_r, N))
     stem_length = np.zeros((number_s, N))
     leaf_length = np.zeros((N,))
+    plant.setSeed(random_seed)
     plant.initialize()
     rld_, z_ = [], []
     for i, dt in enumerate(np.diff(t_)):
@@ -207,7 +207,7 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     # 5. make results store compatible (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
     pd = vp.segs_to_polydata(plant, 1., ["subType", "organType", "radius", "creationTime"])  # poly-data, "radius",
     tube = apply_tube_filter(pd)  # polydata + tube filter
-    vtk_data = vtk_polydata_to_dashvtk_dict(tube) # addd "points" and "polys"
+    vtk_data = vtk_polydata_to_dashvtk_dict(tube)  # addd "points" and "polys"
 
     # from pympler import asizeof
     # print("***********************************************************************************************************************************")

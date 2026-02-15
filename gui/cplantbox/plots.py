@@ -13,7 +13,25 @@ import dash_vtk
 from vtk_conversions import *
 
 
-def vtk3D_plot(vtk_data, color_pick, type_):
+def vtk_camera_preset(vtk_data, distance_scale = 1.5):
+    """Compute a deterministic camera setup so rotation can be reset as well."""
+    points = decode_array(vtk_data["points"]).reshape(-1, 3)
+    if points.size == 0:
+        center = np.zeros(3)
+        radius = 1.0
+    else:
+        center = points.mean(axis = 0)
+        radius = np.linalg.norm(points - center, axis = 1).max()
+        if radius <= 0:
+            radius = 1.0
+    distance = distance_scale * radius
+    return {
+        "cameraPosition": (center + np.array([-distance, -distance, distance])).tolist(),
+        "cameraViewUp": [0, 0, 1],
+    }
+
+
+def vtk3D_plot(vtk_data, color_pick, type_, reset_camera_token, reset_camera):
 
     """ 3D and 3D age plot """
     color_range = [np.min(color_pick), np.max(color_pick)]  # set range from min to max
@@ -55,7 +73,12 @@ def vtk3D_plot(vtk_data, color_pick, type_):
             "opacity": 0.85
         }
     )
-    content = dash_vtk.View(children = [ geom_rep, leaf_rep ])
+
+    if reset_camera:
+        camera_props = vtk_camera_preset(vtk_data)
+        content = dash_vtk.View(children = [geom_rep, leaf_rep], triggerResetCamera = reset_camera_token, **camera_props)
+    else:
+        content = dash_vtk.View(children = [geom_rep, leaf_rep])
 
     if type_ == "Age":
         label_ = "Age [day]"

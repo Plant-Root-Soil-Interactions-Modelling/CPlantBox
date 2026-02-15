@@ -1,6 +1,7 @@
 """ CPlantBox Webapp (using Python dash), D. Leitner 2025 """
 import numpy as np
 import vtk
+from pympler import asizeof
 import webbrowser
 from threading import Timer
 
@@ -11,10 +12,14 @@ import dash_bootstrap_components as dbc
 from conversions import *  # auxiliary stuff
 from plots import *  # figures
 
+
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050")
 
-""" INITIALIZE """
+
+# 
+# INITIALIZE
+#
 app = dash.Dash(__name__, suppress_callback_exceptions = True, external_stylesheets = [dbc.themes.SANDSTONE])  # SANDSTONE, MINTY, MORPH
 app.title = "CPlantbox Dash App"
 
@@ -31,15 +36,18 @@ ROOT_SLIDER_INITIALS = [100, 3, 45, 1, 1, 7, 0.1, 1, 0.2, "Gravitropism"]
 STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180., 1, 0.2, "Gravitropism"]
 LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45., 2., 90, 1., 0.2, "Gravitropism"]
 
-""" LAYOUT """
+# 
+# LAYOUT
+#
 app.layout = dbc.Container([
 
     dcc.Store(id = 'seed-store', data = {"seed": SEED_SLIDER_INITIALS, "basal-checkbox": False, "shoot-checkbox": False, "tillers-checkbox": False }),
     dcc.Store(id = 'root-store', data = {f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)}),
     dcc.Store(id = 'stem-store', data = {f"tab-{i}": STEM_SLIDER_INITIALS for i in range(1, 5)}),
     dcc.Store(id = 'leaf-store', data = {"leaf": LEAF_SLIDER_INITIALS}),
-    dcc.Store(id = 'typename-store', data = {f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),
+    dcc.Store(id = 'typename-store', data = {f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),  # root sub type names
     dcc.Store(id = 'result-store', data = {}),
+    dcc.Store(id = 'settings-store', data = {"token": 0, "reset": True, "random_seed": 0}),
 
     dbc.Row([
         # Panel 1
@@ -57,7 +65,17 @@ app.layout = dbc.Container([
                        marks = {1: "1", 45: "45"},
                        tooltip = { "always_visible": False}),
             html.Div(className = "spacer"),
-            dbc.Button("Create", id = "create-button"),
+            html.Div(
+                [
+                    dbc.Button("Create", id = "create-button"),
+                    dbc.Button("Update", id = "update-button"),
+                ],
+                style = {
+                    "display": "flex",
+                    "gap": "5px",  # horizontal space between buttons
+                    "alignItems": "center",
+                }
+            ),
             html.Div(className = "largeSpacer"),
             dcc.Loading(id = "loading-spinner",
                         type = "circle",  # Options: "default", "circle", "dot", "cube"
@@ -115,9 +133,9 @@ app.layout = dbc.Container([
 
 ], fluid = True)
 
-""" 1. LEFT - Simulation Panel """
-
-
+#
+# 1. LEFT - Simulation Panel
+#
 @app.callback(# plant-dropdown
     Output('seed-store', 'data'),  # , allow_duplicate=True
     Output('root-store', 'data'),
@@ -143,8 +161,9 @@ def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typena
 
 @app.callback(# create-button
     Output('result-tabs-content', 'children', allow_duplicate = True),
-    Output('result-store', 'data'),
-    Output('loading-spinner-output', 'children'),
+    Output('result-store', 'data', allow_duplicate = True),
+    Output('settings-store', 'data', allow_duplicate = True),
+    Output('loading-spinner-output', 'children', allow_duplicate = True),
     Input('create-button', 'n_clicks'),
     State('plant-dropdown', 'value'),
     State('time-slider', 'value'),
@@ -155,18 +174,50 @@ def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typena
     State('typename-store', 'data'),
     State('result-store', 'data'),
     State('result-tabs', 'value'),
+    State('settings-store', 'data'),
     prevent_initial_call = True,
 )
-def click_simulate(n_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, vtk_data, result_value):
-    print("click_simulate()", plant_value)
-    vtk_data = simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data)
-    content = render_result_tab(result_value, vtk_data, typename_data)  # call by hand
-    return (content, vtk_data, html.H6(""))
+def click_create(n_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, vtk_data, result_value, settings_data):
+    print("click_create()", plant_value, settings_data)
+    settings_data["token"] += 1 # does not work with reset view
+    settings_data["reset"] = True
+    rng = np.random.default_rng()
+    settings_data["random_seed"] = rng.integers(1, 10001)  # new random seed
+    vtk_data = simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"])    
+    content = render_result_tab(result_value, vtk_data, typename_data, settings_data)  # call by hand
+    return (content, vtk_data, settings_data, html.H6(""))
 
 
-""" Parameters Panel"""
+@app.callback(# update-button
+    Output('result-tabs-content', 'children', allow_duplicate = True),
+    Output('result-store', 'data', allow_duplicate = True),
+    Output('settings-store', 'data', allow_duplicate = True),
+    Output('loading-spinner-output', 'children', allow_duplicate = True),
+    Input('update-button', 'n_clicks'),
+    State('plant-dropdown', 'value'),
+    State('time-slider', 'value'),
+    State('seed-store', 'data'),
+    State('root-store', 'data'),
+    State('stem-store', 'data'),
+    State('leaf-store', 'data'),
+    State('typename-store', 'data'),
+    State('result-store', 'data'),
+    State('result-tabs', 'value'),
+    State('settings-store', 'data'),
+    prevent_initial_call = True,
+)
+def click_update(n_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, vtk_data, result_value, settings_data):
+    print("click_update()", plant_value, settings_data)        
+    settings_data["reset"] = False
+    vtk_data = simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"])
+    content = render_result_tab(result_value, vtk_data, typename_data, settings_data)  # call by hand
+    return (content, vtk_data, settings_data, html.H6(""))
 
 
+
+#
+# 2. MID - Parameters Panel
+#
 @app.callback(# organtype-tabs
     Output('organtype-tabs-content', 'children'),
     Input('organtype-tabs', 'value'),
@@ -592,23 +643,22 @@ def update_leaf_store(slider_values, store_data):
         store_data["leaf"] = slider_values
     return store_data
 
-
-""" Results Panel """
-
-
+#
+# 3. RIGHT - Results Panel 
+#
 @app.callback(
     Output('result-tabs-content', 'children', allow_duplicate = True),
     Input('result-tabs', 'value'),
     State('result-store', 'data'),
     State('typename-store', 'data'),
+    State('settings-store', 'data'),
     prevent_initial_call = True,
 )
-def render_result_tab(tab, vtk_data, typename_data):
-    print("render_result_tab()", tab)
-    # from pympler import asizeof
-    # print("***********************************************************************************************************************************")
-    # print(asizeof.asizeof(vtk_data) / 1e6, "MB")
-    # print("***********************************************************************************************************************************")
+def render_result_tab(tab, vtk_data, typename_data, settings_data):
+    print("render_result_tab()", tab, settings_data["token"], settings_data["reset"])
+    print("***********************************************************************************************************************************")
+    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
+    print("***********************************************************************************************************************************")
     if not vtk_data:
         print("no data")
         return html.Div([html.H6("press the create button")])
@@ -616,12 +666,11 @@ def render_result_tab(tab, vtk_data, typename_data):
         color_pick = decode_array(vtk_data["subType"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
         # print("number of cell colors", len(color_pick), "cells", len(vtk_data["subType"]) , "\n", type(color_pick))
-        return vtk3D_plot(vtk_data, color_pick, "Type")
-    
+        return vtk3D_plot(vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"])
     elif tab == 'VTK3DAge':
         color_pick = decode_array(vtk_data["creationTime"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
-        return vtk3D_plot(vtk_data, color_pick, "Age")
+        return vtk3D_plot(vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"])
     elif tab == 'Profile1D':
         return profile_plot(vtk_data)
     elif tab == 'Dynamics':
@@ -629,5 +678,5 @@ def render_result_tab(tab, vtk_data, typename_data):
 
 
 if __name__ == '__main__':
-    Timer(1, open_browser).start()
+    # Timer(1, open_browser).start()
     app.run(debug = True)
