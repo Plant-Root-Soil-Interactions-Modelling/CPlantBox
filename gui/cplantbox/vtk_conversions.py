@@ -1,3 +1,5 @@
+""" conversions regarding vtk data, e.g. vtkPolyData to dash store data and back, also colorbar generation, D. Leitner 2026  """ 
+
 import base64 
 import json
 import zlib
@@ -115,30 +117,3 @@ def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, widt
     )
     return fig
 
-# def vtk_polyline_to_dict(polydata):
-#     """ converts polylines to a dict """
-#     points = polydata.GetPoints()
-#     lines = polydata.GetLines()
-#
-#     n_points = points.GetNumberOfPoints()
-#     n_lines = lines.GetNumberOfCells()
-#
-#     # Points array
-#     pts = np.array([points.GetPoint(i) for i in range(n_points)], dtype = np.float32)
-#     pts = pts.flatten().tolist()
-#
-#     # Lines connectivity array
-#     lines.InitTraversal()
-#     id_list = vtk.vtkIdList()
-#     conn = []
-#
-#     for _ in range(n_lines):
-#         lines.GetNextCell(id_list)
-#         conn.append(id_list.GetNumberOfIds())
-#         for j in range(id_list.GetNumberOfIds()):
-#             conn.append(id_list.GetId(j))
-#
-#     return {
-#         "points": pts,
-#         "lines": conn,
-#     }

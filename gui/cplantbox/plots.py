@@ -109,21 +109,18 @@ def vtk3D_plot(vtk_data, color_pick, type_, reset_camera_token, reset_camera):
 
 def profile_plot(vtk_data):
 
-    time = decode_array(vtk_data["time"])[-1]  # final simtime
-
     traces = []
     for i in range(0, 5):
         z_ = decode_array(vtk_data[f"z{i}"])
         rld = decode_array(vtk_data[f"rld{i}"])
-        # print(rld)
-        traces.append(go.Scatter(x = rld, y = z_, mode = 'lines', name = "Day {:g}".format(time / 5.*(i + 1))))
+        t = vtk_data[f"time{i}"]
+        traces.append(go.Scatter(x = rld, y = z_, mode = 'lines', name = f"Day {t}"))
 
     content = dcc.Graph(
             id = 'profile-plot',
             figure = {
                 'data': traces,
                 'layout': go.Layout(
-                    # title='Line Plot of Multiple Arrays vs Time',
                     xaxis = {'title': 'Fraction of plant organ length per cm layer [-]'},
                     yaxis = {'title': 'Vertical position [cm]'},
                     hovermode = 'closest',
@@ -138,10 +135,10 @@ def profile_plot(vtk_data):
 
 def dynamics_plot(vtk_data, typename_data):
 
-    N = 25  # hard coded, see conversions.py
     number_r = vtk_data["number_r"]
     number_s = vtk_data["number_s"]
     time = decode_array(vtk_data["time"])
+    N = int(time[-1])
 
     # fetch results
     root_length = np.zeros((number_r, N))
