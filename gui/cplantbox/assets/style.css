@@ -1,13 +1,19 @@
 /* Fonts */
+:root {
+    --primary: #28a745; /* Change from purple to green (example) */
+}
+
+
 h5 { /* top font */
     font-size: 18px;
-    padding-top: 15px;
-    padding-bottom: 10px;
+    padding-top: 10px;
+    padding-bottom: 5px;
 }
 
 h6, .checkbox-label { /* panel font */
     padding-top: 0px;
-    font-size: 12px;
+    font-size: 14px;
+    padding-bottom: 0px;
     /*color: red;*/ 
 }
 
@@ -17,18 +23,18 @@ h6, .checkbox-label { /* panel font */
 }
 
 .spacer { /* vertical space between panel 1 elements */
-    height: 10px; 
+    height: 20px; 
 }
 
 .largeSpacer { /* vertical margin for panel 3, e.g. h5 + margins + something */
-    height: 70px; 
+    height: 40px; 
 }
 
 .smallSpacer { /* vertical margin for panel 3, e.g. h5 + margins + something */
-    height: 5px; 
+    height: 10px; 
 }
   
-.customDropdown {    
+.dropdown {    
     font-size: 12px !important;
 } 
 
@@ -81,3 +87,29 @@ h6, .checkbox-label { /* panel font */
 .logo:hover {
     opacity: 0.5
 }
+
+/* BUTTONS */
+
+.button {
+    margin-right: 5px;
+}
+
+.smallButton {
+    text-transform: none !important;   /* remove uppercase */
+    font-size: 10px !important;        /* smaller text */
+    padding: 2px 8px !important;       /* thinner button */
+    line-height: 1 !important;         /* remove extra spacing */
+    display: inline-flex;              /* so icon + text align nicely */
+    align-items: center;               /* vertical align center */
+    height: 16px !important;
+    width: auto;
+    margin-right: 3px;
+}
+
+/* Icon inside smallButton */
+.buttonIcon {
+    height: 10px !important;
+    width: auto;
+    margin-right: 4px;
+}
+

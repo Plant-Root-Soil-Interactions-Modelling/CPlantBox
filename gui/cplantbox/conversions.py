@@ -1,7 +1,7 @@
 """ conversions between dash store data types  and gui, D. Leitner 2026  """ 
-
-from vtk.util import numpy_support
+import os
 import numpy as np
+from vtk.util import numpy_support
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -226,7 +226,8 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
     """ open xml """
     fname = get_parameter_names()[int(plant_)][1]  # xml filename
     plant = pb.Plant()
-    plant.readParameters("params/" + fname)
+    my_dir = os.path.dirname(os.path.abspath(__file__)) # still works, if started from ohter folder
+    plant.readParameters(my_dir+"/params/" + fname)
     """ seed """
     srp = plant.getOrganRandomParameter(pb.seed)
     p = srp[0]

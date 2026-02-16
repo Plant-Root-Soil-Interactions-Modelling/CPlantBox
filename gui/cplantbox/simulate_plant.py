@@ -1,8 +1,7 @@
 """ simulates the plant xml parameter set with slider values, D. Leitner 2026 """
-
-
-from vtk.util import numpy_support
+import os
 import numpy as np
+from vtk.util import numpy_support
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -10,14 +9,14 @@ import plantbox.visualisation.vtk_plot as vp
 from vtk_conversions import *
 from conversions import *  # auxiliary stuff
 
-
 def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_data, random_seed):
     """ simulates the plant xml parameter set with slider values """
     print("simulate_plant()")
     # 1. open base xml
     fname = get_parameter_names()[int(plant_)][1]
     plant = pb.Plant()
-    plant.readParameters("params/" + fname)
+    my_dir = os.path.dirname(os.path.abspath(__file__)) # still works, if started from ohter folder
+    plant.readParameters(my_dir+"/params/" + fname)
     srp = plant.getOrganRandomParameter(pb.seed)
     rrp = plant.getOrganRandomParameter(pb.root)
     strp = plant.getOrganRandomParameter(pb.stem)

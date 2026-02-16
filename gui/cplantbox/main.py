@@ -61,7 +61,16 @@ app.layout = dbc.Container([
                         options = plants,
                         value = plants[0]['value'],
                         clearable = False,
-                        className = 'customDropdown'),
+                        className = 'dropdown'),
+            html.Div(className = "smallSpacer"),
+            html.Div(
+                [
+                    dcc.Button([html.Img(src=app.get_asset_url("cloud-download.svg"),className= "buttonIcon"), "xml"], 
+                    id = "xml-download-button", title="Download the XML parameter file", className = "smallButton"),
+                    dcc.Button([html.Img(src=app.get_asset_url("cloud-upload.svg"),className= "buttonIcon"), "xml"], 
+                    id = "xml-upload-button", title="Upload your XML parameter file", className = "smallButton"),
+                ],
+            ),            
             html.Div(className = "spacer"),
             html.H6("Simulation time [day]"),
             dcc.Slider(id = 'time-slider', min = 1, max = 45, step = 1, value = 20,
@@ -70,15 +79,12 @@ app.layout = dbc.Container([
             html.Div(className = "spacer"),
             html.Div(
                 [
-                    dbc.Button("Create", id = "create-button"),
-                    dbc.Button("Update", id = "update-button"),
+                    dcc.Button("Create", id = "create-button", title="Start a simulation, create the root system architecture", className = "button"),
+                    dcc.Button("Update", id = "update-button", title="Update the simulation (with the same random seed)", className = "button"),
                 ],
-                style = {
-                    "display": "flex",
-                    "gap": "5px",  # horizontal space between buttons
-                    "alignItems": "center",
-                }
             ),
+            html.Div(className = "largeSpacer"),
+            html.Div(className = "largeSpacer"),
             html.Div(className = "largeSpacer"),
             dcc.Loading(id = "loading-spinner",
                         type = "circle",  # Options: "default", "circle", "dot", "cube"
@@ -96,11 +102,12 @@ app.layout = dbc.Container([
                             dcc.Tab(label = 'Root', value = 'Root', className = 'tab', selected_className = 'tabSelected'),
                             dcc.Tab(label = 'Stem', value = 'Stem', className = 'tab', selected_className = 'tabSelected'),
                             dcc.Tab(label = 'Leaf', value = 'Leaf', className = 'tab', selected_className = 'tabSelected')
-                        ]
+                        ],
+                className = 'tabs'
                 ),
             html.Div(id = 'organtype-tabs-content'),
-            dcc.Tabs(id = 'root-tabs', children = [], value = ""),
-            dcc.Tabs(id = 'stem-tabs', children = [], value = ""),
+            dcc.Tabs(id = 'root-tabs', children = [], value = "", className = 'tabs'),
+            dcc.Tabs(id = 'stem-tabs', children = [], value = "",className = 'tabs'),
         ], width = 3),
 
         # Panel 3
@@ -114,7 +121,8 @@ app.layout = dbc.Container([
                             dcc.Tab(label = '3D Age', value = 'VTK3DAge', className = 'tab', selected_className = 'tabSelected'),
                             dcc.Tab(label = '1D Profiles', value = 'Profile1D', className = 'tab', selected_className = 'tabSelected'),
                             dcc.Tab(label = 'Dynamics', value = 'Dynamics', className = 'tab', selected_className = 'tabSelected')
-                        ]
+                        ],
+                className = 'tabs'
                 ),
             html.Div(className = "spacer"),
             html.Div(id = 'result-tabs-content')
@@ -267,8 +275,7 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
         max_ = seed_parameter_sliders[key][1]
         sliders.append(html.H6(key, style = style))
         sliders.append(html.Div([
-            dcc.Slider(
-                        id = {'type': 'dynamic-seed-slider', 'index': i},
+            dcc.Slider(id = {'type': 'dynamic-seed-slider', 'index': i},
                         min = min_,
                         max = max_,
                         value = seed_values[i],
