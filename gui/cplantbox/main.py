@@ -1,32 +1,36 @@
-""" CPlantBox Webapp (using Python dash), D. Leitner 2026 """
+"""CPlantBox Webapp (using Python dash), D. Leitner 2026"""
 
-import numpy as np
-import vtk
-from pympler import asizeof
 import webbrowser
 from threading import Timer
 
-import dash
-from dash import html, dcc, Input, Output, State, ctx
-import dash_bootstrap_components as dbc
-
 import conversions  # auxiliary stuff
-import vtk_conversions  # auxiliary stuff
+import dash
+import dash_bootstrap_components as dbc
+import numpy as np
 import plots  # figures
-from simulate_plant import simulate_plant # the simulation loop 
+import vtk
+import vtk_conversions  # auxiliary stuff
+from dash import Input, Output, State, ctx, dcc, html
+from pympler import asizeof
+from simulate_plant import simulate_plant  # the simulation loop
+
 
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050")
 
 
-# 
+#
 # INITIALIZE
 #
-app = dash.Dash(__name__, suppress_callback_exceptions = True, external_stylesheets = [dbc.themes.SANDSTONE])  # SANDSTONE, MINTY, MORPH
+app = dash.Dash(
+    __name__,
+    suppress_callback_exceptions=True,
+    external_stylesheets=[dbc.themes.SANDSTONE],
+)  # SANDSTONE, MINTY, MORPH
 app.title = "CPlantbox Dash App"
 
 param_names = conversions.get_parameter_names()
-plants = [{'label': name[0], 'value': str(i)} for i, name in enumerate(param_names)]
+plants = [{"label": name[0], "value": str(i)} for i, name in enumerate(param_names)]
 
 seed_parameter_sliders = conversions.get_seed_slider_names()
 root_parameter_sliders = conversions.get_root_slider_names()
@@ -35,220 +39,409 @@ leaf_parameter_sliders = conversions.get_leaf_slider_names()
 
 SEED_SLIDER_INITIALS = [180, 1, 7, 7, 20, 7, 7, 15, 5]
 ROOT_SLIDER_INITIALS = [100, 3, 45, 1, 1, 7, 0.1, 1, 0.2, "Gravitropism"]
-STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180., 1, 0.2, "Gravitropism"]
-LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45., 2., 90, 1., 0.2, "Gravitropism"]
+STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180.0, 1, 0.2, "Gravitropism"]
+LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45.0, 2.0, 90, 1.0, 0.2, "Gravitropism"]
 
-# 
+#
 # LAYOUT
 #
-app.layout = dbc.Container([
-
-    dcc.Store(id = 'seed-store', data = {"seed": SEED_SLIDER_INITIALS, "basal-checkbox": False, "shoot-checkbox": False, "tillers-checkbox": False }),
-    dcc.Store(id = 'root-store', data = {f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)}),
-    dcc.Store(id = 'stem-store', data = {f"tab-{i}": STEM_SLIDER_INITIALS for i in range(1, 5)}),
-    dcc.Store(id = 'leaf-store', data = {"leaf": LEAF_SLIDER_INITIALS}),
-    dcc.Store(id = 'typename-store', data = {f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),  # root sub type names
-    dcc.Store(id = 'settings-store', data = {"token": 0, "reset": True, "random_seed": 0}),
-    dcc.Store(id = 'vtk-result-store', data = {}),
-    dcc.Store(id = 'result-store', data = {}),
-
-    dbc.Row([
-        # Panel 1
-        dbc.Col([
-            html.H5("Simulation"),
-            html.H6("Plant"),
-            dcc.Dropdown(id = 'plant-dropdown',
-                        options = plants,
-                        value = plants[0]['value'],
-                        clearable = False,
-                        className = 'dropdown'),
-            html.Div(className = "smallSpacer"),
-            html.Div(
-                [
-                    dcc.Button([html.Img(src=app.get_asset_url("cloud-download.svg"),className= "buttonIcon"), "xml"], 
-                    id = "xml-download-button", title="Download the XML parameter file", className = "smallButton"),
-                    dcc.Button([html.Img(src=app.get_asset_url("cloud-upload.svg"),className= "buttonIcon"), "xml"], 
-                    id = "xml-upload-button", title="Upload your XML parameter file", className = "smallButton"),
-                ],
-            ),            
-            html.Div(className = "spacer"),
-            html.H6("Simulation time [day]"),
-            dcc.Slider(id = 'time-slider', min = 1, max = 45, step = 1, value = 20,
-                       marks = {1: "1", 45: "45"},
-                       tooltip = { "always_visible": False}),
-            html.Div(className = "spacer"),
-            html.Div(
-                [
-                    dcc.Button("Create", id = "create-button", title="Start a simulation, create the root system architecture", className = "button"),
-                    dcc.Button("Update", id = "update-button", title="Update the simulation (with the same random seed)", className = "button"),
-                ],
-            ),
-            html.Div(className = "largeSpacer"),
-            html.Div(className = "largeSpacer"),
-            html.Div(className = "largeSpacer"),
-            dcc.Loading(id = "loading-spinner",
-                        type = "circle",  # Options: "default", "circle", "dot", "cube"
-                        children = html.Div(id = "loading-spinner-output"))
-        ], width = 2),
-
-        # Panel 2
-        dbc.Col([
-            html.H5("Parameters"),
-            dcc.Tabs(
-                id = 'organtype-tabs',
-                value = "Root",
-                children = [
-                            dcc.Tab(label = 'Seed', value = 'Seed', className = 'tab', selected_className = 'tabSelected'),
-                            dcc.Tab(label = 'Root', value = 'Root', className = 'tab', selected_className = 'tabSelected'),
-                            dcc.Tab(label = 'Stem', value = 'Stem', className = 'tab', selected_className = 'tabSelected'),
-                            dcc.Tab(label = 'Leaf', value = 'Leaf', className = 'tab', selected_className = 'tabSelected')
-                        ],
-                className = 'tabs'
-                ),
-            html.Div(id = 'organtype-tabs-content'),
-            dcc.Tabs(id = 'root-tabs', children = [], value = "", className = 'tabs'),
-            dcc.Tabs(id = 'stem-tabs', children = [], value = "",className = 'tabs'),
-        ], width = 3),
-
-        # Panel 3
-        dbc.Col([
-            html.H5("Results"),
-            dcc.Tabs(
-                id = 'result-tabs',
-                value = "VTK3D",
-                children = [
-                            dcc.Tab(label = '3D', value = 'VTK3D', className = 'tab', selected_className = 'tabSelected'),
-                            dcc.Tab(label = '3D Age', value = 'VTK3DAge', className = 'tab', selected_className = 'tabSelected'),
-                            dcc.Tab(label = '1D Profiles', value = 'Profile1D', className = 'tab', selected_className = 'tabSelected'),
-                            dcc.Tab(label = 'Dynamics', value = 'Dynamics', className = 'tab', selected_className = 'tabSelected')
-                        ],
-                className = 'tabs'
-                ),
-            html.Div(className = "spacer"),
-            html.Div(id = 'result-tabs-content')
-        ], width = 6),
-    ]),
-
-    html.Div([
-        html.A(
-            html.Img(src = '/assets/cplantbox.png', className = 'logo'),
-            href = 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox',  # Replace with actual URL
-            target = '_blank'
+app.layout = dbc.Container(
+    [
+        dcc.Store(
+            id="seed-store",
+            data={
+                "seed": SEED_SLIDER_INITIALS,
+                "basal-checkbox": False,
+                "shoot-checkbox": False,
+                "tillers-checkbox": False,
+            },
         ),
-        html.A(
-            html.Img(src = '/assets/fzj.png', className = 'logo'),
-            href = 'https://www.fz-juelich.de/de',  # Replace with actual URL
-            target = '_blank'
+        dcc.Store(
+            id="root-store",
+            data={f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)},
         ),
-    ], className = 'logoContainer')
+        dcc.Store(
+            id="stem-store",
+            data={f"tab-{i}": STEM_SLIDER_INITIALS for i in range(1, 5)},
+        ),
+        dcc.Store(id="leaf-store", data={"leaf": LEAF_SLIDER_INITIALS}),
+        dcc.Store(
+            id="typename-store",
+            data={f"tab-{i}": f"Order {i} root" for i in range(1, 5)},
+        ),  # root sub type names
+        dcc.Store(
+            id="settings-store", data={"token": 0, "reset": True, "random_seed": 0}
+        ),
+        dcc.Store(id="vtk-result-store", data={}),
+        dcc.Store(id="result-store", data={}),
+        dbc.Row(
+            [
+                #
+                # Panel 1
+                #
+                dbc.Col(
+                    [
+                        html.H5("Simulation"),
+                        conversions.into_panel(
+                            [
+                                html.H6("Plant parameters"),
+                                dcc.Dropdown(
+                                    id="plant-dropdown",
+                                    options=plants,
+                                    value=plants[0]["value"],
+                                    clearable=False,
+                                    className="dropdown",
+                                    style={
+                                        "fontSize": "12px",
+                                        "padding-top": "5px",
+                                    },  # hard coded (should be same as h5)
+                                ),
+                                html.Div(className="smallSpacer"),
+                                html.Div(
+                                    [
+                                        dcc.Button(
+                                            [
+                                                html.Img(
+                                                    src=app.get_asset_url(
+                                                        "cloud-download.svg"
+                                                    ),
+                                                    className="buttonIcon",
+                                                ),
+                                                "xml",
+                                            ],
+                                            id="xml-download-button",
+                                            title="Download the XML parameter file",
+                                            className="smallButton",
+                                        ),
+                                        dcc.Button(
+                                            [
+                                                html.Img(
+                                                    src=app.get_asset_url(
+                                                        "cloud-upload.svg"
+                                                    ),
+                                                    className="buttonIcon",
+                                                ),
+                                                "xml",
+                                            ],
+                                            id="xml-upload-button",
+                                            title="Upload your XML parameter file",
+                                            className="smallButton",
+                                        ),
+                                    ],
+                                ),
+                            ]
+                        ),
+                        html.Div(className="spacer"),
+                        conversions.into_panel(
+                            [
+                                html.H6("Simulation time [day]"),
+                                dcc.Slider(
+                                    id="time-slider",
+                                    min=1,
+                                    max=45,
+                                    step=1,
+                                    value=20,
+                                    marks={1: "1", 45: "45"},
+                                    tooltip={"always_visible": False},
+                                ),
+                                html.Div(className="spacer"),
+                                html.Div(
+                                    [
+                                        dcc.Button(
+                                            "Create",
+                                            id="create-button",
+                                            title="Start a simulation, create the root system architecture",
+                                            className="button",
+                                        ),
+                                        dcc.Button(
+                                            "Update",
+                                            id="update-button",
+                                            title="Update the simulation (with the same random seed)",
+                                            className="button",
+                                        ),
+                                    ],
+                                ),
+                            ]
+                        ),
+                        html.Div(className="largeSpacer"),
+                        html.Div(className="largeSpacer"),
+                        dcc.Loading(
+                            id="loading-spinner",
+                            type="circle",  # Options: "default", "circle", "dot", "cube"
+                            children=html.Div(id="loading-spinner-output"),
+                        ),
+                    ],
+                    width=2,
+                ),
+                #
+                # Panel 2
+                #
+                dbc.Col(
+                    [
+                        html.H5("Parameters"),
+                        dcc.Tabs(
+                            id="organtype-tabs",
+                            value="Root",
+                            children=[
+                                dcc.Tab(
+                                    label="Seed",
+                                    value="Seed",
+                                    className="tab",
+                                    selected_className="tabSelected",
+                                ),
+                                dcc.Tab(
+                                    label="Root",
+                                    value="Root",
+                                    className="tab",
+                                    selected_className="tabSelected",
+                                ),
+                                dcc.Tab(
+                                    label="Stem",
+                                    value="Stem",
+                                    className="tab",
+                                    selected_className="tabSelected",
+                                ),
+                                dcc.Tab(
+                                    label="Leaf",
+                                    value="Leaf",
+                                    className="tab",
+                                    selected_className="tabSelected",
+                                ),
+                            ],
+                            className="tabs",
+                        ),
+                        html.Div(id="organtype-tabs-content"),
+                        dcc.Tabs(
+                            id="root-tabs", children=[], value="", className="tabs"
+                        ),
+                        dcc.Tabs(
+                            id="stem-tabs", children=[], value="", className="tabs"
+                        ),
+                    ],
+                    width=3,
+                ),
+                #
+                # Panel 3
+                #
+                dbc.Col(
+                    [
+                        html.H5("Results"),
+                        dcc.Tabs(
+                            id="result-tabs",
+                            value="VTK3D",
+                            children=[
+                                dcc.Tab(
+                                    label="3D",
+                                    value="VTK3D",
+                                    className="tab",
+                                    selected_className="tabSelected",
+                                ),
+                                dcc.Tab(
+                                    label="3D Age",
+                                    value="VTK3DAge",
+                                    className="tab",
+                                    selected_className="tabSelected",
+                                ),
+                                dcc.Tab(
+                                    label="1D Profiles",
+                                    value="Profile1D",
+                                    className="tab",
+                                    selected_className="tabSelected",
+                                ),
+                                dcc.Tab(
+                                    label="Dynamics",
+                                    value="Dynamics",
+                                    className="tab",
+                                    selected_className="tabSelected",
+                                ),
+                            ],
+                            className="tabs",
+                        ),
+                        html.Div(className="spacer"),
+                        html.Div(id="result-tabs-content"),
+                    ],
+                    width=6,
+                ),
+            ]
+        ),
+        html.Div(
+            [
+                html.A(
+                    html.Img(src="/assets/cplantbox.png", className="logo"),
+                    href="https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox",
+                    target="_blank",
+                ),
+                html.A(
+                    html.Img(src="/assets/fzj.png", className="logo"),
+                    href="https://www.fz-juelich.de/de",
+                    target="_blank",
+                ),
+            ],
+            className="logoContainer",
+        ),
+    ],
+    fluid=True,
+)
 
-], fluid = True)
 
 #
 # 1. LEFT - Simulation Panel
 #
-@app.callback(# plant-dropdown
-    Output('seed-store', 'data'),  # , allow_duplicate=True
-    Output('root-store', 'data'),
-    Output('stem-store', 'data'),
-    Output('leaf-store', 'data'),
-    Output('typename-store', 'data'),
-    Output('organtype-tabs', 'value'),  # to trigger update
-    Output('time-slider', 'value'),
-    Input('plant-dropdown', 'value'),
-    State('seed-store', 'data'),
-    State('root-store', 'data'),
-    State('stem-store', 'data'),
-    State('leaf-store', 'data'),
-    State('typename-store', 'data'),
-    State('organtype-tabs', 'value'),
+@app.callback(  # plant-dropdown
+    Output("seed-store", "data"),  # , allow_duplicate=True
+    Output("root-store", "data"),
+    Output("stem-store", "data"),
+    Output("leaf-store", "data"),
+    Output("typename-store", "data"),
+    Output("organtype-tabs", "value"),  # to trigger update
+    Output("time-slider", "value"),
+    Input("plant-dropdown", "value"),
+    State("seed-store", "data"),
+    State("root-store", "data"),
+    State("stem-store", "data"),
+    State("leaf-store", "data"),
+    State("typename-store", "data"),
+    State("organtype-tabs", "value"),
     # prevent_initial_call = True,
 )
-def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value):
+def plant_dropdown(
+    plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value
+):
     print("plant_dropdown()", plant_value)
-    conversions.set_data(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data)
-    return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, seed_data["simulationTime"])
+    conversions.set_data(
+        plant_value, seed_data, root_data, stem_data, leaf_data, typename_data
+    )
+    return (
+        seed_data,
+        root_data,
+        stem_data,
+        leaf_data,
+        typename_data,
+        tabs_value,
+        seed_data["simulationTime"],
+    )
 
 
-@app.callback(# create-button
-    Output('result-tabs-content', 'children', allow_duplicate = True),
-    Output('vtk-result-store', 'data', allow_duplicate = True),    
-    Output('result-store', 'data', allow_duplicate = True),    
-    Output('settings-store', 'data', allow_duplicate = True),
-    Output('loading-spinner-output', 'children', allow_duplicate = True),
-    Input('create-button', 'n_clicks'),
-    State('plant-dropdown', 'value'),
-    State('time-slider', 'value'),
-    State('seed-store', 'data'),
-    State('root-store', 'data'),
-    State('stem-store', 'data'),
-    State('leaf-store', 'data'),
-    State('typename-store', 'data'),
-    State('result-tabs', 'value'),
-    State('settings-store', 'data'),
-    prevent_initial_call = True,
+@app.callback(  # create-button
+    Output("result-tabs-content", "children", allow_duplicate=True),
+    Output("vtk-result-store", "data", allow_duplicate=True),
+    Output("result-store", "data", allow_duplicate=True),
+    Output("settings-store", "data", allow_duplicate=True),
+    Output("loading-spinner-output", "children", allow_duplicate=True),
+    Input("create-button", "n_clicks"),
+    State("plant-dropdown", "value"),
+    State("time-slider", "value"),
+    State("seed-store", "data"),
+    State("root-store", "data"),
+    State("stem-store", "data"),
+    State("leaf-store", "data"),
+    State("typename-store", "data"),
+    State("result-tabs", "value"),
+    State("settings-store", "data"),
+    prevent_initial_call=True,
 )
-def click_create(n_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data):
+def click_create(
+    n_clicks,
+    plant_value,
+    time_slider,
+    seed_data,
+    root_data,
+    stem_data,
+    leaf_data,
+    typename_data,
+    result_value,
+    settings_data,
+):
     print("click_create()", plant_value, settings_data)
-    settings_data["token"] += 1 # does not work with reset view
+    settings_data["token"] += 1  # does not work with reset view
     settings_data["reset"] = True
     rng = np.random.default_rng()
     settings_data["random_seed"] = rng.integers(1, 10001)  # new random seed
-    vtk_data, result_data = simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"])    
-    content = render_result_tab(result_value, vtk_data, result_data, typename_data, settings_data)  # call by hand
+    vtk_data, result_data = simulate_plant(
+        plant_value,
+        time_slider,
+        seed_data,
+        root_data,
+        stem_data,
+        leaf_data,
+        settings_data["random_seed"],
+    )
+    content = render_result_tab(
+        result_value, vtk_data, result_data, typename_data, settings_data
+    )  # call by hand
     return (content, vtk_data, result_data, settings_data, html.H6(""))
 
 
-@app.callback(# update-button
-    Output('result-tabs-content', 'children', allow_duplicate = True),
-    Output('vtk-result-store', 'data', allow_duplicate = True),
-    Output('result-store', 'data', allow_duplicate = True),     
-    Output('settings-store', 'data', allow_duplicate = True),
-    Output('loading-spinner-output', 'children', allow_duplicate = True),
-    Input('update-button', 'n_clicks'),
-    State('plant-dropdown', 'value'),
-    State('time-slider', 'value'),
-    State('seed-store', 'data'),
-    State('root-store', 'data'),
-    State('stem-store', 'data'),
-    State('leaf-store', 'data'),
-    State('typename-store', 'data'),
-    State('result-tabs', 'value'),
-    State('settings-store', 'data'),
-    prevent_initial_call = True,
+@app.callback(  # update-button
+    Output("result-tabs-content", "children", allow_duplicate=True),
+    Output("vtk-result-store", "data", allow_duplicate=True),
+    Output("result-store", "data", allow_duplicate=True),
+    Output("settings-store", "data", allow_duplicate=True),
+    Output("loading-spinner-output", "children", allow_duplicate=True),
+    Input("update-button", "n_clicks"),
+    State("plant-dropdown", "value"),
+    State("time-slider", "value"),
+    State("seed-store", "data"),
+    State("root-store", "data"),
+    State("stem-store", "data"),
+    State("leaf-store", "data"),
+    State("typename-store", "data"),
+    State("result-tabs", "value"),
+    State("settings-store", "data"),
+    prevent_initial_call=True,
 )
-def click_update(n_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data):
-    print("click_update()", plant_value, settings_data)        
+def click_update(
+    n_clicks,
+    plant_value,
+    time_slider,
+    seed_data,
+    root_data,
+    stem_data,
+    leaf_data,
+    typename_data,
+    result_value,
+    settings_data,
+):
+    print("click_update()", plant_value, settings_data)
     settings_data["reset"] = False
-    vtk_data, result_data = simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"])
-    content = render_result_tab(result_value, vtk_data, result_data, typename_data, settings_data)  # call by hand
+    vtk_data, result_data = simulate_plant(
+        plant_value,
+        time_slider,
+        seed_data,
+        root_data,
+        stem_data,
+        leaf_data,
+        settings_data["random_seed"],
+    )
+    content = render_result_tab(
+        result_value, vtk_data, result_data, typename_data, settings_data
+    )  # call by hand
     return (content, vtk_data, result_data, settings_data, html.H6(""))
-
 
 
 #
 # 2. MID - Parameters Panel
 #
-@app.callback(# organtype-tabs
-    Output('organtype-tabs-content', 'children'),
-    Input('organtype-tabs', 'value'),
-    State('seed-store', 'data'),
-    State('root-store', 'data'),
-    State('typename-store', 'data'),
-    State('stem-store', 'data'),
-    State('leaf-store', 'data'),
+@app.callback(  # organtype-tabs
+    Output("organtype-tabs-content", "children"),
+    Input("organtype-tabs", "value"),
+    State("seed-store", "data"),
+    State("root-store", "data"),
+    State("typename-store", "data"),  # root and stem sub-type names
+    State("stem-store", "data"),
+    State("leaf-store", "data"),
 )
 def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_data):
-    if tab == 'Seed':
+    if tab == "Seed":
         print("render_organtype_tab() seed:", seed_data)
         return generate_seed_sliders(seed_data)
-    elif tab == 'Root':
+    elif tab == "Root":
         print("render_organtype_tab() root:", root_data)
         return root_layout(root_data, type_names)
-    elif tab == 'Stem':
+    elif tab == "Stem":
         print("render_organtype_tab() stem:", stem_data)
         return stem_layout(stem_data, type_names)
-    elif tab == 'Leaf':
+    elif tab == "Leaf":
         print("render_organtype_tab() leaf:", leaf_data)
         return generate_leaf_sliders(leaf_data)
 
@@ -260,72 +453,105 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
     seed_values = data["seed"]
     print("generate_seed_sliders()", seed_values)
     sliders = [
-        html.Div(className = "spacer"),
-        html.Div(className = "spacer"),
-        ]
+        html.Div(className="spacer"),
+        html.Div(className="spacer"),
+    ]
     for i, key in enumerate(seed_parameter_sliders.keys()):
         if i in [4, 7]:  # for number of basal, number of tillers
             step_ = 1
         else:
             step_ = 0.1
-        style = {}
-        if i in [0, 1]:
-            style = {'display': 'none'}
+        if i in [0, 1]:  # shoot borne sliders are currently disabled
+            style = {}  # {"display": "none"}
+        else:
+            style = {}  # default
         min_ = seed_parameter_sliders[key][0]
         max_ = seed_parameter_sliders[key][1]
-        sliders.append(html.H6(key, style = style))
-        sliders.append(html.Div([
-            dcc.Slider(id = {'type': 'dynamic-seed-slider', 'index': i},
-                        min = min_,
-                        max = max_,
-                        value = seed_values[i],
-                        marks = {
-                            min_ + 1.e-4: str(min_),
-                            max_ - 1.e-4: str(max_)
-                            },
-                        tooltip = { "always_visible": False},
-                        step = step_,
-                    )], style = style)
+        sliders.append(html.H6(key, style=style))
+        sliders.append(
+            html.Div(
+                [
+                    dcc.Slider(
+                        id={"type": "dynamic-seed-slider", "index": i},
+                        min=min_,
+                        max=max_,
+                        value=seed_values[i],
+                        marks={min_ + 1.0e-4: str(min_), max_ - 1.0e-4: str(max_)},
+                        tooltip={"always_visible": False},
+                        step=step_,
+                    )
+                ],
+                style=style,
             )
+        )
     if data["shoot-checkbox"]:
-        v = ['agree']
+        v = ["agree"]
     else:
         v = []
-    sliders.insert(2, dcc.Checklist(
-        id = 'shoot-checkbox',
-        options = [{'label': html.Span(' Shoot borne roots', className = 'checkbox-label'), 'value': 'agree'}],
-        className = 'checkbox',
-        value = v,
-        style = {'display': 'none'}
-    ))
+    sliders.insert(
+        2,
+        dcc.Checklist(
+            id="shoot-checkbox",
+            options=[
+                {
+                    "label": html.H6(" Shoot borne roots"),
+                    "value": "agree",
+                }
+            ],
+            className="checkbox",
+            value=v,
+            # style={"display": "none"},
+        ),
+    )
     if data["basal-checkbox"]:
-        v = ['agree']
+        v = ["agree"]
     else:
         v = []
-    sliders.insert(3 + 2 * 2, dcc.Checklist(
-        id = 'basal-checkbox',
-        options = [{'label': html.Span(' Basal roots', className = 'checkbox-label'), 'value': 'agree'}],
-        className = 'checkbox',
-        value = v
-    ))
+    sliders.insert(
+        3 + 2 * 2,
+        dcc.Checklist(
+            id="basal-checkbox",
+            options=[
+                {
+                    "label": html.H6(" Basal roots"),
+                    "value": "agree",
+                }
+            ],
+            className="checkbox",
+            value=v,
+        ),
+    )
     if data["tillers-checkbox"]:
-        v = ['agree']
+        v = ["agree"]
     else:
         v = []
-    sliders.insert(4 + 5 * 2, dcc.Checklist(
-        id = 'tillers-checkbox',
-        options = [{'label': html.Span(' Tillers', className = 'checkbox-label'), 'value': 'agree'}],
-        className = 'checkbox',
-        value = v
-    ))
-    return html.Div(sliders)
+    sliders.insert(
+        4 + 5 * 2,
+        dcc.Checklist(
+            id="tillers-checkbox",
+            options=[
+                {
+                    "label": html.H6(" Tillers"),
+                    "value": "agree",
+                }
+            ],
+            className="checkbox",
+            value=v,
+        ),
+    )
+
+    # panel1 = conversions.into_panel(sliders, range(0, 3 + 2 * 2)  # shoot (disabled for now)
+    panel2 = conversions.into_panel(sliders, range(3 + 2 * 2, 4 + 5 * 2))  # basal
+    panel3 = conversions.into_panel(sliders, range(4 + 5 * 2, len(sliders)))  # tillers
+    all_panel = conversions.into_panel(sliders, range(0, len(sliders)))  # tillers
+    return html.Div([panel2, panel3])
 
 
-@app.callback(# dynamic-seed-slider
-    Output('seed-store', 'data', allow_duplicate = True),
-    Input({'type': 'dynamic-seed-slider', 'index': dash.ALL}, 'value'),
-    State('seed-store', 'data'),
-    prevent_initial_call = True,
+@app.callback(  # dynamic-seed-slider
+    Output("seed-store", "data", allow_duplicate=True),
+    Input({"type": "dynamic-seed-slider", "index": dash.ALL}, "value"),
+    State("seed-store", "data"),
+    prevent_initial_call=True,
 )
 def update_seed_store(slider_values, data):
     print("update_seed_store()", data, slider_values, len(data["seed"]))
@@ -334,146 +560,163 @@ def update_seed_store(slider_values, data):
     return data
 
 
-@app.callback(# shoot-checkbox
-    Output({'type': 'dynamic-seed-slider', 'index': 0}, 'disabled'),
-    Output('seed-store', 'data', allow_duplicate = True),
-    Input('shoot-checkbox', 'value'),
-    State('seed-store', 'data'),
-    prevent_initial_call = True
+@app.callback(  # shoot-checkbox
+    Output({"type": "dynamic-seed-slider", "index": 0}, "disabled"),
+    Output("seed-store", "data", allow_duplicate=True),
+    Input("shoot-checkbox", "value"),
+    State("seed-store", "data"),
+    prevent_initial_call=True,
 )
 def toggle_slider(checkbox_value, data):
-    data["shoot-checkbox"] = 'agree' in checkbox_value
-    return ('agree' not in checkbox_value, data)  # disable if not checked
+    data["shoot-checkbox"] = "agree" in checkbox_value
+    return ("agree" not in checkbox_value, data)  # disable if not checked
 
 
-@app.callback(# shoot-checkbox
-    Output({'type': 'dynamic-seed-slider', 'index': 1}, 'disabled'),
-    Input('shoot-checkbox', 'value')
+@app.callback(  # shoot-checkbox
+    Output({"type": "dynamic-seed-slider", "index": 1}, "disabled"),
+    Input("shoot-checkbox", "value"),
 )
 def toggle_slider(checkbox_value):
-    return 'agree' not in checkbox_value  # disable if not checked
+    return "agree" not in checkbox_value  # disable if not checked
 
 
 @app.callback(
-    Output({'type': 'dynamic-seed-slider', 'index': 2}, 'disabled'),
-    Output('seed-store', 'data', allow_duplicate = True),
-    Input('basal-checkbox', 'value'),
-    State('seed-store', 'data'),
-    prevent_initial_call = True
+    Output({"type": "dynamic-seed-slider", "index": 2}, "disabled"),
+    Output("seed-store", "data", allow_duplicate=True),
+    Input("basal-checkbox", "value"),
+    State("seed-store", "data"),
+    prevent_initial_call=True,
 )
 def toggle_slider(checkbox_value, data):
-    data["basal-checkbox"] = 'agree' in checkbox_value
-    return ('agree' not in checkbox_value, data)  # disable if not checked
+    data["basal-checkbox"] = "agree" in checkbox_value
+    return ("agree" not in checkbox_value, data)  # disable if not checked
 
 
 @app.callback(
-    Output({'type': 'dynamic-seed-slider', 'index': 3}, 'disabled'),
-    Input('basal-checkbox', 'value')
+    Output({"type": "dynamic-seed-slider", "index": 3}, "disabled"),
+    Input("basal-checkbox", "value"),
 )
 def toggle_slider(checkbox_value):
-    return 'agree' not in checkbox_value  # disable if not checked
+    return "agree" not in checkbox_value  # disable if not checked
 
 
 @app.callback(
-    Output({'type': 'dynamic-seed-slider', 'index': 4}, 'disabled'),
-    Input('basal-checkbox', 'value')
+    Output({"type": "dynamic-seed-slider", "index": 4}, "disabled"),
+    Input("basal-checkbox", "value"),
 )
 def toggle_slider(checkbox_value):
-    return 'agree' not in checkbox_value  # disable if not checked
+    return "agree" not in checkbox_value  # disable if not checked
 
 
 @app.callback(
-    Output({'type': 'dynamic-seed-slider', 'index': 5}, 'disabled'),
-    Output('seed-store', 'data', allow_duplicate = True),
-    Input('tillers-checkbox', 'value'),
-    State('seed-store', 'data'),
-    prevent_initial_call = True
+    Output({"type": "dynamic-seed-slider", "index": 5}, "disabled"),
+    Output("seed-store", "data", allow_duplicate=True),
+    Input("tillers-checkbox", "value"),
+    State("seed-store", "data"),
+    prevent_initial_call=True,
 )
 def toggle_slider(checkbox_value, data):
-    data["tillers-checkbox"] = 'agree' in checkbox_value
-    return ('agree' not in checkbox_value, data)  # disable if not checked
+    data["tillers-checkbox"] = "agree" in checkbox_value
+    return ("agree" not in checkbox_value, data)  # disable if not checked
 
 
 @app.callback(
-    Output({'type': 'dynamic-seed-slider', 'index': 6}, 'disabled'),
-    Input('tillers-checkbox', 'value')
+    Output({"type": "dynamic-seed-slider", "index": 6}, "disabled"),
+    Input("tillers-checkbox", "value"),
 )
 def toggle_slider(checkbox_value):
-    return 'agree' not in checkbox_value  # disable if not checked
+    return "agree" not in checkbox_value  # disable if not checked
 
 
 @app.callback(
-    Output({'type': 'dynamic-seed-slider', 'index': 7}, 'disabled'),
-    Input('tillers-checkbox', 'value')
+    Output({"type": "dynamic-seed-slider", "index": 7}, "disabled"),
+    Input("tillers-checkbox", "value"),
 )
 def toggle_slider(checkbox_value):
-    return 'agree' not in checkbox_value  # disable if not checked
+    return "agree" not in checkbox_value  # disable if not checked
 
 
 #
 # Parameters Panel - Root
 #
-def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs from stored values
-    """ @param root_values is root_data[current_tab] """
+def generate_root_sliders(
+    root_values, tab
+):  # Generate sliders for root tabs from stored values
+    """@param root_values is root_data[current_tab]"""
     print("generate_root_sliders()", root_values)
     style = {}
     successors = root_values[-1]
     sliders = []
-    sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(root_parameter_sliders.keys()):
         style = {}
         if (not successors) and (i in [3, 4, 5]):  # no lb, ln, la for highest order
-            style = {'display': 'none'}
+            style = {"display": "none"}
         if (tab == 1) and (i == 2):  # no initial growth rate theta for tap
-            style = {'display': 'none'}
+            style = {"display": "none"}
 
         min_ = root_parameter_sliders[key][0]
         max_ = root_parameter_sliders[key][1]
-        sliders.append(html.H6(key, style = style))
+        sliders.append(html.H6(key, style=style))
         # print(key, str(min_), str(max_), min_, max_, "value", root_values[i])
-        sliders.append(html.Div([
-            dcc.Slider(
-                        id = {'type': 'dynamic-slider', 'index': i},
-                        min = min_,
-                        max = max_,
-                        value = root_values[i],
-                        marks = {
-                            min_ + 1.e-4: str(min_),
-                            max_ - 1.e-4: str(max_)
-                            },
-                        tooltip = { "always_visible": False}
-                    )], style = style)
+        sliders.append(
+            html.Div(
+                [
+                    dcc.Slider(
+                        id={"type": "dynamic-slider", "index": i},
+                        min=min_,
+                        max=max_,
+                        value=root_values[i],
+                        marks={min_ + 1.0e-4: str(min_), max_ - 1.0e-4: str(max_)},
+                        tooltip={"always_visible": False},
+                    )
+                ],
+                style=style,
             )
-    sliders.append(dcc.Dropdown(
-                id = {'type': 'dynamic-slider', 'index': i},  # little white lie
-                options = list(conversions.tropism_names.keys()),
-                value = root_values[i + 1],
-                clearable = False,
-                className = 'customDropdown'
-            ))
-    return html.Div(sliders)
+        )
+    sliders.append(
+        dcc.Dropdown(
+            id={"type": "dynamic-slider", "index": i},  # little white lie
+            options=list(conversions.tropism_names.keys()),
+            value=root_values[i + 1],
+            clearable=False,
+            className="customDropdown",
+            style={"fontSize": "12px", "padding-top": "5px"},
+        )
+    )
+    panel2 = conversions.into_panel(
+        sliders, range(0, len(sliders) - (2 * 2 + 1))
+    )  # all but tropism
+    panel3 = conversions.into_panel(
+        sliders, range(len(sliders) - (2 * 2 + 1), len(sliders))
+    )  # tropism
+    return html.Div([panel2, panel3])
 
 
 def root_layout(data, type_names):
-    """ root tab layout: with root subTypes as sub tabs """
+    """root tab layout: with root subTypes as sub tabs"""
     rootPanelChildren = []
     for i in range(0, type_names["number_roottypes"]):
-        ctab = dcc.Tab(label = type_names[f'root tab-{i+1}'], value = f'tab-{i+1}',
-                      className = 'tab', selected_className = 'tabSelected')
+        ctab = dcc.Tab(
+            label=type_names[f"root tab-{i+1}"],
+            value=f"tab-{i+1}",
+            className="tab",
+            selected_className="tabSelected",
+        )
         rootPanelChildren.append(ctab)
     tab = dcc.Tabs(
-        id = 'root-tabs',
-        value = 'tab-1',
-        children = rootPanelChildren,
+        id="root-tabs",
+        value="tab-1",
+        children=rootPanelChildren,
     )
-    content = html.Div(id = 'root-tabs-content')
+    content = html.Div(id="root-tabs-content")
     return [tab, content]
 
 
-@app.callback(# render_root_tab - Display sliders for the selected tab, using stored values
-    Output('root-tabs-content', 'children'),
-    Input('root-tabs', 'value'),
-    State('root-store', 'data'), suppress_callback_exceptions = True
+@app.callback(  # render_root_tab - Display sliders for the selected tab, using stored values
+    Output("root-tabs-content", "children"),
+    Input("root-tabs", "value"),
+    State("root-store", "data"),
+    suppress_callback_exceptions=True,
 )
 def render_root_tab(selected_tab, root_data):
     stored_values = root_data.get(selected_tab, ROOT_SLIDER_INITIALS)
@@ -481,12 +724,12 @@ def render_root_tab(selected_tab, root_data):
     return generate_root_sliders(stored_values, int(selected_tab[-1]))
 
 
-@app.callback(# Update root-store when any slider changes
-    Output('root-store', 'data', allow_duplicate = True),  #
-    Input({'type': 'dynamic-slider', 'index': dash.ALL}, 'value'),
-    State('root-tabs', 'value'),
-    State('root-store', 'data'),
-    prevent_initial_call = True,
+@app.callback(  # Update root-store when any slider changes
+    Output("root-store", "data", allow_duplicate=True),  #
+    Input({"type": "dynamic-slider", "index": dash.ALL}, "value"),
+    State("root-tabs", "value"),
+    State("root-store", "data"),
+    prevent_initial_call=True,
 )
 def update_root_store(slider_values, current_tab, store_data):
     print("update_root_store()", store_data[current_tab])
@@ -500,66 +743,86 @@ def update_root_store(slider_values, current_tab, store_data):
 #
 # Parameters Panel - Stem
 #
-def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs from stored values
+def generate_stem_sliders(
+    stem_values, tab
+):  # Generate sliders for stem tabs from stored values
     sliders = []
     successors = stem_values[-1]
-    sliders.append(html.Div(className = "spacer"))
+    sliders.append(html.Div(className="spacer"))
     for i, key in enumerate(stem_parameter_sliders.keys()):
         style = {}
         # if i in [7]:  # rotBeta (not working)
         #    style = {'display': 'none'}
         if (not successors) and (i in [3]):
-            style = {'display': 'none'}
+            style = {"display": "none"}
         # if (tab == 1) and (i == 2):  # no initial theta for main stem; makes sense for tillers
         #     style = {'display': 'none'}
         min_ = stem_parameter_sliders[key][0]
         max_ = stem_parameter_sliders[key][1]
-        sliders.append(html.H6(key, style = style))
-        sliders.append(html.Div([
-            dcc.Slider(
-                        id = {'type': 'stem-dynamic-slider', 'index': i},
-                        min = min_,
-                        max = max_,
-                        value = stem_values[i],
-                        marks = {
-                            min_: str(min_),
-                            max_: str(max_)
-                            },
-                        tooltip = { "always_visible": False},
-                    )], style = style)
+        sliders.append(html.H6(key, style=style))
+        sliders.append(
+            html.Div(
+                [
+                    dcc.Slider(
+                        id={"type": "stem-dynamic-slider", "index": i},
+                        min=min_,
+                        max=max_,
+                        value=stem_values[i],
+                        marks={min_: str(min_), max_: str(max_)},
+                        tooltip={"always_visible": False},
+                    )
+                ],
+                style=style,
             )
-    sliders.append(dcc.Dropdown(
-                id = {'type': 'stem-dynamic-slider', 'index': i},  # little white lie
-                options = list(conversions.tropism_names.keys()),
-                value = stem_values[i + 1],
-                clearable = False,
-                className = 'customDropdown'
-            ))
-    return html.Div(sliders)
+        )
+    sliders.append(
+        dcc.Dropdown(
+            id={
+                "type": "stem-dynamic-slider",
+                "index": i,
+            },  # little white lie - before we move it top, we need to fix that id
+            options=list(conversions.tropism_names.keys()),
+            value=stem_values[i + 1],
+            clearable=False,
+            className="customDropdown",
+            style={"fontSize": "12px", "padding-top": "5px"},
+        )
+    )
+    panel2 = conversions.into_panel(
+        sliders, range(0, len(sliders) - (2 * 2 + 1))
+    )  # all but tropism
+    panel3 = conversions.into_panel(
+        sliders, range(len(sliders) - (2 * 2 + 1), len(sliders))
+    )  # tropism
+    return html.Div([panel2, panel3])
 
 
 def stem_layout(data, type_names):
-    """ stem tab layout: with stem subTypes as sub tabs """
+    """stem tab layout: with stem subTypes as sub tabs"""
     panelChildren = []
     for i in range(0, type_names["number_stemtypes"]):
-        ctab = dcc.Tab(label = type_names[f'stem tab-{i+1}'], value = f'tab-{i+1}',
-                      className = 'tab', selected_className = 'tabSelected')
+        ctab = dcc.Tab(
+            label=type_names[f"stem tab-{i+1}"],
+            value=f"tab-{i+1}",
+            className="tab",
+            selected_className="tabSelected",
+        )
         panelChildren.append(ctab)
     tab = dcc.Tabs(
-        id = 'stem-tabs',
-        value = 'tab-1',
-        children = panelChildren,
+        id="stem-tabs",
+        value="tab-1",
+        children=panelChildren,
     )
-    content = html.Div(id = 'stem-tabs-content')
-    stored_values = data.get('tab-1', STEM_SLIDER_INITIALS)
+    content = html.Div(id="stem-tabs-content")
+    stored_values = data.get("tab-1", STEM_SLIDER_INITIALS)
     return [tab, content]
 
 
 # render_stem_tab - Display sliders for the selected tab, using stored values
 @app.callback(
-    Output('stem-tabs-content', 'children'),
-    Input('stem-tabs', 'value'),
-    State('stem-store', 'data'),
+    Output("stem-tabs-content", "children"),
+    Input("stem-tabs", "value"),
+    State("stem-store", "data"),
 )
 def render_stem_tab(selected_tab, data):
     stored_values = data.get(selected_tab, STEM_SLIDER_INITIALS)
@@ -569,11 +832,11 @@ def render_stem_tab(selected_tab, data):
 
 # Update root-store when any slider changes
 @app.callback(
-    Output('stem-store', 'data', allow_duplicate = True),  #
-    Input({'type': 'stem-dynamic-slider', 'index': dash.ALL}, 'value'),
-    State('stem-tabs', 'value'),
-    State('stem-store', 'data'),
-    prevent_initial_call = True,
+    Output("stem-store", "data", allow_duplicate=True),  #
+    Input({"type": "stem-dynamic-slider", "index": dash.ALL}, "value"),
+    State("stem-tabs", "value"),
+    State("stem-store", "data"),
+    prevent_initial_call=True,
 )
 def update_stem_store(slider_values, current_tab, store_data):
     print("update_stem_store()", current_tab, slider_values)
@@ -589,46 +852,53 @@ def update_stem_store(slider_values, current_tab, store_data):
 def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored values
 
     if data["leaf"] is None:
-        return [html.Div(className = "spacer"), html.H6("There is no leaf defined in your plant data set") ]
+        return [
+            html.Div(className="spacer"),
+            html.H6("There is no leaf defined in your plant data set"),
+        ]
 
     leaf_values = data["leaf"]
     # print(len(leaf_values), len(leaf_parameter_sliders.keys()))
     sliders = []
-    sliders.append(html.Div(className = "spacer"))
+    sliders.append(html.Div(className="spacer"))
     sliders.append(html.H6("Leaf shape"))
-    sliders.append(dcc.Dropdown(
-                id = {'type': 'leaf-dynamic-slider', 'index': 0},  # little white lie
-                options = ["Defined", "Long", "Round", "Maple", "Flower"],
-                value = "Defined",
-                clearable = False,
-                className = 'customDropdown'
-    ))
-    sliders.append(html.Div(className = "spacer"))
+    sliders.append(
+        dcc.Dropdown(
+            id={"type": "leaf-dynamic-slider", "index": 0},  # little white lie
+            options=["Defined", "Long", "Round", "Maple", "Flower"],
+            value="Defined",
+            clearable=False,
+            className="customDropdown",
+            style={"fontSize": "12px", "padding-top": "5px"},
+        )
+    )
+    sliders.append(html.Div(className="spacer"))
     for i, key in enumerate(leaf_parameter_sliders.keys()):
         min_ = leaf_parameter_sliders[key][0]
         max_ = leaf_parameter_sliders[key][1]
         sliders.append(html.H6(key))
         sliders.append(
             dcc.Slider(
-                        id = {'type': 'leaf-dynamic-slider', 'index': i + 1},
-                        min = min_,
-                        max = max_,
-                        value = leaf_values[i + 1],
-                        marks = {
-                            min_: str(min_),
-                            max_: str(max_)
-                            },
-                        tooltip = { "always_visible": False},
-                    )
+                id={"type": "leaf-dynamic-slider", "index": i + 1},
+                min=min_,
+                max=max_,
+                value=leaf_values[i + 1],
+                marks={min_: str(min_), max_: str(max_)},
+                tooltip={"always_visible": False},
             )
-    sliders.append(dcc.Dropdown(
-                id = {'type': 'leaf-dynamic-slider', 'index': i + 1},  # little white lie
-                options = list(conversions.tropism_names.keys()),
-                value = leaf_values[i + 2],
-                clearable = False,
-                className = 'customDropdown'
-            ))
+        )
+    sliders.append(
+        dcc.Dropdown(
+            id={"type": "leaf-dynamic-slider", "index": i + 1},  # little white lie
+            options=list(conversions.tropism_names.keys()),
+            value=leaf_values[i + 2],
+            clearable=False,
+            className="customDropdown",
+            style={"fontSize": "12px", "padding-top": "5px"},
+        )
+    )
     return html.Div(sliders)
+
 
 # @app.callback(# leaf-dropdown
 #     Output({'type': 'leaf-dynamic-slider', 'index': dash.ALL}, 'value'),
@@ -641,11 +911,11 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
 #     return slider_values
 
 
-@app.callback(# Update leaf-store when any slider changes
-    Output('leaf-store', 'data', allow_duplicate = True),  #
-    Input({'type': 'leaf-dynamic-slider', 'index': dash.ALL}, 'value'),
-    State('leaf-store', 'data'),
-    prevent_initial_call = True,
+@app.callback(  # Update leaf-store when any slider changes
+    Output("leaf-store", "data", allow_duplicate=True),  #
+    Input({"type": "leaf-dynamic-slider", "index": dash.ALL}, "value"),
+    State("leaf-store", "data"),
+    prevent_initial_call=True,
 )
 def update_leaf_store(slider_values, store_data):
     print("update_leaf_store()", slider_values)
@@ -653,42 +923,55 @@ def update_leaf_store(slider_values, store_data):
         store_data["leaf"] = slider_values
     return store_data
 
+
 #
-# 3. RIGHT - Results Panel 
+# 3. RIGHT - Results Panel
 #
 @app.callback(
-    Output('result-tabs-content', 'children', allow_duplicate = True),
-    Input('result-tabs', 'value'),
-    State('vtk-result-store', 'data'),
-    State('result-store', 'data'),
-    State('typename-store', 'data'),
-    State('settings-store', 'data'),
-    prevent_initial_call = True,
+    Output("result-tabs-content", "children", allow_duplicate=True),
+    Input("result-tabs", "value"),
+    State("vtk-result-store", "data"),
+    State("result-store", "data"),
+    State("typename-store", "data"),
+    State("settings-store", "data"),
+    prevent_initial_call=True,
 )
 def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
     print("render_result_tab()", tab, settings_data["token"], settings_data["reset"])
-    print("***********************************************************************************************************************************")
+    print(
+        "***********************************************************************************************************************************"
+    )
     print("vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB")
     print("result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
-    print("***********************************************************************************************************************************")
+    print(
+        "***********************************************************************************************************************************"
+    )
     if not vtk_data:
         print("no data")
         return html.Div([html.H6("press the create button")])
-    if tab == 'VTK3D':
+    if tab == "VTK3D":
         color_pick = vtk_conversions.decode_array(vtk_data["subType"])
-        color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
+        color_pick = np.repeat(
+            color_pick, 16
+        )  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
         # print("number of cell colors", len(color_pick), "cells", len(vtk_data["subType"]) , "\n", type(color_pick))
-        return plots.vtk3D_plot(vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"])
-    elif tab == 'VTK3DAge':
+        return plots.vtk3D_plot(
+            vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"]
+        )
+    elif tab == "VTK3DAge":
         color_pick = vtk_conversions.decode_array(vtk_data["creationTime"])
-        color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
-        return plots.vtk3D_plot(vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"])
-    elif tab == 'Profile1D':
+        color_pick = np.repeat(
+            color_pick, 16
+        )  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
+        return plots.vtk3D_plot(
+            vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"]
+        )
+    elif tab == "Profile1D":
         return plots.profile_plot(result_data)
-    elif tab == 'Dynamics':
+    elif tab == "Dynamics":
         return plots.dynamics_plot(result_data, typename_data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Timer(1, open_browser).start()
-    app.run(debug = True)
+    app.run(debug=True)
