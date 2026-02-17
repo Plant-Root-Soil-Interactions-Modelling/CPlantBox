@@ -17,6 +17,7 @@ tropism_names = {
     "Negative gravitropism": 4,
     "Variable gravitropism": 6,
 }  # "Twist": 5,
+
 tropism_names_ = {
     0: "Plagiotropism",
     1: "Gravitropism",
@@ -42,14 +43,14 @@ def get_parameter_names():  # parameter xml file names
 def get_seed_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "First shoot borne root [day]": (1, 30),
-        "Shoot borne delay [day]": (1, 21),
-        "First basal root [day]": (1, 21),
-        "Basal root delay [day]": (1, 21),
-        "Maximal number of basal roots [1]": (0, 30),
-        "First tiller [day]": (1, 21),
-        "Tiller delay [day]": (1, 21),
-        "Maximal number of tillers [1]": (0, 7),
+        "First shoot borne root [day]": (1, 30, 0.1),
+        "Shoot borne delay [day]": (1, 21, 0.1),
+        "First basal root [day]": (1, 21, 0.1),
+        "Basal root delay [day]": (1, 21, 0.1),
+        "Maximal number of basal roots [1]": (0, 30, 1),
+        "First tiller [day]": (1, 21, 0.1),
+        "Tiller delay [day]": (1, 21, 0.1),
+        "Maximal number of tillers [1]": (0, 7, 1),
     }
     return parameter_sliders
 
@@ -57,15 +58,15 @@ def get_seed_slider_names():  # see set_data, apply_sliders
 def get_root_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 200),
-        "Growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0.0, 90),
-        "Basal zone [cm]": (0.1, 20),
-        "Interlateral distance [cm]": (0.1, 20),
-        "Apical zone [cm]": (0.1, 20),
-        "Radius [cm]": (1.0e-3, 0.25),
-        "Tropism strength [1]": (0, 6),
-        "Tropism tortuosity [1]": (0, 1),
+        "Maximal length [cm]": (1, 200, 0.1),
+        "Growth rate [cm/day]": (0.5, 10, 0.01),
+        "Initial angle [°]": (0.0, 90, 0.1),
+        "Basal zone [cm]": (0.1, 20, 0.1),
+        "Interlateral distance [cm]": (0.1, 20, 0.1),
+        "Apical zone [cm]": (0.1, 20, 0.1),
+        "Radius [cm]": (1.0e-3, 0.25, 1e-3),
+        "Tropism strength [1]": (0.0, 6.0, 0.1),
+        "Tropism tortuosity [1]": (0.0, 1.0, 0.01),
     }
     return parameter_sliders
 
@@ -73,16 +74,16 @@ def get_root_slider_names():  # see set_data, apply_sliders
 def get_stem_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 200),
-        "Growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0, 90),
-        "Phytomer distance [cm]": (0.1, 20),
-        "Radius [cm]": (1.0e-3, 0.25),
-        "Nodal growth start [day]": (0, 21),
-        "Nodal growth time span [day]": (0, 21),
-        "Fixed Rotation [°]": (0, 180),
-        "Tropism strength [1]": (0, 6),
-        "Tropism tortuosity [1]": (0, 1),
+        "Maximal length [cm]": (1, 200, 0.1),
+        "Growth rate [cm/day]": (0.5, 10, 0.01),
+        "Initial angle [°]": (0.0, 90, 0.1),
+        "Phytomer distance [cm]": (0.1, 20, 0.1),
+        "Radius [cm]": (1.0e-3, 0.25, 1e-3),
+        "Nodal growth start [day]": (0, 21, 0.1),
+        "Nodal growth time span [day]": (0, 21, 0.1),
+        "Fixed Rotation [°]": (0, 180, 0.1),
+        "Tropism strength [1]": (0, 6, 0.1),
+        "Tropism tortuosity [1]": (0, 1, 0.01),
     }
     return parameter_sliders
 
@@ -90,13 +91,13 @@ def get_stem_slider_names():  # see set_data, apply_sliders
 def get_leaf_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 50),
-        "Growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0, 180),
-        "Petiole length [cm]": (0.1, 10),  # lb
-        "Fixed Rotation [°]": (0, 180),
-        "Tropism strength [1]": (0, 6),
-        "Tropism tortuosity [1]": (0, 1),
+        "Maximal length [cm]": (1, 50, 0.1),
+        "Growth rate [cm/day]": (0.5, 10, 0.01),
+        "Initial angle [°]": (0.0, 180, 0.1),
+        "Petiole length [cm]": (0.1, 10, 0.1),  # lb
+        "Fixed Rotation [°]": (0, 180, 0.1),
+        "Tropism strength [1]": (0, 6, 0.1),
+        "Tropism tortuosity [1]": (0, 1, 0.01),
     }
     return parameter_sliders
 
@@ -117,9 +118,7 @@ def set_leaf_geometry(shapename, p):
         p.areaMax = 3.145 * (p.la**2)
         phi = np.array([-90, -45, 0.0, 45, 67.5, 70, 90]) / 180.0 * np.pi
         l_ = (p.lmax - p.lb) / 2  # == p.la
-        l = np.array(
-            [l_ for x_i in range(len(phi))]
-        )  # ([2, 2, 2, 4,1,1, 4]) #distance from leaf center
+        l = np.array([l_ for x_i in range(len(phi))])  # ([2, 2, 2, 4,1,1, 4]) #distance from leaf center
     elif shapename == "Maple":
         p.lb = 1  # length of leaf stem
         p.areaMax = 50
@@ -130,9 +129,7 @@ def set_leaf_geometry(shapename, p):
         p.lb = 1  # length of leaf stem
         p.areaMax = 50
         p.la, p.lb, p.lmax = 5, 1, 11
-        phi = (
-            np.array([-90.0, -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180.0 * np.pi
-        )
+        phi = np.array([-90.0, -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180.0 * np.pi
         l = np.array([5.0, 1, 4.5, 1, 4, 1, 4.5, 1, 5])
     p.createLeafRadialGeometry(phi, l, 100)
 
@@ -242,9 +239,7 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
     """ open xml """
     fname = get_parameter_names()[int(plant_)][1]  # xml filename
     plant = pb.Plant()
-    my_dir = os.path.dirname(
-        os.path.abspath(__file__)
-    )  # still works, if started from ohter folder
+    my_dir = os.path.dirname(os.path.abspath(__file__))  # still works, if started from ohter folder
     plant.readParameters(my_dir + "/params/" + fname)
     """ seed """
     srp = plant.getOrganRandomParameter(pb.seed)
@@ -261,9 +256,7 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
     ]
     seed_data["shoot-checkbox"] = p.firstSB < 1.0e3 and p.delaySB < 1.0e3
     seed_data["basal-checkbox"] = p.firstB < 1.0e3 and p.delayB < 1.0e3 and p.maxB > 0
-    seed_data["tillers-checkbox"] = (
-        p.firstTil < 1.0e3 and p.delayTil < 1.0e3 and p.maxTil > 0
-    )
+    seed_data["tillers-checkbox"] = p.firstTil < 1.0e3 and p.delayTil < 1.0e3 and p.maxTil > 0
     if not seed_data["basal-checkbox"]:  # defaults in case someone turns it on
         seed_data["seed"][2] = 7
         seed_data["seed"][3] = 7
