@@ -52,23 +52,7 @@ open('installDumuxRosi.log', 'w').close()
 #################################################################
 # # (2/3) Clone modules
 #################################################################
-#################################################################
-
-url = 'https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi/master/installdumux.py'
-subprocess.run(["wget", url, "-P", "."], check = True)
-
-subprocess.run(["python3", "installdumux.py"], check = True)
-
-os.chdir("./dumux")
-
-subprocess.run(["python3", "dumux/bin/installexternal.py", "ug", "spgrid", "foamgrid"], check = True)
-
-# dumux-rosi
-if not os.path.exists("dumux-rosi"):
-    subprocess.run(['git', 'clone', '--depth', '1', '-b', 'ss2025', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git'])
-else:
-    print("-- Skip cloning dumux-rosi because the folder already exists.")
-
+#################################################
 # CPlantBox
 if not os.path.exists("CPlantBox"):
     subprocess.run(['git', 'clone', '--depth', '1', '-b', 'uclouvain3', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
@@ -80,7 +64,7 @@ else:
 # # (3/3) Configure and build
 #################################################################
 #################################################################
-show_message("(3/3) Configure and build dune modules and dumux using dunecontrol. This may take several minutes...")
+show_message("(3/3) Configure and build cpb. This may take several minutes...")
 
 os.chdir("CPlantBox")
 
@@ -89,10 +73,8 @@ subprocess.run(['cmake', '.'])
 subprocess.run(['make'])
 os.chdir("..")
 
-# run dunecontrol
-subprocess.run(["./dune-common/bin/dunecontrol", "--opts=dumux-rosi/cmake.opts", "all"])
-
-print("(3/3) Step completed. Succesfully configured and built CPlantBox, dune and dumux.")
+print("(3/3) Step completed. Succesfully configured and built CPlantBox.")
 
 print("to test installation, run \n cd dumux/dumux-rosi/python/coupled \n python3 example7b_coupling.py")
+
 
