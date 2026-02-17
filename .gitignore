@@ -1,7 +1,6 @@
 # build system clutter
 build-*
 Testing
-*.so
 src/CMakeFiles/
 src/Makefile
 src/cmake_install.cmake
