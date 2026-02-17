@@ -71,7 +71,7 @@ else:
 
 # CPlantBox
 if not os.path.exists("CPlantBox"):
-    subprocess.run(['git', 'clone', '--depth', '1', '-b', 'ss2025', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+    subprocess.run(['git', 'clone', '--depth', '1', '-b', 'uclouvain3', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
 
@@ -95,3 +95,4 @@ subprocess.run(["./dune-common/bin/dunecontrol", "--opts=dumux-rosi/cmake.opts",
 print("(3/3) Step completed. Succesfully configured and built CPlantBox, dune and dumux.")
 
 print("to test installation, run \n cd dumux/dumux-rosi/python/coupled \n python3 example7b_coupling.py")
+
