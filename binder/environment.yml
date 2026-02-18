@@ -1,18 +1,13 @@
+name: cpb
 channels:
   - conda-forge
 dependencies:
   - python=3.11
-  - wget
-  - git
-  - pip
-  - pip:
-      - numpy
-      - scipy
-      - matplotlib
-      - vtk
-      - pandas
-      - pybind11[global]
-      - setuptools
-      - ipython
-      - ipykernel
-      - pytest
+  - numpy
+  - scipy
+  - matplotlib
+  - pandas
+  - ipython
+  - ipykernel
+  - vtk  # optional
+
