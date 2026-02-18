@@ -27,7 +27,7 @@ ENV PYTHONPATH=/home/jovyan/CPlantBox/lib:$PYTHONPATH
 # -----------------------------
 # 5️Install system libraries safely
 # -----------------------------
-COPY apt.txt /tmp/apt.txt
+COPY binder/apt.txt /tmp/apt.txt
 RUN apt-get update && \
     grep -v '^#' /tmp/apt.txt | xargs apt-get install -y --no-install-recommends && \
     rm -rf /var/lib/apt/lists/* /tmp/apt.txt
