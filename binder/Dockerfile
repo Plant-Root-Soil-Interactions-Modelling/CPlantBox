@@ -1,29 +1,43 @@
 # Base minimal Jupyter image
 FROM jupyter/minimal-notebook:python-3.11
 
-# Copy precompiled Python module
+# -----------------------------
+# 1️⃣ Copy precompiled Python module
+# -----------------------------
 COPY ../lib /home/jovyan/CPlantBox/lib
 
-# Copy notebooks
+# -----------------------------
+# 2️⃣ Copy notebooks
+# -----------------------------
 COPY ../scripts /home/jovyan/scripts
 
-# Copy and create conda environment from .binder/environment.yml
+# -----------------------------
+# 3️Create conda environment
+# -----------------------------
 COPY environment.yml /tmp/environment.yml
-RUN conda env create -f /tmp/environment.yml \
-    && conda clean --all -y
+RUN conda env create -f /tmp/environment.yml --no-builds && \
+    conda clean --all -y && \
+    rm /tmp/environment.yml
 
-# Set Python path for precompiled module
+# -----------------------------
+# 4️Set Python path to precompiled module
+# -----------------------------
 ENV PYTHONPATH=/home/jovyan/CPlantBox/lib:$PYTHONPATH
 
-# Install system libraries from .binder/apt.txt
+# -----------------------------
+# 5️Install system libraries safely
+# -----------------------------
 COPY apt.txt /tmp/apt.txt
-RUN xargs -a /tmp/apt.txt sudo apt-get update && \
-    xargs -a /tmp/apt.txt sudo apt-get install -y && \
-    sudo apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    grep -v '^#' /tmp/apt.txt | xargs apt-get install -y --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/* /tmp/apt.txt
 
-# Set working directory to scipts
+# -----------------------------
+# 6️Set working directory to notebooks
+# -----------------------------
 WORKDIR /home/jovyan/scripts
 
-# Launch notebook
+# -----------------------------
+# 7️Launch notebook
+# -----------------------------
 CMD ["start-notebook.sh"]
