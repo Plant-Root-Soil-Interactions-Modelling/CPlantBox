@@ -403,7 +403,7 @@ PYBIND11_MODULE(plantbox, m) {
 
             .def("initializeReader", &Organism::initializeReader)
             .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("fromFile") = true, py::arg("verbose") = false)  // default
-            .def("writeParameters", &Organism::writeParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("comments") = true)  // default
+            .def("writeParameters", &Organism::writeParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("intoFile") = true, py::arg("verbose") = false)  // default
             .def("writeRSML", &Organism::writeRSML)
             .def("getRSMLSkip", &Organism::getRSMLSkip)
             .def("setRSMLSkip", &Organism::setRSMLSkip)

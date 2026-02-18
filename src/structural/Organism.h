@@ -30,7 +30,8 @@ class Seed;
  * Collect parameters from the organs
  * Can collect information about the last time step
  * Supports RSML
- * Holds global node index and organ index counter
+ * Holds global node index and organ index counter  746 |     static_assert(std::is_base_of<base, type_caster<type>>::value,
+
  * Holds random numbers generator for the organ classes
  */
 class Organism : public std::enable_shared_from_this<Organism> {
@@ -101,7 +102,7 @@ public:
     virtual std::string toString() const; ///< quick info for debugging
     virtual void initializeReader() { } ///< initializes parameter reader
     virtual void readParameters(std::string name, std::string  basetag = "plant", bool fromFile = true, bool verbose = false); ///< reads all organ type parameters from a xml file
-    virtual void writeParameters(std::string name, std::string basetag = "plant", bool comments = true) const; ///< write all organ type parameters into a xml file
+    virtual std::string writeParameters(std::string name, std::string basetag = "plant", bool intoFile = true, bool comments = true) const; ///< write all organ type parameters into a xml file
     virtual void write(std::string name) const; /// writes simulation results (type is determined from file extension in name)
     virtual void writeVTP(int otype, std::ostream & os) const;
     virtual void writeGeometry(std::ostream & os) const;

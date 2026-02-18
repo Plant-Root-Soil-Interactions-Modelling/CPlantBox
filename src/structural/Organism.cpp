@@ -655,9 +655,10 @@ void Organism::readParameters(std::string name, std::string basetag, bool fromFi
  *
  * @param name      file name
  * @param basetag   name of the base tag (e.g. "organism", or "plant") *
+ * @param intoFile  write into file (true) or return as string (false)
  * @param comments  write parameter descriptions
  */
-void Organism::writeParameters(std::string name, std::string basetag, bool comments) const
+std::string Organism::writeParameters(std::string name, std::string basetag, bool intoFile,  bool comments) const
 {
     std::setlocale(LC_NUMERIC, "en_US.UTF-8");
     tinyxml2::XMLDocument xmlDoc;
@@ -673,8 +674,18 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
         }
     }
     xmlDoc.InsertEndChild(xmlParams);
-    xmlDoc.SaveFile(name.c_str());
+    if (intoFile) {
+        xmlDoc.SaveFile(name.c_str());
+        return "";
+    } else { // write into name
+        tinyxml2::XMLPrinter printer;
+        xmlDoc.Print(&printer);
+        return printer.CStr();        
+    }
 }
+
+
+
 
 /**
  * Exports the simulation results with the type from the extension in name
