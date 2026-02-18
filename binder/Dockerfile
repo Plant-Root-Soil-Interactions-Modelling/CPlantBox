@@ -23,7 +23,6 @@ RUN conda install -n base -c conda-forge mamba && \
 # -----------------------------
 # 4️Set Python path to precompiled module
 # -----------------------------
-ENV PYTHONPATH=/home/jovyan/CPlantBox/lib:$PYTHONPATH
 
 # -----------------------------
 # 5️Install system libraries safely
