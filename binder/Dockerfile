@@ -2,19 +2,19 @@
 FROM jupyter/minimal-notebook:python-3.11
 
 # -----------------------------
-# 1️⃣ Copy precompiled Python module
+# 1️Copy precompiled Python module
 # -----------------------------
 COPY ../lib /home/jovyan/CPlantBox/lib
 
 # -----------------------------
-# 2️⃣ Copy notebooks
+# 2️Copy notebooks
 # -----------------------------
 COPY ../scripts /home/jovyan/scripts
 
 # -----------------------------
 # 3️Create conda environment
 # -----------------------------
-COPY environment.yml /tmp/environment.yml
+COPY binder/environment.yml /tmp/environment.yml
 RUN conda env create -f /tmp/environment.yml --no-builds && \
     conda clean --all -y && \
     rm /tmp/environment.yml
