@@ -15,7 +15,7 @@ COPY ../scripts /home/jovyan/scripts
 # 3️Create conda environment
 # -----------------------------
 COPY binder/environment.yml /tmp/environment.yml
-RUN conda env create -f /tmp/environment.yml --no-builds && \
+RUN conda env create -f /tmp/environment.yml && \
     conda clean --all -y && \
     rm /tmp/environment.yml
 
