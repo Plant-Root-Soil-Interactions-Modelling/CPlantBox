@@ -1,43 +1,33 @@
 # Base minimal Jupyter image
 FROM jupyter/minimal-notebook:python-3.11
 
-# -----------------------------
-# 1️Copy precompiled Python module
-# -----------------------------
+# 1. Copy precompiled Python module
 COPY ../lib /home/jovyan/CPlantBox/lib
 
-# -----------------------------
-# 2️Copy notebooks
-# -----------------------------
-COPY ../scripts /home/jovyan/scripts
+# 2. Copy notebooks
+COPY ../scripts /home/jovyan/work
 
-# -----------------------------
-# 3️Create conda environment
-# -----------------------------
-COPY binder/environment.yml /tmp/environment.yml
-RUN conda install -n base -c conda-forge mamba -y && \
-    mamba install -n base --file /tmp/environment.yml --quiet && \
+# 3. Copy environment.yml and create environment with mamba
+COPY benvironment.yml /home/jovyan/environment.yml
+RUN conda install -n base -c conda-forge -y mamba && \
+    mamba env create -f /home/jovyan/environment.yml --quiet && \
     conda clean --all -y && \
-    rm /tmp/environment.yml
+    rm /home/jovyan/environment.yml
 
-# -----------------------------
-# 4️Set Python path to precompiled module
-# -----------------------------
-
-# -----------------------------
-# 5️Install system libraries safely
-# -----------------------------
-COPY binder/apt.txt /tmp/apt.txt
+# 4. Install system libraries
+COPY apt.txt /tmp/apt.txt
 RUN apt-get update && \
     grep -v '^#' /tmp/apt.txt | xargs apt-get install -y --no-install-recommends && \
     rm -rf /var/lib/apt/lists/* /tmp/apt.txt
 
-# -----------------------------
-# 6️Set working directory to notebooks
-# -----------------------------
-WORKDIR /home/jovyan/scripts
+# 5. Install precompiled Python module into conda environment
+RUN /bin/bash -c "source /opt/conda/etc/profile.d/conda.sh && \
+    conda activate cpb && \
+    pip install /home/jovyan/CPlantBox/lib"
 
-# -----------------------------
-# 7️Launch notebook
-# -----------------------------
+# 6. Set working directory to notebooks
+WORKDIR /home/jovyan/work
+
+# 7. Launch Jupyter notebook
 CMD ["start-notebook.sh"]
+

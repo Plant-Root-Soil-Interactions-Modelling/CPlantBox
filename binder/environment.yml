@@ -4,4 +4,10 @@ channels:
 dependencies:
   - python=3.11
   - numpy
+  - scipy
+  - matplotlib
+  - pandas
+  - ipython
+  - ipykernel
+  - vtk  
 
