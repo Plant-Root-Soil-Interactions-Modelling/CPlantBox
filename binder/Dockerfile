@@ -1,5 +1,5 @@
 # Base minimal Jupyter image
-FROM jupyter/minimal-notebook:python-3.11.7
+FROM jupyter/minimal-notebook:python-3.11
 
 # Copy precompiled Python module
 COPY ../lib /home/jovyan/CPlantBox/lib
