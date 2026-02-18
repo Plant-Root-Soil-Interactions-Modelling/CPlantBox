@@ -36,6 +36,7 @@ def get_parameter_names():  # parameter xml file names
         ("Demo Leaf", "leaf_only.xml"),
         ("Demo Root", "root_only.xml"),
         ("Demo Stem", "stem_only.xml"),
+        ("User Data", "xml-store"),
     ]
     return parameter_names
 
@@ -232,15 +233,19 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         p.tropismT = tropism_names[d[8]]
 
 
-def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
+def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, xml_data):
     """sets all store data from the xml file"""
     # print("set_data()")
     typename_data.clear()
     """ open xml """
-    fname = get_parameter_names()[int(plant_)][1]  # xml filename
+    fname = get_parameter_names()[int(plant_)][1]
     plant = pb.Plant()
-    my_dir = os.path.dirname(os.path.abspath(__file__))  # still works, if started from ohter folder
-    plant.readParameters(my_dir + "/params/" + fname)
+    if fname == "xml-store":
+        print("xlm data", type(xml_data["xml"]), len(xml_data["xml"]))
+        plant.readParameters(xml_data["xml"], "plant", False, True)  # read from string, with verbose output (for debugging)
+    else:
+        my_dir = os.path.dirname(os.path.abspath(__file__))  # still works, if started from ohter folder
+        plant.readParameters(my_dir + "/params/" + fname)
     """ seed """
     srp = plant.getOrganRandomParameter(pb.seed)
     p = srp[0]

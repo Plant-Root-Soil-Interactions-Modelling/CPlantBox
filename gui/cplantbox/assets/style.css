@@ -1,3 +1,7 @@
+.dash-range-slider-input {  /* gets rid of the boxes right off the sliders */
+    display: none !important;
+}
+
 h5 {
     /* fz layout */
     font-size: 18px;
@@ -136,4 +140,15 @@ h6,
     display: flex;
     flex-direction: column;
     /* stack children vertically */
+}
+
+/* About tab */
+.aboutContainer {
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    /*border: 1px solid #ccc;*/
+    border-radius: 8px;
+    /*background-color: #f5f6fa;*/
 }

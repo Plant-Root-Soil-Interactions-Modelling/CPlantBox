@@ -1,5 +1,7 @@
 """CPlantBox Webapp (using Python dash), D. Leitner 2026"""
 
+import base64
+import os
 import webbrowser
 from threading import Timer
 
@@ -8,16 +10,24 @@ import dash
 import dash_bootstrap_components as dbc
 import numpy as np
 import plots  # figures
+import simulate_plant  # the simulation loop
 import vtk
 import vtk_conversions  # auxiliary stuff
 from dash import Input, Output, State, ctx, dcc, html
 from pympler import asizeof
-from simulate_plant import simulate_plant  # the simulation loop
 
 
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050")
 
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+md_path = os.path.join(BASE_DIR, "assets", "readme.md")  # Path to your Markdown file in the assets folder
+with open(md_path, "r", encoding="utf-8") as f:  # Read the Markdown content
+    ABOUT_TEXT = f.read()
+
+
+MAX_XML_SIZE = 200 * 1024  # 200 KB in bytes
 
 #
 # INITIALIZE
@@ -55,23 +65,24 @@ app.layout = dbc.Container(
                 "shoot-checkbox": False,
                 "tillers-checkbox": False,
             },
-        ),
+        ),  # seed slider values
         dcc.Store(
             id="root-store",
             data={f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)},
-        ),
+        ),  # root slider values
         dcc.Store(
             id="stem-store",
             data={f"tab-{i}": STEM_SLIDER_INITIALS for i in range(1, 5)},
-        ),
-        dcc.Store(id="leaf-store", data={"leaf": LEAF_SLIDER_INITIALS}),
+        ),  # stem slider values
+        dcc.Store(id="leaf-store", data={"leaf": LEAF_SLIDER_INITIALS}),  # leaf slider values
         dcc.Store(
             id="typename-store",
             data={f"tab-{i}": f"Order {i} root" for i in range(1, 5)},
         ),  # root sub type names
-        dcc.Store(id="settings-store", data={"token": 0, "reset": True, "random_seed": 0}),
-        dcc.Store(id="vtk-result-store", data={}),
-        dcc.Store(id="result-store", data={}),
+        dcc.Store(id="settings-store", data={"token": 0, "reset": True, "random_seed": 0}),  # further settings
+        dcc.Store(id="vtk-result-store", data={}),  # resulting geometry
+        dcc.Store(id="result-store", data={}),  # resulting graphs
+        dcc.Store(id="xml-store", data={}),  # for uploaded xml content
         dcc.Download(id="download-xml"),
         dbc.Row(
             [
@@ -216,8 +227,8 @@ app.layout = dbc.Container(
                             className="tabs",
                         ),
                         html.Div(id="organtype-tabs-content"),
-                        dcc.Tabs(id="root-tabs", children=[], value="", className="tabs"),
-                        dcc.Tabs(id="stem-tabs", children=[], value="", className="tabs"),
+                        # dcc.Tabs(id="root-tabs", children=[], value="", className="tabs"),
+                        # dcc.Tabs(id="stem-tabs", children=[], value="", className="tabs"),
                     ],
                     width=3,
                 ),
@@ -255,10 +266,15 @@ app.layout = dbc.Container(
                                     className="tab",
                                     selected_className="tabSelected",
                                 ),
+                                dcc.Tab(
+                                    label="About",
+                                    value="About",
+                                    className="tab",
+                                    selected_className="tabSelected",
+                                ),
                             ],
                             className="tabs",
                         ),
-                        html.Div(className="spacer"),
                         html.Div(id="result-tabs-content"),
                     ],
                     width=6,
@@ -303,12 +319,13 @@ app.layout = dbc.Container(
     State("leaf-store", "data"),
     State("typename-store", "data"),
     State("organtype-tabs", "value"),
+    State("xml-store", "data"),
     # prevent_initial_call = True,
 )
-def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value):
+def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, xml_data):
     print("plant_dropdown()", plant_value)
-    conversions.set_data(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data)
-    print(typename_data)
+    conversions.set_data(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, xml_data)
+    print("plant_dropdown() - typename_data:", typename_data)
     return (
         seed_data,
         root_data,
@@ -336,6 +353,7 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     State("typename-store", "data"),
     State("result-tabs", "value"),
     State("settings-store", "data"),
+    State("xml-store", "data"),
     prevent_initial_call=True,
 )
 def click_create(
@@ -349,13 +367,14 @@ def click_create(
     typename_data,
     result_value,
     settings_data,
+    xml_data,
 ):
     print("click_create()", plant_value, settings_data)
     settings_data["token"] += 1  # does not work with reset view
     settings_data["reset"] = True
     rng = np.random.default_rng()
     settings_data["random_seed"] = rng.integers(1, 10001)  # new random seed
-    vtk_data, result_data = simulate_plant(
+    vtk_data, result_data = simulate_plant.simulate_plant(
         plant_value,
         time_slider,
         seed_data,
@@ -363,6 +382,7 @@ def click_create(
         stem_data,
         leaf_data,
         settings_data["random_seed"],
+        xml_data,
     )
     content = render_result_tab(result_value, vtk_data, result_data, typename_data, settings_data)  # call by hand
     return (content, vtk_data, result_data, settings_data, html.H6(""))
@@ -384,6 +404,7 @@ def click_create(
     State("typename-store", "data"),
     State("result-tabs", "value"),
     State("settings-store", "data"),
+    State("xml-store", "data"),
     prevent_initial_call=True,
 )
 def click_update(
@@ -397,10 +418,11 @@ def click_update(
     typename_data,
     result_value,
     settings_data,
+    xml_data,
 ):
     print("click_update()", plant_value, settings_data)
     settings_data["reset"] = False
-    vtk_data, result_data = simulate_plant(
+    vtk_data, result_data = simulate_plant.simulate_plant(
         plant_value,
         time_slider,
         seed_data,
@@ -408,38 +430,46 @@ def click_update(
         stem_data,
         leaf_data,
         settings_data["random_seed"],
+        xml_data,
     )
     content = render_result_tab(result_value, vtk_data, result_data, typename_data, settings_data)  # call by hand
     return (content, vtk_data, result_data, settings_data, html.H6(""))
 
 
-@app.callback(  # parameter download
+@app.callback(  # parameter file download
     Output("download-xml", "data"),
     Input("xml-download-button", "n_clicks"),
+    State("plant-dropdown", "value"),
+    State("seed-store", "data"),
+    State("root-store", "data"),
+    State("stem-store", "data"),
+    State("leaf-store", "data"),
+    State("xml-store", "data"),
     prevent_initial_call=True,
 )
-def download_xml(n_clicks):
-    return dict(content="fake content", filename="cplantbox_parameters.xml", type="application/xml")
+def download_xml(n_clicks, plant_value, seed_data, root_data, stem_data, leaf_data, xml_data):
+    xml_string = simulate_plant.get_xml(plant_value, seed_data, root_data, stem_data, leaf_data, xml_data)
+    return dict(content=xml_string, filename="cplantbox_parameters.xml", type="application/xml")
 
 
-# @app.callback(
-#     Output("some-output", "children"),
-#     Input("xml-upload-button", "contents"),
-#     State("xml-upload-button", "filename"),
-#     prevent_initial_call=True,
-# )
-# def handle_xml_upload(contents, filename):
-
-#     if contents is None:
-#         return dash.no_update
-
-#     content_type, content_string = contents.split(",")
-#     xml_string = base64.b64decode(content_string).decode("utf-8")
-
-#     # Now xml_string is your uploaded XML file as a string
-#     print(xml_string)
-
-#     return f"Uploaded {filename}"
+@app.callback(  # parameter fiel upload
+    Output("xml-store", "data"),
+    Output("plant-dropdown", "value"),
+    Input("xml-upload-button", "contents"),
+    State("xml-store", "data"),
+    prevent_initial_call=True,
+)
+def handle_xml_upload(contents, data):
+    if contents is None:
+        return dash.no_update
+    content_type, content_string = contents.split(",")
+    decoded = base64.b64decode(content_string)
+    if len(decoded) > MAX_XML_SIZE:  # Size check (before decoding to UTF-8 string)
+        print("XML file exceeds size limit")
+        return dash.no_update  # or raise PreventUpdate
+    xml_string = decoded.decode("utf-8")
+    data["xml"] = xml_string  # Store the XML content in the dcc.Store
+    return data, "6"
 
 
 #
@@ -840,7 +870,7 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
         dcc.Dropdown(
             id={"type": "leaf-dynamic-slider", "index": 0},  # little white lie
             options=["Defined", "Long", "Round", "Maple", "Flower"],
-            value="Defined",
+            value="Defined",  # leaf_values[0] ???
             clearable=False,
             className="dropdown",
             style={"fontSize": "12px", "padding-top": "5px"},
@@ -916,13 +946,22 @@ def update_leaf_store(slider_values, store_data):
 )
 def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
     print("render_result_tab()", tab, settings_data["token"], settings_data["reset"])
+
+    if tab == "About":
+        return html.Div(
+            dcc.Markdown(ABOUT_TEXT, style={"whiteSpace": "pre-line"}),
+            className="aboutContainer",
+        )
+
+    if not vtk_data:
+        print("no data")
+        return html.Div([html.H6("press the create button")])
+
     print("***********************************************************************************************************************************")
     print("vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB")
     print("result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
     print("***********************************************************************************************************************************")
-    if not vtk_data:
-        print("no data")
-        return html.Div([html.H6("press the create button")])
+
     if tab == "VTK3D":
         color_pick = vtk_conversions.decode_array(vtk_data["subType"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
