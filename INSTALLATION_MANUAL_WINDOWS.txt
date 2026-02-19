@@ -78,7 +78,7 @@ STEP 2: BOOTSTRAP vcpkg AND INSTALL DEPENDENCIES
 
 
     # Install required libraries for x64-windows
-    .\vcpkg install eigen3 tinyxml2 pybind11:x64-windows
+    .\vcpkg install eigen3:x64-windows-static-md tinyxml2:x64-windows-static-md pybind11:x64-windows-static-md
 
 
     IMPORTANT: vcpkg and the CPlantBox repository must live as siblings in the sameworkspace! Otherwise build will not work.
@@ -103,21 +103,12 @@ STEP 3: BUILD CPlantBox
 2. Configure the project with CMake. Replace the toolchain path if your vcpkg
    is located elsewhere:
 
-    cmake -S .. -B . -G "Visual Studio 17 2022" -A x64 `
-      -DCMAKE_TOOLCHAIN_FILE="C:/CPlantBox-windows/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-      -DVCPKG_TARGET_TRIPLET=x64-windows
+    cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE="C:/Users/<name>/Documents/CPlantBox-windows/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL -DBUILD_CPLANTBOX_SHARED=OFF
 	  
 	
 	Convenience for myself:
-	cmake -S .. -B . -G "Visual Studio 17 2022" -A x64 `
-	  -DCMAKE_TOOLCHAIN_FILE="C:/Users/t.selzner/Desktop/Rhizomancer-Project/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-	  -DVCPKG_TARGET_TRIPLET=x64-windows
+	cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE="C:/Users/m.giraud/Documents/CPlantBox-windows/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL -DBUILD_CPLANTBOX_SHARED=OFF
 
-	For Linux builds:
-	cmake -S .. -B . -G Ninja -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux
-
-	Alternatively for linux if Ninja is not available or not desired:
-	cmake -S .. -B . -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux
 
 3. Build the Release configuration:
 
@@ -145,6 +136,30 @@ Set PYTHONPATH so Python can find the compiled extension and helper modules. Thi
     import plantbox as pb
     print("Imported plantbox:", pb)
 
+STEP 5: SHARE THE LIBRARY
+---------------------------------------
+CPlantBox can now be loaded by sharing the `.pyd`, and the python modules and scripts with python3.12. 
+Guidelines for students:
+A virtual python environment is recommended. Open Windows PowerShell and go inside the CPlantBox folder.
+
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+	.\Python312\Python312\python.exe -m venv .venv
+	.venv\Scripts\Activate.ps1
+	
+You will need to activate the virtual environment each time you open python
+	
+
+To run code you will need some extra Python packages. Run the code below after having activate the virtual environment: 
+
+	# upgrade pip and install needed modules
+	python -m pip install --upgrade pip
+	pip install vtk numpy jupyter matplotlib scipy
+	
+Then, to access the excercises run the code below
+
+	jupyter-notebook
+
+TODO: create a bash file to do all that
 
 OUTPUT LOCATION
 ---------------
@@ -169,4 +184,5 @@ NOTES
   dont need to install Visual C++ Redistributable separately.
 * PhloemFlux / PiafMunch is disabled by default. Enabling it requires a legacy
   SUNDIALS/KLU build (not included here, this is very very painful to do with vcpkg).
+
 
