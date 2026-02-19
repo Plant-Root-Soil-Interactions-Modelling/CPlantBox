@@ -5,9 +5,9 @@ project(CPlantBox LANGUAGES CXX)
 include(CMakePackageConfigHelpers) # for later package export
 
 # use static CRT on MSVC to avoid needing the VC++ redistributable
-if (MSVC)
-  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+#if (MSVC)
+#  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+#endif()
 
 #default for single-config generators
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)

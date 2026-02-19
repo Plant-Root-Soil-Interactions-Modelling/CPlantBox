@@ -2,9 +2,9 @@
 set(PYBIND11_FINDPYTHON ON)
 
 # Allow building CPlantBox as a shared library to respect LGPL linking expectations.
-option(BUILD_CPLANTBOX_SHARED "Build CPlantBox as a shared library (DLL/.so) when possible" ON)
+option(BUILD_CPLANTBOX_SHARED "Build CPlantBox as a shared library (DLL/.so) when possible" OFF)
 
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(tinyxml2 CONFIG REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 
@@ -66,7 +66,7 @@ target_include_directories(CPlantBox
 
 target_link_libraries(CPlantBox
   PUBLIC tinyxml2::tinyxml2
-  PRIVATE Eigen3::Eigen
+  PUBLIC Eigen3::Eigen
 )
 
 # Python extension that embeds CPlantBox.
@@ -94,6 +94,8 @@ if (MSVC)
     RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Debug"
   )
 endif()
+
+
 
 set(CPLANTBOX_INCLUDE_DIRS
   "${CMAKE_CURRENT_SOURCE_DIR}"

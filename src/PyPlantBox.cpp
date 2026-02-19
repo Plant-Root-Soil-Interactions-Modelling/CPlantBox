@@ -719,8 +719,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &LeafSpecificParameter::rlt)
             .def_readwrite("leafArea", &LeafSpecificParameter::areaMax)
             .def_readwrite("laterals", &LeafSpecificParameter::laterals)
-            .def_readwrite("laterals", &LeafSpecificParameter::width_blade)
-            .def_readwrite("laterals", &LeafSpecificParameter::width_petiole)
+            .def_readwrite("width_blade", &LeafSpecificParameter::width_blade)
+            .def_readwrite("width_petiole", &LeafSpecificParameter::width_petiole)
 			.def("getK",&LeafSpecificParameter::getK)
             .def("nob",&LeafSpecificParameter::nob);
     /*
