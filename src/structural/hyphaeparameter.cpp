@@ -81,7 +81,7 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
     std::vector<double> ln_; // stores the inter-distances
     double nob_sd = p->randn()*nobs();
     int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
-    bool hasLaterals = (successorST.size()>0) && (nob_real>0);
+    bool hasLaterals = (nob_real>0);
 
     if (!hasLaterals) { // no laterals
         lb_ = 0;
@@ -97,7 +97,7 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
         double nob1 = std::max((lmax-la_-lb_)/ln_mean+1, 0.); // use new la_, lb_ and ln_mean
         int nob_ = std::min(std::max(round(nob1 + nob_sd), 0.), double(nob_real)); // maximal number of branches +1
         int latMissing = nob_real - nob_;
-        assert((latMissing >= 0) && "RootRandomParameter::realize(): latMissing < 0");
+        assert((latMissing >= 0) && "HyphaeRandomParameter::realize(): latMissing < 0");
         int latExtraMean = floor(latMissing/nob_real); // mean number of extra laterals per branching point to keep correct number
         int latExtra = latMissing - latExtraMean*(nob_);
         for (int j = 0; j<latExtraMean; j++) { //at end of basal zone
@@ -177,7 +177,7 @@ void HyphaeRandomParameter::bindParameters()
 }
 
 /**
- * snaps to the grid, to make it compatible with dx() and dxMin() copied from RootRandomPArameter
+ * snaps to the grid, to make it compatible with dx() and dxMin() copied from RootRandomParameter
  */
 double HyphaeRandomParameter::snap(double x) const
 {

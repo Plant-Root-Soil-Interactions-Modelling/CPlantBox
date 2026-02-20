@@ -67,14 +67,7 @@ public:
 
     void bindParameters() override; ///<sets up class introspection
 
-    double lb = 0.0001;         ///< Basal zone [cm]
-    double lbs = 0.;        ///< Standard deviation basal zone [cm]
-    double la = 0.003;        ///< Apical zone [cm];
-    double las = 0.;        ///< Standard deviation apical zone [cm];
-    double lmax = 10.;       ///< Maximal length of the hyphae [cm]
-    double lmaxs = 0.;       ///< Standard deviation of maximal length of the hyphae [cm]
-    double ln = 0.005;          ///< Inter-lateral distance [cm]
-    double lns = 0.;        ///< Standard deviation inter-lateral distance [cm]
+    
     double v=0.13;              ///< tip elongation rate [cm/day] 
     double vs=0.01;             ///< standard deviation of tip elongation rate [cm/day]
     double b=0.5;              ///< branching rate [1/day]
@@ -88,6 +81,14 @@ public:
     double ana= 1.0; ///< Probability of anastomosis occuring if tip is close enough
 
     double lnk = 0.; //< Slope of inter-lateral disntances [1]
+    double lb = 0.0001;         ///< Basal zone [cm]
+    double lbs = 0.;        ///< Standard deviation basal zone [cm]
+    double la = 0.003;        ///< Apical zone [cm];
+    double las = 0.;        ///< Standard deviation apical zone [cm];
+    double lmax = 10.;       ///< Maximal length of the hyphae [cm]
+    double lmaxs = 0.;       ///< Standard deviation of maximal length of the hyphae [cm]
+    double ln = 0.005;          ///< Inter-lateral distance [cm]
+    double lns = 0.;        ///< Standard deviation inter-lateral distance [cm]
 
     int tropismT = 2;       ///< Hypha tropism parameter (Type)
     double tropismN = 1.;   ///< Hypha tropism parameter (number of trials)
