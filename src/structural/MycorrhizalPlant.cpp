@@ -124,13 +124,35 @@ std::vector<int> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
  */
 void MycorrhizalPlant::simulate(double dt, bool verbose)
 {
-    auto organs = getOrgans();
     abs2rel();
     Organism::simulate(dt, verbose);
     sdf = std::make_shared<SDF_RootSystem>(*this);
     sdf->selectedOrganType = Organism::ot_hyphae;
     simulateAnastomosis(dt, verbose);
     rel2abs();
+}
+
+void MycorrhizalPlant::simulateHyphae(double dt, bool verbose) {
+    auto organs = getOrgans();
+    this->dt = dt;
+    oldNumberOfNodes = getNumberOfNodes();
+    oldNumberOfOrgans = getNumberOfOrgans();
+    for (const auto & o : baseOrgans) {
+        if (o->organType() == Organism::ot_hyphae) {
+            // std::cout << "Simulating hyphae growth for dt: " << dt << "\n";
+            std::dynamic_pointer_cast<Hyphae>(o) -> simulate(dt,verbose);
+        }
+    }
+    for (const auto & o : organs) {
+        if (o->organType() == Organism::ot_hyphae) {
+            // std::cout << "Simulating hyphae growth for dt: " << dt << "\n";
+            std::dynamic_pointer_cast<Hyphae>(o) -> simulate(dt,verbose);
+        }
+    }
+    simtime += dt;
+    sdf = std::make_shared<SDF_RootSystem>(*this);
+    sdf->selectedOrganType = Organism::ot_hyphae;
+    simulateAnastomosis(dt, verbose);
 }
 /*
  * Simulates primary infection for all mycorrhizal roots
@@ -139,7 +161,15 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
 */
 void MycorrhizalPlant::simulatePrimaryInfection(double dt, bool verbose) {
     for (const auto& r : baseOrgans) {
-        std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryInfection(dt);
+        if (r->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryInfection(dt);
+        }
+    }
+    auto organs = getOrgans();
+    for (const auto& r : organs) {
+        if (r->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryInfection(dt);
+        }
     }
 }
 
@@ -150,7 +180,16 @@ void MycorrhizalPlant::simulatePrimaryInfection(double dt, bool verbose) {
  */
 void MycorrhizalPlant::simulateSecondaryInfection(double dt, bool verbose) {
     for (const auto& r : baseOrgans) {
-        std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryInfection(dt);
+        if (r->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryInfection(dt);
+        }
+    }
+
+    auto organs = getOrgans();
+    for (const auto& r : organs) {
+        if (r->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryInfection(dt);
+        }
     }
 }
 

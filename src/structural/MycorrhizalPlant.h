@@ -25,6 +25,7 @@ class MycorrhizalPlant :public Plant {
     void simulateSecondaryInfection(double dt, bool verbose);
     void simulateHyphalGrowth(double dt, bool verbose);
     void simulateAnastomosis(double dt, bool verbose);
+    void simulateHyphae(double dt, bool verbose);
 
     virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
     virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
