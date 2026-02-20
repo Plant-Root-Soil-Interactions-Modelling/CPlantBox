@@ -96,9 +96,6 @@ std::shared_ptr<Organ> Hyphae::copy(std::shared_ptr<Organism> rs)
  */
 void Hyphae::simulate(double dt, bool verbose)
 {
-
-// TODO BAS dichotomous branching?
-// TODO runner hyphae lateral branching?
 //    firstCall = true;
 //    moved = false;
     oldNumberOfNodes = nodes.size();
@@ -116,62 +113,133 @@ void Hyphae::simulate(double dt, bool verbose)
 
         if (age>0) { // unborn hyphae have no children
 
-            if (children.size() == 0) { // ELONGATE
+            // if (children.size() == 0) { // ELONGATE
 
-                bool activebefore = active; // store previous state
+            //     if (active) {
+			// 		double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+			// 		double dt_; // time step
+			// 		if (age<dt) { // the hypha emerged in this time step, adjust time step
+			// 			dt_= age;
+			// 		} else {
+			// 			dt_=dt;
+			// 		}
 
-                if (active) {
-					double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
-					double dt_; // time step
-					if (age<dt) { // the hypha emerged in this time step, adjust time step
-						dt_= age;
-					} else {
-						dt_=dt;
-					}
+			// 		double targetlength = calcLength(age_+dt_);//+ this->epsilonDx;
+            //         double e = targetlength-length; // unimpeded elongation in time step dt
+            //         double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+            //         double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
+            //         length = getLength();
+            //         createSegments(dl,dt,verbose);
+            //         length+=dl;
+            //         if (dl == 0.)
+            //         {
+            //             active = false; // if no length increment, hyphae become inactive
+            //         }
 
-					double targetlength = calcLength(age_+dt_);//+ this->epsilonDx;
-					// TODO: maybe add later the epsilonDx. could be usefull for flow computation + in case of length errors created by anastomosis
+            //     }
 
-                    double e = targetlength-length; // unimpeded elongation in time step dt
-                    double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
-                    double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
-                    length = getLength();
-                    createSegments(dl,dt,verbose);
-                    // TODO: if relevant add lateral branching here but wait until feburary Team up Meeting
-                    length+=dl;
-                    if (dl == 0.)
-                    {
-                        active = false; // if no length increment, hyphae become inactive
-                    }
-
-                }
-                // std::cout << p.getMaxLength() << " " << getLength(false) << std::endl;
-                // std::cout << nodes.size() << std::endl;
-                // std::cout<< "Age: "<< age << " vs. simTime - CT first node: "<< getOrganism()->getSimTime() << "\n";
-
-                if (this->getAge() * getParameter("b")>1.) // TODO check if this is really correct
-                {
-                    active = false; // become inactive, if enough time has passed for branching
-                    // std::cout<< "number of children: " << children.size() << "\n";
-                    createLateral(nodes.size()-1); // create a lateral hyphae
-                    createLateral(nodes.size()-1); // create a lateral hyphae
-                    // std::cout<< "Age when a branching occurred: " << age << " days, in hyphal tree " << hyphalTreeIndex << "\n";
-                }
+            //     if (this->getAge() * getParameter("b")>1.) // TODO check if this is really correct
+            //     {
+            //         active = false; // become inactive, if enough time has passed for branching
+            //         createLateral(nodes.size()-1); // create a lateral hyphae
+            //         createLateral(nodes.size()-1); // create a lateral hyphae
+            //     }
                 
-                //std::cout << "Hyphae active: " << active << std::endl;
+            //     //std::cout << "Hyphae active: " << active << std::endl;
 
-            } else { // NOT ACTIVE (children grow)
+            // } else { // NOT ACTIVE (children grow)
 
                 // children first (lateral roots grow even if base root is inactive)
                 for (auto l:children) {
                     l->simulate(dt,verbose);
                 }
             }
+            for (auto l:children) {
+                l->simulate(dt,verbose);
+                
+                if (active) {
+                    // length increment
+                    double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+                    double dt_; // time step
+                    if (age<dt) { // the root emerged in this time step, adjust time step
+                        dt_= age;
+                    } else {
+                        dt_=dt;
+                    }
 
-        } // age>0
-    } // if alive
+                    double targetlength = calcLength(age_+dt_);//+ this->epsilonDx;
 
+                    double e = targetlength-length; // unimpeded elongation in time step dt
+                    double scale = 1.; // getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+                    double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
+                    length = getLength();
+                    this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
+                    // create geometry
+                    if (p.laterals) { // hypha has children
+                        /* basal zone */
+                        if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
+                            if (length+dl<=p.lb) {
+                                createSegments(dl,dt_,verbose);
+                                length+=dl; // - this->epsilonDx;
+                                dl=0;
+                            } else {
+                                double ddx = p.lb-length;
+                                createSegments(ddx,dt_,verbose);
+                                dl-=ddx; // ddx already has been created
+                                length=p.lb;
+                            }
+                        }
+                        /* branching zone */
+                        if ((dl>0)&&(length>=p.lb)) {
+                            double s = p.lb; // summed length
+                            for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
+                                s+=p.ln.at(i);
+                                if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
+
+                                    if (i==created_linking_node) { // new lateral
+                                        createLateral(dt_,verbose);
+                                    }
+
+                                    if(length < s)//because with former check we have (length<=s)
+                                    {
+                                        if (length+dl<=s) { // finish within inter-lateral distance i
+                                            createSegments(dl,dt_,verbose);
+                                            length+=dl; //- this->epsilonDx;
+                                            dl=0;
+                                        } else { // grow over inter-lateral distance i
+                                            double ddx = s-length;
+                                            createSegments(ddx,dt_,verbose);
+                                            dl-=ddx;
+                                            length=s;
+                    
+                                        }
+
+                                    }
+                                }
+                            }
+
+                            if ((p.ln.size()==created_linking_node)&& (getLength(true)-s>-1e-9)){
+                                createLateral(dt_, verbose);
+                            }
+                        }
+                        /* apical zone */
+                        if (dl>0) {
+                            createSegments(dl,dt_,verbose); 
+                            length+=dl; // - this->epsilonDx;
+                        }
+                    } else { // no laterals
+
+                        if (dl>0) {
+                            createSegments(dl,dt_,verbose);
+                            length+=dl; //- this->epsilonDx;
+                        }
+                    } // if lateralgetLengths
+                } // if active
+                active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+            }
+        }
 }
+
 
 ///**
 // * Analytical length of the single root at a given age
@@ -239,19 +307,18 @@ double Hyphae::getParameter(std::string name) const
  * @param ageLN   age of the lateral hyphae
  * @param silence if true, no console output is generated
  */
-void Hyphae::createLateral(double pni)
+void Hyphae::createLateral(double pni, bool verbose)
 {
     double dt_ = plant.lock()->getSimTime() - nodeCTs.at(pni); // time the hyphae should have grown
     double delay = 0.;
-    // double delay = getHyphaeRandomParameter()->hyphalDelay; // todo specific (with std)
     int subType = 1;
     auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay, shared_from_this(), pni); // delay - dt_
     children.push_back(hyphae);
-    // hyphae->setHyphalTreeIndex(hyphalTreeIndex);
-    // std::cout << "********* simulate "  << ", "<< plant.lock()->getSimTime() <<", " << dt_ << "\n";
     hyphae->setHyphalTreeIndex(hyphalTreeIndex); // get new index
     hyphae->simulate(dt_);
-    // std::cout<< "Created lateral hyphae in hyphal tree " << hyphalTreeIndex << " with hopefully on the same index: "<< hyphae->getParameter("hyphalTreeIndex") << "\n";
+    if (verbose) {
+        std::cout << "Hyphae " << getId() << " created lateral hyphae " << hyphae->getId() << " at node " << pni << " at time " << plant.lock()->getSimTime() << std::endl;
+    }
 }
 
 Vector3d Hyphae::getMergePoint(int id)
