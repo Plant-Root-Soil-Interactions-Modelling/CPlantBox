@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import colorsys
 
 # CPB
 import functional.xylem_flux as xylem_flux
@@ -45,7 +46,11 @@ class MainWindow(QtWidgets.QMainWindow):
             'length':       {'title': 'Length (m)', 
                              'format': ticker.StrMethodFormatter('{x:.3f}')},
             'SUF':          {'title': 'SUF (-)', 
-                             'format': ticker.StrMethodFormatter('{x:.2e}')}
+                             'format': ticker.StrMethodFormatter('{x:.2e}')},
+                             
+             'rootId':      {'title': 'Root ID (-)',
+                             'format': ticker.StrMethodFormatter('{x:.0f}'),
+                             'type': 'categorical'},
         }
         self.camera_is_set = False
         self.current_file = None
@@ -571,6 +576,73 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.data.exists():
             viewer_plots.plot_krs(self.data, self.ax_krs, self.combo_krs.currentIndex())
             self.canvas_krs.draw()
+            
+    def _build_rootid_actor(self):
+        """
+        Builds a VTK actor where each RSML polyline is colored by its Root ID (1..N).
+
+        Notes:
+        - Root IDs here are 1-based and correspond to the order of self.data.polylines.
+        - This is meant as a visual assessment tool (quick QA), not a hydraulic/metric plot.
+        """
+        if not getattr(self.data, "polylines", None):
+            return None, (0, 0)
+
+        points = vtk.vtkPoints()
+        lines = vtk.vtkCellArray()
+
+        root_id_arr = vtk.vtkIntArray()
+        root_id_arr.SetName("rootId")
+
+        pid = 0
+        n_roots = 0
+
+        for rid, pl in enumerate(self.data.polylines, start=1):
+            if pl is None or len(pl) < 2:
+                continue
+            n_roots = max(n_roots, rid)
+
+            polyline = vtk.vtkPolyLine()
+            polyline.GetPointIds().SetNumberOfIds(len(pl))
+
+            for j, p in enumerate(pl):
+                # p is expected to be (x, y, z) in RSML coordinates
+                points.InsertNextPoint(float(p[0]), float(p[1]), float(p[2]))
+                root_id_arr.InsertNextValue(int(rid))
+                polyline.GetPointIds().SetId(j, pid)
+                pid += 1
+
+            lines.InsertNextCell(polyline)
+
+        polydata = vtk.vtkPolyData()
+        polydata.SetPoints(points)
+        polydata.SetLines(lines)
+        polydata.GetPointData().SetScalars(root_id_arr)
+
+        # Lookup table with N distinct-ish hues
+        lut = vtk.vtkLookupTable()
+        lut.SetNumberOfTableValues(max(1, n_roots))
+        lut.SetRange(1, max(1, n_roots))
+        lut.Build()
+
+        phi = 0.618033988749895  # golden ratio conjugate
+        h = 0.0
+        for i in range(max(1, n_roots)):
+            h = (h + phi) % 1.0
+            r, g, b = colorsys.hsv_to_rgb(h, 0.95, 0.95)
+            lut.SetTableValue(i, r, g, b, 1.0)
+
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputData(polydata)
+        mapper.SetLookupTable(lut)
+        mapper.SetScalarRange(1, max(1, n_roots))
+        mapper.SelectColorArray("rootId")
+        mapper.SetScalarModeToUsePointData()
+
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+
+        return actor, (1, max(1, n_roots))
 
     
     def render_3d(self, name):
@@ -585,11 +657,27 @@ class MainWindow(QtWidgets.QMainWindow):
             self.renderer.RemoveActor(self.root_actor)
 
         # Create the new 3D actor (plot_roots should now only return the actor)
-        self.root_actor, data_range = vp.plot_roots(
-            self.data.analyser, name,
-            render=False, interactiveImage=False
-        )
+        # Create the new 3D actor
+        if name == "rootId":
+            self.root_actor, data_range = self._build_rootid_actor()
+        else:
+            self.root_actor, data_range = vp.plot_roots(
+                self.data.analyser, name,
+                render=False, interactiveImage=False
+            )
+
+        if self.root_actor is None:
+            QtWidgets.QMessageBox.warning(self, "Warning", f"Could not render mode: {name}")
+            return
+
         self.renderer.AddActor(self.root_actor)
+
+        # Optional but recommended: keep bounds updated for camera/key handlers that use self.bounds
+        try:
+            self.bounds = self.root_actor.GetBounds()
+        except Exception:
+            pass
+
 
         # Update the Matplotlib colorbar with info from the new actor
         mapper = self.root_actor.GetMapper()
@@ -636,4 +724,9 @@ if __name__ == "__main__":
         win = create_rsml_window(path)
 
     win.show()
+    if len(sys.argv) >= 2:
+        def _init_view():
+            win.render_3d('subType')   # Type
+            win._on_x_view()           # X-View
+        QtCore.QTimer.singleShot(0, _init_view)
     sys.exit(app.exec_())
