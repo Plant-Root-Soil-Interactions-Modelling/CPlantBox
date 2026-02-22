@@ -47,13 +47,17 @@ class ViewerDataModel(RsmlData):
         radii, cts, types                    
         """
         nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # fetch nodes and segments
-        segRadii = np.zeros((segs.shape[0], 1))  # convert to paramter per segment
-        segCTs = np.zeros((segs.shape[0], 1))
-        subTypes = np.zeros((segs.shape[0], 1))
+        segRadii = np.zeros(segs.shape[0])  # convert to paramter per segment
+        segCTs = np.zeros(segs.shape[0])
+        if np.any(np.isnan(self.types)):
+            subTypes = np.ones(segs.shape[0], dtype=np.int32)
+        else:
+            subTypes = np.zeros(segs.shape[0], dtype=np.int32)
+            for i, s in enumerate(segs):
+                subTypes[i] = self.types[s[1]]
         for i, s in enumerate(segs):
             segRadii[i] = self.radii[s[1]]  # seg to node index
             segCTs[i] = self.cts[s[1]]
-            subTypes[i] = self.types[s[1]]
 #             st = subTypes[i]  # had coded values...
 #             if st == 0:
 #                 segRadii[i] = 0.055  # seg to node index
@@ -61,8 +65,6 @@ class ViewerDataModel(RsmlData):
 #                 segRadii[i] = 0.03
 #             elif st == 2:
 #                 segRadii[i] = 0.02
-        if np.isnan(subTypes[0]):
-            subTypes = np.ones((len(segs),), dtype = np.int64)
         segs_ = [pb.Vector2i(s[0], s[1]) for s in segs]  # convert to CPlantBox types
         nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
         self.analyser = pb.SegmentAnalyser(nodes_, segs_, segCTs, segRadii)
