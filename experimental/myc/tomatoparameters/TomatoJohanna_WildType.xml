@@ -38,7 +38,7 @@
         <!--X-Coordinate of seed position [cm]-->
         <parameter name="seedPos.y" value="0"/>
         <!--Y-Coordinate of seed position [cm]-->
-        <parameter name="seedPos.z" value="-5"/>
+        <parameter name="seedPos.z" value="0"/>
         <!--Z-Coordinate of seed position [cm]-->
         <parameter name="simulationTime" value="26"/>
         <!--Recommended final simulation time  [day]-->
