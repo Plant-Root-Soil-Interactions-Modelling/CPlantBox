@@ -13,7 +13,7 @@ import plots  # figures
 import simulate_plant  # the simulation loop
 import vtk
 import vtk_conversions  # auxiliary stuff
-from dash import Input, Output, State, ctx, dcc, html
+from dash import Input, Output, State, ctx, dcc, html, no_update
 from pympler import asizeof
 
 
@@ -22,7 +22,9 @@ def open_browser():
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-md_path = os.path.join(BASE_DIR, "assets", "readme.md")  # Path to your Markdown file in the assets folder
+md_path = os.path.join(
+    BASE_DIR, "assets", "readme.md"
+)  # Path to your Markdown file in the assets folder
 with open(md_path, "r", encoding="utf-8") as f:  # Read the Markdown content
     ABOUT_TEXT = f.read()
 
@@ -74,12 +76,16 @@ app.layout = dbc.Container(
             id="stem-store",
             data={f"tab-{i}": STEM_SLIDER_INITIALS for i in range(1, 5)},
         ),  # stem slider values
-        dcc.Store(id="leaf-store", data={"leaf": LEAF_SLIDER_INITIALS}),  # leaf slider values
+        dcc.Store(
+            id="leaf-store", data={"leaf": LEAF_SLIDER_INITIALS}
+        ),  # leaf slider values
         dcc.Store(
             id="typename-store",
             data={f"tab-{i}": f"Order {i} root" for i in range(1, 5)},
         ),  # root sub type names
-        dcc.Store(id="settings-store", data={"token": 0, "reset": True, "random_seed": 0}),  # further settings
+        dcc.Store(
+            id="settings-store", data={"token": 0, "reset": True, "random_seed": 0}
+        ),  # further settings
         dcc.Store(id="vtk-result-store", data={}),  # resulting geometry
         dcc.Store(id="result-store", data={}),  # resulting graphs
         dcc.Store(id="xml-store", data={}),  # for uploaded xml content
@@ -113,7 +119,9 @@ app.layout = dbc.Container(
                                             children=dcc.Button(
                                                 [
                                                     html.Img(
-                                                        src=app.get_asset_url("cloud-download.svg"),
+                                                        src=app.get_asset_url(
+                                                            "cloud-download.svg"
+                                                        ),
                                                         className="buttonIcon",
                                                     ),
                                                     "xml",
@@ -130,7 +138,9 @@ app.layout = dbc.Container(
                                             children=dcc.Button(
                                                 [
                                                     html.Img(
-                                                        src=app.get_asset_url("cloud-upload.svg"),
+                                                        src=app.get_asset_url(
+                                                            "cloud-upload.svg"
+                                                        ),
                                                         className="buttonIcon",
                                                     ),
                                                     "xml",
@@ -227,8 +237,6 @@ app.layout = dbc.Container(
                             className="tabs",
                         ),
                         html.Div(id="organtype-tabs-content"),
-                        # dcc.Tabs(id="root-tabs", children=[], value="", className="tabs"),
-                        # dcc.Tabs(id="stem-tabs", children=[], value="", className="tabs"),
                     ],
                     width=3,
                 ),
@@ -322,9 +330,20 @@ app.layout = dbc.Container(
     State("xml-store", "data"),
     # prevent_initial_call = True,
 )
-def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, xml_data):
+def plant_dropdown(
+    plant_value,
+    seed_data,
+    root_data,
+    stem_data,
+    leaf_data,
+    typename_data,
+    tabs_value,
+    xml_data,
+):
     print("plant_dropdown()", plant_value)
-    conversions.set_data(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, xml_data)
+    conversions.set_data(
+        plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, xml_data
+    )
     print("plant_dropdown() - typename_data:", typename_data)
     return (
         seed_data,
@@ -335,9 +354,6 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
         tabs_value,
         seed_data["simulationTime"],
     )
-
-
-from dash import ctx, no_update
 
 
 @app.callback(
@@ -358,7 +374,6 @@ from dash import ctx, no_update
     State("result-tabs", "value"),
     State("settings-store", "data"),
     State("xml-store", "data"),
-    prevent_initial_call=True,
 )
 def handle_simulation(
     create_clicks,
@@ -433,9 +448,15 @@ def handle_simulation(
     State("xml-store", "data"),
     prevent_initial_call=True,
 )
-def download_xml(n_clicks, plant_value, seed_data, root_data, stem_data, leaf_data, xml_data):
-    xml_string = simulate_plant.get_xml(plant_value, seed_data, root_data, stem_data, leaf_data, xml_data)
-    return dict(content=xml_string, filename="cplantbox_parameters.xml", type="application/xml")
+def download_xml(
+    n_clicks, plant_value, seed_data, root_data, stem_data, leaf_data, xml_data
+):
+    xml_string = simulate_plant.get_xml(
+        plant_value, seed_data, root_data, stem_data, leaf_data, xml_data
+    )
+    return dict(
+        content=xml_string, filename="cplantbox_parameters.xml", type="application/xml"
+    )
 
 
 @app.callback(  # parameter fiel upload
@@ -574,7 +595,9 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
         ),
     )
     # panel1 = conversions.into_panel(sliders, range(0, 1 + 2 * 2)  # shoot (disabled for now)
-    panel2 = conversions.into_panel(sliders, range(0, 2 + 5 * 2))  # basal (0-1+2*2 are added to the gui, but invisible)
+    panel2 = conversions.into_panel(
+        sliders, range(0, 2 + 5 * 2)
+    )  # basal (0-1+2*2 are added to the gui, but invisible)
     panel3 = conversions.into_panel(sliders, range(2 + 5 * 2, len(sliders)))  # tillers
     return html.Div([panel2, panel3])
 
@@ -639,7 +662,9 @@ def toggle_slider(checkbox_value, data):
 #
 # Parameters Panel - Root
 #
-def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs from stored values
+def generate_root_sliders(
+    root_values, tab
+):  # Generate sliders for root tabs from stored values
     """@param root_values is root_data[current_tab]"""
     print("generate_root_sliders()", root_values)
     style = {}
@@ -682,8 +707,12 @@ def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs f
             style={"fontSize": "12px", "padding-top": "5px"},
         )
     )
-    panel2 = conversions.into_panel(sliders, range(0, len(sliders) - (2 * 2 + 1)))  # all but tropism
-    panel3 = conversions.into_panel(sliders, range(len(sliders) - (2 * 2 + 1), len(sliders)))  # tropism
+    panel2 = conversions.into_panel(
+        sliders, range(0, len(sliders) - (2 * 2 + 1))
+    )  # all but tropism
+    panel3 = conversions.into_panel(
+        sliders, range(len(sliders) - (2 * 2 + 1), len(sliders))
+    )  # tropism
     return html.Div([panel2, panel3])
 
 
@@ -738,7 +767,9 @@ def update_root_store(slider_values, current_tab, store_data):
 #
 # Parameters Panel - Stem
 #
-def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs from stored values
+def generate_stem_sliders(
+    stem_values, tab
+):  # Generate sliders for stem tabs from stored values
     sliders = []
     successors = stem_values[-1]
     sliders.append(html.Div(className="spacer"))
@@ -783,8 +814,12 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
             style={"fontSize": "12px", "padding-top": "5px"},
         )
     )
-    panel2 = conversions.into_panel(sliders, range(0, len(sliders) - (2 * 2 + 1)))  # all but tropism
-    panel3 = conversions.into_panel(sliders, range(len(sliders) - (2 * 2 + 1), len(sliders)))  # tropism
+    panel2 = conversions.into_panel(
+        sliders, range(0, len(sliders) - (2 * 2 + 1))
+    )  # all but tropism
+    panel3 = conversions.into_panel(
+        sliders, range(len(sliders) - (2 * 2 + 1), len(sliders))
+    )  # tropism
     return html.Div([panel2, panel3])
 
 
@@ -889,8 +924,12 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
         )
     )
     panel1 = conversions.into_panel(sliders, range(0, 2 + 2 * 2))
-    panel2 = conversions.into_panel(sliders, range(2 + 2 * 2, len(sliders) - (2 * 2 + 1)))  # all but tropism
-    panel3 = conversions.into_panel(sliders, range(len(sliders) - (2 * 2 + 1), len(sliders)))  # tropism
+    panel2 = conversions.into_panel(
+        sliders, range(2 + 2 * 2, len(sliders) - (2 * 2 + 1))
+    )  # all but tropism
+    panel3 = conversions.into_panel(
+        sliders, range(len(sliders) - (2 * 2 + 1), len(sliders))
+    )  # tropism
     return html.Div([panel1, panel2, panel3])
 
 
@@ -943,20 +982,32 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
         print("no data")
         return html.Div([html.H6("press the create button")])
 
-    print("***********************************************************************************************************************************")
+    print(
+        "***********************************************************************************************************************************"
+    )
     print("vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB")
     print("result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
-    print("***********************************************************************************************************************************")
+    print(
+        "***********************************************************************************************************************************"
+    )
 
     if tab == "VTK3D":
         color_pick = vtk_conversions.decode_array(vtk_data["subType"])
-        color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
+        color_pick = np.repeat(
+            color_pick, 16
+        )  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
         # print("number of cell colors", len(color_pick), "cells", len(vtk_data["subType"]) , "\n", type(color_pick))
-        return plots.vtk3D_plot(vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"])
+        return plots.vtk3D_plot(
+            vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"]
+        )
     elif tab == "VTK3DAge":
         color_pick = vtk_conversions.decode_array(vtk_data["creationTime"])
-        color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
-        return plots.vtk3D_plot(vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"])
+        color_pick = np.repeat(
+            color_pick, 16
+        )  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
+        return plots.vtk3D_plot(
+            vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"]
+        )
     elif tab == "Profile1D":
         return plots.profile_plot(result_data)
     elif tab == "Dynamics":
