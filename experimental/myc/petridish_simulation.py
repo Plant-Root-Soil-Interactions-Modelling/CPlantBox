@@ -43,8 +43,8 @@ petri_dish = pb.SDF_PlantContainer(0.94,0.94,0.1,False)
 mycp.setGeometry(petri_dish)
 mycp.initialize(True)
 
-simtime = 8
-fps = 24
+simtime = 4
+fps = 48
 anim_time = simtime
 N = fps * anim_time
 dt = simtime / N

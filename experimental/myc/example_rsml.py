@@ -6,7 +6,7 @@ import plantbox as pb
 # from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
 import numpy as np
 import pandas as pd
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 name = "RSHA_WT_30d_export"
 dfs = pd.read_csv(name+".csv", low_memory=False)  
 RSA_ids = list(set(dfs['RSA_id'].values))

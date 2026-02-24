@@ -57,12 +57,13 @@ else:
 
 
 if animation:
-    for i in range(1, N):
+    for i in range(0, N+1):
         mycp.simulate(dt, False)
         ana = pb.SegmentAnalyser(mycp)
         ana.addData("infection", mycp.getNodeInfections(2))
         ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
-        ana.write("results/" +filename + "{:04d}".format(i) + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
+        ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
+        ana.write("results/" +filename + "{:04d}".format(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
         print("Frame " + str(i) + " of " + str(N))
 
 else:
@@ -74,12 +75,12 @@ else:
         mycp.simulate(dt, True)
 
     # vp.plot_plant(mycp, "organType")  
-#     print('done')
-    
+#     print('done')  
 ana = pb.SegmentAnalyser(mycp)
-# hti = ana.getParameter("hyphalTreeIndex")
-vp.plot_plant(ana,"hyphalTreeIndex")
-ana.write(filename + "_hyphalTrees" + ".vtp", ["radius", "subType", "creationTime","organType","hyphalTreeIndex"])
+ana.addData("infection", mycp.getNodeInfections(2))
+ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
+ana.write("results/" + filename + ".vtp", ["radius", "subType", "organType", "creationTime", "infection", "infectionTime", "anastomosis"])
 # ana.addData("infection", mycp.getNodeInfections(2))
 #     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
 # pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
