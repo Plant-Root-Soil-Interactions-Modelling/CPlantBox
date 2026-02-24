@@ -1,7 +1,6 @@
 """numerical simulation of plant carbon balance"""
 
 from datetime import datetime
-
 from matplotlib.dates import DateFormatter, HourLocator
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,11 +10,12 @@ import plantbox as pb
 from plantbox.functional.phloem_flux import PhloemFluxPython  # |\label{l52:importLib}|
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 from plantbox.visualisation import figure_style
+import plantbox.visualisation.vtk_plot as vp
 
 
 def getWeatherData(t):
     """get the weather data for time t (days)"""
-    diffDt = abs(pd.to_timedelta(weatherData["time"]) - pd.to_timedelta(t % 1, unit="d"))
+    diffDt = abs(pd.to_timedelta(weatherData["time"]) - pd.to_timedelta(t % 1, unit="D"))
     line_data = np.where(diffDt == min(diffDt))[0][0]
     return weatherData.iloc[line_data]
 
@@ -35,7 +35,7 @@ weatherData = pd.read_csv(path + "Selhausen_weather_data.txt", delimiter="\t")
 # Plant
 plant = pb.MappedPlant(seednum=2)
 path = "../../modelparameter/structural/plant/"
-filename = "Triticum_aestivum_test_2021"  # "Triticum_aestivum_adapted_2023"
+filename = "Triticum_aestivum_test_2021_shapeType2"  # "Triticum_aestivum_adapted_2023"
 plant.readParameters(path + filename + ".xml")
 
 sdf = pb.SDF_PlantBox(np.inf, np.inf, depth)
@@ -43,7 +43,6 @@ plant.setGeometry(sdf)
 verbose = False
 plant.initialize(verbose)
 plant.simulate(plant_age, verbose)
-
 
 # Soil
 def picker(_x, _y, z):
@@ -70,7 +69,7 @@ hm.read_phloem_parameters(filename=path + "plant_sucrose/phloem_parameters2025")
 time = []
 cumulAssimilation = 0.0
 cumulTranspiration = 0.0
-Q_Rm_is, Q_Gr_is, Q_Exud_is, Q_Water_is = [], [], [], []
+CSTs, Q_Rm_is, Q_Gr_is, Q_Exud_is, Q_Water_is, hxs = [], [], [], [], [], []
 
 # Simulation loop
 for i in range(n_steps):
@@ -106,9 +105,9 @@ for i in range(n_steps):
 
     n = round(float(i) / float(n_steps - 1) * 100.0)
     print(f"\n[{'*' * n}{' ' * (100 - n)}]")
-    print(f"\t\tat {int(np.floor(plant_age))}d {int((plant_age % 1) * 24)}h, PAR: {round(weatherData_i['PAR'] * 1e6)} mumol m-2 s-1")
-    print(f"cumulative: transpiration {cumulTranspiration:5.2e} [cm3]\tnet assimilation {cumulAssimilation:5.2e} [mol]")
-    print(f"sucrose concentration in sieve tube (mol ml-1):\n\tmean {np.mean(C_ST):.2e}\tmin {min(C_ST):5.2e}\tmax {max(C_ST):5.2e}")
+    print(f"\t\tat {int(np.floor(plant_age))}d {int((plant_age % 1) * 24)}h, PAR: {round(weatherData_i['PAR'] * 1e6)} (mumol m-2 s-1)")
+    print(f"cumulative: transpiration {cumulTranspiration:5.2e} (cm3)\tnet assimilation {cumulAssimilation:5.2e} (mol)")
+    print(f"sucrose concentration in sieve tube (mmol cm-3):\n\tmean {np.mean(C_ST):.2e}\tmin {min(C_ST):5.2e}\tmax {max(C_ST):5.2e}")
     print(f"aggregated sink repartition at last time step (%):\n\tRm {Q_Rm_i / Q_out_i * 100:5.1f}\tGr {Q_Gr_i / Q_out_i * 100:5.1f}\tExud {Q_Exud_i / Q_out_i * 100:5.1f}")
     print(f"total aggregated sink repartition (%):\n\tRm {Q_Rm / Q_out * 100:5.1f}\tGr {Q_Gr / Q_out * 100:5.1f}\tExud {Q_Exud / Q_out * 100:5.1f}")
 
@@ -116,22 +115,44 @@ for i in range(n_steps):
     Q_Rm_is.append(Q_Rm_i / dt)
     Q_Exud_is.append(Q_Exud_i / dt)
     Q_Gr_is.append(Q_Gr_i / dt)
+    CSTs.append(np.mean(C_ST))
     Q_Water_is.append(np.sum(hm.get_transpiration()))
+    hx = hm.get_water_potential()
+    hxs.append(np.mean(hx))
 
 # Plot results
-fig, ax_ = figure_style.subplots11large(2, 2)
+fig, ax_ = figure_style.subplots11large(3, 2)
 ax_[0, 0].plot(time, Q_Water_is, "tab:blue")
-ax_[0, 0].set(xlabel="Time (hh:mm)", ylabel="Total transpiration rate (cm3 day-1)")
-ax_[1, 0].plot(time, Q_Gr_is, "tab:red")
-ax_[1, 0].set(xlabel="Time (hh:mm)", ylabel="Total growth rate (mol day-1)")
-ax_[0, 1].plot(time, Q_Exud_is, "tab:brown")
-ax_[0, 1].set(xlabel="Time (hh:mm)", ylabel="Total exudation rate (mol day-1)")
+ax_[0, 0].set(xlabel="Time (hh:mm)", ylabel="Total transpiration\nrate (cm3 day-1)")
+ax_[1, 0].plot(time, hxs, "tab:blue")
+ax_[1, 0].set(xlabel="Time (hh:mm)", ylabel="Mean plant water\npotential (cm)")
+ax_[2, 0].plot(time, Q_Gr_is, "tab:red")
+ax_[2, 0].set(xlabel="Time (hh:mm)", ylabel="Total growth\nrate (mmol day-1)")
+ax_[0, 1].plot(time, CSTs, "k")
+ax_[0, 1].set(xlabel="Time (hh:mm)", ylabel="Mean phloem sucrose\nconcentration (mmol cm-3)")
 ax_[1, 1].plot(time, Q_Rm_is, "k")
-ax_[1, 1].set(xlabel="Time (hh:mm)", ylabel="Total respiration rate (mol day-1)")
-for ax in ax_.flatten():
+ax_[1, 1].set(xlabel="Time (hh:mm)", ylabel="Total respiration\nrate (mmol day-1)")
+ax_[2, 1].plot(time, Q_Exud_is, "tab:brown")
+ax_[2, 1].set(xlabel="Time (hh:mm)", ylabel="Total exudation\nrate (mmol day-1)")
+panel_labels = ["(a)", "(b)", "(c)", "(d)", "(e)", "(f)"]
+for ax, label in zip(ax_.flatten(), panel_labels):
+    ax.text(
+        0.02, 0.9, label,
+        transform=ax.transAxes,
+        fontsize=14,
+        fontweight="bold",
+        va="top",
+        ha="left"
+    )
     ax.xaxis.set_major_locator(HourLocator(range(0, 25, 1)))
     ax.xaxis.set_major_formatter(DateFormatter("%H:%M"))
     ax.fmt_xdata = DateFormatter("%H:%M")
     fig.autofmt_xdate()
 fig.tight_layout()
+plt.savefig("./results/figure5_2_numerical.png", dpi=300, bbox_inches="tight")
 plt.show()
+
+ana = pb.SegmentAnalyser(plant.mappedSegments())
+ana.addData("[sucrose]\n(mmol/cm3)", C_ST)
+
+vp.plot_plant(ana,p_name = "[sucrose]\n(mmol/cm3)")
