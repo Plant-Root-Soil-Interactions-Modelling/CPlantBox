@@ -56,7 +56,7 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         
         self.startPM(simDuration, simDuration + dt, 1, ( TairC + 273.15) , verbose, outputfile )
         self.Nt = len(self.plant.nodes)        
-        Q_out = np.array(self.Q_out) * 1e-3 * 12 # mmol Suc => mol C
+        Q_out = np.array(self.Q_out) # mmol Suc #* 1e-3 * 12 # mmol Suc => mol C
         self.Q_ST    = np.array(Q_out[0:self.Nt])          #sieve tube sucrose content
         self.Q_meso  = np.array(Q_out[self.Nt:(self.Nt*2)])     #mesophyll sucrose content
         self.Q_Rm    = np.array(Q_out[(self.Nt*2):(self.Nt*3)]) #sucrose used for maintenance respiration
@@ -77,8 +77,8 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
                     
         volST   = np.array(self.vol_ST)         #sieve tube volume
         volMeso   = np.array(self.vol_Meso)      #mesophyll volume  
-        self.C_ST_np    = np.array(self.C_ST)    
-        self.C_meso  = self.Q_meso/volMeso  
+        self.C_ST_np    = np.array(self.C_ST)   # mmol Suc cm-3 # * 1e-3 * 12 # mmol Suc => mol C
+        self.C_meso  = self.Q_meso/volMeso # mmol Suc cm-3 # * 1e-3 * 12 # mmol Suc => mol C
         
         self.Ntbu = self.Nt
         self.Q_STbu       =   self.Q_ST.copy()
