@@ -23,28 +23,25 @@ class Seed;
 /**
  * Organism
  *
- *
  * Manages the OrganRandomParameters
  * Offers an interface for the simulation loop (initialize, simulate, ...)
  * Collects node and line segment geometry from the organ tree
  * Collect parameters from the organs
  * Can collect information about the last time step
- * Supports RSML
- * Holds global node index and organ index counter  746 |     static_assert(std::is_base_of<base, type_caster<type>>::value,
-
- * Holds random numbers generator for the organ classes
+ * Supports RSML, VTK, and a custom text output
+ * Holds global node index and organ index counter 
+ * Holds random numbers generator for the organ classes 
  */
 class Organism : public std::enable_shared_from_this<Organism> {
 public:
 
-	//0: distance based, 1: delay-based carried by the parent for all lateral, 2: delay-based carried by each lateral type
-	enum DelayDefinition { dd_distance = 0, dd_time_lat = 1, dd_time_self = 2}; ///< definition of the growth delay
+	enum DelayDefinition { dd_distance = 0, dd_time_lat = 1, dd_time_self = 2}; ///< definition of the growth delay. 0: distance based, 1: delay-based carried by the parent for all lateral, 2: delay-based carried by each lateral type
     enum OrganTypes { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 }; ///< coarse organ classification
     static std::vector<std::string> organTypeNames; ///< names of the organ types
     static int instances; ///< the number of instances of this or derived classes
 
-    static int organTypeNumber(std::string name); ///< organ type number from a string
-    static std::string organTypeName(int ot); ///< organ type name from an organ type number
+    static int organTypeNumber(std::string name); ///< organ type number from a string REMOVE?
+    static std::string organTypeName(int ot); ///< organ type name from an organ type number REMOVE?
 
     Organism(unsigned int seednum  = 0); ///< constructor
     virtual ~Organism() { }; ///< destructor
@@ -58,21 +55,20 @@ public:
     std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int ot, int subType) const; ///< returns the respective the type parameter
     std::vector<std::shared_ptr<OrganRandomParameter>> getOrganRandomParameter(int ot) const; ///< returns all type parameters of an organ type (e.g. root)
     void setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p); ///< sets an organ type parameter, subType and organType defined within p
-    int getParameterSubType(int organtype, std::string str) const; ///< returns the parameter sub type index of name @param str
+    int getParameterSubType(int organtype, std::string str) const; ///< returns the parameter sub type index of name @param str REMOVE?
 
     /* initialization and simulation */
-    void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before RootSystem::initialize())
-    void addOrgan(std::shared_ptr<Organ> o) { baseOrgans.push_back(o); } ///< adds an organ, takes ownership
-    virtual void initialize(bool verbose = true); ///< overwrite for initialization jobs
+    void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; } ///< optionally, sets a confining geometry, call before initialize()
+    virtual void initialize(bool verbose = true); ///< initialize before simulation, overwrite to setup model
     virtual void simulate(double dt, bool verbose = false); ///< calls the base organs simulate methods
     double getSimTime() const { return simtime; } ///< returns the current simulation time
-    double getDt() const { return dt; } ///< returns the current simulation duration/time step
+    double getDt() const { return dt; } ///< returns the simulation time step of the last simulate() call
+    void addOrgan(std::shared_ptr<Organ> o) { baseOrgans.push_back(o); } ///< adds an organ, takes ownership
 
     /* as sequential list */
     std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1, bool all = false) const; ///< sequential list of organs
     virtual std::vector<double> getParameter(std::string name, int ot = -1, std::vector<std::shared_ptr<Organ>> organs = std::vector<std::shared_ptr<Organ>>(0)) const; ///< parameter value per organ
     double getSummed(std::string name, int ot = -1) const; ///< summed up parameters
-    // std::shared_ptr<Organ> pickOrgan(int nodeId); // TODO
 
     /* geometry */
     int getNumberOfOrgans() const { return organId+1; } ///< number of nodes of the organism
@@ -116,18 +112,20 @@ public:
     int getNodeIndex() { nodeId++; return nodeId; } ///< returns next unique node id, only organ constructors should call this
 
     /* discretisation*/
-    void setMinDx(double dx) { minDx = dx; } ///< Minimum segment size, smaller segments will be skipped
-    double getMinDx() { return minDx; } ///< Minimum segment size, smaller segments will be skipped
+    void setMinDx(double dx) { minDx = dx; } ///< minimum segment size, smaller segments will be skipped
+    double getMinDx() { return minDx; } ///< minimum segment size, smaller segments will be skipped
 
+    /* random numbers */
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
     unsigned int getSeedVal(){return seed_val;}
-
-	virtual double rand() { if (stochastic) { return UD(gen); } else { return 0.5; } }  ///< uniformly distributed random number [0, 1[
-    virtual double randn() { if (stochastic) { return ND(gen); } else { return 0.0; } }  ///< normally distributed random number [-3, 3] in 99.73% of cases
+	virtual double rand() { if (stochastic) { return UD(gen); } else { return 0.5; } }  ///< uniformly distributed random number [0, 1)
+    virtual double randn() { if (stochastic) { return ND(gen); } else { return 0.0; } }  ///< normally distributed random number
 	void setStochastic(bool stochastic_) { stochastic = stochastic_; }
 	bool getStochastic(){ return stochastic; }
-	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
-	virtual bool hasRelCoord(){ return false; } ///< overriden by @Plant::hasRelCoord()
+
+	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the organism (e.g. seed, or initial plant)
+	
+    virtual bool hasRelCoord(){ return false; } ///< overriden by @Plant::hasRelCoord()
 	int getDelayDefinition(int ot_lat);
 
     int plantId; // unique plant id (for debugging copy)
