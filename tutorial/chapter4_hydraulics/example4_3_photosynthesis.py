@@ -99,7 +99,7 @@ for i in range(n_steps):  # |\label{l43:loop}|
     print(f"at {weather_data['time'][i]} ", f"mean water potential (cm) {np.mean(hx):.0f}\n\tin (mmol day-1), net assimilation: {np.sum(hm.get_net_assimilation()) * 1e3:.2f} transpiration: {np.sum(hm.get_transpiration()) / 18 * 1e3:.2f}")
 
 time = [datetime.strptime(tt, "%H:%M:%S") for tt in weather_data["time"]]
-
+panel_labels = ["(a)", "(b)", "(c)", "(d)"]
 fig, axs = figure_style.subplots11large(2, 2)  # |\label{l43:plot}|
 axs[0, 1].plot(time, weather_data["PAR"] * 1e3 * (24 * 3600) / 1e4, "k", label="PAR (mmol cm-2 d-1)")
 axs[0, 1].plot(time, weather_data["Tair"] / 6.2, "tab:red", label="T (°C)")
@@ -122,7 +122,15 @@ axs[1, 0].plot(time, results["transpiration"], "tab:blue")
 axs[1, 0].set(xlabel="Time", ylabel="Total transpiration\n(mmol H2O day-1)")
 axs[1, 0].xaxis.set_major_locator(MaxNLocator(5))
 
-for ax in axs.flatten():
+for ax, label in zip(axs.flatten(), panel_labels):
+    ax.text(
+        0.02, 0.99, label,
+        transform=ax.transAxes,
+        fontsize=14,
+        fontweight="bold",
+        va="top",
+        ha="left"
+    )
     ax.xaxis.set_major_locator(HourLocator(range(0, 25, 6)))
     ax.xaxis.set_major_formatter(DateFormatter("%H:%M"))
     ax.fmt_xdata = DateFormatter("%H:%M")

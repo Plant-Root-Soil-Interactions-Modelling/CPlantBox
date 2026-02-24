@@ -336,63 +336,16 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     )
 
 
-@app.callback(  # create-button
-    Output("result-tabs-content", "children", allow_duplicate=True),
-    Output("vtk-result-store", "data", allow_duplicate=True),
-    Output("result-store", "data", allow_duplicate=True),
-    Output("settings-store", "data", allow_duplicate=True),
-    Output("loading-spinner-output", "children", allow_duplicate=True),
+from dash import ctx, no_update
+
+
+@app.callback(
+    Output("result-tabs-content", "children"),
+    Output("vtk-result-store", "data"),
+    Output("result-store", "data"),
+    Output("settings-store", "data"),
+    Output("loading-spinner-output", "children"),
     Input("create-button", "n_clicks"),
-    State("plant-dropdown", "value"),
-    State("time-slider", "value"),
-    State("seed-store", "data"),
-    State("root-store", "data"),
-    State("stem-store", "data"),
-    State("leaf-store", "data"),
-    State("typename-store", "data"),
-    State("result-tabs", "value"),
-    State("settings-store", "data"),
-    State("xml-store", "data"),
-    prevent_initial_call=True,
-)
-def click_create(
-    n_clicks,
-    plant_value,
-    time_slider,
-    seed_data,
-    root_data,
-    stem_data,
-    leaf_data,
-    typename_data,
-    result_value,
-    settings_data,
-    xml_data,
-):
-    print("click_create()", plant_value, settings_data)
-    settings_data["token"] += 1  # does not work with reset view
-    settings_data["reset"] = True
-    rng = np.random.default_rng()
-    settings_data["random_seed"] = rng.integers(1, 10001)  # new random seed
-    vtk_data, result_data = simulate_plant.simulate_plant(
-        plant_value,
-        time_slider,
-        seed_data,
-        root_data,
-        stem_data,
-        leaf_data,
-        settings_data["random_seed"],
-        xml_data,
-    )
-    content = render_result_tab(result_value, vtk_data, result_data, typename_data, settings_data)  # call by hand
-    return (content, vtk_data, result_data, settings_data, html.H6(""))
-
-
-@app.callback(  # update-button
-    Output("result-tabs-content", "children", allow_duplicate=True),
-    Output("vtk-result-store", "data", allow_duplicate=True),
-    Output("result-store", "data", allow_duplicate=True),
-    Output("settings-store", "data", allow_duplicate=True),
-    Output("loading-spinner-output", "children", allow_duplicate=True),
     Input("update-button", "n_clicks"),
     State("plant-dropdown", "value"),
     State("time-slider", "value"),
@@ -406,8 +359,9 @@ def click_create(
     State("xml-store", "data"),
     prevent_initial_call=True,
 )
-def click_update(
-    n_clicks,
+def handle_simulation(
+    create_clicks,
+    update_clicks,
     plant_value,
     time_slider,
     seed_data,
@@ -419,8 +373,26 @@ def click_update(
     settings_data,
     xml_data,
 ):
-    print("click_update()", plant_value, settings_data)
-    settings_data["reset"] = False
+    triggered = ctx.triggered_id
+
+    if triggered is None:
+        return no_update
+
+    print("Triggered by:", triggered)
+
+    # ---- CREATE BUTTON ----
+    if triggered == "create-button":
+        settings_data["token"] += 1
+        settings_data["reset"] = True
+
+        rng = np.random.default_rng()
+        settings_data["random_seed"] = rng.integers(1, 10001)
+
+    # ---- UPDATE BUTTON ----
+    elif triggered == "update-button":
+        settings_data["reset"] = False
+
+    # ---- Run simulation (common part) ----
     vtk_data, result_data = simulate_plant.simulate_plant(
         plant_value,
         time_slider,
@@ -431,8 +403,22 @@ def click_update(
         settings_data["random_seed"],
         xml_data,
     )
-    content = render_result_tab(result_value, vtk_data, result_data, typename_data, settings_data)  # call by hand
-    return (content, vtk_data, result_data, settings_data, html.H6(""))
+
+    content = render_result_tab(
+        result_value,
+        vtk_data,
+        result_data,
+        typename_data,
+        settings_data,
+    )
+
+    return (
+        content,
+        vtk_data,
+        result_data,
+        settings_data,
+        html.H6(""),
+    )
 
 
 @app.callback(  # parameter file download
