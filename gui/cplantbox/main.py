@@ -52,6 +52,22 @@ ROOT_SLIDER_INITIALS = [100, 3, 45, 1, 1, 7, 0.1, 1, 0.2, "Gravitropism"]
 STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180.0, 1, 0.2, "Gravitropism"]
 LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45.0, 2.0, 90, 1.0, 0.2, "Gravitropism"]
 
+
+
+def small_button(file_type, id_, tool_tip = "", url = "cloud-download.svg"):
+    return dcc.Button([
+            html.Img(
+                src=app.get_asset_url(url),
+                className="buttonIcon",
+            ),
+            file_type,
+        ],
+        id=id_,
+        title=tool_tip,
+        className="smallButton",
+    ) 
+
+
 #
 # LAYOUT
 #
@@ -84,6 +100,10 @@ app.layout = dbc.Container(
         dcc.Store(id="result-store", data={}),  # resulting graphs
         dcc.Store(id="xml-store", data={}),  # for uploaded xml content
         dcc.Download(id="download-xml"),
+        dcc.Download(id="download-vtk"),
+        dcc.Download(id="download-rsml"),
+        dcc.Download(id="download-dynamics-xls"),
+        dcc.Download(id="download-profiles-xls"),
         dbc.Row(
             [
                 #
@@ -104,40 +124,19 @@ app.layout = dbc.Container(
                                     style={
                                         "fontSize": "12px",
                                         "padding-top": "5px",
-                                    },  # hard coded (should be same as h5)
+                                    },  # hard coded (should be same as h5) did not work with css allown
                                 ),
                                 html.Div(className="smallSpacer"),
                                 html.Div(
                                     [
                                         html.Div(  # ohterwise the layout is a pixel wrong
-                                            children=dcc.Button(
-                                                [
-                                                    html.Img(
-                                                        src=app.get_asset_url("cloud-download.svg"),
-                                                        className="buttonIcon",
-                                                    ),
-                                                    "xml",
-                                                ],
-                                                id="xml-download-button",
-                                                title="Download the XML parameter file",
-                                                className="smallButton",
-                                            ),
+                                            children = small_button("xml", "xml-download-button", "Download the XML parameter file")
                                         ),
                                         dcc.Upload(
                                             id="xml-upload-button",
                                             accept=".xml",
                                             multiple=False,
-                                            children=dcc.Button(
-                                                [
-                                                    html.Img(
-                                                        src=app.get_asset_url("cloud-upload.svg"),
-                                                        className="buttonIcon",
-                                                    ),
-                                                    "xml",
-                                                ],
-                                                title="Upload your XML parameter file",
-                                                className="smallButton",
-                                            ),
+                                            children=small_button("xml", "xml-upload-button-hidden", "Upload your XML parameter file")
                                         ),
                                     ],
                                     style={
@@ -931,10 +930,23 @@ def update_leaf_store(slider_values, store_data):
         store_data["leaf"] = slider_values
     return store_data
 
-
 #
 # 3. RIGHT - Results Panel
 #
+def create_geometry_buttons(): 
+    vtk_btn=small_button("vtk", "vkt-download-button", "Download plant architecture as Paraview VTK file")
+    rsml_btn=small_button("rsml", "rsml-download-button", "Download plant architecture root system markup language file (RSML)")
+    return html.Div([vtk_btn, rsml_btn])
+
+
+def attach_buttons(graph, buttons):
+    return html.Div([graph, buttons], style={
+                "display": "flex",
+                "flex-direction": "column",   # stack vertically 
+                "align-items": "flex-start", 
+            })
+
+
 @app.callback(
     Output("result-tabs-content", "children", allow_duplicate=True),
     Input("result-tabs", "value"),
@@ -963,18 +975,26 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
     print("***********************************************************************************************************************************")
 
     if tab == "VTK3D":
+        buttons = create_geometry_buttons()
         color_pick = vtk_conversions.decode_array(vtk_data["subType"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
         # print("number of cell colors", len(color_pick), "cells", len(vtk_data["subType"]) , "\n", type(color_pick))
-        return plots.vtk3D_plot(vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"])
+        graph = plots.vtk3D_plot(vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"], buttons) 
+        return graph
     elif tab == "VTK3DAge":
+        buttons = create_geometry_buttons()
         color_pick = vtk_conversions.decode_array(vtk_data["creationTime"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
-        return plots.vtk3D_plot(vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"])
+        graph = plots.vtk3D_plot(vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"], buttons)
+        return graph # attach_buttons(graph, create_geometry_buttons())
     elif tab == "Profile1D":
-        return plots.profile_plot(result_data)
+        button=small_button("xls", "xls-profile-download-button", "Download 1D profile data as XLS")
+        graph = plots.profile_plot(result_data)
+        return attach_buttons(graph, button)
     elif tab == "Dynamics":
-        return plots.dynamics_plot(result_data, typename_data)
+        button=small_button("xls", "xls-dynamics-download-button", "Download 1D dynamic data as XLS")
+        graph = plots.dynamics_plot(result_data, typename_data)
+        return attach_buttons(graph, button)
 
 
 if __name__ == "__main__":

@@ -78,7 +78,7 @@ public:
      */
     double lb = 0.; 	    ///< Basal zone [cm]
     double lbs = 0.;        ///< Standard deviation basal zone [cm]
-    double la = 0.;	    ///< Apical zone [cm];
+    double la = 0.;	        ///< Apical zone [cm];
     double las = 0.;    	///< Standard deviation apical zone [cm];
     double ln = 1; 		    ///< Inter-lateral distance [cm]
     double lns = 0.;    	///< Standard deviation inter-lateral distance [cm]

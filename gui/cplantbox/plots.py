@@ -27,7 +27,7 @@ def vtk_camera_preset(vtk_data, distance_scale=1.5):
     }
 
 
-def vtk3D_plot(vtk_data, color_pick, type_, reset_camera_token, reset_camera):
+def vtk3D_plot(vtk_data, color_pick, type_, reset_camera_token, reset_camera, buttons):
     """3D and 3D age plot"""
     color_range = [np.min(color_pick), np.max(color_pick)]  # set range from min to max
     geom_rep = dash_vtk.GeometryRepresentation(
@@ -79,14 +79,15 @@ def vtk3D_plot(vtk_data, color_pick, type_, reset_camera_token, reset_camera):
     cbarcontent = dcc.Graph(
         # id = 'dummy-id',
         figure=cbar,
-        style={"width": "200px", "height": "60px", "marginTop": "10px"},
+        style={"width": "200px", "height": "60px", "marginTop": "0px"},
         config={"displayModeBar": False},  # Hides the entire toolbar
     )
-    style_ = {"marginTop": "10px", "marginRight": "10px", "marginBottom": "10px", "marginLeft": "10px"}
+    style_ = {"marginTop": "0px", "marginRight": "10px", "marginBottom": "10px", "marginLeft": "10px"}
 
     colbar = html.Div([html.H6(label_, style=style_), cbarcontent], style={"display": "flex", "justifyContent": "flex-end"})
 
-    return [html.Div(className="spacer"), html.Div(content, style={"width": "100%", "height": "600px"}), colbar]
+    return html.Div([html.Div(className="spacer"), html.Div(content, style={"width": "100%", "height": "600px"}), buttons, colbar], 
+                    style={"width": "100%", "display": "flex","flex-direction": "column", })
 
 
 def profile_plot(vtk_data):
