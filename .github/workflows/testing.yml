@@ -5,10 +5,12 @@ on:
     branches:
       - master
       - testing
+      - testworkflow2
   pull_request:
     branches:
       - master
       - testing
+      - testworkflow2
   workflow_dispatch:
     inputs:
       force_run:
