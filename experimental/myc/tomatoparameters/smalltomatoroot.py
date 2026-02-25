@@ -85,4 +85,3 @@ for i in range(0, N):
 plant.simulate(simtime,True)
 vp.plot_roots_and_container(mycp,half_dish)
 vp.plot_roots_and_container(plant,half_dish)
-mycp
