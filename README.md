@@ -1,9 +1,9 @@
 <img src="Logo_long_white.png" alt="drawing" width="400"/>
 Try Online: [CPlantBox Web App](https://cplantbox.fz-juelich.de/)
 
-# Introduction
+# Introduction §WQT3wqt
 
-CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and provides general tools to build plant soil-interaction models. To solve partial differential equations CPlantBox can use the finite volume solver DuMu<sup>x</sup> and offers simplified Python interfaces in the repository [_dumux-rosi_](https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi).   
+CPlantBox is a functional-structural plant model (FSPM) that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and provides general tools to build plant soil-interaction models. To solve partial differential equations CPlantBox can use the finite volume solver DuMu<sup>x</sup> and offers simplified Python interfaces in the repository [_dumux-rosi_](https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi).   
 
 # Installation
 
