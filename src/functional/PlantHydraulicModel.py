@@ -217,7 +217,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         if there is no single collar segment at index 0, pass indices using @param seg_ind, see find_base_segments
         """
         n = self.ms.getNumberOfMappedSegments()
-        rsx = np.ones((n, 1)) * (-500)
+        rsx = np.ones(n) * (-500)
         rsx = self.ms.total2matric(rsx)
         rx = self.solve_dirichlet(sim_time, -15000, rsx, cells = False)
         t_act = -self.get_transpiration(sim_time, rx, rsx, cells = False)
@@ -229,7 +229,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
     def get_suf(self, sim_time):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         n = self.ms.getNumberOfMappedSegments()
-        rsx = np.ones((n, 1)) * (-500)
+        rsx = np.ones(n) * (-500)
         rsx = self.ms.total2matric(rsx)
         rx = self.solve_dirichlet(sim_time, -15000, rsx, cells = False)
         q = self.radial_fluxes(sim_time, rx, rsx)
@@ -619,9 +619,9 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @return [cm] root matric potential per root system node  
         """
         self.update(sim_time)
-        # print('suf', self.suf.shape)
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
+        print('suf shape', self.suf.shape, rsx.shape)
         collar = self.get_collar_potential(t_act, rsx)
         collar = max(collar, self.wilting_point)
         rsx_ = self.ms.matric2total(rsx)
@@ -713,7 +713,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         A_d, self.Kr, self.kx0 = self.doussan_system_matrix(sim_time)
         self.A_d_splu = LA.splu(A_d)
         self.krs, _ = self.get_krs_(sim_time)
-        self.suf = np.transpose(self.get_suf_())
+        self.suf = self.get_suf_()
 
     def get_collar_potential(self, t_act, rsx):
         """ collar potential for an actual transpiration (call update() before) """
@@ -757,7 +757,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         # krs = -t_act / ((-500) - (rx[self.collar_index_, 0] - n2.z))
         krs = -t_act / ((-500) - (-15000))
         return krs, t_act
-
+        
     def get_suf_(self):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         # print("suf")
@@ -767,11 +767,23 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         b[self.collar_index_, 0] += self.kx0 * -15000
         rx = self.A_d_splu.solve(b)  # total matric potential
         q = -self.Kr.dot(rsx - rx)
-        return np.array(q) / np.sum(q)
+        return (np.array(q) / np.sum(q)).flatten()
 
     def get_heff_(self, rsx):
         """ effective total potential [cm] using cached suf """
         heff = self.suf.dot(self.ms.matric2total(rsx))
-        # print("get_heff_()", heff[0], heff.shape)
-        return heff[0]
+        return heff
 
+    def get_krs(self, sim_time):
+        try:
+            return self.krs
+        except:
+            self.update(sim_time)    
+            return self.krs
+            
+    def get_suf(self, sim_time):
+        try:
+            return self.suf
+        except:
+            self.update(sim_time)    
+            return self.suf
