@@ -1,0 +1,16 @@
+[tool.black]
+line-length = 320
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 320
+lint.select = ["E", "F", "I"]
+lint.ignore = ["E741", "E742", "E743"]
+exclude = ["examples", "figures", "jupyter", "latex", "__pycache__"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["rosi", "plantbox", "my_project"]
+section-order = ["standard-library", "third-party", "first-party", "local-folder"]
+lines-between-types = 0
+force-sort-within-sections = true
