@@ -52,3 +52,12 @@ jobs:
           echo "Run a simple test"
           cd tutorial/examples/
           python example1a_small_noplot.py
+
+      - name: unit tests
+        run: |
+          source "${HOME}/miniforge3/etc/profile.d/conda.sh"
+          conda activate cpb
+          which python
+          echo "Run unit tests"
+          cd test/
+          for f in *.py; do python3 "$f"; done
