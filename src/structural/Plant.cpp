@@ -45,7 +45,7 @@ std::shared_ptr<Organism> Plant::copy()
 
 
 /**
- * todo docme , this could be made unique? and probably should be protected
+ * Sets up the XML Reader for the Plant class
  */
 void Plant::initializeReader()
 {
