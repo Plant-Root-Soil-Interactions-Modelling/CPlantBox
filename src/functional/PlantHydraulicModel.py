@@ -772,6 +772,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
     def get_heff_(self, rsx):
         """ effective total potential [cm] using cached suf """
         heff = self.suf.dot(self.ms.matric2total(rsx))
+
         return heff
 
     def get_krs(self, sim_time):
