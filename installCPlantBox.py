@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""
+""" aerhae
 One click install script for CPlantBox
 adapted from installdumux.py of the Dumux developers
 """
@@ -111,6 +111,7 @@ show_message("(2/2) Step completed. Succesfully configured and built CPlantBox."
 show_message("To test installation, run \n cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
 
 show_message("CPlantBox was installed in your python environment (master branch), use 'cmake . & make install' to recompile")
+
 
 
 
