@@ -28,7 +28,7 @@ plant.simulate(100, False)
 vp.plot_plant(plant, "organType")
 plant.write("results/example2_1_2a.vtp")  # |\label{l2_1:simulateEnd1}|
 
-# Several successor types, specific locations, part B
+# Define successors with specific types, specific locations, part B
 plant = pb.MappedPlant(2)
 plant.readParameters(path + "example2_1_2.xml")
 
