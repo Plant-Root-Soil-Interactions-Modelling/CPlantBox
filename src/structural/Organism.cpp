@@ -654,7 +654,7 @@ std::string Organism::writeParameters(std::string name, std::string basetag, boo
     if (intoFile) {
         xmlDoc.SaveFile(name.c_str());
         return "";
-    } else { // write into name
+    } else { // return as string
         tinyxml2::XMLPrinter printer;
         xmlDoc.Print(&printer);
         return printer.CStr();
@@ -667,25 +667,38 @@ std::string Organism::writeParameters(std::string name, std::string basetag, boo
  *
  * @param name      file name e.g. output.vtp
  */
-void Organism::write(std::string name) const {
-    std::string ext = name.substr(name.size() - 3, name.size()); // pick the right write}r
+std::string Organism::write(std::string name, bool intoFile) const {
+    std::string ext = name.substr(name.size() - 3, name.size()); // pick the right write}
     if (ext.compare("sml") == 0) {
-        std::cout << "writing RSML... " << name.c_str() << "\n";
-        writeRSML(name); // use base class writer
+        std::cout << "Organism::write(): writing RSML... " << name.c_str() << "\n";
+        return writeRSML(name, intoFile); // use base class writer
     } else if (ext.compare("vtp") == 0) {
-        std::cout << "writing VTP... " << name.c_str() << "\n";
-        std::ofstream fos;
-        fos.open(name.c_str());
-        writeVTP(-1, fos);
-        fos.close();
+        std::cout << "Organism::write(): writing VTP... " << name.c_str() << "\n";
+        if (intoFile) {
+            std::ofstream fos;
+            fos.open(name.c_str());
+            writeVTP(-1, fos);
+            fos.close();
+            return "";
+        } else {
+            std::ostringstream oss; 
+            writeVTP(-1, oss);
+            return oss.str();        
+        }
     } else if (ext.compare(".py") == 0) {
-        std::cout << "writing Geometry ... " << name.c_str() << "\n";
-        std::ofstream fos;
-        fos.open(name.c_str());
-        writeGeometry(fos);
-        fos.close();
+        std::cout << "Organism::write(): writing Geometry ... " << name.c_str() << "\n";
+        if (intoFile) {
+            std::ofstream fos;
+            fos.open(name.c_str());
+            writeGeometry(fos);
+            fos.close();
+        } else {
+            std::ostringstream oss; 
+            writeGeometry(oss);
+            return oss.str();               
+        }
     } else {
-        throw std::invalid_argument("Plant::write(): Unkwown file type");
+        throw std::invalid_argument("Organism::write(): Unkwown file type");
     }
 }
 
@@ -829,7 +842,7 @@ void Organism::writeGeometry(std::ostream &os) const {
  *
  * @param name      name of the rsml file
  */
-void Organism::writeRSML(std::string name) const {
+std::string Organism::writeRSML(std::string name, bool intoFile) const {
     std::setlocale(LC_NUMERIC, "en_US.UTF-8");
     tinyxml2::XMLDocument xmlDoc;
     tinyxml2::XMLElement *rsml = xmlDoc.NewElement("rsml"); // RSML
@@ -838,7 +851,14 @@ void Organism::writeRSML(std::string name) const {
     rsml->InsertEndChild(meta);
     rsml->InsertEndChild(scene);
     xmlDoc.InsertEndChild(rsml);
-    xmlDoc.SaveFile(name.c_str());
+    if (intoFile) {
+        xmlDoc.SaveFile(name.c_str());
+        return "";
+    } else { // return as string
+        tinyxml2::XMLPrinter printer;
+        xmlDoc.Print(&printer);
+        return printer.CStr();
+    }
 }
 
 /**

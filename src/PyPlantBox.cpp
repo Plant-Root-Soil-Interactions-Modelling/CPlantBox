@@ -404,7 +404,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("initializeReader", &Organism::initializeReader)
             .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("fromFile") = true, py::arg("verbose") = false)  // default
             .def("writeParameters", &Organism::writeParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("intoFile") = true, py::arg("verbose") = false)  // default
-            .def("writeRSML", &Organism::writeRSML)
+            .def("write", &Organism::write, py::arg("name"), py::arg("intoFile") = true)
+            .def("writeRSML", &Organism::writeRSML, py::arg("name"), py::arg("intoFile") = true)
             .def("getRSMLSkip", &Organism::getRSMLSkip)
             .def("setRSMLSkip", &Organism::setRSMLSkip)
             .def("getRSMLProperties", &Organism::getRSMLProperties) //todo policy
@@ -942,7 +943,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("initCallbacks", &Plant::initCallbacks)
             .def("createTropismFunction", &Plant::createTropismFunction)
             .def("createGrowthFunction", &Plant::createGrowthFunction)
-            .def("write", &Plant::write)
             .def("abs2rel", &Plant::abs2rel)
             .def("rel2abs", &Plant::rel2abs);
 
