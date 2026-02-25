@@ -2,7 +2,7 @@
     <seed name="wheat" subType="0">
         <parameter name="maxTi" value="0"/>
         <!--Maximal number of tillers [1]-->
-        <parameter name="delayB" value="0"/>
+        <parameter name="delayB" value="9"/>
         <!--Time delay between the basal roots [day]-->
         <parameter name="delayRC" value="1000"/>
         <!--Delay between the root crowns [day]-->
