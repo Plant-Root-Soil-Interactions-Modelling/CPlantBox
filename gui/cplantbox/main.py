@@ -65,7 +65,9 @@ def small_button(file_type, id_, tool_tip="", url="cloud-download.svg"):
 #
 app.layout = dbc.Container(
     [
-        dcc.Store(id="seed-store", data={"seed": SEED_SLIDER_INITIALS, "basal-checkbox": False, "shoot-checkbox": False, "tillers-checkbox": False}),  # seed slider values
+        dcc.Store(
+            id="seed-store", data={"seed": SEED_SLIDER_INITIALS, "basal-checkbox": False, "shoot-checkbox": False, "tillers-checkbox": False}
+        ),  # seed slider values
         dcc.Store(id="root-store", data={f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)}),  # root slider values
         dcc.Store(id="stem-store", data={f"tab-{i}": STEM_SLIDER_INITIALS for i in range(1, 5)}),  # stem slider values
         dcc.Store(id="leaf-store", data={"leaf": LEAF_SLIDER_INITIALS}),  # leaf slider values
@@ -101,8 +103,15 @@ app.layout = dbc.Container(
                                 html.Div(className="smallSpacer"),
                                 html.Div(
                                     [
-                                        html.Div(children=small_button("xml", "xml-download-button", "Download the XML parameter file")),  # ohterwise the layout is a pixel wrong
-                                        dcc.Upload(id="xml-upload-button", accept=".xml", multiple=False, children=small_button("xml", "xml-upload-button-hidden", "Upload your XML parameter file")),
+                                        html.Div(
+                                            children=small_button("xml", "xml-download-button", "Download the XML parameter file")
+                                        ),  # ohterwise the layout is a pixel wrong
+                                        dcc.Upload(
+                                            id="xml-upload-button",
+                                            accept=".xml",
+                                            multiple=False,
+                                            children=small_button("xml", "xml-upload-button-hidden", "Upload your XML parameter file"),
+                                        ),
                                     ],
                                     style={"display": "flex", "alignItems": "center"},  # vertical alignment
                                 ),
@@ -116,7 +125,9 @@ app.layout = dbc.Container(
                                 html.Div(className="spacer"),
                                 html.Div(
                                     [
-                                        dcc.Button("Create", id="create-button", title="Start a simulation, create the root system architecture", className="button"),
+                                        dcc.Button(
+                                            "Create", id="create-button", title="Start a simulation, create the root system architecture", className="button"
+                                        ),
                                         dcc.Button("Update", id="update-button", title="Update the simulation (with the same random seed)", className="button"),
                                     ],
                                 ),
@@ -124,8 +135,9 @@ app.layout = dbc.Container(
                         ),
                         html.Div(className="largeSpacer"),
                         html.Div(className="largeSpacer"),
-                        dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),  # Options: "default", "circle", "dot", "cube"
-                        dcc.Loading(id="loading-spinner2", type="circle", children=html.Div(id="loading-spinner-output2")),  # Options: "default", "circle", "dot", "cube"
+                        dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),
+                        dcc.Loading(id="loading-spinner2", type="circle", children=html.Div(id="loading-spinner-output2")),
+                        dcc.Loading(id="loading-spinner3", type="circle", children=html.Div(id="loading-spinner-output3")),
                     ],
                     width=2,
                 ),
@@ -176,7 +188,11 @@ app.layout = dbc.Container(
         ),
         html.Div(
             [
-                html.A(html.Img(src="/assets/cplantbox.png", className="logo"), href="https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox", target="_blank"),
+                html.A(
+                    html.Img(src="/assets/cplantbox.png", className="logo"),
+                    href="https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox",
+                    target="_blank",
+                ),
                 html.A(html.Img(src="/assets/fzj.png", className="logo"), href="https://www.fz-juelich.de/de", target="_blank"),
             ],
             className="logoContainer",
@@ -190,7 +206,7 @@ app.layout = dbc.Container(
 # 1. LEFT - Simulation Panel
 #
 @app.callback(  # plant-dropdown
-    Output("seed-store", "data"),  # , allow_duplicate=True
+    Output("seed-store", "data"),
     Output("root-store", "data"),
     Output("stem-store", "data"),
     Output("leaf-store", "data"),
@@ -235,7 +251,9 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     State("settings-store", "data"),
     State("xml-store", "data"),
 )
-def handle_simulation(create_clicks, update_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data):
+def handle_simulation(
+    create_clicks, update_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data
+):
 
     print("create and update clicks", create_clicks, update_clicks)
     triggered = ctx.triggered_id
@@ -252,7 +270,9 @@ def handle_simulation(create_clicks, update_clicks, plant_value, time_slider, se
         settings_data["reset"] = False
 
     # ---- Run simulation (common part) ----
-    vtk_data, result_data = simulate_plant.simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"], xml_data)
+    vtk_data, result_data = simulate_plant.simulate_plant(
+        plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"], xml_data
+    )
 
     content = render_result_tab(result_value, vtk_data, result_data, typename_data, settings_data)
 
@@ -340,7 +360,18 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
         sliders.append(html.H6(key, style=style))
         sliders.append(
             html.Div(
-                [dcc.Slider(id={"type": "dynamic-seed-slider", "index": i}, min=min_, max=max_, value=seed_values[i], marks={min_ + 1.0e-4: str(min_), max_ - 1.0e-4: str(max_)}, tooltip={"always_visible": False}, step=step_, className="slider")],
+                [
+                    dcc.Slider(
+                        id={"type": "dynamic-seed-slider", "index": i},
+                        min=min_,
+                        max=max_,
+                        value=seed_values[i],
+                        marks={min_ + 1.0e-4: str(min_), max_ - 1.0e-4: str(max_)},
+                        tooltip={"always_visible": False},
+                        step=step_,
+                        className="slider",
+                    )
+                ],
                 style=style,
             )
         )
@@ -462,7 +493,17 @@ def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs f
         # print(key, str(min_), str(max_), min_, max_, "value", root_values[i])
         sliders.append(
             html.Div(
-                [dcc.Slider(id={"type": "root-dynamic-slider", "index": i}, min=min_, max=max_, value=root_values[i], marks={min_ + 1.0e-4: str(min_), max_ - 1.0e-4: str(max_)}, tooltip={"always_visible": False}, step=step_)],
+                [
+                    dcc.Slider(
+                        id={"type": "root-dynamic-slider", "index": i},
+                        min=min_,
+                        max=max_,
+                        value=root_values[i],
+                        marks={min_ + 1.0e-4: str(min_), max_ - 1.0e-4: str(max_)},
+                        tooltip={"always_visible": False},
+                        step=step_,
+                    )
+                ],
                 style=style,
             )
         )
@@ -768,7 +809,7 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
         color_pick = vtk_conversions.decode_array(vtk_data["creationTime"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
         graph = plots.vtk3D_plot(vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"], buttons)
-        return graph  # attach_buttons(graph, create_geometry_buttons())
+        return graph
     elif tab == "Profile1D":
         button = small_button("xls", "xls-profile-download-button", "Download 1D profile data as XLS")
         graph = plots.profile_plot(result_data)
@@ -794,6 +835,9 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
     prevent_initial_call=True,
 )
 def download_vtp(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data):
+    if n_clicks is None:
+        return dash.no_update, dash.no_update
+    print("download_vtp()")
     plant, _, _ = simulate_plant.get_plant(plant_value, seed_data, root_data, stem_data, leaf_data, xml_data)
     N = time_slider  # makes dt = 1
     t_ = np.linspace(0.0, time_slider, N + 1)
@@ -801,9 +845,39 @@ def download_vtp(n_clicks, time_slider, plant_value, seed_data, root_data, stem_
     plant.initialize()
     for _, dt in enumerate(np.diff(t_)):
         plant.simulate(dt)
-    filename = "cplantbox_.vtp"  # maybe add dropdown name?
+    filename = "cplantbox_" + param_names[int(plant_value)][0] + ".vtp"
     vtp_string = plant.write(filename, False)
     return dict(content=vtp_string, filename=filename, type="application/vtp"), html.H6("")
+
+
+@app.callback(
+    Output("download-rsml", "data"),
+    Output("loading-spinner-output3", "children"),
+    Input("rsml-download-button", "n_clicks"),
+    State("time-slider", "value"),
+    State("plant-dropdown", "value"),
+    State("seed-store", "data"),
+    State("root-store", "data"),
+    State("stem-store", "data"),
+    State("leaf-store", "data"),
+    State("settings-store", "data"),
+    State("xml-store", "data"),
+    prevent_initial_call=True,
+)
+def download_vtp(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data):
+    if n_clicks is None:
+        return dash.no_update, dash.no_update
+    print("download_rsml()")
+    plant, _, _ = simulate_plant.get_plant(plant_value, seed_data, root_data, stem_data, leaf_data, xml_data)
+    N = time_slider  # makes dt = 1
+    t_ = np.linspace(0.0, time_slider, N + 1)
+    plant.setSeed(settings_data["random_seed"])
+    plant.initialize()
+    for _, dt in enumerate(np.diff(t_)):
+        plant.simulate(dt)
+    filename = "cplantbox_" + param_names[int(plant_value)][0] + ".rsml"
+    vtp_string = plant.write(filename, False)
+    return dict(content=vtp_string, filename=filename, type="application/rsml"), html.H6("")
 
 
 if __name__ == "__main__":
