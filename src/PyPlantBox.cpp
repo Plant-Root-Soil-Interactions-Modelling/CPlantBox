@@ -646,15 +646,28 @@ PYBIND11_MODULE(plantbox, m) {
              .def_readwrite("thetas", &HyphaeRandomParameter::thetas)
         //      .def_readwrite("distTT", &HyphaeRandomParameter::distTT)
              .def_readwrite("distTH", &HyphaeRandomParameter::distTH)
+             .def_readwrite("lb", &HyphaeRandomParameter::lb)
+             .def_readwrite("lbs", &HyphaeRandomParameter::lbs)
+             .def_readwrite("la", &HyphaeRandomParameter::la)
+             .def_readwrite("las", &HyphaeRandomParameter::las)
+             .def_readwrite("lmax", &HyphaeRandomParameter::lmax)
+             .def_readwrite("lmaxs", &HyphaeRandomParameter::lmaxs)
+             .def_readwrite("ln", &HyphaeRandomParameter::ln)
+             .def_readwrite("lns", &HyphaeRandomParameter::lns)
              .def_readwrite("ana", &HyphaeRandomParameter::ana);
      py::class_<HyphaeSpecificParameter, OrganSpecificParameter, std::shared_ptr<HyphaeSpecificParameter>>(m, "HyphaeSpecificParameter")
              .def(py::init<>())
-             .def(py::init<int , double, double,  double, double, double>())
+             .def(py::init<int, double , double , std::vector<double> , double , double , double , double , double ,bool>())
              .def("getMaxLength", &HyphaeSpecificParameter::getMaxLength)
              .def_readwrite("v", &HyphaeSpecificParameter::v)
              .def_readwrite("b", &HyphaeSpecificParameter::b)
              .def_readwrite("hlt", &HyphaeSpecificParameter::hlt)
-             .def_readwrite("theta", &HyphaeSpecificParameter::theta);
+             .def_readwrite("theta", &HyphaeSpecificParameter::theta)
+             .def_readwrite("lb", &HyphaeSpecificParameter::lb)
+             .def_readwrite("la", &HyphaeSpecificParameter::la)
+             .def_readwrite("lmax", &HyphaeSpecificParameter::lmax)
+             .def_readwrite("ln", &HyphaeSpecificParameter::ln)
+             .def_readwrite("laterals", &HyphaeSpecificParameter::laterals);
     /*
      * seedparameter.h
      */

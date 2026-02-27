@@ -23,9 +23,9 @@ class HyphaeSpecificParameter :public OrganSpecificParameter
 {
 public:
 
-    HyphaeSpecificParameter(): HyphaeSpecificParameter(-1, 0., 0., 0., 0., 0.) { } ///< Default constructor
-    HyphaeSpecificParameter(int subType, double a, double v, double b, double hlt, double theta):
-            OrganSpecificParameter(subType, a),  v(v), b(b), hlt(hlt), theta(theta) { }; ///< Constructor setting all parameters
+    HyphaeSpecificParameter(): HyphaeSpecificParameter(-1, 0., 0., std::vector<double>(), 0., 0., 0., 0., 0., false) { } ///< Default constructor
+    HyphaeSpecificParameter(int subType, double la, double lb, std::vector<double> ln, double a, double v, double b, double hlt, double theta,bool laterals = false):
+            OrganSpecificParameter(subType, a), lb(lb), la(la),ln(ln), v(v), b(b), hlt(hlt), theta(theta), laterals(laterals) { }; ///< Constructor setting all parameters
 
     // int order = 0; // internal counter (? todo)
 
@@ -33,6 +33,12 @@ public:
     double b;              ///< branching rate [1/day]
     double hlt;            ///< hyphal lifetime  [day]
     double theta;          ///< branching angle [rad]
+
+    double la;        ///< apical zone [cm];
+    double lb;        ///< basal zone [cm];
+    double lmax;      ///< maximal length of the hyphae [cm]
+    std::vector<double> ln;        ///< inter-lateral distance [cm]
+    bool laterals = false; ///< whether the hyphae can branch from the basal zone (true) or only from the apical zone (false)
 
     std::string toString() const override; ///< for debugging
     double getMaxLength() const; ///< returns maximal length
@@ -85,9 +91,14 @@ public:
     int tropismT = 2;       ///< Hypha tropism parameter (Type)
     double tropismN = 1.;   ///< Hypha tropism parameter (number of trials)
     double tropismS = 0.3;  ///< Hypha tropism parameter (mean value of expected changeg [1/cm]
+    double nob() const { if(ln>0){ return std::max((lmax-la-lb)/ln+1, 0.);}else{return 0.;} }  ///< returns the mean maximal number of branching nodes [1]
+    double nobs() const; ///< returns the standard deviation of number of branching nodes [1
 
     std::shared_ptr<SoilLookUp> v_scale = std::make_shared<SoilLookUp>(); ///< elongation rate scale
     std::shared_ptr<SoilLookUp> b_scale = std::make_shared<SoilLookUp>(); ///< scale branching rate
+
+    protected:
+    double snap(double x) const; ///< snap x to the nearest multiple of dx, if it is within dxMin distance, otherwise return x
 
 };
 

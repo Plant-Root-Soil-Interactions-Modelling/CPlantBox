@@ -70,14 +70,62 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
 {
     assert(dx > dxMin && "HyphaeRandomParameter::realize(): dxMin must be smaller than dx");
     auto p = plant.lock();
-
     double a_ = std::max(a + p->randn()*as, 0.); // radius
     double v_ = std::max(v + p->randn()*vs, 0.);  // tip elongation rate [cm/day]
     double b_ = std::max(b + p->randn()*bs, 0.); // branching rate [1/day]
+    double lb_; //define the parameters outside of the if functions:
+    double la_;
+    std::vector<double> ln_; // stores the inter-distances
+    double nob_sd = p->randn()*nobs();
+    int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
+    bool hasLaterals = (successorST.size()>0) && (nob_real>0);
+
+    if (!hasLaterals) { // no laterals
+        lb_ = 0;
+        la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
+        la_ = snap(la_);
+    } else { // laterals
+        lb_ = snap(std::max(lb + p->randn()*lbs, 0.)); // length of basal zone
+        la_ = snap(std::max(la + p->randn()*las, 0.)); // length of apical zone
+        double ln_mean = ln;
+        if(ln < dxMin && ln != 0) { // limit to minimum resolution
+            ln_mean = dxMin;
+        }
+        double nob1 = std::max((lmax-la_-lb_)/ln_mean+1, 0.); // use new la_, lb_ and ln_mean
+        int nob_ = std::min(std::max(round(nob1 + nob_sd), 0.), double(nob_real)); // maximal number of branches +1
+        int latMissing = nob_real - nob_;
+        assert((latMissing >= 0) && "RootRandomParameter::realize(): latMissing < 0");
+        int latExtraMean = floor(latMissing/nob_real); // mean number of extra laterals per branching point to keep correct number
+        int latExtra = latMissing - latExtraMean*(nob_);
+        for (int j = 0; j<latExtraMean; j++) { //at end of basal zone
+            ln_.push_back(0);
+        }
+        if (latExtra> 0) { //at end of basal zone
+            ln_.push_back(0);
+            latExtra--;
+        }
+        double sum_ln = nob_*ln_mean; // mean length of lateral zone
+
+        for (int i = 0; i<nob_-1; i++) { // create inter-root distances
+            double z = ((double)i+0.5)*ln_mean; // regular position along root lateral zone
+            double f = 0; // evaluate slope lnk f(mid) = 0
+            double pf = (ln_mean + f) / ln_mean; // we scale lns by the change in percentage
+            double d = std::max(ln_mean + f + pf*p->randn()*lns, 1.e-5); // miminum is 1.e-5
+            d = snap(d);
+            ln_.push_back(d);
+            for (int j = 0; j<latExtraMean; j++) {
+                ln_.push_back(0);
+            }
+            if (latExtra> 0) {
+                ln_.push_back(0);
+                latExtra--;
+            }
+        }
+    }
     double hlt_ = std::max(hlt + p->randn()*hlts, 0.); // hyphal lifetime  [day]
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // branching angle [rad]
 
-     return std::make_shared<HyphaeSpecificParameter>(subType, a_, v_, b_, hlt_, theta_);
+     return std::make_shared<HyphaeSpecificParameter>(subType, la_, lb_, ln_, a_, v_, b_, hlt_, theta_);
 }
 
 /**
@@ -107,6 +155,33 @@ void HyphaeRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
     OrganRandomParameter::readXML(element, verbose);
 }
 
+double HyphaeRandomParameter::nobs() const {
+    double nobs = 0;
+	if(ln >0)
+	{
+		nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
+		if (la>0) {
+			nobs -= (las/la - lns/ln)*la/ln;
+		}
+		if (lb>0) {
+			nobs -= (lbs/lb - lns/ln)*lb/ln;
+		}
+	}
+    return std::max(nobs,0.);
+}
+
+
+double HyphaeRandomParameter::snap(double x) const {
+    double res = x - floor(x / dx)*dx; // res < dx
+    if ((res < dxMin) && (res != 0)) { //make ln compatible with dx() and dxMin().
+        if(res <= dxMin/2){
+            x -= res;
+        } else {
+            x = floor(x / dx)*dx + dxMin;
+        }
+    }
+    return x;
+}
 
 /**
  * Sets up class introspection by linking parameter names to their class members,
