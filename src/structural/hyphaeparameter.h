@@ -72,9 +72,19 @@ public:
     double distTH = 0.; ///< distance for tip hyphae anastomosis [cm]
     double ana= 1.0; ///< Probability of anastomosis occuring if tip is close enough
 
-    int tropismT = 2;       ///< Root tropism parameter (Type)
-    double tropismN = 1.;   ///< Root tropism parameter (number of trials)
-    double tropismS = 0.3;  ///< Root tropism parameter (mean value of expected changeg [1/cm]
+    double lnk = 0.;    //TODO rausschmeissen
+    double lb = 0.0001;         ///< Basal zone [cm]
+    double lbs = 0.;        ///< Standard deviation basal zone [cm]
+    double la = 0.003;        ///< Apical zone [cm];
+    double las = 0.;        ///< Standard deviation apical zone [cm];
+    double lmax = 10.;       ///< Maximal length of the hyphae [cm]
+    double lmaxs = 0.;       ///< Standard deviation of maximal length of the hyphae [cm]
+    double ln = 0.005;          ///< Inter-lateral distance [cm]
+    double lns = 0.;        ///< Standard deviation inter-lateral distance [cm]
+
+    int tropismT = 2;       ///< Hypha tropism parameter (Type)
+    double tropismN = 1.;   ///< Hypha tropism parameter (number of trials)
+    double tropismS = 0.3;  ///< Hypha tropism parameter (mean value of expected changeg [1/cm]
 
     std::shared_ptr<SoilLookUp> v_scale = std::make_shared<SoilLookUp>(); ///< elongation rate scale
     std::shared_ptr<SoilLookUp> b_scale = std::make_shared<SoilLookUp>(); ///< scale branching rate
