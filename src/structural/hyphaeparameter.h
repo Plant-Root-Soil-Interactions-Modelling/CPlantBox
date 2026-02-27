@@ -80,7 +80,7 @@ public:
     double distTH = 0.; ///< distance for tip hyphae anastomosis [cm]
     double ana= 1.0; ///< Probability of anastomosis occuring if tip is close enough
 
-    double lnk = 0.; //< Slope of inter-lateral disntances [1]
+    double lnk = 0.;    //TODO rausschmeissen
     double lb = 0.0001;         ///< Basal zone [cm]
     double lbs = 0.;        ///< Standard deviation basal zone [cm]
     double la = 0.003;        ///< Apical zone [cm];
