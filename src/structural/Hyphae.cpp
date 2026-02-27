@@ -213,7 +213,7 @@ void Hyphae::simulate(double dt, bool verbose)
                     }
                 } // if lateralgetLengths
             } // if active
-            active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+            active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
         }
     } // if alive
     // std::cout << "end" << getId() << "\n" << std::flush;
@@ -274,7 +274,7 @@ void Hyphae::simulate(double dt, bool verbose)
 //                     }
 
 //                 }
-//                 // std::cout << p.getMaxLength() << " " << getLength(false) << std::endl;
+//                 // std::cout << p.getK() << " " << getLength(false) << std::endl;
 //                 // std::cout << nodes.size() << std::endl;
 //                 if (age - plant.lock()->getSimTime() + nodeCTs.at(0) > 0.0001) { 
 //                     std::cout << "Warning: Hyphae age is higher than the time since emergence, this should not happen. Check hyphae age: " << age << ", time since emergence: " << plant.lock()->getSimTime() - nodeCTs.at(0) << "\n";
@@ -312,7 +312,7 @@ void Hyphae::simulate(double dt, bool verbose)
 double Hyphae::calcLength(double age) // ACHTUNG MIT WACHSTUM EINSTELLEN LINEAR NICHT EXPONENTIELL
 {
    assert(age >= 0 && "Hyphae::calcLength() negative hyphae age");
-   return getHyphaeRandomParameter()->f_gf->getLength(age,param()->v,param()->getMaxLength(), shared_from_this());
+   return getHyphaeRandomParameter()->f_gf->getLength(age,param()->v,param()->getK(), shared_from_this());
 }
 
 ///**
@@ -325,7 +325,7 @@ double Hyphae::calcLength(double age) // ACHTUNG MIT WACHSTUM EINSTELLEN LINEAR 
 double Hyphae::calcAge(double length) const
 {
     assert(length >= 0 && "Hyphae::calcAge() negative hyphae length");
-    return getHyphaeRandomParameter()->f_gf->getAge(length,param()->v, param()->getMaxLength(), shared_from_this());
+    return getHyphaeRandomParameter()->f_gf->getAge(length,param()->v, param()->getK(), shared_from_this());
 }
 
 /**

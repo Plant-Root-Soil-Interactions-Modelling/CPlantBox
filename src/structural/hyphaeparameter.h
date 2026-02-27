@@ -41,7 +41,7 @@ public:
     bool laterals = false; ///< whether the hyphae can branch from the basal zone (true) or only from the apical zone (false)
 
     std::string toString() const override; ///< for debugging
-    double getMaxLength() const; ///< returns maximal length
+    double getK() const; ///< returns maximal length
 };
 
 
