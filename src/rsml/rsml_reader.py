@@ -69,12 +69,30 @@ def read_rsml(name:str) -> (list, dict, dict, Metadata):
     metadata = Metadata()
     metadata.read_meta(root[0])
 
-    plant = root[1][0]
     polylines = []
     properties = { }
     functions = { }
-    for elem in plant.iterfind('root'):
-        (polylines, properties, functions) = parse_rsml_(elem, polylines, properties, functions, -1)
+
+    # Support multiple plants under <scene>; keep backward compatibility.
+    plants = []
+    scene = root.find('scene')
+    if scene is not None:
+        plants = list(scene.iterfind('plant'))
+    if not plants:
+        # Legacy fallback: previous parser assumed root[1][0] is the first plant.
+        try:
+            plants = [root[1][0]]
+        except Exception:
+            plants = []
+
+    if plants:
+        for plant in plants:
+            for elem in plant.iterfind('root'):
+                (polylines, properties, functions) = parse_rsml_(elem, polylines, properties, functions, -1)
+    else:
+        # Last fallback for non-standard RSMLs with roots directly under root node.
+        for elem in root.iterfind('root'):
+            (polylines, properties, functions) = parse_rsml_(elem, polylines, properties, functions, -1)
 
     if metadata.software == "RSWMS":
          del properties['parent-node']  # they are something unexpected
