@@ -206,6 +206,46 @@ class MainWindow(QtWidgets.QMainWindow):
             colors.append((r, g, b, a))
         return mpl.colors.ListedColormap(colors)
 
+    def _subtype_color(self, value: int, max_label: int):
+        """
+        Match Rhizomancer root-order palette so RSML subtype colors are consistent.
+        """
+        palette = [
+            (1.0, 0.0, 0.0),   # type 0 / tap
+            (0.0, 0.7, 0.0),
+            (0.0, 0.55, 1.0),
+            (1.0, 0.65, 0.0),
+            (0.65, 0.0, 0.9),
+            (0.0, 0.8, 0.8),
+            (0.8, 0.8, 0.0),
+        ]
+        label = max(0, int(value))
+        if label < len(palette):
+            return palette[label]
+        hue = (label - len(palette)) / max(1, (max_label + 1) - len(palette))
+        return colorsys.hsv_to_rgb((hue + 0.12) % 1.0, 0.85, 1.0)
+
+    def _build_subtype_lookup_table(self, data_range):
+        """
+        Build a categorical LUT for subtype values using Rhizomancer colors.
+        """
+        vmin = int(np.floor(data_range[0]))
+        vmax = int(np.ceil(data_range[1]))
+        if vmax < vmin:
+            vmin, vmax = vmax, vmin
+        n = max(1, vmax - vmin + 1)
+
+        lut = vtk.vtkLookupTable()
+        lut.SetNumberOfTableValues(n)
+        lut.SetRange(vmin, vmax)
+        lut.SetTableRange(vmin, vmax)
+        lut.Build()
+
+        for i, val in enumerate(range(vmin, vmax + 1)):
+            r, g, b = self._subtype_color(val, vmax)
+            lut.SetTableValue(i, r, g, b, 1.0)
+        return lut
+
     def _update_colorbar(self, lookup_table, data_range, data_key):
         """Clears and redraws the Matplotlib colorbar."""
         self.cax.clear()
@@ -669,6 +709,14 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.root_actor is None:
             QtWidgets.QMessageBox.warning(self, "Warning", f"Could not render mode: {name}")
             return
+
+        if name == "subType":
+            mapper = self.root_actor.GetMapper()
+            if mapper is not None and data_range is not None:
+                lut = self._build_subtype_lookup_table(data_range)
+                mapper.SetLookupTable(lut)
+                mapper.UseLookupTableScalarRangeOn()
+                mapper.SetScalarRange(data_range[0], data_range[1])
 
         self.renderer.AddActor(self.root_actor)
 
