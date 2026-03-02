@@ -25,19 +25,9 @@ namespace CPlantBox {
 /**
  * Plant
  *
- * This class manages all model parameters, the simulation,
+ * This class manages all model parameter, the simulation,
  * and stores the seed of the plant,
- * and offers utility functions for post processing.
- *
- * The Plant class inherits from Organism and provides additional functionality:
- * - Manages the OrganRandomParameters
- * - Offers an interface for the simulation loop (initialize, simulate, ...)
- * - Collects node and line segment geometry from the organ tree
- * - Collect parameters from the organs
- * - Can collect information about the last time step
- * - Supports RSML
- * - Holds global node index and organ index counter
- * - Holds random numbers generator for the organ classes
+ * and offers utility functions for post processing
  *
  */
 class Plant :public Organism

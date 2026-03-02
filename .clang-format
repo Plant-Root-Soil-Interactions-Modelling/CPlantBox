@@ -1,7 +1,7 @@
 ---
 BasedOnStyle: LLVM
 IndentWidth: 4
-ColumnLimit: 200
+ColumnLimit: 160
 BreakBeforeBraces: Attach
 AllowShortIfStatementsOnASingleLine: false
 AllowShortBlocksOnASingleLine: false
