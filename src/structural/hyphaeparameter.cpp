@@ -78,7 +78,8 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
     std::vector<double> ln_; // stores the inter-distances
     double nob_sd = p->randn()*nobs();
     int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
-    bool hasLaterals = (successorST.size()>0) && (nob_real>0);
+    // bool hasLaterals = (successorST.size()>0) && (nob_real>0);
+    bool hasLaterals = (nob_real>0);
 
     if (!hasLaterals) { // no laterals
         lb_ = 0;
@@ -122,10 +123,11 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
             }
         }
     }
+    // std::cout<< ln_.size() << " laterals, la: " << la_ << ", lb: " << lb_ << std::endl;
     double hlt_ = std::max(hlt + p->randn()*hlts, 0.); // hyphal lifetime  [day]
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // branching angle [rad]
 
-     return std::make_shared<HyphaeSpecificParameter>(subType, la_, lb_, ln_, a_, v_, b_, hlt_, theta_);
+     return std::make_shared<HyphaeSpecificParameter>(subType, la_, lb_, ln_, a_, v_, b_, hlt_, theta_,hasLaterals);
 }
 
 /**

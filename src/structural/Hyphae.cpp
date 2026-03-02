@@ -115,7 +115,7 @@ void Hyphae::simulate(double dt, bool verbose)
 
         // // probabilistic branching model
         // if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
-        //     double P = getHRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
+        //     double P = getHyphaeRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
         //     if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
         //         double p = 1.-(1.-P*dt); //probability of emergence in this time step
         //         if (plant.lock()->rand()>p) { // not rand()<p
@@ -141,13 +141,13 @@ void Hyphae::simulate(double dt, bool verbose)
                     dt_=dt;
                 }
 
-                double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
+                double targetlength = calcLength(age_+dt_);//+ this->epsilonDx;
 
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
                 length = getLength();
-                this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
+                //this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
                 // create geometry
                 if (p.laterals) { // root has children
                     /* basal zone */
@@ -172,7 +172,7 @@ void Hyphae::simulate(double dt, bool verbose)
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
                             if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
-                                if (i==created_linking_node && plant.lock()->rand() < 0.4) { // new lateral
+                                if (i==created_linking_node && plant.lock() -> rand() < 0.4) { // new lateral
                                     createLateral(dt_, verbose);
                                 }
 
@@ -369,13 +369,18 @@ double Hyphae::getParameter(std::string name) const
  * @param ageLN   age of the lateral hyphae
  * @param silence if true, no console output is generated
  */
-void Hyphae::createLateral(double dt_, bool verbose) // TODO ändern dt umbenennen!!!!
+void Hyphae::createLateral(double dt_, bool verbose)
 {
-    // std::cout << "Creating lateral" << std::endl;
+    std::cout << "Creating lateral" << std::endl;
     // double dt_ = plant.lock()->getSimTime() - nodeCTs.at(pni); // time the hyphae should have grown
     double delay = 0.;
     // double delay = getHyphaeRandomParameter()->hyphalDelay; // todo specific (with std)
-    int subType = 1;
+    int subType = 1;;
+    if (plant.lock()->rand() < 0.4) { // create a lateral with probability 0.4, TODO make this specific and maybe dependent on age or length
+        subType = 1; // create immediately
+        } else {
+            subType = 2; // create in the past, so it emerges immediately in the next time step
+        }
     auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay, shared_from_this(), nodes.size() - 1); // delay - dt_
     children.push_back(hyphae);
     // hyphae->setHyphalTreeIndex(hyphalTreeIndex);

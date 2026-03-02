@@ -600,6 +600,7 @@ void Organism::readParameters(std::string name, std::string basetag, bool fromFi
                 std::string tagname = p->Name();
                 int ot = Organism::organTypeNumber(tagname);
                 std::shared_ptr<OrganRandomParameter> prototype;
+                std::cout<< organParam[ot].count(0) << std::endl;
                 if (organParam[ot].count(0)) { // is the prototype defined?
                     prototype = organParam[ot][0];
                 } else {

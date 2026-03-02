@@ -7,7 +7,7 @@ import numpy as np
 
 mycp = pb.MycorrhizalPlant()
 path = "tomatoparameters/"
-name = "TomatoJohanna_WildType"
+name = "TomatoJohanna_WildTypeTwoHyphaeTypes"
 
 # name = "Heliantus_Pagès_2013"
 
@@ -20,13 +20,13 @@ for i in range(1,5):
 
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
-hyphae_parameter = pb.HyphaeRandomParameter(mycp)
-hyphae_parameter.subType = 1
-hyphae_parameter.a = 0.01
-hyphae_parameter.ln = 0.05
-hyphae_parameter.lb = 0.01
-hyphae_parameter.dx = 0.01
-hyphae_parameter.distTH = 0.05  # distance for anastomosis
+hyphae_parameter = mycp.getOrganRandomParameter(pb.hyphae)
+for hp in hyphae_parameter:    
+    hyphae_parameter.a = 0.01
+    hyphae_parameter.ln = 0.05
+    hyphae_parameter.lb = 0.05
+    hyphae_parameter.dx = 0.01
+    hyphae_parameter.distTH = 0.05   # distance for anastomosis
 mycp.setOrganRandomParameter(hyphae_parameter)
 # print(hyphae_parameter)
 
@@ -43,8 +43,8 @@ mycp.initialize(True)
 # print(mycp.toString())
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-simtime = 20
-fps = 2
+simtime = 10
+fps = 24
 anim_time = simtime
 N = fps * anim_time
 dt = simtime / N
@@ -74,7 +74,7 @@ else:
 
         
         # print(hti)        
-        mycp.simulate(dt, True)
+        mycp.simulate(dt, False)
 
     # vp.plot_plant(mycp, "organType")  
 #     print('done')  
