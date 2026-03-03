@@ -21,7 +21,6 @@ def open_browser():
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 md_path = os.path.join(BASE_DIR, "assets", "readme.md")  # Path to your Markdown file in the assets folder
 with open(md_path, "r", encoding="utf-8") as f:  # Read the Markdown content
     ABOUT_TEXT = f.read()

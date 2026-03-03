@@ -962,7 +962,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("initializeDB", &MappedPlant::initializeDB, py::arg("verbose") = true)
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
 			.def("disableExtraNode",&MappedPlant::disableExtraNode)
-            .def("enableExtraNode",&MappedPlant::enableExtraNode)
+                        .def("enableExtraNode",&MappedPlant::enableExtraNode)
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
 			.def("getNodeIds",&MappedPlant::getNodeIds);
