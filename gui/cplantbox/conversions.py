@@ -59,7 +59,7 @@ def get_seed_slider_names():  # see set_data, apply_sliders
 def get_root_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 200, 0.1),
+        "Maximal length [cm]": (1, 100, 0.1),
         "Growth rate [cm/day]": (0.5, 10, 0.01),
         "Initial angle [°]": (0.0, 90, 0.1),
         "Basal zone [cm]": (0.1, 20, 0.1),
@@ -244,24 +244,19 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
         print("xlm data", type(xml_data["xml"]), len(xml_data["xml"]))
         plant.readParameters(xml_data["xml"], "plant", False, True)  # read from string, with verbose output (for debugging)
     else:
-        my_dir = os.path.dirname(os.path.abspath(__file__))  # still works, if started from ohter folder
+        my_dir = os.path.dirname(os.path.abspath(__file__))  # still works, if started from other folder
         plant.readParameters(my_dir + "/params/" + fname)
     """ seed """
     srp = plant.getOrganRandomParameter(pb.seed)
-    p = srp[0]
-    seed_data["seed"] = [
-        p.firstSB,
-        p.delaySB,
-        p.firstB,
-        p.delayB,
-        p.maxB,
-        p.firstTil,
-        p.delayTil,
-        p.maxTil,
-    ]
-    seed_data["shoot-checkbox"] = p.firstSB < 1.0e3 and p.delaySB < 1.0e3
-    seed_data["basal-checkbox"] = p.firstB < 1.0e3 and p.delayB < 1.0e3 and p.maxB > 0
-    seed_data["tillers-checkbox"] = p.firstTil < 1.0e3 and p.delayTil < 1.0e3 and p.maxTil > 0
+    p = srp[0]  # seed random parameter
+    print("set_data", [p.firstSB, p.delaySB, p.firstB, p.delayB, p.maxB, p.firstTil, p.delayTil, p.maxTil])
+    seed_data["seed"] = [p.firstSB, p.delaySB, p.firstB, p.delayB, p.maxB, p.firstTil, p.delayTil, p.maxTil]
+    seed_data["shoot-checkbox"] = p.firstSB < 1.0e2 and p.delaySB < 1.0e3
+    seed_data["basal-checkbox"] = p.firstB < 1.0e2 and p.delayB < 1.0e2 and p.maxB > 0
+    seed_data["tillers-checkbox"] = p.firstTil < 1.0e2 and p.delayTil < 1.0e2 and p.maxTil > 0
+    if not seed_data["shoot-checkbox"]:  # defaults in case someone turns it on
+        seed_data["seed"][0] = 14
+        seed_data["seed"][1] = 7
     if not seed_data["basal-checkbox"]:  # defaults in case someone turns it on
         seed_data["seed"][2] = 7
         seed_data["seed"][3] = 7
@@ -270,25 +265,13 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
         seed_data["seed"][5] = 7
         seed_data["seed"][6] = 11
         seed_data["seed"][7] = 4
-    seed_data["simulationTime"] = p.simtime  # where to put it
+    seed_data["simulationTime"] = p.simtime
     """ root """
     rrp = plant.getOrganRandomParameter(pb.root)
     typename_data["number_roottypes"] = len(rrp[1:])
     for i, p in enumerate(rrp[1:]):
         tropism_name = tropism_names_[int(p.tropismT)]
-        root_data[f"tab-{i+1}"] = [
-            p.lmax,
-            p.r,
-            p.theta / np.pi * 180,
-            p.lb,
-            p.ln,
-            p.la,
-            p.a,
-            p.tropismN,
-            p.tropismS,
-            tropism_name,
-            len(p.successorST) > 0,
-        ]
+        root_data[f"tab-{i+1}"] = [p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.ln, p.la, p.a, p.tropismN, p.tropismS, tropism_name, len(p.successorST) > 0]
         typename_data[f"root tab-{i+1}"] = p.name
     """ stem """
     strp = plant.getOrganRandomParameter(pb.stem)
@@ -315,23 +298,13 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
     if len(lrp) > 1:
         p = lrp[1]
         tropism_name = tropism_names_[int(p.tropismT)]
-        leaf_data["leaf"] = [
-            "Defined",
-            p.lmax,
-            p.r,
-            p.theta / np.pi * 180,
-            p.lb,
-            p.rotBeta * 180,
-            p.tropismN,
-            p.tropismS,
-            tropism_name,
-        ]
+        leaf_data["leaf"] = ["Defined", p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.rotBeta * 180, p.tropismN, p.tropismS, tropism_name]
     else:
         leaf_data["leaf"] = None
 
 
 def into_panel(content, range_=None):
-    """puts content into a panel"""
+    """puts html content into a panel"""
     if range_ is None:
         range_ = range(len(content))
     c_ = []

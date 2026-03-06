@@ -36,10 +36,10 @@ def get_plant(plant_, seed_data, root_data, stem_data, leaf_data, xml_data):
     srp[0].seedPos.z = -3.0
     srp[0].delayRC = 30.0
     srp[0].delayDefinitionShoot = 2
-    print("get_plant() - delaySB", srp[0].delaySB)
-    print("get_plant() - firstSB", srp[0].firstSB)
-    print("get_plant() - delayRC", srp[0].delayRC)
-    print("get_plant() - nC", srp[0].nC)
+    # print("get_plant() - delaySB", srp[0].delaySB)
+    # print("get_plant() - firstSB", srp[0].firstSB)
+    # print("get_plant() - delayRC", srp[0].delayRC)
+    # print("get_plant() - nC", srp[0].nC)
     return plant, number_r, number_s
 
 
@@ -126,4 +126,5 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     result_data["number_r"] = number_r
     result_data["number_s"] = number_s
 
+    print("simulate_plant():", vtk_data.keys(), result_data.keys())
     return vtk_data, result_data
