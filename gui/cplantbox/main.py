@@ -346,6 +346,8 @@ def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_
         print("render_organtype_tab() leaf:", leaf_data)
         return generate_leaf_sliders(leaf_data)
 
+    print("!" * 200)
+
 
 #
 #  Parameters Panel - Seed
@@ -382,11 +384,17 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
         )
     # Insert checkboxes
     v = ["agree"] if data["shoot-checkbox"] else []
-    sliders.insert(0, dcc.Checklist(id="shoot-checkbox", options=[{"label": html.H6(" Shoot borne roots"), "value": "agree"}], className="checkbox", value=v))
+    sliders.insert(
+        0, html.H6("...")
+    )  # dcc.Checklist(id="shoot-checkbox", options=[{"label": html.H6(" Shoot borne roots"), "value": "agree", className="checkbox", value=v)}]
     v = ["agree"] if data["basal-checkbox"] else []
-    sliders.insert(1 + 2 * 2, dcc.Checklist(id="basal-checkbox", options=[{"label": html.H6(" Basal roots"), "value": "agree"}], className="checkbox", value=v))
+    sliders.insert(
+        1 + 2 * 2, html.H6("...")
+    )  # dcc.Checklist(id="basal-checkbox", options=[{"label": html.H6(" Basal roots"), "value": "agree"}], className="checkbox", value=v)
     v = ["agree"] if data["tillers-checkbox"] else []
-    sliders.insert(2 + 5 * 2, dcc.Checklist(id="tillers-checkbox", options=[{"label": html.H6(" Tillers"), "value": "agree"}], className="checkbox", value=v))
+    sliders.insert(
+        2 + 5 * 2, html.H6("...")
+    )  # dcc.Checklist(id="tillers-checkbox", options=[{"label": html.H6(" Tillers"), "value": "agree"}], className="checkbox", value=v)
     panel1 = conversions.into_panel(sliders, range(0, 1 + 2 * 2))  # shoot
     panel2 = conversions.into_panel(sliders, range(1 + 2 * 2, 2 + 5 * 2))  # basal
     panel3 = conversions.into_panel(sliders, range(2 + 5 * 2, len(sliders)))  # tillers
