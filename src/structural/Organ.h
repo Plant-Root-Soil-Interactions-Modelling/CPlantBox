@@ -65,6 +65,7 @@ public:
     std::shared_ptr<OrganRandomParameter> getOrganRandomParameter() const;  ///< organ type parameter
     bool isAlive() const { return alive; } ///< checks if alive
     bool isActive() const { return active; } ///< checks if active
+    void setAge(double newAge) { age = newAge; } ///< return age of the organ
     double getAge() const { return age; } ///< return age of the organ
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
     double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
@@ -117,7 +118,22 @@ public:
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
+	
+	
+	
+	void setBudStage(int budStage_){budStage = budStage_;};
+	int getBudStage(){return budStage;};
+	void setBudStageChange(int stage, double budStageChange_){budStageChange.at(stage+1) = budStageChange_;};
+	void setBerthFact(double BerthFact_){BerthFact = BerthFact_;};
+	void setSucTested(double sucTested_){sucTested = sucTested_;};
+	void setAuxTested(double auxTested_){auxTested = auxTested_;};
+	double BerthFact = -1;
+	double sucTested = -1.;
+	double auxTested = -1.;
+	int budStage = 2;
+	std::vector<double> budStageChange ={0.,0.,0.,0.};
 
+	
 protected:
 
     mutable Vector3d partialIHeading;//variables mutable in case of pseudo stem (see @Leaf::heading)

@@ -102,8 +102,8 @@ void Smooth_Parameter_and_BoundaryConditions_Changes(int s, double t) ; // User-
 void vector_init(double t, double *y, double *y_dot);
 
 // ******************  mere C-fluxes related variables or parameters ********** :
-extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_S_ST, *Q_Mucil ;		  // components of vector y as used in diff. system f()...
-extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_S_ST_dot, *Q_Mucil_dot ; //... and its derivatives.  ;
+extern double *Q_Auxin, *Q_AuxinOut ,*Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_S_ST, *Q_Mucil ;		  // components of vector y as used in diff. system f()...
+extern double *Q_Auxin_dot, *Q_AuxinOut_dot ,*Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_S_ST_dot, *Q_Mucil_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl ;
 extern Fortran_vector JS_ST, C_amont, JS_Sympl, JS_Apo, RespMaint ;
 extern Fortran_vector vol_ST, vol_PhlApo, vol_ParApo ;
@@ -114,7 +114,7 @@ Fortran_vector i_amont					;
 extern Fortran_vector C_SymplUpflow, C_ApoUpflow ; // to derive JS_Sympl, and maybe JS_Apo, from resp. water fluxes JW_xxx
 
 // ******************  auxiliary sugar- or anatomy- related, non-hydraulic variables or parameters that may be involved in water-system equations ********** :
-extern Fortran_vector C_ST, C_PhlApo		; // Concentration of sugar in phloem  sieve tubes  and  apoplasm, resp.							(mmol / ml)   (ml of solution)
+extern Fortran_vector C_ST, C_Auxin,C_PhlApo		; // Concentration of sugar in phloem  sieve tubes  and  apoplasm, resp.							(mmol / ml)   (ml of solution)
 extern Fortran_vector  JS_PhlMb, JS_ParMb ; //  (if Adv_BioPhysics)  to compute NZS and NZSP (see next line)
 // NZS : optional non-zero volume sugar flow (not a distinct variable)   (ml / h) : NZS = JS_PhlMb * PartMolalVol (=0.2155 in Thompson and Holbrook -- 0.214 might be more accurate)
 extern Fortran_vector C_Sympl, C_ParApo		; // Concentration of sugar in lateral tissue symplasm  and  apoplasm, resp.								(mmol / ml)   (ml of solution)
@@ -148,13 +148,22 @@ Fortran_vector JW_PhlMb		; // Transmembrane Phloem (ST,CC) Apoplasm to Symplasm 
 Fortran_vector JW_ParMb		; // Transmembrane Parenchyma Apoplasm to Symplasm water flux
 Fortran_vector JW_Apo			; // Lateral parenchyma to phloem Apoplastic water flux									(ml / h)
 Fortran_vector JW_Sympl		; // Lateral parenchyma to phloem ST Symplasmic liquid flux									(ml / h)
+Fortran_vector JAuxin_ST1			; 
+Fortran_vector JAuxin_ST2			;
 
+Fortran_vector A_amont;
+Fortran_vector i_amont_auxin;
+SpUnit_matrix Delta2auxin;
+SpUnit_matrix Deltaauxin;
+Fortran_vector Alpha_st;
+Fortran_vector Delta_JA_ST ;
+Fortran_vector C_AuxinOut;
 /********************* WATER SYSTEM EQUATIONS  ***************************/
 
 
 double  PartMolalVol =0;
 //comes from Genotelle, J. Expression de la viscosite des solutions sucrees. Ind. Aliment. Agric. 1978, 95, 747-755
-//prooved to hold by https://doi.org/10.1021/ie000266e
+//proved to hold by https://doi.org/10.1021/ie000266e
 //taken here as presented in "Sucrose Properties and Applications" for pure sucrose solution
 //see 10.1007/978-1-4615-2676-6_6
 //Mathlouthi, M.; Reiser, P., 1995
@@ -205,6 +214,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	//if delete, lower neq
 	Q_S_ST = Q_S_Mesophyll + Nt;
 	Q_Mucil = Q_S_ST + Nt ;
+	Q_AuxinOut = Q_Mucil + Nt;// to check auxin mass balance
+    Q_Auxin = Q_AuxinOut + Nt ;
 	
 	for (int i=1; i<=Nt; i++)  {
 		double volSTi = vol_ST[i];
@@ -215,6 +226,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 		if (Q_S_ST[i] < 0.){ Q_S_ST[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
 		if (Q_S_Mesophyll[i] < 0.){ Q_S_Mesophyll[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
 		C_ST[i] = QSTi / volSTi ; // Concentration of sugar in sieve tubes		(mmol / ml)
+	if (Q_Auxin[i] < 0.){ Q_Auxin[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
+        C_Auxin[i] = Q_Auxin[i] / volSTi ;
 	
 	}
 	Q_ST_dot = y_dot ; 
@@ -230,6 +243,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	
 	Q_S_ST_dot = Q_S_Mesophyll_dot + Nt ;
 	Q_Mucil_dot = Q_S_ST_dot + Nt ;
+	Q_AuxinOut_dot = Q_Mucil_dot + Nt ;//useless, delete?
+    Q_Auxin_dot = Q_AuxinOut_dot + Nt ;
 	
 	//Add later
 	/*if (Adv_BioPhysics) {
@@ -243,6 +258,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	P_ST *= RT;
 	if(usePsiXyl){P_ST += Psi_Xyl ;}
 	JW_ST.set_matmult(Delta, P_ST) ; 
+    Alpha_st.set(auxin_alpha);
+    JAuxin_ST1.set_matmult(Deltaauxin, Alpha_st) ; 
 	for(int j = 1 ; j <= Nc ; j ++) {
 		//int i_aval; double C_aval;
 		if(JW_ST[j] > 0)
@@ -251,7 +268,14 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 		}else{  
 			i_amont[j] = I_Downflow[j] ; 
 		}
+		if(JAuxin_ST1[j] > 0)
+		{  
+			i_amont_auxin[j] = I_Upflow[j] ; 
+		}else{  
+			i_amont_auxin[j] = I_Downflow[j] ; 
+		}
 		C_amont[j] = C_ST[i_amont[j]] ; 
+		A_amont[j] = C_Auxin[i_amont_auxin[j]] ; 
 		
 		if((errorID == I_Upflow[j])||(errorID == I_Downflow[j]))//found an error in last run of C_fluxes function
 		{
@@ -266,6 +290,7 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 			
 		}
 		if (C_amont[j] < 0.) C_amont[j] = 0. ; // fix any artefact from solver (may try C<0 even if actual C never does)
+		if (A_amont[j] < 0.) A_amont[j] = 0. ; 
 	}
 	if(update_viscosity_){update_viscosity() ;}
 	JW_ST /= r_ST;
@@ -273,6 +298,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	JS_ST.set_elemult(JW_ST, C_amont) ;	// 	i.e.   JS_ST = JW_ST * C_amont			   (eq. 11)
 	Delta_JS_ST.set_matmult(Delta2, JS_ST) ;
 	
+	JAuxin_ST2.set_elemult(JAuxin_ST1, A_amont) ;
+	Delta_JA_ST.set_matmult(Delta2, JAuxin_ST2) ;
 	C_fluxes(t, Nt) ; //see PiafMunch2.cpp
 	
 }

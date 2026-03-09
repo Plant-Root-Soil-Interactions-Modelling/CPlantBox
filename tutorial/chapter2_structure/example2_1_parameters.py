@@ -1,5 +1,26 @@
 """simple root system from scratch (without parameter files)"""
+import types
+import importlib
+import os
+import sys
+SRC_PATH = "../../src/"
+sys.path.append("../.."); sys.path.append(SRC_PATH)
 
+# Create a fake plantbox namespace
+plantbox = types.SimpleNamespace()
+
+# Automatically import all folders inside src and attach to plantbox
+for name in os.listdir(SRC_PATH):
+    folder_path = os.path.join(SRC_PATH, name)
+    if os.path.isdir(folder_path) and not name.startswith('__'):
+        try:
+            module = importlib.import_module(name)
+            setattr(plantbox, name, module)
+            sys.modules[f'plantbox.{name}'] = module
+        except ModuleNotFoundError:
+            # skip folders that are not importable as modules
+            pass
+            
 import matplotlib.pyplot as plt  # |\label{l2_1:matplotlib}|
 import numpy as np  # |\label{l2_1:numpy}|
 
@@ -12,6 +33,8 @@ p0 = pb.RootRandomParameter(plant)  # |\label{l2_1:p0}|
 p1 = pb.RootRandomParameter(plant)  # |\label{l2_1:p1}|
 s1 = pb.StemRandomParameter(plant)  # |\label{l2_1:s1}|
 l1 = pb.LeafRandomParameter(plant)  # |\label{l2_1:l1}|
+
+
 
 p0.name = "taproot"  # |\label{l2_1:tap_start}|
 p0.a = 0.2  # radius (cm)
@@ -44,12 +67,12 @@ p1.tropismS = 0.1  # maximal bending (rad cm-1) |\label{l2_1:lat_end}|
 s1.name = "stem"  # |\label{l2_1:stem_start}|
 s1.subType = 1  # radius (cm)
 s1.a = 0.2  # radius (cm)
-s1.ldelay = -1  # delay between lateral creation and start of growth
-s1.nodalGrowth = 0  # inter-lateral distance (cm)
+s1.ldelay = 5  # delay between lateral creation and start of growth
+s1.nodalGrowth = 1  # inter-lateral distance (cm)
 s1.lb = 5  # basal zone (cm)
-s1.la = 10  # apical zone (cm)
+s1.la = 0  # apical zone (cm)
 s1.lmax = 30  # maximal root length (cm)
-s1.ln = 1.0  # inter-lateral distance (cm)
+s1.ln = 5.0  # inter-lateral distance (cm)
 s1.r = 2  # growth rate (cm)
 s1.successorOT = [[4]]
 s1.successorST = [[1]]
@@ -73,13 +96,15 @@ plant.setOrganRandomParameter(p1)  # |\label{l2_1:set_p1}|
 plant.setOrganRandomParameter(l1)  # |\label{l2_1:set_L1}|
 plant.setOrganRandomParameter(s1)  # |\label{l2_1:set_S1}|
 
+
 srp = pb.SeedRandomParameter(plant)  # with default values |\label{l2_1:srp_start}|
 srp.seedPos = pb.Vector3d(0.0, 0.0, -3.0)  # seed position (cm)
+srp.delayDefinitionShoot = 1
 plant.setOrganRandomParameter(srp)  # |\label{l2_1:srp_end}|
 
 plant.initialize(False)
-
-plant.simulate(50, False)  # |\label{l2_1:simulation_start}|
+for i in range(50):
+    plant.simulate(1, False)  # |\label{l2_1:simulation_start}|
 vp.plot_plant(plant, "creationTime")
 plant.write("results/example2_1_parameters.vtp")  # |\label{l2_1:simulation_end}|
 

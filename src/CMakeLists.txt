@@ -61,6 +61,7 @@ set(CPLANTBOX_SOURCES
 if(PIAFMUNCH)
     list(APPEND CPLANTBOX_SOURCES
         external/PiafMunch/runPM.cpp
+        external/PiafMunch/CPB_to_PM.cpp
         external/PiafMunch/PiafMunch2.cpp
         external/PiafMunch/index_vector.cpp
         external/PiafMunch/initialize.cpp

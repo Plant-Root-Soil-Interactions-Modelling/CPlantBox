@@ -61,10 +61,12 @@ double * vol_Sympl_dot = NULL ; // (ml / h) Variation rate of lateral parenchyma
 
 /******************* VARIABLES INVOLVED in CARBON METABOLISM AND FLUXES *******************************  */
 // as components of function f argument double* y in the solving procedure, the first 3 are stored as double* ; all others are Fortran_vectors
+double* Q_AuxinOut = NULL;
 double* Q_Mucil = NULL;
 double* Q_S_ST = NULL;
 double* Q_Mesophyll = NULL						; // Amount of sugar in parenchyma symplasm										(mmol)
 double* Q_ST = NULL						; // Amount of sugar in sieve tubes	= C_TC * Vol_ST						(mmol)
+double* Q_Auxin = NULL						; // Amount of sugar in sieve tubes	= C_TC * Vol_ST						(mmol)
 double* Q_RespMaint = NULL						; // Amount of starch in parenchyma										(mmol)
 double* Q_Exudation = NULL                 ; // amount of sugar in phloem apoplasm   (mmol)
 double* Q_Growthtot = NULL                 ; // amount of sugar in lateral parenchyma apoplasm   (mmol)
@@ -76,6 +78,7 @@ Fortran_vector C_amont					; //  (mmol / ml) : ST Sugar concentration at upflow 
 Fortran_vector Input					; // e.g. Leaf photosynthetic assimilation rate, but may occur at any node, whether 'leaf' or not (boundary condition)			(mmol / h)
 Fortran_vector C_Sympl						; // Concentration of sugar in parenchyma = Q_Par / vol_Sympl			(mmol / ml)
 Fortran_vector C_ST							; // Concentration of sugar in sieve tubes								(mmol / ml solution))
+Fortran_vector C_Auxin							; // Concentration of sugar in sieve tubes								(mmol / ml solution))
 double* vol_Sympl = NULL							; // total volume of symplasm	(ml), which is a reservoir of variable size
 Fortran_vector JS_Sympl						; // Symplasmic flux of sugar from Lateral parenchyma to phloem ST (mmol / h)
 Fortran_vector JS_ParMb				; // Lateral parenchyma cross-membrane sugar flux into symplasm from apoplasm				(mmol / h)
@@ -108,7 +111,7 @@ Fortran_vector TracerC_SymplUpflow					;  // upflow tracer concentration (mmol /
 Fortran_vector TracerC_ApoUpflow ;				; // upflow tracer concentration (mmol / ml) for TracerJS_Apo
 
 /******* variation rate of any variable X is noted: X_dot = dX/dt : *******/
-double * Q_Mesophyll_dot = NULL, * Q_ST_dot = NULL, * Q_Rm_dot = NULL, *Q_Exud_dot = NULL, *Q_Gtot_dot = NULL,  *Q_S_ST_dot = NULL , *Q_Mucil_dot = NULL ;
+double * Q_Mesophyll_dot = NULL, * Q_ST_dot = NULL,* Q_Auxin_dot = NULL,* Q_AuxinOut_dot = NULL, * Q_Rm_dot = NULL, *Q_Exud_dot = NULL, *Q_Gtot_dot = NULL,  *Q_S_ST_dot = NULL , *Q_Mucil_dot = NULL ;
 double * TracerQ_Mesophyll_dot=NULL, * Q_Rmmax_dot=NULL, * TracerQ_Rm_dot=NULL, *Q_S_Mesophyll_dot=NULL, *Q_Gtotmax_dot=NULL ;
 // Next 2 variables are not considered as such, but as possible inputs to compute vol_Sympl_dot :
 Fortran_vector P_ST_dot, P_Sympl_dot			; //  dP_ST/dt , dP_Sympl/dt					(MPa h / h)    -- for elasticity...
@@ -146,6 +149,7 @@ extern Fortran_vector r_Xyl, r_Trsv, r_ST, r_ST_ref, r_Sympl, r_Apo, r_PhlMb, r_
 extern int resistance_changed ;
 Fortran_vector  radius_ST ; // vol_Sympl is considered a variable, driven by its variation rate -- see function  Smooth_Parameter_and_BoundaryConditions_Changes()  below
 
+extern Fortran_vector Delta_JA_ST ;
 
 void PhloemFlux::C_fluxes(double t, int Nt)  
 {
@@ -201,12 +205,16 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
 		
-		double CSTi_delta = max(0.,CSTi-Csoil_node[cpp_id]); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
+		double CSTi_delta = max(0.,CSTi-Csoil_node[cpp_id]); //concentration gradient for passive exudation. 
 		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairK_phloem - 273.15 - TrefQ10)/10);//max maintenance respiration rate
 		
 		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];//max exudation rate
 		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMfu));//active transport of sucrose out of sieve tube			
 		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i] - st_2_starch;//variation of sucrose content in node
+		
+		bool isRoot = Q_Exudmax[i] > 0;
+		if (isRoot){Q_AuxinOut_dot[i] = C_Auxin[i] * auxin_D;}else{Q_AuxinOut_dot[i] = 0;}
+        Q_Auxin_dot[i] = cpb_2_pm->AuxinSource.at(i-1) * auxin_P  + Delta_JA_ST[i] - Q_AuxinOut_dot[i];
 		
 		//Q_meso_dot:
 		Q_Mesophyll_dot[i] = Ag[i] -Q_Fl[i] - Q_S_Mesophyll_dot[i] ;//variaiton of sucrose content in mesophyll compartment 

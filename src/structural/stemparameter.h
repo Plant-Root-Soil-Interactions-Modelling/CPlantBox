@@ -106,6 +106,7 @@ public:
 	double delayNGStarts = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
 	double delayNGEnd = 0.;		///< delay between stem creation and start of nodal growth [day]
 	double delayNGEnds = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
+	
 
     /*
      * Callback functions for the Stem (set up by the class StemSystem)

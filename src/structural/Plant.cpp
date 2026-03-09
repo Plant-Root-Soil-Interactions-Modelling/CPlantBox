@@ -411,6 +411,7 @@ std::shared_ptr<GrowthFunction>Plant::createGrowthFunction(int gft) {
     case gft_negexp: return std::make_shared<ExponentialGrowth>();
     case gft_linear: return std::make_shared<LinearGrowth>();
     case gft_CWLim: return std::make_shared<CWLimitedGrowth>();
+    case gft_CWLim_lin: return std::make_shared<CWLimitedGrowth_lin>();
     default: throw std::invalid_argument( "Plant::createGrowthFunction() growth function type not implemented" );
     }
 }

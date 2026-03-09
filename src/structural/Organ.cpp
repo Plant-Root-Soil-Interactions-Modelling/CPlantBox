@@ -50,7 +50,7 @@ Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int
 : parentNI(pni), plant(plant), parent(parent), id(plant->getOrganIndex()),
   param_(plant->getOrganRandomParameter(ot, st)->realize()), /* root parameters are diced in the getOrganRandomParameter class */
   age(-delay)
-{ }
+{ this->budStage = plant->getOrganRandomParameter(ot, st)->budStage_init;}
 
 /*
  * Deep copies this organ into the new plant @param plant.

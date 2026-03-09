@@ -7,7 +7,9 @@ import os
 import plantbox as pb
 from plantbox import PhloemFlux
 from plantbox.functional.Photosynthesis import PhotosynthesisPython 
-
+import sys
+sys.path.append("./modules"); 
+from helpful import div0f
 
 
 class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
@@ -38,6 +40,8 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         self.Nt   = len(self.plant.nodes)
         self.Q_Rmbu      = np.array([])
         self.Q_Grbu      = np.array([])
+        self.Q_Rmmaxbu      = np.array([])
+        self.Q_Grmaxbu      = np.array([])
         self.Q_Exudbu    = np.array([])
         self.Q_STbu    = np.array([])
         self.Q_mesobu    = np.array([])
@@ -46,6 +50,8 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         self.Q_Rm_i        = np.array([])
         self.Q_Gr_i        = np.array([])
         self.Q_Exud_i      = np.array([])
+        self.Q_Rmmax_i        = np.array([])
+        self.Q_Grmax_i        = np.array([])
                 
     def solve_phloem_flow(self, dt, simDuration = None, TairC = None, verbose = False, outputfile = "errors_solve_phloem_flow.txt" ):
         # stored from the photosynthesis model
@@ -62,33 +68,77 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         self.Q_Rm    = np.array(Q_out[(self.Nt*2):(self.Nt*3)]) #sucrose used for maintenance respiration
         self.Q_Exud  = np.array(Q_out[(self.Nt*3):(self.Nt*4)]) #sucrose used for exudation
         self.Q_Gr    = np.array(Q_out[(self.Nt*4):(self.Nt*5)]) #sucrose used for growth and growth respiration
+        self.Q_Rmmax = np.array(Q_out[(self.Nt*5):(self.Nt*6)])
+        self.Q_Grmax = np.array(Q_out[(self.Nt*6):(self.Nt*7)])
+        self.Q_S_Mesophyll = np.array(Q_out[(self.Nt*7):(self.Nt*8)])
+        self.Q_S_ST = np.array(Q_out[(self.Nt*8):(self.Nt*9)])
+        self.Q_Mucil = np.array(Q_out[(self.Nt*9):(self.Nt*10)])
+        self.Q_AuxinOut = np.array(Q_out[(self.Nt*10):(self.Nt*11)])
+        self.Q_Auxin = np.array(Q_out[(self.Nt*11):(self.Nt*12)])
+        self.Q_used   = self.Q_Rm    + self.Q_Exud      + self.Q_Gr
+        self.Q_labil = self.Q_ST   + self.Q_meso + self.Q_S_Mesophyll+self.Q_S_ST 
         
         #self.Ntbu = len(self.Q_STbu)
         self.Q_STbu       =   np.concatenate((self.Q_STbu, np.full(self.Nt - self.Ntbu, 0.)))
         self.Q_Rmbu       =   np.concatenate((self.Q_Rmbu, np.full(self.Nt - self.Ntbu, 0.)))
         self.Q_Grbu       =   np.concatenate((self.Q_Grbu, np.full(self.Nt - self.Ntbu, 0.))) 
         self.Q_Exudbu     =   np.concatenate((self.Q_Exudbu, np.full(self.Nt - self.Ntbu, 0.))) 
+        self.Q_Rmmaxbu       =   np.concatenate((self.Q_Rmmaxbu, np.full(self.Nt - self.Ntbu, 0.)))
+        self.Q_Grmaxbu       =   np.concatenate((self.Q_Grmaxbu, np.full(self.Nt - self.Ntbu, 0.))) 
             
         self.Q_ST_i        = self.Q_ST      - self.Q_STbu #in the sieve tubes
         self.Q_Rm_i        = self.Q_Rm      - self.Q_Rmbu #for maintenance
         self.Q_Gr_i        = self.Q_Gr      - self.Q_Grbu #for growth
+        self.Q_Rmmax_i        = self.Q_Rmmax      - self.Q_Rmmaxbu #for maintenance
+        self.Q_Grmax_i        = self.Q_Grmax      - self.Q_Grmaxbu #for growth
         self.Q_Exud_i      = self.Q_Exud    - self.Q_Exudbu #for exudation
-        #self.Q_out_i       = self.Q_Rm_i    + self.Q_Exud_i      + self.Q_Gr_i #total usage
+        self.Q_out_i       = self.Q_Rm_i    + self.Q_Exud_i      + self.Q_Gr_i #total usage
                     
         volST   = np.array(self.vol_ST)         #sieve tube volume
         volMeso   = np.array(self.vol_Meso)      #mesophyll volume  
-        self.C_ST_np    = np.array(self.C_ST)   # mmol Suc cm-3 # * 1e-3 * 12 # mmol Suc => mol C
-        self.C_meso  = self.Q_meso/volMeso # mmol Suc cm-3 # * 1e-3 * 12 # mmol Suc => mol C
+        self.C_ST_np    = np.array(self.C_ST)   
+        self.C_meso  = self.Q_meso/volMeso 
+        self.C_Auxin_np = np.array(self.C_Auxin)  
         
         self.Ntbu = self.Nt
         self.Q_STbu       =   self.Q_ST.copy()
         self.Q_Rmbu       =   self.Q_Rm.copy()
         self.Q_Grbu       =   self.Q_Gr.copy() 
         self.Q_Exudbu     =   self.Q_Exud.copy()
-        
+        self.Q_Rmmaxbu       =   self.Q_Rmmax.copy()
+        self.Q_Grmaxbu       =   self.Q_Grmax.copy() 
+    
+        #if (len(self.Q_init) >0 ) and (len(self.Q_ST_init) ==0):
+        #    self.Q_ST_init = np.array(self.Q_init[0:Ntbu])
+        #    self.Q_meso_init = np.array(self.Q_init[Ntbu:(Ntbu*2)])
+        #    self.Q_AuxinInit  = np.array(self.Q_init[(Ntbu*11):(Ntbu*12)])
+            
         if (not self.doTroubleshooting) and (os.path.exists(outputfile)):
             os.remove(outputfile)
+            
+    def printSucroseData(self):
     
+        #manualAddST =  np.array(self.manualAddST)
+        #manualAddMeso =  np.array(self.manualAddMeso)
+        
+        C_ST = self.C_ST_np
+        C_meso = self.C_meso
+        print("C_ST (mmol ml-1):\n\tmean {:.2e}\tmin  {:5.2e} at {:d} segs \tmax  {:5.2e}".format(np.mean(C_ST), min(C_ST), len(np.where(C_ST == min(C_ST) )[0]), max(C_ST)))        
+        print("C_me (mmol ml-1):\n\tmean {:.2e}\tmin  {:5.2e}\tmax  {:5.2e}".format(np.mean(C_meso), min(C_meso), max(C_meso)))       
+        
+        #print('init\tST  {:.2e}\tmeso   {:.2e}'.format(sum(self.Q_ST_init), sum(self.Q_meso_init)))
+        print("Q_labil {:5.2e}:\n\tQ_ST {:5.2e}, Q_meso {:5.2e}, Q_S_ST {:5.2e}, Q_S_Mesophyll {:5.2e}, ".format(
+                sum(self.Q_labil), sum(self.Q_ST), sum(self.Q_meso), sum(self.Q_S_ST), sum(self.Q_S_Mesophyll)))
+        print("ratio:\n\tQ_ST {:5.2e}, Q_meso {:5.2e}, Q_S_ST {:5.2e}, Q_S_Mesophyll {:5.2e}, ".format(
+                sum(self.Q_ST)/sum(self.Q_labil), sum(self.Q_meso)/sum(self.Q_labil), sum(self.Q_S_ST)/sum(self.Q_labil),
+                sum(self.Q_S_Mesophyll)/sum(self.Q_labil) ))
+        print("aggregated sink satisfaction at last time step (%) :\n\tRm   {:5.1f}\tGr   {:5.1f}".format(
+            sum(self.Q_Rm_i)/sum(self.Q_Rmmax_i)*100, div0f(sum(self.Q_Gr_i), sum(self.Q_Grmax_i), 1.)*100,))
+        print("aggregated sink repartition at last time step (%) :\n\tRm   {:5.1f}\tGr   {:5.1f}\tExud {:5.1f}".format(sum(self.Q_Rm_i)/sum(self.Q_out_i)*100, 
+             sum(self.Q_Gr_i)/sum(self.Q_out_i)*100,sum(self.Q_Exud_i)/sum(self.Q_out_i)*100))
+        print("aggregated sink repartition (%) :\n\tRm   {:5.1f}\tGr   {:5.1f}\tExud {:5.1f}".format(sum(self.Q_Rm)/sum(self.Q_used)*100, 
+             sum(self.Q_Gr)/sum(self.Q_used)*100,sum(self.Q_Exud)/sum(self.Q_used)*100))
+
     def update_outputs(self):    
         self.outputs_options = {
                 "sieve tube concentration":self.C_ST_np, 

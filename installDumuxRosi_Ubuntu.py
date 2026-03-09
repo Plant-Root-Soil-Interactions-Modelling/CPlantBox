@@ -138,7 +138,7 @@ if not os.path.exists("CPlantBox"):
     subprocess.run(['git', 'clone', '--depth', '1', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
-
+# git clone --depth 1 -b auxin2911_DONOTDELETE https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
 #################################################################
 #################################################################
 # # (3/3) Configure and build
