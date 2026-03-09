@@ -126,5 +126,6 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     result_data["number_r"] = number_r
     result_data["number_s"] = number_s
 
-    print("simulate_plant():", vtk_data.keys(), result_data.keys())
+    # print("simulate_plant():", vtk_data.keys(), result_data.keys())
+
     return vtk_data, result_data

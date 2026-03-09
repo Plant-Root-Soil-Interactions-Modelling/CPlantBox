@@ -241,7 +241,10 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
     fname = get_parameter_names()[int(plant_)][1]
     plant = pb.Plant()
     if fname == "xml-store":
-        print("xlm data", type(xml_data["xml"]), len(xml_data["xml"]))
+        if "xml" not in xml_data:
+            print("Upload xml first")
+            return
+        print("xml data", type(xml_data["xml"]), len(xml_data["xml"]))
         plant.readParameters(xml_data["xml"], "plant", False, True)  # read from string, with verbose output (for debugging)
     else:
         my_dir = os.path.dirname(os.path.abspath(__file__))  # still works, if started from other folder
@@ -249,7 +252,7 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
     """ seed """
     srp = plant.getOrganRandomParameter(pb.seed)
     p = srp[0]  # seed random parameter
-    print("set_data", [p.firstSB, p.delaySB, p.firstB, p.delayB, p.maxB, p.firstTil, p.delayTil, p.maxTil])
+    # print("set_data", [p.firstSB, p.delaySB, p.firstB, p.delayB, p.maxB, p.firstTil, p.delayTil, p.maxTil])
     seed_data["seed"] = [p.firstSB, p.delaySB, p.firstB, p.delayB, p.maxB, p.firstTil, p.delayTil, p.maxTil]
     seed_data["shoot-checkbox"] = p.firstSB < 1.0e2 and p.delaySB < 1.0e3
     seed_data["basal-checkbox"] = p.firstB < 1.0e2 and p.delayB < 1.0e2 and p.maxB > 0

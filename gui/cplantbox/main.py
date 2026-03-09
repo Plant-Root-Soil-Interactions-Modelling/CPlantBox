@@ -47,16 +47,9 @@ STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180.0, 1, 0.2, "Gravitropism"
 LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45.0, 2.0, 90, 1.0, 0.2, "Gravitropism"]
 
 
-def small_button(file_type, id_, tool_tip="", url="cloud-download.svg"):
-    return dcc.Button(
-        [
-            html.Img(src=app.get_asset_url(url), className="buttonIcon"),
-            file_type,
-        ],
-        id=id_,
-        title=tool_tip,
-        className="smallButton",
-    )
+def small_button(label, id_, tool_tip="", url="cloud-download.svg"):
+    """creates a small button with an icon from the assets folder (from Bootstrap Icons)"""
+    return dcc.Button([html.Img(src=app.get_asset_url(url), className="buttonIcon"), label], id=id_, title=tool_tip, className="smallButton")
 
 
 #
@@ -97,7 +90,7 @@ app.layout = dbc.Container(
                                     value=plants[0]["value"],
                                     clearable=False,
                                     className="dropdown",
-                                    style={"fontSize": "12px", "padding-top": "5px"},  # hard coded (should be same as h5) did not work with css allown
+                                    style={"fontSize": "12px", "padding-top": "5px"},  # hard coded (should be same as h6) did not work with css allown
                                 ),
                                 html.Div(className="smallSpacer"),
                                 html.Div(
@@ -224,9 +217,9 @@ app.layout = dbc.Container(
 )
 def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, xml_data):
     triggered = ctx.triggered_id
-    print("*[plant_dropdown()", plant_value, seed_data, "triggered:", triggered)
+    print("[plant_dropdown()", plant_value, "triggered:", triggered)  # dynamic-seed-slider
     conversions.set_data(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, xml_data)
-    print("*]plant_dropdown()", plant_value, seed_data)
+    print("]plant_dropdown()", plant_value)  # seed_data
     return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, seed_data["simulationTime"], None)
 
 
@@ -330,9 +323,9 @@ def handle_xml_upload(contents, data):
 def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_data):
 
     triggered = ctx.triggered_id
-    print("render_organtype_tab()", triggered, "tab", tab)
+    # print("render_organtype_tab()", triggered, "tab", tab)
     if triggered is None:
-        tab == "Seed"
+        tab = "Seed"
     if tab == "Seed":
         print("render_organtype_tab() seed:", seed_data)
         return generate_seed_sliders(seed_data)
@@ -383,18 +376,44 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
             )
         )
     # Insert checkboxes
+
     v = ["agree"] if data["shoot-checkbox"] else []
     sliders.insert(
-        0, html.H6("...")
-    )  # dcc.Checklist(id="shoot-checkbox", options=[{"label": html.H6(" Shoot borne roots"), "value": "agree", className="checkbox", value=v)}]
+        0,
+        html.Div(
+            [
+                dcc.Checklist(
+                    id="shoot-checkbox",
+                    options=[{"label": "Shoot borne roots", "value": "agree"}],
+                    className="checkbox",
+                    value=v,
+                    style={"fontSize": "12px", "padding-top": "0px"},
+                )
+            ]
+        ),
+    )
     v = ["agree"] if data["basal-checkbox"] else []
     sliders.insert(
-        1 + 2 * 2, html.H6("...")
-    )  # dcc.Checklist(id="basal-checkbox", options=[{"label": html.H6(" Basal roots"), "value": "agree"}], className="checkbox", value=v)
+        1 + 2 * 2,
+        dcc.Checklist(
+            id="basal-checkbox",
+            options=[{"label": "Basal roots", "value": "agree"}],
+            className="checkbox",
+            value=v,
+            style={"fontSize": "12px", "padding-top": "0px"},
+        ),
+    )
     v = ["agree"] if data["tillers-checkbox"] else []
     sliders.insert(
-        2 + 5 * 2, html.H6("...")
-    )  # dcc.Checklist(id="tillers-checkbox", options=[{"label": html.H6(" Tillers"), "value": "agree"}], className="checkbox", value=v)
+        2 + 5 * 2,
+        dcc.Checklist(
+            id="tillers-checkbox",
+            options=[{"label": "Tillers", "value": "agree"}],
+            className="checkbox",
+            value=v,
+            style={"fontSize": "12px", "padding-top": "0px"},
+        ),
+    )
     panel1 = conversions.into_panel(sliders, range(0, 1 + 2 * 2))  # shoot
     panel2 = conversions.into_panel(sliders, range(1 + 2 * 2, 2 + 5 * 2))  # basal
     panel3 = conversions.into_panel(sliders, range(2 + 5 * 2, len(sliders)))  # tillers
@@ -408,7 +427,8 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
     prevent_initial_call=True,
 )
 def update_seed_store(slider_values, data):
-    print("update_seed_store()", data, slider_values, len(data["seed"]))
+    triggered = ctx.triggered_id
+    print("update_seed_store()", triggered, ", ", data, slider_values, len(data["seed"]))
     if len(slider_values) > 1:  # called empty
         data["seed"] = slider_values
     return data
@@ -785,10 +805,11 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
         print("no data")
         return html.Div([html.H6("press the create button")])
 
-    print("***********************************************************************************************************************************")
-    print("vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB")
-    print("result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
-    print("***********************************************************************************************************************************")
+    # print("***********************************************************************************************************************************")
+    # print("vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB")
+    # print("result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
+    # print("***********************************************************************************************************************************")
+    print("render_result_tab()", tab, "vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB", "result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
 
     if tab == "VTK3D":
         buttons = create_geometry_buttons()
@@ -828,10 +849,9 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
     prevent_initial_call=True,
 )
 def download_vtp(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data):
-    print("download_vtp")
+    # print("download_vtp")
     if n_clicks is None:
         triggered = ctx.triggered_id
-        print("triggered(?)", triggered)
         return dash.no_update, dash.no_update
     plant, _, _ = simulate_plant.get_plant(plant_value, seed_data, root_data, stem_data, leaf_data, xml_data)
     N = time_slider  # makes dt = 1
@@ -860,10 +880,9 @@ def download_vtp(n_clicks, time_slider, plant_value, seed_data, root_data, stem_
     prevent_initial_call=True,
 )
 def download_vtp(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data):
-    print("download_rsml()")
+    # print("download_rsml()")
     if n_clicks is None:
         triggered = ctx.triggered_id
-        print("triggered(?)", triggered)
         return dash.no_update, dash.no_update
     plant, _, _ = simulate_plant.get_plant(plant_value, seed_data, root_data, stem_data, leaf_data, xml_data)
     N = time_slider  # makes dt = 1
