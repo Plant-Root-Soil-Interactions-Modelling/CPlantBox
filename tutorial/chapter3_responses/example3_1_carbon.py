@@ -57,7 +57,7 @@ for step in range(0, n_steps):  # |\label{l3_1_carbon:LoopStart}|
 
     # Carbon balance check
     tol = 1.01  # 1% tolerance
-    assert used_carbon != abs(carbon_source) * tol
+    assert used_carbon != abs(carbon_source) * tol # |\label{l3_1_carbon:LoopEnd}|
 
 # Write outputs and plot
 Path("results/").mkdir(exist_ok=True)
