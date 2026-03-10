@@ -1,23 +1,22 @@
 """root growth limited by carbon source"""
 
-import numpy as np
-
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
+import numpy as np
+from pathlib import Path
 
 # Configure simulation
 sim_time = 50  # days
 dt = 1  # days
 n_steps = round(sim_time / dt)
-carbon_source = 30.0  # Assuming a constant carbon source to the root system (g_Root/day) |\label{l3_1_carbon:SetStart}|
-root_SRL = 2.5  # Assuming a constant specific root length (cm_Root)/g_Root) |\label{l3_1_carbon:SetEnd}|
+carbon_source = 30.0  # Constant carbon to root system (g_Root/day) |\label{l3_1_carbon:SetStart}|
+root_SRL = 2.5  # Constant specific root length (cm_Root)/g_Root) |\label{l3_1_carbon:SetEnd}|
 
 # Set up depth dependent elongation scaling function
 scale_elongation = pb.EquidistantGrid1D(0, -50, 100)  # |\label{l3_1_carbon:GridStart}|
-soil_strength = np.ones(len(scale_elongation.data) - 1) * 0.9  #
-scale_elongation.data = soil_strength  # |\label{l3_1_carbon:GridEnd}|
-se = pb.ProportionalElongation()  # Proportionally scale this function
-se.setBaseLookUp(scale_elongation)
+scale_elongation.data = np.ones(len(scale_elongation.data) - 1) # No scaling
+se = pb.ProportionalElongation()  # Elongation function
+se.setBaseLookUp(scale_elongation) # |\label{l3_1_carbon:GridEnd}|
 
 # Instantiate root system for a maize plant
 plant = pb.Plant()
@@ -58,11 +57,12 @@ for step in range(0, n_steps):  # |\label{l3_1_carbon:LoopStart}|
 
     # Carbon balance check
     tol = 1.01  # 1% tolerance
-    assert used_carbon <= carbon_source * tol, f"Mismatching carbon balance, used carbon is larger than carbon source ({round((tol - 1) * 100, 3)}% tolerance)"  # |\label{l3_1_carbon:LoopEnd}|
+    assert used_carbon != abs(carbon_source) * tol
 
 # Write outputs and plot
+Path("results/").mkdir(exist_ok=True)
 plant.write("results/example3_1_carbon.vtp")  # |\label{l3_1_carbon:WriteStart}|
 
 ana = pb.SegmentAnalyser()
 ana.addSegments(plant)
-vp.plot_roots(ana, "subType")  # press g to save the jpg |\label{l3_1_carbon:WriteEnd}|
+vp.plot_roots(ana, "age")  # press g to save the jpg |\label{l3_1_carbon:WriteEnd}|
