@@ -113,7 +113,7 @@ The documentation will be created in this folder. Compile doc/latex/refman.tex t
 
 The official [CPlantBox webapp](https://cplantbox.fz-juelich.de) helps to demonstrate the impact of various CPlantBox parameters and to analyse and explore the resulting 3D plant geometry.  
 
-Another [web application](http://cplantbox.com) was designed to conduct simulations and visualize the dynamics of plant growth. The source code is avialable at [github-xiaoranzhou](https://github.com/xiaoranzhou/cpb).
+Another [web application](http://cplantbox.com) was designed to conduct simulations and visualize the dynamics of plant growth.
 
 ## Jupyter notebooks
 Direct links to notebooks from the summer school of 2025:
@@ -123,8 +123,6 @@ Direct links to notebooks from the summer school of 2025:
 
 For the third repository, you need to go the folder `dumux/CPlantBox/tutorial/jupyter/summer_school_2025` to access the notebooks.
 
-## Videos
-Simulation videos availabe in [Youtube channel](https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q).
 
 
 
