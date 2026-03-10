@@ -117,10 +117,14 @@ app.layout = dbc.Container(
                                 html.Div(className="spacer"),
                                 html.Div(
                                     [
+                                        dcc.Button("Create", id="create-button", title="Create new plant geometry", className="button"),
                                         dcc.Button(
-                                            "Create", id="create-button", title="Start a simulation, create the root system architecture", className="button"
+                                            "Update",
+                                            id="update-button",
+                                            title="Update the simulation (with the same random seed)",
+                                            className="button",
+                                            style={"display": "none"},
                                         ),
-                                        dcc.Button("Update", id="update-button", title="Update the simulation (with the same random seed)", className="button"),
                                     ],
                                 ),
                             ]
@@ -204,8 +208,8 @@ app.layout = dbc.Container(
     Output("leaf-store", "data"),
     Output("typename-store", "data"),
     Output("organtype-tabs", "value"),  # to trigger update
-    Output("time-slider", "value"),
     Output("create-button", "n_clicks"),  # to simulation
+    Output("time-slider", "value"),
     Input("plant-dropdown", "value"),
     State("seed-store", "data"),
     State("root-store", "data"),
@@ -220,7 +224,7 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     print("[plant_dropdown()", plant_value, "triggered:", triggered)  # dynamic-seed-slider
     conversions.set_data(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, xml_data)
     print("]plant_dropdown()", plant_value)  # seed_data
-    return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, seed_data["simulationTime"], None)
+    return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, None, seed_data["simulationTime"])
 
 
 @app.callback(  # Create and update button: update-button
@@ -231,8 +235,8 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     Output("loading-spinner-output", "children"),
     Input("create-button", "n_clicks"),
     Input("update-button", "n_clicks"),
+    Input("time-slider", "value"),
     State("plant-dropdown", "value"),
-    State("time-slider", "value"),
     State("seed-store", "data"),
     State("root-store", "data"),
     State("stem-store", "data"),
@@ -243,10 +247,10 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     State("xml-store", "data"),
 )
 def handle_simulation(
-    create_clicks, update_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data
+    create_clicks, update_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data
 ):
     triggered = ctx.triggered_id
-    print("**[handle_simulation()", triggered, create_clicks, update_clicks)
+    print("**[handle_simulation()", triggered, create_clicks, update_clicks, time_slider)
 
     # ---- CREATE BUTTON ----
     if triggered is None or triggered == "create-button":
@@ -256,7 +260,7 @@ def handle_simulation(
         settings_data["random_seed"] = rng.integers(1, 10001)
 
     # ---- UPDATE BUTTON ----
-    elif triggered == "update-button":
+    elif triggered == "update-button" or triggered == "time-slider":
         settings_data["reset"] = False
 
     # ---- Run simulation (common part) ----
