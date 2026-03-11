@@ -90,7 +90,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
     double nob_sd = p->randn()*nobs();
     int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
     bool hasLaterals = (successorST.size()>0) ;
-    if((shapeType == shape_2D)&&(leafGeometryPhi.size()==0))//because default value of shapeType is shape_2D
+    if((shapeType == shape_2D)&&(leafGeometry.size()==0))//because default value of shapeType is shape_2D
     {
         std::cout<<"shapeType set to shape_2D but no 2D shape data given, set shapeType to cylinder"<<std::endl;
         shapeType = shape_cylinder;
@@ -418,6 +418,10 @@ void LeafRandomParameter::bindParameters()
  */
 void LeafRandomParameter::createLeafRadialGeometry(std::vector<double> phi, std::vector<double> l, int N) {
     if (phi.size()>0 && (phi.size()==l.size())) {
+		if(leafGeometryPhi.size() != phi.size()){ //createLeafRadialGeometry was called outside of the readXML function
+			leafGeometryPhi = phi;
+			leafGeometryX = l;
+		}
         leafGeometry.resize(N);
         auto y_ = Function::linspace(0., leafLength(), N);
         for (int i = 0; i<N; i++) {
@@ -437,6 +441,10 @@ void LeafRandomParameter::createLeafRadialGeometry(std::vector<double> phi, std:
 void LeafRandomParameter::createLeafGeometry(std::vector<double> y, std::vector<double> l, int N) {
     leafGeometry.clear();//needed because we use push_back() later on
     if (y.size()>0 && (y.size()==l.size())) {
+		if(leafGeometryPhi.size() != y.size()){ //createLeafRadialGeometry was called outside of the readXML function
+			leafGeometryPhi = y;
+			leafGeometryX = l;
+		}
         double midy = leafMid();
         leafGeometry.resize(N);
         auto y_ = Function::linspace(-midy, leafLength()-midy, N);

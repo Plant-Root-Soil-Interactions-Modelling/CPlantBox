@@ -57,7 +57,7 @@ plant.simulate(plant_age, False)  # |\label{l51:plantEnd}|
 
 # Plant hydraulic properties
 params = PlantHydraulicParameters()  # |\label{l51:hydraulicparams}|
-params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l6h:hydraulic_end}|
+params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l51:hydraulic_end}|
 hm = PhotosynthesisPython(plant, params)  # |\label{l51:PhotosynthesisPython}|
 
 path = "../../modelparameter/functional/plant_photosynthesis/"
