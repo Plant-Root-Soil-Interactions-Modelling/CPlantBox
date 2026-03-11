@@ -89,7 +89,7 @@ hm.solve(
 h_x = hm.get_water_potential()  # |\label{l43:results}|
 fluxes = hm.radial_fluxes() # cm3/day
 surfs = np.multiply(np.array(plant.segLength()), 2 * np.array(plant.radii) * np.pi)  # plant segment side surface [cm2]
-fluxes = np.divide(fluxes, surfs)  # we convert to [cm3/(cm2 day)]
+fluxes = np.divide(fluxes, surfs)  # we convert to [cm3/(cm2 day)] # |\label{l43:resultsEnd}|
 
 """ plot results """
 
@@ -104,3 +104,4 @@ ana.write(
     "results/example4_3_planthydraulics.vtp",  # |\label{l43:paraview}|
     types=["radius", "subType", "age", "h_x", "radial_flux"],
 )
+
