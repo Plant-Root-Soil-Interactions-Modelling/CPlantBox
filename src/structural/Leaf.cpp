@@ -629,10 +629,22 @@ bool Leaf::nodeLeafVis(double l)
 	}
 }
 
+
 /**
  * Parameterization x value, at position l along the leaf axis
  */
-std::vector<double> Leaf::getLeafVisX_(double l) {
+std::vector<double> Leaf::getLeafVisX_cuboid(double l) {	
+	if (nodeLeafVis(l)) {
+		return {param()->width_blade};
+	}else{
+		return {param()->width_petiole};
+	}
+}
+
+/**
+ * Parameterization x value, at position l along the leaf axis
+ */
+std::vector<double> Leaf::getLeafVisX_2D(double l) {
 	auto& lg = getLeafRandomParameter()->leafGeometry;
 	int n = lg.size();
 	int ind = int( ((l - param()->lb) /leafLength())*(n-1) + 0.5); // index within precomputed normalized geometry
@@ -644,7 +656,22 @@ std::vector<double> Leaf::getLeafVisX_(double l) {
  * for Python binding
  */
 std::vector<double> Leaf::getLeafVisX(int i) {
-	return getLeafVisX_(getLength(i));
+	switch (int(getParameter("shapeType")))
+	{
+		case LeafRandomParameter::shape_2D: return getLeafVisX_2D(getLength(i)); break;
+		case LeafRandomParameter::shape_cuboid: return getLeafVisX_cuboid(getLength(i)); break;
+		default: return std::vector<double>();
+	}
+}
+
+std::vector<Vector3d> Leaf::getLeafVis(int i)
+{
+	switch (int(getParameter("shapeType")))
+	{
+		case LeafRandomParameter::shape_cuboid: return getLeafVis_cuboid(i); break;
+		case LeafRandomParameter::shape_2D: return getLeafVis_2D(i) ; break;
+		default: return std::vector<Vector3d>();
+	}
 }
 
 /**
@@ -652,7 +679,32 @@ std::vector<double> Leaf::getLeafVisX(int i) {
  * and returns leaf shape coordinates per node (normally 2 points, for convex domain it could be more points)
  * see used by vtk_plot.py to create a polygon representation of the leaf area
  */
-std::vector<Vector3d> Leaf::getLeafVis(int i)
+std::vector<Vector3d> Leaf::getLeafVis_cuboid(int i)
+{
+	double l = getLength(i);
+	std::vector<Vector3d> coords;  
+	auto x = getLeafVisX_cuboid(l).at(0);
+	Vector3d x1 = getiHeading0();
+	x1.normalize();
+	Vector3d y1 = Vector3d(0,0,-1).cross(x1); // todo angle between leaf - halfs
+	if (y1.length()<1.e-4) { // if x1 and 0,0,-1 are parallel, we take cross product between down and final position
+			auto leaf_tip = getNode(getNumberOfNodes()-1);
+			leaf_tip.normalize(); // vector to leaf tip
+			y1 = Vector3d(0,0,-1).cross(leaf_tip);
+	}
+	y1.normalize();
+	coords.push_back(getNode(i).plus(y1.times(x)));
+	coords.push_back(getNode(i).minus(y1.times(x)));
+	return coords;
+}
+
+
+/**
+ * Scales unit leaf shape to the specific leaf,
+ * and returns leaf shape coordinates per node (normally 2 points, for convex domain it could be more points)
+ * see used by vtk_plot.py to create a polygon representation of the leaf area
+ */
+std::vector<Vector3d> Leaf::getLeafVis_2D(int i)
 {
 	double l = getLength(i);
 	if (nodeLeafVis(l)) {
@@ -660,7 +712,7 @@ std::vector<Vector3d> Leaf::getLeafVis(int i)
 		int n = lg.size();
 		if (n>0) {
 			std::vector<Vector3d> coords;
-			auto x_ = getLeafVisX_(l);
+			auto x_ = getLeafVisX_2D(l);
 			Vector3d x1= getiHeading0();
 			x1.normalize();
 			Vector3d y1 = Vector3d(0,0,-1).cross(x1); // todo angle between leaf - halfs

@@ -1,6 +1,6 @@
 """Example of the photosynthesis module, using real data from the Selhausen lysimeter setup"""
 
-from datetime import datetime  # |\label{l43:imports}|
+from datetime import datetime  # |\label{l51:imports}|
 
 from matplotlib.dates import DateFormatter, HourLocator
 import matplotlib.pyplot as plt
@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 import plantbox as pb
-from plantbox.functional.Photosynthesis import PhotosynthesisPython  # |\label{l43:importsPhotosynthesis}|
+from plantbox.functional.Photosynthesis import PhotosynthesisPython  # |\label{l51:importsPhotosynthesis}|
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 from plantbox.visualisation import figure_style
 
@@ -22,7 +22,7 @@ def getWeatherData(t):
 
 
 # Parameters and variables
-plant_age = 14  # plant age (day) |\label{l43:Parameters}|
+plant_age = 14  # plant age (day) |\label{l51:Parameters}|
 sim_time = 1.0  # days
 dt = 10.0 / 60.0 / 24.0
 n_steps = round(sim_time / dt)
@@ -31,7 +31,7 @@ Hs = -1000  # top soil matric potential (cm)
 
 # Weather data
 path = "../../modelparameter/functional/climate/"
-weather_data = pd.read_csv(path + "Selhausen_weather_data.txt", delimiter="\t")  # |\label{l43:Tereno}|
+weather_data = pd.read_csv(path + "Selhausen_weather_data.txt", delimiter="\t")  # |\label{l51:Tereno}|
 
 
 # Soil
@@ -41,10 +41,10 @@ def picker(_x, _y, z):
 
 
 soil_domain = pb.SDF_PlantContainer(np.inf, np.inf, depth, True)  # to avoid root growing aboveground
-p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer |\label{l43:SoilEnd}|
+p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer |\label{l51:SoilEnd}|
 
 # Plant
-plant = pb.MappedPlant()  # |\label{l43:plant}|
+plant = pb.MappedPlant()  # |\label{l51:plant}|
 path = "../../modelparameter/structural/plant/"
 filename = "Triticum_aestivum_test_2021"
 plant.readParameters(path + filename + ".xml")
@@ -53,25 +53,25 @@ plant.setGeometry(soil_domain)  # creates soil space to stop roots from growing 
 plant.setSoilGrid(picker)
 
 plant.initialize(False)
-plant.simulate(plant_age, False)  # |\label{l43:plantEnd}|
+plant.simulate(plant_age, False)  # |\label{l51:plantEnd}|
 
 # Plant hydraulic properties
-params = PlantHydraulicParameters()  # |\label{l43:hydraulicparams}|
-params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l6h:hydraulic_end}|
-hm = PhotosynthesisPython(plant, params)  # |\label{l43:PhotosynthesisPython}|
+params = PlantHydraulicParameters()  # |\label{l51:hydraulicparams}|
+params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l51:hydraulic_end}|
+hm = PhotosynthesisPython(plant, params)  # |\label{l51:PhotosynthesisPython}|
 
 path = "../../modelparameter/functional/plant_photosynthesis/"
-hm.read_photosynthesis_parameters(filename=path + "photosynthesis_parameters")  # |\label{l43:read}|
-# hm.write_photosynthesis_parameters(filename=path+"photosynthesis_parametersNew")   # |\label{l43:write}|
+hm.read_photosynthesis_parameters(filename=path + "photosynthesis_parameters")  # |\label{l51:read}|
+# hm.write_photosynthesis_parameters(filename=path+"photosynthesis_parametersNew")   # |\label{l51:write}|
 
 results = {"transpiration": [], "gco2": [], "An": [], "Vc": [], "Vj": []}
-for i in range(n_steps):  # |\label{l43:loop}|
+for i in range(n_steps):  # |\label{l51:loop}|
     # Weather variables
-    weatherData_i = getWeatherData(plant_age)  # |\label{l43:weather}|
+    weatherData_i = getWeatherData(plant_age)  # |\label{l51:weather}|
 
     # Plant growth
     plant_age += dt
-    plant.simulate(dt, False)  # |\label{l43:plant}|
+    plant.simulate(dt, False)  # |\label{l51:plant}|
 
     # Plant transpiration and photosynthesis
     hm.pCO2 = weatherData_i["co2"]
@@ -84,23 +84,23 @@ for i in range(n_steps):  # |\label{l43:loop}|
         cells=True,
         ea=ea,
         es=es,
-        PAR=weather_data["PAR"][i] * (24 * 3600) / 1e4,  # (mol m-2 s-1) -> (mol cm-2 d-1)
+        PAR=weather_data_i["PAR"] * (24 * 3600) / 1e4,  # (mol m-2 s-1) -> (mol cm-2 d-1)
         TairC=weatherData_i["Tair"],
         verbose=0,
-    )  # |\label{l43:solve}|
+    )  # |\label{l51:solve}|
 
     # Post processing
-    hx = hm.get_water_potential()  # |\label{l43:results}|
+    hx = hm.get_water_potential()  # |\label{l51:results}|
     results["transpiration"].append(np.sum(hm.get_transpiration()) / 18 * 1e3)  # (cm3 day-1) * (mol cm-3) * (mmol mol-1)
     results["An"].append(np.sum(hm.get_net_assimilation()) * 1e3)
     results["Vc"].append(np.sum(hm.get_Vc()) * 1e3)
-    results["Vj"].append(np.sum(hm.get_Vj()) * 1e3)  # |\label{l43:resultsEnd}|
+    results["Vj"].append(np.sum(hm.get_Vj()) * 1e3)  # |\label{l51:resultsEnd}|
 
     print(f"at {weather_data['time'][i]} ", f"mean water potential (cm) {np.mean(hx):.0f}\n\tin (mmol day-1), net assimilation: {np.sum(hm.get_net_assimilation()) * 1e3:.2f} transpiration: {np.sum(hm.get_transpiration()) / 18 * 1e3:.2f}")
 
 time = [datetime.strptime(tt, "%H:%M:%S") for tt in weather_data["time"]]
 panel_labels = ["(a)", "(b)", "(c)", "(d)"]
-fig, axs = figure_style.subplots11large(2, 2)  # |\label{l43:plot}|
+fig, axs = figure_style.subplots11large(2, 2)  # |\label{l51:plot}|
 axs[0, 1].plot(time, weather_data["PAR"] * 1e3 * (24 * 3600) / 1e4, "k", label="PAR (mmol cm-2 d-1)")
 axs[0, 1].plot(time, weather_data["Tair"] / 6.2, "tab:red", label="T (°C)")
 axs[0, 1].set(ylabel="PAR\n(mmol cm-2 d-1)")

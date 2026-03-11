@@ -74,7 +74,10 @@ protected:
     void addleafphytomerID(int subtype);
 	double beta;
 
-	std::vector<double> getLeafVisX_(double l);
+	std::vector<double> getLeafVisX_2D(double l);
+	std::vector<double> getLeafVisX_cuboid(double l);
+	std::vector<Vector3d> getLeafVis_2D(int i);
+	std::vector<Vector3d> getLeafVis_cuboid(int i);
 	bool ageDependentTropism = false;///< do we need to check the leaf's age to see when to update the tropism effect?, @see Leaf::rel2abs
     
 };
