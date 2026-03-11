@@ -107,7 +107,7 @@ class XylemFluxPython(XylemFlux):
                 l  = np.linalg.norm(p0 - p1)
                 l_ = l_+l
                 #tip exudation rate 
-                if l_<tip:
+                if (polylengths[i]-l_)<tip:
                     kexu = tip_exu
                     c = 2
                 #base exudation rate 
@@ -115,7 +115,7 @@ class XylemFluxPython(XylemFlux):
                     kexu = base_exu
                     c = 1
                 #if growth has already stopped (99% of total length reached) 
-                if lmax[roottype]*0.99>= polylengths[i] or stopgr:
+                if polylengths[i]>= lmax[roottype]*0.99 or stopgr:
                     #print('REACHED')
                     kexu = base_exu
                     c = 1
