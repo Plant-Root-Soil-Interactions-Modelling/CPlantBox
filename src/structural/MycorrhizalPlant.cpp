@@ -18,6 +18,9 @@ MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum): Plant(seednum) {}
 void MycorrhizalPlant::initializeReader()
 {
     //new Parameters start here
+    auto hyphrp = std::make_shared<HyphaeRandomParameter>(shared_from_this());
+    hyphrp -> subType = 0;
+    setOrganRandomParameter(hyphrp);
     auto mycrrp = std::make_shared<MycorrhizalRootRandomParameter>(shared_from_this());
     mycrrp -> subType = 0;
     setOrganRandomParameter(mycrrp);

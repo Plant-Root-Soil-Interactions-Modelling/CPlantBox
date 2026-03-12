@@ -1,3 +1,26 @@
+
+import types
+import importlib
+import os
+import sys
+SRC_PATH = "../../src/"
+sys.path.append("../.."); sys.path.append(SRC_PATH)
+
+# Create a fake plantbox namespace
+plantbox = types.SimpleNamespace()
+
+# Automatically import all folders inside src and attach to plantbox
+for name in os.listdir(SRC_PATH):
+    folder_path = os.path.join(SRC_PATH, name)
+    if os.path.isdir(folder_path) and not name.startswith('__'):
+        try:
+            module = importlib.import_module(name)
+            setattr(plantbox, name, module)
+            sys.modules[f'plantbox.{name}'] = module
+        except ModuleNotFoundError:
+            # skip folders that are not importable as modules
+            pass
+            
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
@@ -21,13 +44,23 @@ for i in range(1,5):
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
 hyphae_parameter = mycp.getOrganRandomParameter(pb.hyphae)
+
+# for the first item of the list (0: undefined) 
+# we will still have the default value, but the rest is updated
 for hp in hyphae_parameter:    
-    hyphae_parameter.a = 0.01
-    hyphae_parameter.ln = 0.05
-    hyphae_parameter.lb = 0.05
-    hyphae_parameter.dx = 0.01
-    hyphae_parameter.distTH = 0.05   # distance for anastomosis
-mycp.setOrganRandomParameter(hyphae_parameter)
+    print(hp.hlt,'a',hp.a,
+    'ln',hp.ln,
+    'lb',hp.lb,
+    'dx',hp.dx,
+    'distTH',hp.distTH)
+
+for hp in hyphae_parameter:    
+    hp.a = 0.01
+    hp.ln = 0.05
+    hp.lb = 0.05
+    hp.dx = 0.01
+    hp.distTH = 0.05   # distance for anastomosis
+    mycp.setOrganRandomParameter(hp)
 # print(hyphae_parameter)
 
 root = mycp.getOrganRandomParameter(pb.root)
