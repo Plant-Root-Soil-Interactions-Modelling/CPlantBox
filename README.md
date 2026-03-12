@@ -1,5 +1,6 @@
 <img src="Logo_long_white.png" alt="drawing" width="400"/>
-Try Online: [CPlantBox Web App](https://cplantbox.fz-juelich.de/)
+
+Try Online: [CPlantBox Web App](https://cplantbox.fz-juelich.de)
 
 # Introduction
 
@@ -112,8 +113,6 @@ The documentation will be created in this folder. Compile doc/latex/refman.tex t
 ## WebApps
 
 The official [CPlantBox webapp](https://cplantbox.fz-juelich.de) helps to demonstrate the impact of various CPlantBox parameters and to analyse and explore the resulting 3D plant geometry.  
-
-Another [web application](http://cplantbox.com) was designed to conduct simulations and visualize the dynamics of plant growth.
 
 ## Jupyter notebooks
 Direct links to notebooks from the summer school of 2025:
