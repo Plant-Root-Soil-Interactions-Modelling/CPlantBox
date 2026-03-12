@@ -1,26 +1,4 @@
-
-import types
-import importlib
-import os
-import sys
-SRC_PATH = "../../src/"
-sys.path.append("../.."); sys.path.append(SRC_PATH)
-
-# Create a fake plantbox namespace
-plantbox = types.SimpleNamespace()
-
-# Automatically import all folders inside src and attach to plantbox
-for name in os.listdir(SRC_PATH):
-    folder_path = os.path.join(SRC_PATH, name)
-    if os.path.isdir(folder_path) and not name.startswith('__'):
-        try:
-            module = importlib.import_module(name)
-            setattr(plantbox, name, module)
-            sys.modules[f'plantbox.{name}'] = module
-        except ModuleNotFoundError:
-            # skip folders that are not importable as modules
-            pass
-            
+           
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
