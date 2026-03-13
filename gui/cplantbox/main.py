@@ -883,7 +883,7 @@ def download_vtp(n_clicks, time_slider, plant_value, seed_data, root_data, stem_
     State("xml-store", "data"),
     prevent_initial_call=True,
 )
-def download_vtp(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data):
+def download_rsml(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data):
     # print("download_rsml()")
     if n_clicks is None:
         triggered = ctx.triggered_id
