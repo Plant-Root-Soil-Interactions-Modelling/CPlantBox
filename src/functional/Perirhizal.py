@@ -90,6 +90,159 @@ class PerirhizalPython(Perirhizal):
         rsx = root_scalar(fun, method = 'brentq', bracket = [min(rx, sx), max(rx, sx)])
         return rsx.root
 
+
+    #this function achieves the same results as "soil_root_interface_", but it can be solved with a much smaller lookup table
+    @staticmethod
+    def soil_root_interface_simp(rx, sx, inner_kr, rho, sp):
+        """
+        finds matric potential at the soil root interface for as single segment
+        
+        rx             xylem matric potential [cm]
+        sx             bulk soil matric potential [cm]
+        inner_kr       root radius times hydraulic conductivity [cm/day] 
+        rho            geometry factor [1] (outer_radius / inner_radius)
+        sp             soil parameter: van Genuchten parameter set (type vg.Parameters)
+        """
+        if inner_kr < 1.e-7:
+            return sx
+
+        """
+        the original equation was
+        
+        (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x = 0
+
+        this is equivalent to 
+
+        b * k_soilfun(sx, x) * (x - sx) + inner_kr * (x - rx) = 0
+
+        plugging in the definition of k_soilfun yields
+
+        b * (vg.fast_mfp[sp](x) - vg.fast_mfp[sp](sx)) + inner_kr * (x - rx) = 0
+        (vg.fast_mfp[sp](x) - vg.fast_mfp[sp](sx)) + (inner_kr / b) * (x - rx) = 0
+        vg.fast_mfp[sp](x) + (inner_kr / b) * x - (inner_kr / b * rx + vg.fast_mfp[sp](sx)) = 0
+        
+        vg.fast_mfp[sp](x) + m * x + n = 0
+
+        for a given van Genuchten parameter set this equation only dependson two variables, i.e. the lookup table is much smaller
+
+        """
+        
+        #k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint)  # Vanderborgth et al. 2023, Eqn [7]
+        rho2 = np.square(rho)  # rho squared
+        b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
+        #fun = lambda x: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
+        #rsx = root_scalar(fun, method = 'brentq', bracket = [min(rx, sx), max(rx, sx)])
+        m = inner_kr / b
+        n = - (inner_kr / b * rx + vg.fast_mfp[sp](sx))
+        rsx = subfunction_lookup(m,n,sp)
+        return rsx.root
+    #this subfunction is all that is needed for the lookup table, i.e. just 2 dimensions per VG parameter set instead of 4
+    def subfunction_lookup(m, n, sp):
+        fun = lambda x: vg.fast_mfp[sp](x) + m * x + n
+        rx = -15000 #wilting point as lower boundary
+        sx = -10.0 #-10cm as highest possible soil water potential
+        rsx = root_scalar(fun, method = 'brentq', bracket = [min(rx, sx), max(rx, sx)])
+        return rsx
+        
+        """
+        But it gets better:
+        Of the 5 van Genuchten parameters, Ks, alpha, m, theta_r, theta_s,
+        only 3 take part in the equation, namely Ks, alpha, n. 
+        And Ks is a constant factor, meaning the equation can be simplified to 4 inputs.
+        We can construct a lookup table of similar size, but for all van Genuchten parameter sets at once.
+        """
+
+    # a slightly different implementation of waterflow (should lead to the same results)
+    def soil_root_interface_alt(rx, sx, inner_kr, rho, sp):
+        """
+        finds matric potential at the soil root interface for as single segment using a steady state assumption
+        
+        rx             xylem matric potential [cm]
+        sx             bulk soil matric potential [cm]
+        inner_kr       root radius times hydraulic conductivity [cm/day] 
+        rho            geometry factor [1] (outer_radius / inner_radius)
+        sp             soil parameter: van Genuchten parameter set (type vg.Parameters)
+        """
+        if inner_kr < 1.e-7:
+            return sx
+        
+        """
+        go back to the equation:
+        vg.fast_mfp[sp](x) + (inner_kr / b) * x - (inner_kr / b * rx + vg.fast_mfp[sp](sx)) = 0
+        
+        We can improve this by taking a closer look at the function vg.fast_mfp[sp](x)
+        vg.fast_mfp[sp](x) = int_(h_wilting)^(x)K(S(h))dh 
+        K(S) = Ks*sqrt(S)*(1-(1-S)^m)^m
+        S(h) = 1/(1+(alpha*h)
+
+        this implies that S(alpha * h) only depends on m 
+        K(s)/Ks also only depends on m 
+
+        vg.fast_mfp[sp](x) / Ks + (inner_kr / (b*Ks*alpha)) * (alpha*x) - (inner_kr / b * rx + vg.fast_mfp[sp](sx) / Ks ) = 0
+        
+        g(ax,m) + v1 * (ax) + v2 = 0
+        g(ax,m) = vg.fast_mfp[sp](x) / Ks
+        v1 = inner_kr / (b * Ks * alpha)
+        v2 = - (inner_kr / b * rx + vg.fast_mfp[sp](sx)) / Ks
+
+        this can be solved with a lookup table of 3 variables, m, n1, n2
+
+TODO: insert definition of fast_mfp(it is an integral)
+
+If we pull the above equation into the integral, then 
+
+
+
+        """
+        rho2 = np.square(rho)  # rho squared
+        b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
+        m = sp.m 
+        v1 = inner_kr / (b * sp.Ksat * sp.alpha)
+        v2 = - (inner_kr / b * rx + vg.fast_mfp[sp](sx)) / sp.Ksat
+        a_rsx = subfunction_lookup_alt(m, v1, v2)
+        rsx = a_rsx / sp.alpha
+        return rsx
+
+    def subfunction_lookup_alt(m, v1, v2):
+        #dummy van Genuchten parameterset (just includes m, everything else is set to dummy values)
+        p_dummy=[0,1,1,1/(1-m),1]
+        sp_dummy = vg.parameters(p)
+        fun = lambda ax: vg.fast_mfp[sp_dummy](ax) + v1 * ax + v2
+        rx = -15000 #wilting point as lower boundary
+        sx = -10.0 #-10cm as highest possible soil water potential
+        alpha_min = 0.0 #I still need to look these boundaries up, but they hopefully will not significantly influence the speed of the computation
+        alpha_max = 1.0
+        a_rsx = root_scalar(fun, method = 'brentq', bracket = [min(rx, sx)*alpha_max, max(rx, sx)*alpha_min])
+        return a_rsx
+
+
+    # put here the steady state implementation    
+    """
+        this also computes a integral over the diffusion coefficient which is needed for the solute flow i
+        qr             r times the richards flow [cm2/day]
+        Phi            matrix flux potential
+        Phi_rs         matrix flux potential at the root soil interface
+        Phi_bulk       matrix flux potential at the bulk soil
+        this computations assumes a steady state of the waterpotentials
+
+        0 = 1/r \partial_r [r K(h) \partial_r h] = 1/r \partial_r [r q]
+        
+        2*pi*r*q = A = const uptake
+        A/(2*pi) = inner_kr * (rsx - hx)
+
+        \partial_r Phi = A / (2*pi*r)
+        Phi(r) = A/(2*pi) ln(r) + B
+        Phi_bulk - Phi_rs = A/(2*pi) ln(r_bulk/r_root)
+        Phi_bulk - Phi_rs = inner_kr * (rsx - hx) * ln(r_bulk/r_root)
+
+        Phi_rs + (inner_kr * ln(r_bulk/r_root)) * rsx - (Phi_bulk + inner_kr * hx * ln(r_bulk/r_root))
+        vg.fast_mfp[sp](x) + m * x + n = 0
+        (use the subfunction from before for this)
+
+        this works mostly like the steady rate assumption from before. So I could also proceed the same way with that factor B instead of ln(rho)
+    """   
+    # solutes in the perirhizal zone
+    
     def perirhizal_conductance_per_layer(self, h_bs, h_sr, sp):
         """ 
         The perirhizal conductance in a soil layer (or cell) (Vanderborght et al. 2023, Eqn [6]) [day-1], 
