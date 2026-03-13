@@ -811,7 +811,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("basalRootDefined", &Seed::basalRootDefined)
             .def("shootBorneRootDefined", &Seed::shootBorneRootDefined)
             .def("tillersDefined", &Seed::tillersDefined)
-            .def("rootCrowns", &Seed::rootCrowns)
+            .def("getNumberOfRootCrowns", &Seed::getNumberOfRootCrowns)
             .def("getMaxSimTime", &Seed::getMaxSimTime)
             .def_readwrite("tapType", &Seed::tapType)
             .def_readwrite("basalType", &Seed::basalType)

@@ -1,10 +1,13 @@
-import sys; sys.path.append(".."); sys.path.append("../src/")
+import sys
+
+sys.path.append("..")
+sys.path.append("../src/")
 import unittest
+
+import matplotlib.pyplot as plt
 
 import plantbox as pb
 from plantbox.rsml.rsml_reader import *
-
-import matplotlib.pyplot as plt
 
 
 class TestRoot(unittest.TestCase):
@@ -22,12 +25,12 @@ class TestRoot(unittest.TestCase):
         srp.delayRC = 70
         srp.nz = 0.7
         srp.maxTil = 3  # stem
-        srp.simtime = 10.
+        srp.simtime = 10.0
         self.plant.setOrganRandomParameter(srp)
         return srp
 
     def test_constructors(self):
-        """ tests two kinds of constructors and copy """
+        """tests two kinds of constructors and copy"""
         srp = self.get_srp()
         # print(srp)
         # 1. constructor from scratch
@@ -44,7 +47,7 @@ class TestRoot(unittest.TestCase):
         self.assertEqual(str(seed.param()), str(seed3.param()), "deep copy: organs have different parameter values")  # type RootSpecificParameter
 
     def test_initialize(self):
-        """ test initialization (! most important) """
+        """test initialization (! most important)"""
         srp = self.get_srp()
         seed = pb.Seed(self.plant)
         # print(seed)
@@ -67,11 +70,11 @@ class TestRoot(unittest.TestCase):
         st_ = []
         ot_ = []
         for o in organs:
-            st_ .append(o.getParameter("subType"))
-            ot_ .append(o.getParameter("organType"))
-        norc = int(np.ceil((seed.getMaxT() - srp.firstSB) / srp.delayRC) )
+            st_.append(o.getParameter("subType"))
+            ot_.append(o.getParameter("organType"))
+        norc = int(np.ceil((seed.getMaxSimTime() - srp.firstSB) / srp.delayRC))
         self.assertEqual(norc, seed.getNumberOfRootCrowns(), "wrong number of root crowns")
-        maxB = min(srp.maxB, int(np.ceil((seed.getMaxT() - srp.firstB) / srp.delayB)))
+        maxB = min(srp.maxB, int(np.ceil((seed.getMaxSimTime() - srp.firstB) / srp.delayB)))
         self.assertEqual(len(st_), norc * srp.nC + 1 + maxB, "wrong number of roots created")
 
         seed = pb.Seed(self.plant)
@@ -91,14 +94,14 @@ class TestRoot(unittest.TestCase):
         st_ = []
         ot_ = []
         for o in organs:
-            st_ .append(o.getParameter("subType"))
-            ot_ .append(o.getParameter("organType"))
-        st_root = [seed.tapType] + [ seed.basalType for i in range(maxB) ] + [seed.shootborneType for i in range(int(norc * srp.nC))] 
-        ot_root = [ 2.0 for i in range(len(st_root))]
-        st_shoot = [seed.mainStemType] + [ seed.tillerType for i in range(srp.maxTil) ]
-        ot_shoot = [ 3.0 for i in range(len(st_shoot))]
-        #st = [1.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 1.0, 4.0, 4.0, 4.0]
-        #ot = [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0]
+            st_.append(o.getParameter("subType"))
+            ot_.append(o.getParameter("organType"))
+        st_root = [seed.tapType] + [seed.basalType for i in range(maxB)] + [seed.shootborneType for i in range(int(norc * srp.nC))]
+        ot_root = [2.0 for i in range(len(st_root))]
+        st_shoot = [seed.mainStemType] + [seed.tillerType for i in range(srp.maxTil)]
+        ot_shoot = [3.0 for i in range(len(st_shoot))]
+        # st = [1.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 1.0, 4.0, 4.0, 4.0]
+        # ot = [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0]
         st = st_root + st_shoot
         ot = ot_root + ot_shoot
         for i in range(0, len(organs)):
@@ -106,10 +109,10 @@ class TestRoot(unittest.TestCase):
             self.assertEqual(ot_[i], ot[i], "tap root produced wrong organ type")
 
     def test_advanced_initialize(self):
-        """ tests if factory functions can be overwritten in Pyhton """
+        """tests if factory functions can be overwritten in Pyhton"""
         # todo
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

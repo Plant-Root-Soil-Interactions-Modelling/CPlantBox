@@ -60,7 +60,7 @@ class Seed : public Organ {
     bool tillersDefined(); ///< is there a tiller definition in the parameter set? works only before initialization, otherwise the tiller type is copied from to
                            ///< the stem type
 
-    int rootCrowns() const { return rootCrowns_; }            ///< returns the number of root crowns, after initialization (currently == 1)
+    int getNumberOfRootCrowns() const { return rootCrowns_; }            ///< returns the number of root crowns, after initialization (currently == 1)
     double getMaxSimTime() const { return param()->simtime; } ///< returns the recommended final simulation time
 
   protected:
