@@ -1,26 +1,26 @@
-import sys; sys.path.append("..")
+import unittest
 
-import unittestimport plantbox as pb
+import plantbox as pb
 
 
 class TestOrgan(unittest.TestCase):
 
     def hand_example(self):
-        """ an example used in the tests below, a hand with two fingers """
-        self.ons = pb.Vector3d(0., 0., 1.)
+        """an example used in the tests below, a hand with two fingers"""
+        self.ons = pb.Vector3d(0.0, 0.0, 1.0)
         self.human1 = pb.Organism()  # same example as in test_constructor ...
         otp = pb.OrganRandomParameter(self.human1)
         self.human1.setOrganRandomParameter(otp)
         op = otp.realize()
-        self.hand = pb.Organ(self.human1.getOrganIndex(), op, True, True, 0, 15., self.ons, 0, False, 0)
+        self.hand = pb.Organ(self.human1.getOrganIndex(), op, True, True, 0, 15.0, self.ons, 0, False, 0)
         self.hand.setOrganism(self.human1)
-        self.thumb = pb.Organ(self.human1, self.hand, 0, 0, 4,  0)  # delayedfor 4 days
-        self.little_finger = pb.Organ(self.human1, self.hand, 0, 0, 3,  0)  # delayed for 3 days
+        self.thumb = pb.Organ(self.human1, self.hand, 0, 0, 4, 0)  # delayedfor 4 days
+        self.little_finger = pb.Organ(self.human1, self.hand, 0, 0, 3, 0)  # delayed for 3 days
         self.hand.addChild(self.thumb)
         self.hand.addChild(self.little_finger)
 
     def add_nodes(self):
-        """ used in the tests below, adds nodes to the hand example """
+        """used in the tests below, adds nodes to the hand example"""
         self.human1.getNodeIndex()
         self.human1.getNodeIndex()  # to make global and organ index disagree
         self.hand.addNode(pb.Vector3d(0, 0, 0), 0)
@@ -35,18 +35,18 @@ class TestOrgan(unittest.TestCase):
         self.little_finger.addNode(pb.Vector3d(0, 1.7, 2.5), 3)
 
     def test_constructors(self):
-        """ tests three different kinds of constructors """
-        ons = pb.Vector3d(0., 0., 1.)
+        """tests three different kinds of constructors"""
+        ons = pb.Vector3d(0.0, 0.0, 1.0)
         human1 = pb.Organism()
         otp = pb.OrganRandomParameter(human1)
         human1.setOrganRandomParameter(otp)
         op = otp.realize()
         # 1. constructor from scratch
-        hand = pb.Organ(human1.getOrganIndex(), op, True, True, 0., 15., ons, 0, False, 0)
+        hand = pb.Organ(human1.getOrganIndex(), op, True, True, 0.0, 15.0, ons, 0, False, 0)
         hand.setOrganism(human1)
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
-        thumb = pb.Organ(human1, hand, 0, 0, 4,  0)
-        little_finger = pb.Organ(human1, hand, 0, 0, 3,  0)
+        thumb = pb.Organ(human1, hand, 0, 0, 4, 0)
+        little_finger = pb.Organ(human1, hand, 0, 0, 3, 0)
         hand.addChild(thumb)
         hand.addChild(little_finger)
         # 3. deep copy (with a factory function)
@@ -60,7 +60,7 @@ class TestOrgan(unittest.TestCase):
         self.assertIsNot(hand.getOrganism(), hand2.getOrganism(), "deep copy: organs have same parent organisms")
 
     def test_simulation(self):
-        """ tests if the ages agree after a simulate call of 10 days"""
+        """tests if the ages agree after a simulate call of 10 days"""
         self.hand_example()
         self.hand.simulate(10)
         self.assertEqual(self.hand.getAge(), 10, "wrong organ age")
@@ -68,10 +68,10 @@ class TestOrgan(unittest.TestCase):
         self.assertEqual(self.little_finger.getAge(), 7, "wrong organ age")
 
     def test_sequential(self):
-        """ tests if the the organ tree can be represented in a seqential list"""
+        """tests if the the organ tree can be represented in a seqential list"""
         self.hand_example()
         self.add_nodes()  # only organs with number of nodes > 1 are considered
-        ring = pb.Organ(self.human1, self.thumb, 0, 0, 4,  0)  # add a ring to the thumb
+        ring = pb.Organ(self.human1, self.thumb, 0, 0, 4, 0)  # add a ring to the thumb
         self.thumb.addChild(ring)
         ring.addNode(pb.Vector3d(0, -1, 1.6), self.thumb.getNodeId(1), 4)
         ring.addNode(pb.Vector3d(0, -1, 1.6), 4)
@@ -79,7 +79,7 @@ class TestOrgan(unittest.TestCase):
         self.assertEqual(len(organs), 4, "wrong number of organs")
 
     def test_geometry(self):
-        """ tests if nodes can be retrieved from the organ """
+        """tests if nodes can be retrieved from the organ"""
         self.hand_example()
         self.add_nodes()
         organs = [self.hand, self.thumb, self.little_finger]
@@ -93,7 +93,7 @@ class TestOrgan(unittest.TestCase):
                 self.assertEqual(o.getNode(i).x, 0, "x coordinate should be zero")
 
     def test_parameter(self):
-        """ tests if parameters per organ can be accessed (order and age)"""
+        """tests if parameters per organ can be accessed (order and age)"""
         self.hand_example()
         self.add_nodes()
         a1 = self.little_finger.getParameter("age")
@@ -108,7 +108,7 @@ class TestOrgan(unittest.TestCase):
         self.assertEqual(o2, 1, "wrong order")
 
     def test_dynamics(self):
-        """ tests if nodes created in last time step are correct """  #
+        """tests if nodes created in last time step are correct"""  #
         self.hand_example()
         self.hand.simulate(1)
         self.add_nodes()
@@ -135,6 +135,6 @@ class TestOrgan(unittest.TestCase):
         self.assertEqual(n2, 0, "wrong number of new nodes")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
     print("done.")
