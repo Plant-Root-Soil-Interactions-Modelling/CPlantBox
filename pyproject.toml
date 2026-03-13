@@ -2,6 +2,11 @@
 line-length = 320
 target-version = ["py311"]
 
+[tool.isort]
+combine_as_imports = true
+known_first_party = ["rosi", "plantbox", "my_project"]
+sections = ["STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
 [tool.ruff]
 line-length = 320
 lint.select = ["E", "F", "I"]
