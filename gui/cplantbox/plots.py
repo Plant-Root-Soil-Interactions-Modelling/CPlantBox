@@ -214,8 +214,8 @@ def dynamics_plot(data, typename_data):
     return html.Div(content, style={"width": "100%", "height": "600px"})
 
 
-import numpy as np
-import pandas as pd
+
+
 
 
 def dynamics_to_excel(data, typename_data):
