@@ -107,7 +107,7 @@ class Organism : public std::enable_shared_from_this<Organism> {
     virtual std::string writeRSML(std::string name, bool intoFile = true) const; ///< writes a RSML file
     int getRSMLSkip() const { return rsmlSkip; }    ///< skips points in the RSML output (default = 0)
     void setRSMLSkip(int skip) {
-        assert(rsmlSkip >= 0 && "Organism::setRSMLSkip(): skip must be >= 0");
+        assert(skip >= 0 && "Organism::setRSMLSkip(): skip must be >= 0");
         rsmlSkip = skip;
     } ///< skips points in the RSML output (default = 0)
     std::vector<std::string> &getRSMLProperties() { return rsmlProperties; } ///< reference to the vector<string> of RSML property names, default is { "organType", "subType","length", "age"  }
