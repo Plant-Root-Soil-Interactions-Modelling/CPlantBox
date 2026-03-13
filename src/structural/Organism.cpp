@@ -699,7 +699,7 @@ std::string Organism::write(std::string name, bool intoFile) const {
             return oss.str();               
         }
     } else {
-        throw std::invalid_argument("Organism::write(): Unkwown file type");
+        throw std::invalid_argument("Organism::write(): Unknown file type");
     }
 }
 
