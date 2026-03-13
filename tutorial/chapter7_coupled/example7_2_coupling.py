@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plantbox as pb
+import plantbox.visualisation.vtk_plot as vp
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 from plantbox.visualisation import figure_style
-import plantbox.visualisation.vtk_plot as vp
 from rosi.richards import RichardsWrapper  # Python part
 from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
@@ -93,7 +93,9 @@ for i in range(0, n_steps):  # |\label{l72c:loop}|
     t_act_.append(float(hm.get_transpiration(plant_age + t, h_x, h_s, cells=True)))  # |\label{l72c:results}|
 
     n = round(float(i) / float(n_steps) * 100.0)  # |\label{l72c:progress}|
-    print(f"[{'*' * n}{' ' * (100 - n)}], [{np.min(h_s):g}, {np.max(h_s):g}] cm soil [{np.min(h_x):g}, {np.max(h_x):g}] cm root at {s.simTime:g} days {h_x[0]:g}")
+    print(
+        f"[{'*' * n}{' ' * (100 - n)}], [{np.min(h_s):g}, {np.max(h_s):g}] cm soil [{np.min(h_x):g}, {np.max(h_x):g}] cm root at {s.simTime:g} days {h_x[0]:g}"
+    )
 
     if i % 10 == 0:  # |\label{l72c:write}|
         vp.write_soil(f"results/example72_{i // 10:06d}", s, box_min, box_max, cell_number)
