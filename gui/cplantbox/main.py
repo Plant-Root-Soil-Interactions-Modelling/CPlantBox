@@ -11,7 +11,6 @@ import dash_bootstrap_components as dbc
 import numpy as np
 import plots  # figures
 import simulate_plant  # the simulation loop
-import vtk
 import vtk_conversions  # auxiliary stuff
 from dash import Input, Output, State, ctx, dcc, html, no_update
 from pympler import asizeof
@@ -26,17 +25,12 @@ md_path = os.path.join(BASE_DIR, "assets", "readme.md")  # Path to your Markdown
 with open(md_path, "r", encoding="utf-8") as f:  # Read the Markdown content
     ABOUT_TEXT = f.read()
 
-
 MAX_XML_SIZE = 200 * 1024  # 200 KB in bytes
 
 #
 # INITIALIZE
 #
-app = dash.Dash(
-    __name__,
-    suppress_callback_exceptions=True,
-    external_stylesheets=[dbc.themes.SANDSTONE],
-)  # SANDSTONE, MINTY, MORPH
+app = dash.Dash(__name__, suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.MINTY])  # SANDSTONE, MINTY, MORPH
 app.title = "CPlantbox Dash App"
 
 param_names = conversions.get_parameter_names()
@@ -53,19 +47,9 @@ STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180.0, 1, 0.2, "Gravitropism"
 LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45.0, 2.0, 90, 1.0, 0.2, "Gravitropism"]
 
 
-def small_button(file_type, id_, tool_tip="", url="cloud-download.svg"):
-    return dcc.Button(
-        [
-            html.Img(
-                src=app.get_asset_url(url),
-                className="buttonIcon",
-            ),
-            file_type,
-        ],
-        id=id_,
-        title=tool_tip,
-        className="smallButton",
-    )
+def small_button(label, id_, tool_tip="", url="cloud-download.svg"):
+    """creates a small button with an icon from the assets folder (from Bootstrap Icons)"""
+    return dcc.Button([html.Img(src=app.get_asset_url(url), className="buttonIcon"), label], id=id_, title=tool_tip, className="smallButton")
 
 
 #
@@ -74,27 +58,12 @@ def small_button(file_type, id_, tool_tip="", url="cloud-download.svg"):
 app.layout = dbc.Container(
     [
         dcc.Store(
-            id="seed-store",
-            data={
-                "seed": SEED_SLIDER_INITIALS,
-                "basal-checkbox": False,
-                "shoot-checkbox": False,
-                "tillers-checkbox": False,
-            },
+            id="seed-store", data={"seed": SEED_SLIDER_INITIALS, "basal-checkbox": False, "shoot-checkbox": False, "tillers-checkbox": False}
         ),  # seed slider values
-        dcc.Store(
-            id="root-store",
-            data={f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)},
-        ),  # root slider values
-        dcc.Store(
-            id="stem-store",
-            data={f"tab-{i}": STEM_SLIDER_INITIALS for i in range(1, 5)},
-        ),  # stem slider values
+        dcc.Store(id="root-store", data={f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)}),  # root slider values
+        dcc.Store(id="stem-store", data={f"tab-{i}": STEM_SLIDER_INITIALS for i in range(1, 5)}),  # stem slider values
         dcc.Store(id="leaf-store", data={"leaf": LEAF_SLIDER_INITIALS}),  # leaf slider values
-        dcc.Store(
-            id="typename-store",
-            data={f"tab-{i}": f"Order {i} root" for i in range(1, 5)},
-        ),  # root sub type names
+        dcc.Store(id="typename-store", data={f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),  # root sub type names
         dcc.Store(id="settings-store", data={"token": 0, "reset": True, "random_seed": 0}),  # further settings
         dcc.Store(id="vtk-result-store", data={}),  # resulting geometry
         dcc.Store(id="result-store", data={}),  # resulting graphs
@@ -102,8 +71,8 @@ app.layout = dbc.Container(
         dcc.Download(id="download-xml"),
         dcc.Download(id="download-vtk"),
         dcc.Download(id="download-rsml"),
-        dcc.Download(id="download-dynamics-xls"),
         dcc.Download(id="download-profiles-xls"),
+        dcc.Download(id="download-dynamics-xls"),
         dbc.Row(
             [
                 #
@@ -121,36 +90,22 @@ app.layout = dbc.Container(
                                     value=plants[0]["value"],
                                     clearable=False,
                                     className="dropdown",
-                                    style={
-                                        "fontSize": "12px",
-                                        "padding-top": "5px",
-                                    },  # hard coded (should be same as h5) did not work with css allown
+                                    style={"fontSize": "12px", "padding-top": "5px"},  # hard coded (should be same as h6) did not work with css allown
                                 ),
                                 html.Div(className="smallSpacer"),
                                 html.Div(
                                     [
-                                        html.Div(  # ohterwise the layout is a pixel wrong
-                                            children=small_button(
-                                                "xml",
-                                                "xml-download-button",
-                                                "Download the XML parameter file",
-                                            )
-                                        ),
+                                        html.Div(
+                                            children=small_button("xml", "xml-download-button", "Download the XML parameter file")
+                                        ),  # ohterwise the layout is a pixel wrong
                                         dcc.Upload(
                                             id="xml-upload-button",
                                             accept=".xml",
                                             multiple=False,
-                                            children=small_button(
-                                                "xml",
-                                                "xml-upload-button-hidden",
-                                                "Upload your XML parameter file",
-                                            ),
+                                            children=small_button("xml", "xml-upload-button-hidden", "Upload your XML parameter file", url="cloud-upload.svg"),
                                         ),
                                     ],
-                                    style={
-                                        "display": "flex",
-                                        "alignItems": "center",  # vertical alignment
-                                    },
+                                    style={"display": "flex", "alignItems": "center"},  # vertical alignment
                                 ),
                             ]
                         ),
@@ -158,29 +113,17 @@ app.layout = dbc.Container(
                         conversions.into_panel(
                             [
                                 html.H6("Simulation time [day]"),
-                                dcc.Slider(
-                                    id="time-slider",
-                                    min=1,
-                                    max=45,
-                                    step=1,
-                                    value=20,
-                                    marks={1: "1", 45: "45"},
-                                    tooltip={"always_visible": False},
-                                ),
+                                dcc.Slider(id="time-slider", min=1, max=45, step=1, value=20, marks={1: "1", 45: "45"}, tooltip={"always_visible": False}),
                                 html.Div(className="spacer"),
                                 html.Div(
                                     [
-                                        dcc.Button(
-                                            "Create",
-                                            id="create-button",
-                                            title="Start a simulation, create the root system architecture",
-                                            className="button",
-                                        ),
+                                        dcc.Button("Create", id="create-button", title="Create new plant geometry", className="button"),
                                         dcc.Button(
                                             "Update",
                                             id="update-button",
                                             title="Update the simulation (with the same random seed)",
                                             className="button",
+                                            style={"display": "none"},
                                         ),
                                     ],
                                 ),
@@ -188,11 +131,9 @@ app.layout = dbc.Container(
                         ),
                         html.Div(className="largeSpacer"),
                         html.Div(className="largeSpacer"),
-                        dcc.Loading(
-                            id="loading-spinner",
-                            type="circle",  # Options: "default", "circle", "dot", "cube"
-                            children=html.Div(id="loading-spinner-output"),
-                        ),
+                        dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),
+                        dcc.Loading(id="loading-spinner2", type="circle", children=html.Div(id="loading-spinner-output2")),
+                        dcc.Loading(id="loading-spinner3", type="circle", children=html.Div(id="loading-spinner-output3")),
                     ],
                     width=2,
                 ),
@@ -204,32 +145,12 @@ app.layout = dbc.Container(
                         html.H5("Parameters"),
                         dcc.Tabs(
                             id="organtype-tabs",
-                            value="Root",
+                            value="Seed",
                             children=[
-                                dcc.Tab(
-                                    label="Seed",
-                                    value="Seed",
-                                    className="tab",
-                                    selected_className="tabSelected",
-                                ),
-                                dcc.Tab(
-                                    label="Root",
-                                    value="Root",
-                                    className="tab",
-                                    selected_className="tabSelected",
-                                ),
-                                dcc.Tab(
-                                    label="Stem",
-                                    value="Stem",
-                                    className="tab",
-                                    selected_className="tabSelected",
-                                ),
-                                dcc.Tab(
-                                    label="Leaf",
-                                    value="Leaf",
-                                    className="tab",
-                                    selected_className="tabSelected",
-                                ),
+                                dcc.Tab(label="Seed", value="Seed", className="tab", selected_className="tabSelected"),
+                                dcc.Tab(label="Root", value="Root", className="tab", selected_className="tabSelected"),
+                                dcc.Tab(label="Stem", value="Stem", className="tab", selected_className="tabSelected"),
+                                dcc.Tab(label="Leaf", value="Leaf", className="tab", selected_className="tabSelected"),
                             ],
                             className="tabs",
                         ),
@@ -247,36 +168,11 @@ app.layout = dbc.Container(
                             id="result-tabs",
                             value="VTK3D",
                             children=[
-                                dcc.Tab(
-                                    label="3D",
-                                    value="VTK3D",
-                                    className="tab",
-                                    selected_className="tabSelected",
-                                ),
-                                dcc.Tab(
-                                    label="3D Age",
-                                    value="VTK3DAge",
-                                    className="tab",
-                                    selected_className="tabSelected",
-                                ),
-                                dcc.Tab(
-                                    label="1D Profiles",
-                                    value="Profile1D",
-                                    className="tab",
-                                    selected_className="tabSelected",
-                                ),
-                                dcc.Tab(
-                                    label="Dynamics",
-                                    value="Dynamics",
-                                    className="tab",
-                                    selected_className="tabSelected",
-                                ),
-                                dcc.Tab(
-                                    label="About",
-                                    value="About",
-                                    className="tab",
-                                    selected_className="tabSelected",
-                                ),
+                                dcc.Tab(label="3D", value="VTK3D", className="tab", selected_className="tabSelected"),
+                                dcc.Tab(label="3D Age", value="VTK3DAge", className="tab", selected_className="tabSelected"),
+                                dcc.Tab(label="1D Profiles", value="Profile1D", className="tab", selected_className="tabSelected"),
+                                dcc.Tab(label="Dynamics", value="Dynamics", className="tab", selected_className="tabSelected"),
+                                dcc.Tab(label="About", value="About", className="tab", selected_className="tabSelected"),
                             ],
                             className="tabs",
                         ),
@@ -293,11 +189,7 @@ app.layout = dbc.Container(
                     href="https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox",
                     target="_blank",
                 ),
-                html.A(
-                    html.Img(src="/assets/fzj.png", className="logo"),
-                    href="https://www.fz-juelich.de/de",
-                    target="_blank",
-                ),
+                html.A(html.Img(src="/assets/fzj.png", className="logo"), href="https://www.fz-juelich.de/de", target="_blank"),
             ],
             className="logoContainer",
         ),
@@ -309,15 +201,15 @@ app.layout = dbc.Container(
 #
 # 1. LEFT - Simulation Panel
 #
-@app.callback(  # plant-dropdown
-    Output("seed-store", "data"),  # , allow_duplicate=True
+@app.callback(  # Plant parameters: plant-dropdown
+    Output("seed-store", "data"),
     Output("root-store", "data"),
     Output("stem-store", "data"),
     Output("leaf-store", "data"),
     Output("typename-store", "data"),
     Output("organtype-tabs", "value"),  # to trigger update
+    Output("create-button", "n_clicks"),  # to simulation
     Output("time-slider", "value"),
-    Output("create-button", "n_clicks"),
     Input("plant-dropdown", "value"),
     State("seed-store", "data"),
     State("root-store", "data"),
@@ -327,32 +219,15 @@ app.layout = dbc.Container(
     State("organtype-tabs", "value"),
     State("xml-store", "data"),
 )
-def plant_dropdown(
-    plant_value,
-    seed_data,
-    root_data,
-    stem_data,
-    leaf_data,
-    typename_data,
-    tabs_value,
-    xml_data,
-):
-    print("plant_dropdown()", plant_value)
+def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, xml_data):
+    triggered = ctx.triggered_id
+    print("[plant_dropdown()", plant_value, "triggered:", triggered)  # dynamic-seed-slider
     conversions.set_data(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, xml_data)
-    print("plant_dropdown() - typename_data:", typename_data)
-    return (
-        seed_data,
-        root_data,
-        stem_data,
-        leaf_data,
-        typename_data,
-        tabs_value,
-        seed_data["simulationTime"],
-        None,
-    )
+    print("]plant_dropdown()", plant_value)  # seed_data
+    return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, None, seed_data["simulationTime"])
 
 
-@app.callback(
+@app.callback(  # Create and update button: update-button
     Output("result-tabs-content", "children"),
     Output("vtk-result-store", "data"),
     Output("result-store", "data"),
@@ -360,8 +235,8 @@ def plant_dropdown(
     Output("loading-spinner-output", "children"),
     Input("create-button", "n_clicks"),
     Input("update-button", "n_clicks"),
+    Input("time-slider", "value"),
     State("plant-dropdown", "value"),
-    State("time-slider", "value"),
     State("seed-store", "data"),
     State("root-store", "data"),
     State("stem-store", "data"),
@@ -370,24 +245,12 @@ def plant_dropdown(
     State("result-tabs", "value"),
     State("settings-store", "data"),
     State("xml-store", "data"),
-    #    prevent_initial_call=True,
 )
 def handle_simulation(
-    create_clicks,
-    update_clicks,
-    plant_value,
-    time_slider,
-    seed_data,
-    root_data,
-    stem_data,
-    leaf_data,
-    typename_data,
-    result_value,
-    settings_data,
-    xml_data,
+    create_clicks, update_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data
 ):
-    print("create and update clicks", create_clicks, update_clicks)
     triggered = ctx.triggered_id
+    print("**[handle_simulation()", triggered, create_clicks, update_clicks, time_slider)
 
     # ---- CREATE BUTTON ----
     if triggered is None or triggered == "create-button":
@@ -397,36 +260,19 @@ def handle_simulation(
         settings_data["random_seed"] = rng.integers(1, 10001)
 
     # ---- UPDATE BUTTON ----
-    elif triggered == "update-button":
+    elif triggered == "update-button" or triggered == "time-slider":
         settings_data["reset"] = False
 
     # ---- Run simulation (common part) ----
     vtk_data, result_data = simulate_plant.simulate_plant(
-        plant_value,
-        time_slider,
-        seed_data,
-        root_data,
-        stem_data,
-        leaf_data,
-        settings_data["random_seed"],
-        xml_data,
+        plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"], xml_data
     )
 
-    content = render_result_tab(
-        result_value,
-        vtk_data,
-        result_data,
-        typename_data,
-        settings_data,
-    )
+    content = render_result_tab(result_value, vtk_data, result_data, typename_data, settings_data)
 
-    return (
-        content,
-        vtk_data,
-        result_data,
-        settings_data,
-        html.H6(""),
-    )
+    print("**]handle_simulation()", settings_data.keys(), vtk_data.keys(), "\n\n")
+
+    return (content, vtk_data, result_data, settings_data, html.H6(""))
 
 
 @app.callback(  # parameter file download
@@ -445,7 +291,7 @@ def download_xml(n_clicks, plant_value, seed_data, root_data, stem_data, leaf_da
     return dict(content=xml_string, filename="cplantbox_parameters.xml", type="application/xml")
 
 
-@app.callback(  # parameter fiel upload
+@app.callback(  # parameter file upload
     Output("xml-store", "data"),
     Output("plant-dropdown", "value"),
     Input("xml-upload-button", "contents"),
@@ -453,13 +299,14 @@ def download_xml(n_clicks, plant_value, seed_data, root_data, stem_data, leaf_da
     prevent_initial_call=True,
 )
 def handle_xml_upload(contents, data):
+    print("handle_xml_upload****************************************************!!!!")
     if contents is None:
-        return dash.no_update
+        return dash.no_update, dash.no_update
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
     if len(decoded) > MAX_XML_SIZE:  # Size check (before decoding to UTF-8 string)
         print("XML file exceeds size limit")
-        return dash.no_update  # or raise PreventUpdate
+        return dash.no_update, dash.no_update  # or raise PreventUpdate
     xml_string = decoded.decode("utf-8")
     data["xml"] = xml_string  # Store the XML content in the dcc.Store
     return data, "6"
@@ -478,6 +325,11 @@ def handle_xml_upload(contents, data):
     State("leaf-store", "data"),
 )
 def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_data):
+
+    triggered = ctx.triggered_id
+    # print("render_organtype_tab()", triggered, "tab", tab)
+    if triggered is None:
+        tab = "Seed"
     if tab == "Seed":
         print("render_organtype_tab() seed:", seed_data)
         return generate_seed_sliders(seed_data)
@@ -491,23 +343,25 @@ def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_
         print("render_organtype_tab() leaf:", leaf_data)
         return generate_leaf_sliders(leaf_data)
 
+    print("!" * 200)
+
 
 #
 #  Parameters Panel - Seed
 #
 def generate_seed_sliders(data):  # Generate sliders for seed tab from stored values
+    # print("generate_seed_sliders()", seed_values)
     seed_values = data["seed"]
-    print("generate_seed_sliders()", seed_values)
     sliders = []
     for i, key in enumerate(seed_parameter_sliders.keys()):
-        if i in [0, 1]:  # shoot borne sliders are currently disabled
-            style = {"display": "none"}
-        else:
-            style = {}  # default
+        #     if False:  # in case we want to hide certain sliders
+        #         style = {"display": "none"}
+        #     else:
+        #         style = {}  # default
         min_ = seed_parameter_sliders[key][0]
         max_ = seed_parameter_sliders[key][1]
         step_ = seed_parameter_sliders[key][2]
-        sliders.append(html.H6(key, style=style))
+        sliders.append(html.H6(key))  # , style=style
         sliders.append(
             html.Div(
                 [
@@ -522,68 +376,52 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
                         className="slider",
                     )
                 ],
-                style=style,
+                # style=style,
             )
         )
-    if data["shoot-checkbox"]:
-        v = ["agree"]
-    else:
-        v = []
+    # Insert checkboxes
+
+    v = ["agree"] if data["shoot-checkbox"] else []
     sliders.insert(
         0,
-        dcc.Checklist(
-            id="shoot-checkbox",
-            options=[
-                {
-                    "label": html.H6(" Shoot borne roots"),
-                    "value": "agree",
-                }
-            ],
-            className="checkbox",
-            value=v,
-            style={"display": "none"},  # hide for now
+        html.Div(
+            [
+                dcc.Checklist(
+                    id="shoot-checkbox",
+                    options=[{"label": "Shoot borne roots", "value": "agree"}],
+                    className="checkbox",
+                    value=v,
+                    style={"fontSize": "12px", "padding-top": "0px"},
+                )
+            ]
         ),
     )
-    if data["basal-checkbox"]:
-        v = ["agree"]
-    else:
-        v = []
+    v = ["agree"] if data["basal-checkbox"] else []
     sliders.insert(
         1 + 2 * 2,
         dcc.Checklist(
             id="basal-checkbox",
-            options=[
-                {
-                    "label": html.H6(" Basal roots"),
-                    "value": "agree",
-                }
-            ],
+            options=[{"label": "Basal roots", "value": "agree"}],
             className="checkbox",
             value=v,
+            style={"fontSize": "12px", "padding-top": "0px"},
         ),
     )
-    if data["tillers-checkbox"]:
-        v = ["agree"]
-    else:
-        v = []
+    v = ["agree"] if data["tillers-checkbox"] else []
     sliders.insert(
         2 + 5 * 2,
         dcc.Checklist(
             id="tillers-checkbox",
-            options=[
-                {
-                    "label": html.H6(" Tillers"),
-                    "value": "agree",
-                }
-            ],
+            options=[{"label": "Tillers", "value": "agree"}],
             className="checkbox",
             value=v,
+            style={"fontSize": "12px", "padding-top": "0px"},
         ),
     )
-    # panel1 = conversions.into_panel(sliders, range(0, 1 + 2 * 2)  # shoot (disabled for now)
-    panel2 = conversions.into_panel(sliders, range(0, 2 + 5 * 2))  # basal (0-1+2*2 are added to the gui, but invisible)
+    panel1 = conversions.into_panel(sliders, range(0, 1 + 2 * 2))  # shoot
+    panel2 = conversions.into_panel(sliders, range(1 + 2 * 2, 2 + 5 * 2))  # basal
     panel3 = conversions.into_panel(sliders, range(2 + 5 * 2, len(sliders)))  # tillers
-    return html.Div([panel2, panel3])
+    return html.Div([panel1, panel2, panel3])
 
 
 @app.callback(  # store dynamic-seed-slider in seed-store
@@ -593,7 +431,8 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
     prevent_initial_call=True,
 )
 def update_seed_store(slider_values, data):
-    print("update_seed_store()", data, slider_values, len(data["seed"]))
+    triggered = ctx.triggered_id
+    print("update_seed_store()", triggered, ", ", data, slider_values, len(data["seed"]))
     if len(slider_values) > 1:  # called empty
         data["seed"] = slider_values
     return data
@@ -607,7 +446,9 @@ def update_seed_store(slider_values, data):
     State("seed-store", "data"),
     prevent_initial_call=True,
 )
-def toggle_slider(checkbox_value, data):
+def toggle_shoot_checkbox(checkbox_value, data):
+    triggered = ctx.triggered_id
+    print("toggle_shoot_checkbox()", triggered, checkbox_value)
     data["shoot-checkbox"] = "agree" in checkbox_value
     disabled = "agree" not in checkbox_value
     return (disabled, disabled, data)  # disable if not checked
@@ -622,7 +463,9 @@ def toggle_slider(checkbox_value, data):
     State("seed-store", "data"),
     prevent_initial_call=True,
 )
-def toggle_slider(checkbox_value, data):
+def toggle_basal_checkbox(checkbox_value, data):
+    triggered = ctx.triggered_id
+    print("toggle_basal_checkbox()", triggered, checkbox_value)
     data["basal-checkbox"] = "agree" in checkbox_value
     disabled = "agree" not in checkbox_value
     return (disabled, disabled, disabled, data)  # disable if not checked
@@ -637,7 +480,9 @@ def toggle_slider(checkbox_value, data):
     State("seed-store", "data"),
     prevent_initial_call=True,
 )
-def toggle_slider(checkbox_value, data):
+def toggle_tillers_checkbox(checkbox_value, data):
+    triggered = ctx.triggered_id
+    print("toggle_tillers_checkbox()", triggered, checkbox_value)
     data["tillers-checkbox"] = "agree" in checkbox_value
     disabled = "agree" not in checkbox_value
     return (disabled, disabled, disabled, data)
@@ -929,12 +774,8 @@ def update_leaf_store(slider_values, store_data):
 # 3. RIGHT - Results Panel
 #
 def create_geometry_buttons():
-    vtk_btn = small_button("vtk", "vkt-download-button", "Download plant architecture as Paraview VTK file")
-    rsml_btn = small_button(
-        "rsml",
-        "rsml-download-button",
-        "Download plant architecture root system markup language file (RSML)",
-    )
+    vtk_btn = small_button("vtp", "vkt-download-button", "Download plant architecture as Paraview VTP file")
+    rsml_btn = small_button("rsml", "rsml-download-button", "Download plant architecture root system markup language file (RSML)")
     return html.Div([vtk_btn, rsml_btn])
 
 
@@ -962,47 +803,31 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
     print("render_result_tab()", tab, settings_data["token"], settings_data["reset"])
 
     if tab == "About":
-        return html.Div(
-            dcc.Markdown(ABOUT_TEXT, style={"whiteSpace": "pre-line"}),
-            className="aboutContainer",
-        )
+        return html.Div(dcc.Markdown(ABOUT_TEXT, style={"whiteSpace": "pre-line"}), className="aboutContainer")
 
     if not vtk_data:
         print("no data")
         return html.Div([html.H6("press the create button")])
 
-    print("***********************************************************************************************************************************")
-    print("vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB")
-    print("result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
-    print("***********************************************************************************************************************************")
+    # print("***********************************************************************************************************************************")
+    # print("vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB")
+    # print("result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
+    # print("***********************************************************************************************************************************")
+    print("render_result_tab()", tab, "vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB", "result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
 
     if tab == "VTK3D":
         buttons = create_geometry_buttons()
         color_pick = vtk_conversions.decode_array(vtk_data["subType"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
         # print("number of cell colors", len(color_pick), "cells", len(vtk_data["subType"]) , "\n", type(color_pick))
-        graph = plots.vtk3D_plot(
-            vtk_data,
-            color_pick,
-            "Type",
-            settings_data["token"],
-            settings_data["reset"],
-            buttons,
-        )
+        graph = plots.vtk3D_plot(vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"], buttons)
         return graph
     elif tab == "VTK3DAge":
         buttons = create_geometry_buttons()
         color_pick = vtk_conversions.decode_array(vtk_data["creationTime"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
-        graph = plots.vtk3D_plot(
-            vtk_data,
-            color_pick,
-            "Age",
-            settings_data["token"],
-            settings_data["reset"],
-            buttons,
-        )
-        return graph  # attach_buttons(graph, create_geometry_buttons())
+        graph = plots.vtk3D_plot(vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"], buttons)
+        return graph
     elif tab == "Profile1D":
         button = small_button("xls", "xls-profile-download-button", "Download 1D profile data as XLS")
         graph = plots.profile_plot(result_data)
@@ -1015,6 +840,7 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
 
 @app.callback(
     Output("download-vtk", "data"),
+    Output("loading-spinner-output2", "children"),
     Input("vkt-download-button", "n_clicks"),
     State("time-slider", "value"),
     State("plant-dropdown", "value"),
@@ -1026,19 +852,79 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
     State("xml-store", "data"),
     prevent_initial_call=True,
 )
-def download_xml(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data):
-
-    plant, _, _ = get_plant(plant_, seed_data, root_data, stem_data, leaf_data, xml_data)
-
+def download_vtp(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data):
+    # print("download_vtp")
+    if n_clicks is None:
+        triggered = ctx.triggered_id
+        return dash.no_update, dash.no_update
+    plant, _, _ = simulate_plant.get_plant(plant_value, seed_data, root_data, stem_data, leaf_data, xml_data)
     N = time_slider  # makes dt = 1
     t_ = np.linspace(0.0, time_slider, N + 1)
     plant.setSeed(settings_data["random_seed"])
     plant.initialize()
-    rld_, z_, time_ = [], [], []
-    for i, dt in enumerate(np.diff(t_)):
+    for _, dt in enumerate(np.diff(t_)):
         plant.simulate(dt)
+    filename = "cplantbox_" + param_names[int(plant_value)][0] + ".vtp"
+    vtp_string = plant.write(filename, False)
+    return dict(content=vtp_string, filename=filename, type="application/vtp"), html.H6("")
 
-    return dict(content=vtk_string, filename="cplantbox_.vtk", type="application/vtk")
+
+@app.callback(
+    Output("download-rsml", "data"),
+    Output("loading-spinner-output3", "children"),
+    Input("rsml-download-button", "n_clicks"),
+    State("time-slider", "value"),
+    State("plant-dropdown", "value"),
+    State("seed-store", "data"),
+    State("root-store", "data"),
+    State("stem-store", "data"),
+    State("leaf-store", "data"),
+    State("settings-store", "data"),
+    State("xml-store", "data"),
+    prevent_initial_call=True,
+)
+def download_rsml(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data):
+    # print("download_rsml()")
+    if n_clicks is None:
+        triggered = ctx.triggered_id
+        return dash.no_update, dash.no_update
+    plant, _, _ = simulate_plant.get_plant(plant_value, seed_data, root_data, stem_data, leaf_data, xml_data)
+    N = time_slider  # makes dt = 1
+    t_ = np.linspace(0.0, time_slider, N + 1)
+    plant.setSeed(settings_data["random_seed"])
+    plant.initialize()
+    for _, dt in enumerate(np.diff(t_)):
+        plant.simulate(dt)
+    filename = "cplantbox_" + param_names[int(plant_value)][0] + ".rsml"
+    vtp_string = plant.write(filename, False)
+    return dict(content=vtp_string, filename=filename, type="application/rsml"), html.H6("")
+
+
+@app.callback(
+    Output("download-profiles-xls", "data"),
+    Input("xls-profile-download-button", "n_clicks"),
+    State("result-store", "data"),
+)
+def download_profiles_xls(n_clicks, data):
+    print("download_profiles_xls()")
+    if n_clicks is None:
+        return dash.no_update
+    data_xls = plots.profile_to_excel(data)
+    return data_xls
+
+
+@app.callback(
+    Output("download-dynamics-xls", "data"),
+    Input("xls-dynamics-download-button", "n_clicks"),
+    State("result-store", "data"),
+    State("typename-store", "data"),
+)
+def download_dynamics_xls(n_clicks, data, typename_data):
+    print("download_dynamics_xls()")
+    if n_clicks is None:
+        return dash.no_update
+    data_xls = plots.dynamics_to_excel(data, typename_data)
+    return data_xls
 
 
 if __name__ == "__main__":

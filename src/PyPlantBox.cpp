@@ -404,7 +404,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("initializeReader", &Organism::initializeReader)
             .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("fromFile") = true, py::arg("verbose") = false)  // default
             .def("writeParameters", &Organism::writeParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("intoFile") = true, py::arg("verbose") = false)  // default
-            .def("writeRSML", &Organism::writeRSML)
+            .def("write", &Organism::write, py::arg("name"), py::arg("intoFile") = true)
+            .def("writeRSML", &Organism::writeRSML, py::arg("name"), py::arg("intoFile") = true)
             .def("getRSMLSkip", &Organism::getRSMLSkip)
             .def("setRSMLSkip", &Organism::setRSMLSkip)
             .def("getRSMLProperties", &Organism::getRSMLProperties) //todo policy
@@ -800,12 +801,18 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<std::shared_ptr<Organism>>())
             .def("initialize", &Seed::initialize, py::arg("verbose") = true)
             .def("param", &Seed::param)
-            .def("getNumberOfRootCrowns", &Seed::getNumberOfRootCrowns)
-            .def("getMaxT", &Seed::getMaxT)
             .def("baseOrgans", &Seed::baseOrgans)
             .def("copyBaseOrgans", &Seed::copyBaseOrgans)
             .def("createRoot", &Seed::createRoot)
             .def("createStem", &Seed::createStem)
+            .def("basalRoots", &Seed::basalRoots)
+            .def("shootBorneRoots", &Seed::shootBorneRoots)
+            .def("tillers", &Seed::tillers)
+            .def("basalRootDefined", &Seed::basalRootDefined)
+            .def("shootBorneRootDefined", &Seed::shootBorneRootDefined)
+            .def("tillersDefined", &Seed::tillersDefined)
+            .def("rootCrowns", &Seed::rootCrowns)
+            .def("getMaxSimTime", &Seed::getMaxSimTime)
             .def_readwrite("tapType", &Seed::tapType)
             .def_readwrite("basalType", &Seed::basalType)
             .def_readwrite("shootborneType", &Seed::shootborneType)
@@ -942,7 +949,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("initCallbacks", &Plant::initCallbacks)
             .def("createTropismFunction", &Plant::createTropismFunction)
             .def("createGrowthFunction", &Plant::createGrowthFunction)
-            .def("write", &Plant::write)
             .def("abs2rel", &Plant::abs2rel)
             .def("rel2abs", &Plant::rel2abs);
 
@@ -956,7 +962,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("initializeDB", &MappedPlant::initializeDB, py::arg("verbose") = true)
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
 			.def("disableExtraNode",&MappedPlant::disableExtraNode)
-            .def("enableExtraNode",&MappedPlant::enableExtraNode)
+                        .def("enableExtraNode",&MappedPlant::enableExtraNode)
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
 			.def("getNodeIds",&MappedPlant::getNodeIds);

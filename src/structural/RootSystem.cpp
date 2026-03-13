@@ -235,7 +235,7 @@ void RootSystem::initialize_(int basal, int shootborne, bool verbose)
     seed->initialize(verbose);
     seedParam = SeedSpecificParameter(*seed->param()); // copy the specific parameters
     baseOrgans = seed->copyBaseOrgans(shared_from_this());
-    numberOfCrowns = seed->getNumberOfRootCrowns(); // a bit redundant...
+    numberOfCrowns = seed->rootCrowns(); // a bit redundant...
     oldNumberOfNodes = baseOrgans.size();
     initCallbacks();
 }

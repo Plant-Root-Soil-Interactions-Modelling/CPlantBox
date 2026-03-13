@@ -1,12 +1,8 @@
-import sys
-
-sys.path.append("..")
-sys.path.append("../..")
-
 import json
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 import plantbox as pb
 import plantbox.rsml.rsml_reader as rsml
 from plantbox import PlantHydraulicParameters as PlantHydraulicParametersCPP
@@ -84,15 +80,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
 
     def set_kr_age_dependent(self, age, values, subType=-1, organType=int(pb.OrganTypes.root)):
         """sets an age dependent radial conductivity [1 day-1] for roots for a subTypes (default: all 0-9) and organTypes (default: roots)"""
-        self.set_flexible_(
-            self.setKrAgeDependent,
-            (
-                age,
-                values,
-            ),
-            subType,
-            organType,
-        )
+        self.set_flexible_(self.setKrAgeDependent, (age, values), subType, organType)
 
     def set_kx_age_dependent(self, age, values, subType=-1, organType=int(pb.OrganTypes.root)):
         """sets an age dependent axial conductivity [cm3/day] for roots for a subType (-1 for all subTypes)"""
@@ -100,15 +88,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
 
     def set_kr_distance_dependent(self, age, values, subType=-1, organType=int(pb.OrganTypes.root)):
         """sets a distance dependent radial conductivity [1 day-1] for roots for a subTypes (default: all 0-9) and organTypes (default: roots)"""
-        self.set_flexible_(
-            self.setKrDistanceDependent,
-            (
-                age,
-                values,
-            ),
-            subType,
-            organType,
-        )
+        self.set_flexible_(self.setKrDistanceDependent, (age, values), subType, organType)
 
     def set_kx_distance_dependent(self, age, values, subType=-1, organType=int(pb.OrganTypes.root)):
         """sets a distant dependent axial conductivity [cm3/day] for roots for a subType (-1 for all subTypes)"""
