@@ -692,6 +692,7 @@ std::string Organism::write(std::string name, bool intoFile) const {
             fos.open(name.c_str());
             writeGeometry(fos);
             fos.close();
+            return "";
         } else {
             std::ostringstream oss; 
             writeGeometry(oss);
