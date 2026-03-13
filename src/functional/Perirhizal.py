@@ -92,7 +92,7 @@ class PerirhizalPython(Perirhizal):
 
 
     #this function achieves the same results as "soil_root_interface_", but it can be solved with a much smaller lookup table
-    @staticmethod
+    #@staticmethod
     def soil_root_interface_simp(rx, sx, inner_kr, rho, sp):
         """
         finds matric potential at the soil root interface for as single segment

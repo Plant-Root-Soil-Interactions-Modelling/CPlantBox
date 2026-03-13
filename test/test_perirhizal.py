@@ -3,7 +3,10 @@
 
 
 import sys; sys.path.append("../src/functional")
-from Perirhizal import *
+#from plantbox import Perirhizal
+from plantbox.functional.Perirhizal import PerirhizalPython
+import plantbox.functional.van_genuchten as vg
+import Perirhizal
 import pandas as pd
 import numpy as np
 
@@ -49,6 +52,9 @@ for one_label in Intervals.columns:
     testvalues = (max_val - min_val) * np.random.rand(ntests) + min_val * np.ones(ntests)
     tests[one_label] = testvalues
 
+peri = PerirhizalPython()
+#peri = PerirhizalPython(Perirhizal)
+
 for ind in range(ntests):
     rx = tests.loc[ind,"rx"]
     sx = tests.loc[ind,"sx"]
@@ -60,18 +66,20 @@ for ind in range(ntests):
     sp_alpha = tests.loc[ind,"sp_alpha"]
     sp_Ksat = tests.loc[ind,"sp_Ksat"]
 
+    sp = vg.Parameters([sp_theta_r,sp_theta_s,sp_n,sp_alpha,sp_Ksat])
+
     #the standard implementation
-    hsr = soil_root_interface_(rx, sx, inner_kr, rho, sp)
+    hsr = peri.soil_root_interface_(rx, sx, inner_kr, rho, sp)
     tests.loc[ind,"hsr_base"] = hsr
 
     #the first simplified implementation
-    hsr_simp = soil_root_interface_simp(rx, sx, inner_kr, rho, sp)
+    hsr_simp = peri.soil_root_interface_simp(rx, sx, inner_kr, rho, sp)
     tests.loc[ind,"hsr_simp"] = hsr_simp
 
     #the alternative implementation
-    hsr_alt = soil_root_interface_alt(rx, sx, inner_kr, rho, sp)
+    hsr_alt = peri.soil_root_interface_alt(rx, sx, inner_kr, rho, sp)
     tests.loc[ind,"hsr_alt"] = hsr_alt
 
 
-
+print(tests)
 
