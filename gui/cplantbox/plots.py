@@ -132,14 +132,17 @@ def profile_plot(data):
 
 def profile_to_excel(data):
     """
-    Convert VTK data used for plotting into an Excel file.
+    Convert VTK data used for plotting into an Excel file and return it as a Dash download.
 
     Parameters
     ----------
     data : dict
-        Dictionary containing z0..z4, rld0..rld4, time0..time4 arrays
-    output_file : str
-        Path for the Excel output file
+        Dictionary containing z0..z4, rld0..rld4, time0..time4 arrays.
+
+    Returns
+    -------
+    dash.dcc.Download
+        A Dash download response containing the Excel file ``plant_profiles.xlsx``.
     """
     rows = []
 
