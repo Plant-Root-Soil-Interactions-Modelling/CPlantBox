@@ -339,8 +339,8 @@ def write_vtp(name, pd):
 
 def write_vtu(name, pd):
     """Writes a VTU file
-    @param name          file name including the file extension ("name.vtp")
-    @param pd            grid represented as vtkPolyData object
+    @param name          file name including the file extension ("name.vtu")
+    @param pd            grid represented as vtkImageData object
     """
     writer = vtk.vtkXMLImageDataWriter()
     writer.SetFileName(name)
