@@ -873,8 +873,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getBaseRoots", &RootSystem::getBaseRoots)
             .def("getShootSegments", &RootSystem::getShootSegments)
             .def("getRootTips", &RootSystem::getRootTips)
-            .def("getRootBases", &RootSystem::getRootBases)
-            .def("write", &RootSystem::write);
+            .def("getRootBases", &RootSystem::getRootBases);
     /*
      * MappedOrganism.h
      */
