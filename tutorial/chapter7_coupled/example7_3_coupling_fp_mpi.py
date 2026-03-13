@@ -1,18 +1,18 @@
 """coupling with DuMux as solver for the soil part, dumux-rosi must be installed & compiled"""
 
-from pathlib import Path
 import timeit
+from pathlib import Path
 
 import matplotlib.pyplot as plt
-from mpi4py import MPI
 import numpy as np
+from mpi4py import MPI
 
 import plantbox as pb
+import plantbox.visualisation.vtk_plot as vp
 from plantbox.functional.Perirhizal import PerirhizalPython  # |\label{l73:perirhizal}|
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 from plantbox.visualisation import figure_style
-import plantbox.visualisation.vtk_plot as vp
 from rosi.richards import RichardsWrapper  # Python part
 from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
@@ -92,6 +92,7 @@ if rank == 0:
     outer_r = peri.get_outer_radii("length")  # |\label{l73c:outer}|
     inner_r = peri.ms.radii
     rho_ = np.divide(outer_r, np.array(inner_r))  # |\label{l73c:rho}|
+    rho_ = np.clip(rho_, 1.0, 200.0)  # limit for table look up
 
     # Numerical solution (a)
     start_time = timeit.default_timer()
@@ -140,7 +141,9 @@ for i in range(0, n_steps):  # |\label{l73c:loop}|
         t_act_.append(hm.get_transpiration(plant_age + t, h_x.copy(), hsr.copy()))  # cm3 day-1
         q_soil_.append(soil_water)  # cm3 day-1 |\label{l73c:results_end}|
         n = round(i / n_steps * 100)  # |\label{l73c:progress}|
-        print(f"[{'*' * n}{' ' * (100 - n)}], {c:g} iterations, soil h_s [{np.min(h_s):g}, {np.max(h_s):g}], interface [{np.min(hsr):g}, {np.max(hsr):g}] cm, root [{np.min(h_x):g}, {np.max(h_x):g}] cm, {s.simTime:g} days")
+        print(
+            f"[{'*' * n}{' ' * (100 - n)}], {c:g} iterations, soil h_s [{np.min(h_s):g}, {np.max(h_s):g}], interface [{np.min(hsr):g}, {np.max(hsr):g}] cm, root [{np.min(h_x):g}, {np.max(h_x):g}] cm, {s.simTime:g} days"
+        )
 
         if i % 10 == 0:  # |\label{l73c:write}|
             vp.write_soil_mpi(f"results/example73_{i // 10:06d}", h_s, wc, box_min, box_max, cell_number)

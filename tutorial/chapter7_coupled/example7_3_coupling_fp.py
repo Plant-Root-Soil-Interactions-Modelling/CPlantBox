@@ -4,15 +4,15 @@ import timeit
 
 import matplotlib.pyplot as plt
 import numpy as np
+from rosi.richards import RichardsWrapper  # Python part
+from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 import plantbox as pb
+import plantbox.visualisation.vtk_plot as vp
 from plantbox.functional.Perirhizal import PerirhizalPython  # |\label{l73:perirhizal}|
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 from plantbox.visualisation import figure_style
-import plantbox.visualisation.vtk_plot as vp
-from rosi.richards import RichardsWrapper  # Python part
-from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 
 def sinusoidal(t):
@@ -83,6 +83,7 @@ peri.open_lookup("results/hydrus_loam")  # |\label{l73c:peritable}|
 outer_r = peri.get_outer_radii("length")  # |\label{l73c:outer}|
 inner_r = peri.ms.radii
 rho_ = np.divide(outer_r, np.array(inner_r))  # |\label{l73c:rho}|
+rho_ = np.clip(rho_, 1.0, 200.0)  # limit for table look up
 
 # Numerical solution
 start_time = timeit.default_timer()
@@ -105,6 +106,7 @@ for i in range(0, n_steps):  # |\label{l73c:loop}|
     err = 1.0e6
     c = 0
     while err > 100.0 and c < 100:  # |\label{l73c:fixpoint}|
+
         # interpolation
         h_sr = peri.soil_root_interface_potentials(h_x[1:], h_s_, inner_kr_, rho_)  # |\label{l73c:interpolation}|
 
@@ -129,7 +131,9 @@ for i in range(0, n_steps):  # |\label{l73c:loop}|
     q_soil_.append(soil_water)  # cm3/day |\label{l73c:results_end}|
 
     n = round(i / n_steps * 100)  # |\label{l73c:progress}|
-    print(f"[{'*' * n}{' ' * (100 - n)}], {c:g} iterations, soil h_s [{np.min(h_s):g}, {np.max(h_s):g}], interface [{np.min(h_sr):g}, {np.max(h_sr):g}] cm, root [{np.min(h_x):g}, {np.max(h_x):g}] cm, {s.simTime:g} days")
+    print(
+        f"[{'*' * n}{' ' * (100 - n)}], {c:g} iterations, soil h_s [{np.min(h_s):g}, {np.max(h_s):g}], interface [{np.min(h_sr):g}, {np.max(h_sr):g}] cm, root [{np.min(h_x):g}, {np.max(h_x):g}] cm, {s.simTime:g} days"
+    )
 
     if i % 10 == 0:  # |\label{l73c:write}|
         vp.write_soil(f"results/example73_{i // 10:06d}", s, box_min, box_max, cell_number)
