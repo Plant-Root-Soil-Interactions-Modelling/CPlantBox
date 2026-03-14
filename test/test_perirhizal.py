@@ -28,21 +28,22 @@ labels = ["rx","sx","inner_kr","rho","sp_theta_r","sp_theta_s","sp_n","sp_alpha"
 
 #kr is assumed to lie between .5 and 5e-6 cm/hPa/d = 0.5 to 5e-6 1/d 
 #r is assumed to be 0.03
+#multiply this number by 10 in order to not fall under the threshhold at which the soil hydraulic potential is chosen as a default
 
 Intervals = {
         "rx": [-14000,-10],
         "sx": [-1000,-10],
-        "inner_kr": [1.5e-8,1.5e-7], 
+        "inner_kr": [1.5e-7,1.5e-6], 
         "rho": [(0.5/0.03),(10.0)/0.03],
-        "sp_theta_r": [0.01,0.10],
-        "sp_theta_s": [0.2,0.5],
-        "sp_n": [1.0,1.5],
-        "sp_alpha": [0.005,0.05],
-        "sp_Ksat": [1,50]
+        "sp_theta_r": [0.01,0.025],
+        "sp_theta_s": [0.4,0.43],
+        "sp_n": [1.25,1.38],
+        "sp_alpha": [0.0083,0.0383],
+        "sp_Ksat": [2,60]
         }
 Intervals = pd.DataFrame(Intervals, index = ["min","max"])
 
-ntests = 100 
+ntests = 2 
 tests = pd.DataFrame(index = range(ntests),columns = labels)
 
 for one_label in Intervals.columns:
@@ -56,28 +57,36 @@ peri = PerirhizalPython()
 #peri = PerirhizalPython(Perirhizal)
 
 for ind in range(ntests):
-    rx = tests.loc[ind,"rx"]
-    sx = tests.loc[ind,"sx"]
+    rx = tests.loc[ind,"rx"] #* (-1)
+    sx = tests.loc[ind,"sx"] #* (-1)
     inner_kr = tests.loc[ind,"inner_kr"]
+    #print(inner_kr)
     rho = tests.loc[ind,"rho"]
+    #rho = 10
     sp_theta_r = tests.loc[ind,"sp_theta_r"]
     sp_theta_s = tests.loc[ind,"sp_theta_s"]
     sp_n = tests.loc[ind,"sp_n"]
     sp_alpha = tests.loc[ind,"sp_alpha"]
     sp_Ksat = tests.loc[ind,"sp_Ksat"]
+    
+    hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
+    #sp = vg.Parameters([sp_theta_r,sp_theta_s,sp_n,sp_alpha,sp_Ksat])
+    sp = vg.Parameters(hydrus_loam)
 
-    sp = vg.Parameters([sp_theta_r,sp_theta_s,sp_n,sp_alpha,sp_Ksat])
+    #peri.sp = sp
+    peri.set_soil(sp)
 
     #the standard implementation
     hsr = peri.soil_root_interface_(rx, sx, inner_kr, rho, sp)
     tests.loc[ind,"hsr_base"] = hsr
 
     #the first simplified implementation
-    hsr_simp = peri.soil_root_interface_simp(rx, sx, inner_kr, rho, sp)
+    hsr_simp = peri.soil_root_interface_simp(peri, rx, sx, inner_kr, rho, sp)
     tests.loc[ind,"hsr_simp"] = hsr_simp
 
     #the alternative implementation
-    hsr_alt = peri.soil_root_interface_alt(rx, sx, inner_kr, rho, sp)
+    hsr_alt = peri.soil_root_interface_alt(peri, rx, sx, inner_kr, rho, sp)
+    #print(hsr_alt)
     tests.loc[ind,"hsr_alt"] = hsr_alt
 
 

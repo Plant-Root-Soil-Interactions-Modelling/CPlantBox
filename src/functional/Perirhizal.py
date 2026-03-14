@@ -83,7 +83,7 @@ class PerirhizalPython(Perirhizal):
         """
         if inner_kr < 1.e-7:
             return sx
-        k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint)  # Vanderborgth et al. 2023, Eqn [7]
+        k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint + 0.001)  # Vanderborgth et al. 2023, Eqn [7]
         rho2 = np.square(rho)  # rho squared
         b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
         fun = lambda x: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
@@ -92,8 +92,8 @@ class PerirhizalPython(Perirhizal):
 
 
     #this function achieves the same results as "soil_root_interface_", but it can be solved with a much smaller lookup table
-    #@staticmethod
-    def soil_root_interface_simp(rx, sx, inner_kr, rho, sp):
+    @staticmethod
+    def soil_root_interface_simp(self, rx, sx, inner_kr, rho, sp):
         """
         finds matric potential at the soil root interface for as single segment
         
@@ -134,9 +134,10 @@ class PerirhizalPython(Perirhizal):
         #rsx = root_scalar(fun, method = 'brentq', bracket = [min(rx, sx), max(rx, sx)])
         m = inner_kr / b
         n = - (inner_kr / b * rx + vg.fast_mfp[sp](sx))
-        rsx = subfunction_lookup(m,n,sp)
+        rsx = self.subfunction_lookup(m,n,sp)
         return rsx.root
     #this subfunction is all that is needed for the lookup table, i.e. just 2 dimensions per VG parameter set instead of 4
+    @staticmethod
     def subfunction_lookup(m, n, sp):
         fun = lambda x: vg.fast_mfp[sp](x) + m * x + n
         rx = -15000 #wilting point as lower boundary
@@ -153,7 +154,8 @@ class PerirhizalPython(Perirhizal):
         """
 
     # a slightly different implementation of waterflow (should lead to the same results)
-    def soil_root_interface_alt(rx, sx, inner_kr, rho, sp):
+    @staticmethod
+    def soil_root_interface_alt(self, rx, sx, inner_kr, rho, sp):
         """
         finds matric potential at the soil root interface for as single segment using a steady state assumption
         
@@ -172,18 +174,18 @@ class PerirhizalPython(Perirhizal):
         
         We can improve this by taking a closer look at the function vg.fast_mfp[sp](x)
         vg.fast_mfp[sp](x) = int_(h_wilting)^(x)K(S(h))dh 
-        K(S) = Ks*sqrt(S)*(1-(1-S)^m)^m
-        S(h) = 1/(1+(alpha*h)
+        K(S) = Ks*sqrt(S)*(1-(1-S^(1/m))^(m))^2
+        S(h) = 1/(1+(alpha*h)^n)^m
 
         this implies that S(alpha * h) only depends on m 
         K(s)/Ks also only depends on m 
 
-        vg.fast_mfp[sp](x) / Ks + (inner_kr / (b*Ks*alpha)) * (alpha*x) - (inner_kr / b * rx + vg.fast_mfp[sp](sx) / Ks ) = 0
+        vg.fast_mfp[sp](x) *alpha / Ks + (inner_kr / (b*Ks)) * (alpha*x) - (inner_kr / b * rx + vg.fast_mfp[sp](sx)) * alpha / Ks = 0
         
         g(ax,m) + v1 * (ax) + v2 = 0
-        g(ax,m) = vg.fast_mfp[sp](x) / Ks
-        v1 = inner_kr / (b * Ks * alpha)
-        v2 = - (inner_kr / b * rx + vg.fast_mfp[sp](sx)) / Ks
+        g(ax,m) = vg.fast_mfp[sp](x) * alpha / Ks = vg.fast_mfp[sp](ax) / Ks
+        v1 = inner_kr / (b * Ks)
+        v2 = - (inner_kr / b * rx + vg.fast_mfp[sp](sx)) * alpha / Ks
 
         this can be solved with a lookup table of 3 variables, m, n1, n2
 
@@ -197,22 +199,24 @@ If we pull the above equation into the integral, then
         rho2 = np.square(rho)  # rho squared
         b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
         m = sp.m 
-        v1 = inner_kr / (b * sp.Ksat * sp.alpha)
-        v2 = - (inner_kr / b * rx + vg.fast_mfp[sp](sx)) / sp.Ksat
-        a_rsx = subfunction_lookup_alt(m, v1, v2)
-        rsx = a_rsx / sp.alpha
+        v1 = inner_kr / (b * sp.Ksat) 
+        v2 = - (inner_kr / b * rx + vg.fast_mfp[sp](sx)) / sp.Ksat * (sp.alpha/0.03)
+        a_rsx = self.subfunction_lookup_alt(m, v1, v2)
+        rsx = a_rsx.root / (sp.alpha/0.03)
         return rsx
 
+    @staticmethod
     def subfunction_lookup_alt(m, v1, v2):
         #dummy van Genuchten parameterset (just includes m, everything else is set to dummy values)
-        p_dummy=[0,1,1,1/(1-m),1]
-        sp_dummy = vg.parameters(p)
+        p_dummy=[0,1,0.03,1/(1-m),1]
+        sp_dummy = vg.Parameters(p_dummy)
+        vg.create_mfp_lookup(sp_dummy)
         fun = lambda ax: vg.fast_mfp[sp_dummy](ax) + v1 * ax + v2
         rx = -15000 #wilting point as lower boundary
-        sx = -10.0 #-10cm as highest possible soil water potential
-        alpha_min = 0.0 #I still need to look these boundaries up, but they hopefully will not significantly influence the speed of the computation
-        alpha_max = 1.0
-        a_rsx = root_scalar(fun, method = 'brentq', bracket = [min(rx, sx)*alpha_max, max(rx, sx)*alpha_min])
+        sx = -1.0 #-10cm as highest possible soil water potential
+        factor_alpha_min = 0.03 / 0.03 #I still need to look these boundaries up, but they hopefully will not significantly influence the speed of the computation
+        factor_alpha_max = 0.03 / 0.03
+        a_rsx = root_scalar(fun, method = 'brentq', bracket = [min(rx, sx)*factor_alpha_max, max(rx, sx)*factor_alpha_min])
         return a_rsx
 
 
