@@ -371,27 +371,58 @@ double Hyphae::getParameter(std::string name) const
  */
 void Hyphae::createLateral(double dt_, bool verbose)
 {
-    std::cout << "Creating lateral" << std::endl;
     // double dt_ = plant.lock()->getSimTime() - nodeCTs.at(pni); // time the hyphae should have grown
-    double delay = 0.;
+    // double delay = 0.;
     // double delay = getHyphaeRandomParameter()->hyphalDelay; // todo specific (with std)
-    int subType = 1;;
-    if (plant.lock()->rand() < 0.4) { // create a lateral with probability 0.4, TODO make this specific and maybe dependent on age or length
-        subType = 1; // create immediately
-        } else {
-            subType = 2; // create in the past, so it emerges immediately in the next time step
+    // int subType = 1;
+    // if (plant.lock()->rand() < 0.4) { 
+    //     subType = 1; // create immediately
+    //     } else {
+    //         subType = 2; 
+    //     }
+    // std::cout << "Creating lateral hyphae with subType " << subType << "\n";
+ 
+    
+    auto rp = getOrganRandomParameter(); // rename
+
+    for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule
+        //found id
+        bool applyHere = getApplyHere(i);
+
+        if(applyHere)
+        {
+            int numlats = 1;//how many laterals? default = 1
+            if(rp->successorNo.size()>i){numlats =  rp->successorNo.at(i);}
+            for(int nn = 0; nn < numlats; nn++)
+            {
+
+                const Vector3d& pos = Vector3d();
+                int p_id = rp->getLateralType(pos, i);//if probabilistic branching
+
+                if(p_id >=0)
+                {
+                    int ot;
+
+                    if((rp->successorOT.size()>i)&&(rp->successorOT.at(i).size()>p_id)){
+                        ot = rp->successorOT.at(i).at(p_id);
+                    }else{ot = getParameter("organType");}//default
+
+                    int st = rp->successorST.at(i).at(p_id);
+
+                    // double delay = getLatGrowthDelay(ot, st, dt);// forDelay*multiplyDelay
+                    double delay = 0.; // hyphae grow immediatly
+                    double growth_dt = getLatInitialGrowth(dt_);
+
+                    auto hyphae = std::make_shared<Hyphae>(plant.lock(), st,  delay, shared_from_this(), nodes.size() - 1); // delay - dt
+                    children.push_back(hyphae);
+                    hyphae->setHyphalTreeIndex(hyphalTreeIndex); // get new index
+                    hyphae->simulate(growth_dt);
+                }
+            }
         }
-    auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay, shared_from_this(), nodes.size() - 1); // delay - dt_
-    children.push_back(hyphae);
-    // hyphae->setHyphalTreeIndex(hyphalTreeIndex);
-    // std::cout << "********* simulate "  << ", "<< plant.lock()->getSimTime() <<", " << dt_ << "\n";
-    hyphae->setHyphalTreeIndex(hyphalTreeIndex); // get new index
-    hyphae->simulate(dt_);
-    if (verbose) {
-        std::cout << "Hyphae " << getId() << " created lateral hyphae " << hyphae->getId() << " at time " << plant.lock()->getSimTime() << std::endl;
     }
     created_linking_node ++;
-    storeLinkingNodeLocalId(created_linking_node,verbose);//needed (currently) only for stems when doing nodal growth
+    storeLinkingNodeLocalId(created_linking_node,verbose);
 }
 
 Vector3d Hyphae::getMergePoint(int id)
