@@ -219,7 +219,7 @@ bool Seed::shootBorneRootDefined() {
         st = shootborneType; // stick with default if not defined
     }
     try {
-        plant.lock()->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
+        plant.lock()->getOrganRandomParameter(Organism::ot_root, st); // if the type is not defined an exception is thrown
         return true;
     } catch (...) {
         return false;
