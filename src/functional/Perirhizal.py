@@ -11,6 +11,7 @@ from scipy.spatial import ConvexHull, Voronoi
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import fsolve
 from scipy.optimize import root_scalar
+from scipy import integrate
 import scipy.linalg as la
 
 
@@ -245,7 +246,116 @@ If we pull the above equation into the integral, then
 
         this works mostly like the steady rate assumption from before. So I could also proceed the same way with that factor B instead of ln(rho)
     """   
-    # solutes in the perirhizal zone
+
+    def perirhizal_soluteflows(self,h_rs,h_prhiz,r_root,r_prhiz,2piqr,D_0,Vmax,Km,c_prhiz,sp):
+        """
+        finds matric potentials at the soil root interface for as all segments
+        uses a look up tables if present (see create_lookup, and open_lookup) 
+        
+        rx             xylem matric potential [cm]
+        sx             bulk soil matric potential [cm]
+        inner_kr       root radius times hydraulic conductivity [cm/day] 
+        rho            geometry factor [1] (outer_radius / inner_radius)
+        """
+        assert len(h_rs) == len(h_prhiz) == len(r_root) == len(r_prhiz) == len(2piqr) == len(Vmax) == len(Km) == len(c_prhiz) = len(sp), "h_rs, h_prhiz, r_root, r_prhiz, 2piqr, Vmax, Km, c_prhiz and sp must have the same length"
+        if False:#self.lookup_table:
+            Uptakes = np.zeros(len(h_rs))#rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
+        else:
+            Uptakes = np.array([PerirhizalPython.perirhizal_soluteflow(self,h_rs[i],h_prhi[i],r_root[i],r_prhiz[i],2piqr[i],D_0,Vmax[i],Km[i],c_prhiz[i],sp[i]) for i in range(0, len(h_rs))])
+            # rsx = rsx[:, 0]
+        return Uptakes
+
+    # solutes in the perirhizal zone 
+    def perirhizal_soluteflow(self,h_rs,h_prhi,r_root,r_prhiz,2piqr,D_0,Vmax,Km,c_prhiz,sp):
+        """
+        This function determines the uptake of solutes in the perirhizal zone for a steady state flow of water and Michaelis Mentne uptake kinetics
+
+        h_rs: matrix potential at the root soil interface [cm]
+        h_prhiz: matrix potential at the out end of the perirhizal zones [cm]
+        r_root: root radius
+        r_prhiz: radius of the perirhizal zone
+            note: if the steady state water flow is only computed for parts of the perirhizal zone, then h_prhiz and r_prhiz are taken for the outer boundary of the steady state water follow
+        2piqr: darcy flux * circumference [cm2/d], needs to be negative
+        D_0: diffusion coefficient in water
+        Vmax: maximal uptake speed, Michaelis Menten kinetics [cm2/d]
+        Km: Michaelis Menten constant, Michaelis Menten kinetics [mol/cm3]
+        c_prhiz: concentration of the solute at the outer boundary of the perirhizal zone [mol/cm3]
+        sp: van Genuchten parameter set 
+
+        processing variables:
+        rho: r_prhiz / r_root
+        rel_res : theta_r / (theta_s - theta_r)
+        c_root: solute concentration at the root surface [mol/cm3]
+        y_root: diffusive flow of solutes at the root soil interface [mol/cm/d]
+        y_prhiz: diffusive flow of solutes at the outer boundary of the root soil interface [mol/cm/d]
+        Phi(h): int_(h_wilting)^h K(h)dh
+        F: helper integral
+
+        output:
+        U: Uptake (includes the entire circumference) [mol/d]
+
+        equations:
+        (I): U = 2pi r_root (y_root + q * c_root)
+        (II): U = 2pi r_prhiz (y_prhiz + q * c_prhiz)
+        (III): r_prhiz * y_prhiz = F * r_root * y_root
+        (IV): U = 2pi r_root Vmax * c_root / (Km + c_root)
+
+        F = exp(-(qr) * ln(rho) * D_0 / (theta_s^2 pow(theta_s-theta_r,10/3)) * Ks / alpha /(Phi(h_prhiz)-Phi(h_root)) * int_rel_Phi(h_root)^rel_Phi(h_prhiz) (1/(rel_res + sat(rel_Phi))D(sat(rel_Phi)))ds)
+
+        combining all the equations yields
+        F c_root^2 + (F*Km -c_prhiz + (1-F) (r_root Vmax / qr)) c_root – c_prhiz*Km=0
+        A c_root^2 + B c_root + C = 0
+        """
+        
+        rel_res = sp.theta_r / (sp.theta_s - sp.theta_r)
+        rho = r_prhiz / r_root
+
+        Phi_prhiz = vg.fast_mfp[sp](h_prhiz)
+        Phi_root = vg.fast_mfp[sp](h_root)
+        helper_integral2 = peri_sol_helper_integral(Phi_prhiz * sp.alpha / sp.Ks,rel_res,sp.m)
+        helper_integral1 = peri_sol_helper_integral(Phi_root * sp.alpha / sp.Ks,rel_res,sp.m)
+            
+        F = exp(-(2piqr / 2 pi) * log(rho) * D_0 / (pow(sp.theta_s,2) * pow(sp.theta_s-sp.theta_r,10/3)) * sp.Ks / sp.alpha * (helper_integral2 - helper_integral1) / (Phi_prhiz-Phi_root))    
+
+        A = F 
+        B = F * sp.Ks - cprhiz + (1-F) * (r_root * Vmax * 2*pi/2piqr) 
+        C = -c_prhiz * Km
+
+        c_root = - B / (2 * A) + sqrt(pow(B/(2*A),2)-C/A) #only the positive solution makes sense
+        U = 2 * pi * r_root * Vmax * c_root / (Km + c_root)
+        y_root = 2piqr * c_root / (2 * pi * r_root)
+        y_prhiz = 2piqr * c_root / (2 * pi * r_prhiz)
+        return U
+    #this function can be saved in a lookup table
+    def peri_sol_helper_integral(relPhi,rel_res,m):
+        """
+        This function is a helper integral
+        I(rel_Phi) = int_0^rel_Phi 1/((rel_res + Theta(rel_Phi))*tilde_Ds(Theta(rel_Phi))) drel_Psi
+        
+        rel_Psi: Psi * (alpha/Ks)
+        rel_res: theta_r / (theta_s - theta_s)
+        m: van Genuchten parameter
+
+        tilde_Ds = Ds(Theta) * (alpha/Ks)
+        """
+
+        #dummy van Genuchten parameter set
+        p_dummy=[0,1,0.03,1/(1-m),1]
+        sp_dummy = vg.Parameters(p_dummy)
+        vg.create_mfp_lookup(sp_dummy)
+
+        n = p_dummy[3]
+        alpha = p_dummy[2]
+
+        alphah = lambda relPsi : alpha * vg.matric_potential_mfp(relPhi, sp_dummy) # returns alpha * h based on the relative Psi value (Psi * alpha / Ks)
+        sat = lambda ah : 1/pow(1+pow(ah,n),m) # returns saturation based on alpha * h
+        tilde_Ds = lambda sat : pow(sat,10/3) #Diffusion coefficient
+
+        fun = lambda relPhi : 1 / (rel_res+sat(alphah(relPhi))) / tilde_Ds(sat(alphah(relPhi)))
+
+        integral = integrate.quad(fun, 0, relPhi)
+        return integral
+
     
     def perirhizal_conductance_per_layer(self, h_bs, h_sr, sp):
         """ 
