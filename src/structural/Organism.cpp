@@ -531,7 +531,7 @@ std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
 }
 
 /**
- * @return the definition of the growth delay for a specific lateral organ type
+ * @return Definition of growth delay type for a specific lateral organ type (delayDefinitionShoot for stem or leaf, delayDefinition for root)
  * @param ot_lat   the lateral organ type (e.g. ot_stem, ot_leaf)
  */
 int Organism::getDelayDefinition(int ot_lat) {

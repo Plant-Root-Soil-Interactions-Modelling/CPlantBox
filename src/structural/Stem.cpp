@@ -255,6 +255,9 @@ double Stem::getLatInitialGrowth(double dt) {
 }
 
 /**
+ * Overwritten to support different delay times for laterals along the organ 
+ * (sicne they are all created at once when the stem emerges)
+ * 
  *  @see Organ::createLateral
  *  @param ot_lat       organType of lateral to create
  *  @param st_lat       subType of lateral to create
