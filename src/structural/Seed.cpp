@@ -193,7 +193,7 @@ std::vector<std::shared_ptr<Organ>> Seed::copyBaseOrgans(std::shared_ptr<Organis
 }
 
 /**
- * Checks if there is a basal root definition in the parameter set. 
+ * Checks if there is a basal root definition in the parameter set.
  * This works only before initialization, because on initialization the basal root type is copied from to the tap root type
  */
 bool Seed::basalRootDefined() {
@@ -210,37 +210,37 @@ bool Seed::basalRootDefined() {
 }
 
 /**
- * Checks if there is a shoot borne root definition in the parameter set. 
+ * Checks if there is a shoot borne root definition in the parameter set.
  * This works only before initialization, because on initialization the shoot borne root type is copied from to the basal root type
  */
-bool Seed::shootBorneRootDefined() { 
-	int st = getParamSubType(Organism::ot_root, "shootborne");
-	if (st <= 0) {
-		st = shootborneType; // stick with default if not defined
-	}
-	try {
-		plant.lock()->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
-		return true;
-	} catch (...) {
-		return false;
-	}
+bool Seed::shootBorneRootDefined() {
+    int st = getParamSubType(Organism::ot_root, "shootborne");
+    if (st <= 0) {
+        st = shootborneType; // stick with default if not defined
+    }
+    try {
+        plant.lock()->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
+        return true;
+    } catch (...) {
+        return false;
+    }
 }
 
 /**
- * Checks if there is a tiller definition in the parameter set. 
+ * Checks if there is a tiller definition in the parameter set.
  * This works only before initialization, because on initialization the tiller type is copied from to the main stem type
  */
-bool Seed::tillersDefined() { 
-	int tt = getParamSubType(Organism::ot_stem, "tiller");
-	if (tt <= 0) {
-		tt = tillerType; // stick with default if not defined
-	}
-	try {
-		plant.lock()->getOrganRandomParameter(Organism::ot_stem, tt); // if the type is not defined an exception is thrown
-		return true;
-	} catch (...) {
-		return false;
-	}
+bool Seed::tillersDefined() {
+    int tt = getParamSubType(Organism::ot_stem, "tiller");
+    if (tt <= 0) {
+        tt = tillerType; // stick with default if not defined
+    }
+    try {
+        plant.lock()->getOrganRandomParameter(Organism::ot_stem, tt); // if the type is not defined an exception is thrown
+        return true;
+    } catch (...) {
+        return false;
+    }
 }
 
 /*

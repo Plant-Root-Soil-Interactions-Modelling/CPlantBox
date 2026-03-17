@@ -38,8 +38,8 @@ SeedRandomParameter::SeedRandomParameter(std::shared_ptr<Organism> plant) :Organ
     organType = Organism::ot_seed;
     subType = 0;
     bindParameters();
-    delayDefinition = Organism::dd_distance;
-    delayDefinitionShoot = Organism::dd_distance;
+    delayDefinition = Organism::dd_distance; // for roots 
+    delayDefinitionShoot = Organism::dd_distance; // for leaf or stem laterals
 }
 
 /**
