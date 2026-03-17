@@ -654,7 +654,7 @@ double Organ::calcCreationTime(double length, double dt) {
  *
  *  @param l        total length of the segments that are created [cm]
  *  @param dt       time step [day]
- *  @param PhytoIdx index of phytomere node to elongate (optional) [1]
+ *  @param phytoIdx index of phytomere node to elongate (optional) [1]
  *  @param verbose  turns console output on or off
  */
 void Organ::createSegments(double l, double dt, bool verbose, int phytoIdx) {
