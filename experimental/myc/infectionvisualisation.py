@@ -54,7 +54,7 @@ mycp.initialize(True)
 # print(mycp.toString())
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-simtime = 10
+simtime = 20
 fps = 24
 anim_time = simtime
 N = fps * anim_time
@@ -92,7 +92,7 @@ else:
 ana = pb.SegmentAnalyser(mycp)
 ana.addData("infection", mycp.getNodeInfections(2))
 
-vp.plot_plant(ana,"infection")
+vp.plot_plant(ana,"subType")
 ana.write(filename + "_hyphalTrees" + ".vtp", ["radius", "subType", "creationTime","organType","hyphalTreeIndex"])
 # ana.addData("infection", mycp.getNodeInfections(2))
 #     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
