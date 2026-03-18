@@ -30,15 +30,12 @@ public:
     void simulatePrimaryInfection(double dt);
     void simulateSecondaryInfection(double dt);
     void simulateHyphalGrowth(double dt, bool verbose);
-
-
     void simulateInfection(double dt, bool silence = false);
 
     double getParameter(std::string name) const override;
 
     void addNode(Vector3d n, int id, double t, size_t index, bool shift) override;
     void createLateral(double ageLN, bool silence) override;
-
 
     std::string toString() const override;
 
@@ -53,10 +50,8 @@ public:
 protected:
     void createHyphae(int pni);
     int hyphalTreeIndex = -1;
-    double prob(double  t, double segLength, double p);
     void primaryInfection(double dt, bool silence);
     void secondaryInfection(bool silence, double dt);
-
 };
 
 }
