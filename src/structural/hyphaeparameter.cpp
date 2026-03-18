@@ -27,7 +27,6 @@ std::string HyphaeSpecificParameter::toString() const
  * @return Mean maximal hyphae length of this hyphae type
  */
 double HyphaeSpecificParameter::getK() const {
-    // double l = 0.5 / (order+1); // v*hlt is too long ie tip elongation rate * hyphal lifetime
     double l = std::accumulate(ln.begin(), ln.end(), 0.);
     return l+la+lb; 
 }
@@ -79,7 +78,6 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
     double nob_sd = p->randn()*nobs();
     int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
     bool hasLaterals = (successorST.size()>0) && (nob_real>0);
-    // bool hasLaterals = (nob_real>0);
 
     if (!hasLaterals) { // no laterals
         lb_ = 0;
@@ -123,11 +121,10 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
             }
         }
     }
-    // std::cout<< ln_.size() << " laterals, la: " << la_ << ", lb: " << lb_ << std::endl;
     double hlt_ = std::max(hlt + p->randn()*hlts, 0.); // hyphal lifetime  [day]
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // branching angle [rad]
 
-     return std::make_shared<HyphaeSpecificParameter>(subType, la_, lb_, ln_, a_, v_, b_, hlt_, theta_,hasLaterals);
+    return std::make_shared<HyphaeSpecificParameter>(subType, la_, lb_, ln_, a_, v_, b_, hlt_, theta_,hasLaterals);
 }
 
 /**
@@ -190,13 +187,12 @@ double HyphaeRandomParameter::snap(double x) const {
  * additionally adds a description for each parameter, for toString and writeXML
  */
 void HyphaeRandomParameter::bindParameters()
-{
+{ //TODO add lateral branching parameters
     OrganRandomParameter::bindParameters();
     bindParameter("v", &v, "Tip elongation rate [cm/day]", &vs);
     bindParameter("b", &b, "Branching rate [1/day]", &bs);
     bindParameter("hlt", &hlt, "Hyphal lifetime  [day]", &hlts);
     bindParameter("theta", &theta, "Branching angle [rad]", &thetas);
-    // bindParameter("distTT", &distTT, "Distance for tip-tip anastomosis [cm]");
     bindParameter("distTH", &distTH, "Distance for tip-hyphae anastomosis [cm]");
     bindParameter("ana", &ana, "Probability of anastomosis occuring if distance is long enough");
     bindParameter("tropismT", &tropismT, "Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");

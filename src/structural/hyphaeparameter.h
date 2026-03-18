@@ -27,13 +27,10 @@ public:
     HyphaeSpecificParameter(int subType, double la, double lb, std::vector<double> ln, double a, double v, double b, double hlt, double theta,bool laterals = false):
             OrganSpecificParameter(subType, a), lb(lb), la(la),ln(ln), v(v), b(b), hlt(hlt), theta(theta), laterals(laterals) { }; ///< Constructor setting all parameters
 
-    // int order = 0; // internal counter (? todo)
-
     double v;              ///< tip elongation rate [cm/day]
-    double b;              ///< branching rate [1/day]
+    double b;              ///< branching rate [1/day] TODO figure out what to do about tip splitting
     double hlt;            ///< hyphal lifetime  [day]
     double theta;          ///< branching angle [rad]
-
     double la;        ///< apical zone [cm];
     double lb;        ///< basal zone [cm];
     double lmax;      ///< maximal length of the hyphae [cm]
@@ -57,11 +54,8 @@ public:
     virtual ~HyphaeRandomParameter() { };
 
     std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
-
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
-
     std::string toString(bool verbose = true) const override; ///< info for debugging
-
     void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
 
     void bindParameters() override; ///<sets up class introspection
@@ -74,7 +68,6 @@ public:
     double hlts=0.1;           ///< standard deviation of  hyphal lifetime  [day]
     double theta=30./180.*M_PI;          ///< branching angle [rad]
     double thetas=0./180.*M_PI;         ///< standard deviation of branching angle  [rad]
-    // double distTT = 0.; ///< distance for tip tip anastomosis [cm] 
     double distTH = 0.; ///< distance for tip hyphae anastomosis [cm]
     double ana= 1.0; ///< Probability of anastomosis occuring if tip is close enough
 
