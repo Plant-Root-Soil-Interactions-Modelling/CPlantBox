@@ -65,7 +65,7 @@ std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
     }
 
     for (const auto & o : organs) {
-        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++) {
+        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++) { // TOOO check if here we need to check for organ type!!!
             infs.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfection(i);
         }
     }
@@ -82,7 +82,7 @@ std::vector<double> MycorrhizalPlant::getNodeInfectionTime(int ot) const {
     }
 
     for (const auto & o : organs){
-        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++){
+        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++){ // TOOO check if here we need to check for organ type!!!
             infTime.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfectionTime(i);
         }
     }
@@ -96,10 +96,7 @@ std::vector<int> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
         if(o->organType() == Organism::ot_hyphae) {
             auto h = std::dynamic_pointer_cast<Hyphae>(o);
             if (h->mergePointID != -1) {
-                // std::cout << h ->getNode(h->getNumberOfNodes()-1).toString() << std::endl;
-                // std::cout << "Anastomosis point: " << h->mergePointID << std::endl;
                 anaPoints.at(o->getNodeId(h->getNumberOfNodes()-1)) = 1;
-                // std::cout << "Anastomosis at base organ" << std::endl;
             }
             else {
                 anaPoints.at(o->getNodeId(h->getNumberOfNodes()-1)) = 0;
@@ -121,7 +118,7 @@ std::vector<int> MycorrhizalPlant::getAnastomosisPoints(int ot) const {
     return anaPoints;
 }
 /**
- * Simulates plant growth
+ * Simulates mycorrhizal plant growth
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
  */
@@ -142,13 +139,11 @@ void MycorrhizalPlant::simulateHyphae(double dt, bool verbose) {
     oldNumberOfOrgans = getNumberOfOrgans();
     for (const auto & o : baseOrgans) {
         if (o->organType() == Organism::ot_hyphae) {
-            // std::cout << "Simulating hyphae growth for dt: " << dt << "\n";
             std::dynamic_pointer_cast<Hyphae>(o) -> simulate(dt,verbose);
         }
     }
     for (const auto & o : organs) {
         if (o->organType() == Organism::ot_hyphae) {
-            // std::cout << "Simulating hyphae growth for dt: " << dt << "\n";
             std::dynamic_pointer_cast<Hyphae>(o) -> simulate(dt,verbose);
         }
     }
@@ -226,17 +221,11 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
 
         if (h->isActive()) {
             auto tip = h->getNode(h->getNumberOfNodes()-1);
-
             dist = sdf->getDist(tip);
-
-            // std::cout<<"Distance to nearest hyphae from tip " << tip.toString() << " is " << dist << " cm." << std::endl;
             if (fabs(dist) < h->getParameter("distTH") && rand() < h->getParameter("ana")) 
             {
                 auto lastIndex = sdf->distIndex; 
-                // std::cout<< "Anastomosis occurred at distance: " << dist << " cm.\n";
-                // std::cout << "Hyphal tree index " << h->getParameter("hyphalTreeIndex") << "\n";
                 auto connected_to_hyphae = std::dynamic_pointer_cast<Hyphae>(sdf->lastOrgan.lock());
-
                 int locallastIndex = -1;
 
                 for (size_t i = 0; i < connected_to_hyphae->getNumberOfNodes(); i++)
@@ -248,7 +237,6 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
                     }
                 }
                 
-                // std::cout << "connected to " << connected_to_hyphae->hyphalTreeIndex << "\n";
                 if (verbose) {
                     std::cout <<"Anastomosis at tip: " << tip.toString() <<" to node: " << connected_to_hyphae->getNode(locallastIndex).toString() << std::endl;
                     std::cout << "Anastomosis occurred at distance: " << dist << " cm.\n";
@@ -267,9 +255,6 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
 };
 
 void MycorrhizalPlant::initCallbacks() {
-
-    // std::cout << "MycorrhizalPlant::initCallbacks()\n";
-
     Plant::initCallbacks();
 
     for (auto& p_otp :organParam[Organism::ot_root]) {

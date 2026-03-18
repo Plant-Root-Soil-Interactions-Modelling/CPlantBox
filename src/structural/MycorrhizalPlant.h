@@ -16,7 +16,6 @@ class MycorrhizalPlant :public Plant {
     void initializeReader() override; ///< initializes XML reader
     void readParameters(std::string name, std::string basetag = "plant", bool fromFile = true, bool verbose = true) override {this -> initializeReader(); Organism::readParameters(name, basetag, fromFile, verbose);};
 
-    // std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay);
     void initialize(bool verbose = true) override {initializeLB(verbose);};
     void initializeLB(bool verbose = true);
 
@@ -31,7 +30,6 @@ class MycorrhizalPlant :public Plant {
     virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
     virtual std::vector<int> getAnastomosisPoints(int ot) const; // returns Anastomosis Points
 
-    // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
     void initCallbacks() override;
 
     int getNextHyphalTreeIndex() { hyphalTreeIndex++; return hyphalTreeIndex; }
