@@ -101,7 +101,6 @@ void Hyphae::simulate(double dt, bool verbose)
     oldNumberOfNodes = nodes.size();
 
     const HyphaeSpecificParameter& p = *param(); // rename
-    // std::cout << alive << " " << active << " " << age << " " << length << "\n";
 
     if (alive) { // dead roots wont grow
 
@@ -111,7 +110,6 @@ void Hyphae::simulate(double dt, bool verbose)
             alive = false; // this root is dead
         }
         age+=dt;
-        // std::cout <<"Age: "<< age << "\n";
 
         // // probabilistic branching model
         // if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
@@ -132,6 +130,7 @@ void Hyphae::simulate(double dt, bool verbose)
 
 
             if (active) {
+                // TODO hier unterscheidung machen ob lateral oder tip splitting
                 // length increment
                 double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
                 double dt_; // time step
@@ -161,9 +160,6 @@ void Hyphae::simulate(double dt, bool verbose)
                             createSegments(ddx,dt_,verbose);
                             dl-=ddx; // ddx already has been created
                             length=p.lb;
-                            //							if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-                            //								throw std::runtime_error("Root::simulate: p.lb - length < dxMin");
-                            //							} // this could happen, if the tip ends in this section
                         }
                     }
                     /* branching zone */
@@ -175,7 +171,6 @@ void Hyphae::simulate(double dt, bool verbose)
                                 if (i==created_linking_node && plant.lock() -> rand() < 0.4) { // new lateral
                                     createLateral(dt_, verbose);
                                 }
-
                                 if(length < s)//because with former check we have (length<=s)
                                 {
                                     if (length+dl<=s) { // finish within inter-lateral distance i
@@ -187,11 +182,7 @@ void Hyphae::simulate(double dt, bool verbose)
                                         createSegments(ddx,dt_,verbose);
                                         dl-=ddx;
                                         length=s;
-                                        //									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-                                        //										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
-                                        //									} // this could happen, if the tip ends in this section
                                     }
-
                                 }
                             }
                         }
@@ -222,9 +213,6 @@ void Hyphae::simulate(double dt, bool verbose)
 
 // void Hyphae::simulate(double dt, bool verbose)
 // {
-// // std::cout << "Simulating hyphae growth for dt: " << dt << "\n";
-// // TODO BAS dichotomous branching?
-// // TODO runner hyphae lateral branching?
 // //    firstCall = true;
 // //    moved = false;
 //     oldNumberOfNodes = nodes.size();
@@ -259,14 +247,12 @@ void Hyphae::simulate(double dt, bool verbose)
 // 					}
 
 // 					double targetlength = calcLength(age_+dt_);//+ this->epsilonDx;
-// 					// TODO: maybe add later the epsilonDx. could be usefull for flow computation + in case of length errors created by anastomosis
-
+// 					
 //                     double e = targetlength-length; // unimpeded elongation in time step dt
 //                     double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
 //                     double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
 //                     length = getLength();
 //                     createSegments(dl,dt,verbose);
-//                     // TODO: if relevant add lateral branching here but wait until feburary Team up Meeting
 //                     length+=dl;
 //                     if (dl == 0.)
 //                     {
@@ -351,6 +337,7 @@ std::shared_ptr<const HyphaeSpecificParameter> Hyphae::param() const
 double Hyphae::getParameter(std::string name) const
 {
     // specific parameters
+    //TODO update this
         if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
         if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
         if (name=="v") { return param()->v; } // Tip elongation rate [cm day-1]
@@ -371,18 +358,6 @@ double Hyphae::getParameter(std::string name) const
  */
 void Hyphae::createLateral(double dt_, bool verbose)
 {
-    // double dt_ = plant.lock()->getSimTime() - nodeCTs.at(pni); // time the hyphae should have grown
-    // double delay = 0.;
-    // double delay = getHyphaeRandomParameter()->hyphalDelay; // todo specific (with std)
-    // int subType = 1;
-    // if (plant.lock()->rand() < 0.4) { 
-    //     subType = 1; // create immediately
-    //     } else {
-    //         subType = 2; 
-    //     }
-    // std::cout << "Creating lateral hyphae with subType " << subType << "\n";
- 
-    
     auto rp = getOrganRandomParameter(); // rename
 
     for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule

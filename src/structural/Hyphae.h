@@ -26,22 +26,15 @@ public:
 
     void setMergedHyphae(std::weak_ptr<Hyphae> merged) { mergedHyphae = merged; } ///< sets the merged hyphae after anastomosis;
     std::shared_ptr<Hyphae>  getMergedHyphae() { return mergedHyphae.lock(); }
-
-    
     void setMergePointID(int id) { mergePointID = id; } ///< sets the node ID where the anastomosis happened
-    
     Vector3d getMergePoint(int id);
     
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree
 
     int organType() const override { return Organism::ot_hyphae; }; ///< returns the organs type
-
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
-
     double getParameter(std::string name) const override;
-
     void createLateral(double dt_, bool verbose); ///< creates a lateral hyphae
-
     std::string toString() const override;
 
     // void makeanastomosis(std::shared_ptr<Hyphae> a, std::shared_ptr<Hyphae> b); ///< creates an anastomosis with another hyphae
