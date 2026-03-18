@@ -6,7 +6,7 @@
 namespace CPlantBox {
 
 void MycorrhizalRootRandomParameter::bindParameters(){
-    // std::cout << "MycorrhizalRootRandomParameter::bindParameters called" << std::endl;
+    // TODO check nothing is missing
     RootRandomParameter::bindParameters();
     bindParameter("lmbd", &lmbd, "Rate of primary infection for dispersed inoculum [1/(cm day)]", &lmbds);
     bindParameter("minAge", &minAge, "Minimal infectious age of a root segment [day]");
@@ -20,8 +20,7 @@ void MycorrhizalRootRandomParameter::bindParameters(){
 }
 
 std::shared_ptr<OrganSpecificParameter> MycorrhizalRootRandomParameter::realize() {
-    // std::c// std::shared_ptr<OrganSpecificParameter> MycorrhizalRootRandomParameter::realize() {
-    // std::cout << "MycorrhizalRootRandomParameter::realize called" << std::endl;
+    // TODO check nothing is missing
     assert(dx > dxMin && "MycorrhizalRootRandomParameter::realize(): dxMin must be smaller than dx");
     auto p = plant.lock();
 
@@ -89,7 +88,6 @@ std::shared_ptr<OrganSpecificParameter> MycorrhizalRootRandomParameter::realize(
 }
 
 MycorrhizalRootRandomParameter::MycorrhizalRootRandomParameter(std::shared_ptr<Organism> plant) :RootRandomParameter(plant) {
-    // std::cout << "MycorrhizalRootRandomParameter::MycorrhizalRootRandomParameter called" << std::endl;
     bindParameters();
 }
 
@@ -109,7 +107,6 @@ std::shared_ptr<OrganRandomParameter> MycorrhizalRootRandomParameter::copy(std::
 }
 
 std::string MycorrhizalRootRandomParameter::toString(bool verbose) const {
-    // std::cout << "MycorrhizalRootRandomParameter::toString called" << std::endl;
     if (verbose) {
         return OrganRandomParameter::toString(true);
     } else {
@@ -117,13 +114,6 @@ std::string MycorrhizalRootRandomParameter::toString(bool verbose) const {
     }
 }
 
-/**
- * @copydoc OrganTypeParameter::readXML()
- *
- * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
- *
- * If the parameter successor or successorP are not in the element, they are set to zero size.
- */
 void MycorrhizalRootRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
 {
     OrganRandomParameter::readXML(element, verbose);
