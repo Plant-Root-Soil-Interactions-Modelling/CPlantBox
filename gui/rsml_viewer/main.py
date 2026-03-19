@@ -1,22 +1,35 @@
 """RSML Viewer Webapp (using Python Dash), D. Leitner 2026"""
 
 import base64
+import hashlib
 import os
 import sys
 import tempfile
+from collections import OrderedDict
+from threading import Lock
 
 import dash
 import dash_bootstrap_components as dbc
+import dash_vtk
 import numpy as np
 import plotly.graph_objects as go
 from dash import Input, Output, State, ctx, dcc, html, no_update
 
 # Add the viewer folder so ViewerDataModel and viewer_conductivities can be imported
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "viewer"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "cplantbox"))
 
-from viewer_data import ViewerDataModel  # noqa: E402
 import viewer_conductivities  # noqa: E402
+from viewer_data import ViewerDataModel  # noqa: E402
+from vtk_conversions import (  # noqa: E402
+    apply_tube_filter,
+    decode_array,
+    generate_colorbar_image,
+    vtk_polydata_to_dashvtk_dict,
+)
+
 import plantbox as pb  # noqa: E402
+import plantbox.visualisation.vtk_plot as vp  # noqa: E402
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 md_path = os.path.join(BASE_DIR, "assets", "readme.md")
@@ -33,7 +46,18 @@ HYDRAULIC_SCENARIOS = [
     "Wine",
 ]
 
+VTK_VIEW_OPTIONS = [
+    ("Type", "subType"),
+    ("Segment length", "length"),
+    ("Creation time", "creationTime"),
+    ("SUF", "SUF"),
+]
+
 COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f"]
+
+MAX_GEOMETRY_CACHE_ITEMS = 8
+GEOMETRY_CACHE = OrderedDict()
+GEOMETRY_CACHE_LOCK = Lock()
 
 #
 # INITIALISE
@@ -179,6 +203,7 @@ app.layout = dbc.Container(
                             value="info",
                             children=[
                                 dcc.Tab(label="Information", value="info", className="tab", selected_className="tabSelected"),
+                                dcc.Tab(label="3D View", value="vtk", className="tab", selected_className="tabSelected"),
                                 dcc.Tab(label="Depth Profile", value="profile", className="tab", selected_className="tabSelected"),
                                 dcc.Tab(label="Development", value="development", className="tab", selected_className="tabSelected"),
                                 dcc.Tab(label="Hydraulic Properties", value="suf", className="tab", selected_className="tabSelected"),
@@ -220,6 +245,7 @@ app.layout = dbc.Container(
 # Helper: recreate ViewerDataModel from stored XML + apply modifications
 # ---------------------------------------------------------------------------
 
+
 def load_data(rsml_store, state_store):
     """Load a ViewerDataModel from stored XML content and apply any edits."""
     rsml_xml = rsml_store.get("xml", None)
@@ -242,9 +268,44 @@ def load_data(rsml_store, state_store):
     return data
 
 
+def _make_geometry_cache_key(rsml_store, state_store, view_type):
+    """Create a stable cache key from RSML content + edit state + view type."""
+    rsml_xml = rsml_store.get("xml")
+    if not rsml_xml:
+        return None
+    xml_hash = hashlib.md5(rsml_xml.encode("utf-8")).hexdigest()
+    shoot_added = int(bool(state_store.get("shoot_added", False)))
+    ct_added = int(bool(state_store.get("ct_added", False)))
+    max_ct = state_store.get("max_ct")
+    return f"{xml_hash}|s:{shoot_added}|ct:{ct_added}|m:{max_ct}|v:{view_type}"
+
+
+def _get_cached_geometry_payload(cache_key):
+    """Fetch a cached VTK payload and refresh recency ordering."""
+    if cache_key is None:
+        return None
+    with GEOMETRY_CACHE_LOCK:
+        payload = GEOMETRY_CACHE.get(cache_key)
+        if payload is not None:
+            GEOMETRY_CACHE.move_to_end(cache_key)
+        return payload
+
+
+def _set_cached_geometry_payload(cache_key, payload):
+    """Store payload in cache and keep only the newest N entries."""
+    if cache_key is None:
+        return
+    with GEOMETRY_CACHE_LOCK:
+        GEOMETRY_CACHE[cache_key] = payload
+        GEOMETRY_CACHE.move_to_end(cache_key)
+        while len(GEOMETRY_CACHE) > MAX_GEOMETRY_CACHE_ITEMS:
+            GEOMETRY_CACHE.popitem(last=False)
+
+
 # ---------------------------------------------------------------------------
 # 1. Upload
 # ---------------------------------------------------------------------------
+
 
 @app.callback(
     Output("rsml-store", "data"),
@@ -271,6 +332,7 @@ def handle_upload(contents, filename, state_data):
 # 2. Edit – add artificial shoot
 # ---------------------------------------------------------------------------
 
+
 @app.callback(
     Output("state-store", "data", allow_duplicate=True),
     Input("shoot-checkbox", "value"),
@@ -285,6 +347,7 @@ def toggle_shoot(checkbox_value, state_data):
 # ---------------------------------------------------------------------------
 # 3. Edit – add creation times
 # ---------------------------------------------------------------------------
+
 
 @app.callback(
     Output("state-store", "data", allow_duplicate=True),
@@ -313,6 +376,7 @@ def apply_creation_times(n_clicks, max_ct, state_data, rsml_store):
 # 4. Render tab layout
 # ---------------------------------------------------------------------------
 
+
 @app.callback(
     Output("tabs-content", "children"),
     Input("result-tabs", "value"),
@@ -327,6 +391,8 @@ def render_tab(tab, state_data, rsml_store):
 
     if tab == "info":
         return _render_info_tab(data, state_data)
+    elif tab == "vtk":
+        return _render_vtk_tab(data)
     elif tab == "profile":
         return _render_plot_tab(data, "profile")
     elif tab == "development":
@@ -381,21 +447,15 @@ def _render_info_tab(data, state_data):
     using_rows = [
         (
             "Radius",
-            f"from tag '{tagnames[0]}' within [{np.min(data.radii):.4g}, {np.max(data.radii):.4g}] cm"
-            if tagnames[0]
-            else "not found (set to 0.1 cm)",
+            f"from tag '{tagnames[0]}' within [{np.min(data.radii):.4g}, {np.max(data.radii):.4g}] cm" if tagnames[0] else "not found (set to 0.1 cm)",
         ),
         (
             "Creation time",
-            f"from tag '{tagnames[1]}' within [{np.min(data.cts):.4g}, {np.max(data.cts):.4g}] days"
-            if tagnames[1]
-            else "not found",
+            f"from tag '{tagnames[1]}' within [{np.min(data.cts):.4g}, {np.max(data.cts):.4g}] days" if tagnames[1] else "not found",
         ),
         (
             "Types",
-            f"from tag '{tagnames[2]}' within [{np.min(data.types):.4g}, {np.max(data.types):.4g}]"
-            if tagnames[2]
-            else "not found",
+            f"from tag '{tagnames[2]}' within [{np.min(data.types):.4g}, {np.max(data.types):.4g}]" if tagnames[2] else "not found",
         ),
     ]
 
@@ -442,6 +502,7 @@ def _render_plot_tab(data, tab_id):
             "dropdown_id": "profile-dropdown",
             "graph_id": "profile-graph",
             "empty_msg": "Upload an RSML file to view depth profiles.",
+            "graph_style": {"height": "70vh", "width": "50%", "margin": "0 auto"},
         },
         "development": {
             "label": "Plot type",
@@ -449,6 +510,7 @@ def _render_plot_tab(data, tab_id):
             "dropdown_id": "development-dropdown",
             "graph_id": "development-graph",
             "empty_msg": "Upload an RSML file to view development.",
+            "graph_style": {"height": "70vh"},
         },
         "suf": {
             "label": "Hydraulic scenario",
@@ -456,6 +518,7 @@ def _render_plot_tab(data, tab_id):
             "dropdown_id": "suf-dropdown",
             "graph_id": "suf-graph",
             "empty_msg": "Upload an RSML file to view hydraulic properties.",
+            "graph_style": {"height": "70vh", "width": "50%", "margin": "0 auto"},
         },
         "krs": {
             "label": "Hydraulic scenario",
@@ -463,6 +526,7 @@ def _render_plot_tab(data, tab_id):
             "dropdown_id": "krs-dropdown",
             "graph_id": "krs-graph",
             "empty_msg": "Upload an RSML file to view hydraulic development.",
+            "graph_style": {"height": "70vh"},
         },
     }
     cfg = CONFIGS[tab_id]
@@ -485,14 +549,174 @@ def _render_plot_tab(data, tab_id):
                 ],
                 style={"maxWidth": "320px", "padding": "10px 10px 0 10px"},
             ),
-            dcc.Graph(id=cfg["graph_id"], style={"height": "70vh"}),
+            dcc.Graph(id=cfg["graph_id"], style=cfg["graph_style"]),
         ]
+    )
+
+
+def _render_vtk_tab(data):
+    if data is None:
+        return _no_data_msg("Upload an RSML file to view 3D geometry.")
+
+    return html.Div(
+        [
+            html.Div(
+                [
+                    html.H6("View type"),
+                    dcc.Dropdown(
+                        id="vtk-view-dropdown",
+                        options=[{"label": label, "value": value} for label, value in VTK_VIEW_OPTIONS],
+                        value="subType",
+                        clearable=False,
+                        className="dropdown",
+                        style={"fontSize": "12px"},
+                    ),
+                ],
+                style={"maxWidth": "320px", "padding": "10px 10px 0 10px"},
+            ),
+            html.Div(
+                dcc.Loading(type="circle", children=html.Div(id="vtk-content")),
+                style={"marginTop": "5px"},
+            ),
+        ]
+    )
+
+
+def _vtk_scalar_data(polydata, scalar_name):
+    """Fetch scalar values from vtkPolyData and report whether values are point- or cell-based."""
+    arr = polydata.GetCellData().GetArray(scalar_name)
+    if arr is not None:
+        values = np.array([arr.GetTuple1(i) for i in range(arr.GetNumberOfTuples())], dtype=np.float32)
+        return values, "cell"
+
+    arr = polydata.GetPointData().GetArray(scalar_name)
+    if arr is not None:
+        values = np.array([arr.GetTuple1(i) for i in range(arr.GetNumberOfTuples())], dtype=np.float32)
+        return values, "point"
+
+    # Fallback: render with constant color if scalar array is missing.
+    n_cells = polydata.GetNumberOfCells()
+    values = np.zeros((n_cells,), dtype=np.float32)
+    return values, "cell"
+
+
+def _build_vtk_payload(data, view_type):
+    """Build mesh/scalar payload for the VTK tab (expensive path)."""
+    analyser = pb.SegmentAnalyser(data.analyser)
+
+    if view_type == "length":
+        seg_lengths = np.array([analyser.getSegmentLength(i) for i in range(len(analyser.segments))], dtype=np.float64)
+        analyser.addData("length", seg_lengths)
+    elif view_type == "SUF":
+        _init_hydraulic_scenario(data.hydraulic_params, 0)
+        suf = data.hydraulic_model.get_suf(data.max_ct)
+        analyser.addData("SUF", suf)
+
+    polydata = vp.segs_to_polydata(analyser, zoom_factor=1.0, param_names=["radius", view_type])
+    tube_polydata = apply_tube_filter(polydata)
+    vtk_data = vtk_polydata_to_dashvtk_dict(tube_polydata)
+    scalar_values, color_mode = _vtk_scalar_data(tube_polydata, view_type)
+
+    vmin = float(np.min(scalar_values)) if scalar_values.size > 0 else 0.0
+    vmax = float(np.max(scalar_values)) if scalar_values.size > 0 else 1.0
+    if np.isclose(vmin, vmax):
+        vmax = vmin + 1.0
+
+    title = {
+        "subType": "Root Type",
+        "length": "Segment Length [cm]",
+        "creationTime": "Creation Time [day]",
+        "SUF": "Surface Uptake Fraction [1]",
+    }.get(view_type, view_type)
+
+    return {
+        "points": decode_array(vtk_data["points"]).flatten().tolist(),
+        "polys": decode_array(vtk_data["polys"]).tolist(),
+        "scalar_values": scalar_values.tolist(),
+        "color_mode": color_mode,
+        "vmin": vmin,
+        "vmax": vmax,
+        "title": title,
+        "discrete": (view_type == "subType"),
+    }
+
+
+def _render_vtk_content(payload):
+    """Render cached VTK payload as dash_vtk components."""
+    scalar_values = payload["scalar_values"]
+    color_mode = payload["color_mode"]
+    vmin = payload["vmin"]
+    vmax = payload["vmax"]
+
+    scalar_container = dash_vtk.CellData if color_mode == "cell" else dash_vtk.PointData
+    scalar_bar = dcc.Graph(
+        figure=generate_colorbar_image(vmin=vmin, vmax=vmax, colormap="Jet", height=40, width=220, discrete=payload["discrete"]),
+        style={"width": "220px", "height": "70px", "marginTop": "8px"},
+        config={"displayModeBar": False},
+    )
+
+    view = dash_vtk.View(
+        children=[
+            dash_vtk.GeometryRepresentation(
+                mapper={"colorByArrayName": "Colors", "colorMode": color_mode},
+                colorDataRange=[vmin, vmax],
+                children=[
+                    dash_vtk.PolyData(
+                        points=payload["points"],
+                        polys=payload["polys"],
+                        children=[
+                            scalar_container(
+                                [
+                                    dash_vtk.DataArray(
+                                        registration="setScalars",
+                                        name="Colors",
+                                        numberOfComponents=1,
+                                        values=scalar_values,
+                                    )
+                                ]
+                            )
+                        ],
+                    )
+                ],
+            )
+        ]
+    )
+
+    return html.Div(
+        [
+            html.Div(view, style={"width": "100%", "height": "620px"}),
+            html.Div([html.H6(payload["title"], style={"marginTop": "10px"}), scalar_bar], style={"display": "flex", "justifyContent": "flex-end"}),
+        ],
+        style={"width": "100%", "display": "flex", "flexDirection": "column"},
     )
 
 
 # ---------------------------------------------------------------------------
 # 5. Plot callbacks
 # ---------------------------------------------------------------------------
+
+
+@app.callback(
+    Output("vtk-content", "children"),
+    Input("vtk-view-dropdown", "value"),
+    State("rsml-store", "data"),
+    State("state-store", "data"),
+)
+def update_vtk_view(view_type, rsml_store, state_data):
+    if rsml_store.get("xml") is None:
+        return _no_data_msg("Upload an RSML file to view 3D geometry.")
+
+    cache_key = _make_geometry_cache_key(rsml_store, state_data, view_type)
+    payload = _get_cached_geometry_payload(cache_key)
+    if payload is None:
+        data = load_data(rsml_store, state_data)
+        if data is None:
+            return _no_data_msg("Upload an RSML file to view 3D geometry.")
+        payload = _build_vtk_payload(data, view_type)
+        _set_cached_geometry_payload(cache_key, payload)
+
+    return _render_vtk_content(payload)
+
 
 @app.callback(
     Output("profile-graph", "figure"),
@@ -550,6 +774,7 @@ def update_krs_graph(j_str, rsml_store, state_data):
 # 6. Download callbacks
 # ---------------------------------------------------------------------------
 
+
 @app.callback(
     Output("download-rsml", "data"),
     Output("loading-output", "children"),
@@ -606,6 +831,7 @@ def download_vtp_file(n_clicks, rsml_store, state_data):
 # ---------------------------------------------------------------------------
 # Plotly plot functions
 # ---------------------------------------------------------------------------
+
 
 def _init_hydraulic_scenario(params, j: int):
     if j == 0:
@@ -674,7 +900,9 @@ def _plot_rootsystem_development(analyser, j: int) -> go.Figure:
                     w = [np.pi * radii_i[k] ** 2 * ana.getSegmentLength(k) for k in range(len(ana.segments))]
                 cts_i = np.array(ana.data["creationTime"])
                 l_, t_ = np.histogram(cts_i, 100, weights=w)
-                fig.add_trace(go.Scatter(x=0.5 * (t_[1:] + t_[:-1]), y=np.cumsum(l_), mode="lines", name=f"type {i}", line=dict(color=COLORS[(i + 1) % len(COLORS)])))
+                fig.add_trace(
+                    go.Scatter(x=0.5 * (t_[1:] + t_[:-1]), y=np.cumsum(l_), mode="lines", name=f"type {i}", line=dict(color=COLORS[(i + 1) % len(COLORS)]))
+                )
     except Exception as e:
         print(f"_plot_rootsystem_development: {e}")
     fig.update_layout(
