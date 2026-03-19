@@ -4,27 +4,14 @@ import os
 
 import numpy as np
 from dash import html
-from vtk.util import numpy_support
 from vtk_conversions import *
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
-tropism_names = {
-    "Plagiotropism": 0,
-    "Gravitropism": 1,
-    "Exotropism": 2,
-    "Negative gravitropism": 4,
-    "Variable gravitropism": 6,
-}  # "Twist": 5,
+tropism_names = {"Plagiotropism": 0, "Gravitropism": 1, "Exotropism": 2, "Negative gravitropism": 4, "Variable gravitropism": 6}  # "Twist": 5,
 
-tropism_names_ = {
-    0: "Plagiotropism",
-    1: "Gravitropism",
-    2: "Exotropism",
-    4: "Negative gravitropism",
-    6: "Variable gravitropism",
-}  # 5: "Twist",
+tropism_names_ = {0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Negative gravitropism", 6: "Variable gravitropism"}  # 5: "Twist",
 
 
 def get_parameter_names():  # parameter xml file names

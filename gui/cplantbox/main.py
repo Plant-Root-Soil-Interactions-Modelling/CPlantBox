@@ -3,7 +3,7 @@
 import base64
 import os
 import webbrowser
-from threading import Timer
+from threading import Timer  # to open browser automatically ,see __main__
 
 import conversions  # auxiliary stuff
 import dash
@@ -21,8 +21,8 @@ def open_browser():
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-md_path = os.path.join(BASE_DIR, "assets", "readme.md")  # Path to your Markdown file in the assets folder
-with open(md_path, "r", encoding="utf-8") as f:  # Read the Markdown content
+MD_PATH = os.path.join(BASE_DIR, "assets", "readme.md")  # Path to your Markdown file in the assets folder
+with open(MD_PATH, "r", encoding="utf-8") as f:  # Read the Markdown content
     ABOUT_TEXT = f.read()
 
 MAX_XML_SIZE = 200 * 1024  # 200 KB in bytes
@@ -343,7 +343,7 @@ def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_
         print("render_organtype_tab() leaf:", leaf_data)
         return generate_leaf_sliders(leaf_data)
 
-    print("!" * 200)
+    raise ValueError("Unknown tab selected")
 
 
 #
@@ -593,12 +593,13 @@ def update_root_store(slider_values, current_tab, store_data):
 def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs from stored values
     sliders = []
     successors = stem_values[-1]
+    hidden_without_successor = [3, 5, 6, 7]  # phytomer distance, nodal growth start/time, fixed rotation
     sliders.append(html.Div(className="spacer"))
     for i, key in enumerate(stem_parameter_sliders.keys()):
         style = {}
-        # if i in [7]:  # rotBeta (not working)
-        #    style = {'display': 'none'}
-        if (not successors) and (i in [3]):
+        if i in [5, 6]:  # nodal growth start/time
+            style = {"display": "none"}
+        if (not successors) and (i in hidden_without_successor):
             style = {"display": "none"}
         # if (tab == 1) and (i == 2):  # no initial theta for main stem; makes sense for tillers
         #     style = {'display': 'none'}
