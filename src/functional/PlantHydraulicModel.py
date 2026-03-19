@@ -1,7 +1,3 @@
-import timeit
-import types
-
-import matplotlib.pyplot as plt
 import numpy as np
 import plantbox as pb
 import plantbox.rsml.rsml_reader as rsml
@@ -211,9 +207,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         return np.sum(self.radial_fluxes(sim_time, rx, rsx, cells))
 
     def get_krs(self, sim_time):
-        """calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day]
-        if there is no single collar segment at index 0, pass indices using @param seg_ind, see find_base_segments
-        """
+        """calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day]"""
         n = self.ms.getNumberOfMappedSegments()
         rsx = np.ones(n) * (-500)
         rsx = self.ms.total2matric(rsx)

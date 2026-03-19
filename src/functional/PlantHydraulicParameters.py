@@ -40,7 +40,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
     set_kr_age_dependent, set_kx_age_dependent -> setKrAgeDependent, setKxAgeDependent
     set_kr_distance_dependent, set_kx_distance_dependent -> setKrDistanceDependent, setKxDistanceDependent
 
-    it is not possible to use different methods (const, age, or distance) for different subTypes or organTypes
+    it is NOT possible to use different methods (const, age, or distance) for different subTypes or organTypes
     it is possible to use different methods for kr and kx
 
     can write and read parameter json files
