@@ -251,7 +251,7 @@ class App:
             elif j == 4:
                 viewer_conductivities.init_constant_scenario_wine(self.data.hydraulic_params)
 
-            fig = r.plot_conductivities(monocot=False, plot_now=False, axes_ind=[0], lateral_ind=[1, 2, 3])
+            fig = self.data.hydraulic_params.plot_conductivities(monocot=True, plot_now=False, axes_ind=[1, 4, 5], lateral_ind=[2, 3])
             canvas = FigureCanvasTkAgg(fig, master=root)  # A tk.DrawingArea.
             canvas.draw()
             canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
