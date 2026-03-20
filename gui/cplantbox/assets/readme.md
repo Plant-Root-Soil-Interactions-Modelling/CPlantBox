@@ -7,7 +7,7 @@ The `CPlantBox WebApp` showcases the capabilities of [CPlantBox](https://github.
 
 CPlantBox creates plant geometry based on parameter sets and can incorporate feedback from any external functional model. This flexibility facilitates model coupling and supports the development of `plant-soil-atmosphere interaction models`. In addition, CPlantBox provides Python bindings, enabling the construction of complex modeling workflows and the integration of environmental feedback.
 
-Optionally, CPlantBox already mechanistically describes many processes like water and carbon flow within the plant (Giraud et al. 2023), photosynthesis, root-soil interation modelling (see [dumux-rosi](https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi)), and mycorrhizal associations.  
+Optionally, CPlantBox already mechanistically describes many `key processes` like water and carbon flow within the plant (Giraud et al. 2023), photosynthesis, root-soil interation modelling (see [dumux-rosi](https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi)), and mycorrhizal associations.  
 
 **References:** 
 

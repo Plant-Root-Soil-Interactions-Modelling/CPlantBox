@@ -150,5 +150,25 @@ h6,
     margin-bottom: 20px;
     /*border: 1px solid #ccc;*/
     border-radius: 8px;
-    /*background-color: #f5f6fa;*/
+    background-color: #f5f6fa;
+}
+
+.aboutScroll {
+    height: clamp(320px, 70vh, 800px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+}
+
+.tabContentScroll {
+    min-height: 0;
+}
+
+@media (max-height: 900px) {
+    .tabContentScroll {
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 8px;
+    }
 }

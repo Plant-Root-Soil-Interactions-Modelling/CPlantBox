@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <plant name="P0" filetype="parameters">
 <organ type="seed" name="true" subType="0">
         <parameter name="maxTi" value="0"/>
@@ -7,7 +8,7 @@
         <!--Time delay between the basal roots [day]-->
         <parameter name="delayRC" value="6.625"/>
         <!--Delay between the root crowns [day]-->
-        <parameter name="delaySB" value="1"/>
+        <parameter name="delaySB" value="2"/>
         <!--Time delay between the shoot borne roots [day]-->
         <parameter name="firstB" value="3.55"/>
         <!--Emergence of first basal root [day]-->
@@ -15,9 +16,9 @@
         <!--First emergence of a shoot borne root [day]-->
         <parameter name="maxB" value="3.5"/>
         <!--Maximal number of basal roots [1]-->
-        <parameter name="nC" value="3.25"/>
+        <parameter name="nC" value="100"/>
         <!--Maximal number of roots per root crown [1]-->
-        <parameter name="nz" value="0.1"/>
+        <parameter name="nz" value="0."/>
         <!--Distance between the root crowns along the shoot [cm]-->
         <parameter name="seedPos.x" value="0"/>
         <!--X-Coordinate of seed position [cm]-->
@@ -31,6 +32,7 @@
 		<parameter name="delayDefinitionShoot" value="1"/>
 
 </organ>
+
 <organ type="root" name="Primary" subType="1">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
@@ -67,6 +69,7 @@
         <parameter name="successor" type="2" percentage="0.04"/>
         <!--Sub type of lateral roots-->
 </organ>
+
 <organ type="root" name="Basal" subType="4">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
@@ -82,7 +85,7 @@
         <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="1"/>
         <!--Axial resolution [cm] (maximal segment size)-->
-        <!--parameter name="la" value="4.217196833" dev="5.999108226"/>
+        <!--parameter name="la" value="4.217196833" dev="5.999108226"/>-->
         <!--Apical zone [cm]-->
 		<parameter name="ldelay" value="0.85" dev="0.64"/>
 		<!--Apical delay-->
@@ -104,6 +107,7 @@
         <parameter name="successor" type="2" percentage="0.04"/>
         <!--Sub type of lateral roots-->
 </organ>
+
 <organ type="root" name="Crown" subType="5">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
@@ -119,7 +123,7 @@
         <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="1"/>
         <!--Axial resolution [cm] (maximal segment size)-->
-        <!--parameter name="la" value="1.553874517" dev="1.280342942"/>
+        <!--parameter name="la" value="1.553874517" dev="1.280342942"/>-->
         <!--Apical zone [cm]-->
 		<parameter name="ldelay" value="0.52" dev="0.41"/>
 		<!--Apical delay-->
@@ -141,6 +145,7 @@
         <parameter name="successor" type="2" percentage="0.04"/>
         <!--Sub type of lateral roots-->
 </organ>
+
 <organ type="root" name="Lateral1" subType="2">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
@@ -156,7 +161,7 @@
         <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="1"/>
         <!--Axial resolution [cm] (maximal segment size)-->
-        <!--parameter name="la" value="1.671269632" dev="1.35515702"/>
+        <!--parameter name="la" value="1.671269632" dev="1.35515702"/>-->
         <!--Apical zone [cm]-->
 		<parameter name="ldelay" value="0.43" dev="0.34"/>
 		<!--Apical delay-->
@@ -179,6 +184,7 @@
         <parameter name="successor" type="3" percentage="1"/>
         <!--Sub type of lateral roots-->
 </organ>
+
 <organ type="root" name="Lateral2" subType="3">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
@@ -213,6 +219,7 @@
         <parameter name="tropismS" value="0.31415901"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
 </organ>
+
 <organ type="stem" name="Main stem" subType="1">
 		<!--Basal zone [cm]-->
 		<parameter name="lb" value="1" dev="0"/>
@@ -241,7 +248,8 @@
 		<parameter name="RotBeta" value="0"/>
 		<parameter name="BetaDev" value="0"/>
 </organ>
-<organ type="leaf" name="lateral1" subType="2">
+
+<organ type="leaf" name="Lateral1" subType="2">
 		<parameter name="lb" value="0" dev="0"/>
 		<!--Basal zone [cm]-->
 		<parameter name="la" value="0" dev="0"/>
@@ -271,4 +279,5 @@
 		<!--lead 2d shape-->
 		<parameter name="leafGeometry" phi="-0.5, -0.44444444, -0.25, 0., 0.25, 0.5" x="38.41053981, 1, 1, 0.3, 1, 38.41053981"/>
 </organ>
+
 </plant>

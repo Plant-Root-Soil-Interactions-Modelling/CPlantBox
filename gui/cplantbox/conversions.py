@@ -31,14 +31,14 @@ def get_parameter_names():  # parameter xml file names
 def get_seed_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "First shoot borne root [day]": (1, 30, 0.1),
-        "Shoot borne delay [day]": (1, 21, 0.1),
-        "First basal root [day]": (1, 21, 0.1),
-        "Basal root delay [day]": (1, 21, 0.1),
-        "Maximal number of basal roots [1]": (0, 30, 1),
-        "First tiller [day]": (1, 21, 0.1),
-        "Tiller delay [day]": (1, 21, 0.1),
-        "Maximal number of tillers [1]": (0, 7, 1),
+        "First shoot borne root [day]": (1, 21, 0.1, "firstSB"),
+        "Shoot borne delay [day]": (2, 21, 0.1, "delaySB"),
+        "First basal root [day]": (2, 21, 0.1, "firstB"),
+        "Basal root delay [day]": (1, 21, 0.1, "delayB"),
+        "Maximal number of basal roots [1]": (0, 30, 1, "maxB"),
+        "First tiller [day]": (1, 21, 0.1, "firstTil"),
+        "Tiller delay [day]": (1, 21, 0.1, "delayTil"),
+        "Maximal number of tillers [1]": (0, 7, 1, "maxTil"),
     }
     return parameter_sliders
 

@@ -34,8 +34,11 @@ def get_plant(plant_, seed_data, root_data, stem_data, leaf_data, xml_data):
     srp[0].seedPos.x = 0.0  # override position (always)
     srp[0].seedPos.y = 0.0
     srp[0].seedPos.z = -3.0
-    srp[0].delayRC = 30.0
-    srp[0].delayDefinitionShoot = 2
+    srp[0].delayRC = 30.0  # root crown implementation is DEPRECATED (fix values)
+    srp[0].nC = 100  # max number per crown
+    srp[0].nz = 0.0  # no vertical distance of crowns
+    srp[0].simtime = min(45, srp[0].simtime)  # limit with slider max value
+    # srp[0].delayDefinitionShoot = 2
     # print("get_plant() - delaySB", srp[0].delaySB)
     # print("get_plant() - firstSB", srp[0].firstSB)
     # print("get_plant() - delayRC", srp[0].delayRC)

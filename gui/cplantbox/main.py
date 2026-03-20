@@ -24,7 +24,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MD_PATH = os.path.join(BASE_DIR, "assets", "readme.md")  # Path to your Markdown file in the assets folder
 with open(MD_PATH, "r", encoding="utf-8") as f:  # Read the Markdown content
     ABOUT_TEXT = f.read()
-
+XML_INIT_PATH = os.path.join(BASE_DIR, "params", "root_only.xml")
+with open(XML_INIT_PATH, "r", encoding="utf-8") as f:
+    XML_INIT = f.read()
 MAX_XML_SIZE = 200 * 1024  # 200 KB in bytes
 
 #
@@ -68,6 +70,26 @@ app = dash.Dash(
     ],
 )
 app.title = "CPlantBox WebApp"
+app.index_string = """
+<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+        <script data-goatcounter="https://cplantboxwebapp.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+"""
 
 param_names = conversions.get_parameter_names()
 plants = [{"label": name[0], "value": str(i)} for i, name in enumerate(param_names)]
@@ -103,7 +125,7 @@ app.layout = dbc.Container(
         dcc.Store(id="settings-store", data={"token": 0, "reset": True, "random_seed": 0}),  # further settings
         dcc.Store(id="vtk-result-store", data={}),  # resulting geometry
         dcc.Store(id="result-store", data={}),  # resulting graphs
-        dcc.Store(id="xml-store", data={}),  # for uploaded xml content
+        dcc.Store(id="xml-store", data={"xml": XML_INIT}),  # for uploaded xml content
         dcc.Download(id="download-xml"),
         dcc.Download(id="download-vtk"),
         dcc.Download(id="download-rsml"),
@@ -125,6 +147,7 @@ app.layout = dbc.Container(
                                     options=plants,
                                     value=plants[0]["value"],
                                     clearable=False,
+                                    searchable=False,
                                     className="dropdown",
                                     style={"fontSize": "12px", "padding-top": "5px"},  # hard coded (should be same as h6) did not work with css allown
                                 ),
@@ -190,7 +213,7 @@ app.layout = dbc.Container(
                             ],
                             className="tabs",
                         ),
-                        html.Div(id="organtype-tabs-content"),
+                        html.Div(id="organtype-tabs-content", className="tabContentScroll"),
                     ],
                     width=3,
                 ),
@@ -537,8 +560,8 @@ def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs f
         style = {}
         if (not successors) and (i in [3, 4, 5]):  # no lb, ln, la for highest order
             style = {"display": "none"}
-        if (tab == 1) and (i == 2):  # no initial growth rate theta for tap
-            style = {"display": "none"}
+        # if (tab == 1) and (i == 2):  # no initial angle for tap
+        #     style = {"display": "none"}
         min_ = root_parameter_sliders[key][0]
         max_ = root_parameter_sliders[key][1]
         step_ = root_parameter_sliders[key][2]
@@ -840,7 +863,10 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
     print("render_result_tab()", tab, settings_data["token"], settings_data["reset"])
 
     if tab == "About":
-        return html.Div(dcc.Markdown(ABOUT_TEXT, style={"whiteSpace": "pre-line"}), className="aboutContainer")
+        return html.Div(
+            html.Div(dcc.Markdown(ABOUT_TEXT, style={"whiteSpace": "pre-line"}), className="aboutScroll"),
+            className="aboutContainer",
+        )
 
     if not vtk_data:
         print("no data")
