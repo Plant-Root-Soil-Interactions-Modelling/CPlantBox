@@ -9,11 +9,6 @@ The `CPlantBox` WebApp showcases the capabilities of [CPlantBox](https://github.
 
 Optionally, `CPlantBox` already describes many processes like water and carbon flow within the plant (Giraud et al. 2023), photosynthesis, root-soil interation modelling (see [dumux-rosi](https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi)), and mycorrhizal associations.  
 
-
-
-
-
-
 **References:** 
 
 M Giraud, SL Gall, M Harings, M Javaux, D Leitner, F Meunier, Y Rothfuss, D van Dusschoten, J Vanderborght, H Vereecken, et al. CPlantBox: a fully coupled modelling platform for the water and carbon fluxes in the soil–plant–atmosphere continuum. *in silico Plants*, 5(2):diad009, 2023.
