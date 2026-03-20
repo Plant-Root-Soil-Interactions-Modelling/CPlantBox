@@ -23,14 +23,15 @@ class HyphaeSpecificParameter :public OrganSpecificParameter
 {
 public:
 
-    HyphaeSpecificParameter(): HyphaeSpecificParameter(-1, 0., 0., std::vector<double>(), 0., 0., 0., 0., 0., false) { } ///< Default constructor
-    HyphaeSpecificParameter(int subType, double la, double lb, std::vector<double> ln, double a, double v, double b, double hlt, double theta,bool laterals = false):
-            OrganSpecificParameter(subType, a), lb(lb), la(la),ln(ln), v(v), b(b), hlt(hlt), theta(theta), laterals(laterals) { }; ///< Constructor setting all parameters
+    HyphaeSpecificParameter(): HyphaeSpecificParameter(-1, 0., 0., std::vector<double>(), 0., 0., 0., 0., 0., 0., false) { } ///< Default constructor
+    HyphaeSpecificParameter(int subType, double la, double lb, std::vector<double> ln, double a, double v, double b, double hlt, double theta,double b_prob, bool laterals = false):
+            OrganSpecificParameter(subType, a), lb(lb), la(la),ln(ln), v(v), b(b), hlt(hlt), theta(theta), b_prob(b_prob), laterals(laterals) { }; ///< Constructor setting all parameters
 
     double v;              ///< tip elongation rate [cm/day]
     double b;              ///< branching rate [1/day] TODO figure out what to do about tip splitting
     double hlt;            ///< hyphal lifetime  [day]
     double theta;          ///< branching angle [rad]
+    double b_prob;       ///< probability of branching to occur by tip splitting rather than lateral branching [1]
     double la;        ///< apical zone [cm];
     double lb;        ///< basal zone [cm];
     double lmax;      ///< maximal length of the hyphae [cm]
@@ -62,8 +63,6 @@ public:
 
     double v=0.13;              ///< tip elongation rate [cm/day] 
     double vs=0.01;             ///< standard deviation of tip elongation rate [cm/day]
-    double b=0.5;              ///< branching rate [1/day]
-    double bs=0.05;             ///< standard deviation of branching rate [1/day]
     double hlt=10;            ///< hyphal lifetime  [day]
     double hlts=0.1;           ///< standard deviation of  hyphal lifetime  [day]
     double theta=30./180.*M_PI;          ///< branching angle [rad]
@@ -80,6 +79,11 @@ public:
     double lmaxs = 0.;       ///< Standard deviation of maximal length of the hyphae [cm]
     double ln = 0.005;          ///< Inter-lateral distance [cm]
     double lns = 0.;        ///< Standard deviation inter-lateral distance [cm]
+
+    double b = 2;              ///< tip splitting branching rate [1/day]
+    double bs =0.5;             ///< standard deviation of tip splitting branching rate [1/day]
+    double b_prob = 0.; ///< probability of branching to occur by tip splitting rather than lateral branching [1]
+    double b_prob_s = 0.; ///< standard deviation of probability of branching to occur by tip splitting rather than lateral branching [1]
 
     int tropismT = 2;       ///< Hypha tropism parameter (Type)
     double tropismN = 1.;   ///< Hypha tropism parameter (number of trials)

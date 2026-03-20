@@ -122,15 +122,66 @@ void Hyphae::simulate(double dt, bool verbose)
         //     }
         // }
 
-        if (age>0) { // unborn  roots have no children
-            // children first (lateral roots grow even if base root is inactive)
-            for (auto l:children) {
+        if (age>0) {
+
+            if (p.b_prob > plant.lock()->rand()) // checks if tip splitting
+            {
+                if (children.size() == 0) { // ELONGATE
+
+                bool activebefore = active; // store previous state
+
+                if (active) {
+					double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+					double dt_; // time step
+					if (age<dt) { // the hypha emerged in this time step, adjust time step
+						dt_= age;
+					} else {
+						dt_=dt;
+					}
+
+					double targetlength = calcLength(age_+dt_);//+ this->epsilonDx;
+					
+                    double e = targetlength-length; // unimpeded elongation in time step dt
+                    double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+                    double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
+                    length = getLength();
+                    createSegments(dl,dt,verbose);
+                    length+=dl;
+                    if (dl == 0.)
+                    {
+                        active = false; // if no length increment, hyphae become inactive
+                    }
+
+                }
+                // std::cout << p.getK() << " " << getLength(false) << std::endl;
+                // std::cout << nodes.size() << std::endl;
+                if (age - plant.lock()->getSimTime() + nodeCTs.at(0) > 0.0001) { 
+                    std::cout << "Warning: Hyphae age is higher than the time since emergence, this should not happen. Check hyphae age: " << age << ", time since emergence: " << plant.lock()->getSimTime() - nodeCTs.at(0) << "\n";
+                }
+                if (age * getParameter("b")>1.) // TODO check if this is really correct
+                {
+                    active = false; // become inactive, if enough time has passed for branching
+                    // std::cout<< "number of children: " << children.size() << "\n";
+                    createLateral(nodes.size()-1,verbose); // create a lateral hyphae
+                    createLateral(nodes.size()-1,verbose); // create a lateral hyphae
+                    // std::cout<< "Age when a branching occurred: " << age << " days, in hyphal tree " << hyphalTreeIndex << "\n";
+                }
+                
+                //std::cout << "Hyphae active: " << active << std::endl;
+
+            } else { // NOT ACTIVE (children grow)
+
+                // children first (lateral roots grow even if base root is inactive)
+                for (auto l:children) {
+                    l->simulate(dt,verbose);
+                }
+            }
+            } else { //if no tip splitting 
+                for (auto l:children) {
                 l->simulate(dt,verbose);
             }
 
-
             if (active) {
-                // TODO hier unterscheidung machen ob lateral oder tip splitting
                 // length increment
                 double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
                 double dt_; // time step
@@ -205,89 +256,11 @@ void Hyphae::simulate(double dt, bool verbose)
                 } // if lateralgetLengths
             } // if active
             active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+            }
         }
     } // if alive
     // std::cout << "end" << getId() << "\n" << std::flush;
 }
-
-
-// void Hyphae::simulate(double dt, bool verbose)
-// {
-// //    firstCall = true;
-// //    moved = false;
-//     oldNumberOfNodes = nodes.size();
-
-//     const HyphaeSpecificParameter& p = *param(); // rename
-//     // std::cout << alive << " " << active << " " << age << " " << length << "\n";
-
-//     if (alive) { // dead hypae won't grow
-//         // std::cout << age << "\n";
-
-//         // increase age
-//         if (age+dt>p.hlt) { // hyphal life time
-//             dt=p.hlt-age; // remaining life span
-//             alive = false; // this hyphe is dead
-//         }
-//         age+=dt;
-//         // std::cout <<"Age: "<< age << "\n";
-
-//         if (age>0) { // unborn hyphae have no children
-
-//             if (children.size() == 0) { // ELONGATE
-
-//                 bool activebefore = active; // store previous state
-
-//                 if (active) {
-// 					double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
-// 					double dt_; // time step
-// 					if (age<dt) { // the hypha emerged in this time step, adjust time step
-// 						dt_= age;
-// 					} else {
-// 						dt_=dt;
-// 					}
-
-// 					double targetlength = calcLength(age_+dt_);//+ this->epsilonDx;
-// 					
-//                     double e = targetlength-length; // unimpeded elongation in time step dt
-//                     double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
-//                     double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
-//                     length = getLength();
-//                     createSegments(dl,dt,verbose);
-//                     length+=dl;
-//                     if (dl == 0.)
-//                     {
-//                         active = false; // if no length increment, hyphae become inactive
-//                     }
-
-//                 }
-//                 // std::cout << p.getK() << " " << getLength(false) << std::endl;
-//                 // std::cout << nodes.size() << std::endl;
-//                 if (age - plant.lock()->getSimTime() + nodeCTs.at(0) > 0.0001) { 
-//                     std::cout << "Warning: Hyphae age is higher than the time since emergence, this should not happen. Check hyphae age: " << age << ", time since emergence: " << plant.lock()->getSimTime() - nodeCTs.at(0) << "\n";
-//                 }
-//                 if (age * getParameter("b")>1.) // TODO check if this is really correct
-//                 {
-//                     active = false; // become inactive, if enough time has passed for branching
-//                     // std::cout<< "number of children: " << children.size() << "\n";
-//                     createLateral(nodes.size()-1,verbose); // create a lateral hyphae
-//                     createLateral(nodes.size()-1,verbose); // create a lateral hyphae
-//                     // std::cout<< "Age when a branching occurred: " << age << " days, in hyphal tree " << hyphalTreeIndex << "\n";
-//                 }
-                
-//                 //std::cout << "Hyphae active: " << active << std::endl;
-
-//             } else { // NOT ACTIVE (children grow)
-
-//                 // children first (lateral roots grow even if base root is inactive)
-//                 for (auto l:children) {
-//                     l->simulate(dt,verbose);
-//                 }
-//             }
-
-//         } // age>0
-//     } // if alive
-
-// }
 
 ///**
 // * Analytical length of the single root at a given age

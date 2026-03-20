@@ -71,7 +71,8 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
     auto p = plant.lock();
     double a_ = std::max(a + p->randn()*as, 0.); // radius
     double v_ = std::max(v + p->randn()*vs, 0.);  // tip elongation rate [cm/day]
-    double b_ = std::max(b + p->randn()*bs, 0.); // branching rate [1/day]
+    double b_ = std::max(b + p->randn()*bs, 0.); // tip spliting branching rate [1/day]
+    double b_prob_ = std::max(std::min(b_prob + p->randn()*b_prob_s, 1.), 0.); // probability of branching to occur by tip splitting rather than lateral branching [1]
     double lb_; //define the parameters outside of the if functions:
     double la_;
     std::vector<double> ln_; // stores the inter-distances
@@ -124,7 +125,7 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
     double hlt_ = std::max(hlt + p->randn()*hlts, 0.); // hyphal lifetime  [day]
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // branching angle [rad]
 
-    return std::make_shared<HyphaeSpecificParameter>(subType, la_, lb_, ln_, a_, v_, b_, hlt_, theta_,hasLaterals);
+    return std::make_shared<HyphaeSpecificParameter>(subType, la_, lb_, ln_, a_, v_, b_, hlt_, theta_,b_prob_, hasLaterals);
 }
 
 /**
@@ -191,10 +192,15 @@ void HyphaeRandomParameter::bindParameters()
     OrganRandomParameter::bindParameters();
     bindParameter("v", &v, "Tip elongation rate [cm/day]", &vs);
     bindParameter("b", &b, "Branching rate [1/day]", &bs);
+    bindParameter("b_prob", &b_prob, "Probability of branching to occur by tip splitting rather than lateral branching [1]", &b_prob_s);
     bindParameter("hlt", &hlt, "Hyphal lifetime  [day]", &hlts);
     bindParameter("theta", &theta, "Branching angle [rad]", &thetas);
     bindParameter("distTH", &distTH, "Distance for tip-hyphae anastomosis [cm]");
     bindParameter("ana", &ana, "Probability of anastomosis occuring if distance is long enough");
+    bindParameter("la", &la, "Apical zone [cm]", &las);
+    bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
+    bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
+    bindParameter("lmax", &lmax, "Maximal length of the hyphae [cm]", &lmaxs);
     bindParameter("tropismT", &tropismT, "Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of root tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of root tropism [1/cm]");
