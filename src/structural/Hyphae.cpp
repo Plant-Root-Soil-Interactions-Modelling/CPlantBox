@@ -337,11 +337,14 @@ std::shared_ptr<const HyphaeSpecificParameter> Hyphae::param() const
 double Hyphae::getParameter(std::string name) const
 {
     // specific parameters
-    //TODO update this
         if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
         if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
         if (name=="v") { return param()->v; } // Tip elongation rate [cm day-1]
         if (name=="b") { return param()->b; } // Branching rate [1 day-1]
+        if (name=="la") { return param()->la; } // Apical zone [cm]
+        if (name=="lb") { return param()->lb; } // Basal zone [cm]
+        if (name=="lmax") { return param()->lmax; } // Maximal length [cm]
+        if (name=="ln") { return param()->ln.size()>0 ? param()->ln.at(0) : 0.; } // Inter-lateral distance [cm], return first value of vector for simplicity, TODO update this
         if (name=="hlt") { return param()->hlt; } // Hyphal life time [day]
         if (name=="theta") { return param()->theta; } // Branching angle [rad]
         if (name=="hyphalTreeIndex") { return hyphalTreeIndex; } // Hyphal tree index [-]
