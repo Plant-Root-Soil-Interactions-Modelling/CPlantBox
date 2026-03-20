@@ -6,6 +6,7 @@ from plantbox import MappedSegments
 import plantbox.functional.van_genuchten as vg
 
 import numpy as np
+import math
 
 from scipy.spatial import ConvexHull, Voronoi
 from scipy.interpolate import RegularGridInterpolator
@@ -247,7 +248,7 @@ If we pull the above equation into the integral, then
         this works mostly like the steady rate assumption from before. So I could also proceed the same way with that factor B instead of ln(rho)
     """   
 
-    def perirhizal_soluteflows(self,h_rs,h_prhiz,r_root,r_prhiz,2piqr,D_0,Vmax,Km,c_prhiz,sp):
+    def perirhizal_soluteflows(self,h_rs,h_prhiz,r_root,r_prhiz,q2pir,D_0,Vmax,Km,c_prhiz,sp):
         """
         finds matric potentials at the soil root interface for as all segments
         uses a look up tables if present (see create_lookup, and open_lookup) 
@@ -257,16 +258,16 @@ If we pull the above equation into the integral, then
         inner_kr       root radius times hydraulic conductivity [cm/day] 
         rho            geometry factor [1] (outer_radius / inner_radius)
         """
-        assert len(h_rs) == len(h_prhiz) == len(r_root) == len(r_prhiz) == len(2piqr) == len(Vmax) == len(Km) == len(c_prhiz) = len(sp), "h_rs, h_prhiz, r_root, r_prhiz, 2piqr, Vmax, Km, c_prhiz and sp must have the same length"
+        assert len(h_rs) == len(h_prhiz) == len(r_root) == len(r_prhiz) == len(q2pir) == len(Vmax) == len(Km) == len(c_prhiz) == len(sp), "h_rs, h_prhiz, r_root, r_prhiz, 2piqr, Vmax, Km, c_prhiz and sp must have the same length"
         if False:#self.lookup_table:
             Uptakes = np.zeros(len(h_rs))#rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
         else:
-            Uptakes = np.array([PerirhizalPython.perirhizal_soluteflow(self,h_rs[i],h_prhi[i],r_root[i],r_prhiz[i],2piqr[i],D_0,Vmax[i],Km[i],c_prhiz[i],sp[i]) for i in range(0, len(h_rs))])
+            Uptakes = np.array([PerirhizalPython.perirhizal_soluteflow(self,h_rs[i],h_prhi[i],r_root[i],r_prhiz[i],q2pir[i],D_0,Vmax[i],Km[i],c_prhiz[i],sp[i]) for i in range(0, len(h_rs))])
             # rsx = rsx[:, 0]
         return Uptakes
 
     # solutes in the perirhizal zone 
-    def perirhizal_soluteflow(self,h_rs,h_prhi,r_root,r_prhiz,2piqr,D_0,Vmax,Km,c_prhiz,sp):
+    def perirhizal_soluteflow(self,h_rs,h_prhi,r_root,r_prhiz,q2pir,D_0,Vmax,Km,c_prhiz,sp):
         """
         This function determines the uptake of solutes in the perirhizal zone for a steady state flow of water and Michaelis Mentne uptake kinetics
 
@@ -315,16 +316,17 @@ If we pull the above equation into the integral, then
         helper_integral2 = peri_sol_helper_integral(Phi_prhiz * sp.alpha / sp.Ks,rel_res,sp.m)
         helper_integral1 = peri_sol_helper_integral(Phi_root * sp.alpha / sp.Ks,rel_res,sp.m)
             
-        F = exp(-(2piqr / 2 pi) * log(rho) * D_0 / (pow(sp.theta_s,2) * pow(sp.theta_s-sp.theta_r,10/3)) * sp.Ks / sp.alpha * (helper_integral2 - helper_integral1) / (Phi_prhiz-Phi_root))    
+            
+        F = math.exp(-(q2pir / (2 * pi)) * log(rho) * D_0 / (pow(sp.theta_s,2) * pow(sp.theta_s-sp.theta_r,10/3)) * sp.Ks / sp.alpha * ( helper_integral2 - helper_integral1 ) / (Phi_prhiz-Phi_root))    
 
         A = F 
-        B = F * sp.Ks - cprhiz + (1-F) * (r_root * Vmax * 2*pi/2piqr) 
+        B = F * sp.Ks - cprhiz + (1-F) * (r_root * Vmax * 2*pi/q2pir) 
         C = -c_prhiz * Km
 
         c_root = - B / (2 * A) + sqrt(pow(B/(2*A),2)-C/A) #only the positive solution makes sense
         U = 2 * pi * r_root * Vmax * c_root / (Km + c_root)
-        y_root = 2piqr * c_root / (2 * pi * r_root)
-        y_prhiz = 2piqr * c_root / (2 * pi * r_prhiz)
+        y_root = q2pir * c_root / (2 * pi * r_root)
+        y_prhiz = q2pir * c_root / (2 * pi * r_prhiz)
         return U
     #this function can be saved in a lookup table
     def peri_sol_helper_integral(relPhi,rel_res,m):
