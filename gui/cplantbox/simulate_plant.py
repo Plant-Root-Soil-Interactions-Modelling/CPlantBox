@@ -105,8 +105,8 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     leafes = plant.getOrgans(pb.leaf)
     for l in leafes:
         vp.create_leaf_(l, leaf_points, leaf_polys)
-    pts_array = vtk.util.numpy_support.vtk_to_numpy(leaf_points.GetData()).astype(np.float32)
-    polys_data = vtk.util.numpy_support.vtk_to_numpy(leaf_polys.GetData())
+    pts_array = numpy_support.vtk_to_numpy(leaf_points.GetData()).astype(np.float32)
+    polys_data = numpy_support.vtk_to_numpy(leaf_polys.GetData())
     vtk_data["leaf_points"] = encode_array(pts_array)
     vtk_data["leaf_polys"] = encode_array(polys_data)
 

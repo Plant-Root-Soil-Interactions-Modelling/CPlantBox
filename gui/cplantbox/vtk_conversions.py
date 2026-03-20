@@ -7,6 +7,7 @@ import zlib
 import numpy as np
 import plotly.graph_objs as go
 import vtk
+from vtk.util import numpy_support
 
 
 def encode_array(arr: np.ndarray) -> str:
@@ -39,10 +40,10 @@ def vtk_polydata_to_dashvtk_dict(polydata):
     print(f"vtk_polydata_to_dashvtk_dict(): Number of points: {n_points}, polys: {n_polys}")
 
     # Efficiently extract points to a numpy array
-    pts_array = vtk.util.numpy_support.vtk_to_numpy(points.GetData()).astype(np.float16)
+    pts_array = numpy_support.vtk_to_numpy(points.GetData()).astype(np.float16)
 
     # Efficiently extract polygon connectivity
-    polys_array = vtk.util.numpy_support.vtk_to_numpy(polys.GetData()).astype(np.int32)
+    polys_array = numpy_support.vtk_to_numpy(polys.GetData()).astype(np.int32)
 
     vtk_data = {"points": encode_array(pts_array), "polys": encode_array(polys_array)}
 
@@ -98,4 +99,5 @@ def generate_colorbar_image(vmin, vmax, colormap="Viridis", height=500, width=10
         margin=dict(l=10, r=0, t=0, b=0),  # for the text
         yaxis=dict(showticklabels=False, showgrid=False, zeroline=False, visible=False),
     )
+    return fig
     return fig
