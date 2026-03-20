@@ -44,22 +44,17 @@ h6,
 /* --- Fix the size of tabs --- */
 .tab,
 .tabSelected {
-    /* height: 30px; */
     margin-top: 0px !important;
     padding-top: 5px !important;
     padding-bottom: 5px !important;
-    padding-left: 2px !important;
-    padding-right: 2px !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
     font-size: 12px;
-    /*flex: 0;  /* Equal width for all tabs */
-    /*max-width: 150px;  /* Set a fixed max width */
-    /*text-align: left;  /* Center text inside the tab */
-    /*white-space: nowrap;  /* Prevent text from wrapping */
-    overflow: hidden;
-    /* Hide overflowing text */
-    text-overflow: ellipsis;
-    /* Show '...' for long text */
-    /* padding: 1px; */
+    min-height: 28px !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;   /* allow wrapping when stacked vertically */
+    overflow: visible !important;
+    word-break: break-word;
     border-radius: 8px 8px 0 0;
     border: 1px solid transparent;
     transition: background 0.3s ease-in-out;

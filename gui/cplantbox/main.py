@@ -991,5 +991,6 @@ def download_dynamics_xls(n_clicks, data, typename_data):
 
 
 if __name__ == "__main__":
+
     # Timer(1, open_browser).start()
     app.run(debug=True)
