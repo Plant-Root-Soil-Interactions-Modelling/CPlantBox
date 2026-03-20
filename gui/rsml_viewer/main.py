@@ -13,6 +13,7 @@ import dash_bootstrap_components as dbc
 import dash_vtk
 import numpy as np
 import plotly.graph_objects as go
+import vtk
 from dash import Input, Output, State, ctx, dcc, html, no_update
 
 # Add the viewer folder so ViewerDataModel and viewer_conductivities can be imported
