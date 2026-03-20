@@ -30,8 +30,44 @@ MAX_XML_SIZE = 200 * 1024  # 200 KB in bytes
 #
 # INITIALIZE
 #
-app = dash.Dash(__name__, suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.MINTY])  # SANDSTONE, MINTY, MORPH
-app.title = "CPlantbox Dash App"
+app = dash.Dash(
+    __name__,
+    suppress_callback_exceptions=True,
+    external_stylesheets=[dbc.themes.MINTY],  # SANDSTONE, MINTY, MORPH
+    meta_tags=[
+        {
+            "name": "description",
+            "content": (
+                "CPlantBox WebApp — an interactive interface to visualize and simulate plant architecture. "
+                "CPlantBox creates plant geometry based on parameter sets and supports model coupling for "
+                "integrated plant-soil-atmosphere interaction models, including water and carbon flow, "
+                "photosynthesis, root-soil interaction, and mycorrhizal associations."
+            ),
+        },
+        {
+            "name": "keywords",
+            "content": (
+                "CPlantBox, plant modelling, root system simulation, plant architecture, "
+                "soil-plant-atmosphere, water flow, carbon flow, plant parameters, "
+                "functional-structural plant model, dumux-rosi, mycorrhizal, photosynthesis, "
+                "CRootBox, root-soil interaction, Python plant simulation"
+            ),
+        },
+        {
+            "name": "author",
+            "content": "Daniel Leitner, IBG-3, Forschungszentrum Jülich",
+        },
+        {"property": "og:title", "content": "CPlantBox WebApp"},
+        {
+            "property": "og:description",
+            "content": (
+                "Interactive plant architecture simulation — visualize and experiment with " "plant parameters for soil-plant-atmosphere interaction models."
+            ),
+        },
+        {"property": "og:type", "content": "website"},
+    ],
+)
+app.title = "CPlantBox WebApp"
 
 param_names = conversions.get_parameter_names()
 plants = [{"label": name[0], "value": str(i)} for i, name in enumerate(param_names)]
