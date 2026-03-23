@@ -131,115 +131,124 @@ app.layout = dbc.Container(
         dcc.Download(id="download-rsml"),
         dcc.Download(id="download-profiles-xls"),
         dcc.Download(id="download-dynamics-xls"),
-        dbc.Row(
-            [
-                #
-                # Panel 1
-                #
-                dbc.Col(
-                    [
-                        html.H5("Simulation"),
-                        conversions.into_panel(
-                            [
-                                html.H6("Plant parameters"),
-                                dcc.Dropdown(
-                                    id="plant-dropdown",
-                                    options=plants,
-                                    value=plants[0]["value"],
-                                    clearable=False,
-                                    searchable=False,
-                                    className="dropdown",
-                                    style={"fontSize": "12px", "padding-top": "5px"},  # hard coded (should be same as h6) did not work with css allown
-                                ),
-                                html.Div(className="smallSpacer"),
-                                html.Div(
-                                    [
-                                        html.Div(
-                                            children=small_button("xml", "xml-download-button", "Download the XML parameter file")
-                                        ),  # ohterwise the layout is a pixel wrong
-                                        dcc.Upload(
-                                            id="xml-upload-button",
-                                            accept=".xml",
-                                            multiple=False,
-                                            children=small_button("xml", "xml-upload-button-hidden", "Upload your XML parameter file", url="cloud-upload.svg"),
-                                        ),
-                                    ],
-                                    style={"display": "flex", "alignItems": "center"},  # vertical alignment
-                                ),
-                            ]
-                        ),
-                        html.Div(className="spacer"),
-                        conversions.into_panel(
-                            [
-                                html.H6("Simulation time [day]"),
-                                dcc.Slider(id="time-slider", min=1, max=45, step=1, value=20, marks={1: "1", 45: "45"}, tooltip={"always_visible": False}),
-                                html.Div(className="spacer"),
-                                html.Div(
-                                    [
-                                        dcc.Button("Create", id="create-button", title="Create new plant geometry", className="button"),
-                                        dcc.Button(
-                                            "Update",
-                                            id="update-button",
-                                            title="Update the simulation (with the same random seed)",
-                                            className="button",
-                                            style={"display": "none"},
-                                        ),
-                                    ],
-                                ),
-                            ]
-                        ),
-                        html.Div(className="largeSpacer"),
-                        html.Div(className="largeSpacer"),
-                        dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),
-                        dcc.Loading(id="loading-spinner2", type="circle", children=html.Div(id="loading-spinner-output2")),
-                        dcc.Loading(id="loading-spinner3", type="circle", children=html.Div(id="loading-spinner-output3")),
-                    ],
-                    width=2,
-                ),
-                #
-                # Panel 2
-                #
-                dbc.Col(
-                    [
-                        html.H5("Parameters"),
-                        dcc.Tabs(
-                            id="organtype-tabs",
-                            value="Seed",
-                            children=[
-                                dcc.Tab(label="Seed", value="Seed", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="Root", value="Root", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="Stem", value="Stem", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="Leaf", value="Leaf", className="tab", selected_className="tabSelected"),
-                            ],
-                            className="tabs",
-                        ),
-                        html.Div(id="organtype-tabs-content", className="tabContentScroll"),
-                    ],
-                    width=3,
-                ),
-                #
-                # Panel 3
-                #
-                dbc.Col(
-                    [
-                        html.H5("Results"),
-                        dcc.Tabs(
-                            id="result-tabs",
-                            value="VTK3D",
-                            children=[
-                                dcc.Tab(label="3D", value="VTK3D", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="3D Age", value="VTK3DAge", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="1D Profiles", value="Profile1D", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="Dynamics", value="Dynamics", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="About", value="About", className="tab", selected_className="tabSelected"),
-                            ],
-                            className="tabs",
-                        ),
-                        html.Div(id="result-tabs-content"),
-                    ],
-                    width=6,
-                ),
-            ]
+        html.Div(
+            dbc.Row(
+                [
+                    #
+                    # Panel 1
+                    #
+                    dbc.Col(
+                        [
+                            html.H5("Simulation"),
+                            conversions.into_panel(
+                                [
+                                    html.H6("Plant parameters"),
+                                    dcc.Dropdown(
+                                        id="plant-dropdown",
+                                        options=plants,
+                                        value=plants[0]["value"],
+                                        clearable=False,
+                                        searchable=False,
+                                        className="dropdown",
+                                        style={"fontSize": "12px", "padding-top": "5px"},  # hard coded (should be same as h6) did not work with css allown
+                                    ),
+                                    html.Div(className="smallSpacer"),
+                                    html.Div(
+                                        [
+                                            html.Div(
+                                                children=small_button("xml", "xml-download-button", "Download the XML parameter file")
+                                            ),  # ohterwise the layout is a pixel wrong
+                                            dcc.Upload(
+                                                id="xml-upload-button",
+                                                accept=".xml",
+                                                multiple=False,
+                                                children=small_button(
+                                                    "xml", "xml-upload-button-hidden", "Upload your XML parameter file", url="cloud-upload.svg"
+                                                ),
+                                            ),
+                                        ],
+                                        style={"display": "flex", "alignItems": "center"},  # vertical alignment
+                                    ),
+                                ]
+                            ),
+                            html.Div(className="spacer"),
+                            conversions.into_panel(
+                                [
+                                    html.H6("Simulation time [day]"),
+                                    dcc.Slider(id="time-slider", min=1, max=45, step=1, value=20, marks={1: "1", 45: "45"}, tooltip={"always_visible": False}),
+                                    html.Div(className="spacer"),
+                                    html.Div(
+                                        [
+                                            dcc.Button("Create", id="create-button", title="Create new plant geometry", className="button"),
+                                            dcc.Button(
+                                                "Update",
+                                                id="update-button",
+                                                title="Update the simulation (with the same random seed)",
+                                                className="button",
+                                                style={"display": "none"},
+                                            ),
+                                        ],
+                                    ),
+                                ]
+                            ),
+                            html.Div(className="largeSpacer"),
+                            html.Div(className="largeSpacer"),
+                            dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),
+                            dcc.Loading(id="loading-spinner2", type="circle", children=html.Div(id="loading-spinner-output2")),
+                            dcc.Loading(id="loading-spinner3", type="circle", children=html.Div(id="loading-spinner-output3")),
+                        ],
+                        width=2,
+                        style={"minWidth": "160px"},
+                    ),
+                    #
+                    # Panel 2
+                    #
+                    dbc.Col(
+                        [
+                            html.H5("Parameters"),
+                            dcc.Tabs(
+                                id="organtype-tabs",
+                                value="Seed",
+                                children=[
+                                    dcc.Tab(label="Seed", value="Seed", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="Root", value="Root", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="Stem", value="Stem", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="Leaf", value="Leaf", className="tab", selected_className="tabSelected"),
+                                ],
+                                className="tabs",
+                            ),
+                            html.Div(id="organtype-tabs-content"),  # , className="tabContentScroll"
+                        ],
+                        width=3,
+                        style={"minWidth": "250px"},
+                    ),
+                    #
+                    # Panel 3
+                    #
+                    dbc.Col(
+                        [
+                            html.H5("Results"),
+                            dcc.Tabs(
+                                id="result-tabs",
+                                value="VTK3D",
+                                children=[
+                                    dcc.Tab(label="3D", value="VTK3D", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="3D Age", value="VTK3DAge", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="1D Profiles", value="Profile1D", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="Dynamics", value="Dynamics", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="About", value="About", className="tab", selected_className="tabSelected"),
+                                ],
+                                className="tabs",
+                            ),
+                            html.Div(id="result-tabs-content"),
+                        ],
+                        width=6,
+                        style={"minWidth": "320px"},
+                    ),
+                ],
+                className="mainLayoutRow",
+            ),
+            className="mainLayoutScroll",
         ),
         html.Div(
             [

@@ -3,12 +3,11 @@
 }
 
 h5 {
-    /* fz layout */
     font-size: 18px;
     padding-top: 10px;
     padding-bottom: 10px;
     font-weight: bold;
-    color: #023d6c;
+    color: #023d6c;  /* fz logo colour */
 }
 
 h6,
@@ -39,6 +38,18 @@ h6,
 .smallSpacer {
     /* vertical margin for panel 3, e.g. h5 + margins + something */
     height: 10px;
+}
+
+.mainLayoutScroll {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+}
+
+.mainLayoutRow {
+    flex-wrap: nowrap;
+    min-width: 730px;
+    width: max(100%, 730px);
 }
 
 /* --- Fix the size of tabs --- */
@@ -139,20 +150,32 @@ h6,
 
 /* About tab */
 .aboutContainer {
-    margin-left: 50px;
-    margin-right: 50px;
-    margin-top: 40px;
-    margin-bottom: 20px;
-    /*border: 1px solid #ccc;*/
+    margin: 12px 10px 20px;
+    padding: 12px 14px;
     border-radius: 8px;
     background-color: #f5f6fa;
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .aboutScroll {
-    height: clamp(320px, 70vh, 800px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 10px;
+    height: auto;
+    max-height: none;
+    overflow-y: visible;
+    overflow-x: auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.aboutScroll pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.aboutScroll img {
+    max-width: 100%;
+    height: auto;
 }
 
 .tabContentScroll {
@@ -161,9 +184,17 @@ h6,
 
 @media (max-height: 900px) {
     .tabContentScroll {
-        max-height: 90vh;
+        max-height: 600px; /* 90vh;*/
         overflow-y: auto;
         overflow-x: hidden;
         padding-right: 8px;
+    }
+}
+
+@media (max-width: 900px) {
+    .aboutContainer {
+        margin: 8px 0 16px;
+        padding: 10px 12px;
+        border-radius: 6px;
     }
 }
