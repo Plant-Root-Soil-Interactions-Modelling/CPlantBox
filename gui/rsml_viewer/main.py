@@ -59,6 +59,7 @@ COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e3
 MAX_GEOMETRY_CACHE_ITEMS = 8
 GEOMETRY_CACHE = OrderedDict()
 GEOMETRY_CACHE_LOCK = Lock()
+PAGE_BACKGROUND_RGB = [1.0, 1.0, 1.0]
 
 #
 # INITIALISE
@@ -77,7 +78,7 @@ def into_panel(content):
 
 
 def small_button(label, id_, tool_tip="", url="cloud-download.svg"):
-    """Creates a small button with an icon from the assets folder."""
+    """Creates a small button with an icon from the assets folder"""
     return dcc.Button(
         [html.Img(src=app.get_asset_url(url), className="buttonIcon"), label],
         id=id_,
@@ -192,6 +193,7 @@ app.layout = dbc.Container(
                         ),
                     ],
                     width=2,
+                    style={"minWidth": "200px"},
                 ),
                 #
                 # Panel 2 – Results
@@ -219,6 +221,7 @@ app.layout = dbc.Container(
                         ),
                     ],
                     width=9,
+                    style={"minWidth": "320px"},
                 ),
             ]
         ),
@@ -680,15 +683,19 @@ def _render_vtk_content(payload):
                     )
                 ],
             )
-        ]
+        ],
+        background=PAGE_BACKGROUND_RGB,
     )
 
     return html.Div(
         [
-            html.Div(view, style={"width": "100%", "height": "620px"}),
+            html.Div(
+                view,
+                style={"width": "100%", "height": "620px", "backgroundColor": "var(--bs-body-bg, #ffffff)"},
+            ),
             html.Div([html.H6(payload["title"], style={"marginTop": "10px"}), scalar_bar], style={"display": "flex", "justifyContent": "flex-end"}),
         ],
-        style={"width": "100%", "display": "flex", "flexDirection": "column"},
+        style={"width": "100%", "display": "flex", "flexDirection": "column", "backgroundColor": "var(--bs-body-bg, #ffffff)"},
     )
 
 
