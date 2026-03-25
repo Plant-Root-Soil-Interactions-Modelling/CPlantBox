@@ -38,7 +38,7 @@ export PATH="/c/Program Files/Git/cmd:$PATH"
 # not needed anymore?
 # ln -s pkgconf.exe \
 #/c/Users/m.giraud/Documents/CPlantBox-windows/vcpkg/installed/x64-windows/tools/pkgconf/pkg-config.exe
-
+download the dumux-rosi from branch 'feature/build-for-windows'
 
 git config --global --add safe.directory C:/Users/m.giraud/Documents/CPlantBox-windows/dune-common
 git config --global --add safe.directory C:/Users/m.giraud/Documents/CPlantBox-windows/dune-geometry
