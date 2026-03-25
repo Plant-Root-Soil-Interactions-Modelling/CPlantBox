@@ -34,7 +34,7 @@ set(CPLANTBOX_SOURCES
   functional/Perirhizal.cpp
   functional/PlantHydraulicParameters.cpp
   functional/PlantHydraulicModel.cpp
-  visualisation/PlantVisualiser.cpp
+  # visualisation/PlantVisualiser.cpp
   external/aabbcc/AABB.cc
   external/gauss_legendre/gauss_legendre.cpp
 )

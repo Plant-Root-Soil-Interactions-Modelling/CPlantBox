@@ -10,8 +10,16 @@
 namespace CPlantBox {
 
   	// an iterator that can give me the vector mirrored around 0
-	class MirrorIterator : public std::iterator<std::input_iterator_tag, std::pair<int,double> > {
+	class MirrorIterator //: public std::iterator<std::input_iterator_tag, std::pair<int,double> > {
 	public:
+	
+		
+		using iterator_category = std::input_iterator_tag;
+		using value_type = std::pair<int,double>;
+		using difference_type = std::ptrdiff_t;
+		using pointer = std::pair<int,double> *;
+		using reference = std::pair<int,double> &;
+	
 		MirrorIterator(const std::vector<double>* v) : v(v) {
 			//std::cout << "MirrorIterator was created " << v->size() << std::endl;
 			// output all vector elements

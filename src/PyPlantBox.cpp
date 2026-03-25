@@ -47,7 +47,7 @@ namespace py = pybind11;
 // visualisation
 #include "Quaternion.h"
 #include "CatmullRomSpline.h"
-#include "PlantVisualiser.h"
+//#include "PlantVisualiser.h"
 
 #include "sdf_rs.h" // todo to revise ...
 
@@ -1231,24 +1231,24 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("k_mucil_",&PhloemFlux::k_mucil_);
 		*/
 	
-    py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
-        .def(py::init<>())
-        .def(py::init<std::shared_ptr<MappedPlant>>())
-        .def("ComputeGeometryForOrgan",&PlantVisualiser::ComputeGeometryForOrgan, py::arg("organId"))
-        .def("ComputeGeometryForOrganType",&PlantVisualiser::ComputeGeometryForOrganType, py::arg("organType"), py::arg("clearFirst") = true)
-        .def("ComputeGeometry",&PlantVisualiser::ComputeGeometry)
-        .def("GetGeometry",&PlantVisualiser::GetGeometry)
-        .def("GetGeometryColors",&PlantVisualiser::GetGeometryColors)
-        .def("GetGeometryNormals",&PlantVisualiser::GetGeometryNormals)
-        .def("GetGeometryIndices",&PlantVisualiser::GetGeometryIndices)
-        .def("GetGeometryTextureCoordinates",&PlantVisualiser::GetGeometryTextureCoordinates)
-        .def("GetGeometryNodeIds", &PlantVisualiser::GetGeometryNodeIds)
-        .def("SetGeometryResolution",&PlantVisualiser::SetGeometryResolution, py::arg("resolution"))
-        .def("SetLeafResolution",&PlantVisualiser::SetLeafResolution, py::arg("resolution"))
-        .def("SetComputeMidlineInLeaf", &PlantVisualiser::SetComputeMidlineInLeaf, py::arg("inCompute"))
-        .def("HasGeometry", &PlantVisualiser::HasGeometry)
-        .def("ResetGeometry", &PlantVisualiser::ResetGeometry)
-    ;
+    // py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
+        // .def(py::init<>())
+        // .def(py::init<std::shared_ptr<MappedPlant>>())
+        // .def("ComputeGeometryForOrgan",&PlantVisualiser::ComputeGeometryForOrgan, py::arg("organId"))
+        // .def("ComputeGeometryForOrganType",&PlantVisualiser::ComputeGeometryForOrganType, py::arg("organType"), py::arg("clearFirst") = true)
+        // .def("ComputeGeometry",&PlantVisualiser::ComputeGeometry)
+        // .def("GetGeometry",&PlantVisualiser::GetGeometry)
+        // .def("GetGeometryColors",&PlantVisualiser::GetGeometryColors)
+        // .def("GetGeometryNormals",&PlantVisualiser::GetGeometryNormals)
+        // .def("GetGeometryIndices",&PlantVisualiser::GetGeometryIndices)
+        // .def("GetGeometryTextureCoordinates",&PlantVisualiser::GetGeometryTextureCoordinates)
+        // .def("GetGeometryNodeIds", &PlantVisualiser::GetGeometryNodeIds)
+        // .def("SetGeometryResolution",&PlantVisualiser::SetGeometryResolution, py::arg("resolution"))
+        // .def("SetLeafResolution",&PlantVisualiser::SetLeafResolution, py::arg("resolution"))
+        // .def("SetComputeMidlineInLeaf", &PlantVisualiser::SetComputeMidlineInLeaf, py::arg("inCompute"))
+        // .def("HasGeometry", &PlantVisualiser::HasGeometry)
+        // .def("ResetGeometry", &PlantVisualiser::ResetGeometry)
+    // ;
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)
