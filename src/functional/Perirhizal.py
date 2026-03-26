@@ -85,8 +85,9 @@ class PerirhizalPython(Perirhizal):
         fun = lambda x: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
         if rx == sx:  # degenerate bracket: no gradient, interface equals bulk potential
             return sx
-        rsx = root_scalar(fun, method="brentq", bracket=[min(rx, sx), max(rx, sx)])
-        return rsx.root
+        #rsx = root_scalar(fun, method="brentq", bracket=[min(rx, sx), max(rx, sx)])
+        rsx = fsolve(fun, (rx + sx) / 2)
+        return rsx
 
     def perirhizal_conductance_per_layer(self, h_bs, h_sr, sp):
         """
@@ -674,29 +675,31 @@ class PerirhizalPython(Perirhizal):
 
 if __name__ == "__main__":
 
-    sand = [0.045, 0.43, 0.15, 3, 1000]
-    loam = [0.08, 0.43, 0.04, 1.6, 50]
-    clay = [0.1, 0.4, 0.01, 1.1, 10]
+    # sand = [0.045, 0.43, 0.15, 3, 1000]
+    # loam = [0.08, 0.43, 0.04, 1.6, 50]
+    # clay = [0.1, 0.4, 0.01, 1.1, 10]
 
-    hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
-    hydrus_clay = [0.068, 0.38, 0.008, 1.09, 4.8]
-    hydrus_sand = [0.045, 0.43, 0.145, 2.68, 712.8]
-    hydrus_sandyloam = [0.065, 0.41, 0.075, 1.89, 106.1]
+    # hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
+    # hydrus_clay = [0.068, 0.38, 0.008, 1.09, 4.8]
+    # hydrus_sand = [0.045, 0.43, 0.145, 2.68, 712.8]
+    # hydrus_sandyloam = [0.065, 0.41, 0.075, 1.89, 106.1]
 
-    filename = "hydrus_loam"
-    sp = vg.Parameters(hydrus_loam)
-    vg.create_mfp_lookup(sp)
+    # filename = "hydrus_loam"
+    # sp = vg.Parameters(hydrus_loam)
+    # vg.create_mfp_lookup(sp)
+    # peri = PerirhizalPython()
+    # peri.create_lookup_mpi(filename, sp)  # takes some hours; mpiexec -n 4 python Perirhizal.py
+
+    # peri.open_lookup(filename)
     peri = PerirhizalPython()
-    peri.create_lookup_mpi(filename, sp)  # takes some hours; mpiexec -n 4 python Perirhizal.py
-
-    # # peri.open_lookup(filename)
-    # peri.set_soil(vg.Parameters(loam))
-    # a = 0.1  # cm
-    # kr = 1.73e-4  # [1/day]
-    # rx = -15000  # cm
-    # sx = 0.0  # cm
-    # rho = 1 / a
-    # inner_kr = a * kr
-    # rsx = peri.soil_root_interface_potentials([rx], [sx], [inner_kr], [rho])
-    # print("root soil interface", rsx, "cm")
-    # print("results into a flux of", kr * 2 * a * np.pi * (rsx - rx), "cm3/day")
+    loam = [0.08, 0.43, 0.04, 1.6, 50]
+    peri.set_soil(vg.Parameters(loam))
+    a = 0.1  # cm
+    kr = 1.73e-4  # [1/day]
+    rx = -15000  # cm
+    sx = -200  # cm
+    rho = 1 / a
+    inner_kr = a * kr
+    rsx = peri.soil_root_interface_potentials([rx], [sx], [inner_kr], [rho])
+    print("root soil interface", rsx, "cm")
+    print("results into a flux of", kr * 2 * a * np.pi * (rsx - rx), "cm3/day")
