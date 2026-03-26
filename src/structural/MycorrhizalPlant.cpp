@@ -280,28 +280,6 @@ void MycorrhizalPlant::initCallbacks() {
         rp->f_tf = tropism; // set new one
         // growth function is set to LinearGrowth in constructor of HyphaeRandomParameter
     }
-    // Create tropisms and growth functions per random leaf parameter
-    for (auto& p_otp :organParam[Organism::ot_leaf]) {
-		auto rp = std::static_pointer_cast<LeafRandomParameter>(p_otp.second);
-		double Tage =  rp->tropismAge +  rp->tropismAges * randn();
-        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, Tage);
-        tropism->setGeometry(geometry);
-        rp->f_tf = tropism; // set new one
-        auto gf_ = this->createGrowthFunction(rp->gf);
-        gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
-        rp->f_gf  = gf_;
-    }
-    // Create tropisms and growth functions per random stem parameter
-    for (auto& p_otp :organParam[Organism::ot_stem]) {
-		auto rp = std::static_pointer_cast<StemRandomParameter>(p_otp.second);
-		double Tage =  rp->tropismAge +  rp->tropismAges * randn();
-        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, Tage);
-        tropism->setGeometry(geometry);
-        rp->f_tf = tropism; // set new one
-        auto gf_ = this->createGrowthFunction(rp->gf);
-        gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
-        rp->f_gf  = gf_;
-    }
 
 };
 

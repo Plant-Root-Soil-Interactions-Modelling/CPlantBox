@@ -210,7 +210,7 @@ void Hyphae::simulate(double dt, bool verbose)
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
                             if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
-                                if (i==created_linking_node && plant.lock() -> rand() < 0.4) { // new lateral
+                                if (i==created_linking_node) { // new lateral
                                     createLateral(dt_, verbose);
                                 }
                                 if(length < s)//because with former check we have (length<=s)
