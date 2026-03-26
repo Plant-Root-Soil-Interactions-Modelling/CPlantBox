@@ -68,15 +68,16 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         self.Q_Rm    = np.array(Q_out[(self.Nt*2):(self.Nt*3)]) #sucrose used for maintenance respiration
         self.Q_Exud  = np.array(Q_out[(self.Nt*3):(self.Nt*4)]) #sucrose used for exudation
         self.Q_Gr    = np.array(Q_out[(self.Nt*4):(self.Nt*5)]) #sucrose used for growth and growth respiration
-        self.Q_Rmmax = np.array(Q_out[(self.Nt*5):(self.Nt*6)])
-        self.Q_Grmax = np.array(Q_out[(self.Nt*6):(self.Nt*7)])
-        self.Q_S_Mesophyll = np.array(Q_out[(self.Nt*7):(self.Nt*8)])
-        self.Q_S_ST = np.array(Q_out[(self.Nt*8):(self.Nt*9)])
-        self.Q_Mucil = np.array(Q_out[(self.Nt*9):(self.Nt*10)])
-        self.Q_AuxinOut = np.array(Q_out[(self.Nt*10):(self.Nt*11)])
-        self.Q_Auxin = np.array(Q_out[(self.Nt*11):(self.Nt*12)])
+        self.Q_S_Mesophyll = np.array(Q_out[(self.Nt*5):(self.Nt*6)])
+        self.Q_S_ST = np.array(Q_out[(self.Nt*6):(self.Nt*7)])
+        self.Q_Auxin = np.array(Q_out[(self.Nt*7):(self.Nt*8)])
         self.Q_used   = self.Q_Rm    + self.Q_Exud      + self.Q_Gr
         self.Q_labil = self.Q_ST   + self.Q_meso + self.Q_S_Mesophyll+self.Q_S_ST 
+        
+        self.Q_AuxinOut = np.array(self.Q_AuxinOut)
+        self.Q_Rmmax = np.array(self.Q_Rmmax)
+        self.Q_Grmax = np.array(self.Q_Grmax)
+        
         
         #self.Ntbu = len(self.Q_STbu)
         self.Q_STbu       =   np.concatenate((self.Q_STbu, np.full(self.Nt - self.Ntbu, 0.)))

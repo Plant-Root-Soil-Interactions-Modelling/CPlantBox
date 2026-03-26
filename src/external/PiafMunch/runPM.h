@@ -123,13 +123,16 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	
 	//all in (mmol Suc d-1)
 	std::vector<double> Agv;//assimilation (mmol Suc d-1)
-	std::vector<double> Q_Grmaxv;//maximal sucrose sink for growth (mmol Suc d-1)
-	std::vector<double> Q_Exudmaxv ;//maximal exudatoin rate, (mmol Suc d-1)
-	std::vector<double> Q_Rmmaxv ;//maximal sucrose usage for maintenance, (mmol Suc d-1)
+	std::vector<double> Q_Grmax;//maximal sucrose sink for growth (mmol Suc d-1)
+	std::vector<double> Q_Exudmax ;//maximal exudatoin rate, (mmol Suc d-1)
+	std::vector<double> Q_Rmmax;//maximal sucrose usage for maintenance, (mmol Suc d-1)
 	std::vector<double> Flv ;//sucrose flow from mesophyll to sieve tube, (mmol Suc d-1)
 	std::vector<double> vol_Mesov;//volume of mesophyll (same as leaf blade volume), (cm3)
-	std::vector<double> JW_STv;//sieve tube water flow, (cm3 d-1)
-			
+	std::vector<double> JW_STv;//sieve tube water flow, (cm3 d-1)	
+	
+	std::vector<double> Q_Rmmax_dot;
+	std::vector<double> Q_Gtotmax_dot;
+	
 	//		To calibrate	
 	// soil (mmol Suc cm-3)
 	std::vector<double> Csoil_seg;
@@ -153,6 +156,9 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     std::vector<double> Delta_JA_STv;
     std::vector<double> C_AuxinOutv;
     std::vector<double> JAuxin_ST2v;
+	
+    std::vector<double> Q_AuxinOut_dot;
+    std::vector<double> Q_AuxinOut;
 	
 	// sieve tube
 	double Vmaxloading = 0.019872;//mmol cm-1 d-1 for leaf blade 1cm wide
@@ -211,7 +217,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	std::size_t Nt_old = 0; //BU old seg size
 	//bool hayErrores = false;
 	int errorID = -1;
-	std::size_t neq_coef = 12;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
+	std::size_t neq_coef = 8;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
 	
 
 };

@@ -74,7 +74,7 @@ void CPB_to_PM::computeAuxinValue(std::shared_ptr<CPlantBox::Organ> org)
 
 void CPB_to_PM::updateBudStage(double EndTime)// TODO: check at each time step
 {
-	bool allOrgs = true;
+	bool allOrgs = false;
 	auto orgs = plant->getOrgans(3,allOrgs);//also org with length - Epsilon == 0
     for(auto org: orgs)
 	{

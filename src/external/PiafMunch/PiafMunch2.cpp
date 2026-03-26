@@ -29,7 +29,7 @@ string GnuplotPath = "C:/gnuplot/bin/gnuplot.exe" ; // Path to GnuPlot executabl
 //Fortran_vector C_ST_seg, Q_ST_seg, Q_ST_seg_new, Q_ST_newFuFl, grad_Q_ST_seg;
 Fortran_vector Length;
 Fortran_vector  Q_Exud, Q_Gr, Q_Rm, Q_Fl; 
-Fortran_vector  Ag, Q_Grmax, Q_Rmmax, Q_Exudmax, exud_k, krm2, len_leaf;
+Fortran_vector  Ag, exud_k, krm2, len_leaf;
 
 
 // Architecture :
@@ -61,8 +61,6 @@ double * vol_Sympl_dot = NULL ; // (ml / h) Variation rate of lateral parenchyma
 
 /******************* VARIABLES INVOLVED in CARBON METABOLISM AND FLUXES *******************************  */
 // as components of function f argument double* y in the solving procedure, the first 3 are stored as double* ; all others are Fortran_vectors
-double* Q_AuxinOut = NULL;
-double* Q_Mucil = NULL;
 double* Q_S_ST = NULL;
 double* Q_Mesophyll = NULL						; // Amount of sugar in parenchyma symplasm										(mmol)
 double* Q_ST = NULL						; // Amount of sugar in sieve tubes	= C_TC * Vol_ST						(mmol)
@@ -111,7 +109,7 @@ Fortran_vector TracerC_SymplUpflow					;  // upflow tracer concentration (mmol /
 Fortran_vector TracerC_ApoUpflow ;				; // upflow tracer concentration (mmol / ml) for TracerJS_Apo
 
 /******* variation rate of any variable X is noted: X_dot = dX/dt : *******/
-double * Q_Mesophyll_dot = NULL, * Q_ST_dot = NULL,* Q_Auxin_dot = NULL,* Q_AuxinOut_dot = NULL, * Q_Rm_dot = NULL, *Q_Exud_dot = NULL, *Q_Gtot_dot = NULL,  *Q_S_ST_dot = NULL , *Q_Mucil_dot = NULL ;
+double * Q_Mesophyll_dot = NULL, * Q_ST_dot = NULL,* Q_Auxin_dot = NULL,* Q_Rm_dot = NULL, *Q_Exud_dot = NULL, *Q_Gtot_dot = NULL,  *Q_S_ST_dot = NULL , *Q_Mucil_dot = NULL ;
 double * TracerQ_Mesophyll_dot=NULL, * Q_Rmmax_dot=NULL, * TracerQ_Rm_dot=NULL, *Q_S_Mesophyll_dot=NULL, *Q_Gtotmax_dot=NULL ;
 // Next 2 variables are not considered as such, but as possible inputs to compute vol_Sympl_dot :
 Fortran_vector P_ST_dot, P_Sympl_dot			; //  dP_ST/dt , dP_Sympl/dt					(MPa h / h)    -- for elasticity...
@@ -132,8 +130,6 @@ Fortran_vector k2					; // kinetic parameter / maintenance respiration						(ml 
 Fortran_vector k3						; // kinetic parameter / starch/sugar equilibrium. (regul. par. sugar conc.) 			(h-1)
 Fortran_vector StructC				; // structural C subject to maintenance respiration					(mmol sug. eq.)
 Fortran_vector vol_ST, vol_ParApo, vol_PhlApo,vol_Seg ; // (ml) total volume of, resp. : sieve tubes, and  parenchyma and phloem apoplasm
-//Fortran_vector	isTip ,Ag,  Lmax_org, Rmax_org, krm1, krm2 , exud_k, Q_Grmax_; 
-//double krm2;
 /*******************************   LIQUID-FLUXES-RELATED BIOPHYSICAL PARAMETERS  **********************************/
 extern Fortran_vector r_Xyl, r_Trsv, r_ST, r_ST_ref, r_Sympl, r_Apo, r_PhlMb, r_Par_Mb ; // Hydraulic resistances (might change in response to embolism, cold block, aquaporin function, etc...)
 // constants to express hydro resistance changes :
@@ -171,7 +167,6 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		{
 			StarchSyn = Vmax_S_ST * max(0.,Q_ST[i]) / (denominator) ; //  (Vmax and kHyd below) or k3 (below),  or all three, should be zero
 		}
-		Q_Mucil_dot[i] = std::max(0.,k_mucil_[cpp_id] *   Q_S_ST[i]);//mucilage exudation
 		//an alternate, target-oriented,  expression of starch variation rate, mutually exclusive of (AmSyn - kHyd * Amid), so that...
         double Starch_dot_alt = k_S_ST * (CSTi - C_targ) * vol_ST[i] ;	
 		Q_S_ST_dot[i] = StarchSyn + Starch_dot_alt - kHyd_S_ST *std::max(0., Q_S_ST[i]) ; // (Vmax and kHyd) or k3 (below),  or all three, should be zero
@@ -179,10 +174,8 @@ void PhloemFlux::C_fluxes(double t, int Nt)
         if((Q_S_ST[i] <= 0.) && (Q_S_ST_dot[i] < 0.)) { // control negative starch concentrations (remove 4-lines-block if not relevant)
             //cout << "at t=" << t << ", node#" << i << ": Starch <= 0 and Starch_dot < 0  =>  Starch_dot set to zero" << endl ;
             Q_S_ST_dot[i] = 0. ;
-			Q_Mucil_dot[i] = 0. ;
         }
-        double st_2_starch = Q_S_ST_dot[i] ;//+ Q_Mucil_dot[i];
-		Q_S_ST_dot[i] -=  Q_Mucil_dot[i];
+        double st_2_starch = Q_S_ST_dot[i] ;//
 		
         	//MEsophyll
 		Q_S_Mesophyll_dot[i] = 0.;
@@ -206,15 +199,15 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
 		
 		double CSTi_delta = max(0.,CSTi-Csoil_node[cpp_id]); //concentration gradient for passive exudation. 
-		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairK_phloem - 273.15 - TrefQ10)/10);//max maintenance respiration rate
+		Q_Rmmax_ = (Q_Rmmax[cpp_id] + krm2[i] * CSTi) * pow(Q10,(TairK_phloem - 273.15 - TrefQ10)/10);//max maintenance respiration rate
 		
-		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];//max exudation rate
-		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMfu));//active transport of sucrose out of sieve tube			
+		Q_Exudmax_ = CSTi_delta * Q_Exudmax[cpp_id];//max exudation rate
+		Fu_lim = (Q_Rmmax_  + Q_Grmax[cpp_id])* (CSTi/(CSTi + KMfu));//active transport of sucrose out of sieve tube			
 		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i] - st_2_starch;//variation of sucrose content in node
 		
-		bool isRoot = Q_Exudmax[i] > 0;
-		if (isRoot){Q_AuxinOut_dot[i] = C_Auxin[i] * auxin_D;}else{Q_AuxinOut_dot[i] = 0;}
-        Q_Auxin_dot[i] = cpb_2_pm->AuxinSource.at(i-1) * auxin_P  + Delta_JA_ST[i] - Q_AuxinOut_dot[i];
+		bool isRoot = Q_Exudmax[cpp_id] > 0;
+		if (isRoot){Q_AuxinOut_dot[cpp_id] = C_Auxin[i] * auxin_D;}else{Q_AuxinOut_dot[cpp_id] = 0;}
+        Q_Auxin_dot[i] = cpb_2_pm->AuxinSource.at(i-1) * auxin_P  + Delta_JA_ST[i] - Q_AuxinOut_dot[cpp_id];
 		
 		//Q_meso_dot:
 		Q_Mesophyll_dot[i] = Ag[i] -Q_Fl[i] - Q_S_Mesophyll_dot[i] ;//variaiton of sucrose content in mesophyll compartment 
@@ -226,38 +219,13 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		
 		//Growth:
 		//add max(X,0.) in case of issues with rounding
-		Q_Gtot_dot[i] = max(min(Fu_lim - Q_Rm_dot[i], Q_Grmax[i]),0.);//realized rate of sucrose usage for growth + growth respiration
+		Q_Gtot_dot[i] = max(min(Fu_lim - Q_Rm_dot[i], Q_Grmax[cpp_id]),0.);//realized rate of sucrose usage for growth + growth respiration
 		//Exudation:
 		Q_Exud_dot[i] =  Q_Exudmax_;//realized rate of exudation
 		
-		////save maximum sucrose usage rate for post-processing
-		//Resp_maintmax:
-		Q_Rmmax_dot[i] = Q_Rmmax_ ;
-		//Growthmax:
-		Q_Gtotmax_dot[i] = Q_Grmax[i];
 				 
-								   
-		
-		if(doTroubleshooting){
-			std::cout<<"C_fluxes "<<i<<" "<<vol_ST[i]<<" "<<vol_ParApo[i]<<" "<<vol_Seg[i]<<" CSTimin "<<CSTimin<<std::endl;
-			std::cout<<"max(0.,C_ST[i]) "<<max(0.,C_ST[i])<<std::endl;
-			std::cout<<" C_ST[i] "<<C_ST[i]<<" Q_ST[i] "<<Q_ST[i]<<" "<<Q_Fl[i]<<" "<<CSTi<<" "<<Cmeso<<" "<<len_leaf[i]<<" max(0., CSTi-CSTimin) "<< max(0., CSTi-CSTimin)<<std::endl;
-			std::cout<<Q_Rmmax_<<" "<<Q_Rmmax[i]<<" "<< krm2[i]<<" "<<CSTi_delta<<std::endl;
-			std::cout<<Q_Exudmax_<<" Fu_lim "<<Fu_lim<<" Q_ST_dot "<<Q_ST_dot[i]<<" "<<Q_Mesophyll_dot[i]<<" "<<Input[i]<<" "<<Q_Rm_dot[i]<<std::endl;
-			std::cout<<"Qgri "<<Q_Gtot_dot[i] <<" Q_Exudmax_ "<<Q_Exud_dot[i]<<" Q_Rmmax_ "<<Q_Rmmax_dot[i]<<" Qgrmaxi "<<Q_Gtotmax_dot[i]<<std::endl;
-			std::cout<<"Qmeso "<<Q_Mesophyll[i]<<" "<<Ag[i]<<std::endl;
-		}
-		
 		//check if error
 		if(((Q_ST[i]<= 0) &&(Q_ST_dot[i] < 0))||((Q_Rm_dot[i]<0)||(Q_Gtot_dot[i]<0)||(Q_Exud_dot[i]<0))){
-			std::cout<<"error, see file errors.txt"<<std::endl;
-			std::ofstream outfile;
-			outfile.open("errors.txt", std::ios_base::app); // append instead of overwrite
-			outfile<< std::endl<<"C_fluxes "<<t<<" "<<i<<" "<<CSTi<<" "<<CSTimin<<" "<<Q_ST[i]<<" qdot: "<<Q_ST_dot[i]<<", Fu: "<<Fu_lim <<std::flush;
-			outfile<<" rm:"<<Q_Rm_dot[i]<<" maxrm: "<<Q_Rmmax_dot[i]<<std::flush;
-			outfile<<" gr:"<<Q_Gtot_dot[i]<<" grmax: "<<Q_Gtotmax_dot[i]<<" exud:"<<Q_Exud_dot[i]<<" js:"<<Delta_JS_ST[i]<<std::flush;
-			outfile<<" vol_ST:"<<vol_ST[i]<<std::flush;
-			outfile<<std::endl<<std::flush;
 			errorID = i; //will stop computation in PhloemFlux::f
 		}
              
