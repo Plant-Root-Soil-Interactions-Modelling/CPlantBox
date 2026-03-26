@@ -44,10 +44,9 @@ extern Index_vector &RootEnds, &LeafEnds ; // (= i_[1] and i_[0], resp.) : label
 extern std::vector<int> I_Upflow, I_Downflow ; // I_Upflow(resp.I_Downflow)[jf=1..Nc] = id# du noeud amont (resp. aval) : jf = JF(i,i2) > 0 si I_Upflow[(abs(jf)]==i, i.e. si I_Downflow[(abs(jf)]==i2
 extern Fortran_vector kML						; // kinetic parameter / Michaelis - phloem loading					(mmol / ml)
 extern Fortran_vector vMU					; // kinetic parameter / phloem unloading								(mmol /h)
-//extern Fortran_vector	isTip ,Ag,  Lmax_org, Rmax_org, krm1, krm2 , StructC, exud_k; 
-extern Fortran_vector radius_ST ,  Length, vol_Seg;// Q_Grmax, Q_Rmmax, Q_Exudmax; 
+extern Fortran_vector radius_ST ,  Length, vol_Seg;
 
-extern Fortran_vector Ag, Q_Grmax, Q_Rmmax, Q_Exudmax, exud_k, krm2, len_leaf; 
+extern Fortran_vector Ag,  exud_k, krm2, len_leaf; 
 // constants to express hydro resistance changes :
 #define NONE 0
 #define XYL 1
@@ -66,8 +65,8 @@ void auxout(double t, double * y){phloem_.lock()->aux(t, y);} ;	// launch auxili
 void fout(double t, double *y, double *y_dot){phloem_.lock()->f(t, y, y_dot);} ; // the function to be processed by the solver  (implemented in 'solve.cpp')
 
 
-extern double *Q_Auxin, *Q_AuxinOut ,*Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_S_ST, *Q_Mucil ;		  // components of vector y as used in diff. system f()...
-extern double *Q_Auxin_dot, *Q_AuxinOut_dot ,*Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_S_ST_dot, *Q_Mucil_dot ; //... and its derivatives.  ;
+extern double *Q_Auxin,*Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_S_ST ;		  // components of vector y as used in diff. system f()...
+extern double *Q_Auxin_dot, *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_S_ST_dot; //... and its derivatives.  ;
 extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_S_Mesophyll, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
 extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_S_Mesophyll_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl, *vol_Sympl_dot ;
@@ -239,9 +238,6 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	this->C_STv = C_ST.toCppVector();
 	this->C_Auxinv = C_Auxin.toCppVector();
 	this->vol_STv = vol_ST.toCppVector();
-	this->Q_Grmaxv = Q_Grmax.toCppVector();
-	this->Q_Exudmaxv = Q_Exudmax.toCppVector();
-	this->Q_Rmmaxv = Q_Rmmax.toCppVector() ;
 	this->Flv = Input.toCppVector() ;
 	this->r_STv = r_ST.toCppVector() ;
 	this->JW_STv = JW_ST.toCppVector() ;
@@ -258,6 +254,8 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	
     // MEMORY LIBERATIONS:
     delete [] y_dot;
+    delete [] Var_integrale;
+	delete [] Var_derivee;
 	
 	return(1) ;
 	
@@ -332,9 +330,13 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	a_STv.resize(Nc , 0.)  ;//for postprocessing
 	len_leaf =Fortran_vector(Nt, 0.);
 	vol_ParApo =Fortran_vector(Nt, 0.);
-	Q_Grmax =Fortran_vector(Nt, 0.);
-	Q_Exudmax=Fortran_vector(Nt, 0.);
-	Q_Rmmax =Fortran_vector(Nt, 0.);
+	
+	Q_Grmax.resize(Nt);
+	Q_Exudmax.resize(Nt);
+	Q_Rmmax.resize(Nt);
+	Q_AuxinOut.resize(Nt);
+	Q_AuxinOut_dot = std::vector<double>(Nt, 0.);
+	
 	vol_ST=Fortran_vector(Nt, 0.);
 	vol_Seg=Fortran_vector(Nt, 0.);//for postprocessing	
 	exud_k=Fortran_vector(Nt, 0.);
@@ -346,7 +348,6 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	double StructSucrose;//double deltaStructSucrose;
 	double cmH2O_to_hPa = 0.980638	;//cm to hPa
 	double krm1;
-	k_mucil_.resize(Nt , 0.);
 	if(psiXyl4Phloem.size() == Nt){Psi_Xyl = Fortran_vector(psiXyl4Phloem,cmH2O_to_hPa); //computed by xylem object
 	}else{Psi_Xyl = Fortran_vector(Nt, 0.);}
 	
@@ -406,11 +407,6 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 			Q_Exudmax[nodeID ]=0;
 			if((ot==2)&&(this->plant->seg2cell[k-1] >=0)){//root segment belowground
 				Q_Exudmax[nodeID ] =   2 * M_PI * a_seg * l*exud_k[nodeID] ;
-				if (exud_k[nodeID] > 0.)
-				{
-					// k_mucil is a std::vecto not a fotran vector
-					k_mucil_[segmentsPlant[k-1].y ] = k_mucil;
-				}
 				if(Csoil_seg.size() > 0.)
 				{
 					// Csoil_node is a std::vecto not a fotran vector
@@ -443,8 +439,8 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 					}
 			}		
 			StructSucrose = cpb_2_pm->rhoSucrose_f(st,ot) * vol_Seg[nodeID]; 
-			Q_Rmmax[nodeID] = krm1 * StructSucrose;						
-			Q_Grmax[nodeID] = cpb_2_pm->deltaSucOrgNode.at(nodeID_cpb).at(-1)/Gr_Y/dt;
+			Q_Rmmax[nodeID_cpb] = krm1 * StructSucrose;						
+			Q_Grmax[nodeID_cpb] = cpb_2_pm->deltaSucOrgNode.at(nodeID_cpb).at(-1)/Gr_Y/dt;
 		
 		//Test
 			if(exud_k[nodeID]<0.){
@@ -456,16 +452,16 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 				std::cout<<"krm2: loop n#"<<k<<", node "<<nodeID<<" "<<krm2[nodeID]<<std::endl;
 				assert(false);
 			}
-			if(Q_Grmax[nodeID ]<0.){
-				std::cout<<"gr: loop n#"<<k<<", node "<<nodeID<<" "<<Q_Grmax[nodeID]<<" "<< cpb_2_pm->deltaSucOrgNode.at(k).at(-1)<<std::endl;
+			if(Q_Grmax[nodeID_cpb ]<0.){
+				std::cout<<"gr: loop n#"<<k<<", node "<<nodeID<<" "<<Q_Grmax[nodeID_cpb]<<" "<< cpb_2_pm->deltaSucOrgNode.at(k).at(-1)<<std::endl;
 				assert(false);
 			}
-			if(Q_Exudmax[nodeID ]<0.){
-				std::cout<<"exud: loop n#"<<k<<", node "<<nodeID<<" "<<Q_Exudmax[nodeID]<<" "<< l<<" "<<Radii[k-1]<<std::endl;
+			if(Q_Exudmax[nodeID_cpb ]<0.){
+				std::cout<<"exud: loop n#"<<k<<", node "<<nodeID<<" "<<Q_Exudmax[nodeID_cpb]<<" "<< l<<" "<<Radii[k-1]<<std::endl;
 				assert(false);
 			}
-			if(Q_Rmmax[nodeID ]< 0.){
-				std::cout<<"rm: loop n#"<<k<<", node "<<nodeID<<" "<<Q_Rmmax[nodeID]<<" "<< krm1<<" "<<StructSucrose<<std::endl;
+			if(Q_Rmmax[nodeID_cpb ]< 0.){
+				std::cout<<"rm: loop n#"<<k<<", node "<<nodeID<<" "<<Q_Rmmax[nodeID_cpb]<<" "<< krm1<<" "<<StructSucrose<<std::endl;
 				assert(false);
 			}
 			//
@@ -476,14 +472,13 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	len_leaf[1] = len_leaf[2];
 	vol_ParApo[1] = vol_ParApo[2];
 	vol_ST[1] = vol_ST[2];
-	Q_Rmmax[1] =0;
-	Q_Grmax[1] =  cpb_2_pm->deltaSucOrgNode.at(0).at(-1)/Gr_Y/dt;
+	Q_Rmmax[0] =0;
+	Q_Grmax[0] =  cpb_2_pm->deltaSucOrgNode.at(0).at(-1)/Gr_Y/dt;
 	vol_Seg[1] = vol_Seg[2];
 	krm2[1]=0;
-	exud_k[1]=0;Q_Exudmax[1]=0;
+	exud_k[1]=0;Q_Exudmax[0]=0;
 	
 	//for post processing in python
-	this->Q_Grmaxv = Q_Grmax.toCppVector();
 	this->r_ST_refv = r_ST_ref.toCppVector();
 	this->Agv = Ag.toCppVector();
 	this->vol_STv = vol_ST.toCppVector();
@@ -528,9 +523,9 @@ void PhloemFlux::computeOrgGrowth(double t){
 			}
 			double deltaSucmax_ = deltaSucmax_1 /Gr_Y;//max suc needed for Gtot
 			double deltaSuc = std::min(Q_Growthtot[nodeIds_.at(k) +1] - Q_GrowthtotBU[nodeIds_.at(k) +1], deltaSucmax_);
-			if((deltaSucmax_ > Q_Grmax[nodeIds_.at(k) +1]))
+			if((deltaSucmax_ > Q_Grmax[nodeIds_.at(k)]))
 			{
-				std::cout<<"error Q_Grmax "<<k<<" "<<(nodeIds_.at(k)+1)<<" "<<deltaSucmax_<<" "<<Q_Grmax[nodeIds_.at(k) +1]<<std::endl;
+				std::cout<<"error Q_Grmax "<<k<<" "<<(nodeIds_.at(k)+1)<<" "<<deltaSucmax_<<" "<<Q_Grmax[nodeIds_.at(k) ]<<std::endl;
 				assert(false);
 			}
 			if((deltaSuc < 0.)&&(deltaSuc > -1e-5)){deltaSuc=0.;}
@@ -542,7 +537,7 @@ void PhloemFlux::computeOrgGrowth(double t){
 			
 			
 			Q_GrowthtotBU[nodeIds_.at(k) +1] += deltaSuc;//sucrose is spent
-			Q_GrmaxBU[nodeIds_.at(k) +1] += deltaSucmax_;//sucrose is spent
+			Q_GrmaxBU[nodeIds_.at(k)] += deltaSucmax_;//sucrose is spent
 		}
 		
 		double vol = org->orgVolume(-1, false);

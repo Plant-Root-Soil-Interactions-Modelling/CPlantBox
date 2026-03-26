@@ -43,7 +43,8 @@ def weather(simDuration, Qmax):
     
     Qmin = 0;# Qmax = 1000e-6 #458*2.1
     Tmin = 10; Tmax = 22
-    specificHumidity = 0.0097
+    #specificHumidity = 0.0097
+    RHnight = 0.8; RHday = 0.5
     Pair = 1010.00 #hPa
     thetaInit = 30/100
 
@@ -53,8 +54,8 @@ def weather(simDuration, Qmax):
     cs = 350e-6 #co2 paartial pressure at leaf surface (mol mol-1)
     #RH = 0.5 # relative humidity
     es =  6.112 * np.exp((17.67 * TairC_)/(TairC_ + 243.5))
-    ea = specificHumidity * Pair / (0.378 * specificHumidity + 0.622)
-    RH = qair2rh(specificHumidity, es, Pair)
+    RH = RHnight + (RHday - RHnight) * coefhours
+    ea = es * RH#specificHumidity * Pair / (0.378 * specificHumidity + 0.622)
     
     pmean =-100#theta2H(vgSoil, thetaInit)
     
@@ -185,8 +186,9 @@ def setPhloemflow_data(r):
     r.k_S_Mesophyll = 1
     
     r.k_meso = 1e-3#1e-4
-    r.cpb_2_pm.setKrm2([[2e-4]])#2e-4
-    r.cpb_2_pm.setKrm1([[1.3e-1]])
+    r.Gr4Exud = True
+    r.cpb_2_pm.setKrm2([[2e-5 ]])#2e-4
+    r.cpb_2_pm.setKrm1([[10e-2 * 0.]])
     GrRatioLeaf = 10
     GrRatioRoot = 1
     CarbonCostRoot = 1/100
@@ -209,19 +211,29 @@ def setPhloemflow_data(r):
 
     r.cpb_2_pm.setRmax_st(grRate, verbose = True)
     r.KMfu = 0.2
-    r.sameVolume_meso_st = True
-    r.sameVolume_meso_seg = False
+    r.sameVolume_meso_st = False
+    r.sameVolume_meso_seg = True
     r.withInitVal =True
-    r.initValST = 0.#0.15
-    r.initValMeso = 0.#0.2
-    r.beta_loading = 0#3
-    r.Vmaxloading = 0.15#0.3 #mmol/d, needed mean loading rate:  0.3788921068507634
-    r.Mloading = 3.3*1e-3#0.2#
-    r.Gr_Y = 1#0.75
-    r.CSTimin = 0.25#0.3#
-    r.update_viscosity = True
-    r.atol = 1e-10# 1e-14
-    r.rtol = 1e-6#1e-10
+    r.initValST = 0.4 #* 0.
+    r.initValMeso = 0.06# * 0.
+    r.beta_loading = 0.6
+    r.Vmaxloading = 0.05  #mmol/d, needed mean loading rate:  0.3788921068507634
+    r.Mloading = 0.2#
+    r.Gr_Y = 0.8
+    r.CSTimin = 0.2
+    r.CSTimin_exud = 0.2 
+    r.update_viscosity = False
+    r.atol = 1e-8# 1e-14
+    r.rtol = 1e-4#1e-10
+    r.KMrm = 0.1 #VERY IMPORTANT TO KEEP IT HIGH
+    r.surfMeso=0.0025
+    r.leafGrowthZone = 2 # cm
+    r.StemGrowthPerPhytomer = True # 
+    
+    r.C_targ = r.initValST#0.4#r.CSTimin
+    r.C_targMesophyll = 0.06#r.CSTimin
+    r.k_S_ST = 5/25 *100 #*2 #daudet2002
+    r.k_S_Mesophyll = 5/25*100  #daudet2002
 
     #turn off effect of water limitation, TODO : reset again?
     r.psiMin = -10000000000*(1/0.9806806)
@@ -256,7 +268,6 @@ def setKrKx_xylem(TairC,  r): #inC
     hPa2cm = 1/0.9806806
     es =  6.112 * np.exp((17.67 * TairC)/(TairC + 243.5))
     RH = qair2rh(specificHumidity, es, Pair)
-    
     dEauPure = (999.83952 + TairC * (16.952577 + TairC * 
         (- 0.0079905127 + TairC * (- 0.000046241757 + TairC * 
         (0.00000010584601 + TairC * (- 0.00000000028103006)))))) /  (1 + 0.016887236 * TairC)

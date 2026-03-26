@@ -1,8 +1,14 @@
 """ 
 Q:
-- Y less buds than leaves
 - if we make kx age dependent better
-- Y tested auxin and suc still at defualt val
+- Y do we get C_ST > 0 during burn-in time without sun?
+- make sure lats have >=2 nodes also when sleeping buds (at least when reach max sleeping size).
+- add decapita
+- why runtime so high?
+- remove added C and AAI for added segment of laterals? (or just not add C? because can add fals acitvation of carbon? at least for the first segment?)
+- set k_S_ST, C_targ, Q_S_ST init, init Cmeso
+- stop respiration if it leads to C_ST below 0
+- see where that comes from: corrupted size vs. prev_size
 """
 
 import types
@@ -61,13 +67,14 @@ def runSim(directoryN_,nodeD, thread,   Qmax_,
     start_time = time.time()    
     outcondition = 0 # did the calibration fail? 
     temp_time  = time.time()
-    weatherInit = weather(0, Qmax_)    
+    weatherInit = weather(0., Qmax_)    
     simDuration = 0
     burninDuration = simDuration
     
     changedSimMax = False
-    print('go to 1s for troubleshooting')
-    dt = 1/24#60/60 #1h
+    print('go to 1mn for troubleshooting')
+    
+    dt = 1/24/60#/60
     if simMax_ < 0:
         simMax = 100
     else:
@@ -83,10 +90,9 @@ def runSim(directoryN_,nodeD, thread,   Qmax_,
     
     ## todo: remove and set sucrose in seed instead?
     # makes plant old enough that it has enough leaf to grow on its own
-    pl.simulate(3, False)
-    simDuration += 3
-        
-        
+    simDuration += 7#20
+    pl.simulate(simDuration, False)
+    
 
     """ Coupling to soil """
     layers = depth; soilvolume = (depth / layers) * 3 * 12
@@ -114,9 +120,9 @@ def runSim(directoryN_,nodeD, thread,   Qmax_,
     r.cpb_2_pm.L_dead_threshold = 2000. # if berthlim below this, bud dies
     r.cpb_2_pm.BerthLim = BerthLim # limit to go from bud to branch
     r.cpb_2_pm.limLenActive =  0.85 # limite size of 'young expanding' leaves
-    r.auxin_D = 0. #muM /d   # auxin deletion rate
+    r.auxin_D = 10. #muM /d   # auxin deletion rate
     r.auxin_P =  6.8e-3 #muM /d  # auxin production rate
-    r.auxin_alpha =0.00239336
+    r.auxin_alpha = 0.00239336
     r.initValAuxin = 0
     r.burnInTime = True
     
@@ -157,28 +163,28 @@ def runSim(directoryN_,nodeD, thread,   Qmax_,
             print("last leaf",lastleafId,leafArea,maxLeafArea,'num leaves',leafRank)
             print("do decapitate?",numLNodes, growthUpToNode, (not r.burnInTime), nodeD, expandedLeaf , (not changedSimMax))
         forDecapitate = (numLNodes >= growthUpToNode) and (not r.burnInTime) and (nodeD !=0) and expandedLeaf and (not changedSimMax)
-        
-        
+                
         if (not doDecapitation) and (not changedSimMax) and (nodeD ==0) and (numLNodes >=growthUpToNode) and expandedLeaf: 
             if simMax_ <0:
                 simMax = simDuration + testTime
             changedSimMax = True
             dt = 30/(60*24) #1MIN
             
-        if r.burnInTime:
-            weatherX = weather(burninDuration, Qmax_)
-        else:
-            weatherX = weather(simDuration+burninDuration, Qmax_)
-                       
-      
+        weatherX = weather(simDuration+burninDuration, Qmax_)
+        print('weatherX',weatherX,'simDuration+burninDuration',simDuration+burninDuration)              
+        print('solve water')
         r.solve(sim_time = simDuration, 
                 rsx=sx, 
-                 ea= weatherX["ea"], es= weatherX["es"], PAR = weatherInit["Qlight"],
+                 ea= weatherX["ea"], es= weatherX["es"], 
+                 PAR = weatherX["Qlight"] * (24 * 3600) / 1e4 , # [mol photons m-2 s-1] to [mol photons cm-2 d-1] 
                  TairC = weatherX["TairC"])    
-                 
+        r.psiXyl4Phloem = np.array(r.psiXyl4Phloem) * 0.
+        Ag4Phloem = np.array(r.Ag4Phloem)# * 0. # I think have respiraiton before sucrose caused issues?
+        Ag4Phloem[Ag4Phloem < 0.] = 0. # ignore net respiration
+        r.Ag4Phloem = Ag4Phloem
+        print('solve solute',sum(r.Ag4Phloem))         
         r.solve_phloem_flow(dt, simDuration = simDuration ,TairC =  ( weatherX["TairC"]  +273.15))
-      
-    
+        
         Q_Auxin =  r.Q_Auxin
         AuxinSource = np.array(r.cpb_2_pm.AuxinSource)
         orgs = r.plant.getOrgans(3)
@@ -199,7 +205,8 @@ def runSim(directoryN_,nodeD, thread,   Qmax_,
         
         if __name__ == '__main__':
             print("\n\n\n\t\tat ", int(np.floor(simDuration)),"d", int((simDuration%1)*24),"h",
-                        np.round(np.mean(r.Qlight))*1e6,"mumol m-2 s-1",r.burnInTime,doDecapitation)
+                        np.round(np.mean(r.Qlight)*1e6),"mumol m-2 s-1",r.burnInTime,doDecapitation,
+                        'r.burnInTime',r.burnInTime)
             r.printSucroseData()
             
             print("sucTested",sucTested)
@@ -208,9 +215,9 @@ def runSim(directoryN_,nodeD, thread,   Qmax_,
             print("lengthth_org",lengthth_org)
             print("BerthFact",BerthFact)
             print("budStage",budStage)
-            print("AuxinSource",AuxinSourceK)
+            #print("AuxinSource",AuxinSourceK)
             print("C_Auxin_stem",C_Auxin_stem)
-            print("sum aux source",sum(AuxinSourceK), sum(AuxinSource))
+            print("r.C_ST_np",np.sum(r.C_ST_np))
         
             
         if(changedSimMax):
@@ -222,7 +229,7 @@ def runSim(directoryN_,nodeD, thread,   Qmax_,
         outcondition = doCondition(r,timeSinceDecap, thread,(real_time - start_time)/(60*60*24), 
                                     outcondition, nodeD)
         if (((temp_time - start_time)/(60*60*24) > 2) or (outcondition != 0) or (max(r.C_ST_np)>3)): #success or falur
-            print('failure', temp_time - start_time, outcondition, max(r.C_ST_np))
+            print('failure', temp_time - start_time, outcondition, max(r.C_ST_np), r.C_ST_np)
             return -1
             
         
@@ -235,16 +242,17 @@ def runSim(directoryN_,nodeD, thread,   Qmax_,
                 mainStemAuxBU[:] = -1
                 
             burninDuration += dt
-            mainStemAux_std = np.max(np.abs((C_Auxin_stem[1:]-mainStemAuxBU)))
+            mainStemAux_std = np.std(np.abs((C_Auxin_stem[1:]-mainStemAuxBU)))
             mainStemAuxBU = C_Auxin_stem[1:]
             mainStemAux_mean = np.mean(C_Auxin_stem[1:])
-            if __name__ == '__main__':
-                print("mainStemAux_std",mainStemAux_std, mainStemAux_mean)
-            if mainStemAux_std < mainStemAux_mean*0.1:
+            if burninDuration >= 1/24:
+                dt = 10/24/60
+            if (mainStemAux_std < mainStemAux_mean*5e-5) and (np.diff(C_Auxin_stem[1:])[0] < 1e-5 ):
                 r.burnInTime = False
+                print('stop because finished the burnintime')
+                #raise Exception
                 
-                raise Exception
-                
+                       
     delete_file("running")
         
 
@@ -303,7 +311,7 @@ if __name__ == '__main__':
     else:
         nodeD_ = 0
         simMax__ = 25 + 10/24
-        
+    print('Qinit',Qinit)
     runSim(directoryN_ = directoryN, Qmax_ = Qmax__, 
             nodeD = nodeD_, thread = 0, thresholdSuc = thresholdSuc_, BerthLim = BerthLim_,
             doCondition = doConditionDefault)

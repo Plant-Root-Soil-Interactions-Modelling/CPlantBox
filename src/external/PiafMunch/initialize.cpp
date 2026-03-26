@@ -155,7 +155,6 @@ extern int resistance_changed ;
 
 
 extern Fortran_vector  Q_Exud, Q_Gr, Q_Rm, Q_Fl; 
-extern Fortran_vector  Q_Exudmax, Q_Grmax, Q_Rmmax;//, Q_Fl_seg;
 //extern Fortran_vector C_ST_seg, Q_ST_seg, Q_ST_seg_new,Q_ST_newFuFl, grad_Q_ST_seg;
 
 /******************************************  Environmental Variables: *********************************************/
@@ -212,10 +211,7 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 				int nodeyIdx = z+1;
 				int segIdx = nodeyIdx-1;
 				int nodexIdx = I_Upflow[segIdx];
-				if(doTroubleshooting){
-					std::cout<< z<<" "<<nodeyIdx<<" "<<I_Downflow[segIdx]<<" "<<I_Upflow[segIdx]<<" "<<Y0[nodeyIdx+ Nt*9] <<" "<< Y0[nodexIdx+ Nt*9] <<std::endl;
-					std::cout<<nodeyIdx-1 <<" "<<(Y0[nodexIdx+ Nt*9] / vol_ST[nodexIdx])<<std::endl;
-				}
+				
 				if(nodeyIdx!=I_Downflow[segIdx])
 				{
 					
@@ -224,10 +220,10 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 				
 				Y0[nodeyIdx] = Y0[nodexIdx]/ vol_ST[nodexIdx]* vol_ST[nodeyIdx]; //conz to content
 				Y0[nodeyIdx + Nt] = Y0[nodexIdx+ Nt] / vol_ParApo[nodexIdx]* vol_ParApo[nodeyIdx]; //conz to content
-				Y0[nodeyIdx + Nt*9] = Y0[nodexIdx+ Nt*9] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; //conz to content
+				Y0[nodeyIdx + Nt*7] = Y0[nodexIdx+ Nt*7] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; //conz to content
 				manualAddST.at(nodeyIdx -1) = Y0[nodexIdx] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; 
 				manualAddMeso.at(nodeyIdx-1) = Y0[nodexIdx+ Nt] / vol_ParApo[nodexIdx]* vol_ParApo[nodeyIdx];
-				manualAddAux.at(nodeyIdx-1) = Y0[nodexIdx+ Nt*9] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; 
+				manualAddAux.at(nodeyIdx-1) = Y0[nodexIdx+ Nt*7] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; 
 			}
 			Fortran_vector Q_GrowthtotBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
 			Q_GrowthtotBU.append(Q_GrowthtotBU_temp);
@@ -248,7 +244,7 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 					}
 				}
 				for(int z = 0; z < Nt;z++){
-					Y0[z + 1 + Nt * 9] = initValAuxin * vol_ST[z + 1]; //conz to content
+					Y0[z + 1 + Nt * 7] = initValAuxin * vol_ST[z + 1]; //conz to content
 				}
 				this->Q_init = Y0.toCppVector(); //for post processing
 			}

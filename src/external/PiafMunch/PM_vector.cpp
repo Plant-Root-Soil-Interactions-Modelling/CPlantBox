@@ -29,6 +29,10 @@
 #include <PiafMunch/PM_arrays.h>
 
 vector<double> Fortran_vector::toCppVector() {
+	if ( v_ == NULL ) {
+		_LogMessage("Fortran_vector::toCppVector failed -- object already deleted");
+		assert(false);
+	}
 	int n = (int)v_[0];
 	vector<double> vecOut(n);
 	for (int i = 1 ; i <= n ; i++){vecOut[i-1] = v_[i];}
@@ -107,15 +111,30 @@ Fortran_vector & Fortran_vector::operator=(const Fortran_vector &v) {
 }
 
 Fortran_vector::~Fortran_vector() {
-	delete [ ] v_;
+    if (v_ != nullptr) {  // optional, safe even if omitted
+        delete[] v_;
+        v_ = nullptr;      // avoid dangling pointer
+    }
 }
 
-int Fortran_vector::size() const { return (int)v_[0]; }
+int Fortran_vector::size() const { 
+	if ( v_ == NULL ) {
+		_LogMessage("Fortran_vector.size failed -- object does not exist");
+		assert(false);
+	}
+	return (int)v_[0]; 
+}
 
 void Fortran_vector::set(const double &a) {
+	if ( v_ == NULL ) {
+		_LogMessage("Fortran_vector.set failed -- object does not exist");
+		assert(false);
+	}
 	int n = (int)v_[0];
 	for (int i = 1 ; i <= n ; i++)
+	{
 		v_[i] = a;
+	}
 }
 
 void Fortran_vector::set(const Fortran_vector &v) {

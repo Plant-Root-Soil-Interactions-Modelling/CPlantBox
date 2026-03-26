@@ -74,7 +74,7 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, double delay,  std::shared
 	if (parent->organType()!=Organism::ot_seed) { // initial node
 		//if lateral of stem, initial creation time:
 		//time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
-		// @see stem::createLateral
+		// @see Organ::createLateral
 		double creationTime;
 		if (parent->getNumberOfChildren() == 0){creationTime = parent->getNodeCT(pni)+delay;
 		}else{creationTime = parent->getChild(0)->getParameter("creationTime") + delay;}
@@ -293,8 +293,8 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overri
 			return double((org->getParameter("organType") == ot_lat)&&(org->getParameter("subType")==st_lat));
 		};//return 1. if organ of correct type and subtype, 0. otherwise
 
-	double multiplyDelay = double(std::count_if(children.begin(), children.end(),
-									 correctST));
+	double multiplyDelay = std::max(0.,double(created_linking_node)-2.);//double(std::count_if(children.begin(), children.end(),
+	//								 correctST));
 
 	switch(delayDefinition){
 		case Organism::dd_distance:

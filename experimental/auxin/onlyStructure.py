@@ -60,12 +60,12 @@ min_ = np.array([-20, -20, -50])
 max_ = np.array([20, 20, 30.])
 
 
-# anim = vp.AnimateRoots(plant)
-# anim.min = min_
-# anim.max = max_
-# anim.res = [1, 1, 1]
-# anim.plant = True
-# anim.start()
+anim = vp.AnimateRoots(plant)
+anim.min = min_
+anim.max = max_
+anim.res = [1, 1, 1]
+anim.plant = True
+anim.start()
 
 dt = 0.1
 N = int(np.round(sim_time/dt))
@@ -74,7 +74,7 @@ for i in range(N):
     plant.simulate(dt)  # Simulate|\label{l13:simulate}|
     ana = pb.SegmentAnalyser(plant)
     vp.write_plant(f"results/UQ_1LeafRS{i:04d}", ana)
-    # anim.update()
+    anim.update()
 
     numlats.append(plant.getOrgans(3)[0].getNumberOfChildren())
     lenmain1.append(plant.getOrgans(3)[0].getLength(True))
