@@ -130,9 +130,9 @@ target_link_libraries(CPlantBox
 # 2. Make CPlantBox Pyhthon binding
 #
 # find_package(pybind11 REQUIRED) 
-set(PYBIND11_PYTHON_VERSION 3.7)
-find_package( PythonInterp 3.7 REQUIRED )
-find_package( PythonLibs 3.7 REQUIRED )
+set(PYBIND11_PYTHON_VERSION 3.12)
+find_package( PythonInterp 3.12 REQUIRED )
+find_package( PythonLibs 3.12 REQUIRED )
 add_subdirectory(external/pybind11)
 
 pybind11_add_module(plantbox SHARED 
@@ -144,7 +144,7 @@ pybind11_add_module(plantbox SHARED
             rootparameter.cpp
 			seedparameter.cpp
 			leafparameter.cpp
-			stemparameter.cpp			
+			stemparameter.cpp
             
             Root.cpp
             RootDelay.cpp
