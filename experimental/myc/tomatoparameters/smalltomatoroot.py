@@ -34,8 +34,8 @@ for rp in root:
 
 # make sure to set the seed position to 0 because of the petri dish
 seed_parameter = pb.SeedRandomParameter(mycp)
-seed_parameter.seedPos.z = 0
-seed_parameter.seedPos.x = 0
+seed_parameter.seedPos.z = 0.05
+seed_parameter.seedPos.x = 0.5
 seed_parameter.seedPos.y = 0
 mycp.setOrganRandomParameter(seed_parameter)
 
@@ -52,14 +52,13 @@ half_dish = pb.SDF_Difference(petri_dish, moved_helper_dish)
 mycp.setGeometry(half_dish)
 mycp.initialize(True)
 
-simtime = 15
+simtime = 5
 fps = 24
 anim_time = simtime
 N = fps * anim_time
 dt = simtime / N
 
 filename = "half_dish_" + str(simtime)
-
 
 for i in range(0, N):
     if i % 6 == 0:
@@ -72,24 +71,22 @@ for rp in root:
     mycp.setOrganRandomParameter(rp)
 
 # Setting parameters for hyphae and roots
-hyphae_parameter = pb.HyphaeRandomParameter(mycp)
-hyphae_parameter.subType = 1
-hyphae_parameter.dx = 0.001
-hyphae_parameter.a = 0.01
-hyphae_parameter.la = 0.001
-hyphae_parameter.lb = 0.003
-hyphae_parameter.ln = 0.005
-print(hyphae_parameter.v*dt/100)
-hyphae_parameter.distTH = 0.01  # distance for anastomosis 
-mycp.setOrganRandomParameter(hyphae_parameter)
+hyphae_parameter = mycp.getOrganRandomParameter(pb.hyphae)
+for hp in hyphae_parameter:    
+    hp.a = 0.001
+    hp.ln = 0.01
+    hp.lmax = 0.5
+    hp.lb = 0.01
+    hp.dx = 0.001
+    hp.distTH = 0.05   # distance for anastomosis
+    mycp.setOrganRandomParameter(hp)
 
 mycp.setGeometry(petri_dish)
-mycp.simulateHyphalGrowth(1,True)
-# mycp.initialize(True)
-for i in range(0, 2):
-    if i % 6 == 0:
-        print("Step " + str(i) + " of " + str(12))
-    mycp.simulateHyphae(dt/100,True)
+dt_hyphalgrowth = 1/24
+mycp.simulateHyphalGrowth(dt_hyphalgrowth,True)
+dt_hyphae =dt_hyphalgrowth / 60
+for i in range(0, 1):
+    mycp.simulateHyphae(dt_hyphae,True)
 
 # second dish just to see hyphal growth
 # half_dish2 = pb.SDF_TranslateRotate(half_dish, 0, 0, pb.Vector3d(1.5, 0, 0))
