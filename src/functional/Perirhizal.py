@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import linalg as LA
 import scipy.linalg as la
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import fsolve, root_scalar
@@ -32,15 +33,20 @@ class PerirhizalPython(Perirhizal):
             super().__init__()
 
         self.lookup_table = None  # optional 4d look up table to find soil root interface potentials
+        self.simp_lookup_table = None  # optional 2d look up table to find soil root interface potentials
+        self.global_lookup_table = None  # optional 3d look up table to find soil root interface potentials
         self.sp = None  # corresponding van gencuchten soil parameter
         
-        self.alpha_0 = 0.04 # a constant that is used for numerically solving the perirhizal waterflow
+        self.alpha_0 = 0.3 # a constant that is used for numerically solving the perirhizal waterflow
+        self.h_wilt = -16000
+        self.water_filename = "lookup_perirhizal_waterflow_global" #name for the global lookup table
 
     def set_soil(self, sp):
         """sets VG parameters, and no look up table (slow)"""
         vg.create_mfp_lookup(sp)
         self.sp = sp
         self.lookup_table = None
+        self.simp_lookup_table = None
 
     def open_lookup(self, filename):
         """  opens a look-up table from a file to quickly find soil root interface potentials  """
@@ -56,11 +62,13 @@ class PerirhizalPython(Perirhizal):
         npzfile = np.load(filename + "_simp.npz")
         interface = npzfile["interface"]
         inner_kr_b, base_mfp = npzfile["inner_kr_b_"], npzfile["base_mfp_"]
+        print(inner_kr_b[0],inner_kr_b[-1], base_mfp[0],base_mfp[-1])
         soil = npzfile["soil"]
-        self.lookup_table = RegularGridInterpolator((inner_kr_b, base_mfp), interface)  # method = "nearest" fill_value = None , bounds_error=False
+        self.simp_lookup_table = RegularGridInterpolator((inner_kr_b, base_mfp), interface)  # method = "nearest" fill_value = None , bounds_error=False
         self.sp = vg.Parameters(soil)
+        vg.create_mfp_lookup(self.sp) # I do not know why this has to be repeated here
         
-    def open_global_lookup(self, filename = "lookup_perirhizal_waterflow_global"):
+    def open_global_lookup(self, filename):
         """opens a global look-up table from a file to quickly find soil root interface potentials, this lookup table works for all van Genuchten parameter sets"""
         npzfile = np.load(filename + ".npz")
         interface, interface_vg = npzfile["interface"], npzfile["interface_vg"]
@@ -80,13 +88,26 @@ class PerirhizalPython(Perirhizal):
         rho            geometry factor [1] (outer_radius / inner_radius)
         """
         assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length"
+        
+        rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], self.sp) for i in range(0, len(rx))])
+        print("Norm of the computed interface potentials:", LA.norm(rsx))
+        
+        rsx1 = 0*rsx.copy()
+        rsx2 = 0*rsx.copy()
+        rsx3 = 0*rsx.copy()
+        
+        
         if self.lookup_table:
-            rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
-        else if self.global_lookup_table:
-            rsx = self.soil_root_interface_potentials_global_table(rx, sx, inner_kr, rho)
-        else:
-            rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], self.sp) for i in range(0, len(rx))])
-        return rsx
+            rsx1 = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
+            print("Norm of the difference basic lookup table:", LA.norm(rsx-rsx1))
+        if self.simp_lookup_table:
+            rsx2 = self.soil_root_interface_potentials_simp_table(rx, sx, inner_kr, rho)
+            print("Norm of the difference simp lookup table:", LA.norm(rsx-rsx2))
+        if self.global_lookup_table:
+            rsx3 = self.soil_root_interface_potentials_global_table(rx, sx, inner_kr, rho)
+            print("Norm of the difference global lookup table:", LA.norm(rsx-rsx3))
+        
+        return rsx, rsx1, rsx2, rsx3
 
     @staticmethod
     def soil_root_interface_(rx, sx, inner_kr, rho, sp):
@@ -99,19 +120,22 @@ class PerirhizalPython(Perirhizal):
         rho            geometry factor [1] (outer_radius / inner_radius)
         sp             soil parameter: van Genuchten parameter set (type vg.Parameters)
         """
+        #vg.create_mfp_lookup(sp)
+        #print(vg.fast_mfp[sp](-16000))
         if inner_kr < 1.0e-7:
             return sx
-        k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint)  # Vanderborgth et al. 2023, Eqn [7]
+        k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint + 0.001)  # Vanderborgth et al. 2023, Eqn [7]
         rho2 = np.square(rho)  # rho squared
         b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
         fun = lambda x: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
+        #print(fun(rx),fun(sx-0.1),fun(sx+0.1), rho)
         if rx == sx:  # degenerate bracket: no gradient, interface equals bulk potential
-            return sx
+            return sx  
         rsx = root_scalar(fun, method="brentq", bracket=[min(rx, sx), max(rx, sx)])
         return rsx.root
      
     @staticmethod
-    def soil_root_interface_simp_(inner_kr_b, base_mfp, sp):
+    def soil_root_interface_simp_(self, inner_kr_b, base_mfp, sp):
         """
         finds matric potential at the soil root interface for as single segment
 
@@ -124,13 +148,18 @@ class PerirhizalPython(Perirhizal):
         inner_kr_b:    inner_kr/b
         base_mfp:      -(inner_kr/b*rx+vg.fast_mfp[sp](sx))
         """
-        fun = lambda x: vg.fast_mfp[sp](x) + inner_kr_b * x +base_mfp
-        x_int = [-16000.0,-1.0] # interval for search
+        fun = lambda x: vg.fast_mfp[sp](x) + inner_kr_b * (x - 0*self.h_wilt) +base_mfp
+        x_int = [-15999.0,-1.0] # interval for search
+        if fun(x_int[0])> 0:
+            return x_int[0]
+        if fun(x_int[1])< 0:
+            return x_int[1]    
+        print(fun(x_int[0]),fun(x_int[1]), inner_kr_b, base_mfp)
         rsx = root_scalar(fun, method="brentq", bracket=[x_int[0], x_int[1]])
         return rsx.root
     
     @staticmethod
-    def soil_root_interface_global_(inner_kr_b, base_mfp, vg_m):
+    def soil_root_interface_global_(self, inner_kr_b, base_mfp, vg_m):
         """
         finds matric potential at the soil root interface for as single segment
 
@@ -141,7 +170,7 @@ class PerirhizalPython(Perirhizal):
         sp             soil parameter: van Genuchten parameter set (type vg.Parameters)
         
         inner_kr_b:    (inner_kr * alpha)/(alpha_0 * vg_Ks * b)
-        base_mfp:      -((inner_kr * alpha)/(alpha_0 * Ks * b) * rx + vg.fast_mfp[sp_base](sx))
+        base_mfp:      -((inner_kr * alpha)/(alpha_0 * Ks * b) * rx + vg.fast_mfp[sp_base*(alpha_0/alpha)](sx))
         vg_m:          van genuchten parameter m
         
         (sp_base is the van genuchten parameter set of Ks = 1 and alpha = alpha_0, m is an input)
@@ -149,9 +178,16 @@ class PerirhizalPython(Perirhizal):
         
         
         
-        fun = lambda x: self.lookup_global_mfp(vg_m, x) + inner_kr_b * x +base_mfp
-        x_int = [-16000.0,-1.0] # interval for search
+        fun = lambda x: self.lookup_global_mfp((vg_m, x)) + inner_kr_b * x +base_mfp
+        x_int = [-15990.0,-0.1] # interval for search, get closer to 0 as x = h_sr * alpha / alpha_0, alpha / alpha_0 <= 1
+        if fun(x_int[0])> 0:
+            return x_int[0]
+        if fun(x_int[1])< 0:
+            return x_int[1]
         rsx = root_scalar(fun, method="brentq", bracket=[x_int[0], x_int[1]])
+        #except:
+        #    print("f_values", fun(x_int[0]), fun(x_int[1]), vg_m)
+        #    rsx = 0
         return rsx.root
         
 
@@ -204,7 +240,7 @@ class PerirhizalPython(Perirhizal):
         akrn = 100
         akr_ = np.logspace(np.log10(1.0e-7), np.log10(1.0e-4), akrn)
         rhon = 30
-        rho_ = np.logspace(np.log10(1.0), np.log10(200.0), rhon)
+        rho_ = np.logspace(np.log10(2.0), np.log10(200.0), rhon)
 
         if rank == 0:
             print(filename, "calculating", rxn * sxn * rhon * akrn, "supporting points on", size, "thread(s)")
@@ -282,7 +318,7 @@ class PerirhizalPython(Perirhizal):
         akrn = 100
         akr_ = np.logspace(np.log10(1.e-7), np.log10(1.e-4), akrn)
         rhon = 30
-        rho_ = np.logspace(np.log10(1.), np.log10(200.), rhon)
+        rho_ = np.logspace(np.log10(2.), np.log10(200.), rhon) # TODO: talk about the lower bound here: rho = 1 leads to problems
         interface = np.zeros((rxn, sxn, akrn, rhon))
         for i, rx in enumerate(rx_):
             print(i)
@@ -297,46 +333,73 @@ class PerirhizalPython(Perirhizal):
     def create_lookup_simp(self, filename, sp):
         """
         Precomputes all soil root interface potentials for a specific soil type
-        and saves results into a 4D lookup table
+        and saves results into a 2D lookup table
 
         filename       three files are written (filename, filename_, and filename_soil)
         sp             van genuchten soil parameters, , call
                        vg.create_mfp_lookup(sp) before
         """
-
+        
         
         # intervals for all inputs
-        rx_int_abs = [1.0, 16000.0] #absolute values for logarithmic scaling
-        sx_int_abs = [1.0, 16000.0]
+        rx_int_abs = [1.0, 15999.0] #absolute values for logarithmic scaling
+        sx_int_abs = [1.0, 15999.0]
         akr_int = [1.0e-7,1.0e-4]
-        rho_int = [1.0,200.0]
+        rho_int = [2.0,200.0]
         
         #the lookup table only needs 2 inputs from combinations of the 4 general inputs
         b_func = lambda rho: 2 * (rho*rho - 1) / (1 - 0.53 * 0.53 * rho*rho + 2 * rho*rho * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
         b_0 = b_func(rho_int[0])
         b_1 = b_func(rho_int[1])
-        b_int = [min(b0,b1),max(b0,b1)]
+        b_int = [min(b_0,b_1),max(b_0,b_1)]
         
-        inner_kr_bn = 200
-        inner_kr_b_abs_int = [akr_int[0]/b_int[1],akr_int[1]/b_int[0]]
-        inner_kr_b_= np.logspace(np.log10(inner_kr_b_abs_int[0]), np.log10(inner_kr_b_abs_int[1]), inner_kr_bn)
+        #compute the intervals of these 2 possible inputs for the lookup table
         
-        base_mfp_n = 200
-        base_mfp_abs_int = [akr_int[0]/b_int[1]*rx_int_abs[0] + vg.fast_mfp[sp](sx_int_abs[1]),akr_int[1]/b_int[0]*rx_int_abs[1] + vg.fast_mfp[sp](sx_int_abs[0])]
-        base_mfp_= - np.logspace(np.log10(base_mfp_abs_int[0]), np.log10(base_mfp_abs_int[1]), base_mfp_n)
+        inner_kr_bn = 100
+        inner_kr_b_int = [akr_int[0]/b_int[1],akr_int[1]/b_int[0]]
+        inner_kr_b_= np.logspace(np.log10(inner_kr_b_int[0]), np.log10(inner_kr_b_int[1]), inner_kr_bn)
+        
+        print(inner_kr_b_int)
+        min_int, max_int = vg.fast_mfp[sp](-sx_int_abs[1]), vg.fast_mfp[sp](-sx_int_abs[0])
+        print(vg.fast_mfp[sp](-sx_int_abs[1]))
+        print(vg.fast_mfp[sp](-sx_int_abs[0]))
+        base_mfp_n_1 = 500
+        base_mfp_n_2 = 500
+        base_mfp_n = base_mfp_n_1 + base_mfp_n_2
+        base_mfp_int = [inner_kr_b_int[0]*(0*self.h_wilt-(-rx_int_abs[0])) - vg.fast_mfp[sp](-sx_int_abs[0]), inner_kr_b_int[1]*(0*self.h_wilt-(-rx_int_abs[1])) - vg.fast_mfp[sp](-sx_int_abs[1])]
+        #base_mfp_int are negative
+        #base_mfp_int[1] = min(base_mfp_int[1],-1.0e-9) #ensure positivity, this can be close to 0.0, so do not take a huge tolerance here
+        base_mfp_interval1= -np.logspace(np.log10(-base_mfp_int[0]), np.log10(1.0e-9), base_mfp_n_1)
+        base_mfp_interval2= np.logspace(np.log10(1.0e-9), np.log10(base_mfp_int[1]), base_mfp_n_2)
+        print(base_mfp_interval1,base_mfp_interval2)
+        base_mfp_ = np.concatenate((base_mfp_interval1,base_mfp_interval2))
+        #base_mfp_= np.linspace(base_mfp_int[0], base_mfp_int[1], base_mfp_n)
+        print(base_mfp_int)
+        interface = np.zeros((inner_kr_bn,base_mfp_n))
+        
+        tol = 0.001 #tolerance for extreme values of the matrix flux potential at the soil -> output h_rs = h_soil or h_x
+        
+        max_int = vg.fast_mfp[sp](-1)
+        min_int = vg.fast_mfp[sp](-16000+1)
         
         for i, inner_kr_b in enumerate(inner_kr_b_):
             print(i)
             for j, base_mfp in enumerate(base_mfp_):
-                interface[i, j] = PerirhizalPython.soil_root_interface_simp_(inner_kr_b, base_mfp, sp)
-        np.savez(filename, interface=interface, inner_kr_b_=inner_kr_b_, base_mfp_=base_mfp_, soil=list(sp))
-        self.lookup_table = RegularGridInterpolator((inner_kr_b, base_mfp_absolute), interface)
+                #print(base_mfp, tol - (-1-self.h_wilt)*inner_kr_b - max_int, - tol - (-16000-self.h_wilt)*inner_kr_b - min_int, min_int)
+                #base_mfp = max(base_mfp, tol - (-1-0*self.h_wilt)*inner_kr_b - max_int)
+                #base_mfp = min(base_mfp, - tol - (-16000-0*self.h_wilt)*inner_kr_b - min_int)
+                #print(base_mfp)
+                interface[i, j] = PerirhizalPython.soil_root_interface_simp_(self, inner_kr_b, base_mfp, sp)
+        np.savez(filename+"_simp", interface=interface, inner_kr_b_=inner_kr_b_, base_mfp_=base_mfp_, soil=list(sp))
+        print(inner_kr_b_)
+        print(base_mfp_)
+        self.simp_lookup_table = RegularGridInterpolator((inner_kr_b_, base_mfp_), interface)
         self.sp = sp
 
-    def create_lookup_global(self, filename, filenamevg, sp):
+    def create_lookup_global(self, filename, sp):
         """
         Precomputes all soil root interface potentials for a specific soil type
-        and saves results into a 4D lookup table
+        and saves results into a 3D lookup table
 
         filename       three files are written (filename, filename_, and filename_soil)
         sp             van genuchten soil parameters, , call
@@ -348,8 +411,8 @@ class PerirhizalPython(Perirhizal):
         rx_int_abs = [1.0, 16000.0] #absolute values for logarithmic scaling
         sx_int_abs = [1.0, 16000.0]
         akr_int = [1.0e-7,1.0e-4]
-        rho_int = [1.0,200.0]
-        vg_m_int = [0.1,1.0]
+        rho_int = [2.0,200.0]
+        vg_m_int = [0.1,0.8]
         vg_Ks_int = [1.0,100.0]
         vg_alpha_int = [0.01,0.3]
         
@@ -357,42 +420,131 @@ class PerirhizalPython(Perirhizal):
         b_func = lambda rho: 2 * (rho*rho - 1) / (1 - 0.53 * 0.53 * rho*rho + 2 * rho*rho * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
         b_0 = b_func(rho_int[0])
         b_1 = b_func(rho_int[1])
-        b_int = [min(b0,b1),max(b0,b1)]
+        b_int = [min(b_0,b_1),max(b_0,b_1)]
         
-        vg_m_n = 100
+        vg_m_n = 100 
         vg_m_ = np.logspace(np.log10(vg_m_int[0]), np.log10(vg_m_int[1]), vg_m_n)
         
         sx_n = 200
-        sx_ = -np.logspace(np.log10(sx_int_abs[0]), np.log10(sx_int_abs[1]), sx_n)
+        sx_ = -np.logspace(np.log10(sx_int_abs[0]), np.log10(sx_int_abs[1]), sx_n) 
+        
+        interface_vg = np.zeros((vg_m_n,sx_n))
         
         #construct a smaller lookup table for the simplified 
         for i, vg_m in enumerate(vg_m_):
             print(i)
-            sp_dummy = vg.Parameters([0.1,0.4,self.alpha_0,vg_m,1.0])
+            sp_dummy = vg.Parameters([0.1,0.4,self.alpha_0,1./(1.-vg_m),1.0])
             vg.create_mfp_lookup(sp_dummy)
             for j, sx in enumerate(sx_):
-                interface_vg[i, j] = vg.fast_mfp[sp_dummy](sx)
+                #interface_vg[i, j] = vg.fast_mfp[sp_dummy](sx)
+                interface_vg[i, j] = vg.matric_flux_potential(sx, sp_dummy)
+            print(sx, vg.matric_flux_potential(sx+15000, sp_dummy), vg.matric_flux_potential(-1, sp_dummy))
         #np.savez(filename, interface=interface_vg, vg_m_=vg_m_, sx_=sx_, soil=list(sp))
-        self.lookup_global_mfp = RegularGridInterpolator((inner_kr_b, base_mfp_absolute), interface)        
-        
+        self.lookup_global_mfp = RegularGridInterpolator((vg_m_, sx_), interface_vg)        
+        print(vg_m_,sx_)
         inner_kr_bn = 200
-        inner_kr_b_abs_int = [(akr_int[0]*vg_alpha_int[0])/(self.alpha_0*b_int[1]*vg_Ks_int[1]),(akr_int[1]*vg_alpha_int[1])/(self.alpha_0*b_int[0]*vg_Ks_int[0])]
+        inner_kr_b_abs_int = [akr_int[0]/(b_int[1]*vg_Ks_int[1]),akr_int[1]/(b_int[0]*vg_Ks_int[0])]
         inner_kr_b_= np.logspace(np.log10(inner_kr_b_abs_int[0]), np.log10(inner_kr_b_abs_int[1]), inner_kr_bn)
+        print(inner_kr_b_abs_int)
         
-        base_mfp_n = 200
-        base_mfp_abs_int = [inner_kr_b_abs_int[0]*rx_int_abs[0] + 0.0,inner_kr_b_abs_int[1]*rx_int_abs[1] + self.lookup_global_mfp(vg_m_int[0],-sx_int_abs[0])]
-        base_mfp_= - np.logspace(np.log10(base_mfp_abs_int[0]), np.log10(base_mfp_abs_int[1]), base_mfp_n)
+        #base_mfp_n = 200
+        base_mfp_n_1 = 100
+        base_mfp_n_2 = 100
+        base_mfp_n = base_mfp_n_1 + base_mfp_n_2
+        print(-sx_int_abs[1] * vg_alpha_int[1]/self.alpha_0)
+        print(self.lookup_global_mfp((vg_m_int[0],-sx_int_abs[1] * vg_alpha_int[1]/self.alpha_0*0.1)))
+        print(vg.fast_mfp[sp_dummy](-10000.0))
+        print("obere grenze",-sx_int_abs[0] * vg_alpha_int[0]/self.alpha_0)
+        print(self.lookup_global_mfp((vg_m_int[1],min(-sx_int_abs[0] * vg_alpha_int[0]/self.alpha_0,-1.0))))
+        base_mfp_int = [inner_kr_b_abs_int[0]*(-(-rx_int_abs[0]) * vg_alpha_int[0]/self.alpha_0) - self.lookup_global_mfp((vg_m_int[1],min(-sx_int_abs[0] * vg_alpha_int[0]/self.alpha_0,-1))), inner_kr_b_abs_int[1]*(-(-rx_int_abs[1]) *vg_alpha_int[1]/self.alpha_0) -self.lookup_global_mfp((vg_m_int[0],-sx_int_abs[1] * vg_alpha_int[1]/self.alpha_0))] 
+        base_mfp_interval1= -np.logspace(np.log10(-base_mfp_int[0]), np.log10(1.0e-9), base_mfp_n_1)
+        base_mfp_interval2= np.logspace(np.log10(1.0e-9), np.log10(base_mfp_int[1]), base_mfp_n_2)
+        print(base_mfp_interval1,base_mfp_interval2)
+        base_mfp_ = np.concatenate((base_mfp_interval1,base_mfp_interval2))
+        #print(base_mfp_abs_int)
+        #base_mfp_= - np.logspace(np.log10(-base_mfp_abs_int[0]), np.log10(-base_mfp_abs_int[1]), base_mfp_n)
+        
+        interface = np.zeros((vg_m_n,inner_kr_bn,base_mfp_n))
+        
+        tol = 0.001 #tolerance for extreme values of the matrix flux potential at the soil -> output h_rs = h_soil or h_x
+        
         
         for i, vg_m in enumerate(vg_m_):
             print(i)
+            max_int = self.lookup_global_mfp((vg_m,-1))
+            min_int = self.lookup_global_mfp((vg_m,-16000))
             for j, inner_kr_b in enumerate(inner_kr_b_):
                 for k, base_mfp in enumerate(base_mfp_):
-                    interface[i, j, k] = PerirhizalPython.soil_root_interface_global_(inner_kr_b, base_mfp, vg_m)
+                    #base_mfp = max(base_mfp, tol - (-1)*inner_kr_b - max_int)
+                    #base_mfp = min(base_mfp, -tol - (-16000)*inner_kr_b - min_int)
+                    interface[i, j, k] = PerirhizalPython.soil_root_interface_global_(self, inner_kr_b, base_mfp, vg_m)
+                    #if base_mfp + (-1)*inner_kr_b + max_int < tol:
+                    #    interface[i, j, k] = -1
+                    #else:
+                    #    if base_mfp + (-16000)*inner_kr_b + min_int > tol:
+                    #        interface[i, j, k] = -16000
+                    #    else:
+                    #        interface[i, j, k] = PerirhizalPython.soil_root_interface_global_(self, inner_kr_b, base_mfp, vg_m)
         np.savez(filename, interface=interface, interface_vg=interface_vg, vg_m_=vg_m_, inner_kr_b_=inner_kr_b_, base_mfp_=base_mfp_, sx_=sx_, soil=list(sp))
-        self.lookup_table = RegularGridInterpolator((inner_kr_b, base_mfp_absolute), interface)
+        print(vg_m_, inner_kr_b_, base_mfp_)
+        self.global_lookup_table = RegularGridInterpolator((vg_m_, inner_kr_b_, base_mfp_), interface)
         self.sp = sp
 
+
     def soil_root_interface_potentials_table(self, rx, sx, inner_kr_, rho_):
+        """
+        finds potential at the soil root interface using a lookup table
+
+        rx             xylem matric potential [cm]
+        sx             bulk soil matric potential [cm]
+        inner_kr       root radius times hydraulic conductivity [cm/day]
+        rho            geometry factor [1]
+        f              function to look up the potentials
+        """
+        try:
+            sx = np.array(sx)
+            mask = inner_kr_ == 0
+            inner_kr_[mask] = 1.0e-7
+            rsx = self.lookup_table((rx, sx, inner_kr_, rho_))
+            rsx[mask] = sx[mask]  # if inner_kr is zero, there is no flow, and the interface potential is the same as the soil potential
+        except:
+            if np.max(rx) > 0:
+                print("xylem matric potential positive", np.max(rx), "at", np.argmax(rx))
+            if np.min(rx) < -16000:
+                print("xylem matric potential under -16000 cm", np.min(rx), "at", np.argmin(rx))
+            if np.max(sx) > 0:
+                print("soil matric potential positive", np.max(sx), "at", np.argmax(sx))
+            if np.min(sx) < -16000:
+                print("soil matric potential under -16000 cm", np.min(sx), "at", np.argmin(sx))
+            if np.min(inner_kr_) < 1.0e-7:
+                print("radius times radial conductivity below 1.e-7", np.min(inner_kr_), "at", np.argmin(inner_kr_))
+            if np.max(inner_kr_) > 1.0e-4:
+                print("radius times radial conductivity above 1.e-4", np.max(inner_kr_), "at", np.argmax(inner_kr_))
+            if np.min(rho_) < 1:
+                print("geometry factor below 1", np.min(rho_), "at", np.argmin(rho_))
+            if np.max(rho_) > 200:
+                print("geometry factor above 200", np.max(rho_), "at", np.argmax(rho_))
+
+            print("PerirhizalPython.soil_root_interface_potentials_table(): table look up failed, value exceeds table")
+            print(
+                "\trx",
+                np.min(rx),
+                np.max(rx),
+                "sx",
+                np.min(sx),
+                np.max(sx),
+                "inner_kr",
+                np.min(inner_kr_),
+                np.max(inner_kr_),
+                "rho",
+                np.min(rho_),
+                np.max(rho_),
+            )
+            raise
+
+        return rsx
+
+    def soil_root_interface_potentials_simp_table(self, rx, sx, inner_kr_, rho_):
         """
         finds potential at the soil root interface using a lookup table
 
@@ -425,10 +577,18 @@ class PerirhizalPython(Perirhizal):
             rho = np.array(rho_)
             rho2 = np.multiply(rho,rho)
             b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
-            inner_kr_b = np.divide(inner_kr,b)
-            base_mfp = - inner_kr_b * rx + vg.fast_mfp[self.sp](sx)
+            print(b)
+            inner_kr_b = np.divide(inner_kr_,b)
+            print(inner_kr_b)
+            base_mfp = - (inner_kr_b * rx + vg.fast_mfp[self.sp](sx))
+            print(vg.fast_mfp[self.sp](sx))
+            print(base_mfp)
             
-            rsx = self.lookup_table((inner_kr_b, base_mfp))
+            #tol = 0.01
+            #mask2 = base_mfp - tol > 0
+            #base_mfp[mask2] = -tol
+            
+            rsx = self.simp_lookup_table((inner_kr_b, base_mfp))
             rsx[mask] = sx[mask]  # if inner_kr is zero, there is no flow, and the interface potential is the same as the soil potential
         except:
             if np.max(rx) > 0:
@@ -509,10 +669,12 @@ class PerirhizalPython(Perirhizal):
             rho = np.array(rho_)
             rho2 = np.multiply(rho,rho)
             b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
-            inner_kr_b = np.divide(inner_kr*alpha,sp.KS*b)/self.alpha_0
-            base_mfp = - ( inner_kr_b * rx + self.lookup_global_mfp(self.vg.m,sx))
-            
-            rsx = self.global_lookup_table((inner_kr_b, base_mfp, self.vg.m))
+            #print("inner_kr1",inner_kr_[0]*self.sp.alpha/self.sp.Ksat/b[0]/self.alpha_0)
+            inner_kr_b = np.divide(inner_kr_,self.sp.Ksat*b)
+            base_mfp = - ( inner_kr_b * rx * self.sp.alpha / self.alpha_0 + self.lookup_global_mfp((self.sp.m,sx*self.sp.alpha/self.alpha_0)))
+            print((inner_kr_b, base_mfp, self.sp.m)) #TODO multiply by alpha or something
+            rsx = np.array([self.global_lookup_table((self.sp.m, inner_kr_b[i], base_mfp[i])) for i in range(len(inner_kr_b))])*self.alpha_0/self.sp.alpha
+            print(mask, rsx)
             rsx[mask] = sx[mask]  # if inner_kr is zero, there is no flow, and the interface potential is the same as the soil potential
         except:
             if np.max(rx) > 0:
@@ -958,7 +1120,12 @@ if __name__ == "__main__":
     sp = vg.Parameters(hydrus_loam)
     vg.create_mfp_lookup(sp)
     peri = PerirhizalPython()
-    peri.create_lookup_mpi(filename, sp)  # takes some hours; mpiexec -n 4 python Perirhizal.py
+    #peri.create_lookup_mpi(filename, sp)  # takes some hours; mpiexec -n 4 python Perirhizal.py
+    peri.create_lookup_simp(filename, sp)  # should be better
+    peri.create_lookup_global(peri.water_filename)  # this is global
+    
+    # generate some tests
+    
 
     # # peri.open_lookup(filename)
     # peri.set_soil(vg.Parameters(loam))
