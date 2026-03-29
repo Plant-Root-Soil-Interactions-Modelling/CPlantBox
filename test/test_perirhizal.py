@@ -39,7 +39,7 @@ Intervals = {
         }
 Intervals = pd.DataFrame(Intervals, index = ["min","max"])
 
-ntests = 10 
+ntests = 30 
 tests = pd.DataFrame(index = range(ntests),columns = labels)
 
 for one_label in Intervals.columns:
@@ -63,10 +63,10 @@ sp = vg.Parameters(hydrus_loam)
 peri.set_soil(sp)
 
 #create the big lookup table
-t = time.time()
-peri.create_lookup_mpi("hydrus_loam", sp)
-elapsed_time = time.time() - t
-print("Creating the big lookup table took about ", elapsed_time) #
+#t = time.time()
+#peri.create_lookup_mpi("hydrus_loam", sp)
+#elapsed_time = time.time() - t
+#print("Creating the big lookup table took about ", elapsed_time) #
 
 peri.open_lookup("hydrus_loam")
 
