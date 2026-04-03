@@ -34,14 +34,14 @@ extern Sparse_matrix Delta2W;
 extern SpUnit_matrix Delta2		; // describe hydraulic architecture (topology)
 extern Sparse_matrix Deltaabs		; // describe hydraulic architecture (topology)
 #ifdef Full_Matrix // solve full linear system for all hydraulic variables, chained as YY below :
-extern Fortran_vector YY, SM ; // resp., inconnu et second membre de l'eq. matricielle
+extern Fortran_vector YY, SM ; // resp., inconnu et second membre de l'éq. matricielle
 #else // reduce linear system to only one unknown hydraulic variable (P_ST) => significant speed up and reduce required memory -- needs pre-solving recalculation if local model is changed
 extern SpUnit_matrix Delta		; // describe hydraulic architecture (topology)
 extern Sparse_matrix M1, Delta_rxyl, Delta_rphl ; // intermediary complex matrices to speed up calculations
 Sparse_matrix A22, A22_I, Delta2rpDelta, Delta2rxDelta, D6, I, X1 ; // intermediary complex matrices to speed up calculations
 Fortran_vector dummy, dummy_ ; // temporary buffers to speed up calculations(not have to create new objects at each call)
-extern Fortran_vector Km, rG, O ; // (def. in hydric_solve.cpp) intermediaires de calcul des matrices, cf. fichier Excel (Km : rien a voir avec Michaelis !)
-extern Fortran_vector inv_Km, rs_rG, inv_rPhlM, inv_rG ; //  intermediaires de calcul, derives ou inverses des precedents
+extern Fortran_vector Km, rG, O ; // (def. in hydric_solve.cpp) intermédiaires de calcul des matrices, cf. fichier Excel (Km : rien à voir avec Michaelis !)
+extern Fortran_vector inv_Km, rs_rG, inv_rPhlM, inv_rG ; //  intermédiaires de calcul, dérivés ou inverses des précédents
 #endif
 extern Sparse_matrix X ;
 extern int** ipiv_ptr; extern void**TM_ptr; // buffers to speed up linear solving
@@ -54,7 +54,7 @@ extern int N1R ; // Number of  'root tip's, i.e. nodes of conn.order 1 that have
 extern Index_vector i_[] ; // i_[o = 0..8][k = 1..No] = id# of kth node in (1-based list)  list of all nodes of conn.ord. co(o). For o=0: No=N1L ; o=1: No=N1R ; o=2..8: No=N[o] :
 extern Index_vector &RootEnds, &LeafEnds ; // (= i_[1] and i_[0], resp.) : label which nodes are network ends = nodes of co=1 , which are either 'leaf' or 'root' ends :
 extern vector<int> jf_RootEnds ; // to index those nodes that are root- or leaf-ends, resp.
-extern vector<vector<int> > JF_ ; // JF_[i][j] = Id# du (j)eme flux (dans l'ordre declare dans le fichier) issu du noeud #i :> 0 ou < 0 par convention dans le sens (I_Upflow[ ] --> I_Downflow[ ]) :
+extern vector<vector<int> > JF_ ; // JF_[i][j] = Id# du (j)ème flux (dans l'ordre déclaré dans le fichier) issu du noeud #i :> 0 ou < 0 par convention dans le sens (I_Upflow[ ] --> I_Downflow[ ]) :
 extern vector<int> I_Upflow, I_Downflow ; // I_Upflow(resp.I_Downflow)[jf=1..Nc] = id# du noeud amont (resp. aval) par convention : jf > 0 dans le sens (I_Upflow[(abs(jf)] --> I_Downflow[(abs(jf)], < 0 dans l'autre sens
 
 /******************* VARIABLES INVOLVED in CARBON METABOLISM AND FLUXES *******************************  */
@@ -75,7 +75,7 @@ extern Fortran_vector JS_Apo						; // apoplasmic sugar flux from phloem to Late
 extern Fortran_vector JW_ParMb, JW_Apo, JW_Sympl ; // water fluxes corresponding to above 3 sugar fluxes   (ml / h)
 extern Fortran_vector C_SymplUpflow					; // upflow concentration (mmol / ml) for JS_Sympl
 extern Fortran_vector C_PhlApo, C_ParApo, C_ApoUpflow ; // (mmol / ml) apoplasmic sugar conc., resp. in phloem and lat.parenchyma, and upflow conc. for JS_Apo
-extern Fortran_vector Delta_JS_ST ; // sera la composante purement phloemienne de Q_TC_dot[ ]							(mmol / h)
+extern Fortran_vector Delta_JS_ST; // sera la composante purement phloémienne de Q_TC_dot[ ]							(mmol / h)
 
 /******** TRACER-RELATED VARIABLES ***********************************************************/
 extern double TracerDecay_k, TracerHalfLife ;
@@ -89,11 +89,11 @@ extern Fortran_vector TracerC_ST							; // Concentration of soluble tracer in s
 extern Fortran_vector TracerC_PhlApo, TracerC_ParApo ; // Concentration of soluble tracer in apoplasms					(MBq / ml solution))
 extern Fortran_vector TracerRatioSympl ; //   TracerQ_Mesophyll / Q_Mesophyll = TracerC_Sympl / C_Sympl  (MBq / mmol)
 extern Fortran_vector TracerRatioQ_RespMaint ; //   = TracerQ_RespMaint / Q_RespMaint (MBq / mmol)
-extern Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloemienne de Q_Rmmax_dot[ ]
-extern Fortran_vector TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb ; // Lateral (Sympl., Apopl.; cross-membr...) soluble tracer fluxes FROM sieve tubes INTO parenchyma							(MBq / h)     !!! ATTENTION : sens positif oppose a JS_Trsv !!!
+extern Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de Q_Rmmax_dot[ ]
+extern Fortran_vector TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb ; // Lateral (Sympl., Apopl.; cross-membr...) soluble tracer fluxes FROM sieve tubes INTO parenchyma							(MBq / h)     !!! ATTENTION : sens positif opposé à JS_Trsv !!!
 extern Fortran_vector TracerC_SymplUpflow					;  // upflow tracer concentration (mmol / ml) for TracerJS_Sympl
 extern Fortran_vector TracerC_ApoUpflow ;				; // upflow tracer concentration (mmol / ml) for TracerJS_Apo
-extern Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloemienne de Q_Rmmax_dot[ ]
+extern Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de Q_Rmmax_dot[ ]
 
 extern Fortran_vector P_Xyl			; // Xylem water potential = pressure (no solute)												(MPa)
 extern Fortran_vector Psi_Xyl			; // Xylem water potential = pressure (no solute)												(MPa)
@@ -115,21 +115,21 @@ extern Fortran_vector JW_Apo			; // Phloem to Lateral parenchyma Apoplastic wate
 extern Fortran_vector JW_Sympl		; // Lateral parenchyma to phloem ST Symplasmic liquid flux									(ml / h)
 // Next 2 variables are not considered as such, but as possible inputs to compute vol_Sympl_dot :
 extern Fortran_vector P_ST_dot, P_Sympl_dot			; //  dP_ST/dt , dP_Sympl/dt					(MPa h / h)    -- for elasticity...
-// NZS : optional non-zero volume sugar flow (not a distinct variable)   (ml / h) : NZS = JS_Trsv * PartMolalVol (=0.2155 in Thompson and Holbrook -- 0.214 might be more accurate)
+// NZS : optional non-zero volume sugar flow (not a distinct variable)   (ml / h) : NZS = JS_Trsv * PartMolalVol (=0.2155 in Thompson & Holbrook -- 0.214 might be more accurate
 extern Fortran_vector JAuxin_ST1			; 
 extern Fortran_vector JAuxin_ST2			; 
 extern Fortran_vector A_amont;
 extern Fortran_vector i_amont_auxin;
-extern SpUnit_matrix Delta2auxin;
-extern SpUnit_matrix Deltaauxin;
+extern SpUnit_matrix Delta2updown;
+extern SpUnit_matrix Deltaupdown;
 extern Fortran_vector Alpha_st;
 extern Fortran_vector Delta_JA_ST ;
 extern Fortran_vector C_AuxinOut;
 
-/******************************************  Constants and Parameters: *********************************************/
+/******************************************  Constants & Parameters: *********************************************/
 extern double TdC, dEauPure, PartMolalVol, siPhi, newPhi ; // pour visc. calc. par  www.seas.upenn.edu
 extern bool Adv_BioPhysics ; // true if  non-zero sugar specific volume, osmotic pot.=non-linear function of molality (Thompson and Holbrook), and viscosity changes with C_TC (Thompson and Holbrook ; Seas, Flanagan)  ; set in IntroDialogBox
-extern Fortran_vector Q_ST_seg_init;
+//extern Fortran_vector Q_ST_seg_init;
 // Hydro Resistance Parameters (set in GUI) :
 extern Fortran_vector r_Xyl		; // (MPa h / ml)  : axial xylem water resistance
 extern Fortran_vector r_ST			; // (MPa h / ml) : axial phloem water resistance
@@ -155,6 +155,7 @@ extern int resistance_changed ;
 
 
 extern Fortran_vector  Q_Exud, Q_Gr, Q_Rm, Q_Fl; 
+extern Fortran_vector  Q_Exudmax, Q_Grmax, Q_Rmmax;//, Q_Fl_seg;
 //extern Fortran_vector C_ST_seg, Q_ST_seg, Q_ST_seg_new,Q_ST_newFuFl, grad_Q_ST_seg;
 
 /******************************************  Environmental Variables: *********************************************/
@@ -163,7 +164,7 @@ extern double T ;	// absolute temperature													(K)
 extern Fortran_vector Transpirat		; // Leaf transpiration rate (used in water-fluxes calc.)				(mmol / h)
 extern Fortran_vector PsiSoil			; // Soil water potential at root end (used in water-fluxes calc.)		(MPa)
 void UpdateResistances(double t) ;
-extern Fortran_vector Y0	; // (set in GUI) initial condition vector is made of Q_ST_0, Q_Mesophyll_0, Q_RespMaint_0, Q_Exudation_0, Q_Growthtot_0, and homologous tracer init values, and vol_Sympl_0 :
+extern Fortran_vector Y0	; // (set in GUI) initial condition vector is made of Q_ST_0, Q_Mesophyll_0, Q_RespMaint_0, Q_Exudation_0 & Q_Growthtot_0, and homologous tracer init values, and vol_Sympl_0 :
 
 
 
@@ -175,9 +176,10 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
     RespMaint = Fortran_vector(Nt, 0.)			; // Maintenance respiration rate										(mmol / h)
     //Q_RespMaintSyn = Fortran_vector(Nt, 0.)				; // Rate of starch synthesis from sugar substrate						(mmol sug.eq./ h)
     Input = Fortran_vector(Nt, 0.)		; // External sugar input (may be photosynthetic Assimilation rate, but not restricted to leaves)	(mmol / h)
-    i_amont = Fortran_vector(Nc, 0.)	; //  Index_vector(Nc)	; // true upflow node : sera I_Upflow[j]  ou  I_Downflow[j] suivant le sens reel du flux
+    i_amont = Fortran_vector(Nc, 0.)	; //  Index_vector(Nc)	; // true upflow node : sera I_Upflow[j]  ou  I_Downflow[j] suivant le sens réel du flux
     C_amont = Fortran_vector(Nc, 0.)	; //  (mmol / ml) : ST Sugar concentration at true upflow node
 	C_ST = Fortran_vector(Nt, 0.);
+	
     Delta_JA_ST = Fortran_vector(Nt, 0.) ;
 	Alpha_st = Fortran_vector(Nt, 0.) ;
     JAuxin_ST1 = Fortran_vector(Nc, 0.);
@@ -186,8 +188,8 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
     C_AuxinOut = Fortran_vector(Nt, 0.);
 	A_amont = Fortran_vector(Nc, 0.)	;
     i_amont_auxin = Fortran_vector(Nc, 0.)	;
-	
-	if(doTroubleshooting){
+        
+    if(doTroubleshooting){
 		std::cout<<"initial size of vector: "<<vecIn.size()<<" nodes: "<<Nt<<" connections "<<Nc<<" "<<std::endl;
 	}
     if(vecIn.size() == (Nt*neq_coef)){ //gave input vector with starting values 
@@ -204,27 +206,36 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 			if(doTroubleshooting){std::cout<<"complete y0 "<<std::endl;}
 			Y0 =  Fortran_vector(Nt*neq_coef, 0.) ;
 			Y0.sequentialFill(vecIn, Nt_old, Nt);
-			
-			// if a new segment is created, add manually auxin and sucrose, to avoid 
-			// a low signal
-			for(int z = (vecIn.size()/neq_coef); z < Nt;z++){
-				int nodeyIdx = z+1;
-				int segIdx = nodeyIdx-1;
-				int nodexIdx = I_Upflow[segIdx];
-				
-				if(nodeyIdx!=I_Downflow[segIdx])
-				{
-					
-					assert((nodeyIdx==I_Downflow[segIdx])&&"nodeyIdx!=I_Downflow[segIdx]");
+			//Y0.sequentialFill2(vecIn, Nt_old, Nt);StopLoss
+            if(doTroubleshooting){
+            std::cout<<"PhloemFlux::initialize_carbon StopLoss? "<<(vecIn.size()/neq_coef)<<" "<<Nt_old<<" "<<Nt<<std::endl;
+            }
+			if(StopLoss)
+            {
+			//I_Upflow[k] = segmentsPlant[k-1].x +1;
+			//I_Downflow[k] = segmentsPlant[k-1].y +1;
+                for(int z = (vecIn.size()/neq_coef); z < Nt;z++){
+                    int nodeyIdx = z+1;
+                    int segIdx = nodeyIdx-1;
+                    int nodexIdx = I_Upflow[segIdx];
+                    if(doTroubleshooting){
+                        std::cout<< z<<" "<<nodeyIdx<<" "<<I_Downflow[segIdx]<<" "<<I_Upflow[segIdx]<<" "<<Y0[nodeyIdx+ Nt*9] <<" "<< Y0[nodexIdx+ Nt*9] <<std::endl;
+                        std::cout<<nodeyIdx-1 <<" "<<(Y0[nodexIdx+ Nt*9] / vol_ST[nodexIdx])<<std::endl;
+                    }
+                    if(nodeyIdx!=I_Downflow[segIdx])
+                    {
+                        
+                        assert((nodeyIdx==I_Downflow[segIdx])&&"nodeyIdx!=I_Downflow[segIdx]");
+                    }
+                    
+					Y0[nodeyIdx] = Y0[nodexIdx]/ vol_ST[nodexIdx]* vol_ST[nodeyIdx]; //conz to content
+					Y0[nodeyIdx + Nt] = Y0[nodexIdx+ Nt] / vol_ParApo[nodexIdx]* vol_ParApo[nodeyIdx]; //conz to content
+					Y0[nodeyIdx + Nt*9] = Y0[nodexIdx+ Nt*9] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; //conz to content
+                    manualAddST.at(nodeyIdx -1) = Y0[nodexIdx] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; 
+                    manualAddMeso.at(nodeyIdx-1) = Y0[nodexIdx+ Nt] / vol_ParApo[nodexIdx]* vol_ParApo[nodeyIdx];
+                    manualAddAux.at(nodeyIdx-1) = Y0[nodexIdx+ Nt*9] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; 
 				}
-				
-				Y0[nodeyIdx] = Y0[nodexIdx]/ vol_ST[nodexIdx]* vol_ST[nodeyIdx]; //conz to content
-				Y0[nodeyIdx + Nt] = Y0[nodexIdx+ Nt] / vol_ParApo[nodexIdx]* vol_ParApo[nodeyIdx]; //conz to content
-				Y0[nodeyIdx + Nt*7] = Y0[nodexIdx+ Nt*7] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; //conz to content
-				manualAddST.at(nodeyIdx -1) = Y0[nodexIdx] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; 
-				manualAddMeso.at(nodeyIdx-1) = Y0[nodexIdx+ Nt] / vol_ParApo[nodexIdx]* vol_ParApo[nodeyIdx];
-				manualAddAux.at(nodeyIdx-1) = Y0[nodexIdx+ Nt*7] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; 
-			}
+            }
 			Fortran_vector Q_GrowthtotBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
 			Q_GrowthtotBU.append(Q_GrowthtotBU_temp);
 			Fortran_vector Q_GrmaxBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
@@ -244,13 +255,41 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 					}
 				}
 				for(int z = 0; z < Nt;z++){
-					Y0[z + 1 + Nt * 7] = initValAuxin * vol_ST[z + 1]; //conz to content
+					Y0[z + 1 + Nt * 9] = initValAuxin * vol_ST[z + 1]; //conz to content
+				}
+				for(int zz = 0; zz < plant->node_Decapitate.size();zz++){
+					int z = plant->node_Decapitate.at(zz);
+					
+					Y0[z + 1] = 0; 
+					Y0[z + 1 + Nt ] = 0;
+					Y0[z + 1 + Nt*9 ] = 0;
 				}
 				this->Q_init = Y0.toCppVector(); //for post processing
+                
+                if(doTroubleshooting)
+                {
+                    std::cout<<"Qinit "<<std::endl;
+                    for(int y = 0; y <this->Q_init.size(); y++ )
+                    {
+                        std::cout<<this->Q_init.at(y)<<" ";
+                    }std::cout<<std::endl;
+                }
 			}
 		}
 	}
-
+	
+        SucSTLost.resize(Nt,0.);
+        SucMesoLost.resize(Nt,0.);
+        AuxinLost.resize(Nt,0.);
+        for(int zz = 0; zz < plant->node_Decapitate.size();zz++){
+            int z = plant->node_Decapitate.at(zz);
+            SucSTLost[z]   += Y0[z + 1];
+            SucMesoLost[z] += Y0[z + 1 + Nt ];
+            AuxinLost[z]   += Y0[z + 1 + Nt*9] ;
+            Y0[z + 1] = 0; 
+            Y0[z + 1 + Nt ] = 0;
+            Y0[z + 1 + Nt*9 ] = 0;
+        }
 	if(doTroubleshooting){cout<<"Y0_STinit "<<Y0[1]<<" "<<Nc<<" "<<Nt<<" "<<Nt_old<<endl;}
 	Nt_old = Nt; //BU Nt
 	
@@ -264,7 +303,7 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 
 void PhloemFlux::initialize_hydric() {
 	int j;//, k ;
-	//jf_RootEnds =vector<int>(N1R + 1) ; for(k = 1 ; k <= N1R ; k ++)  jf_RootEnds[k] = JF_[RootEnds[k]][1] ; // donne le n# (positif si part du noeud considere, negatif s'il y arrive) du flux reliant le noeud a son voisin
+	//jf_RootEnds =vector<int>(N1R + 1) ; for(k = 1 ; k <= N1R ; k ++)  jf_RootEnds[k] = JF_[RootEnds[k]][1] ; // donne le n° (positif si part du noeud considéré, négatif s'il y arrive) du flux reliant le noeud à son voisin
 	P_Xyl = Fortran_vector(Nt, 0.)	; // Xylem water potential (initial value in relation to resistance update criterion...) (MPa)
 	Psi_ST = Fortran_vector(Nt, 0.)		; // (id.) Phloem water potential	
 	//									(MPa)
@@ -284,12 +323,12 @@ void PhloemFlux::initialize_hydric() {
 	P_PhlApo = Fortran_vector(Nt, 0.)		; // (id.) Phloem Apoplstic pressure										(MPa)
 	P_ParApo = Fortran_vector(Nt, 0.)		; // (id.) Parenchyma Apoplstic pressure										(MPa)
 	
-	P_ST_dot = Fortran_vector(Nt, 0.) ;   // ajout pour elasticite (dP/dt)
-	P_Sympl_dot = Fortran_vector(Nt, 0.) ;   // ajout pour elasticite (dP_Par/dt)
+	P_ST_dot = Fortran_vector(Nt, 0.) ;   // ajout pour élasticité (dP/dt)
+	P_Sympl_dot = Fortran_vector(Nt, 0.) ;   // ajout pour élasticité (dP_Par/dt)
 	r_ST = r_ST_ref		; //(MPa h / ml) :  phloem water resistance
 	//add later
 	//if (Adv_BioPhysics) PartMolalVol = 0.2155 ; else 
-	PartMolalVol = 0. ; // (L / mol) valeur Thompson et Holbrook ; en fait serait plutôt 0.214, independant (a 0.1% pres) a la fois de T et de C (cf. SucroseViscosity.xls)
+	PartMolalVol = 0. ; // (L / mol) valeur Thompson et Holbrook ; en fait serait plutôt 0.214, indépendant (à 0.1% près) à la fois de T et de C (cf. SucroseViscosity.xls)
 	// pour visc. calc. par  www.seas.upenn.edu :
 	TdC = T - 273.15;
 	dEauPure = (999.83952 + 16.952577 * TdC - 7.9905127 * (0.001) * (TdC*TdC) - 46.241757 * (0.000001) * (TdC*TdC*TdC) + 105.84601 * (0.000000001) * (TdC*TdC*TdC*TdC) - 281.03006 * (0.000001*0.000001) * (TdC*TdC*TdC*TdC*TdC)) / (1 + 16.887236 * (0.001) * TdC); // g/L
@@ -297,36 +336,50 @@ void PhloemFlux::initialize_hydric() {
 	newPhi=( - 0.114 + (siPhi *1.1));
 	Delta_JS_ST = Fortran_vector(Nt, 0.) ;
 	Delta_TracerJS_ST = Fortran_vector(Nt, 0.) ;
-	// les signes ci-dessous sont donnes en coherence avec eq. (1) a (4), i.e. considerant que j=JW_ST (et sens oppose a JW_Xyl) :
+	// les signes ci-dessous sont donnés en cohérence avec eq. (1) à (4), i.e. considérant que j=JW_ST (et sens opposé à JW_Xyl) :
 	Sparse_matrix* Delta2_ = new Sparse_matrix(Nt, Nc, 2*Nc) ;//IM shape : ligne shape = Nt; column.size = Nc, 
 	Sparse_matrix* Delta2_abs = new Sparse_matrix(Nt, Nc, 2*Nc) ;//IM shape : ligne shape = Nt; column.size = Nc, 
-	Sparse_matrix* Delta2_auxin = new Sparse_matrix(Nt, Nc, 2*Nc) ;//IM shape : ligne shape = Nt; column.size = Nc, 
-										   
-	
-	for(j = 1 ; j <= Nc ; j ++) { 
+	Sparse_matrix* Delta2_updown = new Sparse_matrix(Nt, Nc, 2*Nc) ;//IM shape : ligne shape = Nt; column.size = Nc, 
+			//I_Upflow[k] = segmentsPlant[k-1].x +1;
+			//I_Downflow[k] = segmentsPlant[k-1].y +1;
+			
+    if(doTroubleshooting)
+    {std::cout<<"PhloemFlux::initialize_hydric()"<<std::endl;}
+	for(j = 1 ; j <= Nc ; j ++) 
+    { 
 		Delta2_->set_(I_Upflow[j], j, -1.) ; 
 		Delta2_->set_(I_Downflow[j], j, 1.) ; 
 		
 		Delta2_abs->set_(I_Upflow[j], j, 0.5) ; 
 		Delta2_abs->set_(I_Downflow[j], j, 0.5) ; 	
+        
         int ot = orgTypes[j-1];
+        int valj;
         if(ot > 2)
         {//auxin goes toward x
-            Delta2_auxin->set_(I_Downflow[j], j, -1) ; 
+            //Delta2_updown->set_(I_Upflow[j], j, 1.) ; 
+            valj=-1;
+            Delta2_updown->set_(I_Downflow[j], j, valj) ; 
         }else
         {//auxin goes toward y
-            Delta2_auxin->set_(I_Downflow[j], j, 1) ; 
+            //Delta2_updown->set_(I_Upflow[j], j, -1.) ; 
+            valj= 1;
+            Delta2_updown->set_(I_Downflow[j], j, valj) ; 
         }
-		}
+        if(doTroubleshooting)
+        {
+            std::cout<<ot<<" "<<j<<" "<<I_Upflow[j]<<" "<<I_Downflow[j]<<" "<<valj<<std::endl;
+        }
+	}
 	Delta2 = SpUnit_matrix(*Delta2_) ; delete Delta2_ ;
-	Sparse_matrix Delta2abs = *Delta2_abs ; delete Delta2_abs ;
-
 	Delta = -transpose(Delta2) ;
-	
-	
-	Delta2auxin = SpUnit_matrix(*Delta2_auxin) ; delete Delta2_auxin ;
-	Deltaauxin = transpose(Delta2auxin) ;
+    
+	Delta2updown = SpUnit_matrix(*Delta2_updown) ; delete Delta2_updown ;
+	Deltaupdown = transpose(Delta2updown) ;
+    
+	Sparse_matrix Delta2abs = *Delta2_abs ; delete Delta2_abs ;
 	Deltaabs = transpose(Delta2abs) ;
+    
 	Delta_rphl = Delta / r_ST_ref ;
 			
 	ipiv_ptr = NULL ; TM_ptr = NULL;
@@ -334,7 +387,7 @@ void PhloemFlux::initialize_hydric() {
 	Absorb.set(0.) ;  P_PhlApo.set(0.) ; //.set(P_Xyl) ; P_PhlApo.sub_elemult(r_Trsv, JW_Trsv) ; // P_PhA = PX - rT * JT (eq. 6)
     Psi_PhlApo.set(0.) ; //.set(P_PhlApo) ; Psi_PhlApo.sub_mult(RT, C_PhlApo) ; // PsiPhA = P_PhA - RT C_PhA  (eq. 6')
     JW_PhlMb.set(0.) ; //.set_sub(Psi_PhlApo, Psi_ST) ; JW_PhlMb *= inv_rPhlM ; // (ST,CC) transmembrane flow (eq. 7)
-    JW_Apo.set(0.) ; //.set_sub(JW_Trsv, JW_PhlMb) ;  JW_Apo.zero(1.e-10 * JW_Trsv) ; // (loi des noeuds (eq. 14) -- et elimination des erreurs d'arrondi a la soustraction
+    JW_Apo.set(0.) ; //.set_sub(JW_Trsv, JW_PhlMb) ;  JW_Apo.zero(1.e-10 * JW_Trsv) ; // (loi des noeuds (eq. 14) -- et élimination des erreurs d'arrondi à la soustraction
     P_ParApo.set(0.) ; //.set(P_PhlApo) ; P_ParApo.sub_elemult(r_Apo, JW_Apo) ; // eq. (9)
     Psi_ParApo.set(0.) ; //.set(P_ParApo) ; Psi_ParApo.sub_mult(RT, C_ParApo) ; // eq. (9')
     JW_ParMb.set(0.) ; //.set(JW_Apo) ;  // (eq. 13)

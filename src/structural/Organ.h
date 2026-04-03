@@ -133,6 +133,9 @@ public:
 	int budStage = 2;
 	std::vector<double> budStageChange ={0.,0.,0.,0.};
 
+    bool alive = true; ///< true: alive, false: dead
+    bool active = true; ///< true: active, false: organ stopped growing
+    double age = 0; ///< current age [days]
 	
 protected:
 
@@ -155,9 +158,6 @@ protected:
     std::shared_ptr<const OrganSpecificParameter> param_; ///< the parameter set of this organ (@see getParam())
 
     /* Parameters are changing over time */
-    bool alive = true; ///< true: alive, false: dead
-    bool active = true; ///< true: active, false: organ stopped growing
-    double age = 0; ///< current age [days]
     double length = 0; ///< length of the organ [cm]
 	double epsilonDx = 0; ///< growth increment too small to be added to organ. kept in memory and added to growth of next simulation step
 	size_t created_linking_node = 0;///number of nodes which carry childrens

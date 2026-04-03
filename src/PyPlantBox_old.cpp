@@ -35,6 +35,7 @@ namespace py = pybind11;
 
 #ifdef ENABLE_PIAFMUNCH
 #include "PiafMunch/runPM.h"
+#include "PiafMunch/CPB_to_PM.h"
 #endif
 
 #include "PlantHydraulicParameters.h"
@@ -359,10 +360,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("BerthFact", &Organ::BerthFact)
             .def_readwrite("sucTested", &Organ::sucTested)
             .def_readwrite("auxTested", &Organ::auxTested)
-            .def_readwrite("budStage", &Organ::budStage)
-        
-            .def_readwrite("budStageChange", &Organ::budStageChange)
-            .def_readwrite("parentLinkingNode", &Organ::parentLinkingNode);
+            .def_readwrite("budStage", &Organ::budStage);
 
     /*
      * Organism.h
@@ -428,12 +426,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("randn", &Organism::randn)
             //        .def_readwrite("seed_nC_", &Organism::seed_nC_)
             //        .def_readwrite("seed_nZ_", &Organism::seed_nZ_)
-            .def("__str__",&Organism::toString)
-           .def_readwrite("maxLBudDormant", &Organism::maxLBudDormant)
-           //.def_readwrite("maxLBudDormant_1", &Organism::maxLBudDormant_1)
-           .def_readwrite("maxLBud", &Organism::maxLBud)
-           .def_readwrite("budGR", &Organism::budGR)
-           .def_readwrite("thread", &Organism::thread);
+            .def("__str__",&Organism::toString);
 
 
     py::enum_<Organism::OrganTypes>(m, "OrganTypes")
@@ -932,8 +925,7 @@ PYBIND11_MODULE(plantbox, m) {
 //		.def_readwrite("organParam", &MappedSegments::plantParam)
 	    .def_readwrite("segO", &MappedSegments::segO)
 		.def("sumSegFluxes",&MappedSegments::sumSegFluxes)
-		.def("splitSoilFluxes",&MappedSegments::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
-		.def_readwrite("node_Decapitate", &MappedSegments::node_Decapitate);
+		.def("splitSoilFluxes",&MappedSegments::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0);
 
     /*
      * Plant.h
@@ -1126,103 +1118,85 @@ PYBIND11_MODULE(plantbox, m) {
             .export_values();
 
 #ifdef ENABLE_PIAFMUNCH
+	/*
+     * CPB_to_PM.h
+     */
+    py::class_<CPB_to_PM, std::shared_ptr<CPB_to_PM>>(m, "CPB_to_PM")
+            .def("setKr_st",&CPB_to_PM::setKr_st, py::arg("values"), py::arg("kr_length") = -1.0, py::arg("verbose") = false)
+            .def("setKx_st",&CPB_to_PM::setKx_st, py::arg("values"), py::arg("verbose") = false)
+            .def("setRmax_st",&CPB_to_PM::setRmax_st, py::arg("values"), py::arg("verbose") = false)
+            .def("setAcross_st",&CPB_to_PM::setAcross_st, py::arg("values"), py::arg("verbose") = false)
+            .def("setRhoSucrose",&CPB_to_PM::setRhoSucrose, py::arg("values"), py::arg("verbose") = false)
+            .def("setKrm1",&CPB_to_PM::setKrm1, py::arg("values"), py::arg("verbose") = false)
+            .def("setKrm2",&CPB_to_PM::setKrm2, py::arg("values"), py::arg("verbose") = false)
+            .def("updateBudStage",&CPB_to_PM::updateBudStage, py::arg("dt"))
+            .def_readonly("rhoSucrose_f",&CPB_to_PM::rhoSucrose_f)
+            .def_readwrite("maxLBud", &CPB_to_PM::maxLBud)
+            .def_readwrite("maxLBudDormant", &CPB_to_PM::maxLBudDormant)
+            .def_readwrite("budGR", &CPB_to_PM::budGR)
+            .def_readwrite("BerthLim", &CPB_to_PM::BerthLim)
+            .def_readwrite("limLenActive", &CPB_to_PM::limLenActive)
+            .def_readwrite("CSTthreshold", &CPB_to_PM::CSTthreshold)
+            .def_readwrite("L_dead_threshold", &CPB_to_PM::L_dead_threshold)
+            .def_readwrite("psiMin", &CPB_to_PM::psiMin)
+            .def_readwrite("krm1v",&CPB_to_PM::krm1v)
+            .def_readwrite("krm2v",&CPB_to_PM::krm2v)
+            .def_readwrite("kr_st",&CPB_to_PM::kr_st)
+            .def_readwrite("kx_st",&CPB_to_PM::kx_st)
+            .def_readwrite("Across_st",&CPB_to_PM::Across_st)
+            .def_readwrite("Perimeter_st",&CPB_to_PM::Perimeter_st)
+            .def_readwrite("Rmax_st",&CPB_to_PM::Rmax_st)
+            .def_readwrite("rhoSucrose",&CPB_to_PM::rhoSucrose)
+			.def_readwrite("Fpsi",&CPB_to_PM::Fpsi)
+			.def_readwrite("Flen",&CPB_to_PM::Flen)
+			.def_readwrite("leafGrowthZone",&CPB_to_PM::leafGrowthZone)
+			.def_readwrite("StemGrowthPerPhytomer",&CPB_to_PM::StemGrowthPerPhytomer)
+			.def_readwrite("GrowthZone",&CPB_to_PM::GrowthZone)
+			.def_readwrite("GrowthZoneLat",&CPB_to_PM::GrowthZoneLat)
+			.def_readwrite("psi_osmo_proto",&CPB_to_PM::psi_osmo_proto)
+			.def_readwrite("psi_p_symplasm",&CPB_to_PM::psi_p_symplasm)
+            .def_readwrite("deltaSucOrgNode",&CPB_to_PM::deltaSucOrgNode)
+            .def_readwrite("Berthkss",&CPB_to_PM::Berthkss)
+            .def_readwrite("Berthkaa",&CPB_to_PM::Berthkaa)
+            .def_readwrite("AuxinSource",&CPB_to_PM::AuxinSource);
 	
 	/*
      * runPM.h
      */
-	py::class_<PhloemFlux, Photosynthesis, std::shared_ptr<PhloemFlux>>(m, "PhloemFlux")
-            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  
+    py::class_<PhloemFlux, Photosynthesis, std::shared_ptr<PhloemFlux>>(m, "PhloemFlux")
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, std::shared_ptr<PlantHydraulicParameters>, double, double>(),  py::arg("plant"),py::arg("params"),
 			py::arg("psiXylInit"),  py::arg("ciInit") )
-            .def("waterLimitedGrowth",&PhloemFlux::waterLimitedGrowth)
-            .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0)
-			
-            .def("setKx_st",&PhloemFlux::setKx_st)
-            .def("setRmax_st",&PhloemFlux::setRmax_st)
-            .def("setAcross_st",&PhloemFlux::setAcross_st)
-            .def("setAcross_st_table",&PhloemFlux::setAcross_st_table)
-            .def("setKx_st_table",&PhloemFlux::setKx_st_table)
-            .def("setRhoSucrose",&PhloemFlux::setRhoSucrose)
-            .def("setKrm1",&PhloemFlux::setKrm1)
-            .def("setKrm2",&PhloemFlux::setKrm2)
 			.def("startPM",&PhloemFlux::startPM)
-			.def("updateBudStage",&PhloemFlux::updateBudStage)
-            .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
-            .def_readwrite("psiMax", &PhloemFlux::psiMax)
-            .def_readwrite("psiMin", &PhloemFlux::psiMin)
-			
-            .def_readwrite("CSTthreshold", &PhloemFlux::CSTthreshold)
-            //.def_readwrite("canStartActivating", &PhloemFlux::canStartActivating)
-			
-            .def_readwrite("Q_out",&PhloemFlux::Q_initOutv)
+			.def("initialize",&PhloemFlux::initialize)
+            .def_readwrite("auxin_D",&PhloemFlux::auxin_D)
+            .def_readwrite("auxin_P",&PhloemFlux::auxin_P)
+            .def_readwrite("auxin_alpha",&PhloemFlux::auxin_alpha)
+            .def_readwrite("initValAuxin",&PhloemFlux::initValAuxin)
+            .def_readwrite("burnInTime",&PhloemFlux::burnInTime)
+            .def_readwrite("Q_AuxinOut",&PhloemFlux::Q_AuxinOut)
+            .def_readwrite("Q_out",&PhloemFlux::Q_outv)
             .def_readwrite("Q_init",&PhloemFlux::Q_init)
-            .def_readwrite("Q_out_dot",&PhloemFlux::Q_initOut_dotv)
-            .def_readwrite("Q_Rmmax1",&PhloemFlux::Q_Rmmax1v)
+            .def_readwrite("Q_out_dot",&PhloemFlux::Q_out_dotv)
             .def_readwrite("a_ST",&PhloemFlux::a_STv)
             .def_readwrite("vol_ST",&PhloemFlux::vol_STv)
             .def_readwrite("vol_Meso",&PhloemFlux::vol_Mesov)
             .def_readwrite("CSTimin",&PhloemFlux::CSTimin)
             .def_readwrite("C_ST",&PhloemFlux::C_STv)
-        
             .def_readwrite("C_Auxin",&PhloemFlux::C_Auxinv)
-            .def_readwrite("auxin_threshold",&PhloemFlux::auxin_threshold)
-            .def_readwrite("auxin_D",&PhloemFlux::auxin_D)
-            .def_readwrite("auxin_P",&PhloemFlux::auxin_P)
-            .def_readwrite("auxin_alpha",&PhloemFlux::auxin_alpha)
-            .def_readwrite("initValAuxin",&PhloemFlux::initValAuxin)
-            .def_readwrite("AuxinSource",&PhloemFlux::AuxinSource)
-            .def_readwrite("C_AuxinOut",&PhloemFlux::C_AuxinOutv)
-            .def_readwrite("Delta_JA_ST",&PhloemFlux::Delta_JA_STv)
-            .def_readwrite("JAuxin_ST2",&PhloemFlux::JAuxin_ST2v)
-            .def_readwrite("deleteAtRootTip",&PhloemFlux::deleteAtRootTip)
-            .def_readwrite("isRootTip",&PhloemFlux::isRootTip)
-            .def_readwrite("burnInTime",&PhloemFlux::burnInTime)
-            .def_readwrite("SucSTLost",&PhloemFlux::SucSTLost)
-            .def_readwrite("SucMesoLost",&PhloemFlux::SucMesoLost)
-            .def_readwrite("AuxinLost",&PhloemFlux::AuxinLost)
-			.def_readwrite("useStemTip",&PhloemFlux::useStemTip)
-			.def_readwrite("StopLoss",&PhloemFlux::StopLoss)
-			.def_readwrite("manualAddST",&PhloemFlux::manualAddST)
-			.def_readwrite("manualAddMeso",&PhloemFlux::manualAddMeso)
-			.def_readwrite("manualAddAux",&PhloemFlux::manualAddAux)
-			.def_readwrite("L_dead_threshold",&PhloemFlux::L_dead_threshold)
-			.def_readwrite("auxin_init_mean",&PhloemFlux::auxin_init_mean)
-			.def_readwrite("computeBerth",&PhloemFlux::computeBerth)
-			.def_readwrite("stopAt",&PhloemFlux::stopAt)
-			.def_readwrite("BerthLim",&PhloemFlux::BerthLim)
-			.def_readwrite("useLength",&PhloemFlux::useLength)
-			.def_readwrite("doMemAux",&PhloemFlux::doMemAux)
-			.def_readwrite("leafAsIAASource",&PhloemFlux::leafAsIAASource)
-			.def_readwrite("limLenActive",&PhloemFlux::limLenActive)
-			.def_readwrite("PRBA",&PhloemFlux::PRBA)
-			.def_readwrite("PRBD",&PhloemFlux::PRBD)
-			.def_readwrite("PRBr",&PhloemFlux::PRBr)
-			.def_readwrite("PRBLeaf",&PhloemFlux::PRBLeaf)
-			//.def_readwrite("CarbonCostDormant",&PhloemFlux::CarbonCostDormant)
-            //.def("computeBerth", (void (PhloemFlux::*)(const std::function<double(double,double)>&)) &PhloemFlux::computeBerth)
-        
             .def_readwrite("r_ST_ref",&PhloemFlux::r_ST_refv)
             .def_readwrite("r_ST",&PhloemFlux::r_STv)
-            .def_readwrite("delta_ls",&PhloemFlux::delta_ls)
-            .def_readwrite("delta_ls_org_i",&PhloemFlux::delta_ls_org_i)
-            .def_readwrite("delta_suc_org",&PhloemFlux::delta_suc_org)
-            .def_readwrite("delta_ls_org",&PhloemFlux::delta_ls_org)
-            .def_readwrite("delta_ls_org_imax",&PhloemFlux::delta_ls_org_imax)
-            .def_readwrite("delta_ls_org_max",&PhloemFlux::delta_ls_org_max)
             .def_readwrite("update_viscosity",&PhloemFlux::update_viscosity_)
             .def_readwrite("AgPhl",&PhloemFlux::Agv)
-            .def_readwrite("Q_Grmax",&PhloemFlux::Q_Grmaxv)
-            .def_readwrite("Q_Exudmax",&PhloemFlux::Q_Exudmaxv)
-            .def_readwrite("Q_Rmmax",&PhloemFlux::Q_Rmmaxv)
+            .def_readwrite("Q_Grmax",&PhloemFlux::Q_Grmax)
+            .def_readwrite("Q_Exudmax",&PhloemFlux::Q_Exudmax)
+            .def_readwrite("Q_Rmmax",&PhloemFlux::Q_Rmmax)
             .def_readwrite("Fl",&PhloemFlux::Flv)
-            //.def_readwrite("KMgr",&PhloemFlux::KMgr)
             .def_readwrite("KMfu",&PhloemFlux::KMfu)
-            //.def_readwrite("k_meso",&PhloemFlux::k_meso)
-            .def_readwrite("Csoil",&PhloemFlux::Csoil)
-            .def_readwrite("deltaSucOrgNode",&PhloemFlux::deltaSucOrgNode_)
+            .def_readwrite("CsoilDefault",&PhloemFlux::CsoilDefault)
+            .def_readwrite("Csoil_seg",&PhloemFlux::Csoil_seg)
+            .def_readwrite("Csoil_node",&PhloemFlux::Csoil_node)
             .def_readwrite("usePsiXyl",&PhloemFlux::usePsiXyl)
-            .def_readwrite("expression",&PhloemFlux::expression)
             .def_readwrite("JW_ST",&PhloemFlux::JW_STv)
-            .def_readwrite("JS_ST",&PhloemFlux::JS_STv)
             .def_readwrite("Gr_Y",&PhloemFlux::Gr_Y)
             .def_readwrite("solver",&PhloemFlux::solver)
             .def_readwrite("atol",&PhloemFlux::atol_double)
@@ -1230,7 +1204,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("surfMeso",&PhloemFlux::surfMeso)
 			.def_readwrite("sameVolume_meso_st",&PhloemFlux::sameVolume_meso_st)
 			.def_readwrite("sameVolume_meso_seg",&PhloemFlux::sameVolume_meso_seg)
-			//.def_readwrite("Cobj_ST",&PhloemFlux::Cobj_ST)
 			.def_readwrite("Vmaxloading",&PhloemFlux::Vmaxloading)
 			.def_readwrite("beta_loading",&PhloemFlux::beta_loading)
 			.def_readwrite("Mloading",&PhloemFlux::Mloading)
@@ -1238,12 +1211,21 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("initValST",&PhloemFlux::initValST)
 			.def_readwrite("initValMeso",&PhloemFlux::initValMeso)
 			.def_readwrite("doTroubleshooting",&PhloemFlux::doTroubleshooting)
-			.def_readwrite("Q_GrUnbornv_i",&PhloemFlux::Q_GrUnbornv_i)
-			.def_readwrite("Q_GrmaxUnbornv_i",&PhloemFlux::Q_GrmaxUnbornv_i)
-			.def_readwrite("Fpsi",&PhloemFlux::Fpsi)
 			.def_readwrite("Q10",&PhloemFlux::Q10)
-			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10);
-
+			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10)
+            .def_readwrite("C_targ",&PhloemFlux::C_targ)
+            .def_readwrite("C_targMesophyll",&PhloemFlux::C_targMesophyll)
+            .def_readwrite("Vmax_S_ST",&PhloemFlux::Vmax_S_ST)
+            .def_readwrite("kM_S_ST",&PhloemFlux::kM_S_ST)
+            .def_readwrite("kHyd_S_ST",&PhloemFlux::kHyd_S_ST)
+            .def_readwrite("k_mucil",&PhloemFlux::k_mucil)
+            .def_readwrite("k_S_ST",&PhloemFlux::k_S_ST)
+            .def_readwrite("Vmax_S_Mesophyll",&PhloemFlux::Vmax_S_Mesophyll)
+            .def_readwrite("kM_S_Mesophyll",&PhloemFlux::kM_S_Mesophyll)
+            .def_readwrite("kHyd_S_Mesophyll",&PhloemFlux::kHyd_S_Mesophyll)
+            .def_readwrite("k_S_Mesophyll",&PhloemFlux::k_S_Mesophyll)
+            .def_readwrite("k_mucil_",&PhloemFlux::k_mucil_)
+            .def_readwrite("cpb_2_pm",&PhloemFlux::cpb_2_pm);
 #endif
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
         .def(py::init<>())

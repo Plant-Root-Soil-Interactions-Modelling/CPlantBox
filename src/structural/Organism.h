@@ -152,6 +152,12 @@ class Organism : public std::enable_shared_from_this<Organism> {
     int getDelayDefinition(int ot_lat);
 
     int plantId; // unique plant id (for debugging copy)
+    
+    double budGR;
+    std::vector<double> maxLBud;
+    std::vector<double> maxLBudDormant;
+    bool useCWGr;
+    int thread;
 
   protected:
     virtual tinyxml2::XMLElement *getRSMLMetadata(tinyxml2::XMLDocument &doc) const;

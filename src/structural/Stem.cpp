@@ -168,6 +168,42 @@ void Stem::simulate(double dt, bool verbose)
 				*/
 				double targetlength = calcLength(age__)+ this->epsilonDx;
 				double e = targetlength-length; // store value of elongation to add
+                
+                double rmax, Lmax;
+                double maxLBudDormant_ = plant.lock()->maxLBudDormant.at(plant.lock()->maxLBudDormant.size()-1);
+                double maxLBud_ = plant.lock()->maxLBud.at(plant.lock()->maxLBud.size()-1);
+                
+                    try {
+                if(parentLinkingNode < plant.lock()->maxLBudDormant.size())
+                {
+                     maxLBudDormant_ = plant.lock()->maxLBudDormant.at(parentLinkingNode);
+                }
+                if(parentLinkingNode < plant.lock()->maxLBud.size())
+                {
+                     maxLBud_ = plant.lock()->maxLBud.at(parentLinkingNode);
+                }
+                    }catch(...){
+                    std::cout<<"stem::simulate select maxLbud "<<plant.lock()->maxLBudDormant.size()<<" "<<plant.lock()->maxLBud.size()<<" "<<parentLinkingNode<<std::flush;
+                    assert(false);
+                    }
+                
+                switch(budStage) 
+                {
+                    case -1:{Lmax = length; break;}
+                    case 0:{rmax = plant.lock()->budGR;//1 mm/d
+                            Lmax = maxLBudDormant_; 
+                            // if(parentLinkingNode == 1)//2nd bud
+                            // {
+                            //     Lmax = plant.lock()->maxLBudDormant_1; 
+                            // }
+                            break;}
+                    case 1 :{rmax = plant.lock()->budGR;Lmax = maxLBud_;break;}//1 mm/d
+                    case 2 :{rmax = getParameter("r");
+                             Lmax = getParameter("k");break;}//1 mm/d
+                    default:{std::cout<<"stem::simulate: budStage not recognised "<< budStage<<std::flush;
+                            assert(false);}
+                }
+                
 				//can be negative
 				double dl = e;//length increment = calculated length + increment from last time step too small to be added
 				length = getLength(true);
