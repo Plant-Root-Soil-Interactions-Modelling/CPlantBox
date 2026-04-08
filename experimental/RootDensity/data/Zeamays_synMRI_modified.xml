@@ -1,0 +1,288 @@
+<plant>
+    <seed name="undefined" subType="0">
+        <parameter name="maxTi" value="0"/>
+        <!--Maximal number of tillers [1]-->
+        <parameter name="a" value="0.1"/>
+        <!--radius [cm]-->
+        <parameter name="delayB" value="0.1"/>
+        <!--Time delay between the basal roots [day]-->
+        <parameter name="delayRC" value="15"/>
+        <!--Delay between the root crowns [day]-->
+        <parameter name="delaySB" value="1.5"/>
+        <!--Time delay between the shoot borne roots [day]-->
+        <parameter name="delayTi" value="1e+09"/>
+        <!--Time delay between the tillers [day]-->
+        <parameter name="dx" value="0.25"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="1e-06"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="firstB" value="0.5"/>
+        <!--Emergence of first basal root [day]-->
+        <parameter name="firstSB" value="1"/>
+        <!--First emergence of a shoot borne root [day]-->
+        <parameter name="firstTi" value="1e+09"/>
+        <!--Emergence of first tiller [day]-->
+        <parameter name="maxB" value="6"/>
+        <!--Maximal number of basal roots [1]-->
+        <parameter name="nC" value="11"/>
+        <!--Maximal number of roots per root crown [1]-->
+        <parameter name="nz" value="0.1"/>
+        <!--Distance between the root crowns along the shoot [cm]-->
+        <parameter name="seedPos.x" value="0"/>
+        <!--X-Coordinate of seed position [cm]-->
+        <parameter name="seedPos.y" value="0"/>
+        <!--Y-Coordinate of seed position [cm]-->
+        <parameter name="seedPos.z" value="-3"/>
+        <!--Z-Coordinate of seed position [cm]-->
+        <parameter name="simulationTime" value="30"/>
+        <!--Recommended final simulation time  [day]-->
+    </seed>
+    <root name="undefined" subType="0">
+        <parameter name="gf" value="1"/>
+        <!--Growth function number [1]-->
+        <parameter name="tropismT" value="1"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.1"/>
+        <!--radius [cm]-->
+        <parameter name="colorB" value="0.2"/>
+        <!--Root color, blue component [0.-1.]-->
+        <parameter name="colorG" value="0.2"/>
+        <!--Root color, green component [0.-1.]-->
+        <parameter name="colorR" value="0.60000002"/>
+        <!--Root color, red component [0.-1.]-->
+        <parameter name="dx" value="0.25"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="1e-06"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="la" value="10"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lb" value="0"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="1"/>
+        <!--Lateral root emergence delay [day]-->
+        <parameter name="lmax" value="0"/>
+        <!--Maximal root length [cm]-->
+        <parameter name="ln" value="1"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="lnk" value="0"/>
+        <!--Slope of inter-lateral distances [1]-->
+        <parameter name="r" value="1"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Root life time [day]-->
+        <parameter name="theta" value="1.22"/>
+        <!--Angle between root and parent root [rad]-->
+        <parameter name="tropismN" value="1"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.2"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+    </root>
+    <root name="taproot" subType="1">
+        <parameter name="gf" value="2"/>
+        <!--Growth function number [1]-->
+        <parameter name="tropismT" value="1"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.0436"/>
+        <!--radius [cm]-->
+        <parameter name="colorB" value="0.2"/>
+        <!--Root color, blue component [0.-1.]-->
+        <parameter name="colorG" value="0.2"/>
+        <!--Root color, green component [0.-1.]-->
+        <parameter name="colorR" value="0.60000002"/>
+        <!--Root color, red component [0.-1.]-->
+        <parameter name="dx" value="0.5"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="0.0049999999"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="la" value="0.56920499"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lb" value="1.37664"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="6.1541929"/>
+        <!--Lateral root emergence delay [day]-->
+        <parameter name="lmax" value="150"/>
+        <!--Maximal root length [cm]-->
+        <parameter name="ln" value="0.56920499"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="lnk" value="0"/>
+        <!--Slope of inter-lateral distances [1]-->
+        <parameter name="r" value="1.6"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Root life time [day]-->
+        <parameter name="theta" value="0"/>
+        <!--Angle between root and parent root [rad]-->
+        <parameter name="tropismN" value="0.1"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.2"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+        <parameter name="successor" type="2" percentage="1"/>
+        <!--Sub type of lateral roots-->
+    </root>
+    <root name="lateral" subType="2">
+        <parameter name="gf" value="2"/>
+        <!--Growth function number [1]-->
+        <parameter name="tropismT" value="2"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.02"/>
+        <!--radius [cm]-->
+        <parameter name="colorB" value="0.2"/>
+        <!--Root color, blue component [0.-1.]-->
+        <parameter name="colorG" value="0.2"/>
+        <!--Root color, green component [0.-1.]-->
+        <parameter name="colorR" value="0.60000002"/>
+        <!--Root color, red component [0.-1.]-->
+        <parameter name="dx" value="0.5"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="0.0049999999"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="la" value="0.65249199"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lb" value="1.4"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="1"/>
+        <!--Lateral root emergence delay [day]-->
+        <parameter name="lmax" value="2.29054"/>
+        <!--Maximal root length [cm]-->
+        <parameter name="ln" value="0.65249199"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="lnk" value="0"/>
+        <!--Slope of inter-lateral distances [1]-->
+        <parameter name="r" value="1.8791695"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Root life time [day]-->
+        <parameter name="theta" value="1.46672"/>
+        <!--Angle between root and parent root [rad]-->
+        <parameter name="tropismN" value="2"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.68568301"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+        <parameter name="successor" type="3" percentage="1"/>
+        <!--Sub type of lateral roots-->
+    </root>
+    <root name="tertiaryroots" subType="3">
+        <parameter name="gf" value="2"/>
+        <!--Growth function number [1]-->
+        <parameter name="tropismT" value="2"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.0099999998"/>
+        <!--radius [cm]-->
+        <parameter name="colorB" value="0"/>
+        <!--Root color, blue component [0.-1.]-->
+        <parameter name="colorG" value="23.799999"/>
+        <!--Root color, green component [0.-1.]-->
+        <parameter name="colorR" value="238"/>
+        <!--Root color, red component [0.-1.]-->
+        <parameter name="dx" value="0.5"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="0.0049999999"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="la" value="1.2"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lb" value="0"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="1"/>
+        <!--Lateral root emergence delay [day]-->
+        <parameter name="lmax" value="0.94"/>
+        <!--Maximal root length [cm]-->
+        <parameter name="ln" value="1.2"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="lnk" value="0"/>
+        <!--Slope of inter-lateral distances [1]-->
+        <parameter name="r" value="2.3499999"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Root life time [day]-->
+        <parameter name="theta" value="1.50098"/>
+        <!--Angle between root and parent root [rad]-->
+        <parameter name="tropismN" value="0.5"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.1"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+    </root>
+    <root name="basal" subType="4">
+        <parameter name="gf" value="2"/>
+        <!--Growth function number [1]-->
+        <parameter name="tropismT" value="1"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.0436"/>
+        <!--radius [cm]-->
+        <parameter name="colorB" value="0.2"/>
+        <!--Root color, blue component [0.-1.]-->
+        <parameter name="colorG" value="0.2"/>
+        <!--Root color, green component [0.-1.]-->
+        <parameter name="colorR" value="0.60000002"/>
+        <!--Root color, red component [0.-1.]-->
+        <parameter name="dx" value="0.5"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="0.0049999999"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="la" value="0.56920499"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lb" value="1.37664"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="6.1541929"/>
+        <!--Lateral root emergence delay [day]-->
+        <parameter name="lmax" value="150"/>
+        <!--Maximal root length [cm]-->
+        <parameter name="ln" value="0.56920499"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="lnk" value="0"/>
+        <!--Slope of inter-lateral distances [1]-->
+        <parameter name="r" value="1.6"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Root life time [day]-->
+        <parameter name="theta" value="1.4835298"/>
+        <!--Angle between root and parent root [rad]-->
+        <parameter name="tropismN" value="0.1"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.2"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+        <parameter name="successor" type="2" percentage="1"/>
+        <!--Sub type of lateral roots-->
+    </root>
+    <root name="shootborne" subType="5">
+        <parameter name="gf" value="2"/>
+        <!--Growth function number [1]-->
+        <parameter name="tropismT" value="1"/>
+        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+        <parameter name="a" value="0.0436"/>
+        <!--radius [cm]-->
+        <parameter name="colorB" value="0.2"/>
+        <!--Root color, blue component [0.-1.]-->
+        <parameter name="colorG" value="0.2"/>
+        <!--Root color, green component [0.-1.]-->
+        <parameter name="colorR" value="0.60000002"/>
+        <!--Root color, red component [0.-1.]-->
+        <parameter name="dx" value="0.5"/>
+        <!--Axial resolution [cm] (maximal segment size)-->
+        <parameter name="dxMin" value="0.0049999999"/>
+        <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="la" value="2.2290001"/>
+        <!--Apical zone [cm]-->
+        <parameter name="lb" value="1.37664"/>
+        <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="6.1541929"/>
+        <!--Lateral root emergence delay [day]-->
+        <parameter name="lmax" value="150"/>
+        <!--Maximal root length [cm]-->
+        <parameter name="ln" value="0.56920499"/>
+        <!--Inter-lateral distance [cm]-->
+        <parameter name="lnk" value="0"/>
+        <!--Slope of inter-lateral distances [1]-->
+        <parameter name="r" value="1.6"/>
+        <!--Initial growth rate [cm day-1]-->
+        <parameter name="rlt" value="1e+09"/>
+        <!--Root life time [day]-->
+        <parameter name="theta" value="1.12"/>
+        <!--Angle between root and parent root [rad]-->
+        <parameter name="tropismN" value="0.1"/>
+        <!--Number of trials of root tropism-->
+        <parameter name="tropismS" value="0.2"/>
+        <!--Mean value of expected change of root tropism [1/cm]-->
+        <parameter name="successor" type="2" percentage="1"/>
+        <!--Sub type of lateral roots-->
+    </root>
+</plant>
