@@ -46,9 +46,9 @@ class ViewerDataModel(RsmlData):
         radii, cts, types
         """
         nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # fetch nodes and segments
-        segRadii = np.zeros((segs.shape[0], 1))  # convert to paramter per segment
-        segCTs = np.zeros((segs.shape[0], 1))
-        subTypes = np.zeros((segs.shape[0], 1))
+        segRadii = np.zeros((segs.shape[0],))  # convert to paramter per segment
+        segCTs = np.zeros((segs.shape[0],))
+        subTypes = np.zeros((segs.shape[0],))
         for i, s in enumerate(segs):
             segRadii[i] = self.radii[s[1]]  # seg to node index
             segCTs[i] = self.cts[s[1]]
@@ -64,9 +64,9 @@ class ViewerDataModel(RsmlData):
             subTypes = np.ones((len(segs),), dtype=np.int64)
         segs_ = [pb.Vector2i(s[0], s[1]) for s in segs]  # convert to CPlantBox types
         nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
-        self.analyser = pb.SegmentAnalyser(nodes_, segs_, segCTs, segRadii)
-        self.analyser.addData("subType", subTypes)
-        ms = pb.MappedSegments(self.analyser.nodes, np.array(self.cts), segs_, np.array(segRadii), np.array(subTypes))
+        self.analyser = pb.SegmentAnalyser(nodes_, segs_, list(segCTs), list(segRadii))
+        self.analyser.addData("subType", list(subTypes))
+        ms = pb.MappedSegments(self.analyser.nodes, list(self.cts), segs_, list(segRadii), [int(x) for x in subTypes])
         self.hydraulic_params = PlantHydraulicParameters()
         self.hydraulic_model = HydraulicModel_Meunier(ms, self.hydraulic_params)
         self.base_nodes = self.get_base_node_indices_()
