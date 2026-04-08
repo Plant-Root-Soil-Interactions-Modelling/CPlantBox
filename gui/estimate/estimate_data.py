@@ -100,21 +100,19 @@ class EstimateDataModel:
         return len(self.rsmls) > 0
 
     def create_length(self):
-        """ calculates root lengths, and adds it to properties if not already present)"""
-        for k, _ in enumerate(self.rsmls):  # measurements
-            if not "length" in self.rsmls[k].properties:
-                self.rsmls[k].properties["length"] = []
-                for i, p in enumerate(self.rsmls[k].polylines):
-                    l = 0.
-                    for j, n1 in enumerate(p[:-1]):
-                        n2 = p[j + 1]
-                        l += np.linalg.norm(np.array(n2) - np.array(n1))
-                    self.rsmls[k].properties["length"].append(l)
-            else:
-                print("EstimateDataModel.create_length: 'length' tag is already available")
-                lengths = self.rsmls[k].properties["length"]  # TODO this is a hack for the RSWMS files
-                for i in range(0, len(lengths)):
-                    lengths[i] = lengths[i] / 10
+        """calculates root lengths, and overwrites/creates the 'length' property (cm)."""
+        for k, _ in enumerate(self.rsmls):
+            # optional: keep original provided lengths for debugging
+            if "length" in self.rsmls[k].properties:
+                self.rsmls[k].properties["length_raw"] = list(self.rsmls[k].properties["length"])
+
+            self.rsmls[k].properties["length"] = []
+            for p in self.rsmls[k].polylines:
+                l = 0.0
+                for j, n1 in enumerate(p[:-1]):
+                    n2 = p[j + 1]
+                    l += np.linalg.norm(np.array(n2) - np.array(n1))
+                self.rsmls[k].properties["length"].append(l)
 
     def initialize_roots_(self):
         """ sets base root indices, tap root indices, and basal root indices.
