@@ -29,6 +29,7 @@ for rp in root:
     rp.highresolution = 0
     rp.dx = 0.01
     rp.a = 0.01
+    rp.tropismT = 2
     mycp.setOrganRandomParameter(rp)
 
 
@@ -78,6 +79,7 @@ for hp in hyphae_parameter:
     hp.lmax = 0.5
     hp.lb = 0.01
     hp.dx = 0.001
+    hp.tropismS = 0.1
     hp.distTH = 0.05   # distance for anastomosis
     mycp.setOrganRandomParameter(hp)
 
@@ -85,8 +87,8 @@ mycp.setGeometry(petri_dish)
 dt_hyphalgrowth = 1/24
 mycp.simulateHyphalGrowth(dt_hyphalgrowth,True)
 dt_hyphae =dt_hyphalgrowth / 60
-for i in range(0, 1):
-    mycp.simulateHyphae(dt_hyphae,True)
+# for i in range(0, 1):
+#     mycp.simulateHyphae(dt_hyphae,True)
 
 # second dish just to see hyphal growth
 # half_dish2 = pb.SDF_TranslateRotate(half_dish, 0, 0, pb.Vector3d(1.5, 0, 0))

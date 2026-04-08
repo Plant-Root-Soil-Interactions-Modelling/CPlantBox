@@ -10,9 +10,7 @@ mycp = pb.MycorrhizalPlant()
 path = "tomatoparameters/"
 name = "TomatoJohanna_WildTypeTwoHyphaeTypes"
 
-# name = "Heliantus_Pagès_2013"
-
-animation = False
+animation = True
 local = False
 infbox = pb.SDF_PlantBox(4, 4, 4)
 # infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
@@ -35,9 +33,11 @@ for hp in hyphae_parameter:
 for hp in hyphae_parameter:    
     hp.a = 0.01
     hp.ln = 0.05
+    hp.lmax = 5.0
+    hp.lmaxs = 3.0
     hp.lb = 0.05
     hp.dx = 0.01
-    hp.distTH = 0.05   # distance for anastomosis
+    hp.distTH = 0.01   # distance for anastomosis
     mycp.setOrganRandomParameter(hp)
 # print(hyphae_parameter)
 
@@ -54,7 +54,7 @@ mycp.initialize(True)
 # print(mycp.toString())
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-simtime = 20
+simtime = 30
 fps = 24
 anim_time = simtime
 N = fps * anim_time
@@ -72,6 +72,7 @@ else:
 if animation:
     for i in range(1, N):
         mycp.simulate(dt, True)
+        print(mycp.getOrganRandomParameter(pb.hyphae)[0].ln)
         ana = pb.SegmentAnalyser(mycp)
         ana.addData("infection", mycp.getNodeInfections(2))
         ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
@@ -81,9 +82,7 @@ if animation:
 
 else:
     for i in range(1, N+1):
-        print('step',i, '/',N)
-
-        
+        print('step',i, '/',N)        
         # print(hti)        
         mycp.simulate(dt, False)
 

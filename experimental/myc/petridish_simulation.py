@@ -18,6 +18,7 @@ hyphae_parameter.subType = 1
 hyphae_parameter.dx = 0.005
 hyphae_parameter.a = 0.01
 hyphae_parameter.b = 2.
+hyphae_parameter.tropismS = 0.1
 hyphae_parameter.distTH = 0.01  # distance for anastomosis 
 mycp.setOrganRandomParameter(hyphae_parameter)
 # print(hyphae_parameter)
@@ -27,6 +28,7 @@ for rp in root:
     rp.hyphalEmergenceDensity = 10
     rp.highresolution = 1.
     rp.dx = 0.01
+    rp.tropismT = 2
     mycp.setOrganRandomParameter(rp)
 
 
@@ -64,7 +66,7 @@ print("just a check")
 # mycp.simulateHyphalGrowth(10, True)
 # print(infected_nodes)
 print('Rest of steps just hyphae grow')
-for i in range(2, N+1):
+for i in range(2, 4):
     print('step',i, '/',N) 
     mycp.simulatePrimaryInfection(dt, True)
     mycp.simulateSecondaryInfection(dt, True)
