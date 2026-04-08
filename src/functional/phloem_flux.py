@@ -25,6 +25,7 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         """
         PhloemFlux.__init__( self,plant_,params, psiXylInit, ciInit)
         PhotosynthesisPython.__init__( self,plant_, params, psiXylInit, ciInit)
+        self.rs = plant_
         self.reset()
         # self.update_outputs()
         

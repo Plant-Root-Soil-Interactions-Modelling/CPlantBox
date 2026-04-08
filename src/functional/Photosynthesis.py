@@ -246,6 +246,6 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
         self.Q10_photo = parameters["Plant"]["C4"]["Q10_photo"]["value"]
         
         
-    def radial_fluxes(self):
+    def radial_fluxes(self, sim_time = None, rx = None, rsx = None, cells = True):
         """ plant-exterior exchanges [cm3/day] """
         return np.array(self.outputFlux)

@@ -121,6 +121,7 @@ public:
 	
 	
 	
+	int parentLinkingNode = -1; ///< local parent node index
 	void setBudStage(int budStage_){budStage = budStage_;};
 	int getBudStage(){return budStage;};
 	void setBudStageChange(int stage, double budStageChange_){budStageChange.at(stage+1) = budStageChange_;};
@@ -132,6 +133,7 @@ public:
 	double auxTested = -1.;
 	int budStage = 2;
 	std::vector<double> budStageChange ={0.,0.,0.,0.};
+	int getNumberOfLinkingNodes(){return created_linking_node;}
 
     bool alive = true; ///< true: alive, false: dead
     bool active = true; ///< true: active, false: organ stopped growing

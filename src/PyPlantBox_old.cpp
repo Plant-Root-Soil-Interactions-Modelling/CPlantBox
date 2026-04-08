@@ -1129,7 +1129,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setRhoSucrose",&CPB_to_PM::setRhoSucrose, py::arg("values"), py::arg("verbose") = false)
             .def("setKrm1",&CPB_to_PM::setKrm1, py::arg("values"), py::arg("verbose") = false)
             .def("setKrm2",&CPB_to_PM::setKrm2, py::arg("values"), py::arg("verbose") = false)
-            .def("updateBudStage",&CPB_to_PM::updateBudStage, py::arg("dt"))
             .def_readonly("rhoSucrose_f",&CPB_to_PM::rhoSucrose_f)
             .def_readwrite("maxLBud", &CPB_to_PM::maxLBud)
             .def_readwrite("maxLBudDormant", &CPB_to_PM::maxLBudDormant)

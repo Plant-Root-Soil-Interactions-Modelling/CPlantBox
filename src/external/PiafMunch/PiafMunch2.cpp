@@ -158,7 +158,7 @@ extern Fortran_vector C_AuxinOut;
 
 void PhloemFlux::C_fluxes(double t, int Nt)  
 {
-	TairC = TairK_phloem - 273.15;
+	double TairC = TairK_phloem - 273.15;
     //std::cout<<"PhloemFlux::C_fluxes(double t, int Nt)"<<std::endl;
     //Delta_JA_ST.display();
     //JAuxin_ST2.display();
@@ -174,7 +174,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
 		
-		double CSTi_delta = max(0.,CSTi-Csoil); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
+		double CSTi_delta = max(0.,CSTi-Csoil_node[i-1]); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
 		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);//max maintenance respiration rate
 		
 		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];//max exudation rate
@@ -182,7 +182,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i];//variation of sucrose content in node
 		
         Q_AuxinOut_dot[i] = C_Auxin[i] * (auxin_D * (1 - deleteAtRootTip) + auxin_D * isRootTip.at(i-1) * deleteAtRootTip);
-        Q_Auxin_dot[i] = AuxinSource.at(i-1) * auxin_P  + Delta_JA_ST[i] - Q_AuxinOut_dot[i];
+        Q_Auxin_dot[i] = cpb_2_pm->AuxinSource.at(i-1) * auxin_P  + Delta_JA_ST[i] - Q_AuxinOut_dot[i];
 		//Q_meso_dot:
 		Q_Mesophyll_dot[i] = Ag[i] -Q_Fl[i];//variaiton of sucrose content in mesophyll compartment 
 		
