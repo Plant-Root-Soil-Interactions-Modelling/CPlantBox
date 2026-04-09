@@ -13,16 +13,6 @@ animation = True
 
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
-## Setting parameters for hyphae and roots
-# hyphae_parameter = pb.HyphaeRandomParameter(mycp)
-# hyphae_parameter.subType = 1
-# hyphae_parameter.dx = 0.001
-# hyphae_parameter.a = 0.01
-# hyphae_parameter.b = 2.
-# hyphae_parameter.distTH = 0.01  # distance for anastomosis 
-# mycp.setOrganRandomParameter(hyphae_parameter)
-# print(hyphae_parameter)
-
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
     rp.hyphalEmergenceDensity = 0
@@ -83,7 +73,8 @@ for hp in hyphae_parameter:
     hp.distTH = 0.05   # distance for anastomosis
     mycp.setOrganRandomParameter(hp)
 
-mycp.setGeometry(petri_dish)
+mycp.changeGeometry(5, petri_dish)
+# need something here to redo the tropism function just for the hyphae
 dt_hyphalgrowth = 1/24
 mycp.simulateHyphalGrowth(dt_hyphalgrowth,True)
 dt_hyphae =dt_hyphalgrowth / 60

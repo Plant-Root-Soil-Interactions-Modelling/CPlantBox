@@ -278,12 +278,17 @@ void MycorrhizalPlant::initCallbacks() {
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
         std::cout << "Created tropism function for hyphae with type " << rp->tropismT << " and parameters n=" << rp->tropismN << " and sigma=" << rp->tropismS << std::endl;
         tropism->setGeometry(geometry);
-        // TODO check this manually
         rp->f_tf = tropism; // set new one
     }
 
 };
 
-
-
+void MycorrhizalPlant::changeGeometry(int ot,std::shared_ptr<SignedDistanceFunction> geom) {
+    for (auto& p_otp :organParam[ot]) {
+        auto rp = std::static_pointer_cast<HyphaeRandomParameter>(p_otp.second);
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
+        tropism->setGeometry(geom);
+        rp->f_tf = tropism; // set new one
+    }
+};
 }
