@@ -716,7 +716,7 @@ if __name__ == "__main__":
     import plantbox.visualisation.vtk_plot as vp
 
     min_b = pb.Vector3d([-38.0, -8.0, -200.0])
-    max_b = pb.Vector3d([38.0, 8.0, 0.0])
+    max_b = pb.Vector3d([38.0, 8.0, -0.301])  # <- exlude seed
     cell_number = pb.Vector3d([1, 1, 1])
 
     plant = pb.MappedPlant()
@@ -725,20 +725,21 @@ if __name__ == "__main__":
     plant.initialize()
     plant.setRectangularGrid(min_b, max_b, cell_number, False, False)
     plant.simulate(40)
+    # print(plant.nodes[0]) # seed is located at (0,0,-0.3)
     # vp.plot_plant(plant, "subType")
 
     peri = PerirhizalPython(plant)
     outer_radii = peri.get_outer_radii("voronoi_periodic")  # length, surface, volume, voronoi_periodic, voronoi_bounded
     print("outer_radii.shape:", outer_radii.shape, "np.nanmin(outer_radii):", np.nanmin(outer_radii), "np.nanmax(outer_radii):", np.nanmax(outer_radii))
+
     lengths = np.array(plant.segLength())
     print("lengths.shape:", len(lengths), "np.nanmin(lengths):", np.nanmin(lengths), "np.nanmax(lengths):", np.nanmax(lengths))
-
     inner_radii = np.array(plant.getEffectiveRadii())
     inner_radii[outer_radii == 0] = 0  # if outer radius is zero, there is no perirhizal zone, and the inner radius must be set to zero as well
     vol = np.prod(plant.getDomainWidth())
     print("Domain volume", vol, "cm3")
     print("total perirhizal volume", np.pi * np.sum(outer_radii * outer_radii * lengths) - np.pi * np.sum(inner_radii * inner_radii * lengths), "cm3")
-    # in case of voronoi not exact due to the seed node
+    # if the seed is inside the domain voronoi is not exact due to the seed node voronoi volume (which apical to any root semgent)
 
     outer_radii = np.clip(outer_radii, 0, 2)  # to avoid outliers for better vizualization
     plt.hist(outer_radii, weights=lengths, bins=40, rwidth=0.9)
