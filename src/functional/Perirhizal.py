@@ -710,7 +710,7 @@ if __name__ == "__main__":
     # print("root soil interface", rsx, "cm")
     # print("results into a flux of", kr * 2 * a * np.pi * (rsx - rx), "cm3/day")
 
-    # Example C: voronoi mesh
+    # Example C: voronoi outer radii
     import matplotlib.pyplot as plt
 
     import plantbox.visualisation.vtk_plot as vp
