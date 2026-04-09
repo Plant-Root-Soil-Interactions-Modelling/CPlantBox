@@ -17,15 +17,18 @@ class PerirhizalPython(Perirhizal):
 
     * calculates root soil interface potential using steady rate approximation (Schröder et al. 2008)
     * perirhizal_conductance_per_layer calculates the perirhizal conductance in a soil layer (or cell) (Vanderborght et al. 2023, Eqn [6])
-    * support of 4D lookup tables (file type is a zipped archive)
+    * support of 4D lookup tables (file type is a zipped archive) -> will be IMPROVED
+    *
     * analysis across soil grid, e.g. get_density, average, aggregate
     * calculates outer perirhizal radii (based on denisties or Voronoi)
 
-    run script to create a 4D lookup table (see __main__)
+    * TODO maybe seperate geometry related functions (e.g. get_density, get_outer_radii) from soil root interface potential related functions (e.g. soil_root_interface_potentials, create_lookup) into different classes
+
+    run script for different examples, uncomment (to create a 4D lookup table, usage lookup table, and voronoi outer radii)
     """
 
     def __init__(self, ms=None):
-        """ms      reference to MappedSegments"""
+        """@param ms reference to MappedSegments"""
         if ms:
             super().__init__(ms)
         else:
@@ -85,7 +88,7 @@ class PerirhizalPython(Perirhizal):
         fun = lambda x: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
         if rx == sx:  # degenerate bracket: no gradient, interface equals bulk potential
             return sx
-        #rsx = root_scalar(fun, method="brentq", bracket=[min(rx, sx), max(rx, sx)])
+        # rsx = root_scalar(fun, method="brentq", bracket=[min(rx, sx), max(rx, sx)])
         rsx = fsolve(fun, (rx + sx) / 2)
         return rsx
 
@@ -119,8 +122,6 @@ class PerirhizalPython(Perirhizal):
         sp             van genuchten soil parameters, , call
                        vg.create_mfp_lookup(sp) before
         """
-        import os
-
         from mpi4py import MPI
 
         comm = MPI.COMM_WORLD
@@ -366,7 +367,7 @@ class PerirhizalPython(Perirhizal):
         elif type == "voronoi" or type == "voronoi_bounded":
             if volumes is not None:
                 print("PerirhizalPython.get_outer_radii() Warning: parmeter 'volumes' is set but not applicable for voronoi")
-            return self.get_outer_radii_voronoi()  # default is bounded voronoi
+            return self.get_outer_radii_voronoi("bounded")  # default is bounded voronoi
         elif type == "voronoi_periodic":
             if volumes is not None:
                 print("PerirhizalPython.get_outer_radii() Warning: parmeter 'volumes' is set but not applicable for voronoi")
@@ -386,23 +387,27 @@ class PerirhizalPython(Perirhizal):
         else:
             print("PerirhizalPython.get_outer_radii_() unknown type (should be 'length', 'surface', or 'volume')", type)
             raise
-        ms = self.ms  # renamethat
+        ms = self.ms  # rename that
         cell2seg = ms.cell2seg
         radii = ms.getEffectiveRadii()
         lengths = ms.segLength()
-        width = ms.maxBound.minus(ms.minBound)
+        width = ms.getDomainWidth()
         outer_r = np.zeros((len(radii),))
         if volumes is None:
             n = ms.resolution.x * ms.resolution.y * ms.resolution.z
             volumes = np.ones(int(n)) * (width.x * width.y * width.z) / n
             # print("PerirhizalPython.get_outer_radii_(): each soil volume has", (width.x * width.y * width.z) / n, "cm3")
-
+        # print("volumes", volumes)
+        # print("cell2seg.keys()", cell2seg.keys())
+        # print("len(cell2seg[-1])", len(cell2seg[-1]))
+        # print("len(cell2seg[0])", len(cell2seg[0]))
         for cell_id, seg_ids in cell2seg.items():
-            tt = np.sum(np.array([f(radii[i], lengths[i]) for i in seg_ids]))
-            for si in seg_ids:
-                t = f(radii[si], lengths[si]) / tt  # proportionality factor (must sum up to == 1 over cell)
-                v = t * volumes[cell_id]  # target volume
-                outer_r[si] = np.sqrt(v / (np.pi * lengths[si]) + radii[si] * radii[si])
+            if cell_id >= 0:
+                tt = np.sum(np.array([f(radii[i], lengths[i]) for i in seg_ids]))
+                for si in seg_ids:
+                    t = f(radii[si], lengths[si]) / tt  # proportionality factor (must sum up to == 1 over cell)
+                    v = t * volumes[cell_id]  # target volume
+                    outer_r[si] = np.sqrt(v / (np.pi * lengths[si]) + radii[si] * radii[si])
 
         return outer_r
 
@@ -414,13 +419,10 @@ class PerirhizalPython(Perirhizal):
         TODO doc
         """
         ms = self.ms  # rename
-        min_b = ms.minBound
-        max_b = ms.maxBound
-
         ns = ms.getNumberOfMappedSegments()
         nodes_ = ms.nodes
         nodes = np.array([[n.x, n.y, n.z] for n in nodes_])  # to numpy array
-        nodes = nodes[: ns + 1]  # TODO there are more nodes than segments,
+        # nodes = nodes[: ns + 1]  # TODO there are more nodes than segments,
         # e.g. some nodes are not connected to the root system.For now we just drop them, but we should check why they are there in the first place.
         print("nodes", len(nodes_))
         print("nodes truncated", nodes.shape)
@@ -430,15 +432,13 @@ class PerirhizalPython(Perirhizal):
         y = int(ms.resolution.y)
         z = int(ms.resolution.z)
 
-        width = np.array([max_b.x, max_b.y, max_b.z]) - np.array([min_b.x, min_b.y, min_b.z])
+        width = ms.getDomainWidth()
         # print("making periodic", width)
         # print("nodes", nodes.shape)
         # print("resolution", x, y, z)
-        nodes = self.make_periodic_(nodes, width[0], width[1])
+        nodes = self.make_periodic_(nodes, width.x, width.y)
 
-        vol = np.empty((nodes.shape[0]))
-        vol[:] = np.nan
-
+        vol = np.zeros((nodes.shape[0]))
         for i in range(0, x):
             for j in range(0, y):
                 for k in range(0, z):
@@ -452,6 +452,7 @@ class PerirhizalPython(Perirhizal):
                         print("PerirhizalPython.get_outer_radii_() unknown type (should be 'bounded', or 'periodic')", type)
                         raise
                     nn = ni.shape[0]
+                    print("number of nodes in cell", nn)
 
                     if nn > 0:
                         vor = Voronoi(n)
@@ -480,7 +481,6 @@ class PerirhizalPython(Perirhizal):
         outer_r = np.zeros((vol.shape[0] - 1,))
         radii = self.ms.getEffectiveRadii()
         lengths = self.ms.segLength()
-
         for i, v in enumerate(vol[1:]):  # seg_index = node_index -1
             if v > 0:
                 outer_r[i] = np.sqrt(v / (np.pi * lengths[i]) + radii[i] * radii[i])
@@ -498,7 +498,7 @@ class PerirhizalPython(Perirhizal):
         grid.SetPoints(points_array)
         return grid
 
-    def get_voronoi_mesh(self):
+    def get_voronoi_mesh(self, crop_domain=None):
         """Creates a VTK grid containing vor_nodes; assumes periodic boundaries in x and y direction, and open in z direction"""
         nodes_ = self.ms.nodes  # make nodes periodic and pass all
         nodes = np.array([[n.x, n.y, n.z] for n in nodes_])  # to numpy array
@@ -506,7 +506,7 @@ class PerirhizalPython(Perirhizal):
         max_b = self.ms.maxBound
         width = np.array([max_b.x, max_b.y, max_b.z]) - np.array([min_b.x, min_b.y, min_b.z])
         nodes = self.make_periodic_(nodes, width[0], width[1])
-        return self.get_voronoi_mesh_(nodes, len(nodes))
+        return self.get_voronoi_mesh_(nodes, len(nodes), crop_domain)
 
     def get_voronoi_mesh_(self, vor_nodes, noc, crop_domain=None):
         """Creates a VTK grid containing vor_nodes;
@@ -533,7 +533,6 @@ class PerirhizalPython(Perirhizal):
 
         for v in vor.vertices:
             points_array.InsertNextPoint(v)
-
             # if crop_domain.dist(v) <= 0:
             #     # print(v)
             #     points_array.InsertNextPoint(v)
@@ -623,7 +622,7 @@ class PerirhizalPython(Perirhizal):
         return n_
 
     def shift_(self, nodes, i: int, j: int, k: int):
-        """adds shifted nodes to the 6 sides of the cube with index i, j, k"""
+        """adds shifted nodes to 8 sides horizontally plus two mirrored vertically with index i, j, k"""
         min_, max_ = self.get_cell_bounds(i, j, k)
         width_ = max_ - min_
         nodes_, ni = self.nodes_within_box(nodes, min_, max_)
@@ -636,6 +635,10 @@ class PerirhizalPython(Perirhizal):
             nodes_ = np.vstack((nodes_, nodes_ + np.array([-dx, 0.0, 0.0])))
             nodes_ = np.vstack((nodes_, nodes_ + np.array([0.0, dy, 0.0])))
             nodes_ = np.vstack((nodes_, nodes_ + np.array([0.0, -dy, 0.0])))
+            nodes_ = np.vstack((nodes_, nodes_ + np.array([dx, dy, 0.0])))
+            nodes_ = np.vstack((nodes_, nodes_ + np.array([-dx, dy, 0.0])))
+            nodes_ = np.vstack((nodes_, nodes_ + np.array([dx, -dy, 0.0])))
+            nodes_ = np.vstack((nodes_, nodes_ + np.array([-dx, -dy, 0.0])))
             nodes_ = np.vstack((nodes_, flipped_z + np.array([0.0, 0.0, dz])))
             nodes_ = np.vstack((nodes_, flipped_z + np.array([0.0, 0.0, -dz])))
             return nodes_, ni
@@ -675,6 +678,8 @@ class PerirhizalPython(Perirhizal):
 
 if __name__ == "__main__":
 
+    # Example A: create lookup table:
+
     # sand = [0.045, 0.43, 0.15, 3, 1000]
     # loam = [0.08, 0.43, 0.04, 1.6, 50]
     # clay = [0.1, 0.4, 0.01, 1.1, 10]
@@ -690,16 +695,51 @@ if __name__ == "__main__":
     # peri = PerirhizalPython()
     # peri.create_lookup_mpi(filename, sp)  # takes some hours; mpiexec -n 4 python Perirhizal.py
 
-    # peri.open_lookup(filename)
-    peri = PerirhizalPython()
-    loam = [0.08, 0.43, 0.04, 1.6, 50]
-    peri.set_soil(vg.Parameters(loam))
-    a = 0.1  # cm
-    kr = 1.73e-4  # [1/day]
-    rx = -15000  # cm
-    sx = -200  # cm
-    rho = 1 / a
-    inner_kr = a * kr
-    rsx = peri.soil_root_interface_potentials([rx], [sx], [inner_kr], [rho])
-    print("root soil interface", rsx, "cm")
-    print("results into a flux of", kr * 2 * a * np.pi * (rsx - rx), "cm3/day")
+    # Example B: usage lookup table:
+    # # peri.open_lookup(filename)
+    # peri = PerirhizalPython()
+    # loam = [0.08, 0.43, 0.04, 1.6, 50]
+    # peri.set_soil(vg.Parameters(loam))
+    # a = 0.1  # cm
+    # kr = 1.73e-4  # [1/day]
+    # rx = -15000  # cm
+    # sx = -200  # cm
+    # rho = 1 / a
+    # inner_kr = a * kr
+    # rsx = peri.soil_root_interface_potentials([rx], [sx], [inner_kr], [rho])
+    # print("root soil interface", rsx, "cm")
+    # print("results into a flux of", kr * 2 * a * np.pi * (rsx - rx), "cm3/day")
+
+    # Example C: voronoi mesh
+    import matplotlib.pyplot as plt
+
+    import plantbox.visualisation.vtk_plot as vp
+
+    min_b = pb.Vector3d([-38.0, -8.0, -200.0])
+    max_b = pb.Vector3d([38.0, 8.0, 0.0])
+    cell_number = pb.Vector3d([1, 1, 1])
+
+    plant = pb.MappedPlant()
+    path = "../../modelparameter/structural/plant/"
+    plant.readParameters(path + "fspm2023" + ".xml")
+    plant.initialize()
+    plant.setRectangularGrid(min_b, max_b, cell_number, False, False)
+    plant.simulate(40)
+    # vp.plot_plant(plant, "subType")
+
+    peri = PerirhizalPython(plant)
+    outer_radii = peri.get_outer_radii("voronoi_periodic")  # length, surface, volume, voronoi_periodic, voronoi_bounded
+    print("outer_radii.shape:", outer_radii.shape, "np.nanmin(outer_radii):", np.nanmin(outer_radii), "np.nanmax(outer_radii):", np.nanmax(outer_radii))
+    lengths = np.array(plant.segLength())
+    print("lengths.shape:", len(lengths), "np.nanmin(lengths):", np.nanmin(lengths), "np.nanmax(lengths):", np.nanmax(lengths))
+
+    inner_radii = np.array(plant.getEffectiveRadii())
+    inner_radii[outer_radii == 0] = 0  # if outer radius is zero, there is no perirhizal zone, and the inner radius must be set to zero as well
+    vol = np.prod(plant.getDomainWidth())
+    print("Domain volume", vol, "cm3")
+    print("total perirhizal volume", np.pi * np.sum(outer_radii * outer_radii * lengths) - np.pi * np.sum(inner_radii * inner_radii * lengths), "cm3")
+    # in case of voronoi not exact due to the seed node
+
+    outer_radii = np.clip(outer_radii, 0, 2)  # to avoid outliers for better vizualization
+    plt.hist(outer_radii, weights=lengths, bins=40, rwidth=0.9)
+    plt.show()
