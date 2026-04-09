@@ -89,7 +89,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
 
     // Determine the appropriate colonization rate for each node based on soil properties and age  
     for (size_t i = 1; i < nodes.size(); i++){
-        if (getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()) != 1.)
+        if (std::dynamic_pointer_cast<SoilLookUpSDF>(getRootRandomParameter()->f_inf))
         {
             lmbd = getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this());
         }

@@ -257,21 +257,6 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
 void MycorrhizalPlant::initCallbacks() {
     Plant::initCallbacks();
 
-    for (auto& p_otp :organParam[Organism::ot_root]) {
-        auto rp = std::static_pointer_cast<MycorrhizalRootRandomParameter>(p_otp.second);
-        auto bigbox = std::make_shared<SDF_PlantBox>(1.e100,1.e100,1.e100); // TODO Fix this
-        auto inf_ = std::make_shared<SoilLookUpSDF>();
-        auto sdf = SignedDistanceFunction();
-        // auto sdf = SoilLookUp();
-        sdf = *bigbox;
-        inf_->sdf = std::make_shared<SignedDistanceFunction>(sdf);
-        inf_->fmax = rp->lmbd;
-        inf_->fmin = 0;
-        inf_->slope = 0;
-        // std::cout<< inf_->sdf->toString() << std::endl;
-        // rp->f_inf = inf_; // set new one
-    }
-
     // Create tropisms and growth functions per random hyphae parameter
     for (auto& p_otp :organParam[Organism::ot_hyphae]) {
         auto rp = std::static_pointer_cast<HyphaeRandomParameter>(p_otp.second);
