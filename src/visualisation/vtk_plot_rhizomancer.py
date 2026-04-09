@@ -174,7 +174,7 @@ def solver_to_polydata(solver, min_, max_, res_):
     return pd
 
 
-def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type", "organType" "creationTime"]):
+def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type", "organType" "creationTime"], min_creation_time = None, creation_time_filter = None):
     """ Creates vtkPolydata from a RootSystem or Plant using vtkLines to represent the root segments
     @param rs             a RootSystem, Plant, or SegmentAnalyser
     @param zoom_factor    a radial zoom factor, since root are sometimes too thin for vizualisation
@@ -187,6 +187,20 @@ def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type
         ana = rs
     nodes = np_convert(ana.nodes)
     segs = np_convert(ana.segments)
+    seg_mask = None
+    if creation_time_filter is not None and segs.shape[0] > 0:
+        seg_cts = np.array(ana.getParameter("creationTime"))
+        if seg_cts.shape[0] == segs.shape[0]:
+            if creation_time_filter == "positive":
+                seg_mask = seg_cts > 0
+            elif creation_time_filter == "nonpositive":
+                seg_mask = seg_cts <= 0
+            segs = segs[seg_mask]
+    elif min_creation_time is not None and segs.shape[0] > 0:
+        seg_cts = np.array(ana.getParameter("creationTime"))
+        if seg_cts.shape[0] == segs.shape[0]:
+            seg_mask = seg_cts > min_creation_time
+            segs = segs[seg_mask]
     points = vtk_points(nodes)
     cells = vtk_cells(segs)
     pd = vtk.vtkPolyData()
@@ -198,6 +212,12 @@ def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type
             if n == "radius":
                 param *= zoom_factor
             data = vtk_data(param)
+            data.SetName(n)
+            pd.GetCellData().AddArray(data)
+        elif seg_mask is not None and param.shape[0] == seg_mask.shape[0]:
+            if n == "radius":
+                param = param * zoom_factor
+            data = vtk_data(param[seg_mask])
             data.SetName(n)
             pd.GetCellData().AddArray(data)
         else:
@@ -446,7 +466,7 @@ def plot_segments(pd, p_name:str, win_title:str = " ", render:bool = True, inter
     return plot_roots(pd, p_name, win_title, render, interactiveImage)
 
 
-def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True, returnLut:bool = False):
+def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True, returnLut:bool = False, min_creation_time = None, creation_time_filter = None):
     """ plots the root system
     @param pd                       RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
     @param p_name                   parameter name of the data to be visualized
@@ -456,16 +476,19 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interacti
     @return a tuple of a vtkActor and the corresponding color bar vtkScalarBarActor
     """
     if isinstance(pd, pb.RootSystem):
-        pd = segs_to_polydata(pd, 1., [p_name, "radius", "organType"])
+        pd = segs_to_polydata(pd, 1., [p_name, "radius", "organType"], min_creation_time = min_creation_time, creation_time_filter = creation_time_filter)
 
     if isinstance(pd, pb.Plant):
-        pd = segs_to_polydata(pd, 1., [p_name, "radius", "organType"])
+        pd = segs_to_polydata(pd, 1., [p_name, "radius", "organType"], min_creation_time = min_creation_time, creation_time_filter = creation_time_filter)
 
     if isinstance(pd, pb.SegmentAnalyser):
-        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
+        pd = segs_to_polydata(pd, 1., [p_name, "radius"], min_creation_time = min_creation_time, creation_time_filter = creation_time_filter)
 
     if win_title == "":
         win_title = p_name
+
+    if pd.GetNumberOfCells() == 0:
+        return None, None
 
     pd.GetPointData().SetActiveScalars("radius")
     tubeFilter = vtk.vtkTubeFilter()

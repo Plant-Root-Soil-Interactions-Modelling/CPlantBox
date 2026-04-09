@@ -54,6 +54,9 @@ class MainWindow(QtWidgets.QMainWindow):
         }
         self.camera_is_set = False
         self.current_file = None
+        self.current_3d_mode = None
+        self.invalid_ct_actor = None
+        self.invalid_ct_color = (120 / 255.0, 130 / 255.0, 142 / 255.0)
         self.setWindowTitle("RSML Viewer by Daniel Leitner")
         self.resize(1600, 900)
         self.data = ViewerDataModel()
@@ -97,6 +100,12 @@ class MainWindow(QtWidgets.QMainWindow):
             btn = QtWidgets.QPushButton(props['title'])
             btn.clicked.connect(lambda checked, k=key: self.render_3d(k))
             pg_layout.addWidget(btn)
+        self.hide_unsupported_ct_checkbox = QtWidgets.QCheckBox("Hide ET <= 0")
+        self.hide_unsupported_ct_checkbox.setToolTip(
+            "Hide segments without supported emergence time in the 3D VTK view."
+        )
+        self.hide_unsupported_ct_checkbox.toggled.connect(self._on_hide_unsupported_ct_toggled)
+        pg_layout.addWidget(self.hide_unsupported_ct_checkbox)
         layout.addWidget(plot_group)
         
         # ——— C) Camera Views ———
@@ -246,7 +255,26 @@ class MainWindow(QtWidgets.QMainWindow):
             lut.SetTableValue(i, r, g, b, 1.0)
         return lut
 
-    def _update_colorbar(self, lookup_table, data_range, data_key):
+    def _get_full_data_range(self, data_key):
+        """Return the unfiltered scalar range for the current analyser data."""
+        if not self.data.exists() or data_key == "rootId":
+            return None
+        values = None
+        if hasattr(self.data.analyser, "data") and data_key in self.data.analyser.data:
+            values = np.array(self.data.analyser.data[data_key])
+        else:
+            try:
+                values = np.array(self.data.analyser.getParameter(data_key))
+            except Exception:
+                values = None
+        if values is None or values.size == 0:
+            return None
+        values = values[np.isfinite(values)]
+        if values.size == 0:
+            return None
+        return (float(np.min(values)), float(np.max(values)))
+
+    def _update_colorbar(self, lookup_table, data_range, data_key, invalid_patch = None):
         """Clears and redraws the Matplotlib colorbar."""
         self.cax.clear()
 
@@ -270,6 +298,38 @@ class MainWindow(QtWidgets.QMainWindow):
         cb.set_ticks(ticks)
         cb.set_label(props['title'], fontsize=14, labelpad=15)
         cb.ax.tick_params(labelsize=12)
+
+        if invalid_patch is not None:
+            color, label = invalid_patch
+            tick_labels = cb.ax.get_yticklabels()
+            tick_fontsize = 12
+            tick_color = 'black'
+            if tick_labels:
+                tick_fontsize = tick_labels[0].get_fontsize()
+                tick_color = tick_labels[0].get_color()
+            rect = mpl.patches.Rectangle(
+                (0.0, -0.055), 1.0, 0.04,
+                transform=self.cax.transAxes,
+                facecolor=color,
+                edgecolor='black',
+                linewidth=0.8,
+                clip_on=False
+            )
+            self.cax.add_patch(rect)
+            self.cax.plot(
+                [1.015, 1.07], [-0.035, -0.035],
+                transform=self.cax.transAxes,
+                color=tick_color,
+                linewidth=1.0,
+                clip_on=False
+            )
+            self.cax.text(
+                1.08, -0.035, "<0",
+                transform=self.cax.transAxes,
+                ha='left', va='center',
+                fontsize=tick_fontsize, color=tick_color,
+                clip_on=False
+            )
 
         self.colorbar_canvas.draw()
         
@@ -416,10 +476,19 @@ class MainWindow(QtWidgets.QMainWindow):
         dev = QtWidgets.QWidget()
         self.tabs.addTab(dev, "Development")
         layout = QtWidgets.QVBoxLayout(dev)
+        controls = QtWidgets.QHBoxLayout()
         self.combo_dev = QtWidgets.QComboBox();
         self.combo_dev.addItems(["Length","Surface","Volume"])
         self.combo_dev.currentIndexChanged.connect(self.update_dev)
-        layout.addWidget(self.combo_dev)
+        controls.addWidget(self.combo_dev)
+        self.checkbox_dev_include_unsupported = QtWidgets.QCheckBox("Include ET<=0")
+        self.checkbox_dev_include_unsupported.setToolTip(
+            "Adds unfilled endpoint circles at Tmax for values including temporally unsupported geometry."
+        )
+        self.checkbox_dev_include_unsupported.toggled.connect(self.update_dev)
+        controls.addWidget(self.checkbox_dev_include_unsupported)
+        controls.addStretch(1)
+        layout.addLayout(controls)
         fig, self.ax_dev = plt.subplots()
         self.canvas_dev = FigureCanvas(fig)
         layout.addWidget(self.canvas_dev)
@@ -603,8 +672,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_dev(self):
         if self.data.exists():
-            viewer_plots.plot_rootsystem_development(self.data.analyser, self.ax_dev, self.combo_dev.currentIndex())
+            viewer_plots.plot_rootsystem_development(
+                self.data.analyser,
+                self.ax_dev,
+                self.combo_dev.currentIndex(),
+                include_unsupported_endpoints = self.checkbox_dev_include_unsupported.isChecked(),
+            )
             self.canvas_dev.draw()
+
+    def _on_hide_unsupported_ct_toggled(self, _checked):
+        if self.data.exists() and self.current_3d_mode:
+            self.render_3d(self.current_3d_mode)
 
     def update_suf(self):
         if self.data.exists():
@@ -690,24 +768,55 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "Warning", "Open RSML file first")
             return
 
+        self.current_3d_mode = name
+
         self.colorbar_canvas.show() # show colorbar when RSML is loaded
         
         # If a root actor already exists, remove it
         if hasattr(self, 'root_actor') and self.root_actor:
             self.renderer.RemoveActor(self.root_actor)
+        if hasattr(self, 'invalid_ct_actor') and self.invalid_ct_actor:
+            self.renderer.RemoveActor(self.invalid_ct_actor)
+            self.invalid_ct_actor = None
 
         # Create the new 3D actor (plot_roots should now only return the actor)
         # Create the new 3D actor
         if name == "rootId":
             self.root_actor, data_range = self._build_rootid_actor()
-        else:
+        elif name == "creationTime":
             self.root_actor, data_range = vp.plot_roots(
                 self.data.analyser, name,
-                render=False, interactiveImage=False
+                render=False, interactiveImage=False,
+                creation_time_filter="positive"
+            )
+            if not self.hide_unsupported_ct_checkbox.isChecked():
+                self.invalid_ct_actor, _ = vp.plot_roots(
+                    self.data.analyser, name,
+                    render=False, interactiveImage=False,
+                    creation_time_filter="nonpositive"
+                )
+                if self.invalid_ct_actor is not None:
+                    mapper = self.invalid_ct_actor.GetMapper()
+                    if mapper is not None:
+                        mapper.ScalarVisibilityOff()
+                    self.invalid_ct_actor.GetProperty().SetColor(*self.invalid_ct_color)
+        else:
+            min_creation_time = 0.0 if self.hide_unsupported_ct_checkbox.isChecked() else None
+            self.root_actor, data_range = vp.plot_roots(
+                self.data.analyser, name,
+                render=False, interactiveImage=False,
+                min_creation_time=min_creation_time
             )
 
-        if self.root_actor is None:
-            QtWidgets.QMessageBox.warning(self, "Warning", f"Could not render mode: {name}")
+        if self.root_actor is None and self.invalid_ct_actor is None:
+            if self.hide_unsupported_ct_checkbox.isChecked() or name == "creationTime":
+                QtWidgets.QMessageBox.information(
+                    self,
+                    "No ET-supported segments",
+                    f"No segments with creationTime > 0 are available for mode: {name}"
+                )
+            else:
+                QtWidgets.QMessageBox.warning(self, "Warning", f"Could not render mode: {name}")
             return
 
         if name == "subType":
@@ -718,18 +827,44 @@ class MainWindow(QtWidgets.QMainWindow):
                 mapper.UseLookupTableScalarRangeOn()
                 mapper.SetScalarRange(data_range[0], data_range[1])
 
-        self.renderer.AddActor(self.root_actor)
+        # Keep the color mapping tied to the full unfiltered data range so the
+        # ET visibility toggle only changes geometry, not the meaning of colors.
+        if name not in ("rootId", "subType", "creationTime") and self.hide_unsupported_ct_checkbox.isChecked():
+            full_range = self._get_full_data_range(name)
+            mapper = self.root_actor.GetMapper()
+            if mapper is not None and full_range is not None:
+                lut = mapper.GetLookupTable()
+                if lut is not None:
+                    lut.SetTableRange(full_range[0], full_range[1])
+                mapper.UseLookupTableScalarRangeOn()
+                mapper.SetScalarRange(full_range[0], full_range[1])
+                data_range = full_range
+
+        if self.root_actor is not None:
+            self.renderer.AddActor(self.root_actor)
+        if self.invalid_ct_actor is not None:
+            self.renderer.AddActor(self.invalid_ct_actor)
 
         # Optional but recommended: keep bounds updated for camera/key handlers that use self.bounds
         try:
-            self.bounds = self.root_actor.GetBounds()
+            actor_for_bounds = self.root_actor if self.root_actor is not None else self.invalid_ct_actor
+            self.bounds = actor_for_bounds.GetBounds()
         except Exception:
             pass
 
 
         # Update the Matplotlib colorbar with info from the new actor
-        mapper = self.root_actor.GetMapper()
-        self._update_colorbar(mapper.GetLookupTable(), data_range, name)
+        if self.root_actor is not None and data_range is not None:
+            mapper = self.root_actor.GetMapper()
+            invalid_patch = None
+            if name == "creationTime" and self.invalid_ct_actor is not None:
+                invalid_patch = (self.invalid_ct_color, "ET<=0")
+            self._update_colorbar(mapper.GetLookupTable(), data_range, name, invalid_patch = invalid_patch)
+            self.colorbar_canvas.show()
+        else:
+            self.cax.clear()
+            self.colorbar_canvas.draw()
+            self.colorbar_canvas.hide()
 
         # Camera logic remains the same
         if not self.camera_is_set:
