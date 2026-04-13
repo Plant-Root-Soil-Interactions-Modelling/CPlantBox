@@ -61,7 +61,7 @@ class Organism : public std::enable_shared_from_this<Organism> {
 
     /* initialization and simulation */
     void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; } ///< optionally, sets a confining geometry, call before initialize()
-    virtual void initialize(bool verbose = true);                                       ///< initialize before simulation, overwrite to setup model
+    virtual void initialize(std::string mode = "", bool verbose = true);                ///< initialize before simulation, overwrite to setup model
     virtual void simulate(double dt, bool verbose = false);                             ///< calls the base organs simulate methods
     double getSimTime() const { return simtime; }                                       ///< returns the current simulation time
     double getDt() const { return dt; }                                                 ///< returns the simulation time step of the last simulate() call
