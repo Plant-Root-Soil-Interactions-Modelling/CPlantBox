@@ -11,6 +11,9 @@ from dash import Input, Output, State, ctx, dcc, html
 from plotly.colors import qualitative
 from vtk_conversions import *
 
+# Scales with viewport height while keeping usable bounds on smaller screens.
+RESULT_PLOT_HEIGHT = "clamp(560px, 72vh, 980px)"
+
 
 def vtk_camera_preset(data, distance_scale=1.5):
     """Compute a deterministic camera setup so rotation can be reset as well."""
@@ -90,7 +93,7 @@ def vtk3D_plot(data, color_pick, type_, reset_camera_token, reset_camera, button
     colbar = html.Div([html.H6(label_, style=style_), cbarcontent], style={"display": "flex", "justifyContent": "flex-end"})
 
     return html.Div(
-        [html.Div(className="spacer"), html.Div(content, style={"width": "100%", "height": "600px"}), buttons, colbar],
+        [html.Div(className="spacer"), html.Div(content, style={"width": "100%", "height": RESULT_PLOT_HEIGHT}), buttons, colbar],
         style={"width": "100%", "display": "flex", "flex-direction": "column"},
     )
 
@@ -115,15 +118,14 @@ def profile_plot(data):
                 colorway=qualitative.Set2,
             ),
         },
-        style={"position": "absolute", "top": 0, "left": 0, "width": "100%", "height": "100%"},
+        style={"width": "100%", "height": "100%"},
     )
 
     return html.Div(
         content,
         style={
-            "position": "relative",
-            "width": "60%",  # of parent width
-            "padding-top": "80%",
+            "width": "60%",
+            "height": RESULT_PLOT_HEIGHT,
             "margin-left": "auto",
             "margin-right": "auto",  # centers the container
         },
@@ -208,14 +210,10 @@ def dynamics_plot(data, typename_data):
                 colorway=qualitative.Set2,
             ),
         },
-        style={"width": "100%", "height": "600px"},
+        style={"width": "100%", "height": RESULT_PLOT_HEIGHT},
     )
 
-    return html.Div(content, style={"width": "100%", "height": "600px"})
-
-
-
-
+    return html.Div(content, style={"width": "100%", "height": RESULT_PLOT_HEIGHT})
 
 
 def dynamics_to_excel(data, typename_data):

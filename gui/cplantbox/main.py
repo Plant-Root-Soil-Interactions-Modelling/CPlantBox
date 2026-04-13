@@ -5,6 +5,7 @@ import os
 import webbrowser
 from threading import Timer  # to open browser automatically ,see __main__
 
+import bibtexxml_apa  # APA citation helper
 import conversions  # auxiliary stuff
 import dash
 import dash_bootstrap_components as dbc
@@ -191,6 +192,8 @@ app.layout = dbc.Container(
                                     ),
                                 ]
                             ),
+                            html.Div(className="spacer"),
+                            html.Div(id="reference-panel"),
                             html.Div(className="largeSpacer"),
                             html.Div(className="largeSpacer"),
                             dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),
@@ -997,6 +1000,35 @@ def download_dynamics_xls(n_clicks, data, typename_data):
         return dash.no_update
     data_xls = plots.dynamics_to_excel(data, typename_data)
     return data_xls
+
+
+@app.callback(
+    Output("reference-panel", "children"),
+    Input("plant-dropdown", "value"),
+    State("xml-store", "data"),
+)
+def update_reference_panel(plant_value, xml_data):
+    """Show APA reference from the selected dataset's XML file, or hide if absent."""
+    fname = conversions.get_parameter_names()[int(plant_value)][1]
+
+    if fname == "xml-store":
+        xml_str = (xml_data or {}).get("xml", "")
+    else:
+        xml_path = os.path.join(BASE_DIR, "params", fname)
+        try:
+            with open(xml_path, "r", encoding="utf-8") as f:
+                xml_str = f.read()
+        except OSError:
+            return []
+
+    citations = bibtexxml_apa.bibtexxml_apa_from_string(xml_str)
+    if not citations:
+        return []
+
+    items = [html.H6("Reference")] + [
+        html.P(c, style={"fontSize": "11px", "marginBottom": "4px"}) for c in citations
+    ]
+    return conversions.into_panel(items)
 
 
 if __name__ == "__main__":
