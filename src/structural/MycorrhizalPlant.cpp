@@ -261,7 +261,7 @@ void MycorrhizalPlant::initCallbacks() {
     for (auto& p_otp :organParam[Organism::ot_hyphae]) {
         auto rp = std::static_pointer_cast<HyphaeRandomParameter>(p_otp.second);
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
-        std::cout << "Created tropism function for hyphae with type " << rp->tropismT << " and parameters n=" << rp->tropismN << " and sigma=" << rp->tropismS << std::endl;
+        // std::cout << "Created tropism function for hyphae with type " << rp->tropismT << " and parameters n=" << rp->tropismN << " and sigma=" << rp->tropismS << std::endl;
         tropism->setGeometry(geometry);
         rp->f_tf = tropism; // set new one
     }
