@@ -73,7 +73,7 @@ class Plant : public Organism {
                                                     ///< plant and root parameters
     virtual void initializeDB(bool verbose = true); ///< creates the base roots (delay based lateral emergence times), call before simulation and after setting
                                                     ///< plant and root parameters
-    void initialize(std::string mode = "", bool verbose = true) override; ///< calls initializeLB (default, "lengthBased", "length_based") or initializeDB ("delayBased", "delay_based")
+    void initialize(bool verbose = true, std::string mode = "") override; ///< calls initializeLB (default, "lengthBased", "length_based") or initializeDB ("delayBased", "delay_based")
     void setTropism(std::shared_ptr<Tropism> tf, int organType, int subType = -1); ///< todo docme
     void simulate(); ///< simulates root system growth for the time defined in the root system parameters
     void simulate(double dt, bool verbose = false) override;

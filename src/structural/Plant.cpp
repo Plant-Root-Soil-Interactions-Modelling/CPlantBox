@@ -96,7 +96,7 @@ void Plant::initialize_(bool verbose) {
  * plant and root parameters
  * @param verbose       print information
  */
-void Plant::initialize(std::string mode, bool verbose) {
+void Plant::initialize(bool verbose, std::string mode) {
     if (mode == "" || mode == "lengthBased" || mode == "length_based") {
         initializeLB(verbose);
     } else if (mode == "delayBased" || mode == "delay_based") {
