@@ -53,6 +53,8 @@ public:
 
     std::vector<int> stemphytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int shootborneType = 5;
+	
+	int getNumActivePhytomeres() const;
 																										 
 protected:
 	void storeLinkingNodeLocalId(int numCreatedLN, bool silence) override; ///<  override by @see Organ::createNonGrowingLateral()

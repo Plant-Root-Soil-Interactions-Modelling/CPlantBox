@@ -52,13 +52,10 @@ plant.maxLBud = np.array([1.,1.,1.,1.])
 plant.maxLBudDormant = np.array([0.15,0.15,0.15,0.15])
 plant.budGR = 1.8
 
-sim_time = 20  # days
-numlats = []
-lenmain1 = []
-lenmain2 = []
-lats = []
-latsOT = []
-
+sim_time = 1400/20  # days
+len_phytomeres = []
+numP = []
+len_leaves = []
 
 min_ = np.array([-20, -20, -50])
 max_ = np.array([20, 20, 30.])
@@ -76,31 +73,51 @@ N = int(np.round(sim_time/dt))
 
 for i in range(N):
     plant.simulate(dt)  # Simulate|\label{l13:simulate}|
-    ana = pb.SegmentAnalyser(plant)
-    vp.write_plant(f"results/UQ_1LeafRS{i:04d}", ana)
+    # ana = pb.SegmentAnalyser(plant)
+    # vp.write_plant(f"results/UQ_1LeafRS{i:04d}", ana)
     anim.update()
-    print(dt * (i+1))
-    numlats.append(plant.getOrgans(3)[0].getNumberOfChildren())
-    lenmain1.append(plant.getOrgans(3)[0].getLength(True))
-    lenmain2.append(plant.getOrgans(3)[0].getLength(False))
-    for kid in range(plant.getOrgans(3)[0].getNumberOfChildren()):
-        if kid < len(lats):
-            lats[kid].append(plant.getOrgans(3)[0].getChild(kid).getLength(False))
-        else:
-            lats.append([plant.getOrgans(3)[0].getChild(kid).getLength(False)])
-            latsOT.append(plant.getOrgans(3)[0].getChild(kid).organType())
-    #print('lats',lats)
-# fig, ax = figure_style.subplots12(1, 1)
-# ax.plot([i for i in range(sim_time)], numlats)
-# plt.show()
-# fig, ax = figure_style.subplots12(1, 1)
-# ax.plot([i for i in range(sim_time)], lenmain1, label='True')
-# ax.plot([i for i in range(sim_time)], lenmain2, label='False')
-# plt.show()
-# fig, ax = figure_style.subplots12(1, 1)
-# for kid in range(plant.getOrgans(3)[0].getNumberOfChildren()):
-    # ax.plot([i for i in range(sim_time)], lats[kid], label=str(latsOT[kid]))
-# plt.show()
+    #print(dt * (i+1))
+    stem = plant.getOrgans(3)[0]
+    lengthP = np.diff([stem.getLength(stem.getChild(np).parentNI) for np in range(stem.getNumberOfChildren())])/2.7
+    lengthkids = np.array([stem.getChild(np).getLength(False)/5 for np in range(stem.getNumberOfChildren()) if stem.getChild(np).organType() == pb.leaf])
+    len_phytomeres.append(lengthP)
+    len_leaves.append(lengthkids)
+    print(dt * (i+1), 'sum(lengthP > 0.011)', sum(lengthP > 0.011))
+    numP.append(sum(lengthP > 0.011))
+    
+len_phytomeres = np.array(len_phytomeres).T
+len_leaves = np.array(len_leaves).T
+
+
+# choose a colormap with enough distinct colors
+cmap = plt.get_cmap('tab10')
+
+fig, ax = figure_style.subplots12(1, 1)
+
+# fig supplementary material of Barillotb
+for idp, len_phytomere in enumerate(len_phytomeres):
+    if idp < 12:
+        color = cmap(idp % cmap.N)  # ensures cycling if more than 10
+        x = [dt * (i+1) * 20 for i in range(N)]
+        ax.plot(x, len_phytomere, color=color, label=f'phytomere {idp}')
+
+for idp, len_leaf in enumerate(len_leaves):
+    if idp < 9:
+        color = cmap(idp % cmap.N)
+        x = [dt * (i+1) * 20 for i in range(N)]
+        ax.scatter(x, len_leaf, color=color, label=f'leaf {idp}')
+
+ax.set_xlim([0, 310])
+ax.legend()  # optional but useful now
+plt.show()
+
+
+# fig 7 barillot7
+fig, ax = figure_style.subplots12(1, 1)
+ax.plot([dt * (i+1) * 20 for i in range(N)], numP)
+ax.set_xlim([0, 1410])
+ax.set_ylim([0, 30])
+plt.show()
 
 # ana = pb.SegmentAnalyser(plant)
 # ana.write("results/example_plant_segs.vtp")

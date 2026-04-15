@@ -157,6 +157,15 @@ void Stem::simulate(double dt, bool verbose)
                 }
 
 				// length increment
+				double age__init = age - dt_;
+				if(age__init > p.delayNGStart){//simulation ends after start of growth pause
+					if(age__init < p.delayNGEnd){age__init =p.delayNGStart;//during growth pause
+					}else{
+						age__init = age__init - (p.delayNGEnd - p.delayNGStart);//simulation ends after end of growth pause
+					}
+				}
+				
+				
 				double age__ = age;
 				if(age > p.delayNGStart){//simulation ends after start of growth pause
 					if(age < p.delayNGEnd){age__ =p.delayNGStart;//during growth pause
@@ -198,10 +207,12 @@ void Stem::simulate(double dt, bool verbose)
                             length<<" "<<this->epsilonDx<<std::flush;
                         assert(false);
                     }  
-                    
-                    double age_ = getStemRandomParameter()->f_gf->getAge(length, rmax, Lmax, shared_from_this());
-                    double LinitTemp = getStemRandomParameter()->f_gf->getLength(age_  , rmax, Lmax, shared_from_this());
-                    double targetlength = getStemRandomParameter()->f_gf->getLength(age_ +dt_ , rmax, Lmax, shared_from_this()) + this->epsilonDx;
+					//will cause issue if used when we are in the basal and apical zone 
+                    int nActivePhytomeres_i = getNumActivePhytomeres(); 
+                    double nActivePhytomeres = double(nActivePhytomeres_i);
+					nActivePhytomeres = std::min(nActivePhytomeres,2.);// manual fix for the auxin work but doe snot really work
+					double LinitTemp = getStemRandomParameter()->f_gf->getLength(age__init  , rmax * nActivePhytomeres, Lmax, shared_from_this());
+                    double targetlength = getStemRandomParameter()->f_gf->getLength(age__ , rmax * nActivePhytomeres, Lmax, shared_from_this()) + this->epsilonDx;
                     e = std::max(0.,targetlength-LinitTemp); // unimpeded elongation in time step dt
                     
                     if(verbose)
@@ -358,7 +369,7 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overri
 			return double((org->getParameter("organType") == ot_lat)&&(org->getParameter("subType")==st_lat));
 		};//return 1. if organ of correct type and subtype, 0. otherwise
 
-	double multiplyDelay = std::max(0.,double(created_linking_node)-2.);//double(std::count_if(children.begin(), children.end(),
+	double multiplyDelay = std::max(0.,double(created_linking_node));//double(std::count_if(children.begin(), children.end(),
 	//								 correctST));
 
 	switch(delayDefinition){
@@ -411,6 +422,37 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overri
 	if(verbose){std::cout<<"create lat, delay defEND "<<forDelay<<" "<<multiplyDelay<<std::endl;}
 	return forDelay*multiplyDelay;
 }
+
+
+int Stem::getNumActivePhytomeres() const
+{
+    const StemSpecificParameter& p = *param();
+	int nAP = 0;
+	size_t nPhytomers = p.ln.size();
+	if(localId_linking_nodes.size() > 0){
+		if(p.nodalGrowth == 1) {
+			for(size_t i = 0; i < nPhytomers; ++i) {
+				double currLength = getLength(localId_linking_nodes[i+1]) -
+									getLength(localId_linking_nodes[i]);			
+				double available = std::max(0.0, p.ln[i] - currLength);
+				if (available > 0){nAP++;}
+			}
+		}else{
+			nAP = 1; // asume at least 1 active
+			for(size_t i = 0; i < nPhytomers; ++i) { // every time we have phytomere 
+				double currLength = getLength(localId_linking_nodes[i+1]) -
+									getLength(localId_linking_nodes[i]);			
+				double available = std::max(0.0, p.ln[i] - currLength);
+				double ratio = currLength/p.ln[i];
+				if ((available > 0) && (ratio > getParameter("ratioSeqGrowth"))){nAP++;}
+			}
+		}
+	}
+		
+	
+	return std::max(1, nAP); // having r of 0 causes issues
+}
+
 /**
  * Simulates internodal growth of dl for this stem
  * divid total stem growth between the phytomeres
@@ -421,57 +463,65 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overri
  * @param 	dl			total length of the segments that are created [cm]
  * @param	verbose		print information
  */
-void Stem::internodalGrowth(double dl,double dt, bool verbose)
+void Stem::internodalGrowth(double dl, double dt, bool verbose)
 {
-	const StemSpecificParameter& p = *param(); // rename
-	std::vector<double> toGrow(p.ln.size());
-	double dl_;
-	const int ln_0 = std::count(p.ln.cbegin(), p.ln.cend(), 0);//number of laterals wich grow on smae branching point as the one before
-	if(p.nodalGrowth==0){//sequentiall growth
-		toGrow[0] = dl;
-		std::fill(toGrow.begin()+1,toGrow.end(),0) ;
-	}
-	if(p.nodalGrowth ==1)
-	{//equal growth
-		std::fill(toGrow.begin(),toGrow.end(),dl/(p.ln.size()-ln_0)) ;
-	}
-	int loopId = 0;
-	size_t phytomerId = 0;
-	while( (dl >0)&&(loopId<2) ) {//do the loop at most twice over the children
-		//if the phytomere can do a growth superior to the mean phytomere growth, we add the value of "missing"
-		//(i.e., length left to grow to get the predefined total growth of the branching zone)
-		int nn1 = localId_linking_nodes.at(phytomerId); //node at the beginning of phytomere
-		int nn2 = localId_linking_nodes.at(phytomerId+1); //node at end of phytomere (if nn1 != nn2)
+    const StemSpecificParameter& p = *param();
+    size_t nPhytomers = p.ln.size();
+    if(dl <= 0.0) return;
+	double ratioSeqGrowth = getParameter("ratioSeqGrowth");
+    if(p.nodalGrowth == 1) {
+        // --- Equal growth: distribute proportionally to available growth ---
+        double totalAvailable = 0.0;
+        std::vector<double> available(nPhytomers);
 
-		double length1 = getLength(nn1);
-		double availableForGrowth = p.ln.at(phytomerId) -( getLength(nn2) - length1 ) ;//difference between maximum and current length of the phytomer
-		if(availableForGrowth<-1e-3)
-		{
-			std::stringstream errMsg;
-			errMsg <<"Stem::internodalGrowth phytomere "<<phytomerId<<" is too long: "<<availableForGrowth<<" "<<
-			p.ln.at(phytomerId)<<" "<<getLength(nn2)<<" "<<length1<<std::endl;
-			throw std::runtime_error(errMsg.str().c_str());
-		}
-		dl_ = std::max(0.,std::min(std::min(toGrow[phytomerId],availableForGrowth), dl));
-		if(dl_ > 0)
-		{
-			createSegments(dl_,dt,verbose, nn2 ); dl -= dl_;
-		}
-		if((phytomerId+1)< p.ln.size()){
-			toGrow.at(phytomerId+1) +=  toGrow.at(phytomerId) - dl_ ;
-			phytomerId ++;
-		}else{
-			toGrow.at(0) +=  toGrow.at(phytomerId) - dl_ ;
-			loopId++; phytomerId = 0;
-		}	//loop twice other the children
+        for(size_t i = 0; i < nPhytomers; ++i) {
+            double currLength = getLength(localId_linking_nodes[i+1]) -
+                                getLength(localId_linking_nodes[i]);
+            available[i] = std::max(0.0, p.ln[i] - currLength);
+            totalAvailable += available[i];
+        }
 
-	}
-	if(std::abs(dl)> 1e-6){//this sould not happen as computed dl to be <= sum(availableForGrowth)
-		std::stringstream errMsg;
-		errMsg <<"Stem::internodalGrowth length left to grow: "<<dl;
-		throw std::runtime_error(errMsg.str().c_str());
-	}
+        if(totalAvailable < 1e-12) return; // nothing can grow
+
+        for(size_t i = 0; i < nPhytomers; ++i) {
+            double growth_i = dl * (available[i] / totalAvailable);
+            createSegments(growth_i, dt, verbose, localId_linking_nodes[i+1]);
+        }
+
+    } else {
+        // --- Sequential / partial sequential growth ---
+        for(size_t i = 0; i < nPhytomers && dl > 0; ++i) {
+            int nn1 = localId_linking_nodes[i];
+            int nn2 = localId_linking_nodes[i+1];
+            double currLength = getLength(nn2) - getLength(nn1);
+            double maxLength = p.ln[i];
+            double available = std::max(0.0, maxLength - currLength);
+            if(available < 1e-12) continue;
+
+            double growth = std::min(dl, available);
+
+            if((i + 1) < nPhytomers) {
+                double respect_threshold = std::min(growth, 
+										std::max(0.0, 
+											maxLength * ratioSeqGrowth - currLength)); // all for phytomere 1
+				if(respect_threshold < growth) {respect_threshold += std::min((dl - respect_threshold)/2.0, 
+																				available - respect_threshold);}
+				growth = respect_threshold;
+            }
+			if(growth > 0){
+				createSegments(growth, dt, verbose, nn2);
+				dl -= growth;
+			}
+            
+        }
+    }
+    if (std::abs(dl) > 1e-6) { // this sould not happen as computed dl to be <= sum(availableForGrowth)
+        std::stringstream errMsg;
+        errMsg << "Stem::internodalGrowth length left to grow: " << dl;
+        throw std::runtime_error(errMsg.str().c_str());
+    }
 }
+
 /**
  * Returns a parameter per organ
  *
@@ -537,7 +587,8 @@ double Stem::calcAge(double length) const
 {
 	assert(length>=0 && "Stem::calcAge() negative root age");
 	double age__ = getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this());
-	if(age__ >param()->delayNGStart ){age__ += (param()->delayNGEnd - param()->delayNGStart);}
+	if(age__ >param()->delayNGStart ){
+		age__ += (param()->delayNGEnd - param()->delayNGStart);}
 	return age__;
 }
 

@@ -292,6 +292,7 @@ double StemRandomParameter::nobs() const
 void StemRandomParameter::bindParameters()
 {
     OrganRandomParameter::bindParameters();
+    bindParameter("ratioSeqGrowth", &ratioSeqGrowth, "ratioSeqGrowth");
     bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
     bindParameter("la", &la, "Apical zone [cm]", &las);
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);

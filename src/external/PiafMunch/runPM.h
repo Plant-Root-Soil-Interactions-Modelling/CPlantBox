@@ -161,6 +161,8 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double beta_loading = 1;//@see C_fluxes, feedback effect of C_ST on Q_FL
 	double Mloading = 0.2;//@see C_fluxes,Michaelis menten coef for Fl
 	double Gr_Y = 0.75;//growth efficiency
+	double k_S_ST = 0.;
+	double C_targ = 0.4;
 	double atol_double = 1e-017;//max absolute error
 	double rtol_double = 1e-023;//max realtive error
 	double initValST = 0.8;//initial concentration in sieve tube
@@ -195,7 +197,6 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double initValAuxin = 0.9;//initial concentration in active tip
     std::vector<double> C_Auxinv;//Suc_ST for python byding
     std::vector<double> Delta_JA_STv;
-    std::vector<double> AuxinSource;
     std::vector<double> C_AuxinOutv;
     std::vector<double> JAuxin_ST2v;
     bool deleteAtRootTip = false;

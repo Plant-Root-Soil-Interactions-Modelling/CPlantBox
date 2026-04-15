@@ -93,7 +93,7 @@ double Q_Rm_dot_alt ; // for an alternate, target-oriented,  expression of starc
 double* TracerQ_Mesophyll = NULL						; // Amount of tracer in parenchyma										(MBq)
 double* Q_RespMaintmax = NULL						; // Amount of soluble tracer in sieve tubes	= TracerC_ST * Vol_ST						(MBq)
 double* TracerQ_RespMaint = NULL						; // Amount of insoluble tracer in parenchyma										(MBq)
-double *Q_Exudationmax=NULL, *Q_Growthtotmax=NULL ; // Amount of soluble tracer in apoplasm	= TracerC_xxxApo * Vol_xxxApo			(MBq)
+double *Q_S_ST=NULL, *Q_Growthtotmax=NULL ; // Amount of soluble tracer in apoplasm	= TracerC_xxxApo * Vol_xxxApo			(MBq)
 Fortran_vector TracerJS_ST						; // TracerJS_ST[i] (MBq / h)  = TracerJS_ST_[i-1], i = 2..N  : Axial phloem soluble tracer flux ; TracerJS_ST[1]= NA, whereas TracerJS_ST_[1] = TracerJS_ST[2]
 Fortran_vector TracerJS_PhlMb						; // Lateral (Apoplasmic) soluble tracer fluxes into sieve tubes from parenchyma				(MBq / h)
 Fortran_vector TracerRespMaint					; // Tracer Maintenance respiration rate										(MBq / h)
@@ -111,7 +111,7 @@ Fortran_vector TracerC_ApoUpflow ;				; // upflow tracer concentration (mmol / m
 
 /******* variation rate of any variable X is noted: X_dot = dX/dt : *******/
 double * Q_Mesophyll_dot = NULL, * Q_ST_dot = NULL,* Q_Auxin_dot = NULL, * Q_Rm_dot = NULL, *Q_Exud_dot = NULL, *Q_Gtot_dot = NULL,  *Q_AuxinOut_dot = NULL  ;
-double * TracerQ_Mesophyll_dot=NULL, * Q_Rmmax_dot=NULL, * TracerQ_Rm_dot=NULL, *Q_Exudmax_dot=NULL, *Q_Gtotmax_dot=NULL ;
+double * TracerQ_Mesophyll_dot=NULL, * Q_Rmmax_dot=NULL, * TracerQ_Rm_dot=NULL, *Q_S_ST_dot=NULL, *Q_Gtotmax_dot=NULL ;
 // Next 2 variables are not considered as such, but as possible inputs to compute vol_Sympl_dot :
 Fortran_vector P_ST_dot, P_Sympl_dot			; //  dP_ST/dt , dP_Sympl/dt					(MPa h / h)    -- for elasticity...
 
@@ -173,13 +173,21 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		
 		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
+			
+		Q_S_ST_dot[i] = k_S_ST * (CSTi - C_targ) * vol_ST[i]; // (Vmax and kHyd) or k3 (below),  or all three, should be zero
+		
+        if((Q_S_ST[i] <= 0.) && (Q_S_ST_dot[i] < 0.)) { // control negative starch concentrations (remove 4-lines-block if not relevant)
+            //cout << "at t=" << t << ", node#" << i << ": Starch <= 0 and Starch_dot < 0  =>  Starch_dot set to zero" << endl ;
+            Q_S_ST_dot[i] = 0. ;
+        }
+		
 		
 		double CSTi_delta = max(0.,CSTi-Csoil_node[i-1]); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
 		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);//max maintenance respiration rate
 		
 		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];//max exudation rate
 		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMfu));//active transport of sucrose out of sieve tube			
-		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i];//variation of sucrose content in node
+		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i] - Q_S_ST_dot[i] ;//variation of sucrose content in node
 		
         Q_AuxinOut_dot[i] = C_Auxin[i] * (auxin_D * (1 - deleteAtRootTip) + auxin_D * isRootTip.at(i-1) * deleteAtRootTip);
         Q_Auxin_dot[i] = cpb_2_pm->AuxinSource.at(i-1) * auxin_P  + Delta_JA_ST[i] - Q_AuxinOut_dot[i];
@@ -202,25 +210,13 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Q_Rmmax_dot[i] = Q_Rmmax_ ;
 		//Growthmax:
 		Q_Gtotmax_dot[i] = Q_Grmax[i];
-		//Exudationmax:
-		Q_Exudmax_dot[i] = Q_Exudmax[i];;
 		
-		if(doTroubleshooting){
-			std::cout<<"C_fluxes "<<i<<" "<<vol_ST[i]<<" "<<vol_ParApo[i]<<" "<<vol_Seg[i]<<" CSTimin "<<CSTimin<<std::endl;
-			std::cout<<"max(0.,C_ST[i]) "<<max(0.,C_ST[i])<<std::endl;
-			std::cout<<" C_ST[i] "<<C_ST[i]<<" Q_ST[i] "<<Q_ST[i]<<" "<<Q_Fl[i]<<" "<<CSTi<<" "<<Cmeso<<" "<<len_leaf[i]<<" max(0., CSTi-CSTimin) "<< max(0., CSTi-CSTimin)<<std::endl;
-			std::cout<<Q_Rmmax_<<" "<<Q_Rmmax[i]<<" "<< krm2[i]<<" "<<CSTi_delta<<" "<<Q_Exudmax[i]<<std::endl;
-			std::cout<<Q_Exudmax_<<" Fu_lim "<<Fu_lim<<" Q_ST_dot "<<Q_ST_dot[i]<<" "<<Q_Mesophyll_dot[i]<<" "<<Input[i]<<" "<<Q_Rm_dot[i]<<std::endl;
-			std::cout<<"Qgri "<<Q_Gtot_dot[i] <<" Q_Exudmax_ "<<Q_Exud_dot[i]<<" Q_Rmmax_ "<<Q_Rmmax_dot[i]<<" Qgrmaxi "<<Q_Gtotmax_dot[i]<<" "<<Q_Exudmax_dot[i]<<std::endl;
-			std::cout<<"Qmeso "<<Q_Mesophyll[i]<<" "<<Ag[i]<<std::endl;
-			std::cout<<"Auxin "<<Q_Auxin[i]<<" "<<Q_Auxin_dot[i]<<" "<<AuxinSource[i-1]<<" "<<auxin_P<<" "<<auxin_D<<" "<<C_Auxin[i]<<" "<<Delta_JA_ST[i]<<std::endl;
-		}
         if((Q_Auxin[i]<= 0) &&(Q_Auxin_dot[i] < 0))
         {
             std::cout<<"errorAuxin, see file errorsAuxin.txt"<<std::endl;
 			std::ofstream outfile;
 			outfile.open("errorsAuxin.txt", std::ios_base::app); 
-			outfile<< std::endl<<"Auxin "<<Q_Auxin_dot[i]<<" "<<AuxinSource[i-1]<<" "<<auxin_P<<" "<<auxin_D<<" "<<C_Auxin[i]<<" "<<Delta_JA_ST[i] <<std::flush;
+			outfile<< std::endl<<"Auxin "<<Q_Auxin_dot[i]<<" "<<cpb_2_pm->AuxinSource[i-1]<<" "<<auxin_P<<" "<<auxin_D<<" "<<C_Auxin[i]<<" "<<Delta_JA_ST[i] <<std::flush;
             assert(false&&"errorsAuxin");
         }
 		

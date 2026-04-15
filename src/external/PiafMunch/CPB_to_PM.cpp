@@ -40,7 +40,7 @@ void CPB_to_PM::setAuxinSource(std::shared_ptr<CPlantBox::Organ> org)
 		int youngExpanding = (org->getLength(false) < org->getParameter("k")*limLenActive);//TODO: check
 		if((org->organType()==4)&&(youngExpanding)) // base of young expading leaves
 		{
-			int nodeSourceId = org->getNodeId(0);//= global pni
+			int nodeSourceId = org->getNodeId(std::min(org->getNumberOfNodes()-1,1));//= global pni
 			AuxinSource.at(nodeSourceId) += 1; //can carry several expanding leaves == several sources
 
 		}
@@ -74,7 +74,7 @@ void CPB_to_PM::computeAuxinValue(std::shared_ptr<CPlantBox::Organ> org)
 
 void CPB_to_PM::updateBudStage(double dt)// TODO: check at each time step
 {
-	bool allOrgs = false;
+	bool allOrgs = true;
 	auto orgs = plant->getOrgans(3,allOrgs);//also org with length - Epsilon == 0
     for(auto org: orgs)
 	{

@@ -1199,7 +1199,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("auxin_P",&PhloemFlux::auxin_P)
             .def_readwrite("auxin_alpha",&PhloemFlux::auxin_alpha)
             .def_readwrite("initValAuxin",&PhloemFlux::initValAuxin)
-            .def_readwrite("AuxinSource",&PhloemFlux::AuxinSource)
             .def_readwrite("C_AuxinOut",&PhloemFlux::C_AuxinOutv)
             .def_readwrite("Delta_JA_ST",&PhloemFlux::Delta_JA_STv)
             .def_readwrite("JAuxin_ST2",&PhloemFlux::JAuxin_ST2v)

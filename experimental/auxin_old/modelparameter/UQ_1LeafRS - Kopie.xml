@@ -106,7 +106,7 @@
 	<parameter name="delayNGStart" value="0" />
 	<parameter name="delayNGEnd" value="2.25" />
 	<parameter name="dx" value="0.25"/>
-	<parameter name="dxMin" value="0.15"/>
+	<parameter name="dxMin" value="0.01"/>
 	<parameter name="theta" value="0" dev="0"/>
 	<parameter name="rlt" value="1000000000" dev="0"/>
 	<parameter name="gf" value="4"/>

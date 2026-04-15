@@ -3,7 +3,7 @@ Q:
 - if we make kx age dependent better
 - Y do we get C_ST > 0 during burn-in time without sun?
 - make sure lats have >=2 nodes also when sleeping buds (at least when reach max sleeping size).
-- add decapita
+- add/check decapita
 - why runtime so high?
 - remove added C and AAI for added segment of laterals? (or just not add C? because can add fals acitvation of carbon? at least for the first segment?)
 - set k_S_ST, C_targ, Q_S_ST init, init Cmeso
@@ -14,8 +14,9 @@ Q:
 - make it so the CPB flow does not depend at all on the structure fil (take out changes made in stem.cpp and the like,
 or create a new class like anna did.
 - why suc tested is negative
-- y the auxin balance is wrong
 - suc balance also causes issue
+- add to the nodes to ignore the ones that are only added at the  top of the stem because of dxmin.
+- and make the auxin source at the highest actually living node. or put all the laterals one the same end-node?
 """
 import types
 import importlib
@@ -509,7 +510,9 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.Vmaxloading = 0.3 #mmol/d, needed mean loading rate:  0.3788921068507634
     r.Mloading = 3.3*1e-3#0.2#
     r.Gr_Y = 1#0.75
-    r.CSTimin = 0.25#0.3#
+    r.CSTimin = 0.25#0.3#    
+    r.k_S_ST = 5/25 *100 #*2 #daudet2002
+    r.C_targ =r.CSTimin
     #r.surfMeso=0.0025
     #r.cs = weatherInit["cs"]
 
@@ -704,7 +707,8 @@ def runSim(directoryN_,doVTP, verbosebase,
         
         expandedLeaf = leafArea > 0.1*maxLeafArea
         if __name__ == '__main__':
-            print("leaf areas",np.array([ll.getLength(True) * ll.getParameter("Width_blade") for ll in allLeaves]))
+            print("leaf_th length",np.array([ll.getLength(False) for ll in allLeaves]))
+            print("leaf_obs length",np.array([ll.getLength(True) for ll in allLeaves]))
             print("leaf",nodeD,growthUpToNode,lastleafId,leafArea,maxLeafArea,leafRank)
             print("do decapitate?",numLNodes, growthUpToNode, (not r.burnInTime), nodeD, expandedLeaf , (not changedSimMax))
         forDecapitate = (numLNodes >= growthUpToNode) and (not r.burnInTime) and (nodeD !=0) and expandedLeaf and (not changedSimMax)
@@ -841,6 +845,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         Q_Rm    = np.array(r.Q_out[(Nt*2):(Nt*3)])
         Q_Exud  = np.array(r.Q_out[(Nt*3):(Nt*4)])
         Q_Gr    = np.array(r.Q_out[(Nt*4):(Nt*5)])
+        Q_S_ST  = np.array(r.Q_out[(Nt*7):(Nt*8)])
         
         
         C_ST    = np.array(r.C_ST)
@@ -849,6 +854,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         volST   = np.array(r.vol_ST)
         volMeso   = np.array(r.vol_Meso)
         C_Par   = Q_Par/volST
+        C_S_ST   = Q_S_ST/volST
         C_meso  = Q_meso/volMeso
         Q_in   += sum(np.array(r.AgPhl)*dt)
         Q_out   = Q_Rm + Q_Exud + Q_Gr
@@ -861,7 +867,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         
         Q_Rmmax       = np.array(r.Q_out[(Nt*5):(Nt*6)])
         Q_Grmax       = np.array(r.Q_out[(Nt*6):(Nt*7)])
-        Q_Exudmax     = np.array(r.Q_out[(Nt*7):(Nt*8)])
+        Q_Exudmax     = Q_Exud.copy()
         
         Q_ST_i        = Q_ST      - Q_STbu
         Q_Rm_i        = Q_Rm      - Q_Rmbu
@@ -898,8 +904,8 @@ def runSim(directoryN_,doVTP, verbosebase,
         AuxinDecap   = np.array(r.AuxinLost)
         manualAddAux =  np.array(r.manualAddAux)
         errorAuxin   = sum(Q_Auxin_stem) + sum(Q_Auxin_other) - sum(Q_AuxinInit)- InAuxin +sum(OutAuxin) + sum(AuxinDecap) - sum(manualAddAux)
-        print('Q_Auxin_stem',Q_Auxin_stem, 'Q_Auxin_other', Q_Auxin_other, 'Q_AuxinInit', Q_AuxinInit, 
-                'InAuxin', InAuxin, 'OutAuxin', OutAuxin, 'AuxinDecap', AuxinDecap, 'manualAddAux', manualAddAux)
+        #print('Q_Auxin_stem',Q_Auxin_stem, 'Q_Auxin_other', Q_Auxin_other, 'Q_AuxinInit', Q_AuxinInit, 
+        #        'InAuxin', InAuxin, 'OutAuxin', OutAuxin, 'AuxinDecap', AuxinDecap, 'manualAddAux', manualAddAux)
         
         C_Auxin      = np.array(r.C_Auxin)
         AuxinSource  = np.array(r.cpb_2_pm.AuxinSource)
@@ -927,6 +933,7 @@ def runSim(directoryN_,doVTP, verbosebase,
             print("water fluxes (cm3/day):\n\ttrans {:5.2e}\tminExud {:5.2e}\tmaxExud {:5.2e}".format(sum(fluxesSoil.values()), min(fluxesSoil.values()), max(fluxesSoil.values())))
             if Q_in >0.:
                 print("C_ST (mmol ml-1):\n\tmean {:.2e}\tmin  {:5.2e} at {:d} segs \tmax  {:5.2e}".format(np.mean(C_ST), min(C_ST), len(np.where(C_ST == min(C_ST) )[0]), max(C_ST)))        
+                print("C_S_ST (mmol ml-1):\n\tmean {:.2e}\tmin  {:5.2e} \tmax  {:5.2e}".format(np.mean(C_S_ST), min(C_S_ST), max(C_S_ST)))        
                 print("C_me (mmol ml-1):\n\tmean {:.2e}\tmin  {:5.2e}\tmax  {:5.2e}".format(np.mean(C_meso), min(C_meso), max(C_meso)))        
                 #print('Q_X (mmol Suc): \n\tST   {:.2e}\tmeso {:5.2e}\tin   {:5.2e}'.format(sum(Q_ST), sum(Q_meso), Q_in))
                 #print('\tRm   {:.2e}\tGr   {:.2e}\tExud {:5.2e}'.format(sum(Q_Rm), sum(Q_Gr), sum(Q_Exud)))
@@ -942,7 +949,7 @@ def runSim(directoryN_,doVTP, verbosebase,
                      sum(Q_Grmax_i)/sum(Q_outmax_i)*100,sum(Q_Exudmax_i)/sum(Q_outmax_i)*100))
             print("Error in Aux_balance:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(
                     errorAuxin, div0f(errorAuxin,sum(Q_Auxin_stem), 1.)))
-        raise Exception
+        
         if (max(C_ST) > 3):
             stringError = "ERROR max(C_ST) > 3 for thread "+ str(thread)
             print(stringError)
@@ -1036,8 +1043,6 @@ def runSim(directoryN_,doVTP, verbosebase,
             parentLinkingNode = np.array([org.parentLinkingNode for org in orgs]) 
             write_file_array("parentLinkingNode", parentLinkingNode)
             orgsLeaves = r.plant.getOrgans(4, True)
-            AuxinSourceK = np.array([AuxinSource[org.getNodeId(0)] for org in orgsLeaves]) 
-            write_file_array("AuxinSourceK", AuxinSourceK)
             
             stemNodes = np.array(Mstem.getNodeIds())
             write_file_array("Grmax_i_s1", Q_Grmax_i[stemNodes])
@@ -1050,14 +1055,11 @@ def runSim(directoryN_,doVTP, verbosebase,
             if __name__ == '__main__':
                 print("numLNodes",numLNodes,simMax)
                 print("sucTested",sucTested)
-                print("sucTested*",sucTested*lengthth_org)
                 print("auxTested",auxTested)
                 print("lengthth_org",lengthth_org)
                 print("BerthFact",BerthFact)
                 print("budStage",budStage)
-                print("AuxinSource",AuxinSourceK)
-                print("sum aux source",sum(AuxinSourceK), sum(AuxinSource))
-                assert(sum(AuxinSourceK)== sum(AuxinSource))
+                print("sum aux source", sum(AuxinSource))
             if(changedSimMax):
                 timeSinceDecap = simDuration - (simMax - testTime)
                 if((not (budStage[(nodeD):] ==-1).all()) and (nodeD>0)):
@@ -1527,7 +1529,7 @@ if __name__ == '__main__':
      kss=0.2,kaa=1,
     BerthLim =BerthLim_,
      UseRatiothresholdAux = True,
-     nodeD = 0, thread = 1,
+     nodeD = 7, thread = 1,
      testTime=9, dtBefore = 1/24, dtAfter= 30/(60*24),
     start_time = start_time_,
      doPrint = True, doDict = False,

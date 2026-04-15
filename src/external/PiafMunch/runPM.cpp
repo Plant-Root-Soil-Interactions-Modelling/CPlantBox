@@ -66,8 +66,8 @@ void fout(double t, double *y, double *y_dot){phloem_.lock()->f(t, y, y_dot);} ;
 
 extern double *Q_ST, *Q_Auxin, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_AuxinOut ;		  // *Q_Auxin, components of vector y as used in diff. system f()...
 extern double *Q_ST_dot,*Q_Auxin_dot,  *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_AuxinOut_dot ; //... and its derivatives.  ;
-extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_Exudationmax, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
-extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_Exudmax_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
+extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_S_ST, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
+extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_S_ST_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl, *vol_Sympl_dot ;
 extern Fortran_vector Psi_Xyl, JW_ST, JS_ST, C_Sympl, C_ST, C_amont, JS_Sympl, JS_Apo, JS_ParMb, JS_PhlMb, Psi_Sympl, C_PhlApo, C_ParApo, P_ST, Absorb, RespMaint ;//, Auxin
 extern Fortran_vector JW_Trsv, JW_Xyl, JW_PhlMb, JW_ParMb, JW_Apo, JW_Sympl, P_Sympl, Psi_ST, P_Xyl, Psi_PhlApo, Psi_ParApo, P_PhlApo, P_ParApo ;
