@@ -48,7 +48,7 @@ public:
     /* Simulation */
     void setSoil(std::shared_ptr<SoilLookUp> soil_) { soil = soil_; } ///< optionally sets a soil for hydro tropism (call before RootSystem::initialize())
     void reset(); ///< resets the root class, keeps the root type parameters
-    virtual void initialize(bool verbose = true, std::string mode = "") override { initializeLB(4,5, verbose); };
+    virtual void initialize(bool verbose = true, std::string mode = "") override;
     ///< creates the base roots, call before simulation and after setting the plant and root parameters
     virtual void initializeLB(int basal = 4, int shootborne = 5, bool verbose = true);
     ///< creates the base roots (length based lateral emergence times), call before simulation and after setting plant and root parameters
