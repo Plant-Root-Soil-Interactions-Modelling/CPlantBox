@@ -134,7 +134,6 @@ public:
     // I made all initializer functions virtual and having only the verbose as argument to avoid confusion, stochasity can be set by Organism::setStochastic
     void initializeLB(bool verbose = true) override { initialize_(verbose,  true); }; ///< overridden, length based initialization
 	void initializeDB(bool verbose = true) override { initialize_(verbose,  false); }; ///< overridden, delay based based initialization
-	void initialize(bool verbose = true) override { initializeLB(verbose); }; ///< overridden, to map initial nodes, segs
 	void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
 
     void printNodes(); ///< print information

@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <sys/stat.h>
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -95,6 +96,16 @@ void Plant::initialize_(bool verbose) {
  * plant and root parameters
  * @param verbose       print information
  */
+void Plant::initialize(std::string mode, bool verbose) {
+    if (mode == "" || mode == "lengthBased" || mode == "length_based") {
+        initializeLB(verbose);
+    } else if (mode == "delayBased" || mode == "delay_based") {
+        initializeDB(verbose);
+    } else {
+        throw std::invalid_argument("Plant::initialize: unknown mode '" + mode + "', expected \"lengthBased\", \"length_based\", \"delayBased\", or \"delay_based\"");
+    }
+}
+
 void Plant::initializeLB(bool verbose) {
     reset(); // just in case
     auto seed = std::make_shared<Seed>(shared_from_this());
