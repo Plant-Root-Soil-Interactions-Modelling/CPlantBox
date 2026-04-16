@@ -317,6 +317,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("getNumberOfLaterals", &Organ::getNumberOfLaterals)
 			.def("setParent",&Organ::setParent)
             .def("getParent",&Organ::getParent)
+            .def("getParentNI",&Organ::getParentNI)
             .def("setOrganism",&Organ::setOrganism)
             .def("getOrganism",&Organ::getOrganism)
             .def("addChild",&Organ::addChild)

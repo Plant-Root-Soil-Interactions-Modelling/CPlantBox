@@ -67,6 +67,7 @@ class Organ : public std::enable_shared_from_this<Organ> {
     double getLength(bool realized = true) const;                                  ///< length of the organ (realized => dependent on dx() and dxMin())
     double getLength(int i) const;                                                 ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
     double getEpsilon() const { return epsilonDx; }                                ///< return stored growth not yet added because too small
+    int getParentNI() const { return parentNI; }                                    ///< local parent node index
     virtual double calcAge(double length) const { throw std::runtime_error("calcAge() not implemented"); } ///< needed for @Organ::getOrgans
     virtual double calcLength(double age) { throw std::runtime_error("calcLength() not implemented"); }
 
@@ -107,12 +108,14 @@ class Organ : public std::enable_shared_from_this<Organ> {
     void writeRSML(tinyxml2::XMLDocument &doc, tinyxml2::XMLElement *parent) const; ///< writes this organs RSML tag
 
     /* useful */
-    int parentNI;                          ///< local parent node index
     virtual Vector3d heading(int n) const; ///< current (absolute) heading of the organs at node n
     Vector3d getiHeading0() const;         ///< the initial coordinate system of the root, when it was created
     bool hasRelCoord() const;              // check if organ has relative coordinates
     bool has_rel_coord = false;
     
+
+    int parentNI;                          ///< local parent node index TODO please make protected and use getParentNI() instead
+
     /* for carbon-limited growth (know future (or past) volume (or length))*/
     virtual double orgVolume(double length_ = -1., bool realized = false) const;                                                   // organ volume for current or for a specific length
     virtual double orgVolume2Length(double volume_) { return volume_ / (M_PI * getParameter("radius") * getParameter("radius")); } // organ length for specific volume
