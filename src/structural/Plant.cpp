@@ -159,8 +159,8 @@ void Plant::initCallbacks() {
     // Create tropisms and growth functions per random leaf parameter
     for (auto &p_otp : organParam[Organism::ot_leaf]) {
         auto rp = std::static_pointer_cast<LeafRandomParameter>(p_otp.second);
-        double Tage = rp->tropismAge + rp->tropismAges * randn();
-        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, Tage);
+        double tAge = rp->tropismAge + rp->tropismAges * randn();
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, tAge);
         tropism->setGeometry(geometry);
         rp->f_tf = tropism; // set new one
         auto gf_ = this->createGrowthFunction(rp->gf);
@@ -170,8 +170,8 @@ void Plant::initCallbacks() {
     // Create tropisms and growth functions per random stem parameter
     for (auto &p_otp : organParam[Organism::ot_stem]) {
         auto rp = std::static_pointer_cast<StemRandomParameter>(p_otp.second);
-        double Tage = rp->tropismAge + rp->tropismAges * randn();
-        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, Tage);
+        double tAge = rp->tropismAge + rp->tropismAges * randn();
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, tAge);
         tropism->setGeometry(geometry);
         rp->f_tf = tropism; // set new one
         auto gf_ = this->createGrowthFunction(rp->gf);
