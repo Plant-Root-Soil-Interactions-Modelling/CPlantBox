@@ -176,6 +176,22 @@ void RootSystem::writeParameters(std::ostream& os) const
 }
 
 /**
+ * Calls initializeLB (default, "lengthBased", "length_based")
+ * or initializeDB ("delayBased", "delay_based")
+ */
+void RootSystem::initialize(bool verbose, std::string mode)
+{
+    if (mode == "" || mode == "lengthBased" || mode == "length_based") {
+        initializeLB(4, 5, verbose);
+    } else if (mode == "delayBased" || mode == "delay_based") {
+        initializeDB(4, 5, verbose);
+    } else {
+        throw std::invalid_argument("RootSystem::initialize: unknown mode '" + mode +
+                                    "', expected \"lengthBased\", \"length_based\", \"delayBased\", or \"delay_based\"");
+    }
+}
+
+/**
  * Sets up the base roots according to the plant parameters,
  * a confining geometry, the tropism functions, and the growth functions.
  *
