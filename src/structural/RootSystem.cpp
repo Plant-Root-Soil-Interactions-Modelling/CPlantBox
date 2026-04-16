@@ -101,79 +101,7 @@ void RootSystem::initializeReader()
     setOrganRandomParameter(srp);
 }
 
-/**
- * DEPRICATED Reads the root parameter from a file. Opens plant parameters with the same filename if available,
- * otherwise assumes a tap root system at position (0,0,-3).
- *
- * @param name          filename without file extension
- * @param subdir        directory ("modelparameter/" by default)
- */
-void RootSystem::openFile(std::string name, std::string subdir)
-{
-    std::cout << "RootSystem::openFile is deprecated, use readParameters instead \n";
-    std::ifstream fis;
-    // open root parameter
-    std::string rp_name = subdir;
-    rp_name.append(name);
-    rp_name.append(".rparam");
-    fis.open(rp_name.c_str());
-    if (fis.good()) { // did it work?
-        readParameters(fis);
-        fis.close();
-    } else {
-        std::string s = "RootSystem::openFile() could not open root parameter file ";
-        throw std::invalid_argument(s.append(rp_name));
-    }
-    // std::cout << "Read " << c << " root type parameters \n"; // debug
 
-    // open plant parameter
-    std::string pp_name = subdir;
-    pp_name.append(name);
-    pp_name.append(".pparam");
-    fis.open(pp_name.c_str());
-    auto randomSeed = std::make_shared<SeedRandomParameter>(shared_from_this());
-    randomSeed->subType = 0;
-    if (fis.good()) { // did it work?
-        randomSeed->read(fis); // reads the random parameters
-        fis.close();
-    } else { // create a tap root system
-        std::cout << "No root system parameters found, using default tap root system \n";
-    }
-    this->setRootSystemParameter(randomSeed);
-}
-
-/**
- * DEPRICATED Reads root type parameter from an input stream @param is
- * (there is a Matlab script exporting these, @see writeParams.m)
- *
- * @param cin  in stream
- */
-int RootSystem::readParameters(std::istream& is)
-{
-    std::cout << "RootSystem::readParameters(std::istream) is deprecated, use readParameters(std::string filename) instead \n";
-    int c = 0;
-    while (is.good()) {
-        auto p = std::make_shared<RootRandomParameter>(shared_from_this());
-        p->read(is);
-        p->organType = Organism::ot_root;
-        setOrganRandomParameter(p);
-        c++;
-    }
-    return c;
-}
-
-/**
- * (DEPRICATED) Writes root type parameters to an output stream @param os
- *
- * @param os  out stream
- */
-void RootSystem::writeParameters(std::ostream& os) const
-{
-    std::cout << "RootSystem::writeParameters is deprecated, use writeParameters(std::string filename) instead \n";
-    for (auto& otp :organParam[Organism::ot_root]) {
-        std::static_pointer_cast<RootRandomParameter>(otp.second)->write(os);
-    }
-}
 
 /**
  * Calls initializeLB (default, "lengthBased", "length_based")

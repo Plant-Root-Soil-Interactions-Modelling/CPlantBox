@@ -49,7 +49,7 @@ class Plant : public Organism {
         tt_antigravi = 4,
         tt_twist = 5,
         tt_antigravi2gravi = 6
-    };                                                                          ///< plant tropism types
+    }; ///< plant tropism types
     enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2, gft_CWLim = 3 }; // plant growth function
 
     Plant(unsigned int seednum = 0.);
@@ -73,7 +73,8 @@ class Plant : public Organism {
                                                     ///< plant and root parameters
     virtual void initializeDB(bool verbose = true); ///< creates the base roots (delay based lateral emergence times), call before simulation and after setting
                                                     ///< plant and root parameters
-    void initialize(bool verbose = true, std::string mode = "") override; ///< calls initializeLB (default, "lengthBased", "length_based") or initializeDB ("delayBased", "delay_based")
+    void initialize(bool verbose = true, std::string mode = "") override;
+    ///< calls initializeLB (default, "lengthBased", "length_based") or initializeDB ("delayBased", "delay_based")
     void setTropism(std::shared_ptr<Tropism> tf, int organType, int subType = -1); ///< todo docme
     void simulate(); ///< simulates root system growth for the time defined in the root system parameters
     void simulate(double dt, bool verbose = false) override;

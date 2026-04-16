@@ -204,65 +204,6 @@ void RootRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
     OrganRandomParameter::readXML(element, verbose);
 }
 
-
-/**
- * CPlantBox parameter reader (DEPRICATED)
- */
-void RootRandomParameter::read(std::istream & cin)
-{
-    std::cout << "RootRandomParameter::read is deprecated, use readXML instead \n";
-    char ch[256]; // dummy
-    cin.getline(ch,256);
-    std::string s; // dummy
-    cin >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> lmax >> lmaxs;
-    cin >> s >> r >> rs >> s >> a >> as >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
-    int n;
-    cin  >> s >> n;
-    successorST.clear();
-    successorOT.clear();
-    successorWhere.clear();
-    successorNo.clear();
-    int is;
-    for (int i=0; i<n; i++) {
-        cin >> is;
-        successorST.push_back(std::vector<int>(is));
-        successorOT.push_back(std::vector<int>(2));
-        successorNo.push_back(1);
-        successorWhere.push_back(std::vector<double>(0,0));
-    }
-    cin >> s >> n;
-    successorP.clear();
-    double ds;
-    for (int i=0; i<n; i++) {
-        cin >> ds;
-        successorP.push_back(std::vector<double>(ds));
-    }
-    cin >> s >> theta >> thetas >> s >> rlt >> rlts >> s >> gf >> s;
-}
-
-/**
- * CPlantBox parameter write (DEPRICATED)
- */
-void RootRandomParameter::write(std::ostream & cout) const {
-    std::cout << "RootRandomParameter::write is deprecated, use writeXML instead \n";
-    cout << "# Root type parameter for " << name << "\n";
-    cout << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
-        << "ln\t" << ln << "\t" << lns << "\n" << "lmax\t"<< lmax <<"\t"<< lmaxs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
-        "a\t" << a << "\t" << as << "\n" << "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successorST.size() << "\t";
-    for (size_t i=0; i<successorST.size(); i++) {
-        for (int j=0; i<successorST.at(i).size(); j++) {
-				cout << successorST.at(i).at(j) << "\t";
-		}
-    }
-    cout << "\n" << "successorP\t" << successorP.size() <<"\t";
-    for (size_t i=0; i<successorP.size(); i++) {
-        for (int j=0; i<successorP.at(i).size(); j++) {
-				cout << successorP.at(i).at(j) << "\t";
-		}
-    }
-    cout << "\n" << "theta\t" << theta << "\t" << thetas << "\n" << "rlt\t" << rlt << "\t" << rlts << "\n" << "gf\t" << gf << "\n";
-}
-
 /**
  * Sets up class introspection by linking parameter names to their class members,
  * additionally adds a description for each parameter, for toString and writeXML

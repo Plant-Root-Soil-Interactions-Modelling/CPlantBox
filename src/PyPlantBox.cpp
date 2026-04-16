@@ -854,7 +854,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getRootRandomParameter", (std::vector<std::shared_ptr<RootRandomParameter>> (RootSystem::*)() const) &RootSystem::getRootRandomParameter)
             .def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
             .def("getRootSystemParameter", &RootSystem::getRootSystemParameter)
-            .def("openFile", &RootSystem::openFile, py::arg("filename"), py::arg("subdir") = "modelparameter/")
             .def("setGeometry", &RootSystem::setGeometry)
             .def("setSoil", &RootSystem::setSoil)
             .def("reset", &RootSystem::reset)
