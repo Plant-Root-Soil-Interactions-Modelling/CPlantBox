@@ -17,12 +17,33 @@ tropism_names_ = {0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Ne
 def get_parameter_names():  # parameter xml file names
     """returns a list of plant parameter names with two values each, first a short name, second exact filename"""
     parameter_names = [
-        ("Maize", "P0.xml"),
-        ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
-        ("FSPM", "fspm2023.xml"),
+        ("Demo Plant", "fspm2023.xml"),
         ("Demo Leaf", "leaf_only.xml"),
         ("Demo Root", "root_only.xml"),
         ("Demo Stem", "stem_only.xml"),
+        ("Maize", "P0.xml"),
+        ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
+        ("Anagallis femina", "Anagallis_femina_Leitner_2010.xml"),
+        ("Brassica napus", "Brassica_napus_a_Leitner_2010.xml"),
+        ("Brassica oleracea", "Brassica_oleracea_Vansteenkiste_2014.xml"),
+        ("Crypsis aculeata", "Crypsis_aculeata_Clausnitzer_1994.xml"),
+        ("Helianthus annuus", "Heliantus_Pages_2013.xml"),
+        ("Juncus squarrosus", "Juncus_squarrosus_Clausnitzer_1994.xml"),
+        ("Lupinus albus", "Lupinus_albus_Leitner_2014.xml"),
+        ("Lupinus angustifolius", "Lupinus_angustifolius_Chen_2011.xml"),
+        ("Medicago truncatula", "Medicago_truncatula_Postma_2011.xml"),
+        ("Noccaea caerulescens", "Noccaea_Pagès_2013.xml"),
+        ("Pisum sativum (a)", "Pisum_sativum_a_Pagès_2014.xml"),
+        ("Pisum sativum (b)", "Pisum_sativum_b_TSEGAYE_1995.xml"),
+        ("Pisum sativum (c)", "Pisum_sativum_c_TSEGAYE_1995.xml"),
+        ("Pisum sativum (d)", "Pisum_sativum_d_TSEGAYE_1995.xml"),
+        ("Triticum aestivum", "Triticum_aestivum_a_Bingham_2011.xml"),
+        ("Zea mays (1)", "Zea_mays_1_Leitner_2010.xml"),
+        ("Zea mays (2)", "Zea_mays_2_Pagès_2014.xml"),
+        ("Zea mays (3)", "Zea_mays_3_Postma_2011.xml"),
+        ("Zea mays (4)", "Zea_mays_4_Leitner_2014.xml"),
+        ("Zea mays (5)", "Zea_mays_5_Leitner_2014.xml"),
+        ("Zea mays (6)", "Zea_mays_6_Leitner_2014.xml"),
         ("User Data", "xml-store"),
     ]
     return parameter_names
