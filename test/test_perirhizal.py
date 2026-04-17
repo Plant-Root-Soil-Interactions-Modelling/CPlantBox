@@ -39,6 +39,7 @@ labels = ["rx","sx","inner_kr","rho","c_sol","Vmax","Km","hsr","hsr_base","hsr_s
 
 inputs = ["rx","sx","inner_kr","rho","c_sol","Vmax","Km"]
 outputs = ["hsr","hsr_base","hsr_simp","hsr_global","sol_c","sol_c_ss","sol_c_sr","sol_U","sol_U_ss","sol_U_sr"]
+outputs = ["rx","sx","sol_c","sol_c_ss","sol_c_sr","sol_U","sol_U_ss","sol_U_sr"]
 
 #kr is assumed to lie between .5 and 5e-6 cm/hPa/d = 0.5 to 5e-6 1/d 
 #r is assumed to be 0.03
@@ -76,7 +77,8 @@ rho = np.array(tests.loc[:,"rho"])
 c_sol = np.array(tests.loc[:,"c_sol"])
 Vmax = np.array(tests.loc[:,"Vmax"])
 Km = np.array(tests.loc[:,"Km"])
-Ds = 1.0e2
+Ds = 1.0e1
+r_root = 0.03
 
 hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
 sp = vg.Parameters(hydrus_loam)
@@ -92,7 +94,7 @@ peri.open_lookup("hydrus_loam")
 
 #create the small lookup table
 #t = time.time()
-peri.create_lookup_simp("hydrus_loam", sp)
+#peri.create_lookup_simp("hydrus_loam", sp)
 #elapsed_time = time.time() - t
 
 peri.open_simp_lookup("hydrus_loam")
@@ -108,6 +110,7 @@ peri.open_global_lookup(peri.water_filename)
 
 #hsr = peri.soil_root_interface_potentials(rx, sx, inner_kr, rho)
 
+#numerically solve each root segment, this is the reference solution 
 hsr = np.array([peri.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], peri.sp) for i in range(0, len(rx))])
 tests.loc[:,"hsr"] = hsr
 print("norm of the root soil matrix potentials: ", LA.norm(hsr))
@@ -127,7 +130,8 @@ hsr3 = peri.soil_root_interface_potentials_table_global(rx, sx, inner_kr, rho)
 tests.loc[:,"hsr_global"] = hsr3
 print("Norm of the difference to global lookup table:", LA.norm(hsr-hsr3))
 
-waterflow = 2*3.14*np.multiply((hsr-rx),inner_kr)
+#waterflow = 2*3.14*np.multiply((hsr-rx),inner_kr)/r_root
+waterflow = -2*3.14*np.multiply((sx-rx),inner_kr)#/r_root
 Phi_root = hsr
 Phi_soil = np.array([vg.fast_mfp[sp](sx[i]) for i in range(len(sx))])
 

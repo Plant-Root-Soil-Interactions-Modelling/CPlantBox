@@ -228,10 +228,10 @@ class PerirhizalPython(Perirhizal):
         for i in range(n_segments):
             F_tilde[i]=math.exp(D_tilde*F[i])
             a1=c_bulk[i]/F_tilde[i]
-            a2=(1-F_tilde[i])/(F_tilde[i]*waterflow[i])
+            a2=(F_tilde[i]-1)/(F_tilde[i]*waterflow[i])
             p=Km[i]-a2*Vmax[i]-a1
             q=-Km[i]*a1
-            rsc[i]=math.sqrt(pow(p/2,2)-q)-p/2
+            rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)
         
         
         return rsc
