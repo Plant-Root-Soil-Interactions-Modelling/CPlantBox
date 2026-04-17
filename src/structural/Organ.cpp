@@ -790,8 +790,8 @@ void Organ::createLateral(double dt, bool verbose) {
                     if ((rp->successorOT.size() > i) && (rp->successorOT.at(i).size() > p_id)) {
                         ot = rp->successorOT.at(i).at(p_id);
                     } else {
-                        ot = getParameter("organType");
-                    } // default
+                        ot = getOrganRandomParameter()->organType; // default
+                    }
 
                     int st = rp->successorST.at(i).at(p_id);
 
