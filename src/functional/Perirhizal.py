@@ -4,6 +4,9 @@ import scipy.linalg as la
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import fsolve, root_scalar
 from scipy.spatial import ConvexHull, Voronoi
+from scipy import integrate
+
+import math
 
 import plantbox as pb
 import plantbox.functional.van_genuchten as vg
@@ -35,6 +38,7 @@ class PerirhizalPython(Perirhizal):
         self.lookup_table = None  # optional 4d look up table to find soil root interface potentials
         self.simp_lookup_table = None  # optional 2d look up table to find soil root interface potentials
         self.global_lookup_table = None  # optional 3d look up table to find soil root interface potentials
+        self.lookup_table_solutes = None
         self.sp = None  # corresponding van gencuchten soil parameter
         
         self.alpha_0 = 0.3 # a constant that is used for numerically solving the perirhizal waterflow
@@ -66,7 +70,7 @@ class PerirhizalPython(Perirhizal):
         self.simp_lookup_table = RegularGridInterpolator((inner_kr_b, base_mfp), interface)  # method = "nearest" fill_value = None , bounds_error=False
         self.sp = vg.Parameters(soil)
         vg.create_mfp_lookup(self.sp) # I do not know why this has to be repeated here
-        
+            
     def open_global_lookup(self, filename):
         """opens a global look-up table from a file to quickly find soil root interface potentials, this lookup table works for all van Genuchten parameter sets"""
         npzfile = np.load(filename + ".npz")
@@ -75,8 +79,18 @@ class PerirhizalPython(Perirhizal):
         self.global_lookup_table = RegularGridInterpolator((vg_m_, inner_kr_b_, base_mfp_), interface)  # method = "nearest" fill_value = None , bounds_error=False
         self.lookup_global_mfp = RegularGridInterpolator((vg_m_, sx_), interface_vg)
         #.sp = vg.Parameters(soil)
-
-    def soil_root_interface_potentials(self, rx, sx, inner_kr, rho):
+    
+    def open_lookup_solutes(self, filename):
+        """opens a look-up table from a file to quickly find soil root solute concentrations in the steady state case"""
+        npzfile = np.load(filename + ".npz")
+        F_integral = npzfile["F_integral"]
+        base_mfp_ = npzfile["base_mfp_"]
+        soil = npzfile["soil"]
+        self.lookup_table_sssolutes = RegularGridInterpolator((base_mfp_), F_integral)  # method = "nearest" fill_value = None , bounds_error=False
+        self.sp = vg.Parameters(soil)
+        vg.create_mfp_lookup(self.sp) # I do not know why this has to be repeated here
+        
+    def soil_root_interface_potentials(self, rx, sx, inner_kr, rho): #TODO: change this after the debugging is done
         """
         finds matric potentials at the soil root interface for as all segments
         uses a look up tables if present (see create_lookup, and open_lookup)
@@ -88,25 +102,20 @@ class PerirhizalPython(Perirhizal):
         """
         assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length"
         
-        rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], self.sp) for i in range(0, len(rx))])
-        print("Norm of the computed interface potentials:", LA.norm(rsx))
-        
-        rsx1 = 0*rsx.copy()
-        rsx2 = 0*rsx.copy()
-        rsx3 = 0*rsx.copy()
-        
         
         if self.lookup_table:
-            rsx1 = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
-            print("Norm of the difference basic lookup table:", LA.norm(rsx-rsx1))
-        if self.simp_lookup_table:
-            rsx2 = self.soil_root_interface_potentials_simp_table(rx, sx, inner_kr, rho)
-            print("Norm of the difference simp lookup table:", LA.norm(rsx-rsx2))
-        if self.global_lookup_table:
-            rsx3 = self.soil_root_interface_potentials_global_table(rx, sx, inner_kr, rho)
-            print("Norm of the difference global lookup table:", LA.norm(rsx-rsx3))
+            rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
+        else:
+            if self.simp_lookup_table:
+                rsx = self.soil_root_interface_potentials_table_simp(rx, sx, inner_kr, rho)
+            else:
+                if self.global_lookup_table:
+                    rsx = self.soil_root_interface_potentials_table_global(rx, sx, inner_kr, rho)
+                else:
+                    rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], self.sp) for i in range(0, len(rx))])
+                
         
-        return rsx, rsx1, rsx2, rsx3
+        return rsx
 
     @staticmethod
     def soil_root_interface_(rx, sx, inner_kr, rho, sp):
@@ -127,7 +136,7 @@ class PerirhizalPython(Perirhizal):
         rho2 = np.square(rho)  # rho squared
         b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
         fun = lambda x: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
-        #print(fun(rx),fun(sx-0.1),fun(sx+0.1), rho)
+        
         if rx == sx:  # degenerate bracket: no gradient, interface equals bulk potential
             return sx  
         rsx = root_scalar(fun, method="brentq", bracket=[min(rx, sx), max(rx, sx)])
@@ -184,7 +193,143 @@ class PerirhizalPython(Perirhizal):
             return x_int[1]
         rsx = root_scalar(fun, method="brentq", bracket=[x_int[0], x_int[1]])
         return rsx.root
+    
+    def soil_root_solutes_ss_(self, Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow, sp):
+        """
+        finds solute concentration at the soil root interface for all segments assuming steady state
+        uses a look up tables if present (see create_lookup, and open_lookup)
+
+        Phi_root       matrix flux potential at the root-soil-interface [cm2/d]
+        Phi_soil       matrix flux potential at the bulk soil [cm2/d]
+        c_bulk         solute concentration at the bulk soil [mol/cm3]
+        Vmax           maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
+        Km             half saturation constant Michaelis Menten Kinetics [mol/cm3]
+        Ds             Diffusion constant in water [cm2/d]
+        waterflow      steady state waterflow (entire root circumference) [cm2/d]
+        sp             van Genuchten parameter set
+        """
+        assert len(Phi_root) == len(Phi_soil) == len(c_bulk) == len(Vmax) == len(Km) == len(waterflow), "Phi_root, Phi_soil, c_bulk, Vmax, Km and waterflow must have the same length"
         
+        n_segments = len(c_bulk)
+        
+        rsc = np.zeros(n_segments)
+        F = np.zeros(n_segments) #F is a helper values
+        F_tilde = np.zeros(n_segments)
+        
+        if self.lookup_table_solutes:
+            F=[(self.lookup_table_solutes(Phi_soil[i])-self.lookup_table_solutes(Phi_root[i])) for i in range(0, len(c_bulk))]
+        else:
+            F=[(self.integral_overDiffusion_(Phi_soil[i],self.sp)-self.integral_overDiffusion_(Phi_root[i],self.sp)) for i in range(0, len(c_bulk))]
+        
+        #compute a prefactor
+        D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
+        
+        #solve quadratic eqation # TODO: Link to publication
+        for i in range(n_segments):
+            F_tilde[i]=math.exp(D_tilde*F[i])
+            a1=c_bulk[i]/F_tilde[i]
+            a2=(1-F_tilde[i])/(F_tilde[i]*waterflow[i])
+            p=Km[i]-a2*Vmax[i]-a1
+            q=-Km[i]*a1
+            rsc[i]=math.sqrt(pow(p/2,2)-q)-p/2
+        
+        
+        return rsc
+        
+    def soil_root_solutes_sr_(self, Phi_root, Phi_soil, rho, c_bulk, Vmax, Km, Ds, waterflow, sp):
+        """
+        finds solute concentration at the soil root interface for all segments assuming steady r
+        uses a look up tables if present (see create_lookup, and open_lookup)
+
+        Phi_root       matrix flux potential at the root-soil-interface [cm2/d]
+        Phi_soil       matrix flux potential at the bulk soil [cm2/d]
+        rho            geometry factor [1] (outer_radius / inner_radius)
+        c_bulk         solute concentration at the bulk soil [mol/cm3]
+        Vmax           maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
+        Km             half saturation constant Michaelis Menten Kinetics [mol/cm3]
+        Ds             Diffusion constant in water [cm2/d]
+        waterflow      steady state waterflow (entire root circumference) [cm2/d]
+        sp             van Genuchten parameter set
+        """
+        assert len(Phi_root) == len(Phi_soil) == len(rho) == len(c_bulk) == len(Vmax) == len(Km) == len(waterflow), "Phi_root, Phi_soil, c_bulk, Vmax, Km and waterflow must have the same length"
+        
+        n_segments = len(c_bulk)
+        
+        rsc = np.zeros(n_segments)
+        F = np.zeros(n_segments) #F is a helper values
+        F_tilde = np.zeros(n_segments)
+        R_sr = np.zeros(n_segments)
+        
+        if self.lookup_table_solutes:
+            F=[(self.lookup_table_solutes(Phi_soil[i])-self.lookup_table_solutes(Phi_root[i])) for i in range(0, len(c_bulk))]
+        else:
+            F=[(self.integral_overDiffusion_(Phi_soil[i],self.sp)-self.integral_overDiffusion_(Phi_root[i],self.sp)) for i in range(0, len(c_bulk))]
+        
+
+        
+        #compute a prefactor
+        D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
+        C_d = self.alpha_0*self.sp.Ksat/sp.alpha*D_tilde
+        
+        
+        
+        #solve quadratic eqation # TODO: Link to publication
+        for i in range(n_segments):
+            R_sr[i] = self.integral_overconcentration_(Phi_root[i], Phi_soil[i], rho[i], C_d, self.sp)
+            F_tilde[i]=math.exp(D_tilde*F[i])
+            a1=c_bulk[i]/(F_tilde[i]*R_sr[i]) #*vg.water_content(vg.fast_imfp[sp](Phi_soil), self.sp)
+            a2=(1-F_tilde[i]*R_sr[i])/(F_tilde[i]*R_sr[i]*waterflow[i])
+            p=Km[i]-a2*Vmax[i]-a1
+            q=-Km[i]*a1
+            rsc[i]=math.sqrt(pow(p/2,2)-q)-p/2
+        
+        
+        return rsc
+    
+    @staticmethod
+    def integral_overDiffusion_(Phi, sp):
+        """
+        Integral of (D_s(theta_s-theta_r)^(13/3))/(theta*D(theta)) from Phi = 0 to Phi
+
+        Phi             matrix flux potential [cm2/d]
+        sp              soil parameter: van Genuchten parameter set (type vg.Parameters)
+        """
+        if Phi <=0:
+            return 0
+        theta_rel = sp.theta_R/(sp.theta_S-sp.theta_R)
+        integral_fun = lambda Phi: pow(theta_rel+vg.effective_saturation(vg.fast_imfp[sp](Phi),sp),-13/3)
+        integral_overD, _ = integrate.quad(integral_fun, 0, Phi)
+        
+        return integral_overD
+    
+    def integral_overconcentration_(self, Phi_in, Phi_out, rho, C_d, sp):
+        """
+        (2 pi * 0.9999 rprhiz^2 (c_rs-C_SW))/(Integral from 0.01*rprhiz to rprhiz of 2 pi s (c(s)-C_SW) ds)
+        
+        Phi_in          matrix flux potential at 0.01 r_prhiz [cm2/d]
+        Phi_out         matrix flux potential at r_prhiz [cm2/d]
+        rho             r_prhiz / r_root
+        C_d             (alpha_0 K_s / alpha) (theta_s^2/(D_s (theta_s-theta_r)^(13/3)))
+        
+        Assume Phi(s=r/r-prhiz)=As^2-2Aln(s)+C (steady rate)
+        A=(Phi_in-Phi_out)/(0.01^2-2*ln(0.01)-1)
+        C=Phi_out-A
+        """        
+        
+        A = (Phi_in-Phi_out)/(1/(rho*rho)-np.log(1/(rho*rho))-1)
+        C = Phi_out-A
+        
+        
+        if self.lookup_table_solutes:
+            F0=self.lookup_table_solutes(A*(1/(rho*rho)-np.log(1/(rho*rho)))+C)
+            integral_fun = lambda s2: vg.water_content(vg.fast_imfp[sp](A*(s2-np.log(s2))+C), self.sp)*math.exp(C_d*(self.lookup_table_solutes(A*(s2-np.log(s2))+C)-F0))
+        else:
+            F0=self.integral_overDiffusion_(A*(1/(rho*rho)-np.log(1/(rho*rho)))+C, self.sp)
+            integral_fun = lambda s2: vg.water_content(vg.fast_imfp[sp](A*(s2-np.log(s2))+C), self.sp)*math.exp(C_d*(self.integral_overDiffusion_(A*(s2-np.log(s2))+C, self.sp)-F0))
+        R_sr, _ = integrate.quad(integral_fun, 1/(rho*rho), 1.0)
+        
+        return R_sr
+
 
     def perirhizal_conductance_per_layer(self, h_bs, h_sr, sp):
         """
@@ -445,7 +590,27 @@ class PerirhizalPython(Perirhizal):
         np.savez(filename, interface=interface, interface_vg=interface_vg, vg_m_=vg_m_, inner_kr_b_=inner_kr_b_, base_mfp_=base_mfp_, sx_=sx_, soil=list(sp))
         self.global_lookup_table = RegularGridInterpolator((vg_m_, inner_kr_b_, base_mfp_), interface)
         self.sp = sp
-
+    
+    def create_integralDiffusion_lookup(self, filename, sp):
+        """      
+        Precomputes all integrals for the steady state solute flow
+        
+        Phi       upper matrix flux potential (bottom is set to 0) [cm2/d]
+        sp             van genuchten soil parameters, , call 
+                       vg.create_mfp_lookup(sp) before 
+        """
+        Phin = 300
+        Phi_ = np.logspace(np.log10(1.0e-6), np.log10(300), Phin)
+        base_mfp_=Phi_
+        integral_overD = np.zeros((Phin,2))
+        for i, Phi in enumerate(Phi_):
+            print(i)
+            integral_overD[i,0] = PerirhizalPython.integral_overDiffusion_(Phi, sp)
+            integral_overD[i,1] = integral_overD[i,0]
+        np.savez(filename, integral_overD = integral_overD, base_mfp_ = base_mfp_, soil = list(sp))
+        self.lookup_table_solutes = RegularGridInterpolator((base_mfp_, np.array([0,1])) , integral_overD)
+        self.sp = sp
+        
 
     def soil_root_interface_potentials_table(self, rx, sx, inner_kr_, rho_):
         """
@@ -500,7 +665,7 @@ class PerirhizalPython(Perirhizal):
 
         return rsx
 
-    def soil_root_interface_potentials_simp_table(self, rx, sx, inner_kr_, rho_):
+    def soil_root_interface_potentials_table_simp(self, rx, sx, inner_kr_, rho_):
         """
         finds potential at the soil root interface using a lookup table
 
@@ -575,7 +740,7 @@ class PerirhizalPython(Perirhizal):
 
         return rsx
         
-    def soil_root_interface_potentials_global_table(self, rx, sx, inner_kr_, rho_):
+    def soil_root_interface_potentials_table_global(self, rx, sx, inner_kr_, rho_):
         """
         finds potential at the soil root interface using a globla lookup table, the lookup table works for all van Genuchten parameter sets
 
