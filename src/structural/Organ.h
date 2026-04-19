@@ -82,10 +82,10 @@ public:
 	std::vector<int> getNodeIds() const { return nodeIds; } ///< global node index of the i-th node, i is called the local node index
     const std::vector<Vector3d>& getNodes() const { return nodes; } ///< all nodes of the organ, absolute coordinates per default
     double getNodeCT(int i) const { return nodeCTs.at(i); } ///< creation time of the i-th node
-    void addNode(Vector3d n, double t, size_t index, bool shift); //< adds a node to the root
-    virtual void addNode(Vector3d n, int id, double t, size_t index, bool shift); //< adds a node to the root
-	void addNode(Vector3d n, int id, double t){ addNode( n,  id, t, size_t(0), false); } //< for pybind, overwise error with parameter repartition
-    void addNode(Vector3d n,  double t){ addNode( n,   t, size_t(0), false); }; //< for link with pybind
+    void addNode(Vector3d n, double t, size_t index, int PhytoIdx); //< adds a node to the root
+    virtual void addNode(Vector3d n, int id, double t, size_t index, int PhytoIdx); //< adds a node to the root
+	void addNode(Vector3d n, int id, double t){ addNode( n,  id, t, size_t(0), -1); } //< for pybind, overwise error with parameter repartition
+    void addNode(Vector3d n,  double t){ addNode( n,   t, size_t(0), -1); }; //< for link with pybind
     std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
 
     double dx() const; ///< returns the max axial resolution
@@ -141,6 +141,7 @@ public:
 	
 protected:
 
+	std::vector<int> localId_linking_nodes;
     mutable Vector3d partialIHeading;//variables mutable in case of pseudo stem (see @Leaf::heading)
 
 	virtual void createLateral(double ageLN, bool silence); ///< creates a new lateral, called by Root::simulate(), overriden by @see RootDelay::createLateral()

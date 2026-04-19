@@ -38,7 +38,7 @@ public:
 	double getLatInitialGrowth(double dt) override;
 	double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const override;
 	Vector3d getNode(int i) const override { return nodes.at(i); } ///< i-th node of the organ
-	void addNode(Vector3d n, int id, double t, size_t index, bool shift) override; //< adds a node to the root
+	void addNode(Vector3d n, int id, double t, size_t index, int PhytoIdx) override; //< adds a node to the root
 
     double getParameter(std::string name) const override; ///< returns an organ parameter
 	std::string toString() const override;
@@ -58,10 +58,10 @@ public:
 																										 
 protected:
 	void storeLinkingNodeLocalId(int numCreatedLN, bool silence) override; ///<  override by @see Organ::createNonGrowingLateral()
-	std::vector<int> localId_linking_nodes;
 	void minusPhytomerId(int subtype) { stemphytomerId[subtype]--;  }
     int getphytomerId(int subtype) { return stemphytomerId[subtype]; }
     void addPhytomerId(int subtype) { stemphytomerId[subtype]++;  }
+	std::vector<double> epsilonDxPerPhyto;
 
 };
 

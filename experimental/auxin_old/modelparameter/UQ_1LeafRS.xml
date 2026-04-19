@@ -92,8 +92,8 @@
 	<!--dummy val, Apical zone [cm];-->
 	<parameter name="ln" value="2.7" dev="0" functiontype="0"/>
 	<!--Inter-lateral distance [cm],3.5 from Barillot, L-pea;-->
-	<!--max = 80. here up to 21cm (20 days, 7 lats)-->
-	<parameter name="lmax" value="67.5" dev="0"/>
+	<!--max = 80. here up to 21cm (20 days, 7 lats) "67.5"-->
+	<parameter name="lmax" value="10" dev="0"/>
 	<!--3.5cm every 2 days, a bit higher because neg exp-->
 	<parameter name="r" value="0.5" dev="0"/>
 	<parameter name="a" value="0.5" dev="0.02"/>

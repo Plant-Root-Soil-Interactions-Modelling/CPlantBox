@@ -177,7 +177,7 @@ void Organ::addChild(std::shared_ptr<Organ> c)
  * @param index	   position were new node is to be added
  * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
  */
-void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
+void Organ::addNode(Vector3d n, int id, double t, size_t index, int PhytoIdx)
 {
     nodes.push_back(n); // node
     nodeIds.push_back(id); //unique id
@@ -206,9 +206,9 @@ void Organ::moveOrigin(int idx)
  * @param index	   position were new node is to be added
  * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
  */
-void Organ::addNode(Vector3d n, double t, size_t index, bool shift)
+void Organ::addNode(Vector3d n, double t, size_t index, int PhytoIdx)
 {
-    addNode(n,plant.lock()->getNodeIndex(),t, index, shift);
+    addNode(n,plant.lock()->getNodeIndex(),t, index, PhytoIdx);
 }
 
 /**
@@ -654,7 +654,7 @@ double Organ::calcCreationTime(double length, double dt)
  *
  *  @param l        total length of the segments that are created [cm]
  *  @param dt       time step [day]
- *  @param PhytoIdx index of phytomere node to elongate (optional) [1]
+ *  @param PhytoIdx index of phytomere to elongate (optional) [1]
  *  @param verbose  turns console output on or off
  */
 void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
@@ -671,7 +671,7 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
     int nn = nodes.size();
     bool stemElongation = (PhytoIdx >= 0);//if we are doing internodal growth,  PhytoIdx >= 0.
     if( stemElongation){
-        nn = PhytoIdx +1;
+        nn = localId_linking_nodes[PhytoIdx] + 1;
     }
     if (firstCall||stemElongation) { // first call of createSegments (in Organ::simulate)
         if (!stemElongation) {
@@ -736,7 +736,7 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
                 }else{this->epsilonDx = sdx;}
                 return;
             }
-            this->epsilonDx = 0; //no residual
+            //this->epsilonDx = 0; //no residual
         }
         sl += sdx;
         Vector3d newnode;
@@ -756,7 +756,7 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
         double et = this->calcCreationTime(getLength(true)+shiftl+sl, dt);//here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
         // in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
-        addNode(newnode, et,size_t(nn+i),stemElongation);
+        addNode(newnode, et,size_t(nn+i),PhytoIdx);
     }
 }
 
