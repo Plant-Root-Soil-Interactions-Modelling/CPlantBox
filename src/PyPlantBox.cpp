@@ -361,10 +361,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("BerthFact", &Organ::BerthFact)
             .def_readwrite("sucTested", &Organ::sucTested)
             .def_readwrite("auxTested", &Organ::auxTested)
-            .def_readwrite("budStage", &Organ::budStage)
-        
+            .def_readwrite("budStage", &Organ::budStage)        
             .def_readwrite("budStageChange", &Organ::budStageChange)
-            .def_readwrite("parentLinkingNode", &Organ::parentLinkingNode);
+            .def_readwrite("parentLinkingNode", &Organ::parentLinkingNode)
+           .def("getLlocalId_linking_nodes", &Organ::getLlocalId_linking_nodes)
+           .def_readwrite("parentLinkingNode", &Organ::parentLinkingNode);
 
     /*
      * Organism.h
@@ -852,7 +853,8 @@ PYBIND11_MODULE(plantbox, m) {
            .def("calcLength", &Stem::calcLength)
            .def("calcAge", &Stem::calcAge)
            .def("getStemRandomParameter", &Stem::getStemRandomParameter)
-           .def("param", &Stem::param);
+           .def("param", &Stem::param)
+           .def_readwrite("epsilonDxPerPhyto", &Stem::epsilonDxPerPhyto);
     /*
      * RootSystem.h
      */

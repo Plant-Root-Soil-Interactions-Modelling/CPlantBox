@@ -680,8 +680,9 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
         //don t move first node
         bool notFirstNode =  (nn>1);
         bool notChildBaseNode = (children.empty() || (nn-1 != std::static_pointer_cast<Organ>(children.back())->parentNI));
+		bool needNewPhyto = (stemElongation && (PhytoIdx > 0) && (localId_linking_nodes[PhytoIdx] == localId_linking_nodes[PhytoIdx-1]));
         // don't move a child base node unless you have phytomere expansion
-        if (notFirstNode && (notChildBaseNode || stemElongation) ) {
+        if (notFirstNode && (notChildBaseNode || stemElongation) && (!needNewPhyto)) {
             Vector3d h;
             Vector3d n2 = nodes.at(nn-2);
 

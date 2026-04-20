@@ -77,17 +77,25 @@ for i in range(N):
     # vp.write_plant(f"results/UQ_1LeafRS{i:04d}", ana)
     anim.update()
     #print(dt * (i+1))
-    try:
-        stem = plant.getOrgans(3)[0]
-        lengthP = np.diff([stem.getLength(stem.getChild(np).parentNI) for np in range(stem.getNumberOfChildren())])/2.7
-        lengthkids = np.array([stem.getChild(np).getLength(False)/5 for np in range(stem.getNumberOfChildren()) if stem.getChild(np).organType() == pb.leaf])
-        len_phytomeres.append(lengthP)
-        len_leaves.append(lengthkids)
-        print(dt * (i+1), 'sum(lengthP > 0.011)', sum(lengthP > 0.011))
-        numP.append(sum(lengthP > 0.011))
-    except:
-        pass
+    stem = plant.getOrgans(3)[0]
+    epsilonDxPerPhyto = np.array(stem.epsilonDxPerPhyto)
+    lln = stem.getLlocalId_linking_nodes()
+    print(len(epsilonDxPerPhyto), len(lln))
+    lengthP = np.zeros(60)
+    __ = np.diff([stem.getLength(lln_i) for lln_i in lln])
+    if len(__) > 0:
+        __ -= epsilonDxPerPhyto 
+    lengthP[:len(__)] = __ /2.7
+    lengthkids = np.zeros(60)
+    __ = np.array([stem.getChild(np).getLength(False)/5 for np in range(stem.getNumberOfChildren()) if stem.getChild(np).organType() == pb.leaf])
+    lengthkids[:len(__)] = __
+    len_phytomeres.append(lengthP)
+    len_leaves.append(lengthkids)
+    print(dt * (i+1), 'sum(lengthP > 0.011)', sum(lengthP > 0.0))
+    numP.append(sum(lengthP > 0.0))
     
+    
+        
 len_phytomeres = np.array(len_phytomeres).T
 len_leaves = np.array(len_leaves).T
 

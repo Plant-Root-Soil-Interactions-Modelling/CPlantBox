@@ -34,7 +34,7 @@ public:
     int organType() const override { return Organism::ot_stem; } ///< returns the organs type
 
     void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
-	void internodalGrowth(double dl,double dt, bool silence = false); ///< internodal growth of \param dl [cm]
+	double internodalGrowth(double rmax,double dt, bool silence = false); ///< internodal growth of \param dl [cm]
 	double getLatInitialGrowth(double dt) override;
 	double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const override;
 	Vector3d getNode(int i) const override { return nodes.at(i); } ///< i-th node of the organ
@@ -55,13 +55,13 @@ public:
     int shootborneType = 5;
 	
 	int getNumActivePhytomeres() const;
+	std::vector<double> epsilonDxPerPhyto;
 																										 
 protected:
 	void storeLinkingNodeLocalId(int numCreatedLN, bool silence) override; ///<  override by @see Organ::createNonGrowingLateral()
 	void minusPhytomerId(int subtype) { stemphytomerId[subtype]--;  }
     int getphytomerId(int subtype) { return stemphytomerId[subtype]; }
     void addPhytomerId(int subtype) { stemphytomerId[subtype]++;  }
-	std::vector<double> epsilonDxPerPhyto;
 
 };
 
