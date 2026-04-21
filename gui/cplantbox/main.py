@@ -2,6 +2,7 @@
 
 import base64
 import os
+import uuid
 import webbrowser
 from threading import Timer  # to open browser automatically ,see __main__
 
@@ -15,6 +16,27 @@ import simulate_plant  # the simulation loop
 import vtk_conversions  # auxiliary stuff
 from dash import Input, Output, State, ctx, dcc, html, no_update
 from pympler import asizeof
+
+MAX_CACHED_RUNS = 16
+RUN_CACHE = {}
+RUN_CACHE_ORDER = []
+
+
+def cache_simulation_run(vtk_data, result_data):
+    """Store one simulation result server-side and return its run id."""
+    run_id = uuid.uuid4().hex
+    RUN_CACHE[run_id] = {"vtk_data": vtk_data, "result_data": result_data}
+    RUN_CACHE_ORDER.append(run_id)
+    while len(RUN_CACHE_ORDER) > MAX_CACHED_RUNS:
+        oldest = RUN_CACHE_ORDER.pop(0)
+        RUN_CACHE.pop(oldest, None)
+    return run_id
+
+
+def get_cached_simulation_run(run_id):
+    if not run_id:
+        return None
+    return RUN_CACHE.get(run_id)
 
 
 def open_browser():
@@ -124,8 +146,7 @@ app.layout = dbc.Container(
         dcc.Store(id="leaf-store", data={"leaf": LEAF_SLIDER_INITIALS}),  # leaf slider values
         dcc.Store(id="typename-store", data={f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),  # root sub type names
         dcc.Store(id="settings-store", data={"token": 0, "reset": True, "random_seed": 0}),  # further settings
-        dcc.Store(id="vtk-result-store", data={}),  # resulting geometry
-        dcc.Store(id="result-store", data={}),  # resulting graphs
+        dcc.Store(id="run-id-store", data={"run_id": None}),  # active server-side simulation run id
         dcc.Store(id="xml-store", data={"xml": XML_INIT}),  # for uploaded xml content
         dcc.Download(id="download-xml"),
         dcc.Download(id="download-vtk"),
@@ -194,8 +215,7 @@ app.layout = dbc.Container(
                             ),
                             html.Div(className="spacer"),
                             html.Div(id="reference-panel"),
-                            html.Div(className="largeSpacer"),
-                            html.Div(className="largeSpacer"),
+                            html.Div(className="spacer"),
                             dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),
                             dcc.Loading(id="loading-spinner2", type="circle", children=html.Div(id="loading-spinner-output2")),
                             dcc.Loading(id="loading-spinner3", type="circle", children=html.Div(id="loading-spinner-output3")),
@@ -300,8 +320,7 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
 
 @app.callback(  # Create and update button: update-button
     Output("result-tabs-content", "children"),
-    Output("vtk-result-store", "data"),
-    Output("result-store", "data"),
+    Output("run-id-store", "data"),
     Output("settings-store", "data"),
     Output("loading-spinner-output", "children"),
     Input("create-button", "n_clicks"),
@@ -338,12 +357,13 @@ def handle_simulation(
     vtk_data, result_data = simulate_plant.simulate_plant(
         plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"], xml_data
     )
+    run_id = cache_simulation_run(vtk_data, result_data)
 
-    content = render_result_tab(result_value, vtk_data, result_data, typename_data, settings_data)
+    content = render_result_content(result_value, run_id, typename_data, settings_data)
 
-    print("**]handle_simulation()", settings_data.keys(), vtk_data.keys(), "\n\n")
+    print("**]handle_simulation()", "\n\n")
 
-    return (content, vtk_data, result_data, settings_data, html.H6(""))
+    return (content, {"run_id": run_id}, settings_data, html.H6(""))
 
 
 @app.callback(  # parameter file download
@@ -380,7 +400,7 @@ def handle_xml_upload(contents, data):
         return dash.no_update, dash.no_update  # or raise PreventUpdate
     xml_string = decoded.decode("utf-8")
     data["xml"] = xml_string  # Store the XML content in the dcc.Store
-    return data, "6"
+    return data, len(conversions.get_parameter_names()) - 1  # set dropdown to "Custom" (last entry)
 
 
 #
@@ -862,17 +882,9 @@ def attach_buttons(graph, buttons):
     )
 
 
-@app.callback(
-    Output("result-tabs-content", "children", allow_duplicate=True),
-    Input("result-tabs", "value"),
-    State("vtk-result-store", "data"),
-    State("result-store", "data"),
-    State("typename-store", "data"),
-    State("settings-store", "data"),
-    prevent_initial_call=True,
-)
-def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
-    print("render_result_tab()", tab, settings_data["token"], settings_data["reset"])
+def render_result_content(tab, run_id, typename_data, settings_data):
+    """Build tab content from cached simulation data identified by run id."""
+    print("render_result_tab()", tab, settings_data["token"], settings_data["reset"], "run", run_id)
 
     if tab == "About":
         return html.Div(
@@ -880,21 +892,20 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
             className="aboutContainer",
         )
 
-    if not vtk_data:
-        print("no data")
+    cached = get_cached_simulation_run(run_id)
+    if not cached:
+        print("no cached data for run", run_id)
         return html.Div([html.H6("press the create button")])
 
-    # print("***********************************************************************************************************************************")
-    # print("vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB")
-    # print("result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
-    # print("***********************************************************************************************************************************")
+    vtk_data = cached["vtk_data"]
+    result_data = cached["result_data"]
+
     print("render_result_tab()", tab, "vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB", "result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
 
     if tab == "VTK3D":
         buttons = create_geometry_buttons()
         color_pick = vtk_conversions.decode_array(vtk_data["subType"])
         color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
-        # print("number of cell colors", len(color_pick), "cells", len(vtk_data["subType"]) , "\n", type(color_pick))
         graph = plots.vtk3D_plot(vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"], buttons)
         return graph
     elif tab == "VTK3DAge":
@@ -911,6 +922,19 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
         button = small_button("xls", "xls-dynamics-download-button", "Download 1D dynamic data as XLS")
         graph = plots.dynamics_plot(result_data, typename_data)
         return attach_buttons(graph, button)
+
+
+@app.callback(
+    Output("result-tabs-content", "children", allow_duplicate=True),
+    Input("result-tabs", "value"),
+    State("run-id-store", "data"),
+    State("typename-store", "data"),
+    State("settings-store", "data"),
+    prevent_initial_call=True,
+)
+def render_result_tab(tab, run_data, typename_data, settings_data):
+    run_id = (run_data or {}).get("run_id")
+    return render_result_content(tab, run_id, typename_data, settings_data)
 
 
 @app.callback(
@@ -978,12 +1002,17 @@ def download_rsml(n_clicks, time_slider, plant_value, seed_data, root_data, stem
 @app.callback(
     Output("download-profiles-xls", "data"),
     Input("xls-profile-download-button", "n_clicks"),
-    State("result-store", "data"),
+    State("run-id-store", "data"),
 )
-def download_profiles_xls(n_clicks, data):
+def download_profiles_xls(n_clicks, run_data):
     print("download_profiles_xls()")
     if n_clicks is None:
         return dash.no_update
+    run_id = (run_data or {}).get("run_id")
+    cached = get_cached_simulation_run(run_id)
+    if not cached:
+        return dash.no_update
+    data = cached["result_data"]
     data_xls = plots.profile_to_excel(data)
     return data_xls
 
@@ -991,13 +1020,18 @@ def download_profiles_xls(n_clicks, data):
 @app.callback(
     Output("download-dynamics-xls", "data"),
     Input("xls-dynamics-download-button", "n_clicks"),
-    State("result-store", "data"),
+    State("run-id-store", "data"),
     State("typename-store", "data"),
 )
-def download_dynamics_xls(n_clicks, data, typename_data):
+def download_dynamics_xls(n_clicks, run_data, typename_data):
     print("download_dynamics_xls()")
     if n_clicks is None:
         return dash.no_update
+    run_id = (run_data or {}).get("run_id")
+    cached = get_cached_simulation_run(run_id)
+    if not cached:
+        return dash.no_update
+    data = cached["result_data"]
     data_xls = plots.dynamics_to_excel(data, typename_data)
     return data_xls
 
@@ -1025,9 +1059,8 @@ def update_reference_panel(plant_value, xml_data):
     if not citations:
         return []
 
-    items = [html.H6("Reference")] + [
-        html.P(c, style={"fontSize": "11px", "marginBottom": "4px"}) for c in citations
-    ]
+    md_text = "\n\n".join(citations)
+    items = [html.H6("Reference"), dcc.Markdown(md_text, style={"fontSize": "11px", "marginBottom": "4px"})]
     return conversions.into_panel(items)
 
 

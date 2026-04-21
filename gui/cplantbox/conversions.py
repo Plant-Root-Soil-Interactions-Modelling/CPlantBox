@@ -14,6 +14,23 @@ tropism_names = {"Plagiotropism": 0, "Gravitropism": 1, "Exotropism": 2, "Negati
 tropism_names_ = {0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Negative gravitropism", 6: "Variable gravitropism"}  # 5: "Twist",
 
 
+def _warn_if_out_of_range(context: str, param_name: str, value, min_value: float, max_value: float):
+    """Print warning if a numeric value is outside slider bounds."""
+    if not isinstance(value, (int, float, np.floating)):
+        return
+    if value < min_value or value > max_value:
+        print(f"WARNING [{context}] '{param_name}' value {value} is outside slider range [{min_value}, {max_value}]")
+
+
+def _warn_vector_against_sliders(context: str, values: list, slider_items: list):
+    """Compare ordered numeric values to ordered slider definitions and print warnings."""
+    for i, (name, bounds) in enumerate(slider_items):
+        if i >= len(values):
+            break
+        min_value, max_value = bounds[0], bounds[1]
+        _warn_if_out_of_range(context, name, values[i], min_value, max_value)
+
+
 def get_parameter_names():  # parameter xml file names
     """returns a list of plant parameter names with two values each, first a short name, second exact filename"""
     parameter_names = [
@@ -277,6 +294,8 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
         seed_data["seed"][6] = 11
         seed_data["seed"][7] = 4
     seed_data["simulationTime"] = p.simtime
+    _warn_vector_against_sliders("Seed", seed_data["seed"], list(get_seed_slider_names().items()))
+    _warn_if_out_of_range("Seed", "Simulation time [day]", seed_data["simulationTime"], 1, 45)
     """ root """
     rrp = plant.getOrganRandomParameter(pb.root)
     typename_data["number_roottypes"] = len(rrp[1:])
@@ -284,6 +303,7 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
         tropism_name = tropism_names_[int(p.tropismT)]
         root_data[f"tab-{i+1}"] = [p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.ln, p.la, p.a, p.tropismN, p.tropismS, tropism_name, len(p.successorST) > 0]
         typename_data[f"root tab-{i+1}"] = p.name
+        _warn_vector_against_sliders(f"Root tab-{i+1}", root_data[f"tab-{i+1}"], list(get_root_slider_names().items()))
     """ stem """
     strp = plant.getOrganRandomParameter(pb.stem)
     typename_data["number_stemtypes"] = len(strp[1:])
@@ -304,12 +324,14 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
             len(p.successorST) > 0,  # for p.rotBeta = 1 == 180 ° (???)
         ]
         typename_data[f"stem tab-{i+1}"] = p.name
+        _warn_vector_against_sliders(f"Stem tab-{i+1}", stem_data[f"tab-{i+1}"], list(get_stem_slider_names().items()))
     """ leaf """
     lrp = plant.getOrganRandomParameter(pb.leaf)
     if len(lrp) > 1:
         p = lrp[1]
         tropism_name = tropism_names_[int(p.tropismT)]
         leaf_data["leaf"] = ["Defined", p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.rotBeta * 180, p.tropismN, p.tropismS, tropism_name]
+        _warn_vector_against_sliders("Leaf", leaf_data["leaf"][1:], list(get_leaf_slider_names().items()))
     else:
         leaf_data["leaf"] = None
 
