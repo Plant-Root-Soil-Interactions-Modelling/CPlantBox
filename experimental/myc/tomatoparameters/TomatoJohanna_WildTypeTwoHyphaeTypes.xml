@@ -342,7 +342,9 @@
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="v" value="0.13" dev="0.0099999998"/>
         <!--Tip elongation rate [cm/day]-->
-        <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="6" percentage="1"/>
+        <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="6" percentage="0.9"/>
+        <!--Sub type of lateral -->
+        <parameter name="successor" ruleId="0" numLat="1" Where="" subType="1" organType="6" percentage="0.1"/>
         <!--Sub type of lateral -->
     </hyphae>
     <hyphae name="RunnerHyphae" subType="2">
