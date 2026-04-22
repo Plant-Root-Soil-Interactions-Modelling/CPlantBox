@@ -30,7 +30,6 @@ Activate the 'cpbenv' environment when using CPlantBox:
 ```bash
 source cpbenv/bin/activate
 ```
-The scripts might work on other Linux OS but has not been tested.
 
 By default, your local repository will only track the master branch. This allows for a quicker download and lower use of memory. In case you would like to switch between branches, you have two options:
 1. Use the switch_branch.py script:
@@ -84,6 +83,20 @@ make install
 ```bash
 cd tutorial/examples/
 python example1a_small.py
+```
+
+## Mac - with Python script
+This installation method requires [homebrew](https://brew.sh/) and Python (>= 3.7, <3.14). For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox_4Mac.py", and run it:
+```bash
+[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate
+wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installCPlantBox_4Mac.py
+python3 installCPlantBox_4Mac.py
+source ~/.zshrc
+```
+The script will install CPlantBox and set it up within the virtual environment 'cpbenv'. 
+Activate the 'cpbenv' environment when using CPlantBox:
+```bash
+source cpbenv/bin/activate
 ```
 
 ## Windows
