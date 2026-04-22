@@ -161,7 +161,7 @@ for line in lines:
             f.write("\n# Added by my Python script\n")
             f.write(line)
             
-final_message = """Setup finished. Implement the changes made to your kernel by running\nsource ~/.zshrc.
+final_message = """Setup finished. Implement the changes made to your kernel by running\nsource ~/.zshrc
 Test it by running\ncd CPlantBox/tutorial/chapter1_introduction\npython3 example1_3_helloplant.py
 ATT: when running for the first time, 'import vtk' may take a long time."""
 show_message(final_message)
