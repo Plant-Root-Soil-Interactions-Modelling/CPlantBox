@@ -93,7 +93,13 @@ wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CP
 python3 installCPlantBox_4Mac.py
 source ~/.zshrc
 ```
-The script will install CPlantBox and set it up within the virtual environment 'cpbenv'. 
+For CPlantBox with _dumux-rosi_, download and run the Python file "installDumuxRosi_Mac.py" (the file is based on the DuMu<sup>x</sup> installation file).
+```bash
+[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate
+wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installDumuxRosi_Mac.py
+python3 installDumuxRosi_Mac.py
+```
+The script will install DuMu<sup>x</sup> and CPlantBox in the virtual environment 'cpbenv'. 
 Activate the 'cpbenv' environment when using CPlantBox:
 ```bash
 source cpbenv/bin/activate
