@@ -22,10 +22,42 @@ RUN_CACHE = {}
 RUN_CACHE_ORDER = []
 
 
+def prepare_vtk_render_data(vtk_data):
+    """Decode geometry once so 3D tab switches do not rebuild large Python lists repeatedly."""
+    points = vtk_conversions.decode_array(vtk_data["points"])
+    point_coords = points.reshape(-1, 3)
+    if point_coords.size == 0:
+        center = np.zeros(3)
+        radius = 1.0
+    else:
+        center = point_coords.mean(axis=0)
+        radius = np.linalg.norm(point_coords - center, axis=1).max()
+        if radius <= 0:
+            radius = 1.0
+    distance = 1.5 * radius
+
+    return {
+        "points": points.flatten().tolist(),
+        "polys": vtk_conversions.decode_array(vtk_data["polys"]).tolist(),
+        "leaf_points": vtk_conversions.decode_array(vtk_data["leaf_points"]).flatten().tolist(),
+        "leaf_polys": vtk_conversions.decode_array(vtk_data["leaf_polys"]).tolist(),
+        "sub_type_colors": np.repeat(vtk_conversions.decode_array(vtk_data["subType"]), 16).tolist(),
+        "age_colors": np.repeat(vtk_conversions.decode_array(vtk_data["creationTime"]), 16).tolist(),
+        "camera_props": {
+            "cameraPosition": (center + np.array([-distance, -distance, distance])).tolist(),
+            "cameraViewUp": [0, 0, 1],
+        },
+    }
+
+
 def cache_simulation_run(vtk_data, result_data):
     """Store one simulation result server-side and return its run id."""
     run_id = uuid.uuid4().hex
-    RUN_CACHE[run_id] = {"vtk_data": vtk_data, "result_data": result_data}
+    RUN_CACHE[run_id] = {
+        "vtk_data": vtk_data,
+        "result_data": result_data,
+        "vtk_render_data": prepare_vtk_render_data(vtk_data),
+    }
     RUN_CACHE_ORDER.append(run_id)
     while len(RUN_CACHE_ORDER) > MAX_CACHED_RUNS:
         oldest = RUN_CACHE_ORDER.pop(0)
@@ -114,8 +146,17 @@ app.index_string = """
 </html>
 """
 
+_sep_style = {"fontStyle": "italic", "color": "gray"}
 param_names = conversions.get_parameter_names()
-plants = [{"label": name[0], "value": str(i)} for i, name in enumerate(param_names)]
+plants = []
+for i, name in enumerate(param_names):
+    if i == 0:
+        plants.append({"label": html.Span("- Dummy data -", style=_sep_style), "value": "separator-demo", "disabled": True})
+    if i == 4:
+        plants.append({"label": html.Span("- Plants -", style=_sep_style), "value": "separator-plants", "disabled": True})
+    if i == 6:
+        plants.append({"label": html.Span("- Root systems -", style=_sep_style), "value": "separator-roots", "disabled": True})
+    plants.append({"label": name[0], "value": str(i)})
 
 seed_parameter_sliders = conversions.get_seed_slider_names()
 root_parameter_sliders = conversions.get_root_slider_names()
@@ -168,7 +209,7 @@ app.layout = dbc.Container(
                                     dcc.Dropdown(
                                         id="plant-dropdown",
                                         options=plants,
-                                        value=plants[0]["value"],
+                                        value=plants[1]["value"],
                                         clearable=False,
                                         searchable=False,
                                         className="dropdown",
@@ -390,7 +431,7 @@ def download_xml(n_clicks, plant_value, seed_data, root_data, stem_data, leaf_da
     prevent_initial_call=True,
 )
 def handle_xml_upload(contents, data):
-    print("handle_xml_upload****************************************************!!!!")
+    print("handle_xml_upload")
     if contents is None:
         return dash.no_update, dash.no_update
     content_type, content_string = contents.split(",")
@@ -400,7 +441,8 @@ def handle_xml_upload(contents, data):
         return dash.no_update, dash.no_update  # or raise PreventUpdate
     xml_string = decoded.decode("utf-8")
     data["xml"] = xml_string  # Store the XML content in the dcc.Store
-    return data, len(conversions.get_parameter_names()) - 1  # set dropdown to "Custom" (last entry)
+    user_data_value = next((str(i) for i, name in enumerate(conversions.get_parameter_names()) if name[0] == "User Data"), None)
+    return data, user_data_value if user_data_value is not None else dash.no_update
 
 
 #
@@ -422,16 +464,16 @@ def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_
     if triggered is None:
         tab = "Seed"
     if tab == "Seed":
-        print("render_organtype_tab() seed:", seed_data)
+        # print("render_organtype_tab() seed:", seed_data)
         return generate_seed_sliders(seed_data)
     elif tab == "Root":
-        print("render_organtype_tab() root:", root_data)
+        # print("render_organtype_tab() root:", root_data)
         return root_layout(root_data, type_names)
     elif tab == "Stem":
-        print("render_organtype_tab() stem:", stem_data)
+        # print("render_organtype_tab() stem:", stem_data)
         return stem_layout(stem_data, type_names)
     elif tab == "Leaf":
-        print("render_organtype_tab() leaf:", leaf_data)
+        # print("render_organtype_tab() leaf:", leaf_data)
         return generate_leaf_sliders(leaf_data)
 
     raise ValueError("Unknown tab selected")
@@ -523,7 +565,7 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
 )
 def update_seed_store(slider_values, data):
     triggered = ctx.triggered_id
-    print("update_seed_store()", triggered, ", ", data, slider_values, len(data["seed"]))
+    # print("update_seed_store()", triggered, ", ", data, slider_values, len(data["seed"]))
     if len(slider_values) > 1:  # called empty
         data["seed"] = slider_values
     return data
@@ -539,7 +581,7 @@ def update_seed_store(slider_values, data):
 )
 def toggle_shoot_checkbox(checkbox_value, data):
     triggered = ctx.triggered_id
-    print("toggle_shoot_checkbox()", triggered, checkbox_value)
+    # print("toggle_shoot_checkbox()", triggered, checkbox_value)
     data["shoot-checkbox"] = "agree" in checkbox_value
     disabled = "agree" not in checkbox_value
     return (disabled, disabled, data)  # disable if not checked
@@ -555,8 +597,8 @@ def toggle_shoot_checkbox(checkbox_value, data):
     prevent_initial_call=True,
 )
 def toggle_basal_checkbox(checkbox_value, data):
-    triggered = ctx.triggered_id
-    print("toggle_basal_checkbox()", triggered, checkbox_value)
+    # triggered = ctx.triggered_id
+    # print("toggle_basal_checkbox()", triggered, checkbox_value)
     data["basal-checkbox"] = "agree" in checkbox_value
     disabled = "agree" not in checkbox_value
     return (disabled, disabled, disabled, data)  # disable if not checked
@@ -573,7 +615,7 @@ def toggle_basal_checkbox(checkbox_value, data):
 )
 def toggle_tillers_checkbox(checkbox_value, data):
     triggered = ctx.triggered_id
-    print("toggle_tillers_checkbox()", triggered, checkbox_value)
+    # print("toggle_tillers_checkbox()", triggered, checkbox_value)
     data["tillers-checkbox"] = "agree" in checkbox_value
     disabled = "agree" not in checkbox_value
     return (disabled, disabled, disabled, data)
@@ -584,7 +626,7 @@ def toggle_tillers_checkbox(checkbox_value, data):
 #
 def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs from stored values
     """@param root_values is root_data[current_tab]"""
-    print("generate_root_sliders()", root_values)
+    # print("generate_root_sliders()", root_values)
     style = {}
     successors = root_values[-1]
     sliders = []
@@ -670,7 +712,7 @@ def render_root_tab(selected_tab, root_data):
     prevent_initial_call=True,
 )
 def update_root_store(slider_values, current_tab, store_data):
-    print("update_root_store()", store_data[current_tab])
+    # print("update_root_store()", store_data[current_tab])
     successors = store_data[current_tab][-1]
     store_data[current_tab] = slider_values
     store_data[current_tab].append(successors)
@@ -761,7 +803,7 @@ def stem_layout(data, type_names):
 )
 def render_stem_tab(selected_tab, data):
     stored_values = data.get(selected_tab, STEM_SLIDER_INITIALS)
-    print("render_stem_tab()", selected_tab, stored_values)
+    # print("render_stem_tab()", selected_tab, stored_values)
     return generate_stem_sliders(stored_values, int(selected_tab[-1]))
 
 
@@ -856,7 +898,7 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
     prevent_initial_call=True,
 )
 def update_leaf_store(slider_values, store_data):
-    print("update_leaf_store()", slider_values)
+    # print("update_leaf_store()", slider_values)
     if len(slider_values) > 1:  # called empty
         store_data["leaf"] = slider_values
     return store_data
@@ -884,7 +926,6 @@ def attach_buttons(graph, buttons):
 
 def render_result_content(tab, run_id, typename_data, settings_data):
     """Build tab content from cached simulation data identified by run id."""
-    print("render_result_tab()", tab, settings_data["token"], settings_data["reset"], "run", run_id)
 
     if tab == "About":
         return html.Div(
@@ -899,20 +940,17 @@ def render_result_content(tab, run_id, typename_data, settings_data):
 
     vtk_data = cached["vtk_data"]
     result_data = cached["result_data"]
+    vtk_render_data = cached["vtk_render_data"]
 
     print("render_result_tab()", tab, "vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB", "result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
 
     if tab == "VTK3D":
         buttons = create_geometry_buttons()
-        color_pick = vtk_conversions.decode_array(vtk_data["subType"])
-        color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
-        graph = plots.vtk3D_plot(vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"], buttons)
+        graph = plots.vtk3D_plot(vtk_render_data, "Type", settings_data["token"], settings_data["reset"], buttons)
         return graph
     elif tab == "VTK3DAge":
         buttons = create_geometry_buttons()
-        color_pick = vtk_conversions.decode_array(vtk_data["creationTime"])
-        color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
-        graph = plots.vtk3D_plot(vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"], buttons)
+        graph = plots.vtk3D_plot(vtk_render_data, "Age", settings_data["token"], settings_data["reset"], buttons)
         return graph
     elif tab == "Profile1D":
         button = small_button("xls", "xls-profile-download-button", "Download 1D profile data as XLS")
