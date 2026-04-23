@@ -86,7 +86,8 @@ python example1a_small.py
 ```
 
 ## Mac - with Python script
-This installation method requires [homebrew](https://brew.sh/) and Python (>= 3.7, <3.14). For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox_Mac.py", and run it:
+This installation method requires [homebrew](https://brew.sh/), Python (>= 3.7, <3.14) and clang (>=15, <=18). If you do not have a clang version within the given range, see the instruction on the [Wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-Mac-users).\
+For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox_Mac.py", and run it:
 ```bash
 [ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate
 wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installCPlantBox_Mac.py
