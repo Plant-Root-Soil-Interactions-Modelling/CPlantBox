@@ -243,13 +243,6 @@ app.layout = dbc.Container(
                                     html.Div(
                                         [
                                             dcc.Button("Create", id="create-button", title="Create new plant geometry", className="button"),
-                                            dcc.Button(
-                                                "Update",
-                                                id="update-button",
-                                                title="Update the simulation (with the same random seed)",
-                                                className="button",
-                                                style={"display": "none"},
-                                            ),
                                         ],
                                     ),
                                 ]
@@ -359,13 +352,12 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, None, seed_data["simulationTime"])
 
 
-@app.callback(  # Create and update button: update-button
+@app.callback(  # Create button and time slider
     Output("result-tabs-content", "children"),
     Output("run-id-store", "data"),
     Output("settings-store", "data"),
     Output("loading-spinner-output", "children"),
     Input("create-button", "n_clicks"),
-    Input("update-button", "n_clicks"),
     Input("time-slider", "value"),
     State("plant-dropdown", "value"),
     State("seed-store", "data"),
@@ -378,10 +370,10 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     State("xml-store", "data"),
 )
 def handle_simulation(
-    create_clicks, update_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data
+    create_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data
 ):
     triggered = ctx.triggered_id
-    print("**[handle_simulation()", triggered, create_clicks, update_clicks, time_slider)
+    print("**[handle_simulation()", triggered, create_clicks, time_slider)
 
     # ---- CREATE BUTTON ----
     if triggered is None or triggered == "create-button":
@@ -390,8 +382,8 @@ def handle_simulation(
         rng = np.random.default_rng()
         settings_data["random_seed"] = rng.integers(1, 10001)
 
-    # ---- UPDATE BUTTON ----
-    elif triggered == "update-button" or triggered == "time-slider":
+    # ---- TIME SLIDER ----
+    elif triggered == "time-slider":
         settings_data["reset"] = False
 
     # ---- Run simulation (common part) ----
