@@ -107,6 +107,7 @@ Activate the 'cpbenv' environment when using CPlantBox:
 source cpbenv/bin/activate
 ```
 
+NB: when running for the first time, 'import vtk' may take a long time.
 ## Windows
 CPlantBox is currently not available on windows. Some pointers to setup a Linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
 
