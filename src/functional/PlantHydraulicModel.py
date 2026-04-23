@@ -748,7 +748,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         # print("k_prhiz", np.nanmin(k_prhiz), np.nanmax(k_prhiz))
         # suf_ = self.get_suf(sim_time)  # [1]
         suf_ = self.suf
-        suf = peri.aggregate(suf_[0, :])  # [1]
+        suf = peri.aggregate(suf_)  # [1]
         # print("suf", np.min(suf), np.max(suf), np.sum(suf))
         return np.divide(krs * k_prhiz, suf * krs + k_prhiz)  # [day-1], see Vanderborgth et al. (2023), Eqn (12)
 
@@ -787,11 +787,14 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         return heff
 
     def get_krs(self, sim_time):
+        """Overload get_krs so that get_krs and get_krs_ return the same data
+            return None so that we always get two objects from get_krs
+        """
         try:
-            return self.krs
+            return self.krs, None
         except:
             self.update(sim_time)
-            return self.krs
+            return self.krs, None
 
     def get_suf(self, sim_time):
         try:
