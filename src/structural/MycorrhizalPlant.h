@@ -20,6 +20,7 @@ class MycorrhizalPlant :public Plant {
     void initializeLB(bool verbose = true);
 
     void simulate(double dt, bool verbose) override;
+    void simulateInfection(double dt, bool verbose);
     void simulatePrimaryInfection(double dt, bool verbose);
     void simulateSecondaryInfection(double dt, bool verbose);
     void simulateHyphalGrowth(double dt, bool verbose);

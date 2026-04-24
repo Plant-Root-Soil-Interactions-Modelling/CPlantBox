@@ -191,6 +191,21 @@ void MycorrhizalPlant::simulateSecondaryInfection(double dt, bool verbose) {
     }
 }
 
+void MycorrhizalPlant::simulateInfection(double dt, bool verbose) {
+    for (const auto& r : baseOrgans) {
+        if (r->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateInfection(dt, verbose);
+        }
+    }
+    
+    auto organs = getOrgans();
+    for (const auto& r : organs) {
+        if (r->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateInfection(dt, verbose);
+        }
+    }
+}
+
 /*
  * Simulates hyphal growth
  * @param dt		duration of the simulation

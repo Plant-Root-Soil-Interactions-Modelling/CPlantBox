@@ -146,15 +146,13 @@ void Hyphae::simulate(double dt, bool verbose)
                         createSegments(dl,dt_,verbose);
                         length+=dl;
                         if (dl == 0.) active = false; // if no length increment, hyphae become inactive
-
+                        if (age * getParameter("b")>1. ){
+                            active = false; // become inactive, if enough time has passed for branching
+                            createLateral(dt_ ,verbose); // create a lateral hyphae
+                            createLateral(dt_,verbose); // create a lateral hyphae
+                        }
                     }
-                    if (age * getParameter("b")>1.)
-                    {
-                        active = false; // become inactive, if enough time has passed for branching
-                        createLateral(dt_ ,verbose); // create a lateral hyphae
-                        createLateral(dt_,verbose); // create a lateral hyphae
-                    }
-                    
+                                        
                     //std::cout << "Hyphae active: " << active << std::endl;
 
             } else { // NOT ACTIVE (children grow)
@@ -165,7 +163,6 @@ void Hyphae::simulate(double dt, bool verbose)
                 }
             }
             } else { //if no tip splitting 
-                // std::cout << "No tip splitting" << std::endl;
                 for (auto l:children) {
                     l->simulate(dt,verbose);
                 }
@@ -181,7 +178,7 @@ void Hyphae::simulate(double dt, bool verbose)
                 }
 
                 double targetlength = calcLength(age_+dt_);//+ this->epsilonDx;
-
+                // std::cout << targetlength << " " << length << std::endl;
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
@@ -244,7 +241,9 @@ void Hyphae::simulate(double dt, bool verbose)
                     }
                 } // if lateralgetLengths
             } // if active
-            active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+            bool anastomosis = mergePointID > -1;
+            bool length_requirement = getLength(false)<=(p.getK()*(1 - 1e-11)); // check if final length is nearly reached, use getLength(false) to avoid issues with epsilon
+            active = anastomosis && length_requirement && !isActiveOverridden(); // become inactive, if final length is nearly reached
             }
         }
     } // if alive

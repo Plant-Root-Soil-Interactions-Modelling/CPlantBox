@@ -50,7 +50,13 @@ public:
     /* Abbreviations */
     std::shared_ptr<HyphaeRandomParameter> getHyphaeRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const HyphaeSpecificParameter> param() const; ///< root parameter
+    
+    void setActive(bool active) override {Organ::setActive(active); activeOverriden = true; std::cout << "Active state overridden" << std::endl;}; ///< sets the active state of the root, if active is manually overridden, it will not be changed by the simulation, use for testing
+    bool isActiveOverridden () const { return activeOverriden; } ///< returns whether the active state was manually overridden, use for testing
 
+
+    private:
+    bool activeOverriden = false; ///< whether the active state was manually overridden, use for testing
 
 };
 
