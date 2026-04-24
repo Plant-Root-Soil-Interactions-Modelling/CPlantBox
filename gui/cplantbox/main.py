@@ -1,7 +1,10 @@
 """CPlantBox Webapp (using Python dash), D. Leitner 2026"""
 
 import base64
+import glob
 import os
+import pickle
+import string
 import uuid
 import webbrowser
 from threading import Timer  # to open browser automatically ,see __main__
@@ -18,8 +21,7 @@ from dash import Input, Output, State, ctx, dcc, html, no_update
 from pympler import asizeof
 
 MAX_CACHED_RUNS = 16
-RUN_CACHE = {}
-RUN_CACHE_ORDER = []
+CACHE_TTL_SECONDS = 24 * 3600  # remove files older than 24 h
 
 
 def prepare_vtk_render_data(vtk_data):
@@ -50,25 +52,55 @@ def prepare_vtk_render_data(vtk_data):
     }
 
 
+def _is_valid_run_id(run_id):
+    return isinstance(run_id, str) and len(run_id) == 32 and all(c in string.hexdigits for c in run_id)
+
+
+def _cache_file_path(run_id):
+    return os.path.join(RUN_CACHE_DIR, f"{run_id}.pkl")
+
+
+def _prune_cache_dir():
+    import time
+
+    now = time.time()
+    files = sorted(glob.glob(os.path.join(RUN_CACHE_DIR, "*.pkl")), key=os.path.getmtime, reverse=True)
+    for i, path in enumerate(files):
+        too_old = (now - os.path.getmtime(path)) > CACHE_TTL_SECONDS
+        over_limit = i >= MAX_CACHED_RUNS
+        if too_old or over_limit:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+
 def cache_simulation_run(vtk_data, result_data):
-    """Store one simulation result server-side and return its run id."""
+    """Store one simulation result on the filesystem and return its run id."""
     run_id = uuid.uuid4().hex
-    RUN_CACHE[run_id] = {
+    payload = {
         "vtk_data": vtk_data,
         "result_data": result_data,
         "vtk_render_data": prepare_vtk_render_data(vtk_data),
     }
-    RUN_CACHE_ORDER.append(run_id)
-    while len(RUN_CACHE_ORDER) > MAX_CACHED_RUNS:
-        oldest = RUN_CACHE_ORDER.pop(0)
-        RUN_CACHE.pop(oldest, None)
+    final_path = _cache_file_path(run_id)
+    tmp_path = f"{final_path}.{uuid.uuid4().hex}.tmp"
+    with open(tmp_path, "wb") as f:
+        pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)
+    os.replace(tmp_path, final_path)  # atomic move
+    _prune_cache_dir()
     return run_id
 
 
 def get_cached_simulation_run(run_id):
-    if not run_id:
+    if not _is_valid_run_id(run_id):
         return None
-    return RUN_CACHE.get(run_id)
+    path = _cache_file_path(run_id)
+    try:
+        with open(path, "rb") as f:
+            return pickle.load(f)
+    except (OSError, pickle.UnpicklingError, EOFError):
+        return None
 
 
 def open_browser():
@@ -76,6 +108,10 @@ def open_browser():
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RUN_CACHE_DIR = os.environ.get("CPLANTBOX_RUN_CACHE_DIR", os.path.join(BASE_DIR, "run_cache"))
+os.makedirs(RUN_CACHE_DIR, exist_ok=True)
+_prune_cache_dir()  # clean up stale files from previous runs on startup
+print("CPlantBox run cache directory:", RUN_CACHE_DIR)
 MD_PATH = os.path.join(BASE_DIR, "assets", "readme.md")  # Path to your Markdown file in the assets folder
 with open(MD_PATH, "r", encoding="utf-8") as f:  # Read the Markdown content
     ABOUT_TEXT = f.read()
