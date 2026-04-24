@@ -209,4 +209,19 @@
         <parameter name="tropismS" value="0.15707999"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="lupinus_albus_leitner_2014">
+            <article>
+                <author>Leitner, Daniel</author>
+                <author>Felderer, B.</author>
+                <author>Vontobel, P.</author>
+                <author>Schnepf, Andrea</author>
+                <title>Recovering root system traits using image analysis exemplified by two-dimensional neutron radiography images of lupine</title>
+                <journal>Plant Physiology</journal>
+                <year>2014</year>
+                <volume>164</volume>
+                <pages>24-35</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

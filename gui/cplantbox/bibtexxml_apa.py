@@ -9,11 +9,11 @@ Typical workflow:
 2. Run this module on the XML file to extract and format citations.
 """
 
-from __future__ import annotations
-
 import re
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Optional
+
+# from __future__ import annotations
 
 
 def _local_name(tag: str) -> str:
@@ -243,6 +243,14 @@ def _format_doi(doi: str) -> str:
     return f"https://doi.org/{doi}"
 
 
+def _format_doi_markdown(doi: str) -> str:
+    """Return DOI as markdown hyperlink text."""
+    doi_url = _format_doi(doi)
+    if not doi_url:
+        return ""
+    return f"[DOI]({doi_url})"
+
+
 def bibtex_item_to_bibtexxml(bibtex_entry: str) -> str:
     """Convert one BibTeX item string (e.g., @article{key, ...}) to a BibTeXML <entry> string."""
 
@@ -352,11 +360,11 @@ def _format_apa(entry_type: str, fields: Dict[str, str]) -> str:
         volume = fields.get("volume", "")
         number = fields.get("number", "")
         pages = fields.get("pages", "")
-        doi = _format_doi(fields.get("doi", ""))
+        doi_md = _format_doi_markdown(fields.get("doi", ""))
 
         details = ""
         if journal:
-            details += f" {journal}"
+            details += f" *{journal}*"
         if volume:
             details += f", {volume}"
         if number:
@@ -365,8 +373,8 @@ def _format_apa(entry_type: str, fields: Dict[str, str]) -> str:
             details += f", {pages}"
         if details:
             details += "."
-        if doi:
-            details += f" {doi}"
+        if doi_md:
+            details += f" {doi_md}"
         return (prefix + details).strip()
 
     if entry_type == "book":
@@ -394,7 +402,10 @@ def _format_apa(entry_type: str, fields: Dict[str, str]) -> str:
     for key in ("journal", "booktitle", "publisher", "pages", "doi"):
         value = fields.get(key)
         if value:
-            extras.append(f"{key}={value}")
+            if key == "doi":
+                extras.append(f"{key}={_format_doi_markdown(value)}")
+            else:
+                extras.append(f"{key}={value}")
     return (prefix + (" " + "; ".join(extras) if extras else "")).strip()
 
 

@@ -125,4 +125,23 @@
         <parameter name="tropismS" value="0.17453299"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="lupinus_angustifolius_chen_2011">
+            <article>
+                <author>Chen, Y. L.</author>
+                <author>Dunbabin, V. M.</author>
+                <author>Postma, J. A.</author>
+                <author>Diggle, A. J.</author>
+                <author>Palta, J. A.</author>
+                <author>Lynch, J. P.</author>
+                <author>Siddique, K. H. M.</author>
+                <author>Rengel, Z.</author>
+                <title>Phenotypic variability and modelling of root structure of wild Lupinus angustifolius genotypes</title>
+                <journal>Plant and Soil</journal>
+                <year>2011</year>
+                <volume>348</volume>
+                <pages>345-364</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

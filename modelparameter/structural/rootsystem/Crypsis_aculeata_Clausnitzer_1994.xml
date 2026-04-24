@@ -251,4 +251,17 @@
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
     </root>
+    <reference>
+        <entry id="crypsis_aculeata_clausnitzer_1994">
+            <article>
+                <author>Clausnitzer, V.</author>
+                <author>Hopmans, J. W.</author>
+                <title>Simultaneous modeling of transient three-dimensional root growth and soil water flow</title>
+                <journal>Plant and Soil</journal>
+                <year>1994</year>
+                <volume>164</volume>
+                <pages>299-314</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

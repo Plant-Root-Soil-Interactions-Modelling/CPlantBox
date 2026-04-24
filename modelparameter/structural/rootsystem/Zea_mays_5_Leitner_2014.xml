@@ -125,4 +125,20 @@
         <parameter name="tropismS" value="0.1"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="zea_mays_5_leitner_2014">
+            <article>
+                <author>Leitner, Daniel</author>
+                <author>Meunier, F.</author>
+                <author>Bodner, G.</author>
+                <author>Javaux, M.</author>
+                <author>Schnepf, Andrea</author>
+                <title>Impact of contrasted maize root traits at flowering on water stress tolerance: A simulation study</title>
+                <journal>Field Crops Research</journal>
+                <year>2014</year>
+                <volume>165</volume>
+                <pages>125-137</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

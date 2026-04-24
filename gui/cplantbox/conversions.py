@@ -14,15 +14,53 @@ tropism_names = {"Plagiotropism": 0, "Gravitropism": 1, "Exotropism": 2, "Negati
 tropism_names_ = {0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Negative gravitropism", 6: "Variable gravitropism"}  # 5: "Twist",
 
 
+def _warn_if_out_of_range(context: str, param_name: str, value, min_value: float, max_value: float):
+    """Print warning if a numeric value is outside slider bounds."""
+    if not isinstance(value, (int, float, np.floating)):
+        return
+    if value < min_value or value > max_value:
+        print(f"WARNING [{context}] '{param_name}' value {value} is outside slider range [{min_value}, {max_value}]")
+
+
+def _warn_vector_against_sliders(context: str, values: list, slider_items: list):
+    """Compare ordered numeric values to ordered slider definitions and print warnings."""
+    for i, (name, bounds) in enumerate(slider_items):
+        if i >= len(values):
+            break
+        min_value, max_value = bounds[0], bounds[1]
+        _warn_if_out_of_range(context, name, values[i], min_value, max_value)
+
+
 def get_parameter_names():  # parameter xml file names
     """returns a list of plant parameter names with two values each, first a short name, second exact filename"""
     parameter_names = [
-        ("Maize", "P0.xml"),
-        ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
-        ("FSPM", "fspm2023.xml"),
+        ("Demo Plant", "fspm2023.xml"),
         ("Demo Leaf", "leaf_only.xml"),
         ("Demo Root", "root_only.xml"),
         ("Demo Stem", "stem_only.xml"),
+        ("Zea mays", "P0.xml"),  # Felix File
+        ("Triticum aestivum", "Triticum_aestivum_test_2021.xml"),  # Monas File
+        ("Anagallis femina", "Anagallis_femina_Leitner_2010.xml"),
+        ("Brassica napus", "Brassica_napus_a_Leitner_2010.xml"),
+        ("Brassica oleracea", "Brassica_oleracea_Vansteenkiste_2014.xml"),
+        ("Crypsis aculeata", "Crypsis_aculeata_Clausnitzer_1994.xml"),
+        ("Helianthus annuus", "Heliantus_Pages_2013.xml"),
+        ("Juncus squarrosus", "Juncus_squarrosus_Clausnitzer_1994.xml"),
+        ("Lupinus albus", "Lupinus_albus_Leitner_2014.xml"),
+        ("Lupinus angustifolius", "Lupinus_angustifolius_Chen_2011.xml"),
+        ("Medicago truncatula", "Medicago_truncatula_Postma_2011.xml"),
+        ("Noccaea caerulescens", "Noccaea_Pagès_2013.xml"),
+        ("Pisum sativum (a)", "Pisum_sativum_a_Pagès_2014.xml"),
+        ("Pisum sativum (b)", "Pisum_sativum_b_TSEGAYE_1995.xml"),
+        ("Pisum sativum (c)", "Pisum_sativum_c_TSEGAYE_1995.xml"),
+        ("Pisum sativum (d)", "Pisum_sativum_d_TSEGAYE_1995.xml"),
+        ("Triticum aestivum", "Triticum_aestivum_a_Bingham_2011.xml"),
+        ("Zea mays (1)", "Zea_mays_1_Leitner_2010.xml"),
+        ("Zea mays (2)", "Zea_mays_2_Pagès_2014.xml"),
+        ("Zea mays (3)", "Zea_mays_3_Postma_2011.xml"),
+        ("Zea mays (4)", "Zea_mays_4_Leitner_2014.xml"),
+        ("Zea mays (5)", "Zea_mays_5_Leitner_2014.xml"),
+        ("Zea mays (6)", "Zea_mays_6_Leitner_2014.xml"),
         ("User Data", "xml-store"),
     ]
     return parameter_names
@@ -33,7 +71,7 @@ def get_seed_slider_names():  # see set_data, apply_sliders
     parameter_sliders = {
         "First shoot borne root [day]": (1, 21, 0.1, "firstSB"),
         "Shoot borne delay [day]": (2, 21, 0.1, "delaySB"),
-        "First basal root [day]": (2, 21, 0.1, "firstB"),
+        "First basal root [day]": (1, 21, 0.1, "firstB"),
         "Basal root delay [day]": (1, 21, 0.1, "delayB"),
         "Maximal number of basal roots [1]": (0, 30, 1, "maxB"),
         "First tiller [day]": (1, 21, 0.1, "firstTil"),
@@ -46,15 +84,15 @@ def get_seed_slider_names():  # see set_data, apply_sliders
 def get_root_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 100, 0.1),
-        "Growth rate [cm/day]": (0.5, 10, 0.01),
-        "Initial angle [°]": (0.0, 90, 0.1),
-        "Basal zone [cm]": (0.1, 20, 0.1),
-        "Interlateral distance [cm]": (0.1, 20, 0.1),
-        "Apical zone [cm]": (0.1, 20, 0.1),
-        "Radius [cm]": (1.0e-3, 0.25, 1e-3),
-        "Tropism strength [1]": (0.0, 6.0, 0.1),
-        "Tropism tortuosity [1]": (0.0, 1.0, 0.01),
+        "Maximal length [cm]": (1, 100, 0.1, "lmax"),
+        "Growth rate [cm/day]": (0.5, 10, 0.01, "r"),
+        "Initial angle [°]": (0.0, 90, 0.1, "theta"),
+        "Basal zone [cm]": (0.0, 20, 0.1, "lb"),
+        "Interlateral distance [cm]": (0.1, 20, 0.1, "ln"),
+        "Apical zone [cm]": (0.0, 20, 0.1, "la"),
+        "Radius [cm]": (1.0e-3, 0.25, 1e-3, "a"),
+        "Tropism strength [1]": (0.0, 6.0, 0.1, "tropismN"),
+        "Tropism tortuosity [1]": (0.0, 1.0, 0.01, "tropismS"),
     }
     return parameter_sliders
 
@@ -62,16 +100,16 @@ def get_root_slider_names():  # see set_data, apply_sliders
 def get_stem_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 200, 0.1),
-        "Growth rate [cm/day]": (0.5, 10, 0.01),
-        "Initial angle [°]": (0.0, 90, 0.1),
-        "Phytomer distance [cm]": (0.1, 20, 0.1),
-        "Radius [cm]": (1.0e-3, 0.25, 1e-3),
-        "Nodal growth start [day]": (0, 21, 0.1),
-        "Nodal growth time span [day]": (0, 21, 0.1),
-        "Fixed Rotation [°]": (0, 180, 0.1),
-        "Tropism strength [1]": (0, 6, 0.1),
-        "Tropism tortuosity [1]": (0, 1, 0.01),
+        "Maximal length [cm]": (1, 200, 0.1, "lmax"),
+        "Growth rate [cm/day]": (0.5, 10, 0.01, "r"),
+        "Initial angle [°]": (0.0, 90, 0.1, "theta"),
+        "Phytomer distance [cm]": (0.1, 20, 0.1, "ln"),
+        "Radius [cm]": (1.0e-3, 0.25, 1e-3, "a"),
+        "Nodal growth start [day]": (0, 21, 0.1, "delayNGStart"),
+        "Nodal growth time span [day]": (0, 21, 0.1, "delayNGEnd"),
+        "Fixed Rotation [°]": (0, 180, 0.1, "rotBeta"),
+        "Tropism strength [1]": (0, 6, 0.1, "tropismN"),
+        "Tropism tortuosity [1]": (0, 1, 0.01, "tropismS"),
     }
     return parameter_sliders
 
@@ -79,13 +117,13 @@ def get_stem_slider_names():  # see set_data, apply_sliders
 def get_leaf_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 50, 0.1),
-        "Growth rate [cm/day]": (0.5, 10, 0.01),
-        "Initial angle [°]": (0.0, 180, 0.1),
-        "Petiole length [cm]": (0.1, 10, 0.1),  # lb
-        "Fixed Rotation [°]": (0, 180, 0.1),
-        "Tropism strength [1]": (0, 6, 0.1),
-        "Tropism tortuosity [1]": (0, 1, 0.01),
+        "Maximal length [cm]": (1, 50, 0.1, "lmax"),
+        "Growth rate [cm/day]": (0.5, 10, 0.01, "r"),
+        "Initial angle [°]": (0.0, 180, 0.1, "theta"),
+        "Petiole length [cm]": (0.1, 10, 0.1, "lb"),  # lb
+        "Fixed Rotation [°]": (0, 180, 0.1, "rotBeta"),
+        "Tropism strength [1]": (0, 6, 0.1, "tropismN"),
+        "Tropism tortuosity [1]": (0, 1, 0.01, "tropismS"),
     }
     return parameter_sliders
 
@@ -256,6 +294,8 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
         seed_data["seed"][6] = 11
         seed_data["seed"][7] = 4
     seed_data["simulationTime"] = p.simtime
+    _warn_vector_against_sliders("Seed", seed_data["seed"], list(get_seed_slider_names().items()))
+    _warn_if_out_of_range("Seed", "Simulation time [day]", seed_data["simulationTime"], 1, 45)
     """ root """
     rrp = plant.getOrganRandomParameter(pb.root)
     typename_data["number_roottypes"] = len(rrp[1:])
@@ -263,6 +303,7 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
         tropism_name = tropism_names_[int(p.tropismT)]
         root_data[f"tab-{i+1}"] = [p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.ln, p.la, p.a, p.tropismN, p.tropismS, tropism_name, len(p.successorST) > 0]
         typename_data[f"root tab-{i+1}"] = p.name
+        _warn_vector_against_sliders(f"Root tab-{i+1}", root_data[f"tab-{i+1}"], list(get_root_slider_names().items()))
     """ stem """
     strp = plant.getOrganRandomParameter(pb.stem)
     typename_data["number_stemtypes"] = len(strp[1:])
@@ -283,12 +324,14 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, 
             len(p.successorST) > 0,  # for p.rotBeta = 1 == 180 ° (???)
         ]
         typename_data[f"stem tab-{i+1}"] = p.name
+        _warn_vector_against_sliders(f"Stem tab-{i+1}", stem_data[f"tab-{i+1}"], list(get_stem_slider_names().items()))
     """ leaf """
     lrp = plant.getOrganRandomParameter(pb.leaf)
     if len(lrp) > 1:
         p = lrp[1]
         tropism_name = tropism_names_[int(p.tropismT)]
         leaf_data["leaf"] = ["Defined", p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.rotBeta * 180, p.tropismN, p.tropismS, tropism_name]
+        _warn_vector_against_sliders("Leaf", leaf_data["leaf"][1:], list(get_leaf_slider_names().items()))
     else:
         leaf_data["leaf"] = None
 

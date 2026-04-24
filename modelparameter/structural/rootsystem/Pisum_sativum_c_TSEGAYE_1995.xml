@@ -167,4 +167,18 @@
         <parameter name="tropismS" value="0.26179901"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="pisum_sativum_c_tsegaye_1995">
+            <article>
+                <author>Tsegaye, T.</author>
+                <author>Mullins, C. E.</author>
+                <author>Diggle, A. J.</author>
+                <title>Modelling pea (Pisum sativum) root growth in drying soil: A comparison between observations and model predictions</title>
+                <journal>New Phytologist</journal>
+                <year>1995</year>
+                <volume>131</volume>
+                <pages>179-189</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

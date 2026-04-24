@@ -100,4 +100,3 @@ def generate_colorbar_image(vmin, vmax, colormap="Viridis", height=500, width=10
         yaxis=dict(showticklabels=False, showgrid=False, zeroline=False, visible=False),
     )
     return fig
-    return fig

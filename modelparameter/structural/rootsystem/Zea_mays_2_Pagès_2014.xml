@@ -125,4 +125,21 @@
         <parameter name="tropismS" value="0.15707999"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="zea_mays_2_pages_2014">
+            <article>
+                <author>Pagès, L.</author>
+                <author>Becel, C.</author>
+                <author>Boukcim, H.</author>
+                <author>Moreau, D.</author>
+                <author>Nguyen, C.</author>
+                <author>Voisin, A.</author>
+                <title>Calibration and evaluation of ArchiSimple, a simple model of root system architecture</title>
+                <journal>Ecological Modelling</journal>
+                <year>2014</year>
+                <volume>290</volume>
+                <pages>76-84</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>
