@@ -43,7 +43,7 @@
         <parameter name="simulationTime" value="26"/>
         <!--Recommended final simulation time  [day]-->
     </seed>
-    <root name="Taproot" subType="1">
+    <root name="Tap" subType="1">
         <parameter name="gf" value="1" dev="1e+08"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -85,7 +85,7 @@
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2, 3" organType="2, 2" percentage="0.31, 0.69"/>
         <!--Sub type of lateral -->
     </root>
-    <root name="Longlaterals" subType="2">
+    <root name="Long laterals" subType="2">
         <parameter name="gf" value="1" dev="1e+08"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="2"/>
@@ -127,7 +127,7 @@
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2, 3" organType="2, 2" percentage="0.009, 0.991"/>
         <!--Sub type of lateral -->
     </root>
-    <root name="Shortlaterals" subType="3">
+    <root name="Short laterals" subType="3">
         <parameter name="gf" value="1" dev="1e+08"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -168,46 +168,6 @@
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="3" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
-    </root>
-    <root name="unknown" subType="4">
-        <parameter name="gf" value="1" dev="1e+08"/>
-        <!--Growth function number [1]-->
-        <parameter name="tropismT" value="1"/>
-        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.0099999998" dev="0.001"/>
-        <!--radius [cm]-->
-        <parameter name="dx" value="0.1"/>
-        <!--Axial resolution [cm] (maximal segment size)-->
-        <parameter name="dxMin" value="1e-06"/>
-        <!--Axial resolution [cm] (minimal segment size)-->
-        <parameter name="hairsElongation" value="0"/>
-        <!--Zone behind the tip without root hairs  [cm]-->
-        <parameter name="hairsLength" value="0"/>
-        <!--Root hair length [cm]-->
-        <parameter name="hairsZone" value="0"/>
-        <!--Length of the root hair zone [cm]-->
-        <parameter name="la" value="10" dev="1"/>
-        <!--Apical zone [cm]-->
-        <parameter name="lb" value="0"/>
-        <!--Basal zone [cm]-->
-        <parameter name="ldelay" value="-1"/>
-        <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="10"/>
-        <!--Maximal root length [cm]-->
-        <parameter name="ln" value="0"/>
-        <!--Inter-lateral distance [cm]-->
-        <parameter name="lnk" value="0"/>
-        <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="1" dev="0.1"/>
-        <!--Initial growth rate [cm day-1]-->
-        <parameter name="rlt" value="1e+09" dev="1e+08"/>
-        <!--Root life time [day]-->
-        <parameter name="theta" value="1.22173" dev="0.122173"/>
-        <!--Angle between root and parent root [rad]-->
-        <parameter name="tropismN" value="1"/>
-        <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="0.15707999"/>
-        <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
     <reference>
         <entry id="lupinus_albus_leitner_2014">

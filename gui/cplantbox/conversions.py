@@ -38,8 +38,8 @@ def get_parameter_names():  # parameter xml file names
         ("Demo Leaf", "leaf_only.xml"),
         ("Demo Root", "root_only.xml"),
         ("Demo Stem", "stem_only.xml"),
-        ("Maize", "P0.xml"),
-        ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
+        ("Zea mays", "P0.xml"),  # Felix File
+        ("Triticum aestivum", "Triticum_aestivum_test_2021.xml"),  # Monas File
         ("Anagallis femina", "Anagallis_femina_Leitner_2010.xml"),
         ("Brassica napus", "Brassica_napus_a_Leitner_2010.xml"),
         ("Brassica oleracea", "Brassica_oleracea_Vansteenkiste_2014.xml"),

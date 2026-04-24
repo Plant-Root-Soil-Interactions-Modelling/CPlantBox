@@ -43,7 +43,7 @@
         <parameter name="simulationTime" value="50"/>
         <!--Recommended final simulation time  [day]-->
     </seed>
-    <root name="Type0" subType="1">
+    <root name="Taproot" subType="1">
         <parameter name="gf" value="1" dev="300"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -85,7 +85,7 @@
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
     </root>
-    <root name="Type1" subType="2">
+    <root name="Lateral1" subType="2">
         <parameter name="gf" value="1" dev="300"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -127,7 +127,7 @@
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="3" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
     </root>
-    <root name="Type2" subType="3">
+    <root name="Lateral2" subType="3">
         <parameter name="gf" value="1" dev="300"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>

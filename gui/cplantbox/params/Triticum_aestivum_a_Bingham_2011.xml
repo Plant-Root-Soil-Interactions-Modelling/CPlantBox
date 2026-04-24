@@ -43,7 +43,7 @@
         <parameter name="simulationTime" value="15"/>
         <!--Recommended final simulation time  [day]-->
     </seed>
-    <root name="taproot" subType="1">
+    <root name="Primaries" subType="1">
         <parameter name="gf" value="1" dev="1e+08"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -85,7 +85,7 @@
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
     </root>
-    <root name="1storderlateral" subType="2">
+    <root name="Lateral1" subType="2">
         <parameter name="gf" value="1" dev="1e+08"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -127,7 +127,7 @@
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="3" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
     </root>
-    <root name="2ndorderlateral" subType="3">
+    <root name="Lateral2" subType="3">
         <parameter name="gf" value="1" dev="1e+08"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
@@ -169,7 +169,7 @@
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="6" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
     </root>
-    <root name="3rdorderlateral" subType="6">
+    <root name="Lateral3" subType="6">
         <parameter name="gf" value="1" dev="1e+08"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
