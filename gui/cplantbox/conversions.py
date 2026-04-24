@@ -84,15 +84,15 @@ def get_seed_slider_names():  # see set_data, apply_sliders
 def get_root_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 100, 0.1),
-        "Growth rate [cm/day]": (0.5, 10, 0.01),
-        "Initial angle [°]": (0.0, 90, 0.1),
-        "Basal zone [cm]": (0.0, 20, 0.1),
-        "Interlateral distance [cm]": (0.1, 20, 0.1),
-        "Apical zone [cm]": (0.0, 20, 0.1),
-        "Radius [cm]": (1.0e-3, 0.25, 1e-3),
-        "Tropism strength [1]": (0.0, 6.0, 0.1),
-        "Tropism tortuosity [1]": (0.0, 1.0, 0.01),
+        "Maximal length [cm]": (1, 100, 0.1, "lmax"),
+        "Growth rate [cm/day]": (0.5, 10, 0.01, "r"),
+        "Initial angle [°]": (0.0, 90, 0.1, "theta"),
+        "Basal zone [cm]": (0.0, 20, 0.1, "lb"),
+        "Interlateral distance [cm]": (0.1, 20, 0.1, "ln"),
+        "Apical zone [cm]": (0.0, 20, 0.1, "la"),
+        "Radius [cm]": (1.0e-3, 0.25, 1e-3, "a"),
+        "Tropism strength [1]": (0.0, 6.0, 0.1, "tropismN"),
+        "Tropism tortuosity [1]": (0.0, 1.0, 0.01, "tropismS"),
     }
     return parameter_sliders
 
@@ -100,16 +100,16 @@ def get_root_slider_names():  # see set_data, apply_sliders
 def get_stem_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 200, 0.1),
-        "Growth rate [cm/day]": (0.5, 10, 0.01),
-        "Initial angle [°]": (0.0, 90, 0.1),
-        "Phytomer distance [cm]": (0.1, 20, 0.1),
-        "Radius [cm]": (1.0e-3, 0.25, 1e-3),
-        "Nodal growth start [day]": (0, 21, 0.1),
-        "Nodal growth time span [day]": (0, 21, 0.1),
-        "Fixed Rotation [°]": (0, 180, 0.1),
-        "Tropism strength [1]": (0, 6, 0.1),
-        "Tropism tortuosity [1]": (0, 1, 0.01),
+        "Maximal length [cm]": (1, 200, 0.1, "lmax"),
+        "Growth rate [cm/day]": (0.5, 10, 0.01, "r"),
+        "Initial angle [°]": (0.0, 90, 0.1, "theta"),
+        "Phytomer distance [cm]": (0.1, 20, 0.1, "ln"),
+        "Radius [cm]": (1.0e-3, 0.25, 1e-3, "a"),
+        "Nodal growth start [day]": (0, 21, 0.1, "delayNGStart"),
+        "Nodal growth time span [day]": (0, 21, 0.1, "delayNGEnd"),
+        "Fixed Rotation [°]": (0, 180, 0.1, "rotBeta"),
+        "Tropism strength [1]": (0, 6, 0.1, "tropismN"),
+        "Tropism tortuosity [1]": (0, 1, 0.01, "tropismS"),
     }
     return parameter_sliders
 
@@ -117,13 +117,13 @@ def get_stem_slider_names():  # see set_data, apply_sliders
 def get_leaf_slider_names():  # see set_data, apply_sliders
     """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 50, 0.1),
-        "Growth rate [cm/day]": (0.5, 10, 0.01),
-        "Initial angle [°]": (0.0, 180, 0.1),
-        "Petiole length [cm]": (0.1, 10, 0.1),  # lb
-        "Fixed Rotation [°]": (0, 180, 0.1),
-        "Tropism strength [1]": (0, 6, 0.1),
-        "Tropism tortuosity [1]": (0, 1, 0.01),
+        "Maximal length [cm]": (1, 50, 0.1, "lmax"),
+        "Growth rate [cm/day]": (0.5, 10, 0.01, "r"),
+        "Initial angle [°]": (0.0, 180, 0.1, "theta"),
+        "Petiole length [cm]": (0.1, 10, 0.1, "lb"),  # lb
+        "Fixed Rotation [°]": (0, 180, 0.1, "rotBeta"),
+        "Tropism strength [1]": (0, 6, 0.1, "tropismN"),
+        "Tropism tortuosity [1]": (0, 1, 0.01, "tropismS"),
     }
     return parameter_sliders
 

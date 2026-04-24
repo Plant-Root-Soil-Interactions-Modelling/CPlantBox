@@ -11,6 +11,19 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 
+def _fit_values_to_length(values, target_len):
+    """Resize scalar values to the target cell count with repeat+trim fallback."""
+    values = np.asarray(values)
+    if target_len <= 0:
+        return values[:0]
+    if values.size == target_len:
+        return values
+    if values.size == 0:
+        return np.zeros(target_len)
+    rep = int(np.ceil(target_len / values.size))
+    return np.repeat(values, rep)[:target_len]
+
+
 def get_plant(plant_, seed_data, root_data, stem_data, leaf_data, xml_data):
     """returns the plant object with slider values applied"""
     print("get_plant()")
@@ -93,13 +106,33 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     pd = vp.segs_to_polydata(plant, 1.0, ["subType", "organType", "radius", "creationTime"])  # poly-data, "radius",
     tube = apply_tube_filter(pd)  # polydata + tube filter
     vtk_data = vtk_polydata_to_dashvtk_dict(tube)  # addd "points" and "polys"
-    cellData = pd.GetCellData()
-    cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
-    vtk_data["creationTime"] = encode_array(cT)  ################## TODO somehow creationTime and Age are mixed up
-    # vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
-    organType = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))  #
-    vtk_data["subType"] = encode_array(numpy_support.vtk_to_numpy(cellData.GetArray("subType")) + 5 * (organType - np.ones(organType.shape) * 2))
-    vtk_data["radius"] = encode_array(numpy_support.vtk_to_numpy(cellData.GetArray("radius")))
+    pd_cell_data = pd.GetCellData()
+    tube_cell_data = tube.GetCellData()
+    n_tube_cells = tube.GetNumberOfCells()
+
+    cT_arr = tube_cell_data.GetArray("creationTime")
+    if cT_arr is not None:
+        cT = numpy_support.vtk_to_numpy(cT_arr)
+    else:
+        cT = _fit_values_to_length(numpy_support.vtk_to_numpy(pd_cell_data.GetArray("creationTime")), n_tube_cells)
+    vtk_data["creationTime"] = encode_array(cT)
+
+    tube_subtype_arr = tube_cell_data.GetArray("subType")
+    tube_organtype_arr = tube_cell_data.GetArray("organType")
+    if tube_subtype_arr is not None and tube_organtype_arr is not None:
+        sub_type = numpy_support.vtk_to_numpy(tube_subtype_arr)
+        organ_type = numpy_support.vtk_to_numpy(tube_organtype_arr)
+    else:
+        sub_type = _fit_values_to_length(numpy_support.vtk_to_numpy(pd_cell_data.GetArray("subType")), n_tube_cells)
+        organ_type = _fit_values_to_length(numpy_support.vtk_to_numpy(pd_cell_data.GetArray("organType")), n_tube_cells)
+    vtk_data["subType"] = encode_array(sub_type + 5 * (organ_type - np.ones(organ_type.shape) * 2))
+
+    tube_radius_arr = tube_cell_data.GetArray("radius")
+    if tube_radius_arr is not None:
+        radius = numpy_support.vtk_to_numpy(tube_radius_arr)
+    else:
+        radius = _fit_values_to_length(numpy_support.vtk_to_numpy(pd_cell_data.GetArray("radius")), n_tube_cells)
+    vtk_data["radius"] = encode_array(radius)
 
     # leaf geometry
     leaf_points = vtk.vtkPoints()

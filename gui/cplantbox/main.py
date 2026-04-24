@@ -41,8 +41,8 @@ def prepare_vtk_render_data(vtk_data):
         "polys": vtk_conversions.decode_array(vtk_data["polys"]).tolist(),
         "leaf_points": vtk_conversions.decode_array(vtk_data["leaf_points"]).flatten().tolist(),
         "leaf_polys": vtk_conversions.decode_array(vtk_data["leaf_polys"]).tolist(),
-        "sub_type_colors": np.repeat(vtk_conversions.decode_array(vtk_data["subType"]), 16).tolist(),
-        "age_colors": np.repeat(vtk_conversions.decode_array(vtk_data["creationTime"]), 16).tolist(),
+        "sub_type_colors": vtk_conversions.decode_array(vtk_data["subType"]).tolist(),
+        "age_colors": vtk_conversions.decode_array(vtk_data["creationTime"]).tolist(),
         "camera_props": {
             "cameraPosition": (center + np.array([-distance, -distance, distance])).tolist(),
             "cameraViewUp": [0, 0, 1],
@@ -486,7 +486,8 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
         min_ = seed_parameter_sliders[key][0]
         max_ = seed_parameter_sliders[key][1]
         step_ = seed_parameter_sliders[key][2]
-        sliders.append(html.H6(key))  # , style=style
+        cpb_param = seed_parameter_sliders[key][3] if len(seed_parameter_sliders[key]) > 3 else key
+        sliders.append(html.H6(key, title=f"{cpb_param}"))  # , style=style
         sliders.append(
             html.Div(
                 [
@@ -631,7 +632,8 @@ def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs f
         min_ = root_parameter_sliders[key][0]
         max_ = root_parameter_sliders[key][1]
         step_ = root_parameter_sliders[key][2]
-        sliders.append(html.H6(key, style=style))
+        cpb_param = root_parameter_sliders[key][3] if len(root_parameter_sliders[key]) > 3 else key
+        sliders.append(html.H6(key, style=style, title=f"{cpb_param}"))
         # print(key, str(min_), str(max_), min_, max_, "value", root_values[i])
         sliders.append(
             html.Div(
@@ -731,7 +733,8 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
         min_ = stem_parameter_sliders[key][0]
         max_ = stem_parameter_sliders[key][1]
         step_ = stem_parameter_sliders[key][2]
-        sliders.append(html.H6(key, style=style))
+        cpb_param = stem_parameter_sliders[key][3] if len(stem_parameter_sliders[key]) > 3 else key
+        sliders.append(html.H6(key, style=style, title=f"{cpb_param}"))
         sliders.append(
             html.Div(
                 [
@@ -844,7 +847,8 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
         min_ = leaf_parameter_sliders[key][0]
         max_ = leaf_parameter_sliders[key][1]
         step_ = leaf_parameter_sliders[key][2]
-        sliders.append(html.H6(key))
+        cpb_param = leaf_parameter_sliders[key][3] if len(leaf_parameter_sliders[key]) > 3 else key
+        sliders.append(html.H6(key, title=f"{cpb_param}"))
         sliders.append(
             dcc.Slider(
                 id={"type": "leaf-dynamic-slider", "index": i + 1},

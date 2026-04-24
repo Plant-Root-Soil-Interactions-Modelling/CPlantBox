@@ -17,8 +17,12 @@ RESULT_PLOT_HEIGHT = "clamp(560px, 72vh, 980px)"
 
 def vtk3D_plot(render_data, type_, reset_camera_token, reset_camera, buttons):
     """3D and 3D age plot"""
-    color_pick = render_data["age_colors"] if type_ == "Age" else render_data["sub_type_colors"]
-    color_range = [np.min(color_pick), np.max(color_pick)]  # set range from min to max
+    color_pick = np.asarray(render_data["age_colors"] if type_ == "Age" else render_data["sub_type_colors"], dtype=float)
+    finite = color_pick[np.isfinite(color_pick)]
+    if finite.size == 0:
+        finite = np.array([0.0])
+    color_pick = finite
+    color_range = [float(np.min(color_pick)), float(np.max(color_pick))]  # set range from min to max
     geom_rep = dash_vtk.GeometryRepresentation(
         mapper={
             "colorByArrayName": "Colors",
