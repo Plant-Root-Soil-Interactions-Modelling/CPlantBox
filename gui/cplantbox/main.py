@@ -807,6 +807,11 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
 
 def stem_layout(data, type_names):
     """stem tab layout: with stem subTypes as sub tabs"""
+    if type_names.get("number_stemtypes", 0) == 0:
+        return [
+            html.Div(className="spacer"),
+            html.H6("There is no stem defined in your plant data set"),
+        ]
     panelChildren = []
     for i in range(0, type_names["number_stemtypes"]):
         ctab = dcc.Tab(
