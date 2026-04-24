@@ -116,6 +116,7 @@ Please refer to the [wiki](https://github.com/Plant-Root-Soil-Interactions-Model
 
 # Folder sructure
 
+`/docs`		Code documentation\
 `/modelparameter`		Plant parameter files\
 `/src`			CPlantBox C++ codes\
 `/test`   Python tests for all CPlantBox classes\
