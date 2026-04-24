@@ -620,6 +620,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("maxAge", &MycorrhizalRootRandomParameter::maxAge)
             .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
             .def_readwrite("vis", &MycorrhizalRootRandomParameter::vis)
+            .def_readwrite("hyphalDelay", &MycorrhizalRootRandomParameter::hyphalDelay)
             .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection)
             .def_readwrite("highresolution", &MycorrhizalRootRandomParameter::highresolution)
             .def_readwrite("dx_inf", &MycorrhizalRootRandomParameter::dx_inf)

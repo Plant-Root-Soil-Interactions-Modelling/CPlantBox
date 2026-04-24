@@ -241,10 +241,13 @@ void Hyphae::simulate(double dt, bool verbose)
                     }
                 } // if lateralgetLengths
             } // if active
-            bool anastomosis = mergePointID > -1;
+            bool anastomosis = mergePointID > -1; // if anastomosis happened mergePointID is set to the node ID where it happened, and also the hypha should not be active
             bool length_requirement = getLength(false)<=(p.getK()*(1 - 1e-11)); // check if final length is nearly reached, use getLength(false) to avoid issues with epsilon
-            active = anastomosis && length_requirement && !isActiveOverridden(); // become inactive, if final length is nearly reached
-            }
+            active = !anastomosis && length_requirement && !isActiveOverridden(); // become inactive, if final length is nearly reached
+            if (active && isActiveOverridden()) {
+                std::cout << "Hyphae " << getId() << " is active even though it was overridden." << std::endl;
+            }    
+        }
         }
     } // if alive
     // std::cout << "end" << getId() << "\n" << std::flush;

@@ -396,8 +396,8 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
 
 void MycorrhizalRoot::createHyphae(int pni)
 {
-    double dt_ = plant.lock()->getSimTime() - infectionTime.at(pni); // time the hyphae should have grown
     double delay = getRootRandomParameter()->hyphalDelay;
+    double dt_ = plant.lock()->getSimTime() - infectionTime.at(pni) - delay; // time the hyphae should have grown
     int subType = 1;
     auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay, shared_from_this(), pni); // delay - dt_
     children.push_back(hyphae);
