@@ -124,11 +124,16 @@ Please refer to the [wiki](https://github.com/Plant-Root-Soil-Interactions-Model
 
 # Code documentation
 
-Create the documentation by running doxygen in the docs/ folder 
+Install doxygen and graphviz (for call graphs):
 ```bash
-doxygen doxy_config
+sudo apt install doxygen graphviz
 ```
-The documentation will be created in this folder. Compile doc/latex/refman.tex to generate the full doxygen documentation in doc/latex/refman.pdf. Additionally, collaboration diagrams give an overview of the code in folder /docs.
+Create the documentation by running doxygen from the `docs/` folder:
+```bash
+cd docs/
+doxygen Doxyfile
+```
+The HTML documentation will be written to `docs/html/`. Open `docs/html/index.html` in a browser to browse the documentation. Collaboration diagrams giving an overview of the code are in the `docs/uml/` folder.
 
 # Online resources
 
