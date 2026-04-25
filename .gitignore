@@ -57,5 +57,3 @@ tutorial/jupyter/.ipynb_checkpoints/
 *.png
 .vscode/settings.json
 
-# lookup tables
-*.npz

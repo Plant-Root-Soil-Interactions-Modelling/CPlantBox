@@ -33,13 +33,11 @@ import time
         sp_alpha
         sp_Ksat
 """
-labels = ["rx","sx","inner_kr","rho","c_sol","Vmax","Km","hsr","hsr_base","hsr_simp","hsr_global","sol_c","sol_c_ss","sol_c_sr","sol_U","sol_U_ss","sol_U_sr"]
-#for now only water flow:
-#labels = ["rx","sx","inner_kr","rho","c_sol","Vmax","Km","hsr","hsr_1d","hsr_base","hsr_simp","hsr_global"]
+labels = ["rx","sx","inner_kr","rho","c_sol","Vmax","Km","hsr","hsr_lookup","hsr_global","waterflow","sol_c","sol_c_ss","sol_c_sr","sol_U","sol_U_ss","sol_U_sr"]
 
 inputs = ["rx","sx","inner_kr","rho","c_sol","Vmax","Km"]
-outputs = ["hsr","hsr_base","hsr_simp","hsr_global","sol_c","sol_c_ss","sol_c_sr","sol_U","sol_U_ss","sol_U_sr"]
-outputs = ["rx","sx","sol_c","sol_c_ss","sol_c_sr","sol_U","sol_U_ss","sol_U_sr"]
+outputs = ["hsr","hsr_lookup","hsr_global","sol_c","sol_c_ss","sol_c_sr","sol_U","sol_U_ss","sol_U_sr"]
+outputs = ["rx","sx","waterflow","sol_c","sol_c_ss","sol_c_sr","sol_U","sol_U_ss","sol_U_sr"]
 
 #kr is assumed to lie between .5 and 5e-6 cm/hPa/d = 0.5 to 5e-6 1/d 
 #r is assumed to be 0.03
@@ -56,7 +54,7 @@ Intervals = {
         }
 Intervals = pd.DataFrame(Intervals, index = ["min","max"])
 
-ntests = 30 
+ntests = 10 
 tests = pd.DataFrame(index = range(ntests),columns = labels)
 
 for one_label in Intervals.columns:
@@ -86,27 +84,21 @@ peri.set_soil(sp)
 
 #create the big lookup table
 #t = time.time()
-#peri.create_lookup_mpi("hydrus_loam", sp)
+#peri.create_lookup("results/hydrus_loam", sp)
 #elapsed_time = time.time() - t
 #print("Creating the big lookup table took about ", elapsed_time) #
 
-peri.open_lookup("hydrus_loam")
+peri.open_lookup("results/hydrus_loam")
 
-#create the small lookup table
-#t = time.time()
-#peri.create_lookup_simp("hydrus_loam", sp)
-#elapsed_time = time.time() - t
-
-peri.open_simp_lookup("hydrus_loam")
-#print("Creating the simp lookup table took about ", elapsed_time) #
 
 #create the global lookup table
 #t = time.time()
-#peri.create_lookup_global(peri.water_filename, sp)
+#peri.create_lookup_global("results/"+peri.water_filename, sp)
 #elapsed_time = time.time() - t
-
-peri.open_global_lookup(peri.water_filename)
 #print("Creating the global lookup table took about ", elapsed_time) #
+
+peri.open_global_lookup("results/"+peri.water_filename)
+
 
 #hsr = peri.soil_root_interface_potentials(rx, sx, inner_kr, rho)
 
@@ -117,13 +109,8 @@ print("norm of the root soil matrix potentials: ", LA.norm(hsr))
 
 #the standard implementation
 hsr1= peri.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
-tests.loc[:,"hsr_base"] = hsr1
+tests.loc[:,"hsr_lookup"] = hsr1
 print("Norm of the difference to basic lookup table:", LA.norm(hsr-hsr1))
-
-#the first simplified implementation
-hsr2 = peri.soil_root_interface_potentials_table_simp(rx, sx, inner_kr, rho)
-tests.loc[:,"hsr_simp"] = hsr2
-print("Norm of the difference to simp lookup table:", LA.norm(hsr-hsr2))
 
 #the alternative implementation
 hsr3 = peri.soil_root_interface_potentials_table_global(rx, sx, inner_kr, rho)
@@ -131,9 +118,10 @@ tests.loc[:,"hsr_global"] = hsr3
 print("Norm of the difference to global lookup table:", LA.norm(hsr-hsr3))
 
 #waterflow = 2*3.14*np.multiply((hsr-rx),inner_kr)/r_root
-waterflow = -2*3.14*np.multiply((sx-rx),inner_kr)#/r_root
-Phi_root = hsr
+waterflow = 2*3.14*np.multiply((sx-rx),inner_kr)#/r_root
+Phi_root = np.array([vg.fast_mfp[sp](hsr[i]) for i in range(len(hsr))])
 Phi_soil = np.array([vg.fast_mfp[sp](sx[i]) for i in range(len(sx))])
+tests.loc[:,"waterflow"] = waterflow
 
 #base solutes
 tests.loc[:,"sol_c"] = c_sol
@@ -145,9 +133,10 @@ tests.loc[:,"sol_c_ss"] = solutes_ss
 tests.loc[:,"sol_U_ss"] = np.array([Vmax[i]*solutes_ss[i]/(Km[i]+solutes_ss[i])*1e6 for i in range(len(solutes_ss))])
 
 # steady rate solutes
-#solutes_sr = peri.soil_root_solutes_sr_(Phi_root, Phi_soil, rho, c_sol, Vmax, Km, Ds, waterflow, peri.sp)
-#tests.loc[:,"sol_c_sr"] = solutes_sr
-#tests.loc[:,"sol_U_sr"] = np.array([Vmax[i]*solutes_sr[i]/(Km[i]+solutes_sr[i])*1e6 for i in range(len(solutes_sr))])
+solutes_sr = peri.soil_root_solutes_sr_(Phi_root, Phi_soil, rho, c_sol, Vmax, Km, Ds, waterflow, peri.sp)
+tests.loc[:,"sol_c_sr"] = solutes_sr
+tests.loc[:,"sol_U_sr"] = np.array([Vmax[i]*solutes_sr[i]/(Km[i]+solutes_sr[i])*1e6 for i in range(len(solutes_sr))])
+
 
 # generate the values for the solute (and water?) uptake with dumux rosi:
 
