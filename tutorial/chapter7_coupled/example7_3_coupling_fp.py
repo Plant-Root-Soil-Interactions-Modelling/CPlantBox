@@ -78,7 +78,7 @@ hm.test()  # |\label{l73c:test}|
 # Perirhizal initialization
 peri = PerirhizalPython(hm.ms)  # |\label{l73c:peri}|
 # peri.set_soil(vg.Parameters(loam))  # |\label{l73c:perisoil}|
-peri.open_simp_lookup("results/hydrus_loam")  # |\label{l73c:peritable}|
+peri.open_lookup("results/hydrus_loam")  # |\label{l73c:peritable}|
 
 outer_r = peri.get_outer_radii("length")  # |\label{l73c:outer}|
 inner_r = peri.ms.radii

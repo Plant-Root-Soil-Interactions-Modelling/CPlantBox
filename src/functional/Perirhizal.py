@@ -77,10 +77,10 @@ class PerirhizalPython(Perirhizal):
     def open_lookup_solutes(self, filename):
         """opens a look-up table from a file to quickly find soil root solute concentrations in the steady state case"""
         npzfile = np.load(filename + ".npz")
-        F_integral = npzfile["F_integral"]
-        mfp_ = npzfile["mfp_"]
+        integral_overD_ = npzfile["integral_overD_"]
+        base_mfp_ = npzfile["base_mfp_"]
         soil = npzfile["soil"]
-        self.lookup_table_solutes = RegularGridInterpolator((mfp_), F_integral)  # method = "nearest" fill_value = None , bounds_error=False
+        self.lookup_table_solutes = RegularGridInterpolator((base_mfp_,[0,1]) , integral_overD_)  # method = "nearest" fill_value = None , bounds_error=False
         self.sp = vg.Parameters(soil)
         vg.create_mfp_lookup(self.sp) # does this have to be repeated here?
     
@@ -88,10 +88,10 @@ class PerirhizalPython(Perirhizal):
         """opens an additional look-up table from a file to quickly find soil root solute concentrations in the steady rate case"""
         npzfile = np.load(filename + ".npz")
         self.open_lookup_solutes(filename)    #repeat steady state case
-        R_sr = npzfile["R_sr"]
-        D_s_, outer_mfp_, inner_mfp_ = npzfile["D_s_"], npzfile["outer_mfp_"], npzfile["inner_mfp_"]
+        R_sr_ = npzfile["R_sr_"]
+        Ds_, outer_mfp_, inner_mfp_ = npzfile["Ds_"], npzfile["outer_mfp_"], npzfile["inner_mfp_"]
         soil = npzfile["soil"]
-        self.lookup_table_sr_solutes = RegularGridInterpolator((D_s, outer_mfp_, inner_mfp_), R_sr)  # method = "nearest" fill_value = None , bounds_error=False
+        self.lookup_table_sr_solutes = RegularGridInterpolator((Ds_, inner_mfp_, outer_mfp_) , R_sr_)  # method = "nearest" fill_value = None , bounds_error=False
         self.sp = vg.Parameters(soil)
         vg.create_mfp_lookup(self.sp) # does this have to be repeated here?
         
@@ -220,7 +220,7 @@ class PerirhizalPython(Perirhizal):
         F_tilde = np.zeros(n_segments)
         
         if self.lookup_table_solutes:
-            F=[(self.lookup_table_solutes(Phi_soil[i])-self.lookup_table_solutes(Phi_root[i])) for i in range(0, len(c_bulk))]
+            F=[(self.lookup_table_solutes((Phi_soil[i],0))-self.lookup_table_solutes((Phi_root[i],0))) for i in range(0, len(c_bulk))]
         else:
             F=[(self.integral_overDiffusion_(Phi_soil[i],self.sp)-self.integral_overDiffusion_(Phi_root[i],self.sp)) for i in range(0, len(c_bulk))]
         
@@ -243,7 +243,7 @@ class PerirhizalPython(Perirhizal):
         """
         finds solute concentration at the soil root interface for all segments assuming steady rate
         largely reuses approach of the steady state case, it just needs to compute the factor between mean concentration and the concentration at the outer boundary
-        uses a look up tables if present (see create_lookup, and open_lookup) #TODO cange names
+        uses a look up tables if present (see create_integralconcentration_lookup, create_integralDiffusion_lookup, and open_lookup_ss_solutes, open_lookup_sr_solutes)
 
         Phi_root       matrix flux potential at the root-soil-interface [cm2/d]
         Phi_soil       matrix flux potential at the bulk soil [cm2/d]
@@ -261,14 +261,14 @@ class PerirhizalPython(Perirhizal):
         n_segments = len(c_bulk)
         
         rsc = np.zeros(n_segments)
-        F = np.zeros(n_segments) #F is a helper values
+        F = np.zeros(n_segments) #F is a helper value
         F_tilde = np.zeros(n_segments)
         R_sr = np.zeros(n_segments)
         watercontent = np.zeros(n_segments)
         
         #repeat from steady state
         if self.lookup_table_solutes:
-            F=[(self.lookup_table_solutes(Phi_soil[i])-self.lookup_table_solutes(Phi_root[i])) for i in range(0, len(c_bulk))]
+            F=[(self.lookup_table_solutes((Phi_soil[i],0))-self.lookup_table_solutes((Phi_root[i],0))) for i in range(0, len(c_bulk))]
         else:
             F=[(self.integral_overDiffusion_(Phi_soil[i],self.sp)-self.integral_overDiffusion_(Phi_root[i],self.sp)) for i in range(0, len(c_bulk))]
         
@@ -278,14 +278,13 @@ class PerirhizalPython(Perirhizal):
         
         if approximate_rho:
             if self.lookup_table_sr_solutes:
-                R_sr=[self.lookup_table_sr_solutes(C_d, Phi_root[i], Phi_soil[i]) for i in range(0, len(c_bulk))]
+                R_sr=[self.lookup_table_sr_solutes((C_d, Phi_root[i], Phi_soil[i])) for i in range(0, len(c_bulk))]
             else:
                 R_sr=[self.integral_overconcentration_(C_d, Phi_root[i], Phi_soil[i], 100.0, self.sp) for i in range(0, len(c_bulk))]
         else:
             R_sr=[self.integral_overconcentration_(C_d, Phi_root[i], Phi_soil[i], rho[i], self.sp) for i in range(0, len(c_bulk))]
 
         watercontent = vg.water_content(vg.fast_imfp[sp](Phi_soil), self.sp) #mean watercontent of the perirhizal zone
-        print("R_sr", R_sr)
         #reuse steady state case
         #solve quadratic eqation # TODO: Link to publication
         for i in range(n_segments):
@@ -332,8 +331,10 @@ class PerirhizalPython(Perirhizal):
         if self.lookup_table_solutes:
             #F0=self.lookup_table_solutes(Phi_A*(1/(rho*rho)-np.log(1/(rho*rho)))+Phi_C)
             #F0=self.lookup_table_solutes(Phi_A*(0.53**2-2*np.log(0.53))+Phi_C)
-            F0=self.lookup_table_solutes(Phi_A*(1.0**2-2*np.log(1.0))+Phi_C)
-            integral_fun = lambda s2: vg.water_content(vg.fast_imfp[sp](Phi_A*(s2-np.log(s2))+Phi_C), self.sp)*math.exp(C_d*(self.lookup_table_solutes(Phi_A*(s2-np.log(s2))+Phi_C)-F0))
+            #print("Phi",Phi_A*(1.0**2-2*np.log(1.0))+Phi_C)
+            F0=self.lookup_table_solutes((Phi_A*(1.0**2-2*np.log(1.0))+Phi_C,0.0))
+            #print("Phi2",Phi_A*(s2-np.log(s2))+Phi_C)
+            integral_fun = lambda s2: vg.water_content(vg.fast_imfp[sp](Phi_A*(s2-np.log(s2))+Phi_C), self.sp)*math.exp(C_d*(self.lookup_table_solutes((Phi_A*(s2-np.log(s2))+Phi_C,0))-F0))
         else:
             #F0=self.integral_overDiffusion_(Phi_A*(1/(rho*rho)-np.log(1/(rho*rho)))+Phi_C, self.sp)
             #F0=self.integral_overDiffusion_(Phi_A*(0.53**2-2*np.log(0.53))+Phi_C, self.sp)
@@ -341,7 +342,7 @@ class PerirhizalPython(Perirhizal):
             integral_fun = lambda s2: vg.water_content(vg.fast_imfp[sp](Phi_A*(s2-np.log(s2))+Phi_C), self.sp)*math.exp(C_d*(self.integral_overDiffusion_(Phi_A*(s2-np.log(s2))+Phi_C, self.sp)-F0))
         integral_R_sr, _ = integrate.quad(integral_fun, 1/(rho*rho), 1.0**2)
         R_sr = integral_R_sr / ((1.0**2-1/(rho*rho)))
-        print(integral_fun(1/(rho*rho)),integral_fun(0.53**2),integral_fun(1.0**2),integral_R_sr, rho)
+        #print(integral_fun(1/(rho*rho)),integral_fun(0.53**2),integral_fun(1.0**2),integral_R_sr, rho)
         return R_sr
         
     def determine_mfp_function(self, Phi_root, Phi_soil, rho):
@@ -609,16 +610,18 @@ class PerirhizalPython(Perirhizal):
                        vg.create_mfp_lookup(sp) before 
         """
         Phin = 300
-        Phi_ = np.logspace(np.log10(1.0e-6), np.log10(300), Phin)
+        Phi_ = np.logspace(np.log10(1.0e-9), np.log10(500), Phin)
         base_mfp_=Phi_
-        integral_overD = np.zeros((Phin))
+        integral_overD_ = np.zeros((Phin, 2))
+        print("Creating a lookup table for the steady state solute flow")
         for i, Phi in enumerate(Phi_):
-            print(i)
-            integral_overD[i] = PerirhizalPython.integral_overDiffusion_(Phi, sp)
-        np.savez(filename, integral_overD = integral_overD, base_mfp_ = base_mfp_, soil = list(sp))
-        self.lookup_table_solutes = RegularGridInterpolator((base_mfp_, np.array([0,1])) , integral_overD)
+            print(i, " / ", Phin)
+            integral_overD_[i,0] = PerirhizalPython.integral_overDiffusion_(Phi, sp)
+            integral_overD_[i,1] = integral_overD_[i,0]
+        np.savez(filename, integral_overD_ = integral_overD_, base_mfp_ = base_mfp_, soil = list(sp))
+        self.lookup_table_solutes = RegularGridInterpolator((base_mfp_,[0,1]) , integral_overD_)
         self.sp = sp
-        return integral_overD, base_mfp_
+        return integral_overD_, base_mfp_
     
     def create_integralconcentration_lookup(self, filename, Ds_, sp):
         """      
@@ -631,24 +634,26 @@ class PerirhizalPython(Perirhizal):
         """
         
         #repeat steady state case
-        integral_overD, base_mfp_ = self.create_integralDiffusion_lookup(filename, self.sp)
+        integral_overD_, base_mfp_ = self.create_integralDiffusion_lookup(filename, self.sp)
         
         n_Ds = len(Ds_)
         
-        Phin = 300
+        Phin = 200
         Phi_ = np.logspace(np.log10(1.0e-6), np.log10(300), Phin)
         outer_mfp_=Phi_
         inner_mfp_=Phi_
         R_sr_ = np.zeros((n_Ds,Phin,Phin))
+        print("Creating a lookup table for the steady rate solute flow")
         for i, Ds in enumerate(Ds_):
             print("starting with diffusion coefficient number ", str(i+1), ":")
+            C_d = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
             for j, Phi_in in enumerate(inner_mfp_):
                 print(j)
                 for k, Phi_out in enumerate(outer_mfp_):
-                    R_sr_[i,j,k] = PerirhizalPython.integral_overconcentration_(Ds, Phi, sp)
+                    R_sr_[i,j,k] = self.integral_overconcentration_(C_d, Phi_in, Phi_out, 100.0, sp)
         
-        np.savez(filename, integral_overD=integral_overD, base_mfp_=base_mfp_, D_s_ = D_s_, outer_mfp_ = outer_mfp_, inner_mfp_ = inner_mfp_, R_sr_ = R_sr_, soil = list(sp))
-        self.lookup_table_sr_solutes = RegularGridInterpolator((base_mfp_, np.array([0,1])) , integral_overD)
+        np.savez(filename, integral_overD_=integral_overD_, base_mfp_=base_mfp_, Ds_ = Ds_, outer_mfp_ = outer_mfp_, inner_mfp_ = inner_mfp_, R_sr_ = R_sr_, soil = list(sp))
+        self.lookup_table_sr_solutes = RegularGridInterpolator((Ds_, inner_mfp_, outer_mfp_) , R_sr_)
         self.sp = sp
     
     def soil_root_interface_potentials_table(self, rx, sx, inner_kr_, rho_):

@@ -82,11 +82,11 @@ hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
 sp = vg.Parameters(hydrus_loam)
 peri.set_soil(sp)
 
-#create the big lookup table
+#create the lookup table
 #t = time.time()
 #peri.create_lookup("results/hydrus_loam", sp)
 #elapsed_time = time.time() - t
-#print("Creating the big lookup table took about ", elapsed_time) #
+#print("Creating the lookup table took about ", elapsed_time) #
 
 peri.open_lookup("results/hydrus_loam")
 
@@ -99,8 +99,15 @@ peri.open_lookup("results/hydrus_loam")
 
 peri.open_global_lookup("results/"+peri.water_filename)
 
+# create lookup tables for the solute flow
+Ds_=np.logspace(np.log10(1.0e0), np.log10(1.0e1), 2)
+#peri.create_integralDiffusion_lookup("results/hydrus_loam_ss_solutes", sp)
+#peri.create_integralconcentration_lookup("results/hydrus_loam_sr_solutes", Ds_, sp)
 
-#hsr = peri.soil_root_interface_potentials(rx, sx, inner_kr, rho)
+# open lookup tables for the solute flow
+peri.open_lookup_solutes("results/hydrus_loam_ss_solutes")
+peri.open_lookup_sr_solutes("results/hydrus_loam_sr_solutes")
+
 
 #numerically solve each root segment, this is the reference solution 
 hsr = np.array([peri.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], peri.sp) for i in range(0, len(rx))])
@@ -112,7 +119,7 @@ hsr1= peri.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
 tests.loc[:,"hsr_lookup"] = hsr1
 print("Norm of the difference to basic lookup table:", LA.norm(hsr-hsr1))
 
-#the alternative implementation
+#the alternative global implementation
 hsr3 = peri.soil_root_interface_potentials_table_global(rx, sx, inner_kr, rho)
 tests.loc[:,"hsr_global"] = hsr3
 print("Norm of the difference to global lookup table:", LA.norm(hsr-hsr3))
@@ -122,6 +129,7 @@ waterflow = 2*3.14*np.multiply((sx-rx),inner_kr)#/r_root
 Phi_root = np.array([vg.fast_mfp[sp](hsr[i]) for i in range(len(hsr))])
 Phi_soil = np.array([vg.fast_mfp[sp](sx[i]) for i in range(len(sx))])
 tests.loc[:,"waterflow"] = waterflow
+Ds = 1.0e1
 
 #base solutes
 tests.loc[:,"sol_c"] = c_sol
@@ -138,30 +146,7 @@ tests.loc[:,"sol_c_sr"] = solutes_sr
 tests.loc[:,"sol_U_sr"] = np.array([Vmax[i]*solutes_sr[i]/(Km[i]+solutes_sr[i])*1e6 for i in range(len(solutes_sr))])
 
 
-# generate the values for the solute (and water?) uptake with dumux rosi:
 
-#print(tests)
-
-# for i in range(ntests):
-    # cyl = RichardsWrapper(RichardsNCCylFoam())
-    
-    # points = [0.03,0.03*tests["rho"].iloc[0]] # radius of discretisation
-    # NC = 100 # number of discretisations + 1
-    # seg_length = 1
-    # cyl.createGrid1d(points)# cm
-    # cyl.setParameter( "Soil.Grid.Cells",str( NC-1))
-    # cyl.seg_length = seg_length
-    # cyl.setTopBC("noFlux")
-    # cyl.setBotBC("constantPressure")
-    # cyl.setTopBC_solute("noFlux")
-    # cyl.setBotBC_solute("michaelisMenten")
-    # cyl.setParameter("RootSystem.Uptake.Vmax",tests.loc[str(i),"Vmax"])
-    # cyl.setParameter("RootSystem.Uptake.Km",tests.loc[str(i),"Km"])
-    # Cells = cyl.getCellCenters_().reshape(-1)
-    # CellsStr = cyl.dumux_str(Cells/100)#cm -> m #changed by Erik
-    # cyl.setParameter("Soil.IC.Z",CellsStr)# m
-    # cyl.setParameter("Soil.IC.C"+str(j)+"Z",CellsStr) # m
-    # cyl.setCriticalPressure(-15000)  # cm pressure head
 
 print("All inputs:")
 print(tests[inputs])
@@ -171,77 +156,3 @@ print(tests[outputs])
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# #print("solute tests")
-
-# #peri.create_integralDiffusion_lookup("hydrus_loam_solutes", peri.sp)
-# peri.open_lookup_solutes("hydrus_loam_solutes")
-
-# labels_sol = ["Phi_root", "Phi_soil", "c_bulk", "Vmax", "Km", "Ds", "waterflow", "c_rootsoil"]
-
-# Intervals_sol = {
-        # "Phi_root": [0.0,50],
-        # "Phi_soil": [60,140],
-        # "c_bulk": [1.5e-8,1.5e-7], 
-        # "Vmax": [3.5e-6,3.6e-6],
-        # "Km": [1.4e-7,1.5e-7],
-        # "waterflow": [0.0,0.0],
-        # }
-# Intervals_sol = pd.DataFrame(Intervals_sol, index = ["min","max"])
-
-# tests_sol = pd.DataFrame(index = range(ntests),columns = labels_sol)
-
-# for one_label in Intervals_sol.columns:
-    # min_val = Intervals_sol.loc["min",one_label]
-    # max_val = Intervals_sol.loc["max",one_label]
-
-    # testvalues = (max_val - min_val) * np.random.rand(ntests) + min_val * np.ones(ntests)
-    # tests_sol[one_label] = testvalues
-
-# Phi_root = np.array(tests_sol.loc[:,"Phi_root"])
-# Phi_soil = np.array(tests_sol.loc[:,"Phi_soil"])
-# c_bulk = np.array(tests_sol.loc[:,"c_bulk"])
-# Vmax = np.array(tests_sol.loc[:,"Vmax"])
-# Km = np.array(tests_sol.loc[:,"Km"])
-# waterflow = np.array([(2*3.14*inner_kr[i]*(hsr[i]-rx[i])) for i in range(ntests)])
-# Ds = 1.9e-5
-
-# #c_rootsoil = peri.soil_root_solutes(Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow)
-
-# tests_sol.loc[:,"c_rootsoil"] = c_rootsoil
-
-
-
-
-# #print(tests_sol)
