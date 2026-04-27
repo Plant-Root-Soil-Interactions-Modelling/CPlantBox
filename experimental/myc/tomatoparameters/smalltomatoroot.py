@@ -63,12 +63,6 @@ petri_dish = pb.SDF_Difference(petri_dish, moved_helper_dish2)
 moved_helper_dish_hyphae = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(-(radius+barrier_thickness), 0, 0))
 hyphae_petri_dish = pb.SDF_Difference(petri_dish, moved_helper_dish_hyphae)
 
-hyphae_dishes = []
-for i in range(1, 10):
-    small_dish = pb.SDF_PlantContainer(radius*i/10,radius*i/10,height,False)
-    small_hyphae_dish = pb.SDF_Intersection(small_dish, moved_helper_dish_hyphae)
-    hyphae_dishes.append(small_hyphae_dish)
-
 # make sure to set the seed position to 0 because of the petri dish
 seed_parameter = pb.SeedRandomParameter(mycp)
 seed_parameter.seedPos.z = -height / 6 # seed is positioned in the middle of the petri dish in the z direction
@@ -136,10 +130,16 @@ while pCol < 0.60:
 print("Infection reached 60% after " + str(days) + " days.")
 
 # simulating hyphal growth
-
-
 mycp.simulateHyphalGrowth(0.5,False)
 vp.plot_roots_and_container(mycp,petri_dish)
+
+hyphae_dishes = []
+small_rad = min(hyphae_parameter.v[0]*dt)
+for i in range(1, 10):
+    small_dish = pb.SDF_PlantContainer(radius*i/10,radius*i/10,height,False)
+    small_hyphae_dish = pb.SDF_Intersection(small_dish, moved_helper_dish_hyphae)
+    hyphae_dishes.append(small_hyphae_dish)
+
 # print("Simulating hyphal growth until hyphae cross the barrier")
 # crossed_barrier = False
 
@@ -177,12 +177,19 @@ middelsimHyphae = time.perf_counter()
 for i in range(1, 60):
     print("Simulating hyphal growth step " + str(i+1) + " of 60")
     mycp.simulateHyphae(dt,False)
+    if animation:
+        ana = pb.SegmentAnalyser(mycp)
+        ana.addData("infection", mycp.getNodeInfections(2))
+        ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+        ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
+        ana.write("animation/step" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+
+if not animation:
     ana = pb.SegmentAnalyser(mycp)
     ana.addData("infection", mycp.getNodeInfections(2))
     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
     ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
     ana.write("animation/step" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
-
 end = time.perf_counter()
 filename = "splitpetri_dish" + str(simtime)
 

@@ -221,64 +221,6 @@
         <parameter name="vi" value="0.13"/>
         <!--Rate of internal infection [cm / day]-->
     </root>
-    <root name="3rdorderlateral" subType="4">
-        <parameter name="gf" value="1" dev="1000000"/>
-        <!--Growth function number [1]-->
-        <parameter name="tropismT" value="1"/>
-        <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.0073558628" dev="0.002311517"/>
-        <!--radius [cm]-->
-        <parameter name="dx" value="0.25"/>
-        <!--Axial resolution [cm] (maximal segment size)-->
-        <parameter name="dxMin" value="1e-06"/>
-        <!--Axial resolution [cm] (minimal segment size)-->
-        <parameter name="dx_inf" value="0.1"/>
-        <!--Segment length for infected root segments only in high resolution case [cm]-->
-        <parameter name="hairsElongation" value="0"/>
-        <!--Zone behind the tip without root hairs  [cm]-->
-        <parameter name="hairsLength" value="0"/>
-        <!--Root hair length [cm]-->
-        <parameter name="hairsZone" value="0"/>
-        <!--Length of the root hair zone [cm]-->
-        <parameter name="highresolution" value="0"/>
-        <!--If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity-->
-        <parameter name="hyphalDelay" value="0"/>
-        <!--Delay time before hyphal emergence after infection [day]-->
-        <parameter name="hyphalEmergenceDensity" value="0"/>
-        <!--Density of hyphal emergence along root [1/cm]-->
-        <parameter name="la" value="1.5127106" dev="1.6042612"/>
-        <!--Apical zone [cm]-->
-        <parameter name="lb" value="1.9079732" dev="0.7536841"/>
-        <!--Basal zone [cm]-->
-        <parameter name="ldelay" value="-1"/>
-        <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="5"/>
-        <!--Maximal root length [cm]-->
-        <parameter name="lmbd" value="0.15000001"/>
-        <!--Rate of primary infection for dispersed inoculum [1/(cm day)]-->
-        <parameter name="ln" value="1.197466" dev="1.0863734"/>
-        <!--Inter-lateral distance [cm]-->
-        <parameter name="lnk" value="0"/>
-        <!--Slope of inter-lateral distances [1]-->
-        <parameter name="maxAge" value="32"/>
-        <!--Maximal infection age of a root segment [day]-->
-        <parameter name="maxInfection" value="1"/>
-        <!--Percentage of maximal infection-->
-        <parameter name="minAge" value="0"/>
-        <!--Minimal infectious age of a root segment [day]-->
-        <parameter name="r" value="0.34999999"/>
-        <!--Initial growth rate [cm day-1]-->
-        <parameter name="rlt" value="9.9999998e+10" dev="1000000"/>
-        <!--Root life time [day]-->
-        <parameter name="theta" value="1.0350198" dev="0.38792506"/>
-        <!--Angle between root and parent root [rad]-->
-        <parameter name="tropismN" value="1.5"/>
-        <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="0.40000001"/>
-        <!--Mean value of expected change of root tropism [1/cm]-->
-        <parameter name="vi" value="0.13"/>
-        <!--Rate of internal infection [cm / day]-->
-    </root>
     <stem name="undefined" subType="1">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
@@ -330,7 +272,7 @@
     <hyphae name="RunnerHyphae" subType="1">
         <parameter name="tropismT" value="2"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.0004" dev="0.0001"/>
+        <parameter name="a" value="0.0050" dev="0.0005"/>
         <!--radius [cm]-->
         <parameter name="ana" value="1"/>
         <!--Probability of anastomosis occuring if distance is long enough-->
@@ -346,15 +288,15 @@
         <!--Axial resolution [cm] (minimal segment size)-->
         <parameter name="hlt" value="10" dev="2"/>
         <!--Hyphal lifetime  [day]-->
-        <parameter name="la" value="0.1" dev="0.05"/>
+        <parameter name="la" value="0.1" dev="0.050000001"/>
         <!--Apical zone [cm]-->
-        <parameter name="lb" value="0.1" dev="0.05"/>
+        <parameter name="lb" value="0.1" dev="0.050000001"/>
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral emergence delay [day]-->
         <parameter name="lmax" value="10" dev="5"/>
         <!--Maximal length of the hyphae [cm]-->
-        <parameter name="ln" value="0.1" dev="0.05"/>
+        <parameter name="ln" value="0.1" dev="0.050000001"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="theta" value="1.0471976" dev="0.10471976"/>
         <!--Branching angle [rad]-->
@@ -362,7 +304,7 @@
         <!--Number of trials of root tropism-->
         <parameter name="tropismS" value="1"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
-        <parameter name="v" value="0.48" dev="0.04"/>
+        <parameter name="v" value="0.24" dev="0.001"/>
         <!--Tip elongation rate [cm/day]-->
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2, 1" organType="6, 6" percentage="0.8, 0.2"/>
         <!--Sub type of lateral -->
@@ -370,13 +312,13 @@
     <hyphae name="BAS" subType="2">
         <parameter name="tropismT" value="2"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.00015" dev="0.0001"/>
+        <parameter name="a" value="0.0025" dev="0.00025"/>
         <!--radius [cm]-->
         <parameter name="ana" value="1"/>
         <!--Probability of anastomosis occuring if distance is long enough-->
         <parameter name="b" value="0.95999998" dev="0.050000001"/>
         <!--Branching rate [1/day]-->
-        <parameter name="b_prob" value="1 "/>
+        <parameter name="b_prob" value="1"/>
         <!--Probability of branching to occur by tip splitting rather than lateral branching [1]-->
         <parameter name="distTH" value="0.0099999998"/>
         <!--Distance for tip-hyphae anastomosis [cm]-->
@@ -386,15 +328,15 @@
         <!--Axial resolution [cm] (minimal segment size)-->
         <parameter name="hlt" value="7" dev="2"/>
         <!--Hyphal lifetime  [day]-->
-        <parameter name="la" value="0.00045" dev="0.00005"/>
+        <parameter name="la" value="0.00044999999" dev="4.9999999e-05"/>
         <!--Apical zone [cm]-->
-        <parameter name="lb" value="0.00045" dev="0.00005"/>
+        <parameter name="lb" value="0.00044999999" dev="4.9999999e-05"/>
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral emergence delay [day]-->
         <parameter name="lmax" value="3" dev="1"/>
         <!--Maximal length of the hyphae [cm]-->
-        <parameter name="ln" value="0.46079999" dev="0.05"/>
+        <parameter name="ln" value="0.46079999" dev="0.050000001"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="theta" value="1.0471976" dev="0.10471976"/>
         <!--Branching angle [rad]-->
@@ -402,9 +344,9 @@
         <!--Number of trials of root tropism-->
         <parameter name="tropismS" value="1"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
-        <parameter name="v" value="0.47999999" dev="0.0099999998"/>
+        <parameter name="v" value="0.13" dev="0.001"/>
         <!--Tip elongation rate [cm/day]-->
-        <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="6" percentage="1.0"/>
+        <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="6" percentage="0.4"/>
         <!--Sub type of lateral -->
     </hyphae>
 </plant>

@@ -6,8 +6,8 @@ import numpy as np
 
 mycp = pb.MycorrhizalPlant()
 
-path = "../tomatoparameters/"
-name = "TomatoJohanna_WildTypeTwoHyphaeTypes"
+# path = "../tomatoparameters/"
+# name = "TomatoJohanna_WildTypeTwoHyphaeTypes"
 
 # mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
@@ -47,11 +47,10 @@ mycp.readParameters(new_name + ".xml", fromFile = True, verbose = True)
 
 hyphae = mycp.getOrganRandomParameter(pb.hyphae)
 
-for hp in hyphae:
-    hp.tropismS = 1.0
-    hp.distTH = 0.01   # distance for anastomosis
-    mycp.setOrganRandomParameter(hp)
-
-
+print("Hyphae 0 a: ", hyphae[0].a)
+print("Hyphae 1 a: ", hyphae[1].a)
+hyphae[1].a = hyphae[0].a/2
+print("Hyphae 1 a after change: ", hyphae[1].a)
+mycp.setOrganRandomParameter(hyphae)
 new_name = "TwoHyphaePlusBAS"
 mycp.writeParameters(new_name + ".xml")

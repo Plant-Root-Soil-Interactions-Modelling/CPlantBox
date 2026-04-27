@@ -3,103 +3,197 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 import numpy as np
+import time
 
 mycp = pb.MycorrhizalPlant()
 path = "tomatoparameters/"
-name = "TomatoJohanna_WildType"
+name = "TwoHyphaePlusBAS"
 
 animation = True
-
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
-## Setting parameters for hyphae and roots
-hyphae_parameter = pb.HyphaeRandomParameter(mycp)
-hyphae_parameter.subType = 1
-hyphae_parameter.dx = 0.005
-hyphae_parameter.a = 0.01
-hyphae_parameter.b = 2.
-hyphae_parameter.tropismS = 0.1
-hyphae_parameter.distTH = 0.01  # distance for anastomosis 
-mycp.setOrganRandomParameter(hyphae_parameter)
-# print(hyphae_parameter)
-
+### initial root parameters
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
-    rp.hyphalEmergenceDensity = 10
-    rp.highresolution = 1.
-    rp.dx = 0.01
-    rp.tropismT = 2
+    rp.hyphalEmergenceDensity = 0
+    rp.highresolution = 0.
+    rp.dx = 0.1
+    rp.maxAge = 100 # maximal infection age
+    rp.hyphalDelay = 5.0
+    # rp.a = 0.01
+    rp.tropismT = 1
     mycp.setOrganRandomParameter(rp)
 
 
 ## Setting up petri dish
+diameter = 9.4
+radius = diameter / 2
+height = 1.6
+# introduce parameters for barrier and opening
+barrier_thickness = 0.16
+barrier_height = height
+opening_length = 5.0
+opening_height = 0.2
 
-petri_dish = pb.SDF_PlantContainer(0.94,0.94,0.1,False)
-# helper_dish = pb.SDF_PlantContainer(0.94,0.94,0.02,True)
-# moved_helper_dish = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(0.47, 0, 0))
-# half_dish = pb.SDF_Difference(petri_dish, moved_helper_dish)
+# petri dish has a radius of 9.4 cm and a height of 1.6 cm
+petri_dish = pb.SDF_PlantContainer(radius,radius,height,False)
+# the helper dish is used to cut the petri dish in half, it has the same radius and height as the petri dish but is rotated and translated to cut the petri dish in half
+helper_dish = pb.SDF_PlantContainer(radius,radius,height,True)
+# moving the helper dish such that it halves the petri dish and removes a bit more to restrict roots to the correct side of barrier
+moved_helper_dish = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(-(radius+barrier_thickness+root[0].a), 0, 0))
+half_dish = pb.SDF_Intersection(petri_dish, moved_helper_dish)
 
-# vp.plot_container(moved_helper_dish)
-# vp.write_container(petri_dish, "results/petri_dish.vtp")
+# helper container for barrier
+helper_staff = pb.SDF_PlantBox(barrier_thickness,barrier_height,diameter)
+# helper container for opening in barrier
+helper_staff2 = pb.SDF_PlantBox(barrier_thickness,opening_height,opening_length)
+# have to  move the helper staff for the right position of the opening and barrier, the midpoint is the distance from the center of the helper staff to the center of the petri dish, the bottompoint is the distance from the center of the helper staff to the center of the petri dish in the y direction, and the helper staff is moved to the position of the opening and barrier
+midpoint = opening_length / 2 - diameter / 2
+bottompoint = opening_height / 2 - barrier_height / 2
+# container for opening moved to the right position
+helper_staff2 = pb.SDF_RotateTranslate(helper_staff2, 0,0,pb.Vector3d(0, bottompoint, midpoint))
+# opening made in the barrier
+helper_dish2 = pb.SDF_Difference(helper_staff, helper_staff2)
+# barrier moved to the right position
+moved_helper_dish2 = pb.SDF_RotateTranslate(helper_dish2, 90, pb.SDF_Axis.xaxis , pb.Vector3d(0, -radius, -height/2))
+petri_dish = pb.SDF_Difference(petri_dish, moved_helper_dish2)
 
-mycp.setGeometry(petri_dish)
+moved_helper_dish_hyphae = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(-(radius+barrier_thickness), 0, 0))
+hyphae_petri_dish = pb.SDF_Difference(petri_dish, moved_helper_dish_hyphae)
+
+# make sure to set the seed position to 0 because of the petri dish
+seed_parameter = pb.SeedRandomParameter(mycp)
+seed_parameter.seedPos.z = -height / 6 # seed is positioned in the middle of the petri dish in the z direction
+seed_parameter.seedPos.x = - 1.0
+seed_parameter.seedPos.y = 0
+mycp.setOrganRandomParameter(seed_parameter)
+
+mycp.setGeometry(half_dish)
 mycp.initialize(True)
 
-simtime = 4
-fps = 48
+# set up simulation times etc.
+simtime = 15
+fps = 24
 anim_time = simtime
 N = fps * anim_time
 dt = simtime / N
-filename = "petri_dish_" + str(simtime)
 
-print('First Step just for root to grow')
-# infected_nodes = [0]
-mycp.simulate(0.5, True)
-### TODO make this better something wrong but produces some infection
-print("just a check")
-# for i in range(1,1000):
-#     mycp.simulatePrimaryInfection(dt, True)
-#     mycp.simulateSecondaryInfection(dt, True)
-#     infected_nodes = mycp.getNodeInfections(2)
-#     mycp.simulateHyphalGrowth(dt, True)
-#     # print(infected_nodes)
-# mycp.simulateHyphalGrowth(10, True)
-# print(infected_nodes)
-print('Rest of steps just hyphae grow')
-for i in range(2, 4):
-    print('step',i, '/',N) 
-    mycp.simulatePrimaryInfection(dt, True)
-    mycp.simulateSecondaryInfection(dt, True)
-    mycp.simulateHyphalGrowth(dt, True)     
-    mycp.simulateHyphae(dt, True)
+filename = "splitpetri_dish" + str(simtime)
 
-# for i in range(1, N+1):
-#     print('step',i, '/',N)        
-#     mycp.simulate(dt, True)
-    
-
-    
-# vp.plot_plant(mycp, "organType")
-vp.plot_roots_and_container(mycp,petri_dish)
-# simtime = 50
-# fps = 1
-# anim_time = simtime
-# N = fps * anim_time
-# dt = simtime / N
-
-# filename = "anastomosis_" + str(simtime)
+# Start simulation
+start = time.perf_counter()
+for i in range(0, N):
+    if i % 6 == 0:
+        print("Step " + str(i) + " of " + str(N))
+    mycp.simulate(dt,True)
+    if (animation):
+        ana = pb.SegmentAnalyser(mycp)
+        ana.addData("infection", mycp.getNodeInfections(2))
+        ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+        ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
+        ana.write("animation/" + filename + str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+# look at roots and container
+vp.plot_roots_and_container(mycp,half_dish)
 
 
-# for i in range(1, N+1):
-#     print('step',i, '/',N)
-#     # print(hti)        
-#     mycp.simulate(dt, False)
-#     if animation:
-#         ana = pb.SegmentAnalyser(mycp)
-#         ana.addData("AnastomosisPoints", mycp.getAnastomosisPoints(5))
-#         ana.addData("infection", mycp.getNodeInfections(2))
-#         ana.write("results/" + filename + "_"+ str(i).zfill(4) + ".vtp", ["radius", "subType", "creationTime","organType","infection","AnastomosisPoints","hyphalTreeIndex"])
+afterroots = time.perf_counter()
+# resetting some parameters for roots
+for rp in root:
+    rp.hyphalEmergenceDensity = 4
+    mycp.setOrganRandomParameter(rp)
+# setting up hyphal parameters
 
-# # ana = pb.SegmentAnalyser(mycp)
-# # ana.addData("AnastomosisPoints", mycp.getAnastomosisPoints(5))
-# # ana.write("results/" + filename + ".vtp", ["radius", "subType", "creationTime","organType","infection","AnastomosisPoints","hyphalTreeIndex"])
+# change geometry but only for hyphae
+mycp.changeGeometry(5, petri_dish)
+
+# check for percentage of colonized roots
+pCol = sum(mycp.getParameter("infectionLength")) / sum(mycp.getParameter("length"))
+print("Initial infection percentage: " + str(pCol*100) + "%")
+days = 0
+while pCol < 0.50:
+    mycp.simulateInfection(1,False)
+    days += 1
+    N+=24
+    pCol = sum(mycp.getParameter("infectionLength")) / sum(mycp.getParameter("length"))
+    print("Infection percentage: " + str(pCol*100) + "% after " + str(days) + " days.")
+print("Infection reached 50% after " + str(days) + " days.")
+
+# simulating hyphal growth
+# mycp.simulateHyphalGrowth(0.5,True)
+# N+=12
+# vp.plot_roots_and_container(mycp,petri_dish)
+
+print("Simulating hyphal growth until hyphae cross the barrier")
+crossed_barrier = 0
+while crossed_barrier < 3:
+    N+=1    
+    mycp.simulateHyphalGrowth(dt,False)
+    mycp.simulateHyphae(dt,False)
+    for organ in mycp.getOrgans(pb.hyphae):
+        if organ.getParameter("subType") == 1:
+            for node in organ.getNodes():
+                if node.x > -barrier_thickness and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
+                    crossed_barrier += 1
+
+        # ana = pb.SegmentAnalyser(mycp)
+        # ana.addData("infection", mycp.getNodeInfections(2))
+        # ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+        # ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
+        # ana.write("animation/step" + str(N+1) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+
+small_dish = pb.SDF_PlantContainer(radius,radius,height,False)
+small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
+
+# inactivating those organs that are in the root part of the compartment
+print("Inactivating those hyphae that are in the root part of the petri dish")
+organs = mycp.getOrgans()
+for organ in organs:
+    stayactive = False
+    for node in organ.getNodes():
+        if node.x > -barrier_thickness and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
+            stayactive = True
+    organ.setActive(stayactive)
+
+# look at system to see how active
+vp.plot_roots(mycp,"active")   
+
+middelsimHyphae = time.perf_counter()
+
+times = np.linspace(N, N+60, 60)
+
+for i in range(0, 60):
+    print("Simulating hyphal growth step " + str(i+1) + " of 60")
+    mycp.simulateHyphae(dt,False)
+    organs = mycp.getOrgans()
+    for organ in organs:
+        stayactive = False
+        for node in organ.getNodes():
+            if node.x > -barrier_thickness and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
+                stayactive = True
+        organ.setActive(stayactive)
+    if animation:
+        ana = pb.SegmentAnalyser(mycp)
+        ana.addData("infection", mycp.getNodeInfections(2))
+        ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+        ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
+        ana.crop(small_hyphae_dish)
+        ana.write("animation/" + filename + "_" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+end = time.perf_counter()
+ana = pb.SegmentAnalyser(mycp)
+ana.addData("infection", mycp.getNodeInfections(2))
+ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
+ana.crop(small_hyphae_dish)
+if not animation:
+    ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+# hld = np.zeros(len(times[1:],1))
+# for j in range(len(times[1:])):
+#     ana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
+#     ana.pack()
+#     distrib = ana.distribution("length", 0.0,-height,1,True)
+#     hld(len(times[1:])-j-1) = np.array(distrib)
+
+
+
+vp.plot_roots_and_container(mycp,small_hyphae_dish)
+vp.write_container(petri_dish, "petri_dish.vtp")
