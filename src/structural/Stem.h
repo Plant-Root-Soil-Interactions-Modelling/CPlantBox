@@ -34,7 +34,7 @@ public:
     int organType() const override { return Organism::ot_stem; } ///< returns the organs type
 
     void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
-	double internodalGrowth(double rmax,double dt, bool silence = false); ///< internodal growth of \param dl [cm]
+	double internodalGrowth(double rmax, double dt, double e_max, bool implement, bool silence = false); ///< internodal growth of \param dl [cm]
 	double getLatInitialGrowth(double dt) override;
 	double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const override;
 	Vector3d getNode(int i) const override { return nodes.at(i); } ///< i-th node of the organ

@@ -159,27 +159,25 @@ void Stem::simulate(double dt, bool verbose)
 
 				// length increment
 				double age__init = age - dt_;
-				if(age__init > p.delayNGStart){//simulation ends after start of growth pause
-					if(age__init < p.delayNGEnd){age__init =p.delayNGStart;//during growth pause
+				double age__ = age;
+                double age_dt = dt_;			
+				double age__init_ = age__init;
+				if(age__init < p.delayNGEnd)
+				{
+					age__init_ = std::min(p.delayNGStart, age__init);
+					if(age > p.delayNGEnd){
+						age__ = age - (p.delayNGEnd - p.delayNGStart);//simulation ends after end of growth pause
 					}else{
-						age__init = age__init - (p.delayNGEnd - p.delayNGStart);//simulation ends after end of growth pause
+						age__ = p.delayNGStart;						
 					}
 				}
+				age_dt = age__ - age__init_;
 				
-				
-				double age__ = age;
-				if(age > p.delayNGStart){//simulation ends after start of growth pause
-					if(age < p.delayNGEnd){age__ =p.delayNGStart;//during growth pause
-					}else{
-						age__ = age - (p.delayNGEnd - p.delayNGStart);//simulation ends after end of growth pause
-					}
-				}//delay to apply
 				/*as we currently do not implement impeded growth for stem and leaves
 				*we can use directly the organ's age to cumpute the target length
 				*/
 				//double targetlength = calcLength(age__)+ this->epsilonDx;
 				double e;// = targetlength-length; // store value of elongation to add
-                double age_dt;
                 double rmax, Lmax;
                 double maxLBudDormant_ = plant.lock()->maxLBudDormant.at(getParameter("subType"));
                 double maxLBud_ = plant.lock()->maxLBud.at(getParameter("subType"));
@@ -197,66 +195,24 @@ void Stem::simulate(double dt, bool verbose)
                     default:{std::cout<<"stem::simulate: budStage not recognised "<< budStage<<std::flush;
                             assert(false);}
                 }
-                
+                double targetlength;
 				
                 if(this->getOrganRandomParameter()->f_gf->CW_Gr.empty())
                 {
-                    
-                    if(Lmax - length < -1e-10)
-                    {
-                        std::cout<<"Lmax - length < -1e-10 "<<getId()<<" "<<Lmax<<" "<<
-                            length<<" "<<this->epsilonDx<<std::flush;
-                        assert(false);
-                    }  
-					//will cause issue if used when we are in the basal and apical zone 
-					int nActivePhytomeres_i = getNumActivePhytomeres(); 
-                    double nActivePhytomeres = double(nActivePhytomeres_i);
-					nActivePhytomeres = std::min(nActivePhytomeres,2.);// manual fix for the auxin work but doe snot really work
-					
-					// double LinitTemp = getStemRandomParameter()->f_gf->getLength(age__init  , rmax * nActivePhytomeres, Lmax, shared_from_this());
-                    // double targetlength = getStemRandomParameter()->f_gf->getLength(age__ , rmax * nActivePhytomeres, Lmax, shared_from_this()) + this->epsilonDx;
-                    // double e1 = std::max(0.,targetlength-LinitTemp); // unimpeded elongation in time step dt
-                    
-					
-					// double maxPhyto =  double(p.ln.size());
-					// double rmax_ = rmax * std::max(1., maxPhyto);
-                    // double scale = nActivePhytomeres / maxPhyto;
-					// double LinitTemp2 = getStemRandomParameter()->f_gf->getLength(age__init  , rmax_, Lmax, shared_from_this());
-                    // double targetlength2 = getStemRandomParameter()->f_gf->getLength(age__ , rmax_, Lmax, shared_from_this()) ;
-                    // double e2 = std::max(0.,scale * (targetlength2-LinitTemp2)) + this->epsilonDx; // unimpeded elongation in time step dt
-                    
-					e = rmax * nActivePhytomeres * (age__ - age__init) + this->epsilonDx;
-					e = std::min(e, Lmax - getLength(true));
-					age_dt = age__ - age__init;
-                    
-                    if((e + getLength(true)) - Lmax> 1e-10){
-                        std::cout<<"Stem::simulate: target length too high "<<e<<" "<<dt<<" "<<getLength(false)<<" "<<getLength(true);
-                        std::cout<<" "<<Lmax<<" "<<getId()<<" "<<budStage<<std::endl;
-                        assert(false);
-                    }
+					targetlength = calcLength(age + dt_) + this->epsilonDx; // not accounting for growth delay => lb growth is before
+					if(targetlength >= p.lb ){targetlength = Lmax;}                    
                 }else{
-                    double targetlength = calcLength(age__)+ this->epsilonDx;//length from piafmunch module
-                    e = targetlength-length; // store value of elongation to add
-                    if(verbose )
-                    {
-                        std::cout<<"NO has was "<<targetlength<<" "<<e  <<" "<<length<<" "<<this->epsilonDx<<std::endl;
-                    }
+                    targetlength = calcLength(age__);//+ this->epsilonDx;//length from piafmunch module                    
                 }
-                // if((budStage == 0)&&(getParameter("subType")==2))
-                    // {
-                        
-                        
-                        // e = maxLBudDormant_ -  getLength(true);
-                    // }
-                
+                e = targetlength-length; // store value of elongation to add
 				double dl = e;//length increment = calculated length + increment from last time step too small to be added
-				length = getLength(true);
+				length = getLength(true); // length - this->epsilonDx
 				this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
 				
 				assert(((budStage !=1)||(length - maxLBud_ < 1e-10))&&"!(((budStage !=1)||(length - maxLBud_ < 1e-10)))");
                 assert(((budStage !=0)||(length - maxLBudDormant_< 1e-10))&&"!(((budStage !=0)||(length < 1e-10)))");
-				assert(((budStage !=1)||(length + e - maxLBud_ < 1e-10))&&"!(((budStage !=1)||(length + dl - maxLBud < 1e-10)))");
-                assert(((budStage !=0)||(length + e - maxLBudDormant_< 1e-10))&&"!(((budStage !=0)||(length + dl - maxLBudDormant < 1e-10)))");
+				//assert(((budStage !=1)||(length + e - maxLBud_ < 1e-10))&&"!(((budStage !=1)||(length + dl - maxLBud < 1e-10)))");
+                //assert(((budStage !=0)||(length + e - maxLBudDormant_< 1e-10))&&"!(((budStage !=0)||(length + dl - maxLBudDormant < 1e-10)))");
 				// create geometry
 				if (p.laterals) { // stem has laterals
 					/* basal zone */
@@ -302,7 +258,7 @@ void Stem::simulate(double dt, bool verbose)
 							//double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);//length to add to branching zone
 
 							if(age_dt > 0){
-								double ddx_ = internodalGrowth(rmax, age_dt, verbose);
+								double ddx_ = internodalGrowth(rmax, age_dt, e, true, verbose);
 								//dl -= ddx;
 								length += ddx_;
 
@@ -462,6 +418,7 @@ int Stem::getNumActivePhytomeres() const
 	return std::max(1, nAP); // having r of 0 causes issues
 }
 
+
 /**
  * Simulates internodal growth of dl for this stem
  * divid total stem growth between the phytomeres
@@ -472,17 +429,16 @@ int Stem::getNumActivePhytomeres() const
  * @param 	dl			total length of the segments that are created [cm]
  * @param	verbose		print information rmax, age_dt
  */
-double Stem::internodalGrowth(double rmax, double dt, bool verbose)
+double Stem::internodalGrowth(double rmax, double dt, double e_max, bool implement, bool verbose)
 {
 	double tot_growth = 0.;
     const StemSpecificParameter& p = *param();
-    size_t nPhytomers = p.ln.size();
+    size_t nPhytomers = p.ln.size(); 
     if(rmax * dt <= 0.0) return 0.;
 	double dt_ = dt;
-	double ratioSeqGrowth = getParameter("ratioSeqGrowth");
+	double ratioSeqGrowth = getParameter("ratioSeqGrowth"); // 0.5
 	double epsilonDx_tot = accumulate(epsilonDxPerPhyto.begin(), epsilonDxPerPhyto.end(), 0.);
-	//dl -= epsilonDx_tot;
-	//assert((dl >= 0)&&"Stem::internodalGrowth: epsilonDx_tot > dl");
+	double epsilonDx_old = this->epsilonDx;
     if(p.nodalGrowth == 1) {
         // --- Equal growth: distribute proportionally to available growth ---
         double totalAvailable = 0.0;
@@ -499,12 +455,12 @@ double Stem::internodalGrowth(double rmax, double dt, bool verbose)
 
         for(size_t i = 0; i < nPhytomers; ++i) {
             double growth_i = rmax * dt;
-            createSegments(growth_i, dt, verbose, localId_linking_nodes[i+1]);
+			if(implement){createSegments(growth_i, dt, verbose, localId_linking_nodes[i+1]);}
         }
 
     } else {
         // --- Sequential / partial sequential growth ---
-        for(size_t i = 0; i < nPhytomers && ((dt_ > 1e-12)||(epsilonDx_tot > 1e-12)); ++i) {
+        for(size_t i = 0; i < nPhytomers && (e_max > 1e-12) && ((dt_ > 1e-12)||(epsilonDx_tot > 1e-12)||(!implement)); ++i) {
             int nn1 = localId_linking_nodes[i];
             int nn2 = localId_linking_nodes[i+1];
             double currLength = getLength(nn2) - getLength(nn1);
@@ -512,49 +468,36 @@ double Stem::internodalGrowth(double rmax, double dt, bool verbose)
             double available = std::max(0.0, maxLength - currLength);
             if(available < 1e-12) continue;
 			double dl = dt_ * rmax;
-            double growth = std::min(dl , available);
-			//double respect_threshold = 0.;
-
-            // if((i + 1) < nPhytomers) {
-                // respect_threshold = std::min(growth, 
-										// std::max(0.0, 
-											// maxLength * ratioSeqGrowth - currLength - epsilonDxPerPhyto[i])); // all for phytomere 1
-				// if(respect_threshold < growth) {
-					// //above_threshold = 
-					// respect_threshold += std::min((dl - respect_threshold)/2.0, available - respect_threshold - epsilonDxPerPhyto[i]);
-				// }
-				// growth = respect_threshold + epsilonDxPerPhyto[i];
-            // }else{
-				// respect_threshold = growth;
-				// growth += epsilonDxPerPhyto[i];
-				
-			// }
+            double growth = std::min(std::min(dl , available),e_max);
 			if(growth  +  epsilonDxPerPhyto[i] > 0){
-				double epsilonDx_old = this->epsilonDx;
+				epsilonDx_old = this->epsilonDx;
 				tot_growth += growth ;
-				createSegments(growth +  epsilonDxPerPhyto[i], dt, verbose, i+1);
-				epsilonDxPerPhyto[i] = this->epsilonDx - epsilonDx_old; // growth promised to this pythomere
+				e_max -= growth ;
+				if(implement){createSegments(growth +  epsilonDxPerPhyto[i], dt, verbose, i+1);}
 			}
 			// adapt dt
 			
 			if(currLength + epsilonDxPerPhyto[i] < maxLength * ratioSeqGrowth ){ //only loose time if was below the limit at the beginning
 				if(currLength + growth + epsilonDxPerPhyto[i] < maxLength * ratioSeqGrowth ){ // if still below limit at the end, no growth for following phytomere
 					dt_ = 0.;
+					e_max = 0.;
 				}else{ // how much time to reach the limit?
-					double dt_above = (currLength + growth + epsilonDxPerPhyto[i] - maxLength * ratioSeqGrowth )/rmax;
-					assert(dt_ >= dt_above - 1e-12);
-					dt_ -= dt_above;
+					double dt_below = (maxLength * ratioSeqGrowth - (currLength + epsilonDxPerPhyto[i]) )/rmax;
+					assert(dt_ >= dt_below - 1e-12);
+					dt_ -= dt_below;
 				}
 			
 			}
-			
-            epsilonDx_tot = accumulate(epsilonDxPerPhyto.begin(), epsilonDxPerPhyto.end(), 0.);
+			if(implement){
+				epsilonDxPerPhyto[i] = this->epsilonDx - epsilonDx_old; // growth promised to this phytomere, but stored because of the resolution				
+				epsilonDx_tot = accumulate(epsilonDxPerPhyto.begin(), epsilonDxPerPhyto.end(), 0.);
+			}
         }
     }
-	assert((epsilonDx_tot <= this->epsilonDx) && "error with epsilon");
-    if (dt_ < 0) { // this sould not happen as computed dl to be <= sum(availableForGrowth)
+	
+    if ((dt_ < 0)||(e_max < 0)) { // this sould not happen as computed dl to be <= sum(availableForGrowth)
         std::stringstream errMsg;
-        errMsg << "Stem::internodalGrowth negative time : " << dt;
+        errMsg << "Stem::internodalGrowth negative time or negatve e_max: " << dt<<" "<<e_max;
         throw std::runtime_error(errMsg.str().c_str());
     }
 	return tot_growth;

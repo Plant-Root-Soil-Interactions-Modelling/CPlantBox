@@ -329,6 +329,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getParam",&Organ::param)//backward compatibility
             .def("param",&Organ::param)
             .def("getOrganRandomParameter",&Organ::getOrganRandomParameter)
+            .def("getTheoreticalGrowth",&Organ::getTheoreticalGrowth)
             .def("isAlive",&Organ::isAlive)
             .def("isActive",&Organ::isActive)
             .def("getAge",&Organ::getAge)
@@ -1220,13 +1221,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("stopAt",&PhloemFlux::stopAt)
 			.def_readwrite("BerthLim",&PhloemFlux::BerthLim)
 			.def_readwrite("useLength",&PhloemFlux::useLength)
-			.def_readwrite("doMemAux",&PhloemFlux::doMemAux)
 			.def_readwrite("leafAsIAASource",&PhloemFlux::leafAsIAASource)
-			.def_readwrite("limLenActive",&PhloemFlux::limLenActive)
-			.def_readwrite("PRBA",&PhloemFlux::PRBA)
-			.def_readwrite("PRBD",&PhloemFlux::PRBD)
-			.def_readwrite("PRBr",&PhloemFlux::PRBr)
-			.def_readwrite("PRBLeaf",&PhloemFlux::PRBLeaf)
 			//.def_readwrite("CarbonCostDormant",&PhloemFlux::CarbonCostDormant)
             //.def("computeBerth", (void (PhloemFlux::*)(const std::function<double(double,double)>&)) &PhloemFlux::computeBerth)
         
@@ -1268,7 +1263,9 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("doTroubleshooting",&PhloemFlux::doTroubleshooting)
 			.def_readwrite("Fpsi",&PhloemFlux::Fpsi)
 			.def_readwrite("Q10",&PhloemFlux::Q10)
-			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10);
+			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10)
+			.def_readwrite("k_S_ST",&PhloemFlux::k_S_ST)
+			.def_readwrite("C_targ",&PhloemFlux::C_targ);
 
 #endif
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")

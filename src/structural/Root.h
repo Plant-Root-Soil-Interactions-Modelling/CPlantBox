@@ -31,6 +31,7 @@ public:
     int organType() const override { return Organism::ot_root; }; ///< returns the organs type
 
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
+    double getTheoreticalGrowth(double dt) override;
 
     double getParameter(std::string name) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)’
     std::string toString() const override;

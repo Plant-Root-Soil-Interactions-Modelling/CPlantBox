@@ -61,12 +61,12 @@ min_ = np.array([-20, -20, -50])
 max_ = np.array([20, 20, 30.])
 
 
-anim = vp.AnimateRoots(plant)
-anim.min = min_
-anim.max = max_
-anim.res = [1, 1, 1]
-anim.plant = True
-anim.start()
+# anim = vp.AnimateRoots(plant)
+# anim.min = min_
+# anim.max = max_
+# anim.res = [1, 1, 1]
+# anim.plant = True
+# anim.start()
 
 dt = 0.1
 N = int(np.round(sim_time/dt))
@@ -75,23 +75,22 @@ for i in range(N):
     plant.simulate(dt)  # Simulate|\label{l13:simulate}|
     # ana = pb.SegmentAnalyser(plant)
     # vp.write_plant(f"results/UQ_1LeafRS{i:04d}", ana)
-    anim.update()
+    # anim.update()
     #print(dt * (i+1))
-    stem = plant.getOrgans(3)[0]
+    stem = plant.getOrgans(3, True)[0]
     epsilonDxPerPhyto = np.array(stem.epsilonDxPerPhyto)
     lln = stem.getLlocalId_linking_nodes()
-    print(len(epsilonDxPerPhyto), len(lln))
     lengthP = np.zeros(60)
     __ = np.diff([stem.getLength(lln_i) for lln_i in lln])
     if len(__) > 0:
-        __ -= epsilonDxPerPhyto 
+        __ += epsilonDxPerPhyto 
     lengthP[:len(__)] = __ /2.7
     lengthkids = np.zeros(60)
     __ = np.array([stem.getChild(np).getLength(False)/5 for np in range(stem.getNumberOfChildren()) if stem.getChild(np).organType() == pb.leaf])
     lengthkids[:len(__)] = __
     len_phytomeres.append(lengthP)
     len_leaves.append(lengthkids)
-    print(dt * (i+1), 'sum(lengthP > 0.011)', sum(lengthP > 0.0))
+    print(dt * (i+1), sum(lengthP > 0.0))
     numP.append(sum(lengthP > 0.0))
     
     

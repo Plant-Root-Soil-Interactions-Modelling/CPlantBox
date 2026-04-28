@@ -171,7 +171,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		double Q_Rmmax_ ;double Q_Exudmax_;double Fu_lim;
 		//Q_AuxinOut_dot[i] = 0;// not used currently
 		
-		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
+		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-max(0.,(CSTi - C_targ))* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
 			
 		Q_S_ST_dot[i] = k_S_ST * (CSTi - C_targ) * vol_ST[i]; // (Vmax and kHyd) or k3 (below),  or all three, should be zero

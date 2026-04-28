@@ -1,5 +1,6 @@
 #include <PiafMunch/CPB_to_PM.h>
 #include "runPM.h"
+#include <unordered_set>
 
 	/*water limited deltaSuc per node*/
 void CPB_to_PM::organToNodeData(double dt) //waterLimitedGrowth
@@ -220,15 +221,20 @@ double CPB_to_PM::getMaxVolumicGrowth(std::shared_ptr<CPlantBox::Organ> org, dou
 	if(org->getParameter("gf") == 3)
 	{
 		f_gf =  plant->createGrowthFunction(1);
-	}
-		
-	double age_ = f_gf->getAge(Linit, rmax, Lmax, org->shared_from_this());			
+	}	
 	assertUsedCReserves(org);			
 	double dt = adaptDt(org, t);				
-	//	params to compute growth
-	//double LinitTemp = f_gf->getLength(age_ , rmax, Lmax, org->shared_from_this());
-	double targetlength = f_gf->getLength(age_ + dt , rmax, Lmax, org->shared_from_this());
-	double e = std::max(0.,targetlength-Linit);// unimpeded elongation in time step dt
+	double e = 0.;	
+	if((org->organType() == 3)&&(org->getNumberOfLinkingNodes() > 0))
+	{
+		e = std::static_pointer_cast<CPlantBox::Stem>(org)->internodalGrowth(rmax, dt, Lmax, false, false);
+	}else{
+		double age_ = f_gf->getAge(Linit, rmax, Lmax, org->shared_from_this());		
+		//	params to compute growth
+		//double LinitTemp = f_gf->getLength(age_ , rmax, Lmax, org->shared_from_this());
+		double targetlength = f_gf->getLength(age_ + dt , rmax, Lmax, org->shared_from_this());
+		e = std::max(0.,targetlength-Linit);// unimpeded elongation in time step dt
+	}
 	
 	if((e + org->getLength(false))> Lmax + 1e-10){
 		std::cout<<"CPB_to_PM::getMaxLengthGrowth: target length too high e: "<<e<<" dt: "<<dt<<" linit: "<<Linit;
@@ -246,7 +252,7 @@ double CPB_to_PM::getMaxVolumicGrowth(std::shared_ptr<CPlantBox::Organ> org, dou
 	}
 	
 	BackUpMaxGrowth[org->getId()] = Linit + e; // to compare with final growth length in @see CPB_to_PM::computeOrgGrowth
-	double deltavol = std::max(0.,org->orgVolume(Linit + e, false) - org->orgVolume(Linit, false));//volume from theoretical length
+	double deltavol = std::max(0.,org->orgVolume(org->getLength(false) + e, false) - org->orgVolume(org->getLength(false), false));//volume from theoretical length
 	return deltavol;
 }
 
@@ -267,7 +273,7 @@ std::vector<int> CPB_to_PM::getGrowingNodes(std::shared_ptr<CPlantBox::Organ> or
 	}else{
 		if(ot == 4)//only for nodes in the leaf growth zone
 		{
-			for(int k = 0; k < nNodes; k++)
+			for(int k = 1; k < nNodes; k++)
 			{
 				nodeLocalIds.push_back(k);
 				if(org->getLength(k) > this->leafGrowthZone)
@@ -278,25 +284,18 @@ std::vector<int> CPB_to_PM::getGrowingNodes(std::shared_ptr<CPlantBox::Organ> or
 		}
 		if(ot == 3)
 		{
-			int nn1 = 0;
-			if((StemGrowthPerPhytomer)&&(org->getNumberOfChildren() > 0))
-			{
-				// only for nodes in the growing phytomers. Phytomer ends each time we have a lateral.
-				auto stemParams = std::static_pointer_cast<CPlantBox::Stem>(org)->param();
-				bool foundPhytoIdx = false;
-				int PhytoIdx = 0; // to remember PhytoIdx outside of loop
-				for(; ((PhytoIdx < stemParams->ln.size())&(!foundPhytoIdx));PhytoIdx++)
-				{
-					double maxPhytoLen = stemParams->ln.at(PhytoIdx);
-					double currentPhytoLen = org->getLength(org->getChild(PhytoIdx+1)->parentNI) - org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI);
-					foundPhytoIdx = (maxPhytoLen - currentPhytoLen > 1e-10);//first still growing phytomere
-					if(maxPhytoLen - currentPhytoLen < -1e-10){throw std::runtime_error("maxPhytoLen - currentPhytoLen < -1e10;");}
-					
+			auto lln = org->getLlocalId_linking_nodes();			
+			if((StemGrowthPerPhytomer)&&( lln.size() > 1))
+			{ 
+				lln.erase(lln.begin()); // remove the point at the bottom of the first phytomere
+				std::unordered_set<int> seen;				
+				for (int x : lln) { // add the end of each phytomere
+					if (seen.insert(x).second) {
+						nodeLocalIds.push_back(x);
+					}
 				}
-				assert((nn1 < nNodes)&&"nn1 > nNodes");
-			}
-			for (int i = nn1; i < nNodes; ++i) {
-				nodeLocalIds.push_back(i);
+			}else{
+				nodeLocalIds.push_back(nNodes - 1);
 			}
 		}
 	}
@@ -328,15 +327,21 @@ void CPB_to_PM::computeFlen(std::shared_ptr<CPlantBox::Organ> org, std::vector<i
 	{
 		Flen.at(org->getNodeId(growingNodesId.at(0))) = 1.;
 	}else{
-		double L_n0 = org->getLength(growingNodesId.at(0)); 
-		double L_growth_length = org->getLength(growingNodesId.at(growingNodesId.size() - 1)) - L_n0;
-		for(std::size_t k = 1; k < growingNodesId.size(); k++)//int nodeId : growingNodesId)
+		//double L_n0 = org->getLength(growingNodesId.at(0)-1); 
+		std::vector<double> Lsegs(growingNodesId.size());
+		double L_growth_length = 0.;// = org->getLength(growingNodesId.at(growingNodesId.size() - 1)) - L_n0;
+		for(std::size_t k = 0; k < growingNodesId.size(); k++)//int nodeId : growingNodesId)
 		{
 			int nodeGlobalId = org->getNodeId(growingNodesId.at(k));
-			auto nodei = plant->nodes.at(org->getNodeId(growingNodesId.at(k - 1)));
+			auto nodei = plant->nodes.at(org->getNodeId(growingNodesId.at(k) - 1));
 			auto nodej = plant->nodes.at(nodeGlobalId);
-			double Lseg = nodej.minus(nodei).length();
-			Flen.at(nodeGlobalId) = (Lseg/L_growth_length);
+			Lsegs.at(k) = nodej.minus(nodei).length();
+			L_growth_length += Lsegs.at(k) ;
+		}
+		for(std::size_t k = 0; k < growingNodesId.size(); k++)
+		{
+			int nodeGlobalId = org->getNodeId(growingNodesId.at(k));
+			Flen.at(nodeGlobalId) = (Lsegs.at(k)/L_growth_length);
 			Flen_tot += Flen.at(nodeGlobalId);
 		}
 		if((std::abs(Flen_tot - 1.)>1e-10)||(std::abs(Flen_tot - 1.)<-1e-10))

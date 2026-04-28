@@ -71,6 +71,11 @@ std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism>  p)
     }
     return o;
 }
+double Organ::getTheoreticalGrowth(double dt) 
+{
+	return -1.;
+}
+
 
 /**
  * @return the organs length from start node up to the node with index @param i.

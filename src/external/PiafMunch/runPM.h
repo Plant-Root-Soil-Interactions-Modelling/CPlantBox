@@ -213,12 +213,6 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     double auxin_init_mean;
     double BerthLim = -1;
     int useLength = 0;
-    double limLenActive;
-    double PRBA =0;
-    double PRBD =0;
-    double PRBr = 0;
-    double PRBLeaf = 0;
-    double doMemAux = 0.;
     
 	//internal PiafMunch functions but cannot protect
 	void initialize_carbon(vector<double> vecIn) ;							// initializes carbon system parameters & constants (implemented in 'initialize.cpp')

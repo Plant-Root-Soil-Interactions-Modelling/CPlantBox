@@ -92,6 +92,41 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
     return r;
 }
 
+double Root::getTheoreticalGrowth(double dt) 
+{
+	double age_temp = age;
+    const RootSpecificParameter& p = *param(); // rename
+	double e = 0.;
+	if (alive) {
+		
+        // increase age
+        if (age_temp+dt>p.rlt) { // root life time
+            dt=p.rlt-age_temp; // remaining life span
+        }
+        age_temp+=dt;
+		
+        if (age_temp>0) { 
+
+
+            if (active) {
+                // length increment
+                double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+                double dt_; // time step
+                if (age_temp<dt) { // the root emerged in this time step, adjust time step
+                    dt_= age_temp;
+                } else {
+                    dt_=dt;
+                }
+
+                double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
+
+                e = targetlength-length; // unimpeded elongation in time step dt
+			}
+		}
+	}
+	return e;
+}
+
 /**
  * Simulates the development of the organ in a time span of @param dt days.
  *
