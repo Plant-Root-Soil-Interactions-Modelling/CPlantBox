@@ -83,7 +83,7 @@ se = pb.ProportionalElongation()
 se.setBaseLookUp(scale_elongation)
 
 rs = pb.Plant()
-rs.setSeed(0)
+rs.setRandomSeed(0)
 rs.readParameters(rootparname)
 for p in rs.getOrganRandomParameter(pb.root):
     p.f_se = se  # set scale elongation function

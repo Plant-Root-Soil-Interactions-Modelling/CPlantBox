@@ -415,7 +415,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNodeIndex", &Organism::getNodeIndex)
 
             .def("setMinDx", &Organism::setMinDx)
-            .def("setSeed", &Organism::setSeed)
+            .def("setSeed", &Organism::setSeed) // bit missleading
+            .def("setRandomSeed", &Organism::setRandomSeed)
             .def("getSeedVal", &Organism::getSeedVal)
             .def_readwrite("plantId", &Organism::plantId)
 

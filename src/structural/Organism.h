@@ -127,16 +127,17 @@ class Organism : public std::enable_shared_from_this<Organism> {
     double getMinDx() { return minDx; }      ///< minimum segment size, smaller segments will be skipped
 
     /* random numbers */
-    virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
+    void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
+    void setRandomSeed(unsigned int seed) { setSeed(seed); } ///< renamed setSeed to avoid confusion with plant seed, but keep setSeed for backward compatibility    
     unsigned int getSeedVal() { return seed_val; }
-    virtual double rand() {
+    double rand() {
         if (stochastic) {
             return UD(gen);
         } else {
             return 0.5;
         }
     } ///< uniformly distributed random number [0, 1)
-    virtual double randn() {
+    double randn() {
         if (stochastic) {
             return ND(gen);
         } else {

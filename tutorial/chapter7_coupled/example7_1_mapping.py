@@ -12,7 +12,7 @@ plant = pb.MappedPlant()
 path = "../../modelparameter/structural/rootsystem/"
 filename = "Anagallis_femina_Leitner_2010"
 plant.readParameters(path + filename + ".xml")
-plant.setSeed(4)  # |\label{l71m:random}|
+plant.setRandomSeed(4)  # |\label{l71m:random}|
 plant.initialize()  # |\label{l71m:root_system_end}|
 
 # Macroscopic soil grid |\label{l71m:grid_start}|

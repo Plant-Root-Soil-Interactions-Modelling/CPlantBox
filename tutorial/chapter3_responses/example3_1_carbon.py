@@ -20,7 +20,7 @@ se.setBaseLookUp(scale_elongation) # |\label{l3_1_carbon:GridEnd}|
 
 # Instantiate root system for a maize plant
 plant = pb.Plant()
-plant.setSeed(0)
+plant.setRandomSeed(0)
 filename = "../../modelparameter/structural/rootsystem/Zea_mays_4_Leitner_2014"
 plant.readParameters(filename + ".xml")
 
