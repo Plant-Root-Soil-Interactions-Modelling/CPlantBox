@@ -227,7 +227,7 @@ double CPB_to_PM::getMaxVolumicGrowth(std::shared_ptr<CPlantBox::Organ> org, dou
 	double e = 0.;	
 	if((org->organType() == 3)&&(org->getNumberOfLinkingNodes() > 0))
 	{
-		e = std::static_pointer_cast<CPlantBox::Stem>(org)->internodalGrowth(rmax, dt, Lmax, false, false);
+		e = std::static_pointer_cast<CPlantBox::Stem>(org)->internodalGrowth_theory(rmax, dt, false);
 	}else{
 		double age_ = f_gf->getAge(Linit, rmax, Lmax, org->shared_from_this());		
 		//	params to compute growth

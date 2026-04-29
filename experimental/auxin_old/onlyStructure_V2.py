@@ -84,13 +84,15 @@ for i in range(N):
     __ = np.diff([stem.getLength(lln_i) for lln_i in lln])
     if len(__) > 0:
         __ += epsilonDxPerPhyto 
-    lengthP[:len(__)] = __ /2.7
+    lengthP[:len(__)] = __/2.7
     lengthkids = np.zeros(60)
     __ = np.array([stem.getChild(np).getLength(False)/5 for np in range(stem.getNumberOfChildren()) if stem.getChild(np).organType() == pb.leaf])
     lengthkids[:len(__)] = __
     len_phytomeres.append(lengthP)
     len_leaves.append(lengthkids)
-    print(dt * (i+1), sum(lengthP > 0.0))
+    print(dt * (i+1), sum(lengthP > 0.0), stem.getLength(True), stem.getLength(False))
+    print("\tepsilonDxPerPhyto",epsilonDxPerPhyto)
+    print("\tlengthP",lengthP)
     numP.append(sum(lengthP > 0.0))
     
     
