@@ -17,7 +17,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plantbox as pb
-from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
+from plantbox.functional.PlantHydraulicModel import (
+    HydraulicModel_Doussan,
+    HydraulicModel_Meunier,
+)
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 
 
@@ -38,8 +41,23 @@ def make_hydraulic_parameters():
     return params
 
 
+def make_constant_hydraulic_parameters(kr_const=1.728e-4, kx_const=4.32e-2):
+    """Use constant hydraulic parameters for all root segments.
+
+    kr_const [day-1]
+    kx_const [cm3 day-1]
+    """
+    params = PlantHydraulicParameters()
+    params.set_kr_const(kr_const)
+    params.set_kx_const(kx_const)
+    return params
+
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Hydraulic parameter mode: "age_dependent" or "constant"
+    hydraulic_mode = "constant"
 
     # Simulation settings
     sim_days = 60
@@ -53,6 +71,7 @@ def main():
 
     # Root architecture file
     plant_name = "Zea_mays_1_Leitner_2010"
+    # plant_name = "Anagallis_femina_Leitner_2010"
     xml_path = os.path.join(script_dir, "..", "..", "modelparameter", "structural", "rootsystem", f"{plant_name}.xml")
     out_dir = os.path.join(script_dir, "results")
     os.makedirs(out_dir, exist_ok=True)
@@ -60,9 +79,13 @@ def main():
     # Root system and hydraulic model
     plant = pb.MappedPlant()
     plant.readParameters(xml_path)
+    # plant.setGeometry(pb.SDF_PlantContainer(1.0e6, 1.0e6, -z_bottom, True))  # large container to avoid boundary effects
     plant.initialize()
 
-    hydraulic_params = make_hydraulic_parameters()
+    if hydraulic_mode == "constant":
+        hydraulic_params = make_constant_hydraulic_parameters(kr_const=1.728e-4, kx_const=4.32e-2)
+    else:
+        hydraulic_params = make_hydraulic_parameters()
     hm = HydraulicModel_Meunier(plant, hydraulic_params)
 
     # Storage
@@ -77,7 +100,7 @@ def main():
     for day in range(1, sim_days + 1):
 
         # Simulate
-        plant.simulate(dt)
+        plant.simulate(dt, False)
 
         # Krs at current age
         krs, _ = hm.get_krs(day)
@@ -96,14 +119,16 @@ def main():
         mean_radius_profile[nonzero] = surface_profile[nonzero] / (2.0 * np.pi * length_profile[nonzero])
 
         # SUF profile by layer
+        # hm.update(day)  # in case of doussan
         suf = hm.get_suf(day)
         ana.addData("SUF", suf)
-        suf_profile = np.array(ana.distribution("SUF", z_top, z_bottom, n_layers, True))
+        suf_profile = np.array(ana.distribution("SUF", z_top, z_bottom, n_layers, False))  # don't cut SUF
 
         length_layers_daily.append(length_profile)
         mean_radius_layers_daily.append(mean_radius_profile)
         suf_layers_daily.append(suf_profile)
         length_total_series.append(np.sum(length_profile))
+        print("Day {}: Krs = {:.4e} cm2 day-1, suf_sum = {:.2f}".format(day, krs, np.sum(suf)))
 
     length_layers_daily = np.array(length_layers_daily)  # shape: [time, layer]
     mean_radius_layers_daily = np.array(mean_radius_layers_daily)
