@@ -242,8 +242,8 @@ def main():
     axes2[2].set_xlabel("Layer SUF sum (-)")
     axes2[2].grid(True)
 
-    axes2[3].set_title("Dead root fraction profiles (all days)")
-    axes2[3].set_xlabel("Dead root length (1)")
+    axes2[3].set_title("Active root length profiles (all days)")
+    axes2[3].set_xlabel("Active root length (cm)")
     axes2[3].grid(True)
 
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
