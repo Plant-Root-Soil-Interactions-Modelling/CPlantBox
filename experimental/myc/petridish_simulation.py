@@ -2,14 +2,16 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
+from plantbox.visualisation import figure_style
 import numpy as np
+import matplotlib.pyplot as plt
 import time
 
-mycp = pb.MycorrhizalPlant()
+mycp = pb.MycorrhizalPlant(100)
 path = "tomatoparameters/"
 name = "TwoHyphaePlusBAS"
 
-animation = True
+animation = False
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
 ### initial root parameters
@@ -18,8 +20,9 @@ for rp in root:
     rp.hyphalEmergenceDensity = 0
     rp.highresolution = 0.
     rp.dx = 0.1
+    rp.lmbd = 0
     rp.maxAge = 100 # maximal infection age
-    rp.hyphalDelay = 5.0
+    # rp.hyphalDelay = 5.0
     # rp.a = 0.01
     rp.tropismT = 1
     mycp.setOrganRandomParameter(rp)
@@ -58,7 +61,7 @@ helper_dish2 = pb.SDF_Difference(helper_staff, helper_staff2)
 moved_helper_dish2 = pb.SDF_RotateTranslate(helper_dish2, 90, pb.SDF_Axis.xaxis , pb.Vector3d(0, -radius, -height/2))
 petri_dish = pb.SDF_Difference(petri_dish, moved_helper_dish2)
 
-moved_helper_dish_hyphae = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(-(radius+barrier_thickness), 0, 0))
+moved_helper_dish_hyphae = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(-(radius+barrier_thickness/2), 0, 0))
 hyphae_petri_dish = pb.SDF_Difference(petri_dish, moved_helper_dish_hyphae)
 
 # make sure to set the seed position to 0 because of the petri dish
@@ -72,7 +75,7 @@ mycp.setGeometry(half_dish)
 mycp.initialize(True)
 
 # set up simulation times etc.
-simtime = 15
+simtime = 5
 fps = 24
 anim_time = simtime
 N = fps * anim_time
@@ -93,13 +96,14 @@ for i in range(0, N):
         ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
         ana.write("animation/" + filename + str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
 # look at roots and container
-vp.plot_roots_and_container(mycp,half_dish)
+# vp.plot_roots_and_container(mycp,half_dish)
 
 
 afterroots = time.perf_counter()
 # resetting some parameters for roots
 for rp in root:
     rp.hyphalEmergenceDensity = 4
+    rp.lmbd = 1/rp.dx
     mycp.setOrganRandomParameter(rp)
 # setting up hyphal parameters
 
@@ -111,9 +115,9 @@ pCol = sum(mycp.getParameter("infectionLength")) / sum(mycp.getParameter("length
 print("Initial infection percentage: " + str(pCol*100) + "%")
 days = 0
 while pCol < 0.50:
-    mycp.simulateInfection(1,False)
-    days += 1
-    N+=24
+    mycp.simulateInfection(0.5,False)
+    days +=0.5
+    N+=12
     pCol = sum(mycp.getParameter("infectionLength")) / sum(mycp.getParameter("length"))
     print("Infection percentage: " + str(pCol*100) + "% after " + str(days) + " days.")
 print("Infection reached 50% after " + str(days) + " days.")
@@ -132,7 +136,7 @@ while crossed_barrier < 3:
     for organ in mycp.getOrgans(pb.hyphae):
         if organ.getParameter("subType") == 1:
             for node in organ.getNodes():
-                if node.x > -barrier_thickness and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
+                if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
                     crossed_barrier += 1
 
         # ana = pb.SegmentAnalyser(mycp)
@@ -150,25 +154,25 @@ organs = mycp.getOrgans()
 for organ in organs:
     stayactive = False
     for node in organ.getNodes():
-        if node.x > -barrier_thickness and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
+        if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
             stayactive = True
     organ.setActive(stayactive)
 
 # look at system to see how active
-vp.plot_roots(mycp,"active")   
+# vp.plot_roots(mycp,"active")   
 
 middelsimHyphae = time.perf_counter()
 
-times = np.linspace(N, N+60, 60)
+hours_hyphae = 30
 
-for i in range(0, 60):
+for i in range(0, hours_hyphae):
     print("Simulating hyphal growth step " + str(i+1) + " of 60")
     mycp.simulateHyphae(dt,False)
     organs = mycp.getOrgans()
     for organ in organs:
         stayactive = False
         for node in organ.getNodes():
-            if node.x > -barrier_thickness and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
+            if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
                 stayactive = True
         organ.setActive(stayactive)
     if animation:
@@ -183,17 +187,61 @@ ana = pb.SegmentAnalyser(mycp)
 ana.addData("infection", mycp.getNodeInfections(2))
 ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
 ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
-ana.crop(small_hyphae_dish)
+
+
 if not animation:
     ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
-# hld = np.zeros(len(times[1:],1))
-# for j in range(len(times[1:])):
-#     ana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
-#     ana.pack()
-#     distrib = ana.distribution("length", 0.0,-height,1,True)
-#     hld(len(times[1:])-j-1) = np.array(distrib)
 
+# set the observation "rings"
+nRings = 20
+radius = radius/2
+small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
+rings = []
+rings.append(pb.SDF_Difference(small_dish, moved_helper_dish_hyphae))
+for i in range(1, nRings):
+    small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
+    small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
+    old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
+    small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
+    rings.append(small_hyphae_dish)
 
+times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.1, 100)
+hld_matrix = np.zeros((len(rings), len(times[1:])))
 
-vp.plot_roots_and_container(mycp,small_hyphae_dish)
-vp.write_container(petri_dish, "petri_dish.vtp")
+for k, ring in enumerate(rings):
+    ringana = pb.SegmentAnalyser(mycp)
+    ringana.crop(ring)
+    for j in range(len(times[1:])):
+        ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
+        ringana.pack()
+        distrib = ringana.getSummed("length")
+        hld_matrix[k, len(times[1:])-1 -j] = np.array(distrib).sum() / (np.pi * radius**2)
+
+print("shape:", hld_matrix.shape)
+print("min:", np.min(hld_matrix))
+print("max:", np.max(hld_matrix))
+print("mean:", np.mean(hld_matrix))
+plt.figure(figsize=(8, 5))
+
+extent = [
+    times[1], times[-1],   # x: Zeit
+    1, len(rings)          # y: Ringe
+]
+
+plt.imshow(
+    hld_matrix,
+    aspect='auto',
+    origin='lower',
+    extent=extent,
+    cmap='viridis'
+)
+
+plt.colorbar(label="Hyphal Length Density")
+
+plt.xlabel("Time")
+plt.ylabel("Ring (center → outside)")
+plt.title("Radial movement of hyphal length density")
+
+plt.show()
+# vp.plot_roots_and_container(mycp,hyphae_petri_dish)
+# vp.write_container(petri_dish, "petri_dish.vtp")
