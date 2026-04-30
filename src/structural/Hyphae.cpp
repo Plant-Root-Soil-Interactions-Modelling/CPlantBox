@@ -143,18 +143,20 @@ void Hyphae::simulate(double dt, bool verbose)
                         double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                         double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
                         length = getLength();
-                        createSegments(dl,dt_,verbose);
-                        length+=dl;
-                        if (dl == 0.) active = false; // if no length increment, hyphae become inactive
+                        if (dl > 0) {
+                            createSegments(dl,dt_,verbose);
+                            length+=dl;
+                        } else setActive(false);
+                        
+                        // if (dl == 0.) active = false; // if no length increment, hyphae become inactive
                         if (age * getParameter("b")>1. ){
-                            active = false; // become inactive, if enough time has passed for branching
+                            setActive(false); // become inactive, if enough time has passed for branching
                             createLateral(dt_ ,verbose); // create a lateral hyphae
                             createLateral(dt_,verbose); // create a lateral hyphae
                         }
                     }
                                         
                     //std::cout << "Hyphae active: " << active << std::endl;
-
             } else { // NOT ACTIVE (children grow)
 
                 // children first (lateral roots grow even if base root is inactive)
@@ -354,6 +356,7 @@ void Hyphae::createLateral(double dt_, bool verbose)
                     // double delay = getLatGrowthDelay(ot, st, dt);// forDelay*multiplyDelay
                     double delay = 0.; // hyphae grow immediatly
                     double growth_dt = getLatInitialGrowth(dt_);
+                    // double growth_dt = age-dt_;
 
                     auto hyphae = std::make_shared<Hyphae>(plant.lock(), st,  delay, shared_from_this(), nodes.size() - 1); // delay - dt
                     children.push_back(hyphae);

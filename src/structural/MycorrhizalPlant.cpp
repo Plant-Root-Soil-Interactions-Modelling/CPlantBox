@@ -133,19 +133,12 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
 }
 
 void MycorrhizalPlant::simulateHyphae(double dt, bool verbose) {
-    auto organs = getOrgans();
+    auto hyphae = getOrgans(5);
     this->dt = dt;
     oldNumberOfNodes = getNumberOfNodes();
     oldNumberOfOrgans = getNumberOfOrgans();
-    for (const auto & o : baseOrgans) {
-        if (o->organType() == Organism::ot_hyphae) {
-            std::dynamic_pointer_cast<Hyphae>(o) -> simulate(dt,verbose);
-        }
-    }
-    for (const auto & o : organs) {
-        if (o->organType() == Organism::ot_hyphae) {
-            std::dynamic_pointer_cast<Hyphae>(o) -> simulate(dt,verbose);
-        }
+    for (const auto & h : hyphae) {
+        std::dynamic_pointer_cast<Hyphae>(h) -> simulate(dt,verbose);
     }
     simtime += dt;
     sdf = std::make_shared<SDF_RootSystem>(*this);
