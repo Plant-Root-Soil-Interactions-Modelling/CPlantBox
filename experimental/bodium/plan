@@ -1,0 +1,19 @@
+
+I einfachst
+	
+	1 krs über die Zeit
+	2 rld über die Zeit
+	3 SUF über die Zeit
+	4 dead root fraction
+	5 radien per layer
+	
+	omega_c = t_p * (-wilting_point*krs)
+	
+II gekoppelt
+	1 plant.simulateLimited(dt, maxInc)
+	2
+	3
+
+
+
+Shoot, Wurzel, SUF, krs, Bodium Senke (alpha-omega)
