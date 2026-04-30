@@ -107,12 +107,14 @@ void Root::simulate(double dt, bool verbose) {
         // increase age
         if (age + dt > p.rlt) { // root life time
             dt = p.rlt - age;   // remaining life span
+            // std::cout << "Root died, dt " << dt << ", p.rlt "<< p.rlt << ", age "<< age << ", oldNumberOfNodes " << oldNumberOfNodes << "\n" << std::flush; 
+            // std::cout << this->toString() << "\n" << std::flush;
             alive = false;      // this root is dead
         }
         age += dt;
 
         // probabilistic branching model
-        if ((age > 0) && (age - dt <= 0)) { // the root emerges in this time step
+        if ((age > 0) && (age - dt <= 0) && (alive)) { // the root emerges in this time step
             double P = getRootRandomParameter()->f_sbp->getValue(nodes.back(), shared_from_this());
             if (P < 1.) {                       // P==1 means the lateral emerges with probability 1 (default case)
                 double p = 1. - (1. - P * dt);  // probability of emergence in this time step
@@ -214,6 +216,7 @@ void Root::simulate(double dt, bool verbose) {
             active = getLength(false) <= (p.getK() * (1 - 1e-11)); // become inactive, if final length is nearly reached
         }
     } // if alive
+
     // std::cout << "end" << getId() << "\n" << std::flush;
 }
 
@@ -328,7 +331,7 @@ double Root::getParameter(std::string name) const {
  */
 std::string Root::toString() const {
     std::stringstream newstring;
-    newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index" << parentNI << ".";
+    newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index " << parentNI << ".";
     return Organ::toString() + newstring.str();
 }
 

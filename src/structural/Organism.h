@@ -157,6 +157,9 @@ class Organism : public std::enable_shared_from_this<Organism> {
 
     int plantId; ///< Unique organism id (mainly for debugging/copy tracing).
 
+    int oldNumberOfOrgans = 0;
+    int oldNumberOfNodes = 0;
+
   protected:
     virtual tinyxml2::XMLElement *getRSMLMetadata(tinyxml2::XMLDocument &doc) const; ///< Builds RSML metadata node.
     virtual tinyxml2::XMLElement *getRSMLScene(tinyxml2::XMLDocument &doc) const;    ///< Builds RSML scene node.
@@ -170,8 +173,6 @@ class Organism : public std::enable_shared_from_this<Organism> {
     double dt = 0;
     int organId = -1;
     int nodeId = -1;
-    int oldNumberOfNodes = 0;
-    int oldNumberOfOrgans = 0;
 
     std::vector<std::string> rsmlProperties = {"organType", "subType", "length", "age", "parent-node", "diameter"};
     int rsmlSkip = 0;     ///< Point decimation factor for RSML output.

@@ -1,11 +1,12 @@
 import numpy as np
+import scipy.sparse.linalg as LA
+from scipy import sparse
+
 import plantbox as pb
 import plantbox.rsml.rsml_reader as rsml
-import scipy.sparse.linalg as LA
 from plantbox import PlantHydraulicModel as PlantHydraulicModelCPP
 from plantbox.functional.Perirhizal import PerirhizalPython as Perirhizal
 from plantbox.structural.MappedOrganism import MappedPlantPython
-from scipy import sparse
 
 
 class PlantHydraulicModel(PlantHydraulicModelCPP):
@@ -788,7 +789,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def get_krs(self, sim_time):
         """Overload get_krs so that get_krs and get_krs_ return the same data
-            return None so that we always get two objects from get_krs
+        return None so that we always get two objects from get_krs
         """
         try:
             return self.krs, None

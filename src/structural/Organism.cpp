@@ -113,7 +113,8 @@ std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, 
         //          std::cout << "\n" << std::flush;
         return organParam.at(ot).at(subType);
     } catch (...) { // const std::out_of_range& oor
-        throw std::invalid_argument("Organism::getOrganTypeParameter: OrganRandomParameter for " + Organism::organTypeName(ot) + ", of sub type " + std::to_string(subType) + " was not set");
+        throw std::invalid_argument("Organism::getOrganTypeParameter: OrganRandomParameter for " + Organism::organTypeName(ot) + ", of sub type " +
+                                    std::to_string(subType) + " was not set");
     }
 }
 
@@ -124,7 +125,8 @@ std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, 
 void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p) {
     assert(p->plant.lock().get() == this && "OrganTypeParameter::plant should be this organism");
     organParam[p->organType][p->subType] = p;
-    // std::cout << "setting organ type " << p->organType << ", sub type " << p->subType << ", name "<< p->name << " " << organParam[p->organType].size() << "\n";
+    // std::cout << "setting organ type " << p->organType << ", sub type " << p->subType << ", name "<< p->name << " " << organParam[p->organType].size() <<
+    // "\n";
 }
 
 /**
@@ -157,7 +159,7 @@ void Organism::initialize(bool verbose, std::string mode) {}
  */
 void Organism::simulate(double dt, bool verbose) {
     if (verbose) {
-        std::cout << "Organism::simulate: from " << simtime << " to " << simtime + dt << " days" << std::endl;
+        std::cout << "Organism::simulate: from " << simtime << " to " << simtime + dt << " days;" << " number of nodes " << getNumberOfNodes() << std::endl;
     }
     this->dt = dt;
     oldNumberOfNodes = getNumberOfNodes();
@@ -463,7 +465,18 @@ std::vector<Vector3d> Organism::getNewNodes() const {
     std::vector<Vector3d> nv(this->getNumberOfNewNodes());
     for (const auto &o : organs) {
         int onon = o->getOldNumberOfNodes();
+        if (onon == 0) { // make sure to never start with the initial node
+            onon = 1;
+        }
+        // std::cout << "getNumberOfNewNodes" << this->getNumberOfNewNodes() << "\n" << std::flush;
         for (size_t i = onon; i < o->getNumberOfNodes(); i++) { // loop over all new nodes
+            if (o->getNodeId(i) < this->oldNumberOfNodes) {
+                std::cout << o->toString() << "\n";
+                std::cout << i << ": " << o->getOldNumberOfNodes() << ", " << o->getNumberOfNodes() << ", " << o->getNodeId(i) << " " << this->oldNumberOfNodes
+                          << "\n" << std::flush;
+                std::cout << o->getNode(0).toString() << "; " << o->getNodeId(0) << "\n" << std::flush;
+                std::cout << o->getNode(1).toString() << "; " << o->getNodeId(1) << "\n" << std::flush;
+            }
             nv.at(o->getNodeId(i) - this->oldNumberOfNodes) = o->getNode(i);
         }
     }
@@ -550,7 +563,8 @@ int Organism::getDelayDefinition(int ot_lat) {
  */
 std::string Organism::toString() const {
     std::stringstream str;
-    str << "Organism with " << baseOrgans.size() << " base organs, " << getNumberOfNodes() << " nodes, and a total of " << getNumberOfOrgans() << " organs, after " << getSimTime() << " days";
+    str << "Organism with " << baseOrgans.size() << " base organs, " << getNumberOfNodes() << " nodes, and a total of " << getNumberOfOrgans()
+        << " organs, after " << getSimTime() << " days";
     return str.str();
 }
 
@@ -604,7 +618,9 @@ void Organism::readParameters(std::string name, std::string basetag, bool fromFi
                     setOrganRandomParameter(otp);
                 } else { // skip prototype
                     if (verbose) {
-                        std::cout << "Organism::readParameters: warning, skipping " << tagname << ", no random parameter class defined, use initializeReader()\n" << std::flush;
+                        std::cout << "Organism::readParameters: warning, skipping " << tagname
+                                  << ", no random parameter class defined, use initializeReader()\n"
+                                  << std::flush;
                     }
                 }
                 p = p->NextSiblingElement();
@@ -676,9 +692,9 @@ std::string Organism::write(std::string name, bool intoFile) const {
             fos.close();
             return "";
         } else {
-            std::ostringstream oss; 
+            std::ostringstream oss;
             writeVTP(-1, oss);
-            return oss.str();        
+            return oss.str();
         }
     } else if (ext.compare(".py") == 0) {
         std::cout << "Organism::write(): writing Geometry ... " << name.c_str() << "\n";
@@ -689,9 +705,9 @@ std::string Organism::write(std::string name, bool intoFile) const {
             fos.close();
             return "";
         } else {
-            std::ostringstream oss; 
+            std::ostringstream oss;
             writeGeometry(oss);
-            return oss.str();               
+            return oss.str();
         }
     } else {
         throw std::invalid_argument("Organism::write(): Unknown file type");

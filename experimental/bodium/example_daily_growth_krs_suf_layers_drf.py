@@ -1,4 +1,4 @@
-"""Daily root growth analysis: Krs, SUF, length per layer, and mean radius per layer.
+"""Daily root growth analysis: Krs, SUF, length per layer, and mean radius per layer and dead root fractions
 
 This example follows the tutorial style and simulates a root system with a daily
 (time step = 1 day) loop. For each day it computes:
@@ -60,7 +60,7 @@ def main():
     hydraulic_mode = "age_dependent"
 
     # Simulation settings
-    sim_days = 10
+    sim_days = 60
     dt = 1.0  # daily time step
 
     # Soil layering for depth profiles
@@ -70,8 +70,8 @@ def main():
     layer_depths = np.linspace(z_top - 0.5 * abs((z_top - z_bottom) / n_layers), z_bottom + 0.5 * abs((z_top - z_bottom) / n_layers), n_layers)
 
     # Root architecture file
-    # plant_name = "Zea_mays_1_Leitner_2010"
-    plant_name = "Anagallis_femina_Leitner_2010"
+    plant_name = "Zea_mays_1_Leitner_2010"
+    # plant_name = "Anagallis_femina_Leitner_2010"
     xml_path = os.path.join(script_dir, "..", "..", "modelparameter", "structural", "rootsystem", f"{plant_name}.xml")
     out_dir = os.path.join(script_dir, "results")
     os.makedirs(out_dir, exist_ok=True)
@@ -79,6 +79,13 @@ def main():
     # Root system and hydraulic model
     plant = pb.MappedPlant()
     plant.readParameters(xml_path)
+
+    rorp = plant.getOrganRandomParameter(pb.root)
+    for rp in rorp:
+        if rp.subType == 3:  # second order lateral roots
+            rp.rlt = 5
+            rp.rlts = 5
+
     # plant.setGeometry(pb.SDF_PlantContainer(1.0e6, 1.0e6, -z_bottom, True))  # large container to avoid boundary effects
     plant.initialize()
 
@@ -100,7 +107,7 @@ def main():
     for day in range(1, sim_days + 1):
 
         # Simulate
-        plant.simulate(dt, True)
+        plant.simulate(dt, False)
 
         # Krs at current age
         krs, _ = hm.get_krs(day)
@@ -110,8 +117,8 @@ def main():
         # Segment-based analysis at this day
         ana = pb.SegmentAnalyser(plant)
 
-        length_profile = np.array(ana.distribution("length", z_top, z_bottom, n_layers, True))
-        surface_profile = np.array(ana.distribution("surface", z_top, z_bottom, n_layers, True))
+        length_profile = np.array(ana.distribution("length", z_top, z_bottom, n_layers, False))
+        surface_profile = np.array(ana.distribution("surface", z_top, z_bottom, n_layers, False))
 
         # Mean radius from surface = 2*pi*r*length, guard division by zero for empty layers
         mean_radius_profile = np.zeros_like(length_profile)
@@ -121,10 +128,24 @@ def main():
         # SUF profile by layer
         # hm.update(day)  # in case of doussan
         suf = hm.get_suf(day)
+        print("suf", len(suf))
         ana.addData("SUF", suf)
         suf_profile = np.array(ana.distribution("SUF", z_top, z_bottom, n_layers, False))  # don't cut SUF
 
-        length_layers_daily.append(length_profile)
+        alive = ana.getParameter("alive")
+        length_ = ana.getParameter("length")  # segment length
+        # print(len(alive))
+        # print(len(length_))
+        active_length = np.array(length_) * np.array(alive)
+        drf = (alive == 0.0) * np.array(length_)
+        # print("active_length", len(active_length))
+        ana.addData("active_length", active_length)
+        ana.addData("alive", alive)
+        drf = (alive == 0.0) * np.array(length_)
+        ana.addData("drf", drf)
+        # print("alive", alive)
+
+        length_layers_daily.append(length_profile)  # overlal length (dead and alive) per layer
         mean_radius_layers_daily.append(mean_radius_profile)
         suf_layers_daily.append(suf_profile)
         length_total_series.append(np.sum(length_profile))
@@ -135,14 +156,14 @@ def main():
     suf_layers_daily = np.array(suf_layers_daily)
 
     # 1) Daily scalar outputs
-    with open(os.path.join(out_dir, "daily_krs_length.csv"), "w", newline="", encoding="utf-8") as f:
+    with open(os.path.join(out_dir, "drf_daily_krs_length.csv"), "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["day", "krs_cm2_per_day", "total_length_cm"])
         for day, krs, length in zip(days, krs_series, length_total_series):
             writer.writerow([day, krs, length])
 
     # 2) Layer outputs per day
-    with open(os.path.join(out_dir, "daily_profiles_by_layer.csv"), "w", newline="", encoding="utf-8") as f:
+    with open(os.path.join(out_dir, "drf_daily_profiles_by_layer.csv"), "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(
             [
@@ -189,7 +210,7 @@ def main():
     axes[2].grid(True)
 
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, "daily_summary.png"), dpi=200)
+    plt.savefig(os.path.join(out_dir, "drf_daily_summary.png"), dpi=200)
     plt.show()
 
     # Plot profile evolution over time
@@ -223,14 +244,14 @@ def main():
     cbar = fig2.colorbar(sm, cax=cax)
     cbar.set_label("Simulation day")
 
-    plt.savefig(os.path.join(out_dir, "final_day_profiles.png"), dpi=200)
+    plt.savefig(os.path.join(out_dir, "drf_final_day_profiles.png"), dpi=200)
     plt.show()
 
     print("Finished simulation.")
-    print(f"Wrote: {os.path.join(out_dir, 'daily_krs_length.csv')}")
-    print(f"Wrote: {os.path.join(out_dir, 'daily_profiles_by_layer.csv')}")
-    print(f"Wrote: {os.path.join(out_dir, 'daily_summary.png')}")
-    print(f"Wrote: {os.path.join(out_dir, 'final_day_profiles.png')}")
+    print(f"Wrote: {os.path.join(out_dir, 'drf_daily_krs_length.csv')}")
+    print(f"Wrote: {os.path.join(out_dir, 'drf_daily_profiles_by_layer.csv')}")
+    print(f"Wrote: {os.path.join(out_dir, 'drf_daily_summary.png')}")
+    print(f"Wrote: {os.path.join(out_dir, 'drf_final_day_profiles.png')}")
 
 
 if __name__ == "__main__":

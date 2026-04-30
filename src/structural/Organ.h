@@ -5,6 +5,7 @@
 #include "mymath.h"
 #include "tinyxml2.h"
 
+#include <iostream>
 #include <functional>
 #include <limits>
 #include <map>

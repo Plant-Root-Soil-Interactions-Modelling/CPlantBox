@@ -159,9 +159,12 @@ void Organ::addChild(std::shared_ptr<Organ> c) {
  * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
  */
 void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
+    // if (id < plant.lock()->oldNumberOfNodes) {
+    //     std::cout << "Organ::addNode: adding node with id " << id << " at time " << t << " days, oldNumberOfNodes " << plant.lock()->oldNumberOfNodes << "\n" << std::flush; 
+    // }
     nodes.push_back(n);    // node
     nodeIds.push_back(id); // unique id
-    nodeCTs.push_back(t);  // exact creation time
+    nodeCTs.push_back(t);  // exact creation time    
 }
 
 /**
