@@ -11,20 +11,20 @@
 namespace CPlantBox {
 
 /**
- * Constructs an organ from given data.
- * The organ tree must be created, @see Organ::setPlant, Organ::setParent, Organ::addChild
- * Organ geometry must be created, @see Organ::addNode, ensure that this->getNodeId(0) == parent->getNodeId(pni)
+ * @brief Constructs an organ from explicit state.
  *
- * @param id        the organ's unique id (@see Organ::getId)
- * @param param     the organs parameters set, ownership transfers to the organ
- * @param alive     indicates if the organ is alive (@see Organ::isAlive)
- * @param active    indicates if the organ is active (@see Organ::isActive)
- * @param age       the current age of the organ (@see Organ::getAge)
- * @param length    the current length of the organ (@see Organ::getLength)
- * @param iHeading TODO
- * @param pni
- * @param moved     indicates if nodes were moved in the previous time step (default = false)
- * @param oldNON    the number of nodes of the previous time step (default = 0)
+ * Tree links and geometry are expected to be set consistently by the caller.
+ *
+ * @param id Organ identifier.
+ * @param param Organ-specific parameters.
+ * @param alive Initial alive state.
+ * @param active Initial active state.
+ * @param age Initial age [day].
+ * @param length Initial length [cm].
+ * @param partialIHeading_ Initial local heading.
+ * @param pni Parent node index in the parent organ.
+ * @param moved Whether nodes moved in the previous time step.
+ * @param oldNON Number of nodes before the previous step.
  */
 Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_,
              int pni, bool moved, int oldNON)
@@ -49,12 +49,10 @@ Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int
       param_(plant->getOrganRandomParameter(ot, st)->realize()), /* root parameters are diced in the getOrganRandomParameter class */
       age(-delay) {}
 
-/*
- * Deep copies this organ into the new plant @param plant.
- * All children are deep copied, plant and parent pointers are updated.
- *
- * @param plant     the plant the copied organ will be part of
- * @return          the newly created copy (ownership is passed)
+/**
+ * @brief Deep-copies this organ and its subtree into another organism.
+ * @param p Target organism for the copied organ tree.
+ * @return Root of the copied subtree.
  */
 std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism> p) {
     auto o = std::make_shared<Organ>(*this); // shallow copy
@@ -85,10 +83,10 @@ double Organ::getLength(int i) const {
     return l;
 }
 
-/* @param realized	FALSE:	get theoretical organ length, INdependent from spatial resolution (dx() and dxMin())
- *					TRUE:	get realized organ length, dependent from spatial resolution (dx() and dxMin())
- *					DEFAULT = TRUE
- * @return 			The chosen type of organ length (realized or theoretical).
+/**
+ * @brief Returns either realized or theoretical organ length.
+ * @param realized If true, subtracts unresolved residual growth epsilonDx.
+ * @return Organ length [cm].
  */
 double Organ::getLength(bool realized) const {
     if (realized) {
@@ -140,10 +138,9 @@ void Organ::simulate(double dt, bool verbose) {
  */
 std::shared_ptr<Plant> Organ::getPlant() const { return std::dynamic_pointer_cast<Plant>(plant.lock()); }
 
-/*
- * Adds a subsequent organ (e.g. a lateral root)
- *
- * @param c     the organ to add (ownership is passed)
+/**
+ * @brief Adds a child organ and sets its parent pointer.
+ * @param c Child organ.
  */
 void Organ::addChild(std::shared_ptr<Organ> c) {
     c->setParent(shared_from_this());
@@ -210,13 +207,14 @@ std::vector<Vector2i> Organ::getSegments() const {
 }
 
 /**
- * returns the maximal axial resolution
+ * @brief Returns the maximal axial resolution dx.
  */
 double Organ::dx() const { return getOrganRandomParameter()->dx; }
 
 /**
- * returns the minimal axial resolution,
- * length overhead is stored in epsilon and realized in the next simulation step (see Organ::getEpsilon)
+ * @brief Returns the minimal axial resolution dxMin.
+ *
+ * Residual growth below this threshold is accumulated in epsilonDx.
  */
 double Organ::dxMin() const { return getOrganRandomParameter()->dxMin; }
 
@@ -790,8 +788,8 @@ void Organ::createLateral(double dt, bool verbose) {
                     if ((rp->successorOT.size() > i) && (rp->successorOT.at(i).size() > p_id)) {
                         ot = rp->successorOT.at(i).at(p_id);
                     } else {
-                        ot = getParameter("organType");
-                    } // default
+                        ot = getOrganRandomParameter()->organType; // default
+                    }
 
                     int st = rp->successorST.at(i).at(p_id);
 
@@ -908,8 +906,7 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // over
     return growthDelay;
 }
 /**
- * Check if the organ has relative coordinates.
- * meaning: organ is not a basal/tap root and first node is at (0,0,0) but
+ * @brief Checks whether node coordinates are stored in relative form.
  */
 bool Organ::hasRelCoord() const { return has_rel_coord; }
 

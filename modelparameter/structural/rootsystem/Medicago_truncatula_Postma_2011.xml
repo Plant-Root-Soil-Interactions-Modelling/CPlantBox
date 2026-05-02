@@ -167,4 +167,17 @@
         <parameter name="tropismS" value="0.40000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="medicago_truncatula_postma_2011">
+            <article>
+                <author>Postma, J. A.</author>
+                <author>Lynch, J. P.</author>
+                <title>Root cortical aerenchyma enhances the growth of maize on soils with suboptimal availability of nitrogen, phosphorus, and potassium</title>
+                <journal>Plant Physiology</journal>
+                <year>2011</year>
+                <volume>156</volume>
+                <pages>1190-1201</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

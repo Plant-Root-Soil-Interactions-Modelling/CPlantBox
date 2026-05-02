@@ -30,7 +30,6 @@ Activate the 'cpbenv' environment when using CPlantBox:
 ```bash
 source cpbenv/bin/activate
 ```
-The scripts might work on other Linux OS but has not been tested.
 
 By default, your local repository will only track the master branch. This allows for a quicker download and lower use of memory. In case you would like to switch between branches, you have two options:
 1. Use the switch_branch.py script:
@@ -86,6 +85,29 @@ cd tutorial/examples/
 python example1a_small.py
 ```
 
+## Mac - with Python script
+This installation method requires [homebrew](https://brew.sh/), Python (>= 3.7, <3.14) and clang (>=15, <=18). If you do not have a clang version within the given range, see the instruction on the [Wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-Mac-users).\
+For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox_Mac.py", and run it:
+```bash
+[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate
+wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installCPlantBox_Mac.py
+python3 installCPlantBox_Mac.py
+source ~/.zshrc
+```
+For CPlantBox with _dumux-rosi_, download and run the Python file "installDumuxRosi_Mac.py" (the file is based on the DuMu<sup>x</sup> installation file).
+```bash
+[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate
+wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installDumuxRosi_Mac.py
+python3 installDumuxRosi_Mac.py
+source ~/.zshrc
+```
+The script will install DuMu<sup>x</sup> and CPlantBox in the virtual environment 'cpbenv'. 
+Activate the 'cpbenv' environment when using CPlantBox:
+```bash
+source cpbenv/bin/activate
+```
+
+NB: when running for the first time, 'import vtk' may take a long time.
 ## Windows
 CPlantBox is currently not available on windows. Some pointers to setup a Linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
 
@@ -94,6 +116,7 @@ Please refer to the [wiki](https://github.com/Plant-Root-Soil-Interactions-Model
 
 # Folder sructure
 
+`/docs`		Code documentation\
 `/modelparameter`		Plant parameter files\
 `/src`			CPlantBox C++ codes\
 `/test`   Python tests for all CPlantBox classes\
@@ -102,11 +125,16 @@ Please refer to the [wiki](https://github.com/Plant-Root-Soil-Interactions-Model
 
 # Code documentation
 
-Create the documentation by running doxygen in the docs/ folder 
+Install doxygen and graphviz (for call graphs):
 ```bash
-doxygen doxy_config
+sudo apt install doxygen graphviz
 ```
-The documentation will be created in this folder. Compile doc/latex/refman.tex to generate the full doxygen documentation in doc/latex/refman.pdf. Additionally, collaboration diagrams give an overview of the code in folder /docs.
+Create the documentation by running doxygen from the `docs/` folder:
+```bash
+cd docs/
+doxygen Doxyfile
+```
+The HTML documentation will be written to `docs/html/`. Open `docs/html/index.html` in a browser to browse the documentation. Collaboration diagrams giving an overview of the code are in the `docs/uml/` folder.
 
 # Online resources
 

@@ -52,7 +52,7 @@ class TestPlant(unittest.TestCase):  # |\label{l9_1:TestPlant}|
         filename = "Brassica_oleracea_Vansteenkiste_2014"
         rs = pb.Plant()  # the original
         rs.readParameters(path + filename + ".xml", verbose=False)
-        rs.setSeed(seed)
+        rs.setRandomSeed(seed)
         rs.initialize(False)
         rs2 = rs.copy()  # copy root system #|\label{l9_1:copy}|
         self.assertIsNot(rs2, rs, "copy: not a copy")  # |\label{l9_1:AssertIsNot}|

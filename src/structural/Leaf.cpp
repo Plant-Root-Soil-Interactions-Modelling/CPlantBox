@@ -255,7 +255,7 @@ double Leaf::getParameter(std::string name) const {
     } // leaf life time [day]
     if (name == "k") {
         return param()->getK();
-    };                      // maximal leaf length [cm]
+    }; // maximal leaf length [cm]
     if (name == "lnMean") { // mean lateral distance [cm]
         auto &v = param()->ln;
         if (v.size() > 0) {

@@ -1,10 +1,15 @@
 """CPlantBox Webapp (using Python dash), D. Leitner 2026"""
 
 import base64
+import glob
 import os
+import pickle
+import string
+import uuid
 import webbrowser
 from threading import Timer  # to open browser automatically ,see __main__
 
+import bibtexxml_apa  # APA citation helper
 import conversions  # auxiliary stuff
 import dash
 import dash_bootstrap_components as dbc
@@ -15,12 +20,98 @@ import vtk_conversions  # auxiliary stuff
 from dash import Input, Output, State, ctx, dcc, html, no_update
 from pympler import asizeof
 
+MAX_CACHED_RUNS = 16
+CACHE_TTL_SECONDS = 24 * 3600  # remove files older than 24 h
+
+
+def prepare_vtk_render_data(vtk_data):
+    """Decode geometry once so 3D tab switches do not rebuild large Python lists repeatedly."""
+    points = vtk_conversions.decode_array(vtk_data["points"])
+    point_coords = points.reshape(-1, 3)
+    if point_coords.size == 0:
+        center = np.zeros(3)
+        radius = 1.0
+    else:
+        center = point_coords.mean(axis=0)
+        radius = np.linalg.norm(point_coords - center, axis=1).max()
+        if radius <= 0:
+            radius = 1.0
+    distance = 1.5 * radius
+
+    return {
+        "points": points.flatten().tolist(),
+        "polys": vtk_conversions.decode_array(vtk_data["polys"]).tolist(),
+        "leaf_points": vtk_conversions.decode_array(vtk_data["leaf_points"]).flatten().tolist(),
+        "leaf_polys": vtk_conversions.decode_array(vtk_data["leaf_polys"]).tolist(),
+        "sub_type_colors": vtk_conversions.decode_array(vtk_data["subType"]).tolist(),
+        "age_colors": vtk_conversions.decode_array(vtk_data["creationTime"]).tolist(),
+        "camera_props": {
+            "cameraPosition": (center + np.array([-distance, -distance, distance])).tolist(),
+            "cameraViewUp": [0, 0, 1],
+        },
+    }
+
+
+def _is_valid_run_id(run_id):
+    return isinstance(run_id, str) and len(run_id) == 32 and all(c in string.hexdigits for c in run_id)
+
+
+def _cache_file_path(run_id):
+    return os.path.join(RUN_CACHE_DIR, f"{run_id}.pkl")
+
+
+def _prune_cache_dir():
+    import time
+
+    now = time.time()
+    files = sorted(glob.glob(os.path.join(RUN_CACHE_DIR, "*.pkl")), key=os.path.getmtime, reverse=True)
+    for i, path in enumerate(files):
+        too_old = (now - os.path.getmtime(path)) > CACHE_TTL_SECONDS
+        over_limit = i >= MAX_CACHED_RUNS
+        if too_old or over_limit:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+
+def cache_simulation_run(vtk_data, result_data):
+    """Store one simulation result on the filesystem and return its run id."""
+    run_id = uuid.uuid4().hex
+    payload = {
+        "vtk_data": vtk_data,
+        "result_data": result_data,
+        "vtk_render_data": prepare_vtk_render_data(vtk_data),
+    }
+    final_path = _cache_file_path(run_id)
+    tmp_path = f"{final_path}.{uuid.uuid4().hex}.tmp"
+    with open(tmp_path, "wb") as f:
+        pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)
+    os.replace(tmp_path, final_path)  # atomic move
+    _prune_cache_dir()
+    return run_id
+
+
+def get_cached_simulation_run(run_id):
+    if not _is_valid_run_id(run_id):
+        return None
+    path = _cache_file_path(run_id)
+    try:
+        with open(path, "rb") as f:
+            return pickle.load(f)
+    except (OSError, pickle.UnpicklingError, EOFError):
+        return None
+
 
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050")
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RUN_CACHE_DIR = os.environ.get("CPLANTBOX_RUN_CACHE_DIR", os.path.join(BASE_DIR, "run_cache"))
+os.makedirs(RUN_CACHE_DIR, exist_ok=True)
+_prune_cache_dir()  # clean up stale files from previous runs on startup
+print("CPlantBox run cache directory:", RUN_CACHE_DIR)
 MD_PATH = os.path.join(BASE_DIR, "assets", "readme.md")  # Path to your Markdown file in the assets folder
 with open(MD_PATH, "r", encoding="utf-8") as f:  # Read the Markdown content
     ABOUT_TEXT = f.read()
@@ -91,8 +182,17 @@ app.index_string = """
 </html>
 """
 
+_sep_style = {"fontStyle": "italic", "color": "gray"}
 param_names = conversions.get_parameter_names()
-plants = [{"label": name[0], "value": str(i)} for i, name in enumerate(param_names)]
+plants = []
+for i, name in enumerate(param_names):
+    if i == 0:
+        plants.append({"label": html.Span("- Dummy data -", style=_sep_style), "value": "separator-demo", "disabled": True})
+    if i == 4:
+        plants.append({"label": html.Span("- Plants -", style=_sep_style), "value": "separator-plants", "disabled": True})
+    if i == 6:
+        plants.append({"label": html.Span("- Root systems -", style=_sep_style), "value": "separator-roots", "disabled": True})
+    plants.append({"label": name[0], "value": str(i)})
 
 seed_parameter_sliders = conversions.get_seed_slider_names()
 root_parameter_sliders = conversions.get_root_slider_names()
@@ -123,123 +223,125 @@ app.layout = dbc.Container(
         dcc.Store(id="leaf-store", data={"leaf": LEAF_SLIDER_INITIALS}),  # leaf slider values
         dcc.Store(id="typename-store", data={f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),  # root sub type names
         dcc.Store(id="settings-store", data={"token": 0, "reset": True, "random_seed": 0}),  # further settings
-        dcc.Store(id="vtk-result-store", data={}),  # resulting geometry
-        dcc.Store(id="result-store", data={}),  # resulting graphs
+        dcc.Store(id="run-id-store", data={"run_id": None}),  # active server-side simulation run id
         dcc.Store(id="xml-store", data={"xml": XML_INIT}),  # for uploaded xml content
         dcc.Download(id="download-xml"),
         dcc.Download(id="download-vtk"),
         dcc.Download(id="download-rsml"),
         dcc.Download(id="download-profiles-xls"),
         dcc.Download(id="download-dynamics-xls"),
-        dbc.Row(
-            [
-                #
-                # Panel 1
-                #
-                dbc.Col(
-                    [
-                        html.H5("Simulation"),
-                        conversions.into_panel(
-                            [
-                                html.H6("Plant parameters"),
-                                dcc.Dropdown(
-                                    id="plant-dropdown",
-                                    options=plants,
-                                    value=plants[0]["value"],
-                                    clearable=False,
-                                    searchable=False,
-                                    className="dropdown",
-                                    style={"fontSize": "12px", "padding-top": "5px"},  # hard coded (should be same as h6) did not work with css allown
-                                ),
-                                html.Div(className="smallSpacer"),
-                                html.Div(
-                                    [
-                                        html.Div(
-                                            children=small_button("xml", "xml-download-button", "Download the XML parameter file")
-                                        ),  # ohterwise the layout is a pixel wrong
-                                        dcc.Upload(
-                                            id="xml-upload-button",
-                                            accept=".xml",
-                                            multiple=False,
-                                            children=small_button("xml", "xml-upload-button-hidden", "Upload your XML parameter file", url="cloud-upload.svg"),
-                                        ),
-                                    ],
-                                    style={"display": "flex", "alignItems": "center"},  # vertical alignment
-                                ),
-                            ]
-                        ),
-                        html.Div(className="spacer"),
-                        conversions.into_panel(
-                            [
-                                html.H6("Simulation time [day]"),
-                                dcc.Slider(id="time-slider", min=1, max=45, step=1, value=20, marks={1: "1", 45: "45"}, tooltip={"always_visible": False}),
-                                html.Div(className="spacer"),
-                                html.Div(
-                                    [
-                                        dcc.Button("Create", id="create-button", title="Create new plant geometry", className="button"),
-                                        dcc.Button(
-                                            "Update",
-                                            id="update-button",
-                                            title="Update the simulation (with the same random seed)",
-                                            className="button",
-                                            style={"display": "none"},
-                                        ),
-                                    ],
-                                ),
-                            ]
-                        ),
-                        html.Div(className="largeSpacer"),
-                        html.Div(className="largeSpacer"),
-                        dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),
-                        dcc.Loading(id="loading-spinner2", type="circle", children=html.Div(id="loading-spinner-output2")),
-                        dcc.Loading(id="loading-spinner3", type="circle", children=html.Div(id="loading-spinner-output3")),
-                    ],
-                    width=2,
-                ),
-                #
-                # Panel 2
-                #
-                dbc.Col(
-                    [
-                        html.H5("Parameters"),
-                        dcc.Tabs(
-                            id="organtype-tabs",
-                            value="Seed",
-                            children=[
-                                dcc.Tab(label="Seed", value="Seed", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="Root", value="Root", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="Stem", value="Stem", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="Leaf", value="Leaf", className="tab", selected_className="tabSelected"),
-                            ],
-                            className="tabs",
-                        ),
-                        html.Div(id="organtype-tabs-content", className="tabContentScroll"),
-                    ],
-                    width=3,
-                ),
-                #
-                # Panel 3
-                #
-                dbc.Col(
-                    [
-                        html.H5("Results"),
-                        dcc.Tabs(
-                            id="result-tabs",
-                            value="VTK3D",
-                            children=[
-                                dcc.Tab(label="3D", value="VTK3D", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="3D Age", value="VTK3DAge", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="1D Profiles", value="Profile1D", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="Dynamics", value="Dynamics", className="tab", selected_className="tabSelected"),
-                                dcc.Tab(label="About", value="About", className="tab", selected_className="tabSelected"),
-                            ],
-                            className="tabs",
-                        ),
-                        html.Div(id="result-tabs-content"),
-                    ],
-                    width=6,
-                ),
-            ]
+        html.Div(
+            dbc.Row(
+                [
+                    #
+                    # Panel 1
+                    #
+                    dbc.Col(
+                        [
+                            html.H5("Simulation"),
+                            conversions.into_panel(
+                                [
+                                    html.H6("Plant parameters"),
+                                    dcc.Dropdown(
+                                        id="plant-dropdown",
+                                        options=plants,
+                                        value=plants[1]["value"],
+                                        clearable=False,
+                                        searchable=False,
+                                        className="dropdown",
+                                        style={"fontSize": "12px", "padding-top": "5px"},  # hard coded (should be same as h6) did not work with css allown
+                                    ),
+                                    html.Div(className="smallSpacer"),
+                                    html.Div(
+                                        [
+                                            html.Div(
+                                                children=small_button("xml", "xml-download-button", "Download the XML parameter file")
+                                            ),  # ohterwise the layout is a pixel wrong
+                                            dcc.Upload(
+                                                id="xml-upload-button",
+                                                accept=".xml",
+                                                multiple=False,
+                                                children=small_button(
+                                                    "xml", "xml-upload-button-hidden", "Upload your XML parameter file", url="cloud-upload.svg"
+                                                ),
+                                            ),
+                                        ],
+                                        style={"display": "flex", "alignItems": "center"},  # vertical alignment
+                                    ),
+                                ]
+                            ),
+                            html.Div(className="spacer"),
+                            conversions.into_panel(
+                                [
+                                    html.H6("Simulation time [day]"),
+                                    dcc.Slider(id="time-slider", min=1, max=45, step=1, value=20, marks={1: "1", 45: "45"}, tooltip={"always_visible": False}),
+                                    html.Div(className="spacer"),
+                                    html.Div(
+                                        [
+                                            dcc.Button("Create", id="create-button", title="Create new plant geometry", className="button"),
+                                        ],
+                                    ),
+                                ]
+                            ),
+                            html.Div(className="spacer"),
+                            html.Div(id="reference-panel"),
+                            html.Div(className="spacer"),
+                            dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),
+                            dcc.Loading(id="loading-spinner2", type="circle", children=html.Div(id="loading-spinner-output2")),
+                            dcc.Loading(id="loading-spinner3", type="circle", children=html.Div(id="loading-spinner-output3")),
+                        ],
+                        width=2,
+                        style={"minWidth": "160px"},
+                    ),
+                    #
+                    # Panel 2
+                    #
+                    dbc.Col(
+                        [
+                            html.H5("Parameters"),
+                            dcc.Tabs(
+                                id="organtype-tabs",
+                                value="Seed",
+                                children=[
+                                    dcc.Tab(label="Seed", value="Seed", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="Root", value="Root", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="Stem", value="Stem", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="Leaf", value="Leaf", className="tab", selected_className="tabSelected"),
+                                ],
+                                className="tabs",
+                            ),
+                            html.Div(id="organtype-tabs-content"),  # , className="tabContentScroll"
+                        ],
+                        width=3,
+                        style={"minWidth": "250px"},
+                    ),
+                    #
+                    # Panel 3
+                    #
+                    dbc.Col(
+                        [
+                            html.H5("Results"),
+                            dcc.Tabs(
+                                id="result-tabs",
+                                value="VTK3D",
+                                children=[
+                                    dcc.Tab(label="3D", value="VTK3D", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="3D Age", value="VTK3DAge", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="1D Profiles", value="Profile1D", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="Dynamics", value="Dynamics", className="tab", selected_className="tabSelected"),
+                                    dcc.Tab(label="About", value="About", className="tab", selected_className="tabSelected"),
+                                ],
+                                className="tabs",
+                            ),
+                            html.Div(id="result-tabs-content"),
+                        ],
+                        width=6,
+                        style={"minWidth": "320px"},
+                    ),
+                ],
+                className="mainLayoutRow",
+            ),
+            className="mainLayoutScroll",
         ),
         html.Div(
             [
@@ -286,14 +388,12 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, None, seed_data["simulationTime"])
 
 
-@app.callback(  # Create and update button: update-button
+@app.callback(  # Create button and time slider
     Output("result-tabs-content", "children"),
-    Output("vtk-result-store", "data"),
-    Output("result-store", "data"),
+    Output("run-id-store", "data"),
     Output("settings-store", "data"),
     Output("loading-spinner-output", "children"),
     Input("create-button", "n_clicks"),
-    Input("update-button", "n_clicks"),
     Input("time-slider", "value"),
     State("plant-dropdown", "value"),
     State("seed-store", "data"),
@@ -306,10 +406,10 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     State("xml-store", "data"),
 )
 def handle_simulation(
-    create_clicks, update_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data
+    create_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data
 ):
     triggered = ctx.triggered_id
-    print("**[handle_simulation()", triggered, create_clicks, update_clicks, time_slider)
+    print("**[handle_simulation()", triggered, create_clicks, time_slider)
 
     # ---- CREATE BUTTON ----
     if triggered is None or triggered == "create-button":
@@ -318,20 +418,21 @@ def handle_simulation(
         rng = np.random.default_rng()
         settings_data["random_seed"] = rng.integers(1, 10001)
 
-    # ---- UPDATE BUTTON ----
-    elif triggered == "update-button" or triggered == "time-slider":
+    # ---- TIME SLIDER ----
+    elif triggered == "time-slider":
         settings_data["reset"] = False
 
     # ---- Run simulation (common part) ----
     vtk_data, result_data = simulate_plant.simulate_plant(
         plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"], xml_data
     )
+    run_id = cache_simulation_run(vtk_data, result_data)
 
-    content = render_result_tab(result_value, vtk_data, result_data, typename_data, settings_data)
+    content = render_result_content(result_value, run_id, typename_data, settings_data)
 
-    print("**]handle_simulation()", settings_data.keys(), vtk_data.keys(), "\n\n")
+    print("**]handle_simulation()", "\n\n")
 
-    return (content, vtk_data, result_data, settings_data, html.H6(""))
+    return (content, {"run_id": run_id}, settings_data, html.H6(""))
 
 
 @app.callback(  # parameter file download
@@ -358,7 +459,7 @@ def download_xml(n_clicks, plant_value, seed_data, root_data, stem_data, leaf_da
     prevent_initial_call=True,
 )
 def handle_xml_upload(contents, data):
-    print("handle_xml_upload****************************************************!!!!")
+    print("handle_xml_upload")
     if contents is None:
         return dash.no_update, dash.no_update
     content_type, content_string = contents.split(",")
@@ -368,7 +469,8 @@ def handle_xml_upload(contents, data):
         return dash.no_update, dash.no_update  # or raise PreventUpdate
     xml_string = decoded.decode("utf-8")
     data["xml"] = xml_string  # Store the XML content in the dcc.Store
-    return data, "6"
+    user_data_value = next((str(i) for i, name in enumerate(conversions.get_parameter_names()) if name[0] == "User Data"), None)
+    return data, user_data_value if user_data_value is not None else dash.no_update
 
 
 #
@@ -390,16 +492,16 @@ def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_
     if triggered is None:
         tab = "Seed"
     if tab == "Seed":
-        print("render_organtype_tab() seed:", seed_data)
+        # print("render_organtype_tab() seed:", seed_data)
         return generate_seed_sliders(seed_data)
     elif tab == "Root":
-        print("render_organtype_tab() root:", root_data)
+        # print("render_organtype_tab() root:", root_data)
         return root_layout(root_data, type_names)
     elif tab == "Stem":
-        print("render_organtype_tab() stem:", stem_data)
+        # print("render_organtype_tab() stem:", stem_data)
         return stem_layout(stem_data, type_names)
     elif tab == "Leaf":
-        print("render_organtype_tab() leaf:", leaf_data)
+        # print("render_organtype_tab() leaf:", leaf_data)
         return generate_leaf_sliders(leaf_data)
 
     raise ValueError("Unknown tab selected")
@@ -420,7 +522,8 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
         min_ = seed_parameter_sliders[key][0]
         max_ = seed_parameter_sliders[key][1]
         step_ = seed_parameter_sliders[key][2]
-        sliders.append(html.H6(key))  # , style=style
+        cpb_param = seed_parameter_sliders[key][3] if len(seed_parameter_sliders[key]) > 3 else key
+        sliders.append(html.H6(key, title=f"{cpb_param}"))  # , style=style
         sliders.append(
             html.Div(
                 [
@@ -491,7 +594,7 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
 )
 def update_seed_store(slider_values, data):
     triggered = ctx.triggered_id
-    print("update_seed_store()", triggered, ", ", data, slider_values, len(data["seed"]))
+    # print("update_seed_store()", triggered, ", ", data, slider_values, len(data["seed"]))
     if len(slider_values) > 1:  # called empty
         data["seed"] = slider_values
     return data
@@ -507,7 +610,7 @@ def update_seed_store(slider_values, data):
 )
 def toggle_shoot_checkbox(checkbox_value, data):
     triggered = ctx.triggered_id
-    print("toggle_shoot_checkbox()", triggered, checkbox_value)
+    # print("toggle_shoot_checkbox()", triggered, checkbox_value)
     data["shoot-checkbox"] = "agree" in checkbox_value
     disabled = "agree" not in checkbox_value
     return (disabled, disabled, data)  # disable if not checked
@@ -523,8 +626,8 @@ def toggle_shoot_checkbox(checkbox_value, data):
     prevent_initial_call=True,
 )
 def toggle_basal_checkbox(checkbox_value, data):
-    triggered = ctx.triggered_id
-    print("toggle_basal_checkbox()", triggered, checkbox_value)
+    # triggered = ctx.triggered_id
+    # print("toggle_basal_checkbox()", triggered, checkbox_value)
     data["basal-checkbox"] = "agree" in checkbox_value
     disabled = "agree" not in checkbox_value
     return (disabled, disabled, disabled, data)  # disable if not checked
@@ -541,7 +644,7 @@ def toggle_basal_checkbox(checkbox_value, data):
 )
 def toggle_tillers_checkbox(checkbox_value, data):
     triggered = ctx.triggered_id
-    print("toggle_tillers_checkbox()", triggered, checkbox_value)
+    # print("toggle_tillers_checkbox()", triggered, checkbox_value)
     data["tillers-checkbox"] = "agree" in checkbox_value
     disabled = "agree" not in checkbox_value
     return (disabled, disabled, disabled, data)
@@ -552,7 +655,7 @@ def toggle_tillers_checkbox(checkbox_value, data):
 #
 def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs from stored values
     """@param root_values is root_data[current_tab]"""
-    print("generate_root_sliders()", root_values)
+    # print("generate_root_sliders()", root_values)
     style = {}
     successors = root_values[-1]
     sliders = []
@@ -565,7 +668,8 @@ def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs f
         min_ = root_parameter_sliders[key][0]
         max_ = root_parameter_sliders[key][1]
         step_ = root_parameter_sliders[key][2]
-        sliders.append(html.H6(key, style=style))
+        cpb_param = root_parameter_sliders[key][3] if len(root_parameter_sliders[key]) > 3 else key
+        sliders.append(html.H6(key, style=style, title=f"{cpb_param}"))
         # print(key, str(min_), str(max_), min_, max_, "value", root_values[i])
         sliders.append(
             html.Div(
@@ -638,7 +742,7 @@ def render_root_tab(selected_tab, root_data):
     prevent_initial_call=True,
 )
 def update_root_store(slider_values, current_tab, store_data):
-    print("update_root_store()", store_data[current_tab])
+    # print("update_root_store()", store_data[current_tab])
     successors = store_data[current_tab][-1]
     store_data[current_tab] = slider_values
     store_data[current_tab].append(successors)
@@ -665,7 +769,8 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
         min_ = stem_parameter_sliders[key][0]
         max_ = stem_parameter_sliders[key][1]
         step_ = stem_parameter_sliders[key][2]
-        sliders.append(html.H6(key, style=style))
+        cpb_param = stem_parameter_sliders[key][3] if len(stem_parameter_sliders[key]) > 3 else key
+        sliders.append(html.H6(key, style=style, title=f"{cpb_param}"))
         sliders.append(
             html.Div(
                 [
@@ -702,6 +807,11 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
 
 def stem_layout(data, type_names):
     """stem tab layout: with stem subTypes as sub tabs"""
+    if type_names.get("number_stemtypes", 0) == 0:
+        return [
+            html.Div(className="spacer"),
+            html.H6("There is no stem defined in your plant data set"),
+        ]
     panelChildren = []
     for i in range(0, type_names["number_stemtypes"]):
         ctab = dcc.Tab(
@@ -729,7 +839,7 @@ def stem_layout(data, type_names):
 )
 def render_stem_tab(selected_tab, data):
     stored_values = data.get(selected_tab, STEM_SLIDER_INITIALS)
-    print("render_stem_tab()", selected_tab, stored_values)
+    # print("render_stem_tab()", selected_tab, stored_values)
     return generate_stem_sliders(stored_values, int(selected_tab[-1]))
 
 
@@ -778,7 +888,8 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
         min_ = leaf_parameter_sliders[key][0]
         max_ = leaf_parameter_sliders[key][1]
         step_ = leaf_parameter_sliders[key][2]
-        sliders.append(html.H6(key))
+        cpb_param = leaf_parameter_sliders[key][3] if len(leaf_parameter_sliders[key]) > 3 else key
+        sliders.append(html.H6(key, title=f"{cpb_param}"))
         sliders.append(
             dcc.Slider(
                 id={"type": "leaf-dynamic-slider", "index": i + 1},
@@ -824,7 +935,7 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
     prevent_initial_call=True,
 )
 def update_leaf_store(slider_values, store_data):
-    print("update_leaf_store()", slider_values)
+    # print("update_leaf_store()", slider_values)
     if len(slider_values) > 1:  # called empty
         store_data["leaf"] = slider_values
     return store_data
@@ -850,17 +961,8 @@ def attach_buttons(graph, buttons):
     )
 
 
-@app.callback(
-    Output("result-tabs-content", "children", allow_duplicate=True),
-    Input("result-tabs", "value"),
-    State("vtk-result-store", "data"),
-    State("result-store", "data"),
-    State("typename-store", "data"),
-    State("settings-store", "data"),
-    prevent_initial_call=True,
-)
-def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
-    print("render_result_tab()", tab, settings_data["token"], settings_data["reset"])
+def render_result_content(tab, run_id, typename_data, settings_data):
+    """Build tab content from cached simulation data identified by run id."""
 
     if tab == "About":
         return html.Div(
@@ -868,28 +970,24 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
             className="aboutContainer",
         )
 
-    if not vtk_data:
-        print("no data")
+    cached = get_cached_simulation_run(run_id)
+    if not cached:
+        print("no cached data for run", run_id)
         return html.Div([html.H6("press the create button")])
 
-    # print("***********************************************************************************************************************************")
-    # print("vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB")
-    # print("result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
-    # print("***********************************************************************************************************************************")
+    vtk_data = cached["vtk_data"]
+    result_data = cached["result_data"]
+    vtk_render_data = cached["vtk_render_data"]
+
     print("render_result_tab()", tab, "vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB", "result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
 
     if tab == "VTK3D":
         buttons = create_geometry_buttons()
-        color_pick = vtk_conversions.decode_array(vtk_data["subType"])
-        color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
-        # print("number of cell colors", len(color_pick), "cells", len(vtk_data["subType"]) , "\n", type(color_pick))
-        graph = plots.vtk3D_plot(vtk_data, color_pick, "Type", settings_data["token"], settings_data["reset"], buttons)
+        graph = plots.vtk3D_plot(vtk_render_data, "Type", settings_data["token"], settings_data["reset"], buttons)
         return graph
     elif tab == "VTK3DAge":
         buttons = create_geometry_buttons()
-        color_pick = vtk_conversions.decode_array(vtk_data["creationTime"])
-        color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
-        graph = plots.vtk3D_plot(vtk_data, color_pick, "Age", settings_data["token"], settings_data["reset"], buttons)
+        graph = plots.vtk3D_plot(vtk_render_data, "Age", settings_data["token"], settings_data["reset"], buttons)
         return graph
     elif tab == "Profile1D":
         button = small_button("xls", "xls-profile-download-button", "Download 1D profile data as XLS")
@@ -899,6 +997,19 @@ def render_result_tab(tab, vtk_data, result_data, typename_data, settings_data):
         button = small_button("xls", "xls-dynamics-download-button", "Download 1D dynamic data as XLS")
         graph = plots.dynamics_plot(result_data, typename_data)
         return attach_buttons(graph, button)
+
+
+@app.callback(
+    Output("result-tabs-content", "children", allow_duplicate=True),
+    Input("result-tabs", "value"),
+    State("run-id-store", "data"),
+    State("typename-store", "data"),
+    State("settings-store", "data"),
+    prevent_initial_call=True,
+)
+def render_result_tab(tab, run_data, typename_data, settings_data):
+    run_id = (run_data or {}).get("run_id")
+    return render_result_content(tab, run_id, typename_data, settings_data)
 
 
 @app.callback(
@@ -966,12 +1077,17 @@ def download_rsml(n_clicks, time_slider, plant_value, seed_data, root_data, stem
 @app.callback(
     Output("download-profiles-xls", "data"),
     Input("xls-profile-download-button", "n_clicks"),
-    State("result-store", "data"),
+    State("run-id-store", "data"),
 )
-def download_profiles_xls(n_clicks, data):
+def download_profiles_xls(n_clicks, run_data):
     print("download_profiles_xls()")
     if n_clicks is None:
         return dash.no_update
+    run_id = (run_data or {}).get("run_id")
+    cached = get_cached_simulation_run(run_id)
+    if not cached:
+        return dash.no_update
+    data = cached["result_data"]
     data_xls = plots.profile_to_excel(data)
     return data_xls
 
@@ -979,15 +1095,48 @@ def download_profiles_xls(n_clicks, data):
 @app.callback(
     Output("download-dynamics-xls", "data"),
     Input("xls-dynamics-download-button", "n_clicks"),
-    State("result-store", "data"),
+    State("run-id-store", "data"),
     State("typename-store", "data"),
 )
-def download_dynamics_xls(n_clicks, data, typename_data):
+def download_dynamics_xls(n_clicks, run_data, typename_data):
     print("download_dynamics_xls()")
     if n_clicks is None:
         return dash.no_update
+    run_id = (run_data or {}).get("run_id")
+    cached = get_cached_simulation_run(run_id)
+    if not cached:
+        return dash.no_update
+    data = cached["result_data"]
     data_xls = plots.dynamics_to_excel(data, typename_data)
     return data_xls
+
+
+@app.callback(
+    Output("reference-panel", "children"),
+    Input("plant-dropdown", "value"),
+    State("xml-store", "data"),
+)
+def update_reference_panel(plant_value, xml_data):
+    """Show APA reference from the selected dataset's XML file, or hide if absent."""
+    fname = conversions.get_parameter_names()[int(plant_value)][1]
+
+    if fname == "xml-store":
+        xml_str = (xml_data or {}).get("xml", "")
+    else:
+        xml_path = os.path.join(BASE_DIR, "params", fname)
+        try:
+            with open(xml_path, "r", encoding="utf-8") as f:
+                xml_str = f.read()
+        except OSError:
+            return []
+
+    citations = bibtexxml_apa.bibtexxml_apa_from_string(xml_str)
+    if not citations:
+        return []
+
+    md_text = "\n\n".join(citations)
+    items = [html.H6("Reference"), dcc.Markdown(md_text, style={"fontSize": "11px", "marginBottom": "4px"})]
+    return conversions.into_panel(items)
 
 
 if __name__ == "__main__":

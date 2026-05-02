@@ -125,4 +125,17 @@
         <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="juncus_squarrosus_clausnitzer_1994">
+            <article>
+                <author>Clausnitzer, V.</author>
+                <author>Hopmans, J. W.</author>
+                <title>Simultaneous modeling of transient three-dimensional root growth and soil water flow</title>
+                <journal>Plant and Soil</journal>
+                <year>1994</year>
+                <volume>164</volume>
+                <pages>299-314</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

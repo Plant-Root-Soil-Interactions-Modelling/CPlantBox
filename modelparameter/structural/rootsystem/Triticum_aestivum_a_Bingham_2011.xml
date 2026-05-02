@@ -209,4 +209,17 @@
         <parameter name="tropismS" value="0.40000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="triticum_aestivum_bingham_2011">
+            <article>
+                <author>Bingham, I. J.</author>
+                <author>Wu, L.</author>
+                <title>Simulation of wheat growth using the 3D root architecture model SPACSYS: Validation and sensitivity analysis</title>
+                <journal>European Journal of Agronomy</journal>
+                <year>2011</year>
+                <volume>34</volume>
+                <pages>181-189</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

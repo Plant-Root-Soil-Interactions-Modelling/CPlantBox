@@ -167,4 +167,21 @@
         <parameter name="tropismS" value="0.40000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="brassica_oleracea_vansteenkiste_2014">
+            <article>
+                <author>Vansteenkiste, J.</author>
+                <author>Van Loon, J.</author>
+                <author>Garré, S.</author>
+                <author>Pagès, L.</author>
+                <author>Schrevens, E.</author>
+                <author>Diels, J.</author>
+                <title>Estimating the parameters of a 3-D root distribution function from root observations with the trench profile method: Case study with simulated and field-observed root data</title>
+                <journal>Plant and Soil</journal>
+                <year>2014</year>
+                <volume>375</volume>
+                <pages>75-88</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

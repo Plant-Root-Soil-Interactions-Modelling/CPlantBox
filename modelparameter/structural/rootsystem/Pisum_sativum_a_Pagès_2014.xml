@@ -167,4 +167,17 @@
         <parameter name="tropismS" value="0.26179901"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="pisum_sativum_a_pages_2014">
+            <article>
+                <author>Pagès, L.</author>
+                <author>Picon-Cochard, C.</author>
+                <title>Modelling the root system architecture of Poaceae. Can we simulate integrated traits from morphological parameters of growth and branching?</title>
+                <journal>New Phytologist</journal>
+                <year>2014</year>
+                <volume>204</volume>
+                <pages>149-158</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

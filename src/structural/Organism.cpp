@@ -5,6 +5,7 @@
 #include "Seed.h"
 #include "organparameter.h"
 
+#include <chrono>
 #include <ctime>
 #include <fstream>
 #include <iostream>
@@ -18,8 +19,8 @@ std::vector<std::string> Organism::organTypeNames = {"organ", "seed", "root", "s
 int Organism::instances = 0; // number of instances
 
 /**
- * Constructs organism, initializes random number generator
- * @param seednum    option to set seed (for creation of random number) default = 0.
+ * @brief Constructs an organism and initializes RNG state.
+ * @param seednum Optional fixed seed (0 uses a time-based seed).
  */
 Organism::Organism(unsigned int seednum) {
     instances++;
@@ -34,7 +35,9 @@ Organism::Organism(unsigned int seednum) {
 };
 
 /**
- * @return the organ type number of an organ type name @param name
+ * @brief Maps an organ type name to its enum value.
+ * @param name Organ type name.
+ * @return Organ type value, or -1 if unknown.
  */
 int Organism::organTypeNumber(std::string name) {
     for (int ot = 0; ot < organTypeNames.size(); ot++) {
@@ -47,7 +50,10 @@ int Organism::organTypeNumber(std::string name) {
 }
 
 /**
- * @return the organ type name of an organ type number @param ot
+ * @brief Maps an organ type enum value to its name.
+ * @param ot Organ type enum value.
+ * @return Organ type name.
+ * @throws std::invalid_argument if ot is invalid.
  */
 std::string Organism::organTypeName(int ot) {
     try {
@@ -58,7 +64,7 @@ std::string Organism::organTypeName(int ot) {
 }
 
 /**
- * Deep copies the organism
+ * @brief Deep-copies the organism, organ tree, and parameter sets.
  */
 std::shared_ptr<Organism> Organism::copy() {
     std::cout << "Warning Organism (copy) should not be called directly: " << plantId << "\n" << std::flush;
@@ -112,10 +118,8 @@ std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, 
 }
 
 /**
- *  Sets the random parameter.
- *  subType and organType are defined within @param p.
- *
- *  @param p    the organ random parameter
+ * @brief Registers an organ random-parameter set.
+ * @param p Parameter object; organType and subType are taken from p.
  */
 void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p) {
     assert(p->plant.lock().get() == this && "OrganTypeParameter::plant should be this organism");
@@ -126,10 +130,10 @@ void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p) 
 /**
  * @return Get the organ sub type by its name
  *
- * @param organtype 		the organ type
- * @param str 				the sub type name
- */
-
+ * @brief Finds subtype index by subtype name for a given organ type.
+ * @param organtype Organ type.
+ * @param str Subtype name.
+ * @return Subtype index, or -1 if not found.
 int Organism::getParameterSubType(int organtype, std::string str) const {
     auto orp = this->getOrganRandomParameter(organtype);
     for (auto &o : orp) {
@@ -141,12 +145,9 @@ int Organism::getParameterSubType(int organtype, std::string str) const {
 }
 
 /**
- * Overwrite if there is the need for additional initializations,
- * before the simulation starts.
- *
- * e.g. for initialization of GrowthFunctions, TropismFunctions, set up base Organs
+ * @brief Optional initialization hook for derived classes.
  */
-void Organism::initialize(bool verbose) {}
+void Organism::initialize(bool verbose, std::string mode) {}
 
 /**
  * Simulates the development of the organism in a time span of @param dt days.
@@ -531,8 +532,9 @@ std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
 }
 
 /**
- * @return Definition of growth delay type for a specific lateral organ type (delayDefinitionShoot for stem or leaf, delayDefinition for root)
- * @param ot_lat   the lateral organ type (e.g. ot_stem, ot_leaf)
+ * @brief Returns growth-delay definition for lateral organ type.
+ * @param ot_lat Lateral organ type (e.g. stem or leaf).
+ * @return Delay-definition enum value.
  */
 int Organism::getDelayDefinition(int ot_lat) {
     auto srp = std::static_pointer_cast<SeedRandomParameter>(this->getOrganRandomParameter(Organism::ot_seed, 0));
@@ -544,7 +546,7 @@ int Organism::getDelayDefinition(int ot_lat) {
 }
 
 /**
- * @return Quick info about the object for debugging
+ * @brief Returns a one-line debug summary.
  */
 std::string Organism::toString() const {
     std::stringstream str;
@@ -553,16 +555,11 @@ std::string Organism::toString() const {
 }
 
 /**
- * Polymorphic XML parameter file reader:
- * adds all organ parameter types of a XML file to the organism's parameters
- *
- * Each OrganTypeParameter must have already one prototype defined
- * in the organ type parameters Organism::organParam, since
- * the organ type parameters are created by OrganTypeParameter::copy.
- *
- * @param name      file name or data as string
- * @param basetag   name of the base tag (e.g. "organism", or "plant")
- * @param fromFile  @param name == file name (true) or data as string (false)
+ * @brief Reads organ random-parameter sets from XML.
+ * @param name File path or XML string.
+ * @param basetag Root XML tag (e.g. "plant").
+ * @param fromFile True: read from file path in name; false: parse name as XML content.
+ * @param verbose Enables warnings for skipped/legacy tags.
  */
 void Organism::readParameters(std::string name, std::string basetag, bool fromFile, bool verbose) {
     tinyxml2::XMLDocument doc;
@@ -628,13 +625,11 @@ void Organism::readParameters(std::string name, std::string basetag, bool fromFi
 }
 
 /**
- * XML parameter file writer
- * writes all organ parameter types into a XML File
- *
- * @param name      file name
- * @param basetag   name of the base tag (e.g. "organism", or "plant") *
- * @param intoFile  write into file (true) or return as string (false)
- * @param comments  write parameter descriptions
+ * @brief Writes organ random-parameter sets to XML.
+ * @param name Output file path.
+ * @param basetag Root XML tag.
+ * @param intoFile True: write file and return empty string; false: return XML string.
+ * @param comments Includes parameter descriptions when supported.
  */
 std::string Organism::writeParameters(std::string name, std::string basetag, bool intoFile, bool comments) const {
     std::setlocale(LC_NUMERIC, "en_US.UTF-8");
@@ -662,10 +657,10 @@ std::string Organism::writeParameters(std::string name, std::string basetag, boo
 }
 
 /**
- * Exports the simulation results with the type from the extension in name
- * (that must be lower case)
- *
- * @param name      file name e.g. output.vtp
+ * @brief Writes simulation output selected by file extension.
+ * @param name Output target (e.g. *.vtp, *.rsml, *.py).
+ * @param intoFile True: write to file; false: return content string.
+ * @return Empty string for file output, otherwise generated content.
  */
 std::string Organism::write(std::string name, bool intoFile) const {
     std::string ext = name.substr(name.size() - 3, name.size()); // pick the right write}
@@ -704,8 +699,10 @@ std::string Organism::write(std::string name, bool intoFile) const {
 }
 
 /**
-write VTP using tinyXML
- **/
+ * @brief Writes VTP polyline representation to stream.
+ * @param otype Organ type filter (-1 for all).
+ * @param os Output stream.
+ */
 void Organism::writeVTP(int otype, std::ostream &os) const // Write .VTP file by using TinyXML2 performance slowed by 0.5 seconds but precision increased
 {
     tinyxml2::XMLPrinter printer(0, false, 0);
@@ -824,12 +821,8 @@ void Organism::writeVTP(int otype, std::ostream &os) const // Write .VTP file by
 }
 
 /**
- * Writes the current confining geometry (e.g. a plant container) as paraview python script
- * Just adds the initial lines, before calling the method of the sdf.
- *
- * todo move to Organism (including geometry)
- *
- * @param os      typically a file out stream
+ * @brief Writes confining geometry as ParaView Python script.
+ * @param os Output stream.
  */
 void Organism::writeGeometry(std::ostream &os) const {
     os << "from paraview.simple import *\n";
@@ -839,9 +832,10 @@ void Organism::writeGeometry(std::ostream &os) const {
 }
 
 /**
- * Creates a rsml file with filename @param name.
- *
- * @param name      name of the rsml file
+ * @brief Writes RSML output.
+ * @param name Output file path.
+ * @param intoFile True: write file; false: return RSML string.
+ * @return Empty string for file output, otherwise RSML string.
  */
 std::string Organism::writeRSML(std::string name, bool intoFile) const {
     std::setlocale(LC_NUMERIC, "en_US.UTF-8");
@@ -863,7 +857,9 @@ std::string Organism::writeRSML(std::string name, bool intoFile) const {
 }
 
 /**
- * @return the meta tag of the rsml file
+ * @brief Builds RSML metadata element.
+ * @param xmlDoc XML document used for element allocation.
+ * @return RSML metadata element.
  */
 tinyxml2::XMLElement *Organism::getRSMLMetadata(tinyxml2::XMLDocument &xmlDoc) const {
     tinyxml2::XMLElement *metadata = xmlDoc.NewElement("metadata"); // META
@@ -893,7 +889,9 @@ tinyxml2::XMLElement *Organism::getRSMLMetadata(tinyxml2::XMLDocument &xmlDoc) c
 }
 
 /**
- * @return the scene tag of the RSML document, calls base organs to write their tags
+ * @brief Builds RSML scene element from base organs.
+ * @param xmlDoc XML document used for element allocation.
+ * @return RSML scene element.
  */
 tinyxml2::XMLElement *Organism::getRSMLScene(tinyxml2::XMLDocument &xmlDoc) const {
     tinyxml2::XMLElement *scene = xmlDoc.NewElement("scene");
@@ -906,15 +904,13 @@ tinyxml2::XMLElement *Organism::getRSMLScene(tinyxml2::XMLDocument &xmlDoc) cons
 }
 
 /**
- * Sets the seed of the organisms random number generator.
- * In order to obtain two exact same organisms call before Organism::initialize().
- *
- * @param seed      the random number generator seed
+ * @brief Sets RNG seed.
+ * @param seed Random generator seed.
  */
 void Organism::setSeed(unsigned int seed) { this->gen = std::mt19937(seed); }
 
 /**
- * Returns the seed of the plant
+ * @brief Returns the seed organ.
  */
 std::shared_ptr<Seed> Organism::getSeed() { return std::static_pointer_cast<Seed>(baseOrgans.at(0)); }
 

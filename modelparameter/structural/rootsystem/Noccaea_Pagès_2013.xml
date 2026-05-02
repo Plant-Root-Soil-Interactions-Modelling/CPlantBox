@@ -167,4 +167,18 @@
         <parameter name="tropismS" value="0.40000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="noccaea_caerulescens_pages_2013">
+            <article>
+                <author>Pagès, L.</author>
+                <author>Xie, J.</author>
+                <author>Serra, V.</author>
+                <title>Potential and actual root growth variations in root systems: Modeling them with a two-step stochastic approach</title>
+                <journal>Plant and Soil</journal>
+                <year>2013</year>
+                <volume>373</volume>
+                <pages>723-735</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

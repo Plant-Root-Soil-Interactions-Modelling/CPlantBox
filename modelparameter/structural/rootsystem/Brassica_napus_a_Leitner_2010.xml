@@ -209,4 +209,20 @@
         <parameter name="tropismS" value="0.31415901"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="brassica_napus_leitner_2010">
+            <article>
+                <author>Leitner, Daniel</author>
+                <author>Klepsch, Stefan</author>
+                <author>Knie, Andreas</author>
+                <author>Schnepf, Andrea</author>
+                <title>The algorithmic beauty of plant roots: An L-System model for dynamic root growth simulation</title>
+                <journal>Mathematical and Computer Modelling of Dynamical Systems</journal>
+                <year>2010</year>
+                <volume>16</volume>
+                <pages>575-587</pages>
+                <doi>10.1080/13873954.2010.491360</doi>
+            </article>
+        </entry>
+    </reference>
 </plant>
