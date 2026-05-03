@@ -103,7 +103,7 @@ def main():
     length_layers_daily = []
     mean_radius_layers_daily = []
     suf_layers_daily = []
-    drf_layers_daily = []
+    active_fraction_layers_daily = []
 
     for day in range(1, sim_days + 1):
 
@@ -135,29 +135,25 @@ def main():
 
         alive = ana.getParameter("alive")
         length_ = ana.getParameter("length")  # segment length
-        # print(len(alive))
-        # print(len(length_))
         active_length = np.array(length_) * np.array(alive)
-        drf = (alive == 0.0) * np.array(length_)
-        # print("active_length", len(active_length))
         ana.addData("active_length", active_length)
-        ana.addData("alive", alive)
-        drf = (alive != 1.0) * np.array(length_)
-        ana.addData("drf", drf)
-        # print("alive", alive)
-        drf_profile = np.array(ana.distribution("active_length", z_top, z_bottom, n_layers, False))
+        active_length_profile = np.array(ana.distribution("active_length", z_top, z_bottom, n_layers, False))
 
-        length_layers_daily.append(length_profile)  # overlal length (dead and alive) per layer
+        active_fraction_profile = np.zeros_like(length_profile)
+        nonzero_length = length_profile > 0.0
+        active_fraction_profile[nonzero_length] = active_length_profile[nonzero_length] / length_profile[nonzero_length]
+
+        length_layers_daily.append(length_profile)  # overall length (dead and alive) per layer
         mean_radius_layers_daily.append(mean_radius_profile)
         suf_layers_daily.append(suf_profile)
-        drf_layers_daily.append(drf_profile)
+        active_fraction_layers_daily.append(active_fraction_profile)
         length_total_series.append(np.sum(length_profile))
         print("Day {}: Krs = {:.4e} cm2 day-1, suf_sum = {:.2f}".format(day, krs, np.sum(suf)))
 
     length_layers_daily = np.array(length_layers_daily)  # shape: [time, layer]
     mean_radius_layers_daily = np.array(mean_radius_layers_daily)
     suf_layers_daily = np.array(suf_layers_daily)
-    drf_layers_daily = np.array(drf_layers_daily)
+    active_fraction_layers_daily = np.array(active_fraction_layers_daily)
 
     # 1) Daily scalar outputs
     with open(os.path.join(out_dir, "drf_daily_krs_length.csv"), "w", newline="", encoding="utf-8") as f:
@@ -227,7 +223,7 @@ def main():
         axes2[0].plot(length_layers_daily[ti, :], layer_depths, color=color, alpha=0.9)
         axes2[1].plot(mean_radius_layers_daily[ti, :], layer_depths, color=color, alpha=0.9)
         axes2[2].plot(suf_layers_daily[ti, :], layer_depths, color=color, alpha=0.9)
-        axes2[3].plot(drf_layers_daily[ti, :], layer_depths, color=color, alpha=0.9)
+        axes2[3].plot(active_fraction_layers_daily[ti, :], layer_depths, color=color, alpha=0.9)
 
     axes2[0].set_title("Length profiles (all days)")
     axes2[0].set_xlabel("Length (cm)")
@@ -242,8 +238,8 @@ def main():
     axes2[2].set_xlabel("Layer SUF sum (-)")
     axes2[2].grid(True)
 
-    axes2[3].set_title("Active root length profiles (all days)")
-    axes2[3].set_xlabel("Active root length (cm)")
+    axes2[3].set_title("Active root length fraction profiles (all days)")
+    axes2[3].set_xlabel("Active length fraction (-)")
     axes2[3].grid(True)
 
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)

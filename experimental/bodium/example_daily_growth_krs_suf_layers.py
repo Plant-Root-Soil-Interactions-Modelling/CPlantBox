@@ -72,7 +72,7 @@ def main():
 
     # Root architecture file
     plant_name = "Zea_mays_1_Leitner_2010"
-    # plant_name = "Anagallis_femina_Leitner_2010"
+    plant_name = "Anagallis_femina_Leitner_2010"
     xml_path = os.path.join(script_dir, "..", "..", "modelparameter", "structural", "rootsystem", f"{plant_name}.xml")
     out_dir = os.path.join(script_dir, "results")
     os.makedirs(out_dir, exist_ok=True)
