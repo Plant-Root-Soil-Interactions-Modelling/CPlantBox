@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plantbox as pb
+from plantbox.structural.MappedOrganism import MappedPlantPython
 from plantbox.functional.PlantHydraulicModel import (
     HydraulicModel_Doussan,
     HydraulicModel_Meunier,
@@ -60,7 +61,7 @@ def main():
     hydraulic_mode = "age_dependent"
 
     # Simulation settings
-    sim_days = 10
+    sim_days = 62
     dt = 1.0  # daily time step
 
     # Soil layering for depth profiles
@@ -70,8 +71,8 @@ def main():
     layer_depths = np.linspace(z_top - 0.5 * abs((z_top - z_bottom) / n_layers), z_bottom + 0.5 * abs((z_top - z_bottom) / n_layers), n_layers)
 
     # Root architecture file
-    # plant_name = "Zea_mays_1_Leitner_2010"
-    plant_name = "Anagallis_femina_Leitner_2010"
+    plant_name = "Zea_mays_1_Leitner_2010"
+    # plant_name = "Anagallis_femina_Leitner_2010"
     xml_path = os.path.join(script_dir, "..", "..", "modelparameter", "structural", "rootsystem", f"{plant_name}.xml")
     out_dir = os.path.join(script_dir, "results")
     os.makedirs(out_dir, exist_ok=True)
@@ -81,11 +82,13 @@ def main():
     plant.readParameters(xml_path)
     # plant.setGeometry(pb.SDF_PlantContainer(1.0e6, 1.0e6, -z_bottom, True))  # large container to avoid boundary effects
     plant.initialize()
+    plant_python = MappedPlantPython(plant)
 
     if hydraulic_mode == "constant":
         hydraulic_params = make_constant_hydraulic_parameters(kr_const=1.728e-4, kx_const=4.32e-2)
     else:
         hydraulic_params = make_hydraulic_parameters()
+    # hm = HydraulicModel_Doussan(plant, hydraulic_params)
     hm = HydraulicModel_Meunier(plant, hydraulic_params)
 
     # Storage
@@ -96,13 +99,28 @@ def main():
     length_layers_daily = []
     mean_radius_layers_daily = []
     suf_layers_daily = []
+    tip_count_layers_daily = []
+    tip_positions_daily = []
+    tip_layer_edges = np.linspace(z_bottom, z_top, n_layers + 1)
 
     for day in range(1, sim_days + 1):
 
         # Simulate
         plant.simulate(dt, True)
 
+        root_tips = plant_python.get_root_tips()
+        tip_positions_daily.append(root_tips.copy())
+
+        # Count root tips per soil layer using tip z-coordinates.
+        if root_tips.size > 0:
+            tip_z = root_tips[:, 2]
+            tip_counts = np.histogram(tip_z, bins=tip_layer_edges)[0][::-1]  # match top->bottom layer order
+        else:
+            tip_counts = np.zeros(n_layers, dtype=np.int64)
+        tip_count_layers_daily.append(tip_counts)
+
         # Krs at current age
+        # hm.update(day)  # in case of doussan
         krs, _ = hm.get_krs(day)
         krs_series.append(krs)
         days.append(day)
@@ -119,7 +137,7 @@ def main():
         mean_radius_profile[nonzero] = surface_profile[nonzero] / (2.0 * np.pi * length_profile[nonzero])
 
         # SUF profile by layer
-        # hm.update(day)  # in case of doussan
+        # hm.update(day)  # in case of Doussan
         suf = hm.get_suf(day)
         ana.addData("SUF", suf)
         suf_profile = np.array(ana.distribution("SUF", z_top, z_bottom, n_layers, False))  # don't cut SUF
@@ -133,6 +151,7 @@ def main():
     length_layers_daily = np.array(length_layers_daily)  # shape: [time, layer]
     mean_radius_layers_daily = np.array(mean_radius_layers_daily)
     suf_layers_daily = np.array(suf_layers_daily)
+    tip_count_layers_daily = np.array(tip_count_layers_daily)
 
     # 1) Daily scalar outputs
     with open(os.path.join(out_dir, "daily_krs_length.csv"), "w", newline="", encoding="utf-8") as f:
@@ -152,6 +171,7 @@ def main():
                 "length_cm",
                 "mean_radius_cm",
                 "suf_layer_sum",
+                "root_tip_count",
             ]
         )
         for ti, day in enumerate(days):
@@ -164,8 +184,20 @@ def main():
                         length_layers_daily[ti, li],
                         mean_radius_layers_daily[ti, li],
                         suf_layers_daily[ti, li],
+                        int(tip_count_layers_daily[ti, li]),
                     ]
                 )
+
+    # 3) Root tip positions (all tips, all days)
+    with open(os.path.join(out_dir, "daily_root_tip_positions.csv"), "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["day", "tip_index", "x_cm", "y_cm", "z_cm"])
+        for ti, day in enumerate(days):
+            root_tips = tip_positions_daily[ti]
+            if root_tips.size == 0:
+                continue
+            for tip_i, tip in enumerate(root_tips):
+                writer.writerow([day, tip_i, tip[0], tip[1], tip[2]])
 
     # Plot summary curves
     fig, axes = plt.subplots(1, 3, figsize=(15, 4), sharex=True)
@@ -182,10 +214,10 @@ def main():
     axes[1].set_ylabel("Length (cm)")
     axes[1].grid(True)
 
-    axes[2].plot(days, np.sum(suf_layers_daily, axis=1))
-    axes[2].set_title("Sum of SUF (sanity check)")
+    axes[2].plot(days, np.sum(tip_count_layers_daily, axis=1))
+    axes[2].set_title("Total root tips over time")
     axes[2].set_xlabel("Day")
-    axes[2].set_ylabel("sum(SUF)")
+    axes[2].set_ylabel("Root tip count (-)")
     axes[2].grid(True)
 
     plt.tight_layout()
@@ -193,7 +225,7 @@ def main():
     plt.show()
 
     # Plot profile evolution over time
-    fig2, axes2 = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
+    fig2, axes2 = plt.subplots(1, 4, figsize=(19, 5), sharey=True)
     cmap = plt.get_cmap("viridis")
     norm = plt.Normalize(vmin=days[0], vmax=days[-1])
 
@@ -202,6 +234,7 @@ def main():
         axes2[0].plot(length_layers_daily[ti, :], layer_depths, color=color, alpha=0.9)
         axes2[1].plot(mean_radius_layers_daily[ti, :], layer_depths, color=color, alpha=0.9)
         axes2[2].plot(suf_layers_daily[ti, :], layer_depths, color=color, alpha=0.9)
+        axes2[3].plot(tip_count_layers_daily[ti, :], layer_depths, color=color, alpha=0.9)
 
     axes2[0].set_title("Length profiles (all days)")
     axes2[0].set_xlabel("Length (cm)")
@@ -216,9 +249,13 @@ def main():
     axes2[2].set_xlabel("Layer SUF sum (-)")
     axes2[2].grid(True)
 
+    axes2[3].set_title("Root tip count profiles (all days)")
+    axes2[3].set_xlabel("Tip count (-)")
+    axes2[3].grid(True)
+
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    fig2.subplots_adjust(right=0.88, wspace=0.3)
+    fig2.subplots_adjust(right=0.88, wspace=0.35)
     cax = fig2.add_axes([0.90, 0.15, 0.02, 0.7])
     cbar = fig2.colorbar(sm, cax=cax)
     cbar.set_label("Simulation day")
@@ -226,11 +263,31 @@ def main():
     plt.savefig(os.path.join(out_dir, "final_day_profiles.png"), dpi=200)
     plt.show()
 
+    # # Plot root tip z-positions as a day-vs-depth scatter.
+    # fig3, ax3 = plt.subplots(1, 1, figsize=(8, 4.5))
+    # for ti, day in enumerate(days):
+    #     root_tips = tip_positions_daily[ti]
+    #     if root_tips.size == 0:
+    #         continue
+    #     tip_z = root_tips[:, 2]
+    #     day_vals = np.full(tip_z.shape, day, dtype=float)
+    #     ax3.scatter(day_vals, tip_z, s=12, alpha=0.8, color=cmap(norm(day)))
+
+    # ax3.set_title("Root tip vertical positions over time")
+    # ax3.set_xlabel("Day")
+    # ax3.set_ylabel("Tip depth z (cm)")
+    # ax3.grid(True)
+    # plt.tight_layout()
+    # plt.savefig(os.path.join(out_dir, "daily_root_tip_positions.png"), dpi=200)
+    # plt.show()
+
     print("Finished simulation.")
     print(f"Wrote: {os.path.join(out_dir, 'daily_krs_length.csv')}")
     print(f"Wrote: {os.path.join(out_dir, 'daily_profiles_by_layer.csv')}")
+    print(f"Wrote: {os.path.join(out_dir, 'daily_root_tip_positions.csv')}")
     print(f"Wrote: {os.path.join(out_dir, 'daily_summary.png')}")
     print(f"Wrote: {os.path.join(out_dir, 'final_day_profiles.png')}")
+    print(f"Wrote: {os.path.join(out_dir, 'daily_root_tip_positions.png')}")
 
 
 if __name__ == "__main__":
