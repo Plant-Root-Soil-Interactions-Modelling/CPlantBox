@@ -11,6 +11,7 @@ Outputs are written to CSV files in experimental/bodium/results.
 """
 
 import csv
+import json
 import os
 
 import matplotlib.pyplot as plt
@@ -58,7 +59,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Hydraulic parameter mode: "age_dependent" or "constant"
-    hydraulic_mode = "age_dependent"
+    hydraulic_mode = "constant"
 
     # Simulation settings
     sim_days = 62
@@ -72,7 +73,7 @@ def main():
 
     # Root architecture file
     plant_name = "Zea_mays_1_Leitner_2010"
-    plant_name = "Anagallis_femina_Leitner_2010"
+    # plant_name = "Anagallis_femina_Leitner_2010"
     xml_path = os.path.join(script_dir, "..", "..", "modelparameter", "structural", "rootsystem", f"{plant_name}.xml")
     out_dir = os.path.join(script_dir, "results")
     os.makedirs(out_dir, exist_ok=True)
@@ -153,12 +154,68 @@ def main():
     suf_layers_daily = np.array(suf_layers_daily)
     tip_count_layers_daily = np.array(tip_count_layers_daily)
 
+    daily_scalar_rows = [
+        {
+            "day": int(day),
+            "krs_cm2_per_day": float(krs),
+            "total_length_cm": float(length),
+        }
+        for day, krs, length in zip(days, krs_series, length_total_series)
+    ]
+
+    layer_profile_rows = [
+        {
+            "day": int(day),
+            "layer_index": int(li),
+            "layer_center_depth_cm": float(layer_depths[li]),
+            "length_cm": float(length_layers_daily[ti, li]),
+            "mean_radius_cm": float(mean_radius_layers_daily[ti, li]),
+            "suf_layer_sum": float(suf_layers_daily[ti, li]),
+            "root_tip_count": int(tip_count_layers_daily[ti, li]),
+        }
+        for ti, day in enumerate(days)
+        for li in range(n_layers)
+    ]
+
+    tip_position_rows = [
+        {
+            "day": int(day),
+            "tip_index": int(tip_i),
+            "x_cm": float(tip[0]),
+            "y_cm": float(tip[1]),
+            "z_cm": float(tip[2]),
+        }
+        for ti, day in enumerate(days)
+        for tip_i, tip in enumerate(tip_positions_daily[ti])
+    ]
+
+    json_export = {
+        "metadata": {
+            "plant_name": plant_name,
+            "hydraulic_mode": hydraulic_mode,
+            "sim_days": int(sim_days),
+            "dt_days": float(dt),
+            "z_top_cm": float(z_top),
+            "z_bottom_cm": float(z_bottom),
+            "n_layers": int(n_layers),
+            "layer_center_depths_cm": [float(depth) for depth in layer_depths],
+        },
+        "daily": [
+            {
+                "day": int(day),
+                "krs_cm2_per_day": float(krs),
+                "suf_layers": [float(v) for v in suf_layers_daily[ti, :]],
+            }
+            for ti, (day, krs) in enumerate(zip(days, krs_series))
+        ],
+    }
+
     # 1) Daily scalar outputs
     with open(os.path.join(out_dir, "daily_krs_length.csv"), "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["day", "krs_cm2_per_day", "total_length_cm"])
-        for day, krs, length in zip(days, krs_series, length_total_series):
-            writer.writerow([day, krs, length])
+        for row in daily_scalar_rows:
+            writer.writerow([row["day"], row["krs_cm2_per_day"], row["total_length_cm"]])
 
     # 2) Layer outputs per day
     with open(os.path.join(out_dir, "daily_profiles_by_layer.csv"), "w", newline="", encoding="utf-8") as f:
@@ -174,30 +231,28 @@ def main():
                 "root_tip_count",
             ]
         )
-        for ti, day in enumerate(days):
-            for li in range(n_layers):
-                writer.writerow(
-                    [
-                        day,
-                        li,
-                        layer_depths[li],
-                        length_layers_daily[ti, li],
-                        mean_radius_layers_daily[ti, li],
-                        suf_layers_daily[ti, li],
-                        int(tip_count_layers_daily[ti, li]),
-                    ]
-                )
+        for row in layer_profile_rows:
+            writer.writerow(
+                [
+                    row["day"],
+                    row["layer_index"],
+                    row["layer_center_depth_cm"],
+                    row["length_cm"],
+                    row["mean_radius_cm"],
+                    row["suf_layer_sum"],
+                    row["root_tip_count"],
+                ]
+            )
 
     # 3) Root tip positions (all tips, all days)
     with open(os.path.join(out_dir, "daily_root_tip_positions.csv"), "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["day", "tip_index", "x_cm", "y_cm", "z_cm"])
-        for ti, day in enumerate(days):
-            root_tips = tip_positions_daily[ti]
-            if root_tips.size == 0:
-                continue
-            for tip_i, tip in enumerate(root_tips):
-                writer.writerow([day, tip_i, tip[0], tip[1], tip[2]])
+        for row in tip_position_rows:
+            writer.writerow([row["day"], row["tip_index"], row["x_cm"], row["y_cm"], row["z_cm"]])
+
+    with open(os.path.join(out_dir, "daily_outputs.json"), "w", encoding="utf-8") as f:
+        json.dump(json_export, f, indent=2)
 
     # Plot summary curves
     fig, axes = plt.subplots(1, 3, figsize=(15, 4), sharex=True)
@@ -263,31 +318,13 @@ def main():
     plt.savefig(os.path.join(out_dir, "final_day_profiles.png"), dpi=200)
     plt.show()
 
-    # # Plot root tip z-positions as a day-vs-depth scatter.
-    # fig3, ax3 = plt.subplots(1, 1, figsize=(8, 4.5))
-    # for ti, day in enumerate(days):
-    #     root_tips = tip_positions_daily[ti]
-    #     if root_tips.size == 0:
-    #         continue
-    #     tip_z = root_tips[:, 2]
-    #     day_vals = np.full(tip_z.shape, day, dtype=float)
-    #     ax3.scatter(day_vals, tip_z, s=12, alpha=0.8, color=cmap(norm(day)))
-
-    # ax3.set_title("Root tip vertical positions over time")
-    # ax3.set_xlabel("Day")
-    # ax3.set_ylabel("Tip depth z (cm)")
-    # ax3.grid(True)
-    # plt.tight_layout()
-    # plt.savefig(os.path.join(out_dir, "daily_root_tip_positions.png"), dpi=200)
-    # plt.show()
-
     print("Finished simulation.")
     print(f"Wrote: {os.path.join(out_dir, 'daily_krs_length.csv')}")
     print(f"Wrote: {os.path.join(out_dir, 'daily_profiles_by_layer.csv')}")
     print(f"Wrote: {os.path.join(out_dir, 'daily_root_tip_positions.csv')}")
+    print(f"Wrote: {os.path.join(out_dir, 'daily_outputs.json')}")
     print(f"Wrote: {os.path.join(out_dir, 'daily_summary.png')}")
     print(f"Wrote: {os.path.join(out_dir, 'final_day_profiles.png')}")
-    print(f"Wrote: {os.path.join(out_dir, 'daily_root_tip_positions.png')}")
 
 
 if __name__ == "__main__":
