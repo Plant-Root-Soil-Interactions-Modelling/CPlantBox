@@ -70,6 +70,8 @@ def main():
     z_bottom = -120.0
     n_layers = 24
     layer_depths = np.linspace(z_top - 0.5 * abs((z_top - z_bottom) / n_layers), z_bottom + 0.5 * abs((z_top - z_bottom) / n_layers), n_layers)
+    ref_area = 100.0 * 100.0  # reference area for length density [cm2], used to compute layer volume and RLD
+    layer_volume = abs((z_top - z_bottom) / n_layers) * ref_area
 
     # Root architecture file
     plant_name = "Zea_mays_1_Leitner_2010"
@@ -99,6 +101,7 @@ def main():
 
     length_layers_daily = []
     mean_radius_layers_daily = []
+    r_outer_layers_daily = []
     suf_layers_daily = []
     tip_count_layers_daily = []
     tip_positions_daily = []
@@ -137,6 +140,9 @@ def main():
         nonzero = length_profile > 0.0
         mean_radius_profile[nonzero] = surface_profile[nonzero] / (2.0 * np.pi * length_profile[nonzero])
 
+        rld = length_profile / layer_volume
+        r_outer = 1.0 / np.sqrt(np.pi * rld)
+
         # SUF profile by layer
         # hm.update(day)  # in case of Doussan
         suf = hm.get_suf(day)
@@ -145,12 +151,14 @@ def main():
 
         length_layers_daily.append(length_profile)
         mean_radius_layers_daily.append(mean_radius_profile)
+        r_outer_layers_daily.append(r_outer)
         suf_layers_daily.append(suf_profile)
         length_total_series.append(np.sum(length_profile))
         print("Day {}: Krs = {:.4e} cm2 day-1, suf_sum = {:.2f}".format(day, krs, np.sum(suf)))
 
     length_layers_daily = np.array(length_layers_daily)  # shape: [time, layer]
     mean_radius_layers_daily = np.array(mean_radius_layers_daily)
+    r_outer_layers_daily = np.array(r_outer_layers_daily)
     suf_layers_daily = np.array(suf_layers_daily)
     tip_count_layers_daily = np.array(tip_count_layers_daily)
 
@@ -203,8 +211,11 @@ def main():
         "daily": [
             {
                 "day": int(day),
-                "krs_cm2_per_day": float(krs),
-                "suf_layers": [float(v) for v in suf_layers_daily[ti, :]],
+                "krs": float(krs),
+                "suf": [float(v) for v in suf_layers_daily[ti, :]],
+                "mean_radius": [float(v) for v in mean_radius_layers_daily[ti, :]],
+                "r_outer": [0.0 if not np.isfinite(v) else float(v) for v in r_outer_layers_daily[ti, :]],
+                "length_per_area": [float(v) / ref_area for v in length_layers_daily[ti, :]],
             }
             for ti, (day, krs) in enumerate(zip(days, krs_series))
         ],
