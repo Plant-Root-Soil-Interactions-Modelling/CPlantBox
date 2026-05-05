@@ -129,7 +129,6 @@ def main():
         # SUF profile by layer
         # hm.update(day)  # in case of doussan
         suf = hm.get_suf(day)
-        print("suf", len(suf))
         ana.addData("SUF", suf)
         suf_profile = np.array(ana.distribution("SUF", z_top, z_bottom, n_layers, False))  # don't cut SUF
 
