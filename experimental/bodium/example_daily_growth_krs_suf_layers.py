@@ -137,14 +137,27 @@ def main():
         surface_profile = np.array(ana.distribution("surface", z_top, z_bottom, n_layers, True))
 
         # Mean radius from surface = 2*pi*r*length, guard division by zero for empty layers
-        mean_radius_profile = np.zeros_like(length_profile)
+        mean_radius_profile = np.zeros_like(length_profile, dtype=float)
         nonzero = length_profile > 0.0
         mean_radius_profile[nonzero] = surface_profile[nonzero] / (2.0 * np.pi * length_profile[nonzero])
+
         rld = length_profile / layer_volume
-        r_outer = 1.0 / np.sqrt(np.pi * rld)
-        rho = np.divide(r_outer, mean_radius_profile)
-        rho2 = np.square(rho)  # [1]
-        b = np.divide(2 * (rho2 - np.ones(rho2.shape)), np.ones(rho2.shape) - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # [1], see Eqn [8]
+        r_outer = np.full_like(length_profile, np.nan, dtype=float)
+        valid_rld = rld > 0.0
+        r_outer[valid_rld] = 1.0 / np.sqrt(np.pi * rld[valid_rld])
+
+        rho = np.full_like(length_profile, np.nan, dtype=float)
+        valid_rho = valid_rld & (mean_radius_profile > 0.0)
+        rho[valid_rho] = r_outer[valid_rho] / mean_radius_profile[valid_rho]
+
+        b = np.full_like(length_profile, np.nan, dtype=float)
+        valid_b = np.isfinite(rho) & (rho > 0.0)
+        if np.any(valid_b):
+            rho_valid = rho[valid_b]
+            rho2_valid = np.square(rho_valid)  # [1]
+            numerator = 2.0 * (rho2_valid - 1.0)
+            denominator = 1.0 - 0.53 * 0.53 * rho2_valid + 2.0 * rho2_valid * (np.log(rho_valid) + np.log(0.53))
+            b[valid_b] = numerator / denominator  # [1], see Eqn [8]
 
         # SUF profile by layer
         # hm.update(day)  # in case of Doussan
