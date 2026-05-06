@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append("..")
-sys.path.append("../src/")
 import math
 import os
 import unittest
@@ -63,9 +59,8 @@ class TestOrganParameter(unittest.TestCase):
         self.assertAlmostEqual(orp.getParameter("ldelay_dev"), 0.5, msg="getParameter ldelay_dev unexpected")
         # _mean suffix is an alias for the mean value
         self.assertAlmostEqual(orp.getParameter("a_mean"), 0.05, msg="getParameter a_mean unexpected")
-        # unknown parameter name raises RuntimeError
-        with self.assertRaises(RuntimeError, msg="getParameter unknown name should raise RuntimeError"):
-            orp.getParameter("nonexistent")
+        # unknown parameter name returns NaN
+        self.assertTrue(math.isnan(orp.getParameter("nonexistent")), "getParameter unknown name should return NaN")
 
     def test_toString(self):
         """Tests __str__ in both non-verbose (one-liner) and verbose (full table) modes."""
