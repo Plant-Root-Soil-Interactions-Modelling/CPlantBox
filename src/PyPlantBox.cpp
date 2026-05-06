@@ -169,6 +169,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("rotX", &Matrix3d::rotX)
             .def("rotY", &Matrix3d::rotY)
             .def("rotZ", &Matrix3d::rotZ)
+            .def("rotAB", &Matrix3d::rotAB)
             .def("ons", &Matrix3d::ons)
             .def("det", &Matrix3d::det)
             .def("inverse", &Matrix3d::inverse)
@@ -183,7 +184,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_buffer([](Matrix3d &m_) -> py::buffer_info { /* enables numpy conversion with np.array(matrix3d_instance, copy = False) */
         return py::buffer_info(
             &m_.r0.x,                               /* Pointer to buffer */
-            sizeof(float),                          /* Size of one scalar */
+            sizeof(double),                         /* Size of one scalar */
             py::format_descriptor<double>::format(),/* Python struct-style format descriptor */
             2,                                      /* Number of dimensions */
             { 3, 3 },                               /* Buffer dimensions */
