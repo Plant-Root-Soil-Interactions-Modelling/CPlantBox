@@ -18,10 +18,12 @@ namespace py = pybind11;
 #include "rootparameter.h"
 #include "seedparameter.h"
 #include "leafparameter.h"
+#include "grassleafparameter.h"
 #include "stemparameter.h"
 #include "Root.h"
 #include "Seed.h"
 #include "Leaf.h"
+#include "GrassLeaf.h"
 #include "Stem.h"
 
 #include "RootSystem.h"
@@ -225,6 +227,52 @@ PYBIND11_MODULE(plantbox, m) {
         );
       })
     ;
+    /*
+     * Turtle3D
+     */
+    py::class_<Turtle3D>(m, "Turtle3D")
+        .def(py::init<>())
+        .def(py::init<const Vector3d&, const Matrix3d&>())
+        .def("forward",    &Turtle3D::forward,    py::arg("dist"))
+        .def("turnLeft",   &Turtle3D::turnLeft,   py::arg("angle"))
+        .def("turnRight",  &Turtle3D::turnRight,  py::arg("angle"))
+        .def("pitchUp",    &Turtle3D::pitchUp,    py::arg("angle"))
+        .def("pitchDown",  &Turtle3D::pitchDown,  py::arg("angle"))
+        .def("rollLeft",   &Turtle3D::rollLeft,   py::arg("angle"))
+        .def("rollRight",  &Turtle3D::rollRight,  py::arg("angle"))
+        .def("getPosition",  &Turtle3D::getPosition)
+        .def("heading",      &Turtle3D::heading)
+        .def("left",         &Turtle3D::left)
+        .def("up",           &Turtle3D::up)
+        .def("getFrame",     &Turtle3D::getFrame)
+        .def("setPosition",  &Turtle3D::setPosition, py::arg("p"))
+        .def("setFrame",     &Turtle3D::setFrame,    py::arg("f"))
+        .def("__str__",      &Turtle3D::toString);
+    /*
+     * Meristem
+     */
+    auto meristemClass = py::class_<Meristem>(m, "Meristem")
+        .def(py::init<>())
+        .def(py::init<const Vector3d&, const Matrix3d&>())
+        .def("addNodeBack",  &Meristem::addNodeBack,
+             py::arg("dist"), py::arg("yaw") = 0., py::arg("pitch") = 0., py::arg("roll") = 0.)
+        .def("addNodeFront", &Meristem::addNodeFront,
+             py::arg("dist"), py::arg("yaw") = 0., py::arg("pitch") = 0., py::arg("roll") = 0.)
+        .def("size",           &Meristem::size)
+        .def("getNode",        &Meristem::getNode,        py::arg("i"))
+        .def("getPolyline",    &Meristem::getPolyline)
+        .def("getAnchor",      &Meristem::getAnchor)
+        .def("getAnchorFrame", &Meristem::getAnchorFrame)
+        .def("setAnchor",      &Meristem::setAnchor,      py::arg("p"))
+        .def("setAnchorFrame", &Meristem::setAnchorFrame, py::arg("f"))
+        .def("getNodes",       &Meristem::getNodes)
+        .def("__str__",        &Meristem::toString);
+    py::class_<Meristem::TurtleNode>(meristemClass, "TurtleNode")
+        .def(py::init<>())
+        .def_readwrite("yaw",   &Meristem::TurtleNode::yaw)
+        .def_readwrite("pitch", &Meristem::TurtleNode::pitch)
+        .def_readwrite("roll",  &Meristem::TurtleNode::roll)
+        .def_readwrite("dist",  &Meristem::TurtleNode::dist);
     /*
      * sdf
      */
@@ -822,6 +870,38 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("mainStemType", &Seed::mainStemType)
             .def_readwrite("tillerType", &Seed::tillerType);
     /**
+     * grassleafparameter.h
+     */
+    py::class_<GrassLeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<GrassLeafSpecificParameter>>(m, "GrassLeafSpecificParameter")
+        .def(py::init<>())
+        .def(py::init<int, double, double, double, double, double, double, double, double>())
+        .def_readwrite("a",             &GrassLeafSpecificParameter::a)
+        .def_readwrite("bladeAngle",    &GrassLeafSpecificParameter::bladeAngle)
+        .def_readwrite("bladeWidth",    &GrassLeafSpecificParameter::bladeWidth)
+        .def_readwrite("bladeLength",   &GrassLeafSpecificParameter::bladeLength)
+        .def_readwrite("sheathLength",  &GrassLeafSpecificParameter::sheathLength)
+        .def_readwrite("sheathDuration",&GrassLeafSpecificParameter::sheathDuration)
+        .def_readwrite("bladeDelay",    &GrassLeafSpecificParameter::bladeDelay)
+        .def_readwrite("bladeDuration", &GrassLeafSpecificParameter::bladeDuration)
+        .def("__str__", &GrassLeafSpecificParameter::toString);
+    py::class_<GrassLeafRandomParameter, OrganRandomParameter, std::shared_ptr<GrassLeafRandomParameter>>(m, "GrassLeafRandomParameter")
+        .def(py::init<std::shared_ptr<Organism>>())
+        .def_readwrite("bladeAngle",     &GrassLeafRandomParameter::bladeAngle)
+        .def_readwrite("bladeAngles",    &GrassLeafRandomParameter::bladeAngles)
+        .def_readwrite("bladeWidth",     &GrassLeafRandomParameter::bladeWidth)
+        .def_readwrite("bladeWidths",    &GrassLeafRandomParameter::bladeWidths)
+        .def_readwrite("bladeLength",    &GrassLeafRandomParameter::bladeLength)
+        .def_readwrite("bladeLengths",   &GrassLeafRandomParameter::bladeLengths)
+        .def_readwrite("sheathLength",   &GrassLeafRandomParameter::sheathLength)
+        .def_readwrite("sheathLengths",  &GrassLeafRandomParameter::sheathLengths)
+        .def_readwrite("sheathDuration", &GrassLeafRandomParameter::sheathDuration)
+        .def_readwrite("sheathDurations",&GrassLeafRandomParameter::sheathDurations)
+        .def_readwrite("bladeDelay",     &GrassLeafRandomParameter::bladeDelay)
+        .def_readwrite("bladeDelays",    &GrassLeafRandomParameter::bladeDelays)
+        .def_readwrite("bladeDuration",  &GrassLeafRandomParameter::bladeDuration)
+        .def_readwrite("bladeDurations", &GrassLeafRandomParameter::bladeDurations)
+        .def("__str__", [](const GrassLeafRandomParameter& p){ return p.toString(true); });
+    /**
      * Leaf.h
      */
     py::class_<Leaf, Organ, std::shared_ptr<Leaf>>(m, "Leaf")
@@ -838,6 +918,23 @@ PYBIND11_MODULE(plantbox, m) {
             .def("leafArea", &Leaf::leafArea, py::arg("realized")=false, py::arg("withPetiole")=false)
             .def("leafCenter", &Leaf::leafCenter, py::arg("realized")=false)
             .def("leafLength", &Leaf::leafLength, py::arg("realized")=false);
+    /**
+     * GrassLeaf.h
+     */
+    py::class_<GrassLeaf, Organ, std::shared_ptr<GrassLeaf>>(m, "GrassLeaf")
+        .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
+        .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
+        .def("simulate",    &GrassLeaf::simulate,    py::arg("dt"), py::arg("verbose") = false)
+        .def("calcLength",  &GrassLeaf::calcLength,  py::arg("age"))
+        .def("calcAge",     &GrassLeaf::calcAge,     py::arg("length"))
+        .def("getGrassLeafRandomParameter", &GrassLeaf::getGrassLeafRandomParameter)
+        .def("param",       &GrassLeaf::param)
+        .def("getSheathLength",    &GrassLeaf::getSheathLength)
+        .def("getBladeLengthGrown",&GrassLeaf::getBladeLengthGrown)
+        .def("isSheathComplete",   &GrassLeaf::isSheathComplete)
+        .def("isBladeEmerged",     &GrassLeaf::isBladeEmerged)
+        .def("getMeristem",        &GrassLeaf::getMeristem, py::return_value_policy::reference_internal)
+        .def("__str__",     &GrassLeaf::toString);
     /**
      * Stem.h
      */

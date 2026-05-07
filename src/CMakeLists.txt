@@ -34,6 +34,8 @@ set(CPLANTBOX_SOURCES
     structural/Seed.cpp
     structural/Stem.cpp
     structural/Leaf.cpp
+    structural/grassleafparameter.cpp
+    structural/GrassLeaf.cpp
     structural/Plant.cpp
     structural/Organism.cpp
 	structural/Plant.cpp            			

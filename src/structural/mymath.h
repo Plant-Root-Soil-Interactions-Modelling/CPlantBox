@@ -8,6 +8,7 @@
  */
 
 #include <cmath>
+#include <deque>
 #include <sstream>
 #include <assert.h>
 #include <vector>
@@ -305,8 +306,274 @@ public:
 
 };
 
+/**
+ * 3-D turtle graphics.
+ *
+ * Maintains a local coordinate frame (heading H, left L, up U) stored as
+ * the columns of a Matrix3d, and a current position.  All rotations are
+ * intrinsic (applied in the turtle's own frame).
+ *
+ * Convention:
+ *   column 0 (H) – heading  (forward direction)
+ *   column 1 (L) – left
+ *   column 2 (U) – up
+ *
+ * Usage:
+ * @code
+ *   Turtle3D t;
+ *   t.forward(5.0);
+ *   t.pitch(M_PI / 6);   // nose up 30°
+ *   t.forward(3.0);
+ * @endcode
+ */
+class Turtle3D
+{
+public:
+
+    /// Initialises at the origin with H = +x, L = +y, U = +z.
+    Turtle3D()
+        : pos(0., 0., 0.),
+          frame(Matrix3d(1,0,0, 0,1,0, 0,0,1)) { }
+
+    /// Initialises with a given position and frame.
+    Turtle3D(const Vector3d& position, const Matrix3d& frame)
+        : pos(position), frame(frame) { }
+
+    /// Moves forward by @p dist along the current heading (column 0).
+    void forward(double dist) {
+        Vector3d h = heading();
+        pos = pos.plus(h.times(dist));
+    }
+
+    /**
+     * Yaw: rotate around the up axis (U, column 2) by @p angle [rad].
+     * Positive angle turns left when viewed from above.
+     */
+    void turnLeft(double angle) {
+        rotateAroundColumn(2, angle);
+    }
+
+    /**
+     * Yaw: rotate around the up axis (U, column 2) by @p angle [rad].
+     * Positive angle turns right (equivalent to turnLeft(-angle)).
+     */
+    void turnRight(double angle) {
+        rotateAroundColumn(2, -angle);
+    }
+
+    /**
+     * Pitch: rotate around the left axis (L, column 1) by @p angle [rad].
+     * Positive angle pitches the heading upward.
+     */
+    void pitchUp(double angle) {
+        rotateAroundColumn(1, angle);
+    }
+
+    /**
+     * Pitch: rotate around the left axis (L, column 1) by @p angle [rad].
+     * Positive angle pitches the heading downward.
+     */
+    void pitchDown(double angle) {
+        rotateAroundColumn(1, -angle);
+    }
+
+    /**
+     * Roll: rotate around the heading axis (H, column 0) by @p angle [rad].
+     * Positive angle rolls the left side upward.
+     */
+    void rollLeft(double angle) {
+        rotateAroundColumn(0, angle);
+    }
+
+    /**
+     * Roll: rotate around the heading axis (H, column 0) by @p angle [rad].
+     * Positive angle rolls the left side downward.
+     */
+    void rollRight(double angle) {
+        rotateAroundColumn(0, -angle);
+    }
+
+    Vector3d getPosition() const { return pos; }         ///< Current turtle position
+    Vector3d heading()     const { return frame.column(0); } ///< Current heading direction (unit vector)
+    Vector3d left()        const { return frame.column(1); } ///< Current left direction (unit vector)
+    Vector3d up()          const { return frame.column(2); } ///< Current up direction (unit vector)
+    Matrix3d getFrame()    const { return frame; }        ///< Full local coordinate frame
+
+    /// Teleports to @p p without changing orientation.
+    void setPosition(const Vector3d& p) { pos = p; }
+
+    /// Replaces the entire coordinate frame (columns: H, L, U); columns should be orthonormal.
+    void setFrame(const Matrix3d& f) { frame = f; }
+
+    std::string toString() const {
+        std::ostringstream s;
+        s << "pos=" << pos.toString()
+          << " H=" << heading().toString()
+          << " L=" << left().toString()
+          << " U=" << up().toString();
+        return s.str();
+    }
+
+private:
+
+    /**
+     * Rodrigues rotation of the frame around its own column @p axis by @p angle [rad].
+     *
+     * All three columns are rotated so the frame stays orthonormal.
+     */
+    void rotateAroundColumn(int axis, double angle) {
+        assert(axis >= 0 && axis < 3);
+        const double ca = std::cos(angle);
+        const double sa = std::sin(angle);
+        Vector3d k = frame.column(axis); // unit rotation axis
+
+        for (int c = 0; c < 3; c++) {
+            if (c == axis) continue; // axis column is unchanged
+            Vector3d v = frame.column(c);
+            // Rodrigues: v' = v*cos(a) + (k x v)*sin(a) + k*(k.v)*(1-cos(a))
+            // Since k and v are already orthonormal frame columns, k.v == 0,
+            // so the formula simplifies to: v' = v*cos(a) + (k x v)*sin(a)
+            Vector3d vr = v.times(ca).plus(k.cross(v).times(sa));
+            // Write back the rotated column
+            switch(c) {
+            case 0: frame.r0.x = vr.x; frame.r1.x = vr.y; frame.r2.x = vr.z; break;
+            case 1: frame.r0.y = vr.x; frame.r1.y = vr.y; frame.r2.y = vr.z; break;
+            case 2: frame.r0.z = vr.x; frame.r1.z = vr.y; frame.r2.z = vr.z; break;
+            }
+        }
+    }
+
+    Vector3d pos;   ///< Current position
+    Matrix3d frame; ///< Local frame: columns are H (heading), L (left), U (up)
+};
 
 
+/**
+ * A polyline defined in relative turtle-graphics coordinates.
+ *
+ * Each segment is stored as a TurtleNode: three intrinsic rotations (yaw, pitch,
+ * roll) applied to the local frame arriving at that node, followed by a forward
+ * step of @c dist.  Node 0 is always the anchor (no movement from the initial
+ * frame); subsequent nodes extend the polyline.
+ *
+ * Cartesian coordinates are computed on demand by replaying the turtle commands
+ * from the front of the deque.
+ *
+ * Nodes can be appended at either end:
+ *  - @c addNodeBack()  – grow the tip 
+ *  - @c addNodeFront() – insert a at base 
+ */
+class Meristem
+{
+public:
+
+    /// One segment of the polyline in turtle-relative coordinates.
+    struct TurtleNode {
+        double yaw   = 0.; ///< Rotation around U (up) before the forward step [rad]
+        double pitch = 0.; ///< Rotation around L (left) before the forward step [rad]
+        double roll  = 0.; ///< Rotation around H (heading) before the forward step [rad]
+        double dist  = 0.; ///< Forward distance of this segment [cm]
+    };
+
+    /// Creates an empty meristem anchored at the origin with the default frame (H=+x, L=+y, U=+z).
+    Meristem() : anchor(Vector3d(0., 0., 0.)), anchorFrame(Matrix3d(1,0,0, 0,1,0, 0,0,1)) {}
+
+    /// Creates an empty meristem with an explicit anchor position and frame.
+    Meristem(const Vector3d& anchorPos, const Matrix3d& frame)
+        : anchor(anchorPos), anchorFrame(frame) {}
+
+    /**
+     * Appends a new node at the back (tip) of the polyline.
+     *
+     * @param dist   forward distance of the new segment [cm]
+     * @param yaw    rotation around U before moving forward [rad]
+     * @param pitch  rotation around L before moving forward [rad]
+     * @param roll   rotation around H before moving forward [rad]
+     */
+    void addNodeBack(double dist, double yaw = 0., double pitch = 0., double roll = 0.) {
+        nodes.push_back({yaw, pitch, roll, dist});
+    }
+
+    /**
+     * Prepends a new node at the front (base) of the polyline.
+     * All existing node indices shift by one.
+     *
+     * @param dist   forward distance of the new segment [cm]
+     * @param yaw    rotation around U before moving forward [rad]
+     * @param pitch  rotation around L before moving forward [rad]
+     * @param roll   rotation around H before moving forward [rad]
+     */
+    void addNodeFront(double dist, double yaw = 0., double pitch = 0., double roll = 0.) {
+        nodes.push_front({yaw, pitch, roll, dist});
+    }
+
+    /// Returns the number of nodes (including the implicit anchor node 0).
+    int size() const { return static_cast<int>(nodes.size()) + 1; }
+
+    /**
+     * Returns the Cartesian position of node @p i.
+     *
+     * Node 0 is the anchor.  Node k (k >= 1) is reached by replaying the first
+     * k turtle commands starting from the anchor.
+     *
+     * @param i  node index in [0, size()-1]
+     */
+    Vector3d getNode(int i) const {
+        assert(i >= 0 && i < size());
+        if (i == 0) return anchor;
+        Turtle3D t(anchor, anchorFrame);
+        int idx = 0;
+        for (const auto& n : nodes) {
+            t.turnLeft(n.yaw);
+            t.pitchUp(n.pitch);
+            t.rollLeft(n.roll);
+            t.forward(n.dist);
+            ++idx;
+            if (idx == i) break;
+        }
+        return t.getPosition();
+    }
+
+    /// Returns all nodes as a vector of Cartesian positions.
+    std::vector<Vector3d> getPolyline() const {
+        std::vector<Vector3d> pts;
+        pts.reserve(size());
+        pts.push_back(anchor);
+        Turtle3D t(anchor, anchorFrame);
+        for (const auto& n : nodes) {
+            t.turnLeft(n.yaw);
+            t.pitchUp(n.pitch);
+            t.rollLeft(n.roll);
+            t.forward(n.dist);
+            pts.push_back(t.getPosition());
+        }
+        return pts;
+    }
+
+    Vector3d getAnchor()      const { return anchor; }      ///< Anchor position (node 0)
+    Matrix3d getAnchorFrame() const { return anchorFrame; } ///< Coordinate frame at the anchor
+    void setAnchor(const Vector3d& p)      { anchor = p; }
+    void setAnchorFrame(const Matrix3d& f) { anchorFrame = f; }
+
+    /// Direct read access to the raw turtle-node deque.
+    const std::deque<TurtleNode>& getNodes() const { return nodes; }
+
+    std::string toString() const {
+        std::ostringstream s;
+        s << "Meristem [" << size() << " nodes]\n";
+        auto pts = getPolyline();
+        for (int i = 0; i < static_cast<int>(pts.size()); ++i) {
+            s << "  " << i << ": " << pts[i].toString() << "\n";
+        }
+        return s.str();
+    }
+
+private:
+
+    Vector3d anchor;          ///< Cartesian position of node 0
+    Matrix3d anchorFrame;     ///< Local frame at the anchor
+    std::deque<TurtleNode> nodes; ///< Turtle commands from base to tip
+};
 
 
 } // end namespace CPlantBox
