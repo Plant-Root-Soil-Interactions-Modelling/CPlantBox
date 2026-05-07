@@ -4,20 +4,26 @@
 
 #include "mymath.h"
 #include "sdf.h"
-#include "tinyxml2.h"
 
 #include <array>
-#include <chrono>
-#include <iostream>
+#include <iosfwd>
 #include <map>
 #include <memory>
 #include <random>
+
+namespace tinyxml2 {
+class XMLDocument;
+class XMLElement;
+} // namespace tinyxml2
 
 namespace CPlantBox {
 
 class Organ;
 class OrganRandomParameter;
 class Seed;
+class Root;
+class Stem;
+class Leaf;
 
 /**
  * @brief Base container for plant organs and global simulation state.
@@ -98,30 +104,19 @@ class Organism : public std::enable_shared_from_this<Organism> {
     /* io */
     virtual std::string toString() const; ///< quick info for debugging
     virtual void initializeReader() {}    ///< initializes parameter reader
-    virtual void readParameters(std::string name, std::string basetag = "plant", bool fromFile = true,
-                                bool verbose = false); ///< reads all organ type parameters from a xml file
-    virtual std::string writeParameters(std::string name, std::string basetag = "plant", bool intoFile = true,
-                                        bool comments = true) const;             ///< write all organ type parameters into a xml file
+    virtual void readParameters(std::string name, std::string basetag = "plant", bool fromFile = true, bool verbose = false); ///< reads all organ type parameters from a xml file
+    virtual std::string writeParameters(std::string name, std::string basetag = "plant", bool intoFile = true, bool comments = true) const;             ///< write all organ type parameters into a xml file
     virtual std::string write(std::string name, bool intoFile = true) const;     /// Writes output based on file extension.
     virtual void writeVTP(int otype, std::ostream &os) const;                    ///< Writes VTP polyline output.
     virtual void writeGeometry(std::ostream &os) const;                          ///< Writes confining geometry as ParaView Python script.
     virtual std::string writeRSML(std::string name, bool intoFile = true) const; ///< writes a RSML file
     int getRSMLSkip() const { return rsmlSkip; }                                 ///< skips points in the RSML output (default = 0)
-    void setRSMLSkip(int skip) {
-        assert(skip >= 0 && "Organism::setRSMLSkip(): skip must be >= 0");
-        rsmlSkip = skip;
-    } ///< skips points in the RSML output (default = 0)
+    void setRSMLSkip(int skip) { assert(skip >= 0 && "Organism::setRSMLSkip(): skip must be >= 0"); rsmlSkip = skip; } ///< skips points in the RSML output (default = 0)
     std::vector<std::string> &getRSMLProperties() { return rsmlProperties; } ///< Returns mutable list of RSML property names.
 
     /* id management */
-    int getOrganIndex() {
-        organId++;
-        return organId;
-    } ///< returns next unique organ id, only organ constructors should call this
-    int getNodeIndex() {
-        nodeId++;
-        return nodeId;
-    } ///< returns next unique node id, only organ constructors should call this
+    int getOrganIndex() { organId++; return organId; } ///< returns next unique organ id, only organ constructors should call this
+    int getNodeIndex() { nodeId++; return nodeId; } ///< returns next unique node id, only organ constructors should call this
 
     /* discretisation*/
     void setMinDx(double dx) { minDx = dx; } ///< minimum segment size, smaller segments will be skipped
@@ -129,24 +124,10 @@ class Organism : public std::enable_shared_from_this<Organism> {
 
     /* random numbers */
     void setSeed(unsigned int seed); ///< Sets RNG seed.
-    void setRandomSeed(unsigned int seed) {
-        setSeed(seed);
-    } ///< renamed setSeed to avoid confusion with plant seed, but keep setSeed for backward compatibility
+    void setRandomSeed(unsigned int seed) { setSeed(seed); } ///< renamed setSeed to avoid confusion with plant seed, but keep setSeed for backward compatibility
     unsigned int getSeedVal() { return seed_val; }
-    double rand() {
-        if (stochastic) {
-            return UD(gen);
-        } else {
-            return 0.5;
-        }
-    } ///< uniformly distributed random number [0, 1)
-    double randn() {
-        if (stochastic) {
-            return ND(gen);
-        } else {
-            return 0.0;
-        }
-    } ///< normally distributed random number
+    double rand() { if (stochastic) { return UD(gen); } else { return 0.5; } } ///< uniformly distributed random number [0, 1)
+    double randn() { if (stochastic) { return ND(gen); } else { return 0.0; } } ///< normally distributed random number
     void setStochastic(bool stochastic_) { stochastic = stochastic_; } ///< Enables/disables stochastic sampling.
     bool getStochastic() { return stochastic; }                        ///< Returns stochastic sampling flag.
 
@@ -156,6 +137,11 @@ class Organism : public std::enable_shared_from_this<Organism> {
     int getDelayDefinition(int ot_lat);          ///< Returns delay-definition mode for a lateral organ type.
 
     int plantId; ///< Unique organism id (mainly for debugging/copy tracing).
+
+    virtual std::shared_ptr<Seed> createSeed();                                                                    ///< Factory method for creating a seed organ.
+    virtual std::shared_ptr<Root> createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni);  ///< Factory method for creating roots, overridden by Plant to return Root instances.
+    virtual std::shared_ptr<Stem> createStem(int subType, double delay, std::shared_ptr<Organ> parent, int pni);  ///< Factory method for creating stems, overridden by Plant to return Stem instances.
+    virtual std::shared_ptr<Leaf> createLeaf(int subType, double delay, std::shared_ptr<Organ> parent, int pni);  ///< Factory method for creating leaves, overridden by Plant to return Leaf instances.
 
   protected:
     virtual tinyxml2::XMLElement *getRSMLMetadata(tinyxml2::XMLDocument &doc) const; ///< Builds RSML metadata node.
