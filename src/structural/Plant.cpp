@@ -159,7 +159,8 @@ std::shared_ptr<SeedRandomParameter> Plant::getSeedRandomParameter() {
 void Plant::initCallbacks() {
     // Create tropisms and growth functions per random root parameter
     for (auto &p_otp : organParam[Organism::ot_root]) {
-        auto rp = std::static_pointer_cast<RootRandomParameter>(p_otp.second);
+        auto rp = std::dynamic_pointer_cast<RootRandomParameter>(p_otp.second);
+        if (!rp) continue; // skip non-RootRandomParameter entries 
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
         tropism->setGeometry(geometry);
         rp->f_tf = tropism; // set new one
@@ -181,7 +182,8 @@ void Plant::initCallbacks() {
     }
     // Create tropisms and growth functions per random stem parameter
     for (auto &p_otp : organParam[Organism::ot_stem]) {
-        auto rp = std::static_pointer_cast<StemRandomParameter>(p_otp.second);
+        auto rp = std::dynamic_pointer_cast<StemRandomParameter>(p_otp.second);
+        if (!rp) continue; // skip non-StemRandomParameter entries 
         double tAge = rp->tropismAge + rp->tropismAges * randn();
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, tAge);
         tropism->setGeometry(geometry);
