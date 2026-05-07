@@ -44,7 +44,7 @@ std::shared_ptr<Organism> Plant::copy() {
 }
 
 /**
- * Sets up the XML Reader for the Plant class
+ * Sets up the XML Reader for the Plant class, subType = 0 stores the protoype to read the parameters with readXML()
  */
 void Plant::initializeReader() {
     auto rrp = std::make_shared<RootRandomParameter>(shared_from_this());
@@ -110,7 +110,7 @@ void Plant::initializeLB(bool verbose) {
     reset(); // just in case
     auto seed = createSeed();
     this->addOrgan(seed);
-    seed->initialize(verbose);
+    std::static_pointer_cast<Seed>(seed)->initialize(verbose);
     initialize_(verbose);
 }
 

@@ -135,7 +135,7 @@ void RootSystem::initializeLB(int basal, int shootborne, bool verbose)
 {
 	reset(); // just in case
     getNodeIndex(); // introduce an extra node at nodes[0]
-    seed = createSeed(); // introduce a 2nd node =>  2 nodes to make a seed segment
+    seed = std::static_pointer_cast<Seed>(createSeed()); // introduce a 2nd node =>  2 nodes to make a seed segment
 	initialize_(basal, shootborne, verbose);
 }
 

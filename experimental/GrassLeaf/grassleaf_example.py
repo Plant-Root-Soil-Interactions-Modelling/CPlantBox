@@ -16,12 +16,22 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
 import plantbox as pb
+import plantbox.visualisation.vtk_plot as vp
+
+
+class Poaceae(pb.Plant):
+    """Plant subclass that creates GrassLeaf organs instead of the default Leaf."""
+
+    def createLeaf(self, subType, delay, parent, pni):
+        print("wild things are going on", flush=True)
+        return pb.GrassLeaf(self, subType, delay, parent, pni)
+
 
 # --------------------------------------------------------------------------- #
 #  1.  Build a minimal Plant with one stem that hosts GrassLeaf laterals
 # --------------------------------------------------------------------------- #
 
-plant = pb.Plant()
+plant = Poaceae()
 
 # -- Seed (required boilerplate) --
 seed_rp = pb.SeedRandomParameter(plant)
@@ -48,6 +58,7 @@ stem_rp.lnf = 1
 stem_rp.theta = 0.0
 stem_rp.successor = [[1]]  # GrassLeaf subType 1
 stem_rp.successorP = [[1.0]]
+stem_rp.successorOT = [[pb.leaf]]
 plant.setOrganRandomParameter(stem_rp)
 
 # -- GrassLeaf random parameters --
@@ -59,6 +70,7 @@ gl_rp.bladeLength = 12.0  # cm
 gl_rp.bladeLengths = 1.0
 gl_rp.bladeWidth = 0.8  # cm
 gl_rp.bladeWidths = 0.05
+
 gl_rp.sheathLength = 6.0  # cm
 gl_rp.sheathLengths = 0.5
 gl_rp.sheathDuration = 8.0  # days
@@ -68,6 +80,7 @@ gl_rp.bladeDelays = 0.0
 gl_rp.bladeDuration = 15.0  # days to full blade
 gl_rp.bladeDurations = 1.0
 plant.setOrganRandomParameter(gl_rp)
+
 
 # --------------------------------------------------------------------------- #
 #  2.  Initialise and run the simulation
@@ -80,14 +93,16 @@ dt = 0.5  # days per step
 steps = int(total_days / dt)
 
 print(f"Simulating {total_days} days in {steps} steps …")
-for _ in range(steps):
+for i in range(steps):
+    print(i, end=" ", flush=True)
     plant.simulate(dt, verbose=False)
+
 
 # --------------------------------------------------------------------------- #
 #  3.  Inspect the GrassLeaf organs
 # --------------------------------------------------------------------------- #
 
-organs = plant.getOrgans(pb.OrganTypes.leaf)
+organs = plant.getOrgans(pb.OrganTypes.leaf, True)
 print(f"\nFound {len(organs)} leaf organ(s)")
 
 for org in organs:
@@ -99,20 +114,22 @@ for org in organs:
 
     p = gl.param()
     print("\n--- GrassLeaf ---")
-    print(f"  age            = {gl.age:.2f} days")
-    print(f"  total length   = {gl.length:.2f} cm")
+    print(f"  age            = {gl.getAge():.2f} days")
+    print(f"  total length   = {gl.getLength():.2f} cm")
     print(f"  sheathLength   = {gl.getSheathLength():.2f} / {p.sheathLength:.2f} cm")
     print(f"  bladeLengthGrown = {gl.getBladeLengthGrown():.2f} / {p.bladeLength:.2f} cm")
     print(f"  sheathComplete = {gl.isSheathComplete()}")
     print(f"  bladeEmerged   = {gl.isBladeEmerged()}")
     print(f"  nodes          = {gl.getNumberOfNodes()}")
 
+vp.plot_plant(plant, "age")
+
 # --------------------------------------------------------------------------- #
 #  4.  Step-by-step time series for ONE leaf (first one found)
 # --------------------------------------------------------------------------- #
 
 # Re-run a fresh plant, record state every 2 days
-plant2 = pb.Plant()
+plant2 = Poaceae()
 plant2.setOrganRandomParameter(pb.SeedRandomParameter(plant2))
 rp2 = pb.RootRandomParameter(plant2)
 rp2.subType = 1
@@ -129,8 +146,8 @@ s2.lb = 2.0
 s2.ln = 5.0
 s2.lnf = 1
 s2.theta = 0.0
-s2.successor = [1]
-s2.successorP = [1.0]
+# s2.successor = [1]
+# s2.successorP = [1.0]
 plant2.setOrganRandomParameter(s2)
 g2 = pb.GrassLeafRandomParameter(plant2)
 g2.subType = 1

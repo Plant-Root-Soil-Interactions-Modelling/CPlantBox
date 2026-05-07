@@ -1028,10 +1028,35 @@ PYBIND11_MODULE(plantbox, m) {
 		.def("splitSoilFluxes",&MappedSegments::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0);
 
     /*
-     * Plant.h
+     * Plant.h – trampoline to allow Python subclasses to override organ factory methods.
      */
-    py::class_<Plant, Organism, std::shared_ptr<Plant>>(m, "Plant")
+    struct PyPlant : Plant {
+        using Plant::Plant;
+        std::shared_ptr<Organ> createSeed() override {
+            PYBIND11_OVERRIDE(std::shared_ptr<Organ>, Plant, createSeed);
+        }
+        std::shared_ptr<Organ> createRoot(int subType, double delay,
+                                         std::shared_ptr<Organ> parent, int pni) override {
+            PYBIND11_OVERRIDE(std::shared_ptr<Organ>, Plant, createRoot,
+                              subType, delay, parent, pni);
+        }
+        std::shared_ptr<Organ> createStem(int subType, double delay,
+                                         std::shared_ptr<Organ> parent, int pni) override {
+            PYBIND11_OVERRIDE(std::shared_ptr<Organ>, Plant, createStem,
+                              subType, delay, parent, pni);
+        }
+        std::shared_ptr<Organ> createLeaf(int subType, double delay,
+                                         std::shared_ptr<Organ> parent, int pni) override {
+            PYBIND11_OVERRIDE(std::shared_ptr<Organ>, Plant, createLeaf,
+                              subType, delay, parent, pni);
+        }
+    };
+    py::class_<Plant, Organism, PyPlant, std::shared_ptr<Plant>>(m, "Plant")
             .def(py::init<unsigned int>(),  py::arg("seednum")=0)
+            .def("createSeed", &Plant::createSeed)
+            .def("createRoot", &Plant::createRoot)
+            .def("createStem", &Plant::createStem)
+            .def("createLeaf", &Plant::createLeaf)
             .def("initialize", &Plant::initialize, py::arg("verbose") = true, py::arg("mode") = "")
 			.def("initializeLB", &Plant::initializeLB, py::arg("verbose") = true)
             .def("initializeDB", &Plant::initializeDB, py::arg("verbose") = true)
@@ -1086,6 +1111,8 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * PlantHydraulicParameters.h
      */
+    /* MappedPlant also needs the trampoline so that Python subclasses of Plant
+     * that go through MappedPlant still resolve virtual calls correctly. */
     py::class_<PlantHydraulicParameters, std::shared_ptr<PlantHydraulicParameters>>(m, "PlantHydraulicParameters")
             .def(py::init<>())
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
