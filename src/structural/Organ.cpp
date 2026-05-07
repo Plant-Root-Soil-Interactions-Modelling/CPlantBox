@@ -846,21 +846,21 @@ void Organ::createLateral(double dt, bool verbose) {
 
                     switch (ot) {
                     case Organism::ot_root: {
-                        auto lateral = std::make_shared<Root>(plant.lock(), st, delay, shared_from_this(), nodes.size() - 1);
+                        auto lateral = plant.lock()->createRoot(st, delay, shared_from_this(), nodes.size() - 1);
                         lateral->has_rel_coord = this->has_rel_coord;
                         children.push_back(lateral);
                         lateral->simulate(growth_dt, verbose);
                         break;
                     }
                     case Organism::ot_stem: {
-                        auto lateral = std::make_shared<Stem>(plant.lock(), st, delay, shared_from_this(), nodes.size() - 1);
+                        auto lateral = plant.lock()->createStem(st, delay, shared_from_this(), nodes.size() - 1);
                         lateral->has_rel_coord = this->has_rel_coord;
                         children.push_back(lateral);
                         lateral->simulate(growth_dt, verbose);
                         break;
                     }
                     case Organism::ot_leaf: {
-                        auto lateral = std::make_shared<Leaf>(plant.lock(), st, delay, shared_from_this(), nodes.size() - 1);
+                        auto lateral = plant.lock()->createLeaf(st, delay, shared_from_this(), nodes.size() - 1);
                         lateral->has_rel_coord = this->has_rel_coord;
                         children.push_back(lateral);
                         lateral->simulate(growth_dt, verbose); // age-ageLN,verbose);
