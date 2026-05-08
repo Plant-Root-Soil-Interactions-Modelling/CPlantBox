@@ -678,15 +678,27 @@ class TestMeristem(unittest.TestCase):
     # ---- construction --------------------------------------------------------
 
     def test_default_construction(self):
+        """Default Meristem has 1 node (the initial {0,0,0,0} node at the anchor)."""
         m = pb.Meristem()
         self.assertEqual(m.size(), 1)
         np.testing.assert_array_almost_equal(v3(m.getNode(0)), [0.0, 0.0, 0.0])
+
+    def test_default_initial_node_index(self):
+        """initialNodeIdx starts at 0 (deque index of the initial node)."""
+        m = pb.Meristem()
+        self.assertEqual(m.getInitialNodeIndex(), 0)
 
     def test_custom_construction(self):
         pos = pb.Vector3d(1.0, 2.0, 3.0)
         m = pb.Meristem(pos, pb.Matrix3d())
         np.testing.assert_array_almost_equal(v3(m.getAnchor()), [1.0, 2.0, 3.0])
         self.assertEqual(m.size(), 1)
+
+    def test_custom_construction_initial_node_at_anchor(self):
+        """getNode(0) for custom anchor returns the anchor position (initial node has dist=0)."""
+        pos = pb.Vector3d(1.0, 2.0, 3.0)
+        m = pb.Meristem(pos, pb.Matrix3d())
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [1.0, 2.0, 3.0])
 
     # ---- addNodeBack ---------------------------------------------------------
 
@@ -697,10 +709,17 @@ class TestMeristem(unittest.TestCase):
         m.addNodeBack(1.0)
         self.assertEqual(m.size(), 3)
 
+    def test_addNodeBack_does_not_change_initial_node_index(self):
+        m = pb.Meristem()
+        m.addNodeBack(1.0)
+        m.addNodeBack(1.0)
+        self.assertEqual(m.getInitialNodeIndex(), 0)
+
     def test_getNode1_straight(self):
-        """Single forward step with no rotations → node 1 at anchor + dist*heading."""
+        """Node 0 = initial node at anchor; node 1 = anchor + dist*heading."""
         m = pb.Meristem()
         m.addNodeBack(5.0)
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [0.0, 0.0, 0.0], decimal=12)
         np.testing.assert_array_almost_equal(v3(m.getNode(1)), [5.0, 0.0, 0.0], decimal=12)
 
     def test_getNode_with_yaw(self):
@@ -725,17 +744,37 @@ class TestMeristem(unittest.TestCase):
         m.addNodeFront(1.0)
         self.assertEqual(m.size(), 2)
 
+    def test_addNodeFront_increments_initial_node_index(self):
+        """Each addNodeFront() prepends a node, shifting initialNodeIdx by 1."""
+        m = pb.Meristem()
+        self.assertEqual(m.getInitialNodeIndex(), 0)
+        m.addNodeFront(1.0)
+        self.assertEqual(m.getInitialNodeIndex(), 1)
+        m.addNodeFront(1.0)
+        self.assertEqual(m.getInitialNodeIndex(), 2)
+
     def test_addNodeFront_shifts_indices(self):
         """addNodeFront prepends; old node 1 becomes node 2."""
         m = pb.Meristem()
-        m.addNodeBack(5.0)  # node 1 at (5,0,0)
-        m.addNodeFront(3.0)  # new node 1 at (3,0,0); chain continues to (8,0,0)
-        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [3.0, 0.0, 0.0], decimal=12)
+        m.addNodeBack(5.0)  # deque: [{0,0,0,0}, {0,0,0,5}]; node 0=(0,0,0), node 1=(5,0,0)
+        m.addNodeFront(3.0)  # deque: [{0,0,0,3}, {0,0,0,0}, {0,0,0,5}]
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [3.0, 0.0, 0.0], decimal=12)
+        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [3.0, 0.0, 0.0], decimal=12)  # initial node (dist=0)
         np.testing.assert_array_almost_equal(v3(m.getNode(2)), [8.0, 0.0, 0.0], decimal=12)
+
+    def test_initial_node_position_after_addNodeFront(self):
+        """getNode(getInitialNodeIndex()) always returns the initial node position."""
+        m = pb.Meristem()
+        m.addNodeBack(5.0)  # (5,0,0)
+        m.addNodeFront(3.0)  # prepend; initial node now at index 1
+        idx = m.getInitialNodeIndex()  # == 1
+        # initial node has dist=0, so its position equals the node before it
+        np.testing.assert_array_almost_equal(v3(m.getNode(idx)), v3(m.getNode(idx - 1)), decimal=12)
 
     # ---- getPolyline ---------------------------------------------------------
 
     def test_getPolyline_length(self):
+        """getPolyline() has one entry per deque node (initial + 3 added = 4)."""
         m = pb.Meristem()
         m.addNodeBack(1.0)
         m.addNodeBack(1.0)
@@ -743,25 +782,71 @@ class TestMeristem(unittest.TestCase):
         self.assertEqual(len(m.getPolyline()), 4)
 
     def test_getPolyline_straight(self):
-        """Straight polyline: each step of dist=2 increments x by 2."""
+        """Initial node is at (0,0,0); subsequent steps of dist=2 increment x by 2."""
         m = pb.Meristem()
         for _ in range(3):
             m.addNodeBack(2.0)
         pts = m.getPolyline()
+        # pts[0] = initial node at (0,0,0), pts[i] = (2*i, 0, 0)
         for i, p in enumerate(pts):
             np.testing.assert_array_almost_equal(v3(p), [2.0 * i, 0.0, 0.0], decimal=12)
 
-    # ---- getNodes (raw turtle data) -----------------------------------------
+    # ---- getNodes and getTurtleNode (raw turtle data) -----------------------
+
+    def test_getNodes_includes_initial_node(self):
+        """getNodes() deque always starts with the initial {0,0,0,0} node."""
+        m = pb.Meristem()
+        nodes = m.getNodes()
+        self.assertEqual(len(nodes), 1)
+        self.assertAlmostEqual(nodes[0].yaw, 0.0)
+        self.assertAlmostEqual(nodes[0].pitch, 0.0)
+        self.assertAlmostEqual(nodes[0].roll, 0.0)
+        self.assertAlmostEqual(nodes[0].dist, 0.0)
 
     def test_getNodes_returns_raw_nodes(self):
+        """getNodes() returns all deque entries; index 0 is initial, index 1 is added."""
         m = pb.Meristem()
         m.addNodeBack(1.0, yaw=0.5, pitch=0.3, roll=0.1)
         nodes = m.getNodes()
-        self.assertEqual(len(nodes), 1)
-        self.assertAlmostEqual(nodes[0].yaw, 0.5)
-        self.assertAlmostEqual(nodes[0].pitch, 0.3)
-        self.assertAlmostEqual(nodes[0].roll, 0.1)
-        self.assertAlmostEqual(nodes[0].dist, 1.0)
+        self.assertEqual(len(nodes), 2)
+        # index 0: initial node
+        self.assertAlmostEqual(nodes[0].dist, 0.0)
+        # index 1: the added node
+        self.assertAlmostEqual(nodes[1].yaw, 0.5)
+        self.assertAlmostEqual(nodes[1].pitch, 0.3)
+        self.assertAlmostEqual(nodes[1].roll, 0.1)
+        self.assertAlmostEqual(nodes[1].dist, 1.0)
+
+    def test_getTurtleNode_initial(self):
+        """getTurtleNode(0) returns the initial zero node."""
+        m = pb.Meristem()
+        n = m.getTurtleNode(0)
+        self.assertAlmostEqual(n.yaw, 0.0)
+        self.assertAlmostEqual(n.pitch, 0.0)
+        self.assertAlmostEqual(n.roll, 0.0)
+        self.assertAlmostEqual(n.dist, 0.0)
+
+    def test_getTurtleNode_added(self):
+        """getTurtleNode(i) returns the TurtleNode at deque index i."""
+        m = pb.Meristem()
+        m.addNodeBack(2.5, yaw=0.1, pitch=0.2, roll=0.3)
+        n = m.getTurtleNode(1)
+        self.assertAlmostEqual(n.dist, 2.5)
+        self.assertAlmostEqual(n.yaw, 0.1)
+        self.assertAlmostEqual(n.pitch, 0.2)
+        self.assertAlmostEqual(n.roll, 0.3)
+
+    def test_getTurtleNode_matches_getNodes(self):
+        """getTurtleNode(i) and getNodes()[i] refer to the same data."""
+        m = pb.Meristem()
+        m.addNodeBack(3.0, yaw=0.7)
+        nodes = m.getNodes()
+        for i in range(m.size()):
+            n = m.getTurtleNode(i)
+            self.assertAlmostEqual(n.dist, nodes[i].dist)
+            self.assertAlmostEqual(n.yaw, nodes[i].yaw)
+            self.assertAlmostEqual(n.pitch, nodes[i].pitch)
+            self.assertAlmostEqual(n.roll, nodes[i].roll)
 
     # ---- setters -------------------------------------------------------------
 

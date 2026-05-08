@@ -62,8 +62,11 @@ public:
 
     std::string toString() const override;
 
-    double calcLength(double age) override;
-    double calcAge(double length) const override;
+    double calcLength(double age, double k, double r);
+    double calcAge(double length, double k, double r);
+    
+    double calcLength(double age) override; // unused (overriden to throw exception)
+    double calcAge(double length) const override; // unused (overriden to throw exception)
 
     double getSheathLength() const { return sheathLengthGrown; }      ///< Returns the current sheath length grown so far [cm].
     double getBladeLengthGrown() const { return bladeLengthGrown; }   ///< Returns the current blade length grown so far [cm].
@@ -81,7 +84,7 @@ private:
 
     void growSheath(double dl, double dt); ///< Grows the sheath by dl [cm] by prepending nodes into the Meristem.
     void growBlade(double dl, double dt);  ///< Grows the blade by dl [cm] by prepending nodes into the Meristem.
-    void addMeristemNodes(double dl, double yaw, double dt); ///< Subdivides dl into dx()-sized segments and prepends each as a meristem node; residual < dxMin() is stored in epsilonDx.
+    void addSheathNodes(double dl, double yaw, double dt); ///< Subdivides dl into dx()-sized segments and prepends each as a meristem node; residual < dxMin() is stored in epsilonDx.
 
     mutable Meristem meristem;     ///< Polyline of the entire leaf in turtle coordinates
     double sheathLengthGrown = 0.; ///< Accumulated sheath length [cm]

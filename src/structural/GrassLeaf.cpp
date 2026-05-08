@@ -70,31 +70,33 @@ std::shared_ptr<Organ> GrassLeaf::copy(std::shared_ptr<Organism> p) {
  * @brief Advances the leaf by @p dt days through sheath elongation, blade delay, and blade elongation phases.
  */
 void GrassLeaf::simulate(double dt, bool verbose) {
+
     oldNumberOfNodes = meristem.size();
 
-    if (!alive)
+    if (!alive) {
         return; // leafs don't die (yet)
+    }
 
     // std::cout << "Simulating GrassLeaf id=" << getId() << " age=" << age << " dt=" << dt << "\n" << std::flush;
 
     const GrassLeafSpecificParameter &p = *param();
 
-    if (age + dt > p.sheathDuration + p.bladeDelay + p.bladeDuration) {
-        dt = std::max(p.sheathDuration + p.bladeDelay + p.bladeDuration - age, 0.);
-    }
     age += dt;
+    double dt_ = (age < dt) ? age : dt; // time step; age < dt means the organ emerged in this time step
 
-    if (age <= 0.)
+    if (age <= 0.) {
         return; // still in delay
+    }
 
-    if (active && dt>0.) {
-        // sheath elongation
-        if (sheathLengthGrown < p.sheathLength) {
-            double sheathRate = (p.sheathDuration > 0.) ? p.sheathLength / p.sheathDuration : p.sheathLength/dt; // instant if duration = 0
-            double dl = std::min(sheathRate * dt, p.sheathLength - sheathLengthGrown);
-            if (dl > 0.) {
-                growSheath(dl, dt);
-            }
+    // GrassLeaf hold no children
+
+    if (active) {
+
+        double age_ = calcAge(sheathLengthGrown, p.sheathLength, p.sheathLength/p.sheathDuration); 
+        double targetSheathLength = calcLength(age_ + dt_, p.sheathLength, p.sheathLength/p.sheathDuration) + this->epsilonDx;
+        double dl = targetSheathLength - sheathLengthGrown; 
+        if (dl > 0.) {
+            growSheath(dl, dt);
         }
 
         // // blade elongation
@@ -143,47 +145,6 @@ std::string GrassLeaf::toString() const {
     return s.str();
 }
 
-/**
- * @brief Returns total leaf length (sheath + blade) at @p age_; piecewise-linear approximation.
- */
-double GrassLeaf::calcLength(double age_) {
-    const GrassLeafSpecificParameter &p = *param();
-    if (age_ <= 0.)
-        return 0.;
-
-    double sheathRate = (p.sheathDuration > 0.) ? p.sheathLength / p.sheathDuration : p.sheathLength;
-    double sheathLen = std::min(sheathRate * age_, p.sheathLength);
-    double remaining = age_ - sheathLen / std::max(sheathRate, 1e-12);
-    if (remaining <= 0.)
-        return sheathLen;
-
-    double afterDelay = remaining - p.bladeDelay;
-    if (afterDelay <= 0.)
-        return sheathLen; // still in blade delay
-
-    double bladeRate = (p.bladeDuration > 0.) ? p.bladeLength / p.bladeDuration : p.bladeLength;
-    double bladeLen = std::min(bladeRate * afterDelay, p.bladeLength);
-    return sheathLen + bladeLen;
-}
-
-/**
- * @brief Returns the age at which the leaf reaches @p length_; inverse of calcLength().
- */
-double GrassLeaf::calcAge(double length_) const {
-    const GrassLeafSpecificParameter &p = *param();
-    if (length_ <= 0.)
-        return 0.;
-
-    double sheathRate = (p.sheathDuration > 0.) ? p.sheathLength / p.sheathDuration : 1e9;
-    if (length_ <= p.sheathLength) {
-        return length_ / sheathRate;
-    }
-
-    double ageAtSheath = p.sheathLength / sheathRate;
-    double bladeRate = (p.bladeDuration > 0.) ? p.bladeLength / p.bladeDuration : 1e9;
-    double bladeLen = length_ - p.sheathLength;
-    return ageAtSheath + p.bladeDelay + bladeLen / bladeRate;
-}
 
 /**
  * @brief Returns the stochastic parameter set for this leaf's sub-type.
@@ -211,7 +172,7 @@ double GrassLeaf::calcAgeAtSheathComplete() const {
  */
 void GrassLeaf::growSheath(double dl, double dt) {
     sheathLengthGrown += dl;
-    addMeristemNodes(dl, 0., dt);
+    addSheathNodes(dl, 0., dt);
 }
 
 /**
@@ -221,7 +182,7 @@ void GrassLeaf::growBlade(double dl, double dt) {
     const GrassLeafSpecificParameter &p = *param();
     double yaw = (bladeLengthGrown == 0.) ? p.bladeAngle : 0.; // blade angle only on first segment
     bladeLengthGrown += dl;
-    addMeristemNodes(dl, yaw, dt);
+    addSheathNodes(dl, yaw, dt);
 }
 
 /**
@@ -240,16 +201,16 @@ void GrassLeaf::growBlade(double dl, double dt) {
  * @param yaw  Yaw rotation [rad] for the innermost new segment (0 = straight).
  * @param dt   Current time step [days]; used for creation-time interpolation.
  */
-void GrassLeaf::addMeristemNodes(double dl, double yaw, double dt) {
-    if (dl <= 0.) return;
+void GrassLeaf::addSheathNodes(double dl, double yaw, double dt) {
+    if (dl <= 0.)
+        return;
 
     double baseCT = nodeCTs.at(meristem.getInitialNodeIndex());
-    double totalLen = sheathLengthGrown + bladeLengthGrown; // already updated by caller
-    double accLen   = totalLen - dl;                        // length before this call
+    double totalLen = sheathLengthGrown; // already updated by caller
+    double accLen = totalLen - dl;                          // length before this call
 
-    int    n    = static_cast<int>(std::floor(dl / dx()));
-    double last = dl - n * dx();
-    // if last piece is below dxMin, absorb it into epsilonDx and skip
+    int n = static_cast<int>(std::floor(dl / dx()));
+    double last = dl - n * dx(); // if last piece is below dxMin, absorb it into epsilonDx and skip
     bool addLast = (last >= dxMin() * (1. - 1e-10));
     if (!addLast) {
         epsilonDx += last;
@@ -260,17 +221,80 @@ void GrassLeaf::addMeristemNodes(double dl, double yaw, double dt) {
     int nSegs = n + (addLast ? 1 : 0);
     // prepend in reverse order so that node 0 ends up as the new base
     for (int i = nSegs - 1; i >= 0; --i) {
-        double sdx   = (i < n) ? dx() : last;
-        accLen      += sdx;
-        double age_  = calcAge(std::max(accLen, 0.));
-        double a     = std::min(std::max(age_, age - dt), age);
-        double ct    = a + baseCT;
-        int    nid   = plant.lock()->getNodeIndex();
+        double sdx = (i < n) ? dx() : last;
+        accLen += sdx;
+        double age_ = calcAge(std::max(accLen, 0.));
+        double a = std::min(std::max(age_, age - dt), age);
+        double ct = a + baseCT;
+        int nid = plant.lock()->getNodeIndex();
         double segYaw = (i == nSegs - 1) ? yaw : 0.; // yaw only on innermost segment
         meristem.addNodeFront(sdx, segYaw, 0., 0.);
         nodeIds.insert(nodeIds.begin(), nid);
         nodeCTs.insert(nodeCTs.begin(), ct);
     }
 }
+
+
+
+
+double GrassLeaf::calcLength(double length, double k, double r) {
+    assert(age >= 0 && "GrassLeaf::calcLength() negative leaf age");
+    return getGrassLeafRandomParameter()->f_gf->getLength(age, r, k, shared_from_this());
+}
+
+
+double GrassLeaf::calcAge(double length, double k, double r) {
+    assert(length >= 0 && "GrassLeaf::calcAge() negative leaf length");
+    return getGrassLeafRandomParameter()->f_gf->getAge(length, r, k, shared_from_this());
+}
+
+
+
+/**
+ * @brief Returns total leaf length (sheath + blade) at @p age_; piecewise-linear approximation.
+ */
+double GrassLeaf::calcLength(double age_) {
+    throw std::runtime_error("GrassLeaf::calcLength(age) not implemented, use calcLength(age, k, r) instead");
+    const GrassLeafSpecificParameter &p = *param();
+    if (age_ <= 0.)
+        return 0.;
+
+    double sheathRate = (p.sheathDuration > 0.) ? p.sheathLength / p.sheathDuration : p.sheathLength;
+    double sheathLen = std::min(sheathRate * age_, p.sheathLength);
+    double remaining = age_ - sheathLen / std::max(sheathRate, 1e-12);
+    if (remaining <= 0.)
+        return sheathLen;
+
+    double afterDelay = remaining - p.bladeDelay;
+    if (afterDelay <= 0.)
+        return sheathLen; // still in blade delay
+
+    double bladeRate = (p.bladeDuration > 0.) ? p.bladeLength / p.bladeDuration : p.bladeLength;
+    double bladeLen = std::min(bladeRate * afterDelay, p.bladeLength);
+    return sheathLen + bladeLen;
+}
+
+/**
+ * @brief Returns the age at which the leaf reaches @p length_; inverse of calcLength().
+ */
+double GrassLeaf::calcAge(double length_) const {
+    throw std::runtime_error("GrassLeaf::calcAge(length) not implemented, use calcAge(length, k, r) instead");
+    const GrassLeafSpecificParameter &p = *param();
+    if (length_ <= 0.)
+        return 0.;
+
+    double sheathRate = (p.sheathDuration > 0.) ? p.sheathLength / p.sheathDuration : 1e9;
+    if (length_ <= p.sheathLength) {
+        return length_ / sheathRate;
+    }
+
+    double ageAtSheath = p.sheathLength / sheathRate;
+    double bladeRate = (p.bladeDuration > 0.) ? p.bladeLength / p.bladeDuration : 1e9;
+    double bladeLen = length_ - p.sheathLength;
+    return ageAtSheath + p.bladeDelay + bladeLen / bladeRate;
+}
+
+
+
 
 } // end namespace CPlantBox
