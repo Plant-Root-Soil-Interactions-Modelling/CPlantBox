@@ -81,7 +81,7 @@ class Organ : public std::enable_shared_from_this<Organ> {
     virtual double calcLength(double age) { throw std::runtime_error("calcLength() not implemented"); }     ///< Maps age -> length; must be overridden
 
     /* geometry */
-    int getNumberOfNodes() const { return nodes.size(); }                  ///< Returns the number of nodes
+    virtual int getNumberOfNodes() const { return nodes.size(); }                  ///< Returns the number of nodes
     int getNumberOfSegments() const { return nodes.size() - 1; }           ///< Returns the number of polyline segments (nodes - 1)
     Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< Returns the absolute coordinate of the organ's attachment point on the parent
     virtual Vector3d getNode(int i) const { return nodes.at(i); }          ///< Returns the absolute (or relative) coordinate of node @p i

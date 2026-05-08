@@ -81,11 +81,11 @@ double Organ::getLength(int i) const {
     double l = 0.;       // length until node i
     if (hasRelCoord()) { // is currently using relative coordinates?
         for (int j = 0; j < i; j++) {
-            l += nodes.at(j + 1).length(); // relative length equals absolute length
+            l += getNode(j + 1).length(); // relative length equals absolute length
         }
     } else {
         for (int j = 0; j < i; j++) {
-            l += nodes.at(j + 1).minus(nodes.at(j)).length(); // relative length equals absolute length
+            l += getNode(j + 1).minus(getNode(j)).length(); // relative length equals absolute length
         }
     }
     return l;
@@ -262,10 +262,10 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>> &v, bool all) 
     // deprecated: do not need bulb anymore, stems of subtype 2 are normal stems
     // bool notBulb = !((this->organType() == Organism::ot_stem)&&(this->getParameter("subType") == 2));//do not count leaf bulb
     // might have age <0 and node.size()> 1 when adding organ manuelly @see test_organ.py
-    bool forCarbon_limitedGrowth = (all && (this->getAge() > 0)); // when ask for "all" organs which have age > 0 even if nodes.size() == 1
+    bool forCarbon_limitedGrowth = (all && (this->getAge() > 0)); // when ask for "all" organs which have age > 0 even if getNumberOfNodes() == 1
     bool notSeed = (this->organType() != Organism::ot_seed);
 
-    if ((this->nodes.size() > 1 || forCarbon_limitedGrowth) && notSeed) { //&& notBulb
+    if ((this->getNumberOfNodes() > 1 || forCarbon_limitedGrowth) && notSeed) { //&& notBulb
         if ((ot < 0) || (ot == this->organType())) {
             v.push_back(shared_from_this());
         }

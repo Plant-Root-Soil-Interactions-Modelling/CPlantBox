@@ -15,32 +15,21 @@ namespace CPlantBox {
 class Plant;
 
 /**
- * @brief A single grass leaf organ whose geometry is described by a Meristem polyline.
+ * @brief A grass leaf organ whose geometry is described by a Meristem polyline.
  *
  * The polyline is built by prepending nodes with addNodeFront():
+ *  - Sheath segments grow upward relative to the stem until @c sheathLength is reached.
+ *  - After a @c bladeDelay waiting period, blade segments are prepended with a @c bladeAngle yaw.
  *
- *  - The first segment(s) added describe the **sheath** (the part wrapped around
- *    the stem); they grow upward relative to the stem.
- *  - Once the sheath is complete, subsequent segments describe the **midrib** (blade),
- *    which emerges at the ligule and bends outward with the blade angle.
- *
- * During simulate() the leaf advances through three phases:
- *  1. Sheath elongation  – sheath nodes are prepended until sheathLength is reached.
- *  2. Blade delay        – a waiting period before blade emergence.
- *  3. Blade elongation   – blade nodes are prepended until bladeLength is reached.
- *
- * getNode(i) delegates to the internal Meristem, returning Cartesian coordinates
- * by replaying turtle commands from the anchor.
+ * Growth phases in simulate():
+ *  1. Sheath elongation  – nodes prepended until @c sheathLength is reached.
+ *  2. Blade delay        – waiting period @c bladeDelay after sheath completion.
+ *  3. Blade elongation   – nodes prepended until @c bladeLength is reached.
  */
 class GrassLeaf : public Organ
 {
 public:
 
-    // ------------------------------------------------------------------ //
-    //  Constructors
-    // ------------------------------------------------------------------ //
-
-    /// Restoration constructor (used when loading from file / copy).
     GrassLeaf(int id,
               std::shared_ptr<const OrganSpecificParameter> param,
               bool alive, bool active,
@@ -48,31 +37,26 @@ public:
               Vector3d partialIHeading_,
               int pni,
               bool moved = false,
-              int oldNON = 0);
+              int oldNON = 0); ///< Restoration constructor; tree links and geometry must be set by the caller.
 
-    /// Simulation constructor – called by the plant during growth.
     GrassLeaf(std::shared_ptr<Organism> plant,
               int subtype,
               double delay,
               std::shared_ptr<Organ> parent,
-              int pni);
+              int pni); ///< Simulation constructor – called by the plant during growth.
 
     virtual ~GrassLeaf() {}
 
-    // ------------------------------------------------------------------ //
-    //  Organ interface
-    // ------------------------------------------------------------------ //
-
+  
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override;
 
     int organType() const override { return Organism::ot_leaf; }
 
     void simulate(double dt, bool verbose = false) override;
 
-    /// Returns Cartesian node i from the internal Meristem.
-    Vector3d getNode(int i) const override { return meristem.getNode(i); }
+    Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
 
-    int getNumberOfNodes() const { return meristem.size(); }
+    int getNumberOfNodes() const override { return meristem.size(); }
 
     double getParameter(std::string name) const override;
 
@@ -81,52 +65,25 @@ public:
     double calcLength(double age) override;
     double calcAge(double length) const override;
 
-    // ------------------------------------------------------------------ //
-    //  Grass-leaf specific accessors
-    // ------------------------------------------------------------------ //
+    double getSheathLength() const { return sheathLengthGrown; }      ///< Returns the current sheath length grown so far [cm].
+    double getBladeLengthGrown() const { return bladeLengthGrown; }   ///< Returns the current blade length grown so far [cm].
+    bool isSheathComplete() const { return sheathLengthGrown >= param()->sheathLength; } ///< True once the sheath phase is complete.
+    bool isBladeEmerged() const { return isSheathComplete() && (age >= param()->bladeDelay + calcAgeAtSheathComplete()); } ///< True once the blade delay has elapsed.
 
-    /// Returns the current sheath length grown so far [cm].
-    double getSheathLength() const { return sheathLengthGrown; }
-
-    /// Returns the current blade length grown so far [cm].
-    double getBladeLengthGrown() const { return bladeLengthGrown; }
-
-    /// True once the sheath phase is complete.
-    bool isSheathComplete() const { return sheathLengthGrown >= param()->sheathLength; }
-
-    /// True once the blade delay has elapsed.
-    bool isBladeEmerged() const { return isSheathComplete() && (age >= param()->bladeDelay + calcAgeAtSheathComplete()); }
-
-    /// Read-only access to the underlying meristem.
-    const Meristem& getMeristem() const { return meristem; }
-
-    // ------------------------------------------------------------------ //
-    //  Parameter convenience
-    // ------------------------------------------------------------------ //
+    const Meristem& getMeristem() const { return meristem; } ///< Read-only access to the underlying meristem.
 
     std::shared_ptr<GrassLeafRandomParameter> getGrassLeafRandomParameter() const;
     std::shared_ptr<const GrassLeafSpecificParameter> param() const;
 
 private:
 
-    // ------------------------------------------------------------------ //
-    //  Internal helpers
-    // ------------------------------------------------------------------ //
+    double calcAgeAtSheathComplete() const; ///< Age at which sheath elongation completes (approximate, from growth function).
 
-    /// Age at which sheath elongation completes (approximate, from growth function).
-    double calcAgeAtSheathComplete() const;
+    void growSheath(double dl, double dt); ///< Grows the sheath by dl [cm] by prepending nodes into the Meristem.
+    void growBlade(double dl, double dt);  ///< Grows the blade by dl [cm] by prepending nodes into the Meristem.
+    void addMeristemNodes(double dl, double yaw, double dt); ///< Subdivides dl into dx()-sized segments and prepends each as a meristem node; residual < dxMin() is stored in epsilonDx.
 
-    /// Grows the sheath by dl [cm] by prepending nodes into the Meristem.
-    void growSheath(double dl);
-
-    /// Grows the blade by dl [cm] by prepending nodes into the Meristem.
-    void growBlade(double dl);
-
-    // ------------------------------------------------------------------ //
-    //  State
-    // ------------------------------------------------------------------ //
-
-    Meristem meristem;             ///< Polyline of the entire leaf in turtle coordinates
+    mutable Meristem meristem;     ///< Polyline of the entire leaf in turtle coordinates
     double sheathLengthGrown = 0.; ///< Accumulated sheath length [cm]
     double bladeLengthGrown  = 0.; ///< Accumulated blade length [cm]
 };

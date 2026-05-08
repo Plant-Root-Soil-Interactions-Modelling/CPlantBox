@@ -453,11 +453,12 @@ private:
  *
  * Each segment is stored as a TurtleNode: three intrinsic rotations (yaw, pitch,
  * roll) applied to the local frame arriving at that node, followed by a forward
- * step of @c dist.  Node 0 is always the anchor (no movement from the initial
- * frame); subsequent nodes extend the polyline.
+ * step of @c dist.  Node 0 corresponds to deque entry 0 (the initial node);
+ * subsequent nodes extend the polyline.
  *
  * Cartesian coordinates are computed on demand by replaying the turtle commands
- * from the front of the deque.
+ * from the front of the deque.  The anchor is the turtle's starting position for
+ * playback and is not part of the public node indexing.
  *
  * Nodes can be appended at either end:
  *  - @c addNodeBack()  – grow the tip 
@@ -476,11 +477,13 @@ public:
     };
 
     /// Creates an empty meristem anchored at the origin with the default frame (H=+x, L=+y, U=+z).
-    Meristem() : anchor(Vector3d(0., 0., 0.)), anchorFrame(Matrix3d(1,0,0, 0,1,0, 0,0,1)) {}
+    Meristem() : anchor(Vector3d(0., 0., 0.)), anchorFrame(Matrix3d(1,0,0, 0,1,0, 0,0,1))
+        { nodes.push_back({0., 0., 0., 0.}); }
 
     /// Creates an empty meristem with an explicit anchor position and frame.
     Meristem(const Vector3d& anchorPos, const Matrix3d& frame)
-        : anchor(anchorPos), anchorFrame(frame) {}
+        : anchor(anchorPos), anchorFrame(frame)
+        { nodes.push_back({0., 0., 0., 0.}); }
 
     /**
      * Appends a new node at the back (tip) of the polyline.
@@ -505,22 +508,21 @@ public:
      */
     void addNodeFront(double dist, double yaw = 0., double pitch = 0., double roll = 0.) {
         nodes.push_front({yaw, pitch, roll, dist});
+        ++initialNodeIdx;
     }
 
-    /// Returns the number of nodes (including the implicit anchor node 0).
-    int size() const { return static_cast<int>(nodes.size()) + 1; }
+    /// Returns the number of nodes (equals the deque size).
+    int size() const { return static_cast<int>(nodes.size()); }
 
     /**
      * Returns the Cartesian position of node @p i.
      *
-     * Node 0 is the anchor.  Node k (k >= 1) is reached by replaying the first
-     * k turtle commands starting from the anchor.
+     * Node i is reached by replaying deque entries 0..i starting from the anchor.
      *
      * @param i  node index in [0, size()-1]
      */
     Vector3d getNode(int i) const {
         assert(i >= 0 && i < size());
-        if (i == 0) return anchor;
         Turtle3D t(anchor, anchorFrame);
         int idx = 0;
         for (const auto& n : nodes) {
@@ -528,17 +530,19 @@ public:
             t.pitchUp(n.pitch);
             t.rollLeft(n.roll);
             t.forward(n.dist);
-            ++idx;
             if (idx == i) break;
+            ++idx;
         }
         return t.getPosition();
     }
 
-    /// Returns all nodes as a vector of Cartesian positions.
+    /// Returns the TurtleNode at deque index @p i.
+    const TurtleNode& getTurtleNode(int i) const { return nodes.at(i); }
+
+    /// Returns all nodes as a vector of Cartesian positions (one per deque entry).
     std::vector<Vector3d> getPolyline() const {
         std::vector<Vector3d> pts;
         pts.reserve(size());
-        pts.push_back(anchor);
         Turtle3D t(anchor, anchorFrame);
         for (const auto& n : nodes) {
             t.turnLeft(n.yaw);
@@ -550,10 +554,13 @@ public:
         return pts;
     }
 
-    Vector3d getAnchor()      const { return anchor; }      ///< Anchor position (node 0)
+    Vector3d getAnchor()      const { return anchor; }      ///< Anchor position (turtle start; not a numbered node)
     Matrix3d getAnchorFrame() const { return anchorFrame; } ///< Coordinate frame at the anchor
     void setAnchor(const Vector3d& p)      { anchor = p; }
     void setAnchorFrame(const Matrix3d& f) { anchorFrame = f; }
+
+    /// Returns the deque index of the initial node (0 at construction; incremented by addNodeFront()).
+    int getInitialNodeIndex() const { return initialNodeIdx; }
 
     /// Direct read access to the raw turtle-node deque.
     const std::deque<TurtleNode>& getNodes() const { return nodes; }
@@ -570,9 +577,10 @@ public:
 
 private:
 
-    Vector3d anchor;          ///< Cartesian position of node 0
-    Matrix3d anchorFrame;     ///< Local frame at the anchor
+    Vector3d anchor;              ///< Cartesian position of node 0
+    Matrix3d anchorFrame;         ///< Local frame at the anchor
     std::deque<TurtleNode> nodes; ///< Turtle commands from base to tip
+    int initialNodeIdx = 0;       ///< Deque index of the initial {0,0,0,0} node; incremented by addNodeFront()
 };
 
 

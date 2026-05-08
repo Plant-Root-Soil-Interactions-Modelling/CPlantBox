@@ -265,8 +265,10 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getAnchorFrame", &Meristem::getAnchorFrame)
         .def("setAnchor",      &Meristem::setAnchor,      py::arg("p"))
         .def("setAnchorFrame", &Meristem::setAnchorFrame, py::arg("f"))
-        .def("getNodes",       &Meristem::getNodes)
-        .def("__str__",        &Meristem::toString);
+        .def("getNodes",            &Meristem::getNodes)
+        .def("getTurtleNode",       &Meristem::getTurtleNode,       py::arg("i"))
+        .def("getInitialNodeIndex", &Meristem::getInitialNodeIndex)
+        .def("__str__",             &Meristem::toString);
     py::class_<Meristem::TurtleNode>(meristemClass, "TurtleNode")
         .def(py::init<>())
         .def_readwrite("yaw",   &Meristem::TurtleNode::yaw)
