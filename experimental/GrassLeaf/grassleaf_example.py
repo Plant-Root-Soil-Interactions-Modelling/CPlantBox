@@ -79,7 +79,7 @@ gl_rp.bladeDelay = 1.0  # days after sheath complete
 gl_rp.bladeDelays = 0.0
 gl_rp.bladeDuration = 15.0  # days to full blade
 gl_rp.bladeDurations = 1.0
-gl_rp.f_gf = pb.LinearGrowth()  # for other organs these are set in initCallbacks from parameters
+gl_rp.f_gf = pb.LinearGrowth()  # for other organs this is set in initCallbacks() from parameters
 
 # gl_rp = pb.LeafRandomParameter(plant)
 # gl_rp.subType = 1
