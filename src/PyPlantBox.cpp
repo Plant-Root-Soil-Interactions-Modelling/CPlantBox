@@ -1056,6 +1056,7 @@ PYBIND11_MODULE(plantbox, m) {
                         .def("simulateSecondaryInfection", &MycorrhizalPlant::simulateSecondaryInfection)
                         .def("simulateInfection", &MycorrhizalPlant::simulateInfection)
                         .def("getAnastomosisPoints", &MycorrhizalPlant::getAnastomosisPoints)
+                        .def("getNodeTips", &MycorrhizalPlant::getNodeTips)
                         .def("getNodeInfectionTime", &MycorrhizalPlant::getNodeInfectionTime)
                         .def("getNodeInfections",&MycorrhizalPlant::getNodeInfections);
 

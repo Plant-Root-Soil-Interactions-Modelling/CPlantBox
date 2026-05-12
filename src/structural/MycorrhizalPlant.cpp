@@ -284,4 +284,13 @@ void MycorrhizalPlant::changeGeometry(int ot,std::shared_ptr<SignedDistanceFunct
         rp->f_tf = tropism; // set new one
     }
 };
+
+std::vector<int> MycorrhizalPlant::getNodeTips( int ot) const {
+    auto organs = getOrgans(ot);
+    std::vector<int> tips(getNumberOfNodes(),0);
+    for (const auto & o : organs) {
+        tips.at(o->getNodeId(o->getNumberOfNodes()-1)) = 1;
+    }
+    return tips;
+};
 }

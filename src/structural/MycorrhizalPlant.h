@@ -30,6 +30,7 @@ class MycorrhizalPlant :public Plant {
     virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
     virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
     virtual std::vector<int> getAnastomosisPoints(int ot) const; // returns Anastomosis Points
+    std::vector<int> getNodeTips(int ot) const;
 
     void initCallbacks() override;
 
