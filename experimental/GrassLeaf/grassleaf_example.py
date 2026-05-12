@@ -64,13 +64,13 @@ plant.setOrganRandomParameter(stem_rp)
 # -- GrassLeaf random parameters --
 gl_rp = pb.GrassLeafRandomParameter(plant)
 gl_rp.subType = 1
+gl_rp.a = 1  # ????
 gl_rp.bladeAngle = 0.4  # ~23 deg bend at ligule
 gl_rp.bladeAngles = 0.05
 gl_rp.bladeLength = 12.0  # cm
 gl_rp.bladeLengths = 1.0
 gl_rp.bladeWidth = 0.8  # cm
 gl_rp.bladeWidths = 0.05
-
 gl_rp.sheathLength = 6.0  # cm
 gl_rp.sheathLengths = 0.5
 gl_rp.sheathDuration = 8.0  # days
@@ -79,8 +79,17 @@ gl_rp.bladeDelay = 1.0  # days after sheath complete
 gl_rp.bladeDelays = 0.0
 gl_rp.bladeDuration = 15.0  # days to full blade
 gl_rp.bladeDurations = 1.0
+gl_rp.f_gf = pb.LinearGrowth()  # for other organs these are set in initCallbacks from parameters
+
+# gl_rp = pb.LeafRandomParameter(plant)
+# gl_rp.subType = 1
 plant.setOrganRandomParameter(gl_rp)
 
+
+# print(gl_rp.f_gf)
+# print(gl_rp.f_gf.getLength(5.0, 1.0, 1.0, None))  # example call to growth function
+# print("done")
+# ss
 
 # --------------------------------------------------------------------------- #
 #  2.  Initialise and run the simulation
@@ -105,12 +114,7 @@ for i in range(steps):
 organs = plant.getOrgans(pb.OrganTypes.leaf, True)
 print(f"\nFound {len(organs)} leaf organ(s)")
 
-for org in organs:
-    # Try to cast — if it is a GrassLeaf it will expose the extra accessors
-    try:
-        gl = pb.GrassLeaf(org)  # pybind11 upcasts automatically; just use org
-    except Exception:
-        gl = org
+for gl in organs:
 
     p = gl.param()
     print("\n--- GrassLeaf ---")
@@ -118,11 +122,14 @@ for org in organs:
     print(f"  total length   = {gl.getLength():.2f} cm")
     print(f"  sheathLength   = {gl.getSheathLength():.2f} / {p.sheathLength:.2f} cm")
     print(f"  bladeLengthGrown = {gl.getBladeLengthGrown():.2f} / {p.bladeLength:.2f} cm")
-    print(f"  sheathComplete = {gl.isSheathComplete()}")
-    print(f"  bladeEmerged   = {gl.isBladeEmerged()}")
     print(f"  nodes          = {gl.getNumberOfNodes()}")
+    print(gl.getParent().getNode(gl.parentNI))  # parent node where leaf is attached
+    print(gl.getNode(0))  # base node
 
-vp.plot_plant(plant, "age")
+ana = pb.SegmentAnalyser(plant)
+ana.addAge(total_days)
+# vp.plot_roots(ana, "age")  # plot roots only |\label{l13:plot_roots}|
+vp.plot_plant(ana, "age")
 
 # --------------------------------------------------------------------------- #
 #  4.  Step-by-step time series for ONE leaf (first one found)

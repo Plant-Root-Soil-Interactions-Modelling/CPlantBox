@@ -6,6 +6,7 @@
 #include "Organism.h"
 #include "grassleafparameter.h"
 #include "mymath.h"
+#include "Plant.h"
 
 #include <memory>
 #include <string>
@@ -54,6 +55,9 @@ public:
 
     void simulate(double dt, bool verbose = false) override;
 
+    void abs2rel() override {} ///< No-op: GrassLeaf geometry is meristem-managed, not nodes-based.
+    void rel2abs() override {} ///< No-op: GrassLeaf geometry is meristem-managed, not nodes-based.
+
     Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
 
     int getNumberOfNodes() const override { return meristem.size(); }
@@ -70,21 +74,16 @@ public:
 
     double getSheathLength() const { return sheathLengthGrown; }      ///< Returns the current sheath length grown so far [cm].
     double getBladeLengthGrown() const { return bladeLengthGrown; }   ///< Returns the current blade length grown so far [cm].
-    bool isSheathComplete() const { return sheathLengthGrown >= param()->sheathLength; } ///< True once the sheath phase is complete.
-    bool isBladeEmerged() const { return isSheathComplete() && (age >= param()->bladeDelay + calcAgeAtSheathComplete()); } ///< True once the blade delay has elapsed.
-
-    const Meristem& getMeristem() const { return meristem; } ///< Read-only access to the underlying meristem.
+    bool isSheathComplete() const { return age >= param()->sheathDuration; } ///< True once the sheath phase is complete.
+    bool isBladeEmerged() const { return (age >= param()->bladeDelay); } ///< True once the blade delay has elapsed.
 
     std::shared_ptr<GrassLeafRandomParameter> getGrassLeafRandomParameter() const;
     std::shared_ptr<const GrassLeafSpecificParameter> param() const;
 
 private:
 
-    double calcAgeAtSheathComplete() const; ///< Age at which sheath elongation completes (approximate, from growth function).
-
     void growSheath(double dl, double dt); ///< Grows the sheath by dl [cm] by prepending nodes into the Meristem.
     void growBlade(double dl, double dt);  ///< Grows the blade by dl [cm] by prepending nodes into the Meristem.
-    void addSheathNodes(double dl, double yaw, double dt); ///< Subdivides dl into dx()-sized segments and prepends each as a meristem node; residual < dxMin() is stored in epsilonDx.
 
     mutable Meristem meristem;     ///< Polyline of the entire leaf in turtle coordinates
     double sheathLengthGrown = 0.; ///< Accumulated sheath length [cm]

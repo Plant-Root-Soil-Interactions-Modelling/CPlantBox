@@ -14,6 +14,7 @@ namespace py = pybind11;
 #include "Organism.h"
 #include "soil.h"
 #include "tropism.h"
+#include "growth.h"
 
 #include "rootparameter.h"
 #include "seedparameter.h"
@@ -57,6 +58,7 @@ namespace CPlantBox {
  * Are required for all base classes that can be derived in Python, currently
  * Tropism
  * SoilLookUp
+ * GrowthFunction
  */
 class PyTropism : public Tropism {
 public:
@@ -74,6 +76,22 @@ public:
 
     double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> organ = nullptr) override
     { PYBIND11_OVERLOAD( double, Tropism, tropismObjective, pos, old, a, b, dx, organ ); }
+
+};
+
+class PyGrowthFunction : public GrowthFunction {
+public:
+
+    using GrowthFunction::GrowthFunction; /* Inherit the constructors */
+
+    double getLength(double t, double r, double k, std::shared_ptr<Organ> organ) const override
+    { PYBIND11_OVERLOAD( double, GrowthFunction, getLength, t, r, k, organ ); }
+
+    double getAge(double l, double r, double k, std::shared_ptr<const Organ> organ) const override
+    { PYBIND11_OVERLOAD( double, GrowthFunction, getAge, l, r, k, organ ); }
+
+    std::shared_ptr<GrowthFunction> copy() const override
+    { PYBIND11_OVERLOAD( std::shared_ptr<GrowthFunction>, GrowthFunction, copy ); }
 
 };
 
@@ -566,9 +584,30 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<std::shared_ptr<Organism>,double, double>());
     py::class_<Hydrotropism, Tropism, std::shared_ptr<Hydrotropism>>(m, "Hydrotropism")
             .def(py::init<std::shared_ptr<Organism>,double, double, std::shared_ptr<SoilLookUp>>());
-    //    py::class_<CombinedTropism, Tropism>(m, "CombinedTropism") // Todo constructors needs some extra work (?)
-    //        .def(py::init<>());
-    // todo antigravi, twist ...
+    /*
+     * growth.h
+     */
+    py::class_<GrowthFunction, PyGrowthFunction, std::shared_ptr<GrowthFunction>>(m, "GrowthFunction")
+            .def(py::init<>())
+            .def("getLength", &GrowthFunction::getLength, py::arg("t"), py::arg("r"), py::arg("k"), py::arg("organ"))
+            .def("getAge", &GrowthFunction::getAge, py::arg("l"), py::arg("r"), py::arg("k"), py::arg("organ"))
+            .def("copy", &GrowthFunction::copy)
+            .def_readwrite("CW_Gr", &GrowthFunction::CW_Gr);
+    py::class_<LinearGrowth, GrowthFunction, std::shared_ptr<LinearGrowth>>(m, "LinearGrowth")
+            .def(py::init<>())
+            .def("getLength", &LinearGrowth::getLength, py::arg("t"), py::arg("r"), py::arg("k"), py::arg("organ"))
+            .def("getAge", &LinearGrowth::getAge, py::arg("l"), py::arg("r"), py::arg("k"), py::arg("organ"))
+            .def("copy", &LinearGrowth::copy);
+    py::class_<ExponentialGrowth, GrowthFunction, std::shared_ptr<ExponentialGrowth>>(m, "ExponentialGrowth")
+            .def(py::init<>())
+            .def("getLength", &ExponentialGrowth::getLength, py::arg("t"), py::arg("r"), py::arg("k"), py::arg("organ"))
+            .def("getAge", &ExponentialGrowth::getAge, py::arg("l"), py::arg("r"), py::arg("k"), py::arg("organ"))
+            .def("copy", &ExponentialGrowth::copy);
+    py::class_<CWLimitedGrowth, ExponentialGrowth, std::shared_ptr<CWLimitedGrowth>>(m, "CWLimitedGrowth")
+            .def(py::init<>())
+            .def("getLength", &CWLimitedGrowth::getLength, py::arg("t"), py::arg("r"), py::arg("k"), py::arg("organ"))
+            .def("getAge", &CWLimitedGrowth::getAge, py::arg("l"), py::arg("r"), py::arg("k"), py::arg("organ"))
+            .def("copy", &CWLimitedGrowth::copy);
     /*
      * analysis.h
      */
@@ -927,15 +966,14 @@ PYBIND11_MODULE(plantbox, m) {
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
         .def("simulate",    &GrassLeaf::simulate,    py::arg("dt"), py::arg("verbose") = false)
-        .def("calcLength",  &GrassLeaf::calcLength,  py::arg("age"))
-        .def("calcAge",     &GrassLeaf::calcAge,     py::arg("length"))
+        .def("calcLength",  py::overload_cast<double, double, double>(&GrassLeaf::calcLength), py::arg("age"), py::arg("k"), py::arg("r"))
+        .def("calcAge",     py::overload_cast<double, double, double>(&GrassLeaf::calcAge),    py::arg("length"), py::arg("k"), py::arg("r"))
         .def("getGrassLeafRandomParameter", &GrassLeaf::getGrassLeafRandomParameter)
         .def("param",       &GrassLeaf::param)
         .def("getSheathLength",    &GrassLeaf::getSheathLength)
         .def("getBladeLengthGrown",&GrassLeaf::getBladeLengthGrown)
         .def("isSheathComplete",   &GrassLeaf::isSheathComplete)
         .def("isBladeEmerged",     &GrassLeaf::isBladeEmerged)
-        .def("getMeristem",        &GrassLeaf::getMeristem, py::return_value_policy::reference_internal)
         .def("__str__",     &GrassLeaf::toString);
     /**
      * Stem.h

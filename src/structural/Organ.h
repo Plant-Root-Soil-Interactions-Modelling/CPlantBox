@@ -97,8 +97,8 @@ class Organ : public std::enable_shared_from_this<Organ> {
 
     double dx() const;                                 ///< Returns the maximal axial segment length from the organ random parameter [cm]
     double dxMin() const;                              ///< Returns the minimal axial segment length from the organ random parameter [cm]
-    void rel2abs();                                    ///< Converts node coordinates from relative to absolute (recursive over children)
-    void abs2rel();                                    ///< Converts node coordinates from absolute to relative (recursive over children)
+    virtual void rel2abs();                            ///< Converts node coordinates from relative to absolute (recursive over children)
+    virtual void abs2rel();                            ///< Converts node coordinates from absolute to relative (recursive over children)
     void moveOrigin(int idx);                          ///< Updates the parent attachment node index (used during internodal growth)
     double calcCreationTime(double length, double dt); ///< Returns the analytical creation time of a node at @p length along the organ [days]
 

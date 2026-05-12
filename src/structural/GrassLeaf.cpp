@@ -93,9 +93,10 @@ void GrassLeaf::simulate(double dt, bool verbose) {
     if (active) {
 
         double age_ = calcAge(sheathLengthGrown, p.sheathLength, p.sheathLength/p.sheathDuration); 
-        double targetSheathLength = calcLength(age_ + dt_, p.sheathLength, p.sheathLength/p.sheathDuration) + this->epsilonDx;
+        double targetSheathLength = calcLength(age_ + dt_, p.sheathLength, p.sheathLength/p.sheathDuration) + this->epsilonDx;        
         double dl = targetSheathLength - sheathLengthGrown; 
         if (dl > 0.) {
+            this->epsilonDx = 0; // its in dl already
             growSheath(dl, dt);
         }
 
@@ -159,55 +160,13 @@ std::shared_ptr<GrassLeafRandomParameter> GrassLeaf::getGrassLeafRandomParameter
 std::shared_ptr<const GrassLeafSpecificParameter> GrassLeaf::param() const { return std::dynamic_pointer_cast<const GrassLeafSpecificParameter>(param_); }
 
 /**
- * @brief Returns the organ age at which sheath elongation completes.
- */
-double GrassLeaf::calcAgeAtSheathComplete() const {
-    const GrassLeafSpecificParameter &p = *param();
-    double sheathRate = (p.sheathDuration > 0.) ? p.sheathLength / p.sheathDuration : 1e9;
-    return p.sheathLength / sheathRate;
-}
-
-/**
  * @brief Grows the sheath by @p dl [cm]; subdivides into dx()-sized segments via addMeristemNodes().
  */
 void GrassLeaf::growSheath(double dl, double dt) {
-    sheathLengthGrown += dl;
-    addSheathNodes(dl, 0., dt);
-}
 
-/**
- * @brief Grows the blade by @p dl [cm]; applies bladeAngle yaw on the first segment, then subdivides via addMeristemNodes().
- */
-void GrassLeaf::growBlade(double dl, double dt) {
-    const GrassLeafSpecificParameter &p = *param();
-    double yaw = (bladeLengthGrown == 0.) ? p.bladeAngle : 0.; // blade angle only on first segment
-    bladeLengthGrown += dl;
-    addSheathNodes(dl, yaw, dt);
-}
+    const GrassLeafSpecificParameter &p = *param(); 
 
-/**
- * @brief Subdivides @p dl into dx()-sized segments and prepends each as a meristem node.
- *
- * Mirrors the logic of Organ::createSegments:
- *  - Full segments of length dx() are prepended first.
- *  - The remaining piece is prepended only if it is >= dxMin(); otherwise it
- *    is accumulated in epsilonDx and prepended in a future time step.
- *  - @p yaw is applied only to the innermost (first-prepended) segment; all
- *    subsequent segments are straight.
- *  - nodeId and creation time are recorded for each node, compatible with
- *    Organ::nodeIds / Organ::nodeCTs conventions.
- *
- * @param dl   Total length to add [cm].
- * @param yaw  Yaw rotation [rad] for the innermost new segment (0 = straight).
- * @param dt   Current time step [days]; used for creation-time interpolation.
- */
-void GrassLeaf::addSheathNodes(double dl, double yaw, double dt) {
-    if (dl <= 0.)
-        return;
-
-    double baseCT = nodeCTs.at(meristem.getInitialNodeIndex());
-    double totalLen = sheathLengthGrown; // already updated by caller
-    double accLen = totalLen - dl;                          // length before this call
+    double baseCT = nodeCTs[meristem.getInitialNodeIndex()]; // organ creation time 
 
     int n = static_cast<int>(std::floor(dl / dx()));
     double last = dl - n * dx(); // if last piece is below dxMin, absorb it into epsilonDx and skip
@@ -217,24 +176,32 @@ void GrassLeaf::addSheathNodes(double dl, double yaw, double dt) {
     } else {
         epsilonDx = 0.;
     }
-
     int nSegs = n + (addLast ? 1 : 0);
+    
     // prepend in reverse order so that node 0 ends up as the new base
     for (int i = nSegs - 1; i >= 0; --i) {
         double sdx = (i < n) ? dx() : last;
-        accLen += sdx;
-        double age_ = calcAge(std::max(accLen, 0.));
-        double a = std::min(std::max(age_, age - dt), age);
+        sheathLengthGrown += sdx;
+        double age_ = calcAge(sheathLengthGrown, p.sheathLength, p.sheathLength/p.sheathDuration);
+        double a = std::min(std::max(age_, age - dt), age);        
         double ct = a + baseCT;
         int nid = plant.lock()->getNodeIndex();
-        double segYaw = (i == nSegs - 1) ? yaw : 0.; // yaw only on innermost segment
-        meristem.addNodeFront(sdx, segYaw, 0., 0.);
+        meristem.addNodeFront(sdx, 0., 0., 0.);
         nodeIds.insert(nodeIds.begin(), nid);
         nodeCTs.insert(nodeCTs.begin(), ct);
     }
+
 }
 
-
+/**
+ * @brief Grows the blade by @p dl [cm]; applies bladeAngle yaw on the first segment, then subdivides via addMeristemNodes().
+ */
+void GrassLeaf::growBlade(double dl, double dt) {
+    const GrassLeafSpecificParameter &p = *param();
+    double yaw = (bladeLengthGrown == 0.) ? p.bladeAngle : 0.; // blade angle only on first segment
+    bladeLengthGrown += dl;
+    // TODO
+}
 
 
 double GrassLeaf::calcLength(double length, double k, double r) {
