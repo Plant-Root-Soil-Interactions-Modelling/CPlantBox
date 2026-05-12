@@ -12,7 +12,7 @@ import plantbox.functional.van_genuchten as vg
 from rosi.richards_flat import RichardsFlatWrapper as RichardsWrapper  # Python part, macroscopic soil model
 #from richards import RichardsWrapper  # Python part
 from rosi.richards_no_mpi import RichardsNoMPIWrapper  # Python part of cylindrcial
-from rosi.rosi_richardsnc_cyl import RichardsNCCylFoam as RichardsNC_cyl # C++ part (Dumux binding), macroscopic soil model
+from rosi.rosi_richardsnc_cyl import RichardsNCCylFoam # C++ part (Dumux binding), macroscopic soil model
 #from rosi_richardsnc_cyl import RichardsNCCylFoam as RichardsNC_cyl  # C++ part (Dumux binding)
 from rosi_richards22c import RichardsNCSPILU as RichardsNCSP #test
 
@@ -20,6 +20,7 @@ import Perirhizal
 import pandas as pd
 import numpy as np
 import time
+import math
 
 # run the dumux implementation of root water and nitrate uptake an then compare it to the alpha omega model
 
@@ -28,7 +29,7 @@ do_computation = True #should the computation be run or take the data from a sav
 
 # general parameters
 
-max_time = 10 #d
+max_time = 1 #d
 n_times = 100 # number of time intervals
 times = np.linspace(0,max_time,n_times)[1:]
 r_prhiz = 1 # cm
@@ -36,6 +37,8 @@ r_root = 0.02 # cm
 rho = r_prhiz / r_root
 NC = 101 # number of spatial discretisations
 n_sp = NC - 1
+
+length = 3 #cm?
 
 dt = max_time / n_times
 
@@ -141,7 +144,7 @@ def run_perirhizal_test():
     
     # determine some random parameters
     initial_waterpotential = -100 + np.random.rand() * 50 #cm3/cm3 #or choose an initial pressure head?
-    initial_soluteconcentration = 1e-6*(1.0+np.random.rand()) #mol/cm3 #TODO: lookup realistic concnetration, maybe 10 times the Michaelis Menten half saturation?
+    initial_soluteconcentration = 1e-6*(1.0+np.random.rand()) #g/cm3 #TODO: lookup realistic concnetration, maybe 10 times the Michaelis Menten half saturation?
     print("initial_soluteconcentration",initial_soluteconcentration)
     
     # root conductivity and solute uptake parameters, it is chosen to be constant throughout the entire simulation time
@@ -167,223 +170,134 @@ def run_perirhizal_test():
                                   NC, base = lb)
     CC = np.array([(points[i] + points[i+1])/2 for i in range(len(points)-1)])
 
-    
+    simtimes = np.linspace(max_time/n_times,max_time,n_times).tolist() # days #TODO remove
 
     # initialise the dumux model
-    print("test0")
-    #cyl = RichardsNoMPIWrapper(RichardsNCCylFoam())
-    cyl = RichardsWrapper(RichardsNC_cyl())
-    cyl = load_constants(cyl)
-    soilTexture = getSoilTextureAndShape(cyl, soilVG)
-    print("test005")
-   # cyl = RichardsNoMPIWrapper(RichardsNC_cyl())
-    c2 = [cyl.mlFr * CC[i] for i in range(NC-1)]
-    #cyl = RichardsWrapper(RichardsCylFoam())
-    #cyl.initialize()
-    cyl.createGrid1d(points)
-    initial=-10
-    cyl.setHomogeneousIC(initial)  # cm pressure head
-    #cyl.setICZ_solute(cyl.dumux_str([q for q in c2]))
-    cyl.setICZ_solute(str([q for q in c2]))
-    print("test006")
-    cyl.initialize()
-    
-    cyl.setVGParameters([soilVG])
-    cyl.setOuterBC("fluxCyl", 0.)  # [cm/day]
-    cyl.setInnerBC("fluxCyl", 0.)  # [cm/day]
-    print("test007")
-    #cyl.initializeProblem()
-    cyl.maxDt = 3500/(3600*24) # soilModel.maxDt_1DS
-    #cyl.setParameter("Soil.mucilCAffectsW", "true")
-    cyl.setParameter("Problem.verbose", "0")
-    cyl.setParameter("Newton.Verbosity", "0")
-    cyl.initializeProblem(maxDt=cyl.maxDt ) 
-    print("test008")
-    critP=-15000
-    cyl.setCriticalPressure(critP)  # cm pressure head
-    #cyls.append(cyl)
-    print("test0.1")
-    seg_length = 1 #cm
-    
-    if True:
-        cyl.setParameter("Newton.EnableResidualCriterion", "true") # sometimes helps, sometimes makes things worse
-        cyl.setParameter("Newton.EnableAbsoluteResidualCriterion", "true")
-        cyl.setParameter("Newton.SatisfyResidualAndShiftCriterion", "true")
-        cyl.setParameter("Newton.MaxRelativeShift", "1e-9")# reset value
-    #cyl.initialize(verbose = False) # No parameter file found. Continuing without parameter file.
-    #cyl.initialize()
-    print("test1")
-    #cyl.initializeProblem(maxDt=cyl.maxDt )
-    cyl = load_constants(cyl)
-    soilTexture = getSoilTextureAndShape(cyl, soilVG)
-    
-    c2 = [cyl.mlFr * CC[i] for i in range(NC-1)]
-    
-    cyl.createGrid1d(points)# cm
-    cyl.doSoluteFlow = True
-    cyl.noAds = False
-    
-    #set soil parameters
-    cyl.solidDensity = soilTexture['solidDensity'] #[kg/m^3 solid]
-    cyl.solidMolarMass = soilTexture['solidMolarMass']# [kg/mol]
-    cyl.soil =  soilTexture['soilVG']
+    s = RichardsWrapper(RichardsNCCylFoam())
 
-    cyl.setParameter( "Soil.MolarMass", str(cyl.solidMolarMass))
-    cyl.setParameter( "Soil.solidDensity", str(cyl.solidDensity))
-    #cyl.setVGParameters([cyl.soil])
+    s.initialize()
+    s.createGrid1d(np.linspace(r_root, r_prhiz, NC))  # [cm]
+    s.setVGParameters([soilVG])
 
-    minD=1.0e-12#minimal diffusion coefficient, I think this will be numerically good
-    #cyl.setParameter("1.Component.LiquidDiffusionCoefficient", str(DS_W/10000+minD)) #cm^2/s -> m^2/s
-    #todo: reactivate the diffusion coefficient
+    # theta = 0.378, benchmark is set be nearly fully saturated, so we don't care too much about the specific values
+    s.setHomogeneousIC(initial_waterpotential)  # cm pressure head
+
+    s.setTopBC("constantFluxCyl",0.0)  #  [cm/day] "noFlux")#
+    s.setBotBC("constantFluxCyl",0.0) # "noFlux")#
+    s.setParameter("Soil.BC.Top.SType", "3")  # michaelisMenten=8 (SType = Solute Type)
+    s.setParameter("Soil.BC.Top.CValue", "0.0")  # michaelisMenten=8 (SType = Solute Type)
+    s.setParameter("Soil.BC.Bot.SType", "3")  # michaelisMenten=8 (SType = Solute Type)
+    s.setParameter("Soil.BC.Bot.CValue", "0.0")
+
+    s.setParameter("Soil.IC.C", str(initial_soluteconcentration))  # g / cm3  # TODO specialised setter?
+
+    s.setParameter("Component.MolarMass", "1.8e-2") 
+
+    s.setParameter("Component.LiquidDiffusionCoefficient", str(Ds))  # m2 s-1
+    s.initializeProblem(maxDt = 0.01)
+
+    cellVolumes = s.getCellSurfacesCyl() * length # cm3
+    print(s)
+
+    s.ddt = 1.e-3  # days
+
+    simtimes.insert(0, 0)
+    dt_ = np.diff(simtimes)
     
-    #set michaelis menten uptake parameters
-    cyl.setParameter("RootSystem.Uptake.Vmax", str(Vmax))
-    cyl.setParameter("RootSystem.Uptake.Km", str(Km))
-    
-    #cyl = setSoilParam(cyl,paramSet) # here the soil parameters are set out of paramSet
-    #cyl = setBiochemParam(cyl,paramSet) # here the biochemical parameters are set out of paramSet
-    print("test2") 
-    #cyl.initializeProblem(maxDt=cyl.maxDt )    
-    doCells = False
-    if doCells:
-        Cells = (cyl.getCellCenters_().reshape(-1))
-    else:
-        Cells = []
-    cyl.setParameter("Flux.UpwindWeight", "1")
-    cyl.setParameter("SpatialParams.Temperature","293.15") # todo: redefine at each time step
-    cyl.setParameter("Soil.BC.dzScaling", "1")
-    #cyl.setParameter( "Soil.css1Function", str(9)) # todo: can I activate this?
-    cyl.setParameter("Problem.verbose", "0")
-    cyl.setParameter("Problem.reactionExclusive", "0")
-    cyl.setParameter("Soil.CriticalPressure", str(-15000))
-    cyl.seg_length = seg_length
-    cyl.setParameter("Problem.segLength", str(seg_length))   # cm
-    cyl.l = seg_length
-    cyl.setParameter( "Soil.Grid.Cells",str( NC-1)) # -1 to go from vertices to cell (dof) # I am unsure what this comment means
-    cyl.setParameter("Newton.MaxTimeStepDivisions",
-                str( 100) )
-    cyl.setParameter("Newton.MaxSteps",
-                str( 100) )
-    cyl.setParameter("Newton.EnableChop", "true")
-    print("test3")
-    #cyl.initializeProblem(maxDt=cyl.maxDt )
-    #boundary conditions
-    #water
-    cyl.setParameter( "Soil.BC.Bot.Type", str(int(3)))
-    cyl.setParameter( "Soil.BC.Top.Type", str(int(3)))
-    cyl.setParameter( "Soil.BC.Bot.Value", str(0.0)) #will be prescribed at each timestep
-    cyl.setParameter( "Soil.BC.Top.Value", str(0.0))
-    print("test3.1")
-    #solutes
-    cyl.setParameter( "Soil.BC.Bot.SType", str(int(3))) # TODO change this to 8 as Michaelis mnetne
-    cyl.setParameter( "Soil.BC.Top.SType", str(int(3)))
-    cyl.setParameter( "Soil.BC.Bot.CValue", str(0.0)) #Michaelis Menten parameters are set elsewhere
-    cyl.setParameter( "Soil.BC.Top.CValue", str(0.0))
-    
-    print("test3.2")
-    #cyl.initializeProblem(maxDt=cyl.maxDt )
-    
-    #initial conditions
-    cyl.setHomogeneousIC(initial_waterpotential)
-    #cyl.setParameter("Soil.IC.P", cyl.dumux_str(initial_waterpotential))# cm #this is where the initial matrix potential and with it the water content are set
-    #molar_fraction = initial_soluteconcentration / 62 * 18 /1 # / molar mass NO3 * molarMass Water
-    #print("molar_fraction",molar_fraction)
-    #cyl.setICZ_solute(c=[molar_fraction])
-    theta = 0.3 #change this after testing
-    c2 = [cyl.mlFr * initial_soluteconcentration/cyl.mg_per_molC*cyl.masspercm3/theta for i in range(NC-1)]
-    #mlFr*paramSet['Soil.IC.C1']/cyl.mg_per_molC*masspercm3/theta
-    temp = np.array(c2)*initial_soluteconcentration
-    #temp2 = cyl.dumux_str(temp.tolist())
-    temp2 = cyl.dumux_str(c2)
-    #cyl.initializeProblem(maxDt=cyl.maxDt )
-    print("IC",temp2)
-    #cyl.initialize()
-    #cyl.initializeProblem(maxDt=cyl.maxDt )
-    #
-    #cyl.initialize()
-    #cyl.setParameter("Soil.IC.C1",cyl.dumux_str([q for q in c2]))
-    #cyl.setParameter("Soil.IC.C", temp2)# cm #does this work without spatial resolution
-    #cyl.setParameter("Soil.IC.C", initial_soluteconcentration)# cm #does this work without spatial resolution
-    
-    print("test3.3")
-    cyl.initializeProblem(maxDt=cyl.maxDt )
-    
-    if len(Cells) > 0:#in case we update a cylinder, to allow dumux to do interpolation
-        assert(len(c2)==len(Cells))
-        CellsStr = cyl.dumux_str(Cells/100)#cm -> m #changed by Erik
-        cyl.setParameter("Soil.IC.Z",CellsStr)# m
-        if len(Cells)!= len(x):
-            print("Cells, x",Cells, x, len(Cells), len(x))
-            raise Exception
-         
-        #j = 2
-        for j in range( 1, cyl.numComp):
-            cyl.setParameter("Soil.IC.C"+str(j)+"Z",CellsStr) # m
-        if len(Cells)!= len( c2):
-            print("Cells,  cAll[j-1]",Cells,  c2,
-                    len(Cells), len(c2), j)
-            raise Exception
-    print("test3.4")
-    cyl.maxDt = 3500/(3600*24) # soilModel.maxDt_1DS
-    #cyl.setParameter("Soil.mucilCAffectsW", "true")
-    cyl.setParameter("Problem.verbose", "0")
-    cyl.setParameter("Newton.Verbosity", "0")
-    cyl.initializeProblem(maxDt=cyl.maxDt ) 
+    for r, dt in enumerate(dt_):
         
-    #cyl.setParameter("Problem.doNeffect","true") 
 
-    cyl.eps_regularization = 1e-14
-    #cyl.setRegularisation(cyl.eps_regularization, cyl.eps_regularization)
-    #which one is the relative error?
-    #pcEps    capillary pressure regularisation, krEps 	relative permeabiltiy regularisation
-    #default 1e-6, 1e-6
-    cyl.setRegularisation(cyl.eps_regularization, cyl.eps_regularization)
+        time = simtimes[r] 
+        print('time',time)
+            
+        #if time >= 5:
+        #    s.setSoluteTopBC([1], [0.])
+        print("*****", "#", r, "external time step", dt, " d, simulation time", s.simTime, "d, internal time step", s.ddt, "d")
 
-    cyl.setCriticalPressure(-15000)  # cm pressure head
-    #cyl = setInitialConditions(cyl,paramSet)
-
-    # run the dumux model
-    #get water and solute next to the root
-    print("test3.5")
-    current_rs_potential = cyl.getSolutionHead() #todo rmeove
-    print(current_rs_potential[0])
-    print("test3.6")
-    #current_rs_potential = current_rs_potential[0]
-    current_rs_potential = initial_waterpotential
-    print("test3.7")
-    current_rs_concentration = cyl.getSolution(1) * cyl.rhoWM # todo remove
-    print(current_rs_concentration)
-    print(current_rs_concentration[0])
-    print("test3.8")
-    #current_rs_concentration = current_rs_concentration[0]
-    current_rs_concentration = initial_soluteconcentration
-    print("test4")
-    for i in range(n_times):
-        rx = rx_t(i*dt)
+        Wvolbefore = cellVolumes * s.getWaterContent() # cm3
+        Smassbefore = s.getSolution(1) * Wvolbefore # g
+        
         #model root water uptake 
+        rx = rx_t(i*dt)
+        current_rs_potential = s.getSolutionHead()
+        water_dumux[i,1:] = vg.water_content(current_rs_potential,peri.sp)
+        current_rs_potential = current_rs_potential[0]
         root_wateruptake = root_conductivity * (rx - current_rs_potential)
         water_dumux[i,0] = root_wateruptake
-        cyl.setParameter( "Soil.BC.Bot.Value", str(root_wateruptake))
+        #s.setParameter( "Soil.BC.Bot.Value", str(root_wateruptake))
         
-        #model root solute uptake 
+        #model root solute uptake
+        #note: solutes are given in g
+        current_rs_concentration = s.getSolution(0)
+        solute_dumux[i,1:] = current_rs_concentration
+        current_rs_concentration = current_rs_concentration[0]
         root_soluteuptake = Vmax * current_rs_concentration * (Km + current_rs_concentration)
-        solute_dumux[i,0] = root_wateruptake
-        cyl.setParameter( "Soil.BC.Bot.Value", str(root_wateruptake)) #todo set BC solute
-        print("test5")
-        cyl.solve(dt)
+        solute_dumux[i,0] = root_soluteuptake
+        #s.setParameter( "Soil.BC.Bot.SValue", str(root_soluteuptake))
         
-        # save outputs of dumux
-        print("test6")
-        water_dumux[i,1:] = cyl.getWaterContent()
-        solute_dumux[i,1:] = cyl.getSolution(0)
+        s.solve(dt, saveInnerFluxes_ = True)
+        Wvolafter = cellVolumes*s.getWaterContent() # cm3
+        Smassafter = s.getSolution(1) * Wvolafter # g
         
-        mean_water = np.mean(water_dumux[i,1:])
-        mean_solutes = np.mean(solutes_dumux[i,1:])
+            
+        rootSoilFluxes = s.getInnerFlow(0, length) * dt # cm3
+        rootSoilFluxesS = s.getInnerFlow(1, length) * dt # g
+        soilSoilFluxes = s.getOuterFlow(0, length) * dt # cm3
+        soilSoilFluxesS = s.getOuterFlow(1, length) * dt # g
+        
+        # TODO: currently, setSource not properly implemented for richards and richards 2c
+        # so left out of the mass balance.
+        # scvSources = s.getSource(0) * cellVolumes * dt # cm3
+        # scvSourcesS = s.getSource(1) * cellVolumes * dt # kg
+        
+    # #cyl.initializeProblem(maxDt=cyl.maxDt )
+    # #boundary conditions
+    # #water
+    # cyl.setParameter( "Soil.BC.Bot.Type", str(int(3)))
+    # cyl.setParameter( "Soil.BC.Top.Type", str(int(3)))
+    # cyl.setParameter( "Soil.BC.Bot.Value", str(0.0)) #will be prescribed at each timestep
+    # cyl.setParameter( "Soil.BC.Top.Value", str(0.0))
+    
+    # #solutes
+    # s.setParameter( "Soil.BC.Bot.SType", str(int(3))) # TODO change this to 8 as Michaelis mnetne
+    # s.setParameter( "Soil.BC.Top.SType", str(int(3)))
+    # s.setParameter( "Soil.BC.Bot.CValue", str(0.0)) #Michaelis Menten parameters are set elsewhere
+    # s.setParameter( "Soil.BC.Top.CValue", str(0.0))
+    # print("test")
+    
+    # # run the dumux model
+    # #get water and solute next to the root
+    # current_rs_potential = s.getSolutionHead()[0] #todo rmeove
+    # print(current_rs_potential)
+    # current_rs_concentration = s.getSolution(1)[0] * s.rhoWM # todo remove
+    # print(current_rs_concentration[0])
+    # for i in range(n_times):
+        # rx = rx_t(i*dt)
+        # #model root water uptake 
+        # root_wateruptake = root_conductivity * (rx - current_rs_potential)
+        # water_dumux[i,0] = root_wateruptake
+        # #s.setParameter( "Soil.BC.Bot.Value", str(root_wateruptake))
+        # #s.setSource( 0, str(root_wateruptake)) #TODO activat ehtis
+        # print("test")
+        # #model root solute uptake 
+        # root_soluteuptake = Vmax * current_rs_concentration * (Km + current_rs_concentration)
+        # solute_dumux[i,0] = root_wateruptake
+        # #s.setParameter( "Soil.BC.Bot.Value", str(root_wateruptake)) #todo set BC solute
+        # print("test5")
+        # s.solve(dt)
+        
+        # # save outputs of dumux
+        # print("test6")
+        # water_dumux[i,1:] = cyl.getWaterContent()
+        # solute_dumux[i,1:] = cyl.getSolution(0)
+        
+        # mean_water = np.mean(water_dumux[i,1:])
+        # mean_solutes = np.mean(solutes_dumux[i,1:])
         
         
-        current_rs_potential = cyl.getSolutionHead()
-        current_rs_potential = current_rs_potential[0]
-        current_rs_concentration = solute_dumux[i,1]
+        # current_rs_potential = cyl.getSolutionHead()
+        # current_rs_potential = current_rs_potential[0]
+        # current_rs_concentration = solute_dumux[i,1]
 
     
 
@@ -405,8 +319,8 @@ def run_perirhizal_test():
         h_sr = peri.soil_root_interface_(rx, sx, inner_kr, rho, peri.sp)
         
         #compute both matrix flux potentials:
-        Phi_root = vg.fast_mfp[sp](h_sr)
-        Phi_soil = vg.fast_mfp[sp](s_x)
+        Phi_root = np.array(vg.fast_mfp[sp](h_sr))
+        Phi_soil = np.array(vg.fast_mfp[sp](sx))
         
         #compute the spatial watercontents
         Phi_A, Phi_C = peri.determine_mfp_function(Phi_root, Phi_soil, rho)
@@ -414,31 +328,34 @@ def run_perirhizal_test():
         Phi_out = Phi_A+Phi_C
         
         for j in range(NC-1):
-            s = CC[j] / r_prhiz
-            Phi = Phi_A*(s**2-np.log(s**2))+Phi_C
-            water_sr[i,j] = vg.water_content(vg.fast_imfp[sp](),peri.sp)
-        
+            r_rel = CC[j] / r_prhiz
+            Phi = Phi_A*(r_rel**2-np.log(r_rel**2))+Phi_C
+            water_sr[i,j] = vg.water_content(vg.fast_imfp[sp](Phi),peri.sp)
 
         # run the alpha omega model on solute flow (both steady state and steady rate)
         waterflow = root_wateruptake
-        result_solutes_ss = peri.soil_root_solutes_ss_(Phi_out, Phi_soil, total_solute, Vmax, Km, Ds, waterflow, peri.sp)
-        result_solutes_sr = peri.soil_root_solutes_sr_(Phi_root, Phi_soil, rho, total_solute, Vmax, Km, Ds, waterflow, peri.sp)
+        result_solutes_ss = peri.soil_root_solutes_ss_([Phi_out], [Phi_soil], [total_solute], [Vmax], [Km], Ds, [waterflow], peri.sp)
+        result_solutes_sr = peri.soil_root_solutes_sr_([Phi_root], [Phi_soil], [rho], [total_solute], [Vmax], [Km], Ds, [waterflow], peri.sp)
+        result_solutes_ss = result_solutes_ss[0]
+        result_solutes_sr = result_solutes_sr[0]
         
         solute_ss[i,1] = result_solutes_ss
         solute_ss[i,0] = Vmax * result_solutes_ss / (Km + result_solutes_ss)
         solute_sr[i,1] = result_solutes_sr
         solute_sr[i,0] = Vmax * result_solutes_sr / (Km + result_solutes_sr)
         
-        F0 = self.lookup_table_solutes((Phi_root[i],0)) # for the ratio of concentration next to the root to somewhere in the perirhizal zone
+        #F0 = peri.lookup_table_solutes((Phi_root,0)) # for the ratio of concentration next to the root to somewhere in the perirhizal zone
+        F0 = peri.integral_overDiffusion_(Phi,peri.sp)
         D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
         for j in range(NC-2):
-            s = CC[j+1] / r_prhiz
-            Phi_current = Phi_A*(s**2-np.log(s**2))+Phi_C
-            F = self.lookup_table_solutes((Phi_soil[i],0))-F0
+            r_rel = CC[j+1] / r_prhiz
+            Phi_current = Phi_A*(r_rel**2-np.log(r_rel**2))+Phi_C
+            #F = peri.lookup_table_solutes((Phi_current,0))-F0
+            F = peri.integral_overDiffusion_(Phi_current,peri.sp)-F0
             F_tilde=math.exp(D_tilde*F)
             solute_ss[i,1] = result_solutes_ss * F_tilde + (1-F_tilde) * solute_ss[i,0] / waterflow
             solute_sr[i,1] = result_solutes_sr * F_tilde + (1-F_tilde) * solute_sr[i,0] / waterflow
-    
+        print("test4")
 
     return water_dumux, solute_dumux, solute_ss, water_sr, solute_sr
 
