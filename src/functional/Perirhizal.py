@@ -411,6 +411,10 @@ class PerirhizalPython(Perirhizal):
         sp             van genuchten soil parameters, , call
                        vg.create_mfp_lookup(sp) before
         """
+        
+        if rank == 0:
+            print("The function *create_lookup_mpi* is deprecated, use *create_lookup* without mpi instead.")
+        
         from mpi4py import MPI
 
         comm = MPI.COMM_WORLD
