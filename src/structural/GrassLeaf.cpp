@@ -33,7 +33,14 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
 
     // Anchor frame: align heading column with parent heading at pni.
     if (parent->getNumberOfNodes() > 0) {
-        Vector3d h = parent->heading(pni);
+        Vector3d h;
+        if (parent->hasRelCoord()) {
+            parent->rel2abs(); 
+            h = parent->heading(pni); // otherwise that does not work
+            parent->abs2rel();
+        } else {
+            h = parent->heading(pni);
+        }
         anchorFrame = Matrix3d::ons(h); // heading → col 0; col 1, 2 perpendicular
     }
 
@@ -41,8 +48,9 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
     meristem.setAnchorFrame(anchorFrame);
 
     // Seed nodeIds/nodeCTs for the initial meristem node.
+    meristem.addNodeFront(0., 0., M_PI/2, 0.); // initial node at the anchor
     double creationTime = parent->getNodeCT(pni) + std::max(delay, 0.0);
-    nodeIds.push_back(plant->getNodeIndex());
+    nodeIds.push_back(parent->getNodeId(pni));
     nodeCTs.push_back(creationTime);
 }
 

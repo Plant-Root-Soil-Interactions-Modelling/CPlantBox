@@ -211,9 +211,10 @@ void Organ::addNode(Vector3d n, double t, size_t index, bool shift) { addNode(n,
  * Returns an empty vector if fewer than two nodes exist.
  */
 std::vector<Vector2i> Organ::getSegments() const {
-    if (this->nodes.size() > 1) {
-        std::vector<Vector2i> segs = std::vector<Vector2i>(nodes.size() - 1);
-        for (size_t i = 0; i < nodes.size() - 1; i++) {
+    int n = this->getNumberOfNodes();
+    if (n > 1) {
+        std::vector<Vector2i> segs = std::vector<Vector2i>(n - 1);
+        for (size_t i = 0; i < n - 1; i++) {
             Vector2i s(getNodeId(i), getNodeId(i + 1));
             segs[i] = s;
         }
@@ -558,9 +559,7 @@ void Organ::abs2rel() {
         }
         hasShootParent = ot_parent > 2;
     }
-
-    if ((isShoot || hasShootParent) && (!hasRelCoord())) // convert to relative coordinate if is shoot organ or carried by shoot organs
-    {
+    if ((isShoot || hasShootParent) && (!hasRelCoord())) { // convert to relative coordinate if is shoot organ or carried by shoot organs
         for (int j = nodes.size(); j > 1; j--) {
             auto nodes_j_1 = nodes.at(j - 1).minus(nodes.at(j - 2));
             Vector3d h = heading(j - 2);
@@ -594,7 +593,7 @@ Vector3d Organ::getiHeading0() const {
     bool isBaseOrgan = (getParent()->organType() == Organism::ot_seed);
     bool isShootBornRoot = ((getParent()->organType() == Organism::ot_stem) && (organType() == Organism::ot_root));
     bool isRootBornShoot = ((getParent()->organType() == Organism::ot_root) && ((organType() == Organism::ot_stem) || (organType() == Organism::ot_leaf)));
-    if (isBaseOrgan || isShootBornRoot || isRootBornShoot) { // from seed?
+    if (isBaseOrgan || isShootBornRoot || isRootBornShoot) {
         if (organType() == Organism::ot_root) {
             parentHeading = Matrix3d(Vector3d(0, 0, -1), Vector3d(0, -1, 0), Vector3d(-1, 0, 0));
         } else {
@@ -608,6 +607,7 @@ Vector3d Organ::getiHeading0() const {
     Vector3d new_heading = Matrix3d::ons(heading).times(this->partialIHeading);
     return Matrix3d::ons(new_heading).column(0);
 }
+
 /**
  * @brief Returns the absolute heading at node @p n.
  *
@@ -616,10 +616,12 @@ Vector3d Organ::getiHeading0() const {
  * Negative @p n is treated as the last node.
  */
 Vector3d Organ::heading(int n) const {
-
     if (n < 0) {
         n = nodes.size() - 1;
     }
+    // if (this->has_rel_coord) {
+    //     return nodes.at(n-1);  // TODO: no idea if this is correct...       
+    // }
     if ((nodes.size() > 1) && (n > 0)) {
         n = std::min(int(nodes.size()), n);
         Vector3d h = getNode(n).minus(getNode(n - 1));

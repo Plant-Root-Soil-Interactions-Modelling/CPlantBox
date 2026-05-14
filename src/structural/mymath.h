@@ -522,7 +522,7 @@ public:
      * @param i  node index in [0, size()-1]
      */
     Vector3d getNode(int i) const {
-		std::cout << "Meristem size: " << size() << std::endl;
+		// std::cout << "Meristem size: " << size() << std::endl;
         assert(i >= 0 && i < size());
         Turtle3D t(anchor, anchorFrame);
         int idx = 0;
@@ -534,7 +534,7 @@ public:
             if (idx == i) break;
             ++idx;
         }
-		std::cout << "position: " << t.getPosition().toString() << std::endl;
+		// std::cout << "position: " << t.getPosition().toString() << std::endl;
         return t.getPosition();
     }
 

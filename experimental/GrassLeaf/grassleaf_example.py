@@ -31,7 +31,7 @@ class Poaceae(pb.Plant):
 #  1.  Build a minimal Plant with one stem that hosts GrassLeaf laterals
 # --------------------------------------------------------------------------- #
 
-plant = Poaceae()
+plant = Poaceae()  #  pb.Plant()
 
 # -- Seed (required boilerplate) --
 seed_rp = pb.SeedRandomParameter(plant)
@@ -49,22 +49,27 @@ plant.setOrganRandomParameter(root_rp)
 # -- Stem: carries the GrassLeaf laterals --
 stem_rp = pb.StemRandomParameter(plant)
 stem_rp.subType = 1
-stem_rp.lmax = 30.0  # 30 cm tall stem
+stem_rp.lmax = 15.0
 stem_rp.r = 2.0  # 2 cm/day elongation rate
-stem_rp.la = 0.0
+stem_rp.la = 1.0
 stem_rp.lb = 2.0  # first leaf at 2 cm
 stem_rp.ln = 5.0  # internode 5 cm
-stem_rp.lnf = 1
+stem_rp.lnf = 0  # homogeneous distances
 stem_rp.theta = 0.0
 stem_rp.successor = [[1]]  # GrassLeaf subType 1
 stem_rp.successorP = [[1.0]]
 stem_rp.successorOT = [[pb.leaf]]
+stem_rp.successorNo = [1]  # one leaf per stem
 plant.setOrganRandomParameter(stem_rp)
+
+# print(stem_rp.successorNo, flush=True)
+# print("Stem", int(pb.stem), "Leaf", int(pb.leaf), flush=True)
+
 
 # -- GrassLeaf random parameters --
 gl_rp = pb.GrassLeafRandomParameter(plant)
 gl_rp.subType = 1
-gl_rp.a = 1  # ????
+gl_rp.a = 0.1
 gl_rp.bladeAngle = 0.4  # ~23 deg bend at ligule
 gl_rp.bladeAngles = 0.05
 gl_rp.bladeLength = 12.0  # cm
@@ -72,7 +77,7 @@ gl_rp.bladeLengths = 1.0
 gl_rp.bladeWidth = 0.8  # cm
 gl_rp.bladeWidths = 0.05
 gl_rp.sheathLength = 6.0  # cm
-gl_rp.sheathLengths = 0.5
+gl_rp.sheathLengths = 2
 gl_rp.sheathDuration = 8.0  # days
 gl_rp.sheathDurations = 0.0
 gl_rp.bladeDelay = 1.0  # days after sheath complete
@@ -81,7 +86,9 @@ gl_rp.bladeDuration = 15.0  # days to full blade
 gl_rp.bladeDurations = 1.0
 gl_rp.f_gf = pb.LinearGrowth()  # for other organs this is set in initCallbacks() from parameters
 
+# print(gl_rp.successorNo, flush=True)
 # gl_rp = pb.LeafRandomParameter(plant)
+# gl_rp.lmax = 12.0
 # gl_rp.subType = 1
 plant.setOrganRandomParameter(gl_rp)
 
@@ -97,7 +104,7 @@ plant.setOrganRandomParameter(gl_rp)
 
 plant.initialize(verbose=False)
 
-total_days = 25.0
+total_days = 100.0
 dt = 0.5  # days per step
 steps = int(total_days / dt)
 
@@ -111,25 +118,27 @@ for i in range(steps):
 #  3.  Inspect the GrassLeaf organs
 # --------------------------------------------------------------------------- #
 
-organs = plant.getOrgans(pb.OrganTypes.leaf, True)
-print(f"\nFound {len(organs)} leaf organ(s)")
+# organs = plant.getOrgans(pb.OrganTypes.leaf, True)
+# print(f"\nFound {len(organs)} leaf organ(s)")
 
-for gl in organs:
+# for gl in organs:
 
-    p = gl.param()
-    print("\n--- GrassLeaf ---")
-    print(f"  age            = {gl.getAge():.2f} days")
-    print(f"  total length   = {gl.getLength():.2f} cm")
-    print(f"  sheathLength   = {gl.getSheathLength():.2f} / {p.sheathLength:.2f} cm")
-    print(f"  bladeLengthGrown = {gl.getBladeLengthGrown():.2f} / {p.bladeLength:.2f} cm")
-    print(f"  nodes          = {gl.getNumberOfNodes()}")
-    print(gl.getParent().getNode(gl.parentNI))  # parent node where leaf is attached
-    print(gl.getNode(0))  # base node
+#     p = gl.param()
+#     print("\n--- GrassLeaf ---")
+#     print(f"  age            = {gl.getAge():.2f} days")
+#     print(f"  total length   = {gl.getLength():.2f} cm")
+#     print(f"  sheathLength   = {gl.getSheathLength():.2f} / {p.sheathLength:.2f} cm")
+#     print(f"  bladeLengthGrown = {gl.getBladeLengthGrown():.2f} / {p.bladeLength:.2f} cm")
+#     print(f"  nodes          = {gl.getNumberOfNodes()}")
+#     print(gl.getParent().getNode(gl.parentNI))  # parent node where leaf is attached
+#     for i in range(0, gl.getNumberOfNodes()):
+#         print(gl.getNode(i), end="; ")
+
 
 ana = pb.SegmentAnalyser(plant)
 ana.addAge(total_days)
 # vp.plot_roots(ana, "age")  # plot roots only |\label{l13:plot_roots}|
-vp.plot_plant(ana, "age")
+vp.plot_roots(ana, "organType")
 
 # --------------------------------------------------------------------------- #
 #  4.  Step-by-step time series for ONE leaf (first one found)
