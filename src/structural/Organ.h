@@ -77,12 +77,13 @@ class Organ : public std::enable_shared_from_this<Organ> {
     double getLength(int i) const;                  ///< Returns length from the first node up to node index @p i [cm]
     double getEpsilon() const { return epsilonDx; } ///< Returns residual growth not yet converted to a new segment [cm]
     int getParentNI() const { return parentNI; }    ///< Returns the local node index in the parent organ where this organ is attached
+    
     virtual double calcAge(double length) const { throw std::runtime_error("calcAge() not implemented"); }  ///< Maps length -> age; must be overridden; needed by getOrgans()
     virtual double calcLength(double age) { throw std::runtime_error("calcLength() not implemented"); }     ///< Maps age -> length; must be overridden
 
     /* geometry */
     virtual int getNumberOfNodes() const { return nodes.size(); }                  ///< Returns the number of nodes
-    int getNumberOfSegments() const { return nodes.size() - 1; }           ///< Returns the number of polyline segments (nodes - 1)
+    int getNumberOfSegments() const { return getNumberOfNodes() - 1; }           ///< Returns the number of polyline segments (nodes - 1)
     Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< Returns the absolute coordinate of the organ's attachment point on the parent
     virtual Vector3d getNode(int i) const { return nodes.at(i); }          ///< Returns the absolute (or relative) coordinate of node @p i
     int getNodeId(int i) const { return nodeIds.at(i); }                   ///< Returns the global node index of local node @p i

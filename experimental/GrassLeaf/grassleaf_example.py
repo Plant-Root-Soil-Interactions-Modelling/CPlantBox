@@ -134,11 +134,12 @@ for i in range(steps):
 #     for i in range(0, gl.getNumberOfNodes()):
 #         print(gl.getNode(i), end="; ")
 
+vp.plot_roots(plant, "organType")
 
-ana = pb.SegmentAnalyser(plant)
-ana.addAge(total_days)
-# vp.plot_roots(ana, "age")  # plot roots only |\label{l13:plot_roots}|
-vp.plot_roots(ana, "organType")
+# ana = pb.SegmentAnalyser(plant)
+# ana.addAge(total_days)
+# # vp.plot_roots(ana, "age")  # plot roots only |\label{l13:plot_roots}|
+# vp.plot_roots(ana, "organType")
 
 # --------------------------------------------------------------------------- #
 #  4.  Step-by-step time series for ONE leaf (first one found)
@@ -216,18 +217,19 @@ print("\nGrowth curve saved to grassleaf_growth.png")
 # --------------------------------------------------------------------------- #
 
 leaves_final = plant.getOrgans(pb.OrganTypes.leaf)
+print(f"\nFound {len(leaves_final)} leaf organ(s) at the end of the simulation")
 if leaves_final:
     gl = leaves_final[0]
     n = gl.getNumberOfNodes()
     nodes = np.array([[gl.getNode(i).x, gl.getNode(i).y, gl.getNode(i).z] for i in range(n)])
-
     fig3d = plt.figure(figsize=(6, 8))
     ax3d = fig3d.add_subplot(111, projection="3d")
     ax3d.plot(nodes[:, 0], nodes[:, 1], nodes[:, 2], "g-o", markersize=4, linewidth=2)
     ax3d.scatter(*nodes[0], color="blue", s=60, zorder=5, label="base (node 0)")
     ax3d.scatter(*nodes[-1], color="red", s=60, zorder=5, label="tip")
     # mark sheath / blade boundary
-    n_sheath = int(gl.getSheathLength() / max(gl.length, 1e-9) * (n - 1)) + 1
+    l = gl.getSheathLength() + gl.getBladeLengthGrown()
+    n_sheath = int(gl.getSheathLength() / max(l, 1e-9) * (n - 1)) + 1
     if 0 < n_sheath < n:
         ax3d.scatter(*nodes[n_sheath - 1], color="orange", s=80, zorder=5, label="ligule (approx.)")
     ax3d.set_xlabel("x [cm]")

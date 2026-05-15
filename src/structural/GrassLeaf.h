@@ -58,17 +58,15 @@ public:
     void abs2rel() override {} ///< No-op: GrassLeaf geometry is meristem-managed, not nodes-based.
     void rel2abs() override {} ///< No-op: GrassLeaf geometry is meristem-managed, not nodes-based.
 
+    int getNumberOfNodes() const override { return meristem.size()+1; } ///< +1 because the anchor point is not stored in the meristem
     Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
-
-    int getNumberOfNodes() const override { return meristem.size(); }
 
     double getParameter(std::string name) const override;
 
     std::string toString() const override;
 
     double calcLength(double age, double k, double r);
-    double calcAge(double length, double k, double r);
-    
+    double calcAge(double length, double k, double r);    
     double calcLength(double age) override; // unused (overriden to throw exception)
     double calcAge(double length) const override; // unused (overriden to throw exception)
 
