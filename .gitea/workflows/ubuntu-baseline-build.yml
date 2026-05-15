@@ -88,6 +88,19 @@ jobs:
           assert any(module_path.is_relative_to(p) for p in site_packages), (module_path, site_packages)
           PY
 
+      - name: Check Python extension does not link libpython
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source cpbenv/bin/activate
+          python - <<'PY' > /tmp/cplantbox-extension.txt
+          import pathlib
+          import plantbox.plantbox as extension
+          print(pathlib.Path(extension.__file__))
+          PY
+          readelf -d "$(cat /tmp/cplantbox-extension.txt)" | tee /tmp/cplantbox-readelf.txt
+          ! grep -E 'NEEDED.*libpython[0-9]' /tmp/cplantbox-readelf.txt
+
       - name: Run documented tutorial smoke test
         shell: bash
         run: |

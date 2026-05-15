@@ -1,4 +1,4 @@
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
 
 message(STATUS "Project dir: ${PROJECT_SOURCE_DIR}")
 message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
