@@ -66,6 +66,23 @@ jobs:
           cmake .
           make install -j"$(nproc)"
 
+      - name: Check manual install imports from venv
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source cpbenv/bin/activate
+          cd /tmp
+          python - <<'PY'
+          import pathlib
+          import site
+          import plantbox
+
+          module_path = pathlib.Path(plantbox.__file__).resolve()
+          site_packages = [pathlib.Path(p).resolve() for p in site.getsitepackages()]
+          print(module_path)
+          assert any(module_path.is_relative_to(p) for p in site_packages), (module_path, site_packages)
+          PY
+
       - name: Run documented tutorial smoke test
         shell: bash
         run: |
