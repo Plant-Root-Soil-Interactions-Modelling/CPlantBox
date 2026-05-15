@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - wheels/**
   pull_request:
     branches:
       - master
