@@ -101,6 +101,20 @@ jobs:
           readelf -d "$(cat /tmp/cplantbox-extension.txt)" | tee /tmp/cplantbox-readelf.txt
           ! grep -E 'NEEDED.*libpython[0-9]' /tmp/cplantbox-readelf.txt
 
+      - name: Check installed package data
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source cpbenv/bin/activate
+          python - <<'PY'
+          from pathlib import Path
+          import plantbox as pb
+          root = Path(pb.data_path())
+          assert root.exists(), root
+          assert (root / "structural" / "plant" / "fspm2023.xml").exists(), root
+          print(root)
+          PY
+
       - name: Run documented tutorial smoke test
         shell: bash
         run: |

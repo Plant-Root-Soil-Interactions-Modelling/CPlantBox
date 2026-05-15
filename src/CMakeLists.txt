@@ -168,26 +168,38 @@ set_target_properties(plantbox PROPERTIES
     INSTALL_RPATH "$ORIGIN"
 )
 
-# Install plantbox module into Python site-packages
-install(TARGETS CPlantBox LIBRARY DESTINATION "${Python3_SITEARCH}/plantbox") 
-install(TARGETS plantbox LIBRARY DESTINATION "${Python3_SITEARCH}/plantbox")
+# Install plantbox module into Python site-packages for native CMake installs.
+# scikit-build-core stages wheel contents under the CMake install prefix, so wheel
+# builds must use a relative install destination.
+if(SKBUILD)
+    set(CPLANTBOX_PYTHON_INSTALL_DIR "plantbox")
+else()
+    set(CPLANTBOX_PYTHON_INSTALL_DIR "${Python3_SITEARCH}/plantbox")
+endif()
 
-install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${Python3_SITEARCH}/plantbox)
+install(TARGETS CPlantBox LIBRARY DESTINATION "${CPLANTBOX_PYTHON_INSTALL_DIR}") 
+install(TARGETS plantbox LIBRARY DESTINATION "${CPLANTBOX_PYTHON_INSTALL_DIR}")
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/visualisation DESTINATION ${Python3_SITEARCH}/plantbox
+install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${CPLANTBOX_PYTHON_INSTALL_DIR})
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/visualisation DESTINATION ${CPLANTBOX_PYTHON_INSTALL_DIR}
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rsml DESTINATION ${Python3_SITEARCH}/plantbox
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rsml DESTINATION ${CPLANTBOX_PYTHON_INSTALL_DIR}
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/structural DESTINATION ${Python3_SITEARCH}/plantbox
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/structural DESTINATION ${CPLANTBOX_PYTHON_INSTALL_DIR}
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/functional DESTINATION ${Python3_SITEARCH}/plantbox
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/functional DESTINATION ${CPLANTBOX_PYTHON_INSTALL_DIR}
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/modelparameter DESTINATION ${CPLANTBOX_PYTHON_INSTALL_DIR}
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.ipynb" EXCLUDE
+        PATTERN ".DS_Store" EXCLUDE)
 
