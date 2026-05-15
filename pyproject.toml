@@ -1,3 +1,21 @@
+# Local wheel build entrypoint:
+#   python -m build --wheel
+
+[build-system]
+requires = [
+  "scikit-build-core==0.12.2",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "cplantbox"
+version = "2.1.0"
+requires-python = ">=3.11"
+
+[tool.scikit-build]
+build-dir = "_skbuild/{wheel_tag}"
+wheel.packages = []
+
 [tool.black]
 line-length = 320
 target-version = ["py311"]

@@ -40,6 +40,11 @@ Makefile
 *.pyc
 __pycache__
 
+# Python build artifacts
+dist/
+_skbuild/
+*.egg-info/
+
 # pyenv
 .python-version
 
