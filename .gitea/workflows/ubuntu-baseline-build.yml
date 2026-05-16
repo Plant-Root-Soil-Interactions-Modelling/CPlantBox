@@ -88,18 +88,40 @@ jobs:
           assert any(module_path.is_relative_to(p) for p in site_packages), (module_path, site_packages)
           PY
 
-      - name: Check Python extension does not link libpython
+      - name: Audit installed native dependencies
         shell: bash
         run: |
           set -euxo pipefail
           source cpbenv/bin/activate
-          python - <<'PY' > /tmp/cplantbox-extension.txt
-          import pathlib
+          python - <<'PY' > /tmp/cplantbox-native-targets.txt
+          from pathlib import Path
+          import plantbox
           import plantbox.plantbox as extension
-          print(pathlib.Path(extension.__file__))
+
+          package_dir = Path(plantbox.__file__).resolve().parent
+          native_libraries = sorted(package_dir.glob("libCPlantBox*.so"))
+          assert native_libraries, package_dir
+
+          targets = [Path(extension.__file__).resolve(), *native_libraries]
+          for target in targets:
+              print(target)
           PY
-          readelf -d "$(cat /tmp/cplantbox-extension.txt)" | tee /tmp/cplantbox-readelf.txt
+          : > /tmp/cplantbox-ldd.txt
+          : > /tmp/cplantbox-readelf.txt
+          : > /tmp/cplantbox-ldd-resolved.txt
+          while read -r target; do
+            ldd "${target}" | tee -a /tmp/cplantbox-ldd.txt
+            readelf -d "${target}" | tee -a /tmp/cplantbox-readelf.txt
+          done < /tmp/cplantbox-native-targets.txt
+          while read -r target; do
+            case "$(basename "${target}")" in
+              libCPlantBox*.so) ldd -r "${target}" | tee -a /tmp/cplantbox-ldd-resolved.txt ;;
+            esac
+          done < /tmp/cplantbox-native-targets.txt
+          ! grep -E 'not found' /tmp/cplantbox-ldd.txt
+          ! grep -E 'undefined symbol' /tmp/cplantbox-ldd-resolved.txt
           ! grep -E 'NEEDED.*libpython[0-9]' /tmp/cplantbox-readelf.txt
+          ! grep -E 'NEEDED.*(libsundials|libklu|libamd|libcolamd|libbtf|libsuitesparseconfig)' /tmp/cplantbox-readelf.txt
 
       - name: Check installed package data
         shell: bash
