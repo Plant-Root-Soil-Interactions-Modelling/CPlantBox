@@ -33,7 +33,9 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends \
             build-essential \
+            ca-certificates \
             cmake \
+            curl \
             default-jre \
             g++ \
             gcc \
@@ -156,3 +158,141 @@ jobs:
           for test_file in *.py; do
             python "${test_file}"
           done
+
+  ubuntu-source-deps-build:
+    name: Build with source native dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: https://github.com/actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install uv
+        uses: https://github.com/astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.16"
+
+      - name: Install Ubuntu prerequisites
+        shell: bash
+        run: |
+          set -euxo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            cmake \
+            curl \
+            default-jre \
+            g++ \
+            gcc \
+            gfortran \
+            git \
+            libboost-all-dev \
+            libeigen3-dev \
+            libopenmpi-dev \
+            libqt5x11extras5 \
+            libx11-dev \
+            openmpi-bin \
+            pkg-config \
+            python3 \
+            python3-dev \
+            python3-tk \
+            wget
+
+      - name: Create Python environment
+        shell: bash
+        run: |
+          set -euxo pipefail
+          unset UV_NATIVE_TLS
+          uv python install 3.11
+          uv venv cpbenv --python 3.11
+          source cpbenv/bin/activate
+          uv pip install setuptools wheel
+          uv pip install -r requirements.txt
+
+      - name: Build native dependencies from source
+        shell: bash
+        run: |
+          set -euxo pipefail
+          scripts/deps/source-native-deps-linux.sh /tmp/cplantbox-native-deps
+          test -f /tmp/cplantbox-native-deps/share/cplantbox-native-deps-provenance.txt
+
+      - name: Configure and build CPlantBox with source dependencies
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source cpbenv/bin/activate
+          git submodule update --init --recursive
+          cmake -S . -B /tmp/cplantbox-source-build \
+            -DCPB_SUITESPARSE_PROVIDER=source \
+            -DCPB_SUNDIALS_PROVIDER=source \
+            -DCPB_NATIVE_DEPS_PREFIX=/tmp/cplantbox-native-deps
+          cmake --build /tmp/cplantbox-source-build --target install -j"$(nproc)"
+
+      - name: Check source-dependency install imports from venv
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source cpbenv/bin/activate
+          cd /tmp
+          python - <<'PY'
+          import pathlib
+          import site
+          import plantbox
+
+          module_path = pathlib.Path(plantbox.__file__).resolve()
+          site_packages = [pathlib.Path(p).resolve() for p in site.getsitepackages()]
+          print(module_path)
+          assert any(module_path.is_relative_to(p) for p in site_packages), (module_path, site_packages)
+          PY
+
+      - name: Audit source-dependency native install
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source cpbenv/bin/activate
+          python - <<'PY' > /tmp/cplantbox-native-targets.txt
+          from pathlib import Path
+          import plantbox
+          import plantbox.plantbox as extension
+
+          package_dir = Path(plantbox.__file__).resolve().parent
+          native_libraries = sorted(package_dir.glob("libCPlantBox*.so"))
+          assert native_libraries, package_dir
+
+          targets = [Path(extension.__file__).resolve(), *native_libraries]
+          for target in targets:
+              print(target)
+          PY
+          : > /tmp/cplantbox-ldd.txt
+          : > /tmp/cplantbox-readelf.txt
+          : > /tmp/cplantbox-ldd-resolved.txt
+          while read -r target; do
+            ldd "${target}" | tee -a /tmp/cplantbox-ldd.txt
+            readelf -d "${target}" | tee -a /tmp/cplantbox-readelf.txt
+          done < /tmp/cplantbox-native-targets.txt
+          while read -r target; do
+            case "$(basename "${target}")" in
+              libCPlantBox*.so) ldd -r "${target}" | tee -a /tmp/cplantbox-ldd-resolved.txt ;;
+            esac
+          done < /tmp/cplantbox-native-targets.txt
+          ! grep -E 'not found' /tmp/cplantbox-ldd.txt
+          ! grep -E 'undefined symbol' /tmp/cplantbox-ldd-resolved.txt
+          ! grep -E 'NEEDED.*libpython[0-9]' /tmp/cplantbox-readelf.txt
+          ! grep -E 'NEEDED.*(libsundials|libklu|libamd|libcolamd|libbtf|libsuitesparseconfig)' /tmp/cplantbox-readelf.txt
+
+      - name: Check installed package data
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source cpbenv/bin/activate
+          python - <<'PY'
+          from pathlib import Path
+          import plantbox as pb
+          root = Path(pb.data_path())
+          assert root.exists(), root
+          assert (root / "structural" / "plant" / "fspm2023.xml").exists(), root
+          print(root)
+          PY

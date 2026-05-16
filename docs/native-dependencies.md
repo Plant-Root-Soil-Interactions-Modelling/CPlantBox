@@ -13,8 +13,8 @@ PIAFMUNCH=ON
 The native dependency provider is selected independently for SuiteSparse and SUNDIALS:
 
 ```bash
--DCPB_SUITESPARSE_PROVIDER=bundled|system
--DCPB_SUNDIALS_PROVIDER=bundled|system
+-DCPB_SUITESPARSE_PROVIDER=bundled|source|system
+-DCPB_SUNDIALS_PROVIDER=bundled|source|system
 ```
 
 The default is:
@@ -34,6 +34,36 @@ make install
 ```
 
 The long-term preferred default is source-built dependencies: build pinned SuiteSparse/SUNDIALS source inputs, link against those outputs, and keep `system` as an explicit override for developers and distribution packagers. The current bundled/prebuilt path is transitional compatibility for the existing Linux build.
+
+## Source provider
+
+The source provider consumes a local dependency prefix containing headers and static libraries built from pinned source inputs:
+
+```bash
+scripts/deps/source-native-deps-linux.sh /tmp/cplantbox-native-deps
+cmake . \
+  -DCPB_SUITESPARSE_PROVIDER=source \
+  -DCPB_SUNDIALS_PROVIDER=source \
+  -DCPB_NATIVE_DEPS_PREFIX=/tmp/cplantbox-native-deps
+make install
+```
+
+The source build currently pins:
+
+| Dependency | Version | Source input |
+| --- | --- | --- |
+| SUNDIALS | 4.0.2 | Release tarball with SHA256 verification |
+| SuiteSparse | 5.3.0 | Git tag `v5.3.0` verified at commit `e927f7a3fc82339755482e553df37d932ff30083` |
+
+The source provider is the intended path for release-wheel-oriented builds because it avoids relying on opaque checked-in archives.
+
+Known follow-ups after the source path is stable:
+
+- factor duplicated CI setup/audit snippets into reusable helper scripts
+- reduce repeated SuiteSparse/SUNDIALS library lists in CMake once provider behavior is settled
+- consider replacing the SuiteSparse pinned git checkout with a tarball plus SHA256, or document why the pinned commit remains preferred
+
+These are maintainability improvements, not blockers for validating the source-built dependency path.
 
 ## Bundled provider
 
@@ -80,8 +110,8 @@ Platform wheels should be built with explicit and audited native dependency choi
 
 For now:
 
-- native/developer default: bundled provider
-- wheel jobs: explicit provider selection per platform
+- native/developer default: bundled provider for compatibility, source provider long-term
+- wheel jobs: explicit source provider selection per platform
 - no accidental system native dependencies in release wheels
 - no runtime dependency on `libpython`
 - no unresolved native symbols in installed shared libraries
