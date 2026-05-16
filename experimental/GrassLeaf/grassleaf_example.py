@@ -104,7 +104,7 @@ plant.setOrganRandomParameter(gl_rp)
 
 plant.initialize(verbose=False)
 
-total_days = 100.0
+total_days = 25.0
 dt = 0.5  # days per step
 steps = int(total_days / dt)
 
@@ -134,12 +134,12 @@ for i in range(steps):
 #     for i in range(0, gl.getNumberOfNodes()):
 #         print(gl.getNode(i), end="; ")
 
-vp.plot_roots(plant, "organType")
+# vp.plot_roots(plant, "organType")
 
-# ana = pb.SegmentAnalyser(plant)
-# ana.addAge(total_days)
-# # vp.plot_roots(ana, "age")  # plot roots only |\label{l13:plot_roots}|
-# vp.plot_roots(ana, "organType")
+ana = pb.SegmentAnalyser(plant)
+ana.addAge(total_days)
+# vp.plot_roots(ana, "age")  # plot roots only |\label{l13:plot_roots}|
+vp.plot_roots(ana, "age")
 
 # --------------------------------------------------------------------------- #
 #  4.  Step-by-step time series for ONE leaf (first one found)

@@ -45,12 +45,16 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
     }
 
     meristem.setAnchor(anchorPos);
+
+    // rotate the anchor frame: pitch the heading up by 90° so the leaf grows upward along the parent axis
+    Turtle3D t(Vector3d(0., 0., 0.), anchorFrame);
+    t.pitchUp(M_PI / 2.0);
+    anchorFrame = t.getFrame();
     meristem.setAnchorFrame(anchorFrame);
 
     // Seed nodeIds/nodeCTs for the initial meristem node.
-    meristem.addNodeFront(0., 0., M_PI/2, 0.); // initial node at the anchor
     double creationTime = parent->getNodeCT(pni) + std::max(delay, 0.0);
-    nodeIds.push_back(parent->getNodeId(pni));
+    nodeIds.push_back(parent->getNodeId(pni)); // anchorframe id and ct is located at index 0
     nodeCTs.push_back(creationTime);
 }
 
@@ -58,8 +62,13 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
  * @brief Returns the absolute Cartesian position of meristem node @p i, with the anchor set to the parent attachment point.
  */
 Vector3d GrassLeaf::getNode(int i) const {
-    meristem.setAnchor(getParent()->getNode(parentNI));
-    return meristem.getNode(i);
+    auto anchorPoint = getParent()->getNode(parentNI);
+    if (i==0) {
+        return anchorPoint; 
+    } else {
+        meristem.setAnchor(anchorPoint);
+        return meristem.getNode(i-1); // -1 because the initial node at index 0 
+    }
 }
 
 /**
@@ -79,7 +88,7 @@ std::shared_ptr<Organ> GrassLeaf::copy(std::shared_ptr<Organism> p) {
  */
 void GrassLeaf::simulate(double dt, bool verbose) {
 
-    oldNumberOfNodes = meristem.size();
+    oldNumberOfNodes = getNumberOfNodes();
 
     if (!alive) {
         return; // leafs don't die (yet)
@@ -195,8 +204,8 @@ void GrassLeaf::growSheath(double dl, double dt) {
         double ct = a + baseCT;
         int nid = plant.lock()->getNodeIndex();
         meristem.addNodeFront(sdx, 0., 0., 0.);
-        nodeIds.insert(nodeIds.begin(), nid);
-        nodeCTs.insert(nodeCTs.begin(), ct);
+        nodeIds.insert(nodeIds.begin()+1, nid); // +1 because the initial node at index 0 is the anchor and does not have a nodeId
+        nodeCTs.insert(nodeCTs.begin()+1, ct);
     }
 
 }
