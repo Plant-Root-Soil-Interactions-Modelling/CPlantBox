@@ -65,6 +65,16 @@ Known follow-ups after the source path is stable:
 
 These are maintainability improvements, not blockers for validating the source-built dependency path.
 
+## Wheel smoke test
+
+Before adding cibuildwheel jobs, the installed-wheel smoke test can be run locally on Linux with source-built native dependencies:
+
+```bash
+scripts/wheel/smoke-test-linux.sh
+```
+
+The helper builds a wheel, installs it into a fresh virtual environment, runs from outside the repository tree, verifies `plantbox.data_path()`, loads `fspm2023.xml`, and runs a minimal non-graphical simulation.
+
 ## Bundled provider
 
 The bundled provider uses the prebuilt archives and headers in the source tree:

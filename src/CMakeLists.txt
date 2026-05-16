@@ -19,6 +19,12 @@ message(STATUS "Project dir: ${PROJECT_SOURCE_DIR}")
 message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "Project binary dir: ${PROJECT_BINARY_DIR}")
 
+if(APPLE)
+    set(CPB_INSTALL_RPATH "@loader_path")
+else()
+    set(CPB_INSTALL_RPATH "$ORIGIN")
+endif()
+
 # -----------------------------
 # 1. Sources
 # -----------------------------
@@ -86,7 +92,7 @@ set_target_properties(CPlantBox PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     BUILD_WITH_INSTALL_RPATH TRUE
-    INSTALL_RPATH "$ORIGIN"
+    INSTALL_RPATH "${CPB_INSTALL_RPATH}"
 )
 
 target_include_directories(CPlantBox
@@ -396,7 +402,7 @@ if(CPB_BUILD_PYTHON)
     target_link_libraries(plantbox PRIVATE CPlantBox Python3::Module)
 
     set_target_properties(plantbox PROPERTIES
-        INSTALL_RPATH "$ORIGIN"
+        INSTALL_RPATH "${CPB_INSTALL_RPATH}"
     )
 
     # Install plantbox module into Python site-packages for native CMake installs.

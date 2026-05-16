@@ -296,3 +296,49 @@ jobs:
           assert (root / "structural" / "plant" / "fspm2023.xml").exists(), root
           print(root)
           PY
+
+
+  ubuntu-wheel-smoke-test:
+    name: Build and smoke-test wheel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: https://github.com/actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Ubuntu prerequisites
+        shell: bash
+        run: |
+          set -euxo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            cmake \
+            curl \
+            default-jre \
+            g++ \
+            gcc \
+            gfortran \
+            git \
+            libboost-all-dev \
+            libeigen3-dev \
+            libopenmpi-dev \
+            libqt5x11extras5 \
+            libx11-dev \
+            openmpi-bin \
+            pkg-config \
+            python3 \
+            python3-dev \
+            python3-pip \
+            python3-tk \
+            python3-venv \
+            wget
+
+      - name: Build, install, and smoke-test wheel
+        shell: bash
+        run: |
+          set -euxo pipefail
+          scripts/wheel/smoke-test-linux.sh
