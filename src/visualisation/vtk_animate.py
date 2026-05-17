@@ -23,6 +23,8 @@ Typical usage::
 Author: Daniel Leitner
 """
 
+import os
+
 import vtk
 
 import plantbox as pb
@@ -75,8 +77,10 @@ class AnimateRoots:
         Bounding-box minimum / maximum and cell resolution for the soil grid.
         Only used when :attr:`soil_data` is *True*.
     avi_name : str, optional
-        Base file name for JPEG frame export.  When set, each call to
-        :meth:`update` writes ``<avi_name><frame_index>.jpg`` to disk.
+        Base name for JPEG frame export.  When set, each call to
+        :meth:`update` creates a subdirectory named *avi_name* (if it does
+        not already exist) and writes frames as
+        ``<avi_name>/<avi_name><frame_index>.jpg``.
     """
 
     def __init__(self, rootsystem=None, container_sdf=None):
@@ -102,6 +106,10 @@ class AnimateRoots:
         self.iren = None  # vtkRenderWindowInteractor
         self.color_bar = None  # active vtkScalarBarActor
         self.bounds = None  # [xmin, xmax, ymin, ymax, zmin, zmax]
+
+        # Current simulation time [days]; set this before each update() call
+        # so that derived parameters such as "age" are computed correctly.
+        self.simtime = 0.0
 
         # Optional JPEG frame export
         self.avi_name = None
@@ -164,8 +172,8 @@ class AnimateRoots:
         re-render.  The container actor is preserved across frames (it does
         not change during a simulation).
 
-        If :attr:`avi_name` is set the rendered frame is also written to a
-        JPEG file named ``<avi_name><frame_index>.jpg``.
+        If :attr:`avi_name` is set the rendered frame is also written to
+        ``<avi_name>/<avi_name><frame_index>.jpg``.
 
         Raises
         ------
@@ -195,6 +203,7 @@ class AnimateRoots:
         for a in self.actors:
             ren.AddActor(a)
 
+        ren.ResetCamera()
         self.iren.Render()
 
         if self.avi_name:
@@ -214,12 +223,12 @@ class AnimateRoots:
         if self.rootsystem is None:
             return
 
-        pd = segs_to_polydata(self.rootsystem, 1.0, [self.root_name, "radius"])
-
-        if self.plant:
-            new_actors, root_cbar = plot_plant(self.rootsystem, self.root_name, render=False)
-        else:
-            new_actors, root_cbar = plot_roots(pd, self.root_name, "", render=False)
+        # Build an analyser so we can call addAge before creating polydata.
+        # addAge is required for the "age" parameter (age = simtime - creationTime).
+        ana = pb.SegmentAnalyser(self.rootsystem)
+        ana.addAge(self.simtime)
+        pd = segs_to_polydata(ana, 1.0, [self.root_name, "radius"])
+        new_actors, root_cbar = plot_roots(pd, self.root_name, "", render=False)
 
         if isinstance(new_actors, list):
             self.actors.extend(new_actors)
@@ -299,15 +308,55 @@ class AnimateRoots:
     def _save_frame(self, renWin):
         """Write the current render window to a JPEG file.
 
-        The file is named ``<avi_name><frame_count>.jpg`` and the internal
-        frame counter is incremented.
+        Frames are saved as ``<avi_name>/<avi_name><frame_count>.jpg``.
+        The subdirectory is created automatically if it does not exist.
+        The internal frame counter is incremented after each save.
 
         Parameters
         ----------
         renWin : vtkRenderWindow
             The render window to capture.
         """
-        filename = f"{self.avi_name}{self._frame_count}"
-        write_jpg(renWin, filename)
+        os.makedirs(self.avi_name, exist_ok=True)
+        filename = os.path.join(self.avi_name, f"{self.avi_name}{self._frame_count}")
+        write_jpg(renWin, filename, magnification=1)
         print(f"saved {filename}.jpg")
         self._frame_count += 1
+
+    def make_video(self, output_file=None, fps=10, codec="libx264"):
+        """Assemble JPEG frames saved by :meth:`update` into a video via ffmpeg.
+
+        Requires :attr:`avi_name` to be set and ffmpeg on ``PATH``.
+        Input pattern: ``<avi_name>/<avi_name>%d.jpg``.
+
+        @param output_file  output path incl. extension; defaults to ``<avi_name>.mp4``
+        @param fps          frames per second (default 10)
+        @param codec        ffmpeg codec (default ``"libx264"``; use ``"mpeg4"`` for .avi)
+        """
+        import subprocess
+
+        if not self.avi_name:
+            raise ValueError("avi_name is not set; no frames to assemble.")
+
+        if output_file is None:
+            output_file = f"{self.avi_name}.mp4"
+
+        frame_pattern = os.path.join(self.avi_name, f"{self.avi_name}%d.jpg")
+
+        cmd = [
+            "ffmpeg",
+            "-y",  # overwrite output without asking
+            "-r",
+            str(fps),
+            "-i",
+            frame_pattern,
+            "-vcodec",
+            codec,
+            "-pix_fmt",
+            "yuv420p",  # broad player compatibility
+            output_file,
+        ]
+
+        print(f"Running: {' '.join(cmd)}")
+        subprocess.run(cmd, check=True)
+        print(f"Video saved to {output_file}")

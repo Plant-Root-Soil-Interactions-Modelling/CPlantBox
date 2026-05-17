@@ -100,7 +100,7 @@ render_every = 1
 
 # Set to a base filename (e.g. "grassleaf_") to export JPEG frames, or
 # leave as None to skip frame export.
-save_frames = None  # e.g. "grassleaf_"
+save_frames = "grassleaf_"  # e.g. "grassleaf_"
 
 # --------------------------------------------------------------------------- #
 #  3.  Warm-start: simulate until the plant has at least one segment so that
@@ -123,7 +123,7 @@ elapsed = warmup_steps * dt
 # --------------------------------------------------------------------------- #
 
 anim = AnimateRoots(plant)
-anim.root_name = "organType"  # colour by organ type (root / stem / leaf)
+anim.root_name = "age"
 anim.plant = True  # include leaf surface polygons via plot_plant
 if save_frames:
     anim.avi_name = save_frames
@@ -140,6 +140,7 @@ for i in range(remaining_steps):
     plant.simulate(dt, verbose=False)
     elapsed += dt
     if i % render_every == 0:
+        anim.simtime = elapsed
         anim.update()
 
 print(f"\nSimulation finished at t = {elapsed:.1f} days.")

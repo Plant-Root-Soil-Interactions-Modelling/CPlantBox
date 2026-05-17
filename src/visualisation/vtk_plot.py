@@ -33,9 +33,16 @@ def plot_leaf(leaf):
 
 
 def plot_plant(plant, p_name, render=True, interactiveImage=True):
-    """
-    @param interactiveImage         make image interactive or static (should be static for google Colab)
-    plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons
+    """Plots a whole plant: roots and stems as tubes, leaf blades as polygon meshes.
+
+    Both the tube actor and the leaf polygon actor share the same color lookup table,
+    so the scalar p_name is consistently colorized across all organ types.
+
+    @param plant            a pb.Organism (Plant, RootSystem) or pb.MappedSegments
+    @param p_name           parameter name to visualize (e.g. "age", "organType", "radius")
+    @param render           if True, opens an interactive VTK render window (default = True)
+    @param interactiveImage make image interactive or static (should be static for Google Colab)
+    @return ([tube_actor, leaf_actor], color_bar)
     """
     # plant as tube plot
     if isinstance(plant, pb.MappedSegments):
@@ -97,7 +104,20 @@ def plot_plant(plant, p_name, render=True, interactiveImage=True):
 
 
 def create_leaf_(leaf, leaf_points, leaf_polys):
-    """used by plot plant, and cplantbox dash gui; adds to leaf_points, and leaf_polys"""
+    """Tessellates a single leaf object into VTK polygon geometry.
+
+    Iterates over consecutive node pairs (i, i+1). For each pair, getLeafVis() returns
+    3D edge coordinates whose count encodes the cross-section shape:
+      - 2 points: simple convex blade  -> 2 quads (left and right half)
+      - 6 points: non-convex blade     -> 4 quads per segment
+      - 0 points: petiole / branched   -> segment is skipped
+    Transition segments (2->6 or 6->2) are handled with optional extra quads.
+
+    @param leaf         a pb.Leaf organ object
+    @param leaf_points  vtkPoints container to append polygon corner points to
+    @param leaf_polys   vtkCellArray container to append quad polygon cells to
+    @return list of global node IDs (y-index) for each generated quad, used for scalar coloring
+    """
     offs = leaf_points.GetNumberOfPoints()
     globalIdx_y = []  # index of y node
     for i in range(0, leaf.getNumberOfNodes() - 1):  #
@@ -143,7 +163,17 @@ def create_leaf_(leaf, leaf_points, leaf_polys):
 
 
 def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
-    """used by create_leaf_"""
+    """Appends a single quadrilateral polygon (a, b, c, d) to the VTK geometry containers.
+
+    Points are inserted in winding order: axis node, left edge, right edge, next axis node.
+    The polygon cell references these four points by consecutive indices starting at offs.
+
+    @param a, b, c, d   four Vector3d corner points of the quad
+    @param leaf_points  vtkPoints container to append to
+    @param leaf_polys   vtkCellArray container to append the quad cell to
+    @param offs         current point offset index
+    @return updated offset (offs + 4)
+    """
     q = vtk.vtkPolygon()
     q.GetPointIds().SetNumberOfIds(4)
     for j in range(0, 4):
