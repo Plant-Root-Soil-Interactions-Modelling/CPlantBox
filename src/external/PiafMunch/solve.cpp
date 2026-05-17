@@ -222,6 +222,7 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 		
 		if (QSTi < 0.){ QSTi = 0. ; Q_ST[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
 		if (Q_Mesophyll[i] < 0.){ Q_Mesophyll[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
+		if (Q_S_ST[i] < 0.){ Q_S_ST[i] =0;}
 		C_ST[i] = QSTi / volSTi ; // Concentration of sugar in sieve tubes		(mmol / ml)
 		if (Q_Auxin[i] < 0.){ Q_Auxin[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
         C_Auxin[i] = Q_Auxin[i] / volSTi ;

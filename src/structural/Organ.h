@@ -140,6 +140,7 @@ public:
     bool active = true; ///< true: active, false: organ stopped growing
     double age = 0; ///< current age [days]
 	std::vector<int> getLlocalId_linking_nodes(){return localId_linking_nodes;};
+	std::vector<int> localGrowingNodesId;
 	
 protected:
 

@@ -366,7 +366,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("budStageChange", &Organ::budStageChange)
             .def_readwrite("parentLinkingNode", &Organ::parentLinkingNode)
            .def("getLlocalId_linking_nodes", &Organ::getLlocalId_linking_nodes)
-           .def_readwrite("parentLinkingNode", &Organ::parentLinkingNode);
+           .def_readwrite("parentLinkingNode", &Organ::parentLinkingNode)
+           .def_readwrite("alive", &Organ::alive)
+           .def_readwrite("active", &Organ::active);
 
     /*
      * Organism.h
@@ -1054,6 +1056,8 @@ PYBIND11_MODULE(plantbox, m) {
 					py::arg("sxx")  , py::arg("ea"),py::arg("es"),py::arg("TleafK")  ,
 					py::arg("cells") = true,py::arg("soil_k") = std::vector<double>(),
 					py::arg("doLog")=false, py::arg("verbose")=true,    py::arg("outputDir")="")
+            .def("getAg4Phloem", &Photosynthesis::getAg4Phloem)
+            .def_readwrite("seg_leaves_idx", &Photosynthesis::seg_leaves_idx)
             .def_readwrite("PhotoType", &Photosynthesis::PhotoType)
             .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
             .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
@@ -1234,8 +1238,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("delta_ls_org_imax",&PhloemFlux::delta_ls_org_imax)
             .def_readwrite("delta_ls_org_max",&PhloemFlux::delta_ls_org_max)
             .def_readwrite("update_viscosity",&PhloemFlux::update_viscosity_)
+            .def_readwrite("initVal_S_ST",&PhloemFlux::initVal_S_ST)
             .def_readwrite("AgPhl",&PhloemFlux::Agv)
-            .def_readwrite("Q_Grmax",&PhloemFlux::Q_Grmaxv)
+            .def_readwrite("Q_Grmaxv",&PhloemFlux::Q_Grmaxv)
             .def_readwrite("Q_Exudmax",&PhloemFlux::Q_Exudmaxv)
             .def_readwrite("Q_Rmmax",&PhloemFlux::Q_Rmmaxv)
             .def_readwrite("Fl",&PhloemFlux::Flv)

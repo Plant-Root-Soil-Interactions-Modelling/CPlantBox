@@ -56,6 +56,7 @@ sim_time = 1400/20  # days
 len_phytomeres = []
 numP = []
 len_leaves = []
+len_buds = []
 
 min_ = np.array([-20, -20, -50])
 max_ = np.array([20, 20, 30.])
@@ -90,15 +91,23 @@ for i in range(N):
     lengthkids[:len(__)] = __
     len_phytomeres.append(lengthP)
     len_leaves.append(lengthkids)
+    
+    lengthkids = np.zeros(60)
+    __ = np.array([stem.getChild(np).getLength(False)/0.15 for np in range(stem.getNumberOfChildren()) if stem.getChild(np).organType() == pb.stem])
+    lengthkids[:len(__)] = __
+    len_buds.append(lengthkids)
     print(dt * (i+1), sum(lengthP > 0.0), stem.getLength(True), stem.getLength(False))
-    print("\tepsilonDxPerPhyto",epsilonDxPerPhyto)
-    print("\tlengthP",lengthP)
+    print('age leaf',np.array([stem.getChild(np).getAge() for np in range(stem.getNumberOfChildren()) if stem.getChild(np).organType() == pb.leaf]))
+    print('age bud',np.array([stem.getChild(np).getAge() for np in range(stem.getNumberOfChildren()) if stem.getChild(np).organType() == pb.stem]))
+    #print("\tepsilonDxPerPhyto",epsilonDxPerPhyto)
+    #print("\tlengthP",lengthP)
     numP.append(sum(lengthP > 0.0))
     
     
         
 len_phytomeres = np.array(len_phytomeres).T
 len_leaves = np.array(len_leaves).T
+len_buds = np.array(len_buds).T
 
 
 # choose a colormap with enough distinct colors
@@ -106,12 +115,11 @@ cmap = plt.get_cmap('tab10')
 
 fig, ax = figure_style.subplots12(1, 1)
 
-# fig supplementary material of Barillotb
-for idp, len_phytomere in enumerate(len_phytomeres):
-    if idp < 12:
+for idp, len_bud in enumerate(len_buds):
+    if idp < 9:
         color = cmap(idp % cmap.N)  # ensures cycling if more than 10
         x = [dt * (i+1) * 20 for i in range(N)]
-        ax.plot(x, len_phytomere, color=color, label=f'phytomere {idp}')
+        ax.plot(x, len_bud, color=color, label=f'phytomere {idp}')
 
 for idp, len_leaf in enumerate(len_leaves):
     if idp < 9:
@@ -123,6 +131,24 @@ ax.set_xlim([0, 310])
 ax.legend()  # optional but useful now
 plt.show()
 
+# fig, ax = figure_style.subplots12(1, 1)
+
+# # check buds creation time
+# for idp, len_leaf in enumerate(len_leaves):
+    # if idp < 9:
+        # color = cmap(idp % cmap.N)
+        # x = [dt * (i+1) * 20 for i in range(N)]
+        # ax.scatter(x, len_leaf, color=color, label=f'leaf {idp}')
+
+# for idp, len_leaf in enumerate(len_leaves):
+    # if idp < 9:
+        # color = cmap(idp % cmap.N)
+        # x = [dt * (i+1) * 20 for i in range(N)]
+        # ax.scatter(x, len_leaf, color=color, label=f'leaf {idp}')
+
+# ax.set_xlim([0, 310])
+# ax.legend()  # optional but useful now
+# plt.show()
 
 # fig 7 barillot7
 fig, ax = figure_style.subplots12(1, 1)

@@ -179,6 +179,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
         if((Q_S_ST[i] <= 0.) && (Q_S_ST_dot[i] < 0.)) { // control negative starch concentrations (remove 4-lines-block if not relevant)
             //cout << "at t=" << t << ", node#" << i << ": Starch <= 0 and Starch_dot < 0  =>  Starch_dot set to zero" << endl ;
             Q_S_ST_dot[i] = 0. ;
+			Q_S_ST[i] = 0.;
         }
 		
 		

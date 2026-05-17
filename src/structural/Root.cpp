@@ -1,5 +1,6 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "Root.h"
+#include "Plant.h"
 #include <numeric>
 
 namespace CPlantBox {
@@ -109,16 +110,32 @@ double Root::getTheoreticalGrowth(double dt)
 
 
             if (active) {
-                // length increment
-                double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
-                double dt_; // time step
-                if (age_temp<dt) { // the root emerged in this time step, adjust time step
-                    dt_= age_temp;
-                } else {
-                    dt_=dt;
-                }
+				auto f_gf = getPlant()->createGrowthFunction(this->getParameter("gf"));
+				if(this->getParameter("gf") == 4)
+				{
+					f_gf =  getPlant()->createGrowthFunction(2);
+				}
+				if(this->getParameter("gf") == 3)
+				{
+					f_gf =  getPlant()->createGrowthFunction(1);
+				}	
+				double Linit = this->getLength(false);//theoretical length 
+				double age_ = f_gf->getAge(Linit,  this->getParameter("r"), this->getParameter("k"), this->shared_from_this());		
+				//	params to compute growth
+				double targetlength = f_gf->getLength(age_ + dt , this->getParameter("r"), this->getParameter("k"), this->shared_from_this());
+				
+				e = std::max(0.,targetlength-Linit);// unimpeded elongation in time step dt
+		
+                // // length increment
+                // double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+                // double dt_; // time step org
+                // if (age_temp<dt) { // the root emerged in this time step, adjust time step
+                    // dt_= age_temp;
+                // } else {
+                    // dt_=dt;
+                // }
 
-                double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
+                // double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
 
                 e = targetlength-length; // unimpeded elongation in time step dt
 			}

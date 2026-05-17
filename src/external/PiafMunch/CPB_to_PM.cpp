@@ -361,6 +361,7 @@ void CPB_to_PM::waterLimitedGrowth(std::shared_ptr<CPlantBox::Organ> org,
 		int st = org->getParameter("subType");
 		double deltaSucGrowth_tot = 0.;
 		double rhoSucrose_double = rhoSucrose_f(st,ot);
+		org->localGrowingNodesId = localGrowingNodesId;
 		for(int localNodeId : localGrowingNodesId) // fill out the sink power at each node
 		{
 			int nodeId = org->getNodeId(localNodeId);

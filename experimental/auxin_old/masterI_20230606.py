@@ -10,11 +10,13 @@ Q:
 - stop respiration if it leads to C_ST below 0
 - see where that comes from: corrupted size vs. prev_size in the new version
 - check that od and new version give the same restuls
-- why suc tested is negative
-- suc balance also causes issue
+- StopLoss: do only for auxin
+- with so much exudation, we should have the roots growing. also why is growth_th changing for the static roots.
 - recalibrate for correct carbon-dependent growth:
-    - reserve of S_ST at the beginning
-    - change of density?
+    - highlight when grown: get the correct growth
+    - k_S_ST, C_me => correct growth at night when growth
+    - get concentration pick after decapitation
+    - reserve of S_ST at the beginning (change of density or An?)
 """
 import types
 import importlib
@@ -102,7 +104,7 @@ def weather(simDuration, Qmax):
     Pair = 1010.00 #hPa
     thetaInit = 30/100
 
-    coefhours = 1#stairs(simDuration)#sinusoidal(simDuration)
+    coefhours = stairs(simDuration)#sinusoidal(simDuration)
     TairC_ = Tmin + (Tmax - Tmin) * coefhours
     Q_ = Qmin + (Qmax - Qmin) * coefhours
     cs = 350e-6 #co2 paartial pressure at leaf surface (mol mol-1)
@@ -122,7 +124,7 @@ def weather(simDuration, Qmax):
 def div0(a, b, c):        
     return np.divide(a, b, out=np.full(len(a), c), where=b!=0)
     
-def div0f(a, b, c):    
+def div0f(a, b, c = 1.):    
     if b != 0:
         return a/b
     else:
@@ -221,7 +223,7 @@ def setKrKx_phloem(r): #inC
     #radial conductivity [1/day],
     kr_l  = 0.#3.83e-4 * hPa2cm# init: 3.83e-4 cm/d/hPa
     kr_s  = 0.#1.e-20  * hPa2cm # set to almost 0
-    kroot = 5e-2
+    kroot = 5e-3
     kr_r0 = kroot
     kr_r1 = kroot
     kr_r2 = kroot 
@@ -259,12 +261,22 @@ def successPointsDefault(rinput, timeSinceDecap_,i, simtime, memoryCondition, no
 
 from pathlib import Path
 
+def killChildren(orgToKill):
+    toFill = orgToKill.getNodeIds()
+    orgToKill.alive = False
+    orgToKill.active = False
+    orgToKill.budStage = -1
+    if orgToKill.getNumberOfChildren() > 0:
+        toFill_ = [killChildren(orgToKill.getChild(ni)) for ni in range(orgToKill.getNumberOfChildren())]
+        toFill_ = [item for sublist in toFill_ for item in sublist]
+        toFill = toFill + toFill_
+    return toFill
           
 def runSim(directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, 
            Qmax_, thresholdSuc,useLength,
            maxLBud , maxLBudDormant,#maxLBudDormant_1,
-           budGR,L_dead_threshold ,
+           L_dead_threshold ,
            nodeD, thread,  
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
            doPrint ,doDict, auxin_D = 0.,kss=0.2,kaa=1., 
@@ -329,7 +341,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         print("input", np.array([directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, 
            Qmax_, thresholdSuc,
-           maxLBud , budGR,L_dead_threshold ,
+           maxLBud , L_dead_threshold ,
            nodeD, thread,  
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
            doPrint ,doDict, auxin_D,Klight ]))
@@ -346,7 +358,7 @@ def runSim(directoryN_,doVTP, verbosebase,
            "PRate_", "thresholdAux", "RatiothresholdAux", 
            "Qmax_", "thresholdSuc","useLength",
             "maxLBud[0]" , "maxLBudDormant[0]","maxLBudDormant[1]","maxLBudDormant[2]",
-                      "budGR","L_dead_threshold" ,
+                      "L_dead_threshold" ,
            "nodeD", "thread",  
            "testTime", "dtBefore", "dtAfter", "start_time", "dt_write","dtSIM_write",
            "doPrint" ,"doDict", "auxin_D","kss", "kaa" ,
@@ -356,7 +368,7 @@ def runSim(directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, 
            Qmax_, thresholdSuc,useLength,
            maxLBud[0] , maxLBudDormant[0],maxLBudDormant[1],maxLBudDormant[2],
-           budGR,L_dead_threshold ,
+           L_dead_threshold ,
            nodeD, thread,  
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
            doPrint ,doDict, auxin_D ,kss,kaa, 
@@ -401,11 +413,11 @@ def runSim(directoryN_,doVTP, verbosebase,
     pl.initialize(verbose = False)#, stochastic = False)
     pl.maxLBud = maxLBud
     pl.maxLBudDormant = maxLBudDormant
-    pl.budGR = budGR
+    pl.budGR = 1.8
     leafArea = np.array([])
     budlength = np.array([])
     while (len(pl.getOrgans(3, False)) ==0 ) or (pl.getOrgans(3, False)[0].getNumberOfLinkingNodes() < (3)) or (len(leafArea)<3) or (sum(leafArea) < (0.69)):
-        pl.simulate(20, False)
+        pl.simulate(8, False) #20
         scalLeaves = pl.getOrgans(4, True)
         leafArea = np.array([org.getLength(True) * org.getParameter("Width_blade") for org in scalLeaves])
         stems = pl.getOrgans(3, True)[1:]
@@ -470,15 +482,17 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.alpha = 0.27
     r.theta = 0.51
     r.k_meso = 1e-3
-    r.cpb_2_pm.setKrm2([[2e-4 * 0.]])
-    r.cpb_2_pm.setKrm1([[1.3e-1 * 0.]])
+    r.cpb_2_pm.setKrm2([[2e-5 ]])
+    r.cpb_2_pm.setKrm1([[1.3e-2 ]])
     rho_org = [[0.,1.3,1.3,1.3],[0.,1.4,1.4,1.4],[0.,1.5,1.5,1.5,1.5]]#g glucose/gDW
     
     density = 0.17 #g DW/cm3
-    #density and rho in mmol suc or carbon?
-    rho_org = np.array([np.array(xi) for xi in rho_org],dtype=object)*density/2 #/2 => glucose to sucrose
+    g_2_mmolSuc = 2.92 
+    #density and rho in mmol suc
+    rho_org = np.array([np.array(xi) for xi in rho_org],dtype=object)*density/2 * g_2_mmolSuc #/2 => glucose to sucrose
     r.cpb_2_pm.setRhoSucrose(rho_org)
-    grRate = [[0.,4.,2.,1.0,4.],[0.,1.8,1.8,1.8],[0.,3.,3.,3.,3.]]
+    grRoot = 1.3
+    grRate = [[0.,2.*grRoot,0.7*grRoot,0.5*grRoot,2.*grRoot],[0.,1.,1.,1.],[0.,1.,1.,1.,1.]]
     grRate = np.array([np.array(xi) for xi in grRate],dtype=object)
     
     r.cpb_2_pm.setRmax_st(grRate)
@@ -487,21 +501,22 @@ def runSim(directoryN_,doVTP, verbosebase,
     #r.k_gr = 1#0
     r.sameVolume_meso_st = False
     r.sameVolume_meso_seg = True
-    r.withInitVal =True
-    r.initValST = 0.#0.15
+    r.withInitVal = True
+    r.initValST = 0.3
+    r.initVal_S_ST = 1e10
     r.initValMeso = 0.#0.2
     r.beta_loading = 10
     r.Vmaxloading = 0.3 #mmol/d, needed mean loading rate:  0.3788921068507634
     r.Mloading = 3.3*1e-3#0.2#
     r.Gr_Y = 1#0.75
     r.CSTimin = 0.25#0.3#    
-    r.k_S_ST = 5/25 *100  #daudet2002
-    r.C_targ =r.CSTimin
+    r.k_S_ST = 5/25 *1000  #daudet2002
+    r.C_targ = r.CSTimin * 6
     #r.surfMeso=0.0025
     #r.cs = weatherInit["cs"]
 
     r.expression = 6
-    r.update_viscosity = True
+    r.update_viscosity = False
     r.solver = 1
     r.atol = 1e-10# 1e-14
     r.rtol = 1e-6#1e-10
@@ -630,7 +645,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     InAuxin = 0
     #r.canStartActivating = False
     r.cpb_2_pm.CSTthreshold = thresholdSuc 
-    r.StopLoss = True
+    r.StopLoss = True #// when add a new segment, create an initial concentraiton to avoid empty puls
     
     r.cpb_2_pm.L_dead_threshold = L_dead_threshold
     orgs_stems = r.plant.getOrgans(3, True)
@@ -647,15 +662,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.useLength = useLength
     r.leafAsIAASource = leafAsIAASource_ #only young expending leaf production is relevant
     r.cpb_2_pm.limLenActive = limLenActive_
-    def killChildren(orgToKill):
-        toFill = orgToKill.getNodeIds()
-        orgToKill.alive = False
-        orgToKill.budStage = -1
-        if orgToKill.getNumberOfChildren() > 0:
-            toFill_ = [killChildren(orgToKill.getChild(ni)) for ni in range(orgToKill.getNumberOfChildren())]
-            toFill_ = [item for sublist in toFill_ for item in sublist]
-            toFill = toFill + toFill_
-        return toFill
+
     
     
     
@@ -667,11 +674,14 @@ def runSim(directoryN_,doVTP, verbosebase,
 
     stem = r.plant.getOrgans(3, False)[0]
     leaves = np.array([stem.getChild(np) for np in range(stem.getNumberOfChildren()) if stem.getChild(np).organType() == pb.leaf])
-    roots = r.plant.getOrgans(2, False)
+    roots = r.plant.getOrgans(2, True)
     lln = stem.getLlocalId_linking_nodes()
     lln = np.diff([stem.getLength(lln_i) for lln_i in lln]) + np.array(stem.epsilonDxPerPhyto) 
     ll = np.array([ll.getLength(False) for ll in leaves])
-    lr = np.array([ll.getLength(False) for ll in roots])
+
+    lr = np.array([ll_.getLength(False) for ll_ in roots])
+    idRoots = np.array([ll_.getId() for ll_ in roots])
+    lr = dict(zip(idRoots, lr))
     grr_th = np.array([np.nan])
     while  simDuration < simMax:#
         temp_time = time.time()
@@ -683,24 +693,28 @@ def runSim(directoryN_,doVTP, verbosebase,
             weatherX = weather(simDuration+toAdd, Qmax_)
             
             
-        print('solve water')
-        r.solve(sim_time = simDuration, 
-                rsx=sx, 
-                 ea= weatherX["ea"], es= weatherX["es"], 
-                 PAR = weatherX["Qlight"] * (24 * 3600) / 1e4 , # [mol photons m-2 s-1] to [mol photons cm-2 d-1] 
-                 TairC = weatherX["TairC"])  
-        print('ok water')
+        # print('solve water')
+        # r.solve(sim_time = simDuration, 
+                # rsx=sx, 
+                 # ea= weatherX["ea"], es= weatherX["es"], 
+                 # PAR = weatherX["Qlight"] * (24 * 3600) / 1e4 , # [mol photons m-2 s-1] to [mol photons cm-2 d-1] 
+                 # TairC = weatherX["TairC"])  
+        # print('ok water')
         
-        ots = np.concatenate((np.array([0]), r.get_organ_types()))#per node
-        leavesSegs = np.where(ots[1:] ==4)
-        fluxes = np.array(r.outputFlux)
-        fluxes_leaves = fluxes[leavesSegs]
-        errLeuning = sum(r.outputFlux)
-            
+        r.seg_leaves_idx = r.rs.getSegmentIds(4)
+        leafBladeSurface = np.array(r.rs.leafBladeSurface)[np.array( r.seg_leaves_idx)]
+        An = np.zeros(len(leafBladeSurface))
+        An[leafBladeSurface > 0.] = 15e-6 * weatherX["Qlight"]/(1000e-6 ) /2.
+        r.An = An
+        assert((weatherX["Qlight"]/(1000e-6 )) <= 1.)
         """ dumux """    
-        fluxesSoil = r.soil_fluxes(simDuration, r.psiXyl, sx)
-        #r.doTroubleshooting = (ö == 22)
-        #r.Ag4Phloem = np.full(len(r.Ag4Phloem),0)
+        r.getAg4Phloem() # 0.88  mmol Suc d-1
+        # growth shoot, theory = 0.88*0.2 = 0.177  mmol Suc d-1
+        # real growth use: 
+        #       stem: 0.5 * 2* np.pi * (0.5 ** 2) * 1.4 * 0.17 = 0.187  mmol Suc d-1
+        #       leaf: 0.5 * 4 * 0.05 * 6.8 * 1.5 * 0.17
+        
+        
         AnSum += np.sum(r.Ag4Phloem)*dt
         startphloem= simDuration
         endphloem = startphloem + dt
@@ -719,12 +733,9 @@ def runSim(directoryN_,doVTP, verbosebase,
         r.stopAt = -1 
         if doStartPM:
             try:
-                
                 print('solve sucrose')
-                r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)
-                
-                print('ok sucrose')
-            
+                r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)                
+                print('ok sucrose')            
             except:
                 print("error while running r.startPM",thread, simDuration)
                 r.doTroubleshooting = True
@@ -770,11 +781,28 @@ def runSim(directoryN_,doVTP, verbosebase,
         Q_MesoLost = np.array(r.SucMesoLost)
         manualAddST =  np.array(r.manualAddST)
         manualAddMeso =  np.array(r.manualAddMeso)
+            
+        if (r.withInitVal) and (len(Q_ST_init) == 0) :
+            Q_ST_init = r.initValST * volST
+            Q_S_ST_init = r.initVal_S_ST * volST
+            Q_meso_init = r.initValMeso * volMeso
+            Q_meso_init[volMeso < 0.] = 0. 
         
-        error   = sum(Q_ST +Q_meso + Q_out + Q_STLost + Q_MesoLost)- Q_in - sum(Q_ST_init)  - sum(Q_meso_init) - sum(manualAddST) -sum(manualAddMeso)
-        
+        # if (len(r.Q_init) >0 ) and (len(Q_ST_init) ==0): # somehow not working
+            # Q_ST_init = np.array(r.Q_init[0:Ntbu])
+            # Q_meso_init = np.array(r.Q_init[Ntbu:(Ntbu*2)])
+            # Q_AuxinInit  = np.array(r.Q_init[(Ntbu*9):(Ntbu*10)])
+            
+        error   = sum(Q_ST +Q_meso + Q_out + Q_STLost + Q_MesoLost + Q_S_ST)- Q_in - sum(Q_ST_init) - sum(Q_S_ST_init)  - sum(Q_meso_init) - sum(manualAddST) -sum(manualAddMeso)
+        Q_labile = Q_ST + Q_meso + Q_S_ST
         Q_Rmmax       = np.array(r.Q_out[(Nt*5):(Nt*6)])
         Q_Grmax       = np.array(r.Q_out[(Nt*6):(Nt*7)])
+        Q_GrmaxBis       = r.Q_Grmaxv
+        # print(Q_Grmax)
+        # print(Q_GrmaxBis)
+        # print(dt)
+        # print(np.array(Q_Grmax) - np.array(Q_GrmaxBis)*dt)
+        #raise Exception
         Q_Exudmax     = Q_Exud.copy()
         
         Q_ST_i        = Q_ST      - Q_STbu
@@ -836,22 +864,25 @@ def runSim(directoryN_,doVTP, verbosebase,
             
         if __name__ == '__main__':
             #int(((simDuration%1)%24)*(24*60)),"mn",
-            print("\n\n\n\t\tat ", int(np.floor(simDuration)),"d", int((simDuration%1)*24),"h",round(np.mean(r.Qlight) *1e6),"mumol m-2 s-1",
+            print("\n\n\n\t\tat ", int(np.floor(simDuration)),"d", int((simDuration%1)*24),"h",round(weatherX["Qlight"] *1e6),"mumol m-2 s-1",
                     'burnInTime?',r.burnInTime,'doDecapitation?',doDecapitation)
             if Q_in >0.:
                 print("Error in Suc_balance:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(error, div0f(error,Q_in, 1.)))
             #print("Error in growth:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(errorGri, relErrorGri))
-            print("Error in photos:\n\tabs (cm3/day) {:5.2e}".format(errLeuning))
-            print("water fluxes (cm3/day):\n\ttrans {:5.2e}\tmin {:5.2e}\tmax {:5.2e}".format(sum(fluxesSoil.values()), min(fluxesSoil.values()), max(fluxesSoil.values())))
+            #print("Error in photos:\n\tabs (cm3/day) {:5.2e}".format(errLeuning))
+            #print("water fluxes (cm3/day):\n\ttrans {:5.2e}\tmin {:5.2e}\tmax {:5.2e}".format(sum(fluxesSoil.values()), min(fluxesSoil.values()), max(fluxesSoil.values()))) Q_S_ST
             if Q_in >0.:
+                print("tot balance",'leafBladeSurface',sum(leafBladeSurface),'an',sum(r.An), sum(r.Ag4Phloem),sum(r.AgPhl),
+                            'Q_S_ST', sum(Q_S_ST), 'Q_meso', sum(Q_meso), 'Q_ST', sum(Q_ST), 'Q_Gr', sum(Q_Gr),
+                                'Q_Rm', sum(Q_Rm), 'Q_Exud', sum(Q_Exud))
                 print("C_ST (mmol ml-1):\n\tmean {:.2e}\tmin  {:5.2e} at {:d} segs \tmax  {:5.2e}".format(np.mean(C_ST), min(C_ST), len(np.where(C_ST == min(C_ST) )[0]), max(C_ST)))        
-                print("C_S_ST (mmol ml-1):\n\tmean {:.2e}\tmin  {:5.2e} \tmax  {:5.2e}".format(np.mean(C_S_ST), min(C_S_ST), max(C_S_ST)))        
+                print("C_S_ST (mmol ml-1):\n\tmean {:.2e}\tmin  {:5.2e} \tmax  {:5.2e}".format(np.mean(C_S_ST), min(C_S_ST), max(C_S_ST)))            
                 print("C_me (mmol ml-1):\n\tmean {:.2e}\tmin  {:5.2e}\tmax  {:5.2e}".format(np.mean(C_meso), min(C_meso), max(C_meso)))        
                 #print('Q_X (mmol Suc): \n\tST   {:.2e}\tmeso {:5.2e}\tin   {:5.2e}'.format(sum(Q_ST), sum(Q_meso), Q_in))
-                #print('\tRm   {:.2e}\tGr   {:.2e}\tExud {:5.2e}'.format(sum(Q_Rm), sum(Q_Gr), sum(Q_Exud)))
+                #print('\tRm   {:.2e}\tGr   {:.2e}\tExud {:5.2e}'.format(sum(Q_Rm), sum(Q_Gr), sum(Q_Exud))) Q_labile
                 print('init\tST  {:.2e}\tmeso   {:.2e}'.format(sum(Q_ST_init), sum(Q_meso_init)))
                 print("aggregated sink satisfaction at last time step (%)\n\ttot {:5.1f}\tRm {:5.1f}\tGr {:5.1f}".format(
-                    sum(Q_out_i)/sum(Q_outmax_i)*100,sum(Q_Rm_i)/sum(Q_Rmmax_i)*100, 
+                     div0f(sum(Q_Rm_i+ Q_Gr_i),sum(Q_Rmmax_i + Q_Grmax_i))*100,div0f(sum(Q_Rm_i),sum(Q_Rmmax_i))*100, 
                      div0f(sum(Q_Gr_i), sum(Q_Grmax_i), 1.)*100))
                 print("aggregated sink repartition at last time step (%):\n\tRm {:5.1f}\tGr {:5.1f}\tExud {:5.1f}".format(sum(Q_Rm_i)/sum(Q_out_i)*100, 
                      sum(Q_Gr_i)/sum(Q_out_i)*100,sum(Q_Exud_i)/sum(Q_out_i)*100))
@@ -859,6 +890,10 @@ def runSim(directoryN_,doVTP, verbosebase,
                      sum(Q_Gr)/sum(Q_out)*100,sum(Q_Exud)/sum(Q_out)*100))
                 print("aggregated sink repartition for max (%) :\n\tRm   {:5.1f}\tGr   {:5.1f}\tExud {:5.1f}".format(sum(Q_Rmmax_i)/sum(Q_outmax_i)*100, 
                      sum(Q_Grmax_i)/sum(Q_outmax_i)*100,sum(Q_Exudmax_i)/sum(Q_outmax_i)*100))
+                print("aggregated C repartition (%) :\n\tRm   {:5.1f}\tGr   {:5.1f}\tExud {:5.1f}\tLabile {:5.1f}".format(sum(Q_Rm)/sum(Q_out + Q_labile)*100, 
+                     sum(Q_Gr)/sum(Q_out + Q_labile)*100,sum(Q_Exud)/sum(Q_out + Q_labile)*100,sum(Q_labile)/sum(Q_out + Q_labile)*100))
+                print("aggregated Q_labile repartition (%) :\n\tQ_ST   {:5.1f}\tQ_S_ST   {:5.1f}\tQ_meso {:5.1f}".format(sum(Q_ST)/sum(Q_labile)*100, 
+                     sum(Q_S_ST)/sum(Q_labile)*100,sum(Q_meso)/sum(Q_labile)*100))
             print("Error in Aux_balance:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(
                     errorAuxin, div0f(errorAuxin,sum(Q_Auxin_stem), 1.)))
         
@@ -907,13 +942,7 @@ def runSim(directoryN_,doVTP, verbosebase,
 
             #write_file_array("idnodeOfOrg", idnodeOfOrg)
             
-            
-           
-            lengthth_org = np.array([org.getLength(False) for org in orgs])
-            length_org = np.array([org.getLength(True) for org in orgs])
-            parentOrgId = np.array([org.getParent().getId() for org in orgs])
-            ownOrgId = np.array([org.getId() for org in orgs])
-            distFromParentBase = np.array([org.getParent().getLength(org.parentNI) for org in orgs])
+                
             #write_file_array("length_org", length_org)
             write_file_array("lengthth_org", lengthth_org)
             
@@ -926,7 +955,6 @@ def runSim(directoryN_,doVTP, verbosebase,
             write_file_array("ownOrgId", ownOrgId)
             write_file_array("distFromParentBase", distFromParentBase)
 
-            sucTested = np.array([org.sucTested for org in orgs])
             write_file_array("sucTested", sucTested)#only take shoot C
             write_file_array("sucTestedWeighted",sucTested*lengthth_org)
             #Q_GrmaxPerOrg = [np.mean(Q_Grmax[org.getNodeIds()[1:]]) for org in orgs]
@@ -944,10 +972,6 @@ def runSim(directoryN_,doVTP, verbosebase,
             write_file_array("agesStems", agesStems)
             budStage = np.array([org.budStage for org in orgs]) 
             write_file_array("budStage", budStage)
-            #if(simDuration > 15.43):#- (simMax  - testTime)> 0.5):
-            #    orgs[nodeD -1 ].budStage = 2
-            #if(simDuration - (simMax  - testTime)> 1.5):
-            #    orgs[nodeD -2 ].budStage = 2
             BerthFact = np.array([org.BerthFact for org in orgs]) 
             write_file_array("BerthFact", BerthFact)
             budStageChange = np.array([org.budStageChange for org in orgs]) 
@@ -969,16 +993,26 @@ def runSim(directoryN_,doVTP, verbosebase,
                 print("sucTested",sucTested)
                 print("auxTested",auxTested)
                 print("lengthth_buds",lengthth_org)
+                print("buds_age",buds_age)
                 print("BerthFact",BerthFact)
                 print("budStage",budStage)
                 print("sum aux source", sum(AuxinSource))
                 print("stem length",lln)
                 print("growth rate",(lln - lln_old)/dt)
                 print("leaf_th length",ll)
+                #print('true', ll_true)
                 print("growth rate",(ll - ll_old)/dt)
-                print("root_th length",lr)
-                print("growth rate",(lr - lr)/dt)
-                print("growth_th",grr_th)
+                print('leaf ages',leaf_ages)
+                #print("get ids",idRoots)
+                print("root_th length",sum([value.item() for key, value in lr.items()]))
+                gr_real = []
+                for key, value in lr.items():
+                    if key in lr_old:
+                        gr_real.append((value.item() - lr_old[key].item())/dt)
+                    else:
+                        gr_real.append(value.item()/dt)
+                print("growth rate",sum(gr_real))
+                print("growth_th",sum(grr_th))
                 #print("leaf_obs length",np.array([ll.getLength(True) for ll in leaves]))
                 print("leaf",nodeD,growthUpToNode,len(leaves),leafArea,maxLeafArea)
                 print("do decapitate?",numLNodes, growthUpToNode, (not r.burnInTime), nodeD  , (not changedSimMax))
@@ -1011,6 +1045,18 @@ def runSim(directoryN_,doVTP, verbosebase,
             stem = r.plant.getOrgans(3, False)[0]
         
         ### size of phytomeres
+        
+
+        Mstem = r.plant.getOrgans(3, True)[0]#main shoot
+        orgs = np.array([Mstem.getChild(i) for i in range(Mstem.getNumberOfChildren()) if Mstem.getChild(i).organType() == pb.stem])#r.plant.getOrgans(3, True)
+        lengthth_org = np.array([org.getLength(False) for org in orgs])
+        buds_age = np.array([org.getAge() for org in orgs])
+        length_org = np.array([org.getLength(True) for org in orgs])
+        parentOrgId = np.array([org.getParent().getId() for org in orgs])
+        ownOrgId = np.array([org.getId() for org in orgs])
+        distFromParentBase = np.array([org.getParent().getLength(org.parentNI) for org in orgs])
+        sucTested = np.array([org.sucTested for org in orgs])
+        
         lln_old = lln
         epsilonDxPerPhyto = np.array(stem.epsilonDxPerPhyto)
         lln = stem.getLlocalId_linking_nodes()
@@ -1018,10 +1064,15 @@ def runSim(directoryN_,doVTP, verbosebase,
         numLNodes = np.sum(lln > 2.6)
         leaves = np.array([stem.getChild(np) for np in range(stem.getNumberOfChildren()) if stem.getChild(np).organType() == pb.leaf])
         ll_old = ll
-        ll = np.array([ll_.getLength(False) for ll_ in leaves])            
-        roots = r.plant.getOrgans(2, False)
+        ll = np.array([ll_.getLength(False) for ll_ in leaves])    
+        ll_true = np.array([ll_.getLength(False) for ll_ in leaves])             
+        roots = r.plant.getOrgans(2, True)
         lr_old = lr
         lr = np.array([ll_.getLength(False) for ll_ in roots])
+        idRoots = np.array([ll_.getId() for ll_ in roots])
+        lr = dict(zip(idRoots, lr))
+        leaf_ages = np.array([ll_.getAge() for ll_ in leaves]) 
+        
         
         leafArea = leaves[-1].getLength(False) * leaves[-1].getParameter("Width_blade")  
         maxLeafArea = leaves[-1].getParameter("k") * leaves[-1].getParameter("Width_blade") 
@@ -1074,6 +1125,7 @@ def runSim(directoryN_,doVTP, verbosebase,
             #raise Exception
             
         ###
+        #
         #4UQ
         #
         ###
@@ -1219,10 +1271,6 @@ def runSim(directoryN_,doVTP, verbosebase,
         Ntbu = Nt
         Nt = len(r.plant.nodes)
         
-            
-
-
-        
         Q_Rmbu       =   np.concatenate((Q_Rm, np.full(Nt - Ntbu, 0.)))
         Q_Grbu       =   np.concatenate((Q_Gr, np.full(Nt - Ntbu, 0.))) 
         Q_Exudbu     =   np.concatenate((Q_Exud, np.full(Nt - Ntbu, 0.))) 
@@ -1271,7 +1319,6 @@ def runSim(directoryN_,doVTP, verbosebase,
             Q_outTemp[0:Ntbu] = Q_ST   
             Q_outTemp[Ntbu:(Ntbu*2)] = Q_meso 
             r.Q_out = Q_outTemp
-            r.Q_init = Q_outTemp
             InAuxin =0
             Q_in = 0
             Q_Rmbu       =   np.full(Nt , 0.)
@@ -1292,10 +1339,6 @@ def runSim(directoryN_,doVTP, verbosebase,
             Q_out   = Q_Rm + Q_Exud + Q_Gr
             Q_STLost = np.array(r.SucSTLost)
             Q_MesoLost = np.array(r.SucMesoLost)
-            if (len(r.Q_init) >0 ) and (len(Q_ST_init) ==0):
-                Q_ST_init = np.array(r.Q_init[0:Ntbu])
-                Q_meso_init = np.array(r.Q_init[Ntbu:(Ntbu*2)])
-                Q_AuxinInit  = np.array(r.Q_init[(Ntbu*9):(Ntbu*10)])
                 
             error   = sum(Q_ST + Q_meso + Q_out + Q_STLost + Q_MesoLost)- Q_in - sum(Q_ST_init)  - sum(Q_meso_init)
             if abs(errorBU) < abs(error):
@@ -1434,7 +1477,7 @@ if __name__ == '__main__':
     
     assert nameSim in np.array(["DW","SLM","WT","WTD"])
     assert lightLevel in np.array(["low","medium","high"])
-    Qinit = 500*1e-6 
+    Qinit = 1000*1e-6 
     if lightLevel == "medium":
         Qinit *= 0.86 
     elif lightLevel == "low":
@@ -1444,13 +1487,13 @@ if __name__ == '__main__':
     BerthLim_ =  3.
     thresholdSuc_ = 1#3e-2 #*2*2
     simMax__ = -1
-    runSim(directoryN_ = directoryN, doVTP = 2, verbosebase = False,
+    runSim(directoryN_ = directoryN, doVTP = 0, verbosebase = False,
     PRate_ = 6.8e-3, thresholdAux = 0, 
      RatiothresholdAux = 1,useLength = 2,limLenActive_ = 1.5,
      Qmax_ = Qinit, Klight = 0.,
      thresholdSuc = thresholdSuc_, 
      maxLBud = np.array([1.,1.,1.,1.]),  maxLBudDormant = np.array([0.15,0.15,0.15,0.15]), #([0.1,0.15,0.05])
-     budGR = 1.8,L_dead_threshold=2000.,
+     L_dead_threshold=2000.,
      kss=0.2,kaa=1,
     BerthLim =BerthLim_,
      nodeD = 7, thread = 1,

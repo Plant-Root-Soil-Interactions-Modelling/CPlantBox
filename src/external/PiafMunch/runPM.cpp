@@ -329,17 +329,18 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	this->r_STv = r_ST.toCppVector() ;
 	this->JW_STv = JW_ST.toCppVector() ;
 	this->JS_STv = JS_ST.toCppVector() ;
-    if((!burnInTime)&&(plant->useCWGr))
-    {
+    //if((!burnInTime)&&(plant->useCWGr))
+    //{
         if(doTroubleshooting){
             std::cout<<"computeOrgGrowth"<<std::endl;
         }
         computeOrgGrowth(tf-t0);
         cpb_2_pm->updateBudStage(tf);
-    }else{
-		Q_GrowthtotBU = Fortran_vector(Nt, 0.) ;
-        Q_GrmaxBU = Fortran_vector(Nt, 0.) ;
-    }
+    //}
+	// else{
+		// Q_GrowthtotBU = Fortran_vector(Nt, 0.) ;
+        // Q_GrmaxBU = Fortran_vector(Nt, 0.) ;
+    // }
     
 	if(doTroubleshooting&&(!verbose)){std::cout.rdbuf(coutbuf);} //reset to standard output again
 	return(1) ;
@@ -621,34 +622,53 @@ void PhloemFlux::computeOrgGrowth(double t){
 	double delta_volOrg;
 	double delta_volOrgmax;
 	int orgID2 = 0;//needed as max(orgID) can be > plant->getOrgans(-1, true).size()
+	
+	Fortran_vector Delta_Q_Growthtot = Fortran_vector(Q_GrowthtotBU.size(),Q_Growthtot) - Q_GrowthtotBU;
 	for(auto org: orgs){
 		//double meanCST = org->getNodeIds()
 		int orgID = org->getId();
 		std::vector<int> nodeIds_;
+		for(int k=0;k< org->localGrowingNodesId.size();k++)//take  first node as might carry small laterals
+		{
+			nodeIds_.push_back(org->getNodeId(org->localGrowingNodesId.at(k)));
+		}
 		int ot = org->organType();
 		int st = org->getParameter("subType");
 		int nNodes = org->getNumberOfNodes();
 		if(doTroubleshooting){std::cout<<"org "<<orgID<<" "<<st<<" "<<ot<<" "<<nNodes<<std::endl;}
 		
-		if(ot == 2){
-			nodeIds_.push_back(org->getNodeId(nNodes-1));			
-			}else{nodeIds_ = org->getNodeIds();}
+		// if(ot == 2){
+			// nodeIds_.push_back(org->getNodeId(nNodes-1));			
+			// }else{nodeIds_ = org->getNodeIds();}
 		
 		delta_volOrg = 0;
 		delta_volOrgmax = 0;
 		std::vector<int> allnodeids = org->getNodeIds();
 		for(int k=0;k< nodeIds_.size();k++)//take  first node as might carry small laterals
 		{
+			int cpb_nodeId = nodeIds_.at(k);
+			int pm_nodeId =  I_Downflow[nodeIds_.at(k)];
+			// Q_Grmax[pm_nodeId] * t == cpb_2_pm->deltaSucOrgNode.at(nodeIds_.at(k)).at(-1)
 			double deltaSucmax_1 = 0;
-			if(cpb_2_pm->deltaSucOrgNode.at(nodeIds_.at(k)).count(orgID) !=0){
-				deltaSucmax_1 = cpb_2_pm->deltaSucOrgNode.at(nodeIds_.at(k)).at(orgID);//maxsuc needed for Gr
+			// Q_Grmax[nodeID] = cpb_2_pm->deltaSucOrgNode.at(k).at(-1)/Gr_Y/dt;
+			double ratio = 0.;
+			if(Q_Grmax[pm_nodeId] == 0.)
+			{
+				assert(cpb_2_pm->deltaSucOrgNode.at(cpb_nodeId).at(-1) == 0.);
+			}else{
+				ratio = (Delta_Q_Growthtot[pm_nodeId])/cpb_2_pm->deltaSucOrgNode.at(cpb_nodeId).at(-1); // satisfaction ratio
+			}
+			assert((ratio>=-1e-5)&&(ratio <= 1 + 1e-12));
+			ratio = std::min(std::max(ratio, 0.), 1.);
+			if(cpb_2_pm->deltaSucOrgNode.at(cpb_nodeId).count(orgID) !=0){
+				deltaSucmax_1 = cpb_2_pm->deltaSucOrgNode.at(cpb_nodeId).at(orgID) * ratio;//maxsuc needed for Gr
 				if(doTroubleshooting){std::cout<<"deltaSucmax_1 "<<org->getId()<<" "<<k<<" "<<deltaSucmax_1<<std::endl;}
 			}
 			double deltaSucmax_ = deltaSucmax_1 /Gr_Y;//max suc needed for Gtot
-			double deltaSuc = std::min(Q_Growthtot[nodeIds_.at(k) +1] - Q_GrowthtotBU[nodeIds_.at(k) +1], deltaSucmax_);
-			if((deltaSucmax_ > Q_Grmax[nodeIds_.at(k) +1]))
+			double deltaSuc = std::min(Q_Growthtot[pm_nodeId] - Q_GrowthtotBU[pm_nodeId], deltaSucmax_);
+			if((deltaSucmax_ > Q_Grmax[pm_nodeId] * t))
 			{
-				std::cout<<"error Q_Grmax "<<k<<" "<<(nodeIds_.at(k)+1)<<" "<<deltaSucmax_<<" "<<Q_Grmax[nodeIds_.at(k) +1]<<std::endl;
+				std::cout<<"error Q_Grmax "<<k<<" "<<pm_nodeId<<" "<<deltaSucmax_<<" "<<Q_Grmax[pm_nodeId]<<std::endl;
 				assert(false);
 			}
 			if((deltaSuc < 0.)&&(deltaSuc > -1e-5)){deltaSuc=0.;}
@@ -660,14 +680,14 @@ void PhloemFlux::computeOrgGrowth(double t){
 						
 			assert((delta_volOrg >= 0.) &&"negative delta_volOrg");
 			
-			Q_GrowthtotBU[nodeIds_.at(k) +1] += deltaSuc;//sucrose is spent
-			Q_GrmaxBU[nodeIds_.at(k) +1] += deltaSucmax_;//sucrose is spent
+			Q_GrowthtotBU[pm_nodeId] += deltaSuc;//sucrose is spent
+			Q_GrmaxBU[pm_nodeId] += deltaSucmax_;//sucrose is spent // TODO: here use +1 instead of DownFlow. ok?
 			
-			delta_vol_node_i.at(nodeIds_.at(k)) += deltaSuc*Gr_Y/cpb_2_pm->rhoSucrose_f(st,ot);
-			delta_vol_node.at(nodeIds_.at(k)) += deltaSuc*Gr_Y/cpb_2_pm->rhoSucrose_f(st,ot);
+			delta_vol_node_i.at(cpb_nodeId) += deltaSuc*Gr_Y/cpb_2_pm->rhoSucrose_f(st,ot);
+			delta_vol_node.at(cpb_nodeId) += deltaSuc*Gr_Y/cpb_2_pm->rhoSucrose_f(st,ot);
 			
-			delta_vol_node_imax.at(nodeIds_.at(k)) += deltaSucmax_*Gr_Y/cpb_2_pm->rhoSucrose_f(st,ot);
-			delta_vol_node_max.at(nodeIds_.at(k)) += deltaSucmax_*Gr_Y/cpb_2_pm->rhoSucrose_f(st,ot);
+			delta_vol_node_imax.at(cpb_nodeId) += deltaSucmax_*Gr_Y/cpb_2_pm->rhoSucrose_f(st,ot);
+			delta_vol_node_max.at(cpb_nodeId) += deltaSucmax_*Gr_Y/cpb_2_pm->rhoSucrose_f(st,ot);
 			
 			delta_suc_org.at(orgID2) += deltaSuc*Gr_Y;
 			
@@ -716,15 +736,17 @@ void PhloemFlux::computeOrgGrowth(double t){
 			assert((orgGr >= 0.) &&"negative orgGr");
 		if((delta_lmax < 0.)&&(delta_lmax > -1e-10)){delta_lmax=0.;}
 			assert((delta_lmax >= 0.) &&"negative delta_lmax");	
-		
-		if(ot == 2){//each organ type has it s own growth function (and thus CW_Gr map)
-			cWGrRoot.insert(std::pair<int, double>(orgID, orgGr));
-		}
-		if(ot == 3){
-			cWGrStem.insert(std::pair<int, double>(orgID, orgGr));
-		}
-		if(ot == 4){
-			cWGrLeaf.insert(std::pair<int, double>(orgID,orgGr));
+		if((!burnInTime)&&(plant->useCWGr))
+		{
+			if(ot == 2){//each organ type has it s own growth function (and thus CW_Gr map)
+				cWGrRoot.insert(std::pair<int, double>(orgID, orgGr));
+			}
+			if(ot == 3){
+				cWGrStem.insert(std::pair<int, double>(orgID, orgGr));
+			}
+			if(ot == 4){
+				cWGrLeaf.insert(std::pair<int, double>(orgID,orgGr));
+			}
 		}
 		if((cpb_2_pm->BackUpMaxGrowth[orgID] - newl)< -1e-10)
 		{

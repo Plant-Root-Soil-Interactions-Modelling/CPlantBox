@@ -167,6 +167,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double rtol_double = 1e-023;//max realtive error
 	double initValST = 0.8;//initial concentration in sieve tube
 	double initValMeso = 0.9;//initial concentration in mesophyll
+	double initVal_S_ST = 0.;
 	
 	//		boolean choices
     bool doTroubleshooting = false;
@@ -208,7 +209,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     std::vector<double> manualAddST;
     std::vector<double> manualAddMeso;
     std::vector<double> manualAddAux;
-    bool StopLoss = false;
+    bool StopLoss = false;// when add a new segment, create an initial concentraiton to avoid emptz puls
     double L_dead_threshold = 2.;
     double auxin_init_mean;
     double BerthLim = -1;

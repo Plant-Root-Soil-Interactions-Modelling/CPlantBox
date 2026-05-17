@@ -248,6 +248,7 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 			if(withInitVal){//initial value for mesophyll and sieve tube
 				for(int z = 0; z < Nt;z++){
 					Y0[z + 1] = initValST * vol_ST[z + 1]; //conz to content
+					Y0[z + 1 + Nt * 7] = initVal_S_ST * vol_ST[z + 1]; //conz to content
 				}
 				for(int z = 0; z < Nt;z++){
 					if(vol_ParApo[z + 1] > 0){
