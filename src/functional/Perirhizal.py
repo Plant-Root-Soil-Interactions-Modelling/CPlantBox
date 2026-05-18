@@ -242,7 +242,7 @@ class PerirhizalPython(Perirhizal):
         
         return rsc
         
-    def soil_root_solutes_sr_(self, Phi_root, Phi_soil, rho, c_bulk, Vmax, Km, Ds, waterflow, sp, approximate_rho = True):
+    def soil_root_solutes_sr_(self, Phi_root, Phi_soil, rho, c_bulk, Vmax, Km, Ds, waterflow, sp, approximate_rho = False):
         """
         finds solute concentration at the soil root interface for all segments assuming steady rate
         largely reuses approach of the steady state case, it just needs to compute the factor between mean concentration and the concentration at the outer boundary
@@ -353,6 +353,7 @@ class PerirhizalPython(Perirhizal):
         integral_R_sr, _ = integrate.quad(integral_fun, 1/(rho*rho), 1.0**2)
         R_sr = integral_R_sr / ((1.0**2-1/(rho*rho)))
         #print(integral_fun(1/(rho*rho)),integral_fun(0.53**2),integral_fun(1.0**2),integral_R_sr, rho)
+        print("R_sr",R_sr)
         return R_sr
         
     def determine_mfp_function(self, Phi_root, Phi_soil, rho):
