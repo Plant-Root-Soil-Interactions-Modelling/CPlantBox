@@ -68,7 +68,7 @@ plant.setOrganRandomParameter(stem_rp)
 # -- GrassLeaf random parameters (deterministic: std = 0) --
 gl_rp = pb.GrassLeafRandomParameter(plant)
 gl_rp.subType = 1
-gl_rp.a = 0.1
+gl_rp.a = 0.02
 gl_rp.bladeAngle = 0.4
 gl_rp.bladeAngles = 0.0
 gl_rp.bladeLength = 12.0  # cm

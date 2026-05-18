@@ -105,6 +105,7 @@ class AnimateRoots:
         self.actors = []  # current list of vtkActors in the scene
         self.iren = None  # vtkRenderWindowInteractor
         self.color_bar = None  # active vtkScalarBarActor
+        self.auto_bounds = True  # whether to auto-compute bounds from root segments
         self.bounds = None  # [xmin, xmax, ymin, ymax, zmin, zmax]
 
         # Current simulation time [days]; set this before each update() call
@@ -227,8 +228,7 @@ class AnimateRoots:
         # addAge is required for the "age" parameter (age = simtime - creationTime).
         ana = pb.SegmentAnalyser(self.rootsystem)
         ana.addAge(self.simtime)
-        pd = segs_to_polydata(ana, 1.0, [self.root_name, "radius"])
-        new_actors, root_cbar = plot_roots(pd, self.root_name, "", render=False)
+        new_actors, root_cbar = plot_plant(ana, self.root_name, render=False)
 
         if isinstance(new_actors, list):
             self.actors.extend(new_actors)
@@ -236,7 +236,10 @@ class AnimateRoots:
             self.actors.append(new_actors)
 
         self.color_bar = root_cbar
-        self.bounds = pd.GetBounds()
+        if self.auto_bounds:
+            mn = ana.getMinBounds()
+            mx = ana.getMaxBounds()
+            self.bounds = [mn.x, mx.x, mn.y, mx.y, mn.z, mx.z]
 
     def create_soil_actors(self):
         """Build VTK actors for the soil grid overlay.
@@ -343,19 +346,7 @@ class AnimateRoots:
 
         frame_pattern = os.path.join(self.avi_name, f"{self.avi_name}%d.jpg")
 
-        cmd = [
-            "ffmpeg",
-            "-y",  # overwrite output without asking
-            "-r",
-            str(fps),
-            "-i",
-            frame_pattern,
-            "-vcodec",
-            codec,
-            "-pix_fmt",
-            "yuv420p",  # broad player compatibility
-            output_file,
-        ]
+        cmd = ["ffmpeg", "-y", "-r", str(fps), "-i", frame_pattern, "-vcodec", codec, "-pix_fmt", "yuv420p", output_file]  # overwrite output without asking  # broad player compatibility
 
         print(f"Running: {' '.join(cmd)}")
         subprocess.run(cmd, check=True)

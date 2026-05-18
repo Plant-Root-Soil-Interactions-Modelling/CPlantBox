@@ -70,13 +70,15 @@ public:
     double calcLength(double age) override; // unused (overriden to throw exception)
     double calcAge(double length) const override; // unused (overriden to throw exception)
 
-    double getSheathLength() const { return sheathLengthGrown; }      ///< Returns the current sheath length grown so far [cm].
+    double getSheathLengthGrown() const { return sheathLengthGrown; }      ///< Returns the current sheath length grown so far [cm].
     double getBladeLengthGrown() const { return bladeLengthGrown; }   ///< Returns the current blade length grown so far [cm].
     bool isSheathComplete() const { return age >= param()->sheathDuration; } ///< True once the sheath phase is complete.
     bool isBladeEmerged() const { return (age >= param()->bladeDelay); } ///< True once the blade delay has elapsed.
 
     std::shared_ptr<GrassLeafRandomParameter> getGrassLeafRandomParameter() const;
     std::shared_ptr<const GrassLeafSpecificParameter> param() const;
+
+    std::vector<Vector3d> getLeafVis(int i);    ///< 3D edge points at node i: 2 for blade, 0 for sheath
 
 private:
 

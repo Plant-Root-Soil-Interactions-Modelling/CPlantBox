@@ -43,12 +43,13 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
         }
         anchorFrame = Matrix3d::ons(h); // heading → col 0; col 1, 2 perpendicular
     }
-
+    auto rotX = anchorFrame.rotX(2 * M_PI * this->plant.lock()->rand());    
+    anchorFrame.times(rotX); // random rotation around the heading to make the leaf orientation truly random
     meristem.setAnchor(anchorPos);
-
+    
     // rotate the anchor frame: pitch the heading up by 90° so the leaf grows upward along the parent axis
     Turtle3D t(Vector3d(0., 0., 0.), anchorFrame);
-    t.pitchUp(M_PI / 2.0);
+    t.pitchUp(0.1 * M_PI / 2.0);
     anchorFrame = t.getFrame();
     meristem.setAnchorFrame(anchorFrame);
 
@@ -84,7 +85,7 @@ std::shared_ptr<Organ> GrassLeaf::copy(std::shared_ptr<Organism> p) {
 }
 
 /**
- * @brief Advances the leaf by @p dt days through sheath elongation, blade delay, and blade elongation phases.
+ * @brief Advances the leaf by @p dt days 
  */
 void GrassLeaf::simulate(double dt, bool verbose) {
 
@@ -109,22 +110,21 @@ void GrassLeaf::simulate(double dt, bool verbose) {
 
     if (active) {
 
-        double age_ = calcAge(sheathLengthGrown, p.sheathLength, p.sheathLength/p.sheathDuration); 
-        double targetSheathLength = calcLength(age_ + dt_, p.sheathLength, p.sheathLength/p.sheathDuration) + this->epsilonDx;        
-        double dl = targetSheathLength - sheathLengthGrown; 
-        if (dl > 0.) {
-            this->epsilonDx = 0; // its in dl already
-            growSheath(dl, dt);
-        }
-
-        // // blade elongation
-        // if (isSheathComplete() && isBladeEmerged()) {
-        //     double bladeRate = (p.bladeDuration > 0.)
-        //                     ? p.bladeLength / p.bladeDuration
-        //                     : p.bladeLength;
-        //     double dl = std::min(bladeRate * dt, p.bladeLength - bladeLengthGrown);
-        //     if (dl > 0.) growBlade(dl, dt);
+        // double age_ = calcAge(sheathLengthGrown, p.sheathLength, p.sheathLength/p.sheathDuration); 
+        // double targetSheathLength = calcLength(age_ + dt_, p.sheathLength, p.sheathLength/p.sheathDuration) + this->epsilonDx;        
+        // double dl = targetSheathLength - sheathLengthGrown; 
+        // if (dl > 0.) {
+        //     this->epsilonDx = 0; // its in dl already
+        //     growSheath(dl, dt);
         // }
+
+        double age_ = calcAge(bladeLengthGrown, p.bladeLength, p.bladeLength/p.bladeDuration); 
+        double targetBladeLength = calcLength(age_ + dt_, p.bladeLength, p.bladeLength/p.bladeDuration) + this->epsilonDx;
+        double dl = targetBladeLength - bladeLengthGrown;
+        if (dl > 0.) {
+            growBlade(dl, dt);
+        }
+        
     }
 
     // Sync the length field used by the base class infrastructure.
@@ -203,7 +203,7 @@ void GrassLeaf::growSheath(double dl, double dt) {
         double a = std::min(std::max(age_, age - dt), age);        
         double ct = a + baseCT;
         int nid = plant.lock()->getNodeIndex();
-        meristem.addNodeFront(sdx, 0., 0., 0.);
+        meristem.addNodeFront(sdx, 0., 0.03, 0.);
         nodeIds.insert(nodeIds.begin()+1, nid); // +1 because the initial node at index 0 is the anchor and does not have a nodeId
         nodeCTs.insert(nodeCTs.begin()+1, ct);
     }
@@ -214,12 +214,34 @@ void GrassLeaf::growSheath(double dl, double dt) {
  * @brief Grows the blade by @p dl [cm]; applies bladeAngle yaw on the first segment, then subdivides via addMeristemNodes().
  */
 void GrassLeaf::growBlade(double dl, double dt) {
-    const GrassLeafSpecificParameter &p = *param();
-    double yaw = (bladeLengthGrown == 0.) ? p.bladeAngle : 0.; // blade angle only on first segment
-    bladeLengthGrown += dl;
-    // TODO
-}
 
+    const GrassLeafSpecificParameter &p = *param(); 
+
+    double baseCT = nodeCTs[meristem.getInitialNodeIndex()]; // organ creation time 
+
+    int n = static_cast<int>(std::floor(dl / dx()));
+    double last = dl - n * dx(); // if last piece is below dxMin, absorb it into epsilonDx and skip
+    bool addLast = (last >= dxMin() * (1. - 1e-10));
+    if (!addLast) {
+        epsilonDx += last;
+    } else {
+        epsilonDx = 0.;
+    }
+    int nSegs = n + (addLast ? 1 : 0);
+
+    // prepend in reverse order so that node 0 ends up as the new base
+    for (int i = nSegs - 1; i >= 0; --i) {
+        double sdx = (i < n) ? dx() : last;
+        bladeLengthGrown += sdx;
+        double age_ = calcAge(bladeLengthGrown, p.bladeLength, p.bladeLength/p.bladeDuration);
+        double a = std::min(std::max(age_, age - dt), age);        
+        double ct = a + baseCT;
+        int nid = plant.lock()->getNodeIndex();
+        meristem.addNodeFront(sdx, 0., 0.03, 0.);
+        nodeIds.insert(nodeIds.begin()+1, nid); // +1 because the initial node at index 0 is the anchor and does not have a nodeId
+        nodeCTs.insert(nodeCTs.begin()+1, ct);
+    }
+}
 
 double GrassLeaf::calcLength(double length, double k, double r) {
     assert(age >= 0 && "GrassLeaf::calcLength() negative leaf age");
@@ -231,8 +253,6 @@ double GrassLeaf::calcAge(double length, double k, double r) {
     assert(length >= 0 && "GrassLeaf::calcAge() negative leaf length");
     return getGrassLeafRandomParameter()->f_gf->getAge(length, r, k, shared_from_this());
 }
-
-
 
 /**
  * @brief Returns total leaf length (sheath + blade) at @p age_; piecewise-linear approximation.
@@ -278,7 +298,56 @@ double GrassLeaf::calcAge(double length_) const {
     return ageAtSheath + p.bladeDelay + bladeLen / bladeRate;
 }
 
+/**
+ * @brief Returns two 3D coordinates at node @p i for VTK polygon rendering.
+ *
+ * @param i  node index (0-based)
+ * @return   empty for sheath nodes, or {leftEdge, rightEdge} for blade nodes
+ */
+std::vector<Vector3d> GrassLeaf::getLeafVis(int i) {
+    // Cumulative arc length to node i
+    double cumLen = 0.;
+    for (int j = 0; j < i; j++) {
+        cumLen += getNode(j + 1).minus(getNode(j)).length();
+    } // TODO meristem knows length, do shortcut
+    double p = cumLen/(getSheathLengthGrown() + getBladeLengthGrown());
 
+    // Local segment direction at node i
+    Vector3d dir;
+    if (i > 0) {
+        dir = getNode(i).minus(getNode(i - 1));
+    } else if (getNumberOfNodes() > 1) {
+        dir = getNode(1).minus(getNode(0));
+    } else {
+        return {};
+    }
+    if (dir.length() < 1e-12) {
+        return {};
+    }
+    dir.normalize();
 
+    // Lateral direction: perpendicular to segment and world-up (0,0,1)
+    Vector3d up(0., 0., 1.);
+    Vector3d y1 = dir.cross(up);
+    if (y1.length() < 1e-6) {
+        y1 = Vector3d(1., 0., 0.);  // fallback when segment is nearly vertical
+    } else {
+        y1.normalize();
+    }
+
+    double bw; 
+    double halfWidth = param()->bladeWidth / 2.;
+    double a = getParent()->param()->a; // parent radius
+    if (p<0.25) {
+        bw = (halfWidth-a) * (p/0.25)+a;
+    } else if (p<0.6) {
+        bw = halfWidth;
+    } else {
+        bw = halfWidth*(1. - (p-0.6)/0.4);
+    }
+    
+    Vector3d node = getNode(i);
+    return { node.plus(y1.times(bw)), node.minus(y1.times(bw)) };
+}
 
 } // end namespace CPlantBox
