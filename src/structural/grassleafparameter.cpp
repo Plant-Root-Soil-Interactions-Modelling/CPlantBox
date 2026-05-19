@@ -23,9 +23,7 @@ std::string GrassLeafSpecificParameter::toString() const
     str << "bladeWidth\t"    << bladeWidth   << std::endl;
     str << "bladeLength\t"   << bladeLength  << std::endl;
     str << "sheathLength\t"  << sheathLength << std::endl;
-    str << "sheathDuration\t"<< sheathDuration << std::endl;
-    str << "bladeDelay\t"    << bladeDelay   << std::endl;
-    str << "bladeDuration\t" << bladeDuration << std::endl;
+    str << "leafGrowthDuration\t" << leafGrowthDuration << std::endl;
     return str.str();
 }
 
@@ -70,15 +68,12 @@ std::shared_ptr<OrganSpecificParameter> GrassLeafRandomParameter::realize()
     double bladeWidth_   = std::max(bladeWidth   + p->randn() * bladeWidths,    0.);
     double bladeLength_  = std::max(bladeLength  + p->randn() * bladeLengths,   0.);
     double sheathLength_ = std::max(sheathLength + p->randn() * sheathLengths,  0.);
-    double sheathDuration_ = std::max(sheathDuration + p->randn() * sheathDurations, 0.);
-    double bladeDelay_   = std::max(bladeDelay   + p->randn() * bladeDelays,    0.);
-    double bladeDuration_ = std::max(bladeDuration + p->randn() * bladeDurations, 0.);
+    double leafGrowthDuration_ = std::max(leafGrowthDuration + p->randn() * leafGrowthDurations, 0.);
 
     return std::make_shared<GrassLeafSpecificParameter>(
         subType, a_,
         bladeAngle_, bladeWidth_, bladeLength_,
-        sheathLength_, sheathDuration_,
-        bladeDelay_, bladeDuration_);
+        sheathLength_, leafGrowthDuration_);
 }
 
 /**
@@ -108,9 +103,7 @@ void GrassLeafRandomParameter::bindParameters()
     bindParameter("bladeWidth",    &bladeWidth,    "Width of the blade [cm]",               &bladeWidths);
     bindParameter("bladeLength",   &bladeLength,   "Length of the blade [cm]",              &bladeLengths);
     bindParameter("sheathLength",  &sheathLength,  "Length of the sheath [cm]",             &sheathLengths);
-    bindParameter("sheathDuration",&sheathDuration,"Duration of sheath development [day]",  &sheathDurations);
-    bindParameter("bladeDelay",    &bladeDelay,    "Delay before blade emergence [day]",    &bladeDelays);
-    bindParameter("bladeDuration", &bladeDuration, "Duration of blade growth [day]",        &bladeDurations);
+    bindParameter("leafGrowthDuration", &leafGrowthDuration, "Total duration of leaf growth [day]", &leafGrowthDurations);
 }
 
 } // end namespace CPlantBox

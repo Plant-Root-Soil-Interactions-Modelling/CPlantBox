@@ -446,7 +446,7 @@ class Turtle3D {
  *  - @c addNodeBack()  – grow the tip
  *  - @c addNodeFront() – insert a at base
  */
-class Meristem {
+class TurtlePolyline {
   public:
     /// One segment of the polyline in turtle-relative coordinates.
     struct TurtleNode {
@@ -457,10 +457,10 @@ class Meristem {
     };
 
     /// Creates an empty meristem anchored at the origin with the default frame (H=+x, L=+y, U=+z).
-    Meristem() : anchor(Vector3d(0., 0., 0.)), anchorFrame(Matrix3d(1, 0, 0, 0, 1, 0, 0, 0, 1)) {}
+    TurtlePolyline() : anchor(Vector3d(0., 0., 0.)), anchorFrame(Matrix3d(1, 0, 0, 0, 1, 0, 0, 0, 1)) {}
 
     /// Creates an empty meristem with an explicit anchor position and frame.
-    Meristem(const Vector3d &anchorPos, const Matrix3d &frame) : anchor(anchorPos), anchorFrame(frame) {}
+    TurtlePolyline(const Vector3d &anchorPos, const Matrix3d &frame) : anchor(anchorPos), anchorFrame(frame) {}
 
     /**
      * Appends a new node at the back (tip) of the polyline.
@@ -486,6 +486,33 @@ class Meristem {
     void addNodeFront(double dist, double yaw = 0., double pitch = 0., double roll = 0.) {
         nodes.push_front({yaw, pitch, roll, dist});
         ++initialNodeIdx;
+    }
+
+    /**
+     * Inserts a new node immediately to the left (before) the initial node.
+     * The initial node index is incremented so it still refers to the same node.
+     *
+     * @param dist   forward distance of the new segment [cm]
+     * @param yaw    rotation around U before moving forward [rad]
+     * @param pitch  rotation around L before moving forward [rad]
+     * @param roll   rotation around H before moving forward [rad]
+     */
+    void addNodeLeft(double dist, double yaw = 0., double pitch = 0., double roll = 0.) {
+        nodes.insert(nodes.begin() + initialNodeIdx, {yaw, pitch, roll, dist});
+        ++initialNodeIdx;
+    }
+
+    /**
+     * Inserts a new node immediately to the right (after) the initial node.
+     * The initial node index is unchanged.
+     *
+     * @param dist   forward distance of the new segment [cm]
+     * @param yaw    rotation around U before moving forward [rad]
+     * @param pitch  rotation around L before moving forward [rad]
+     * @param roll   rotation around H before moving forward [rad]
+     */
+    void addNodeRight(double dist, double yaw = 0., double pitch = 0., double roll = 0.) {
+        nodes.insert(nodes.begin() + initialNodeIdx + 1, {yaw, pitch, roll, dist});
     }
 
     /// Returns the number of nodes (equals the deque size).

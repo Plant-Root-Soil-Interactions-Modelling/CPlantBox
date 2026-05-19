@@ -25,20 +25,16 @@ public:
     GrassLeafSpecificParameter() : OrganSpecificParameter(-1, 0.) { }
     GrassLeafSpecificParameter(int subType, double a,
         double bladeAngle, double bladeWidth, double bladeLength,
-        double sheathLength, double sheathDuration,
-        double bladeDelay, double bladeDuration)
+        double sheathLength, double leafGrowthDuration)
         : OrganSpecificParameter(subType, a),
           bladeAngle(bladeAngle), bladeWidth(bladeWidth), bladeLength(bladeLength),
-          sheathLength(sheathLength), sheathDuration(sheathDuration),
-          bladeDelay(bladeDelay), bladeDuration(bladeDuration) { }
+          sheathLength(sheathLength), leafGrowthDuration(leafGrowthDuration) { }
 
     double bladeAngle = 0.;      ///< Angle between blade and stem [rad]
     double bladeWidth = 0.;      ///< Width of the blade [cm]
     double bladeLength = 0.;     ///< Length of the blade [cm]
     double sheathLength = 0.;    ///< Length of the sheath [cm]
-    double sheathDuration = 0.;  ///< Duration of sheath development [day]
-    double bladeDelay = 0.;      ///< Delay before blade emergence [day]
-    double bladeDuration = 0.;   ///< Duration of blade growth [day]
+    double leafGrowthDuration = 0.; ///< Total duration of leaf growth [day]
 
     std::string toString() const override; ///< for debugging
 };
@@ -76,12 +72,9 @@ public:
     double bladeLengths = 0.;    ///< Standard deviation of blade length [cm]
     double sheathLength = 5.;    ///< Mean length of the sheath [cm]
     double sheathLengths = 0.;   ///< Standard deviation of sheath length [cm]
-    double sheathDuration = 10.; ///< Mean duration of sheath development [day]
-    double sheathDurations = 0.; ///< Standard deviation of sheath duration [day]
-    double bladeDelay = 2.;      ///< Mean delay before blade emergence [day]
-    double bladeDelays = 0.;     ///< Standard deviation of blade delay [day]
-    double bladeDuration = 20.;  ///< Mean duration of blade growth [day]
-    double bladeDurations = 0.;  ///< Standard deviation of blade duration [day]
+
+    double leafGrowthDuration = 20.; ///< Mean total duration of leaf growth [day]
+    double leafGrowthDurations = 0.; ///< Standard deviation of leaf growth duration [day]
 
 protected:
 

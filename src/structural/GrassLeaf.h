@@ -16,16 +16,14 @@ namespace CPlantBox {
 class Plant;
 
 /**
- * @brief A grass leaf organ whose geometry is described by a Meristem polyline.
- *
- * The polyline is built by prepending nodes with addNodeFront():
- *  - Sheath segments grow upward relative to the stem until @c sheathLength is reached.
- *  - After a @c bladeDelay waiting period, blade segments are prepended with a @c bladeAngle yaw.
+ * @brief A grass leaf organ whose geometry is described by a polyline with Turtle coordinates.
  *
  * Growth phases in simulate():
- *  1. Sheath elongation  – nodes prepended until @c sheathLength is reached.
- *  2. Blade delay        – waiting period @c bladeDelay after sheath completion.
- *  3. Blade elongation   – nodes prepended until @c bladeLength is reached.
+ *  1. Elongation by creation of small segments (mimics cell division in the meristem)
+ *  2. Seperation into sheath and blade segments (angular change at leaf collar)
+ *  3. Blade and sheath grow by elongation of the existing segments
+ * 
+ * In reality cell divisions and elongation happen simultaneously, but we separate them here for simplicity. 
  */
 class GrassLeaf : public Organ
 {
@@ -64,16 +62,12 @@ public:
     double getParameter(std::string name) const override;
 
     std::string toString() const override;
-
-    double calcLength(double age, double k, double r);
-    double calcAge(double length, double k, double r);    
-    double calcLength(double age) override; // unused (overriden to throw exception)
-    double calcAge(double length) const override; // unused (overriden to throw exception)
+   
+    double calcLength(double age) override; 
+    double calcAge(double length) const override; 
 
     double getSheathLengthGrown() const { return sheathLengthGrown; }      ///< Returns the current sheath length grown so far [cm].
     double getBladeLengthGrown() const { return bladeLengthGrown; }   ///< Returns the current blade length grown so far [cm].
-    bool isSheathComplete() const { return age >= param()->sheathDuration; } ///< True once the sheath phase is complete.
-    bool isBladeEmerged() const { return (age >= param()->bladeDelay); } ///< True once the blade delay has elapsed.
 
     std::shared_ptr<GrassLeafRandomParameter> getGrassLeafRandomParameter() const;
     std::shared_ptr<const GrassLeafSpecificParameter> param() const;
@@ -82,10 +76,12 @@ public:
 
 private:
 
-    void growSheath(double dl, double dt); ///< Grows the sheath by dl [cm] by prepending nodes into the Meristem.
-    void growBlade(double dl, double dt);  ///< Grows the blade by dl [cm] by prepending nodes into the Meristem.
+    int initialLength;  // legnth until all segments are created
 
-    mutable Meristem meristem;     ///< Polyline of the entire leaf in turtle coordinates
+    void growLeaf(double dl, double dt); ///< Grows the sheath by dl [cm] by prepending nodes into the Meristem.
+    void elongateLeaf(double dl,double dt); ///< Elongates the leaf by dl [cm] by prepending nodes into the Meristem.
+
+    mutable TurtlePolyline meristem;     ///< Polyline of the entire leaf in turtle coordinates
     double sheathLengthGrown = 0.; ///< Accumulated sheath length [cm]
     double bladeLengthGrown  = 0.; ///< Accumulated blade length [cm]
 };
