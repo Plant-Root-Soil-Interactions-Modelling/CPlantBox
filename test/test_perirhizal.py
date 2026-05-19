@@ -31,10 +31,10 @@ do_computation = True #should the computation be run or take the data from a sav
 
 # general parameters
 
-max_time = 1 #d
-n_times = 100 # number of time intervals
+max_time = 3 #d
+n_times = 300 # number of time intervals
 times = np.linspace(0,max_time,n_times)[1:]
-r_prhiz = 1 # cm
+r_prhiz = 0.3 # cm
 r_root = 0.02 # cm
 
 
@@ -53,7 +53,7 @@ soluteconcentration_steadystate = np.zeros((n_tests, n_times, n_sp+1))
 watercontent_steadyrate = np.zeros((n_tests, n_times, n_sp+1))
 soluteconcentration_steadyrate = np.zeros((n_tests, n_times, n_sp+1))
 
-soilVG = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam soil
+soilVG = [0.078, 0.43, 0.036, 1.56, 24.96*10]  # hydrus loam soil #test:conductivity times 10 TODO remove test
 
 lb = 0.5
 points = np.logspace(np.log(r_root) / np.log(lb), np.log(r_prhiz) / np.log(lb),
@@ -152,18 +152,20 @@ def run_perirhizal_test():
     mean_solutes = np.zeros((n_times))
     
     # determine some random parameters
-    initial_waterpotential = -3000 + np.random.rand() * 200 #cm3/cm3 #or choose an initial pressure head?
-    initial_soluteconcentration = 1e-6*(1.0+np.random.rand()) #g/cm3 #TODO: lookup realistic concnetration, maybe 10 times the Michaelis Menten half saturation?
+    initial_waterpotential = -3000 + np.random.rand() * 50 #cm3/cm3 #or choose an initial pressure head?
+    initial_soluteconcentration = 2e-5*(1.0+np.random.rand()) #g/cm3 #TODO: lookup realistic concnetration, maybe 10 times the Michaelis Menten half saturation?
     print("initial_soluteconcentration",initial_soluteconcentration)
     
     # root conductivity and solute uptake parameters, it is chosen to be constant throughout the entire simulation time
     root_conductivity = 1e-4 #1/d
     inner_kr = root_conductivity * r_root * 2 * 3.14
-    Vmax = 4.0e-11 * 62 * 1 * (2*3.14*r_root) * (24*3600) #mol/(cm2 s) * (g/mol) * cm * cm * (s/d) -> g / d
-    Km = 1.5e-7 * 62 #mol/cm3 -> g/cm3
+    Vmax = 4.0e-11 * 62 * 1 * (2*3.14*r_root) * (24*3600) #mol/(cm2 s) * (g/mol) * cm * cm * (s/d) -> g / d #TODO: remove test multiplication by 10
+    Km = 1.5e-7 * 62   #mol/cm3 -> g/cm3
     
-    DS_W = 1.902e-5 #cm2/s
-    Ds = DS_W * 3600 * 24 / 100#cm2/d
+    #DS_W = 1.902e-5 #cm2/s
+    #Ds = DS_W / 10000#m2/s
+    Ds = 1.902e-5 #cm2/s
+    Ds = Ds * 24 * 3600 #cm2/d #TODO: remove the division by 3 after testing
 
     # the xylem matrix potential varies over time (keep it low so that there is little to no outflow of water)
     rx_t = lambda t : -7000+200*np.sin(t) #cm
@@ -200,7 +202,7 @@ def run_perirhizal_test():
     #s.setParameter("Component.MolarMass", "1.8e-2")
     s.setParameter("Component.MolarMass", "62.0")    
 
-    s.setParameter("Component.LiquidDiffusionCoefficient", str(Ds))  # m2 s-1
+    s.setParameter("Component.LiquidDiffusionCoefficient", str(Ds / 1.e4 / (24*3600)))  # m2 s-1
     s.initializeProblem(maxDt = 0.01)
 
     cellVolumes = s.getCellSurfacesCyl() * length # cm3
@@ -354,6 +356,7 @@ def run_perirhizal_test():
         result_solutes_sr = peri.soil_root_solutes_sr_([Phi_root], [Phi_soil], [rho], [mean_solute], [Vmax], [Km], Ds, [waterflow], peri.sp)
         result_solutes_ss = result_solutes_ss[0]
         result_solutes_sr = result_solutes_sr[0]
+        print("steadystate", result_solutes_ss, "steadyrate", result_solutes_sr)
         
         solute_ss[r,1] = result_solutes_ss
         solute_ss[r,0] = Vmax * result_solutes_ss / (Km + result_solutes_ss)
@@ -364,10 +367,12 @@ def run_perirhizal_test():
         F0 = peri.integral_overDiffusion_(Phi_root,peri.sp)
         D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
         for j in range(NC-1):
+            
             r_rel = CC[j] / r_prhiz
             Phi_current = Phi_A*(r_rel**2-np.log(r_rel**2))+Phi_C
             #F = peri.lookup_table_solutes((Phi_current,0))-F0
             F = peri.integral_overDiffusion_(Phi_current,peri.sp)-F0
+            #print("Ds", Ds, "Dtilde",D_tilde,"F",F,"Dtilde*F",D_tilde*F)
             F_tilde=math.exp(D_tilde*F)
             solute_ss[r,j+1] = result_solutes_ss * F_tilde + (1-F_tilde) * solute_ss[r,0] / waterflow
             solute_sr[r,j+1] = result_solutes_sr * F_tilde + (1-F_tilde) * solute_sr[r,0] / waterflow
@@ -431,7 +436,7 @@ for i in range(5):
 
     ax1[i].set_xlabel("distance root [cm]")
     ax1[i].set_ylabel("water")
-    ax2.set_ylabel("nitrogen concentration")
+    ax2.set_ylabel("nitrogen")
     ax1[i].legend(["watercontent cm3/cm3"], loc="upper left")
     ax2.legend(["nitrogen concentration mol/cm3"], loc="upper right")
 
@@ -440,7 +445,34 @@ for i in range(5):
 #np.save("input/" + filename + "_fp", np.vstack((sim_times_, -np.array(t_act_), np.array(q_soil_)))) 
 plt.show()
 
+# for i in range(5):
+    # for j in range(2):
+        # ax2 = ax1[i,j].twinx()
+    
+        # water_dumux = watercontent_dumux[run, timestep[i], 1:]
+        # water_perirhizal = watercontent_steadyrate[run, timestep[i], 1:]
+        # solute_dumux = soluteconcentration_dumux[run, timestep[i], 1:]
+        # solute_steadystate = soluteconcentration_steadystate[run, timestep[i], 1:]
+        # solute_steadyrate = soluteconcentration_steadyrate[run, timestep[i], 1:]
 
+        # ax1[i,j].plot(CC, water_dumux, "b", linestyle = linestyle_dumux, label = "water_dumux")
+        # ax1[i,j].plot(CC, water_perirhizal, "b", linestyle = linestyle_steadyrate, label = "water_perirhizal")
+        # ax2.plot(CC, solute_dumux, "m", linestyle = linestyle_dumux, label = "solute_dumux")
+        # if j==0:
+            # ax2.plot(CC, solute_steadystate, "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
+        # else:
+            # ax2.plot(CC, solute_steadyrate, "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
+
+        # ax1[i,j].set_xlabel("distance root [cm]")
+        # ax1[i,j].set_ylabel("water")
+        # ax2.set_ylabel("nitrogen concentration")
+        # ax1[i,j].legend(["watercontent cm3/cm3"], loc="upper left")
+        # ax2.legend(["nitrogen concentration mol/cm3"], loc="upper right")
+
+        # ax1[i,j].legend(loc="upper left")
+        # ax2.legend(loc="upper right")
+# #np.save("input/" + filename + "_fp", np.vstack((sim_times_, -np.array(t_act_), np.array(q_soil_)))) 
+# plt.show()
 
 
 # #---old stuff below

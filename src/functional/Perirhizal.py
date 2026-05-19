@@ -220,7 +220,7 @@ class PerirhizalPython(Perirhizal):
         
         rsc = np.zeros(n_segments)
         F = np.zeros(n_segments) #F is a helper values
-        F_tilde = np.zeros(n_segments)
+        F_tilde_inv = np.zeros(n_segments)
         
         if self.lookup_table_solutes:
             F=[(self.lookup_table_solutes((Phi_soil[i],0))-self.lookup_table_solutes((Phi_root[i],0))) for i in range(0, len(c_bulk))]
@@ -232,9 +232,10 @@ class PerirhizalPython(Perirhizal):
         
         #solve quadratic eqation # TODO: Link to publication
         for i in range(n_segments):
-            F_tilde[i]=math.exp(D_tilde*F[i])
-            a1=c_bulk[i]/F_tilde[i]
-            a2=(F_tilde[i]-1)/(F_tilde[i]*waterflow[i])
+            print("Dtilde",D_tilde,"F",F[i])
+            F_tilde_inv[i]=math.exp(-D_tilde*F[i])
+            a1=c_bulk[i]*F_tilde_inv[i]
+            a2=(1-F_tilde_inv[i])/(waterflow[i])
             p=Km[i]-a2*Vmax[i]-a1
             q=-Km[i]*a1
             rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)
@@ -265,7 +266,7 @@ class PerirhizalPython(Perirhizal):
         
         rsc = np.zeros(n_segments)
         F = np.zeros(n_segments) #F is a helper value
-        F_tilde = np.zeros(n_segments)
+        F_tilde_inv = np.zeros(n_segments)
         R_sr = np.zeros(n_segments)
         watercontent = np.zeros(n_segments)
         
@@ -295,13 +296,14 @@ class PerirhizalPython(Perirhizal):
         #reuse steady state case
         #solve quadratic eqation # TODO: Link to publication
         for i in range(n_segments):
-            F_tilde[i]=math.exp(C_d*F[i])
-            a1=(c_bulk[i]*watercontent[i])/(F_tilde[i]*R_sr[i])
-            a2=(F_tilde[i]*R_sr[i]-watercontent[i])/(F_tilde[i]*R_sr[i]*waterflow[i])
+            print("C_d",C_d,"F",F[i])
+            F_tilde_inv[i]=math.exp(-C_d*F[i])
+            a1=(c_bulk[i]*watercontent[i])/(R_sr[i])*F_tilde_inv[i]
+            a2=(1-watercontent[i]/R_sr[i]*F_tilde_inv[i])/waterflow[i]
             p=Km[i]-a2*Vmax[i]-a1
             q=-Km[i]*a1
             if q>0:
-                print("q>0",Km[i],a1,F_tilde[i],R_sr[i],c_bulk[i],watercontent[i])
+                print("q>0",Km[i],a1,F_tilde_inv[i],R_sr[i],c_bulk[i],watercontent[i])
                 q=0
             rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)
         
