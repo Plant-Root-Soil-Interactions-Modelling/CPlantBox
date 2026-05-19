@@ -11,7 +11,7 @@ mycp = pb.MycorrhizalPlant(100)
 path = "tomatoparameters/"
 name = "TwoHyphaePlusBAS"
 
-animation = False
+animation = True
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
 ### initial root parameters
@@ -26,6 +26,14 @@ for rp in root:
     rp.tropismT = 1
     mycp.setOrganRandomParameter(rp)
 
+
+def getMycSegmentAnalyser(plant):
+    ana = pb.SegmentAnalyser(plant)
+    ana.addData("infection", plant.getNodeInfections(2))
+    ana.addData("infectionTime", plant.getNodeInfectionTime(2))
+    ana.addData("anastomosis", plant.getAnastomosisPoints(5))
+    ana.addData("nodeTips", plant.getNodeTips(5))
+    return ana
 
 ## Setting up petri dish
 diameter = 9.4
@@ -82,6 +90,8 @@ dt = simtime / N
 
 filename = "splitpetri_dish" + str(simtime)
 
+ana_total =[]
+ana_times = []
 # Start simulation
 start = time.perf_counter()
 for i in range(0, N):
@@ -89,10 +99,7 @@ for i in range(0, N):
         print("Step " + str(i) + " of " + str(N))
     mycp.simulate(dt,True)
     if (animation):
-        ana = pb.SegmentAnalyser(mycp)
-        ana.addData("infection", mycp.getNodeInfections(2))
-        ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
-        ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
+        ana = getMycSegmentAnalyser(mycp)
         ana.write("animation/" + filename + str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
 # look at roots and container
 # vp.plot_roots_and_container(mycp,half_dish)
@@ -135,11 +142,7 @@ while crossed_barrier < 3:
                 if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
                     crossed_barrier += 1
 
-        # ana = pb.SegmentAnalyser(mycp)
-        # ana.addData("infection", mycp.getNodeInfections(2))
-        # ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
-        # ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
-        # ana.write("animation/step" + str(N+1) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+    ana = getMycSegmentAnalyser(mycp)
 
 small_dish = pb.SDF_PlantContainer(radius,radius,height,False)
 small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
@@ -171,23 +174,17 @@ for i in range(0, hours_hyphae):
             if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
                 stayactive = True
         organ.setActive(stayactive)
+    ana = getMycSegmentAnalyser(mycp)
+    ana_total.append(ana)
+    ana_times.append(mycp.getSimTime())
     if animation:
-        ana = pb.SegmentAnalyser(mycp)
-        ana.addData("infection", mycp.getNodeInfections(2))
-        ana.addData("nodeTips",mycp.getNodeTips(-1))
-        ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
-        ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
         ana.crop(small_hyphae_dish)
         ana.write("animation/" + filename + "_" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
 end = time.perf_counter()
-ana = pb.SegmentAnalyser(mycp)
-ana.addData("infection", mycp.getNodeInfections(2))
-ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
-ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
 
 
 if not animation:
-    ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+    ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
 
 # set the observation "rings"
 nRings = 20
@@ -202,13 +199,12 @@ for i in range(1, nRings):
     small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
     rings.append(small_hyphae_dish)
 
-times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.1, 100)
-hld_matrix = np.zeros((len(rings), len(times[1:])))
+# times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.1, 100)
 
 def getParaDistperRing(parameter, times, plant, rings):
     paradenmat = np.zeros((len(rings),len(times[1:])))
     for k, ring in enumerate(rings):
-        ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
+        ringana = plant # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
         ringana.crop(ring)
         for j in range(len(times[1:])):
             ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
@@ -217,40 +213,47 @@ def getParaDistperRing(parameter, times, plant, rings):
             paradenmat[k, len(times[1:])-1 -j] = np.array(distrib).sum() 
     return paradenmat
 
-for k, ring in enumerate(rings):
-    ringana = pb.SegmentAnalyser(mycp)
-    ringana.crop(ring)
-    for j in range(len(times[1:])):
-        ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
+def getParaDist2(parameter,plant, rings):
+    paradenmat = np.zeros((len(rings)))
+    for k, ring in enumerate(rings):
+        ringana = plant # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
+        ringana.crop(ring)
         ringana.pack()
-        distrib = ringana.getSummed("length")
-        hld_matrix[k, len(times[1:])-1 -j] = np.array(distrib).sum() / (np.pi * radius**2)
+        distrib = ringana.getSummed(parameter)
+        paradenmat[k] = np.array(distrib).sum() 
+    return paradenmat
 
-print("shape:", hld_matrix.shape)
-print("min:", np.min(hld_matrix))
-print("max:", np.max(hld_matrix))
-print("mean:", np.mean(hld_matrix))
-plt.figure(figsize=(8, 5))
+print(len(ana_times))
+tip_densities = np.array([getParaDist2("nodeTips", ana, rings) for ana in ana_total])
+print(tip_densities)
+# hld_matrix = getParaDistperRing("nodeTips", times, ana, rings)
 
-extent = [
-    times[1], times[-1],   # x: Zeit
-    1, len(rings)          # y: Ringe
-]
+# print("shape:", hld_matrix.shape)
+# print("min:", np.min(hld_matrix))
+# print("max:", np.max(hld_matrix))
+# print("mean:", np.mean(hld_matrix))
 
-plt.imshow(
-    hld_matrix,
-    aspect='auto',
-    origin='lower',
-    extent=extent,
-    cmap='viridis'
-)
+# plt.figure(figsize=(8, 5))
 
-plt.colorbar(label="Hyphal Length Density")
+# extent = [
+#     times[1], times[-1],   # x: Zeit
+#     1, len(rings)          # y: Ringe
+# ]
 
-plt.xlabel("Time")
-plt.ylabel("Ring (center → outside)")
-plt.title("Radial movement of hyphal length density")
+# plt.imshow(
+#     hld_matrix,
+#     aspect='auto',
+#     origin='lower',
+#     extent=extent,
+#     cmap='viridis'
+# )
 
-plt.show()
-# vp.plot_roots_and_container(mycp,hyphae_petri_dish)
-# vp.write_container(petri_dish, "petri_dish.vtp")
+# plt.colorbar(label="Hyphal Length Density")
+
+# plt.xlabel("Time")
+# plt.ylabel("Ring (center → outside)")
+# plt.title("Radial movement of hyphal length density")
+
+# plt.show()
+# # vp.plot_roots_and_container(mycp,hyphae_petri_dish)
+# # vp.write_container(petri_dish, "petri_dish.vtp")

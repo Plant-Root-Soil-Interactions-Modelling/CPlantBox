@@ -334,7 +334,7 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral emergence delay [day]-->
-        <parameter name="lmax" value="1" dev="0.1"/>
+        <parameter name="lmax" value="0.4" dev="0.1"/>
         <!--Maximal length of the hyphae [cm]-->
         <parameter name="ln" value="0.46079999" dev="0.050000001"/>
         <!--Inter-lateral distance [cm]-->
@@ -346,7 +346,7 @@
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="v" value="0.13" dev="0.001"/>
         <!--Tip elongation rate [cm/day]-->
-        <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="6" percentage="0.4"/>
+        <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="6" percentage="0.2"/>
         <!--Sub type of lateral -->
     </hyphae>
 </plant>
