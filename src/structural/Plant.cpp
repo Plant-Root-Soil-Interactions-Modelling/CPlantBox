@@ -112,7 +112,11 @@ void Plant::initializeLB(bool verbose) {
     reset(); // just in case
     auto seed = createSeed();
     this->addOrgan(seed);
-    std::static_pointer_cast<Seed>(seed)->initialize(verbose);
+    auto typedSeed = std::dynamic_pointer_cast<Seed>(seed);
+    if (!typedSeed) {
+        throw std::runtime_error("Plant::initializeLB: createSeed() must return a Seed-compatible organ for plant initialization");
+    }
+    typedSeed->initialize(verbose);
     initialize_(verbose);
 }
 
