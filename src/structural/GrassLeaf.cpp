@@ -27,8 +27,6 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
     : Organ(plant, parent, Organism::ot_leaf, subtype, delay, pni) {
     assert(parent != nullptr && "GrassLeaf: parent must not be null");
 
-    std::cout << "Creating GrassLeaf with parent " << parent->getId() << " pni " << pni << " delay " << delay << "\n" << std::flush;
-
     // Anchor the meristem at the attachment point with the parent's heading as
     // the initial turtle frame (+x = heading, +z = up).
     Vector3d anchorPos(0., 0., 0.); // relative coordinate; abs is resolved via rel2abs
