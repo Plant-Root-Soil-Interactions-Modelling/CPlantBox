@@ -228,7 +228,10 @@ class AnimateRoots:
         # addAge is required for the "age" parameter (age = simtime - creationTime).
         ana = pb.SegmentAnalyser(self.rootsystem)
         ana.addAge(self.simtime)
-        new_actors, root_cbar = plot_plant(ana, self.root_name, render=False)
+        if self.plant:
+            new_actors, root_cbar = plot_plant(ana, self.root_name, render=False)
+        else:
+            new_actors, root_cbar = plot_roots(ana, self.root_name, render=False)
 
         if isinstance(new_actors, list):
             self.actors.extend(new_actors)
