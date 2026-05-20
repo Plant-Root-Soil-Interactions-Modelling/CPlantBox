@@ -673,80 +673,80 @@ class TestTurtle3D(unittest.TestCase):
         self.assertIn("pos", s)
 
 
-class TestMeristem(unittest.TestCase):
+class TestTurtlePolyline(unittest.TestCase):
+    """Tests for TurtlePolyline (formerly Meristem) exposed as pb.TurtlePolyline."""
 
     # ---- construction --------------------------------------------------------
 
     def test_default_construction(self):
-        """Default Meristem has 1 node (the initial {0,0,0,0} node at the anchor)."""
-        m = pb.Meristem()
-        self.assertEqual(m.size(), 1)
-        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [0.0, 0.0, 0.0])
+        """Default TurtlePolyline starts with 0 nodes; anchor is at the origin."""
+        m = pb.TurtlePolyline()
+        self.assertEqual(m.size(), 0)
+        np.testing.assert_array_almost_equal(v3(m.getAnchor()), [0.0, 0.0, 0.0])
 
     def test_default_initial_node_index(self):
         """initialNodeIdx starts at 0 (deque index of the initial node)."""
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         self.assertEqual(m.getInitialNodeIndex(), 0)
 
     def test_custom_construction(self):
         pos = pb.Vector3d(1.0, 2.0, 3.0)
-        m = pb.Meristem(pos, pb.Matrix3d())
+        m = pb.TurtlePolyline(pos, pb.Matrix3d())
         np.testing.assert_array_almost_equal(v3(m.getAnchor()), [1.0, 2.0, 3.0])
-        self.assertEqual(m.size(), 1)
+        self.assertEqual(m.size(), 0)
 
-    def test_custom_construction_initial_node_at_anchor(self):
-        """getNode(0) for custom anchor returns the anchor position (initial node has dist=0)."""
+    def test_custom_construction_first_node_at_anchor(self):
+        """getNode(0) after addNodeBack(0) returns the anchor position."""
         pos = pb.Vector3d(1.0, 2.0, 3.0)
-        m = pb.Meristem(pos, pb.Matrix3d())
+        m = pb.TurtlePolyline(pos, pb.Matrix3d())
+        m.addNodeBack(0.0)
         np.testing.assert_array_almost_equal(v3(m.getNode(0)), [1.0, 2.0, 3.0])
 
     # ---- addNodeBack ---------------------------------------------------------
 
     def test_addNodeBack_increases_size(self):
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
+        m.addNodeBack(1.0)
+        self.assertEqual(m.size(), 1)
         m.addNodeBack(1.0)
         self.assertEqual(m.size(), 2)
-        m.addNodeBack(1.0)
-        self.assertEqual(m.size(), 3)
 
     def test_addNodeBack_does_not_change_initial_node_index(self):
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         m.addNodeBack(1.0)
         m.addNodeBack(1.0)
         self.assertEqual(m.getInitialNodeIndex(), 0)
 
-    def test_getNode1_straight(self):
-        """Node 0 = initial node at anchor; node 1 = anchor + dist*heading."""
-        m = pb.Meristem()
+    def test_getNode0_straight(self):
+        """Node 0 = anchor + dist*heading."""
+        m = pb.TurtlePolyline()
         m.addNodeBack(5.0)
-        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [0.0, 0.0, 0.0], decimal=12)
-        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [5.0, 0.0, 0.0], decimal=12)
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [5.0, 0.0, 0.0], decimal=12)
 
     def test_getNode_with_yaw(self):
         """Node after yaw=pi/2 then forward(3) should land on +y axis."""
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         m.addNodeBack(3.0, yaw=math.pi / 2)
-        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [0.0, 3.0, 0.0], decimal=12)
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [0.0, 3.0, 0.0], decimal=12)
 
     def test_getNode_chained(self):
         """Two straight steps of length 2 give cumulative positions."""
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         m.addNodeBack(2.0)
         m.addNodeBack(2.0)
-        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [0.0, 0.0, 0.0], decimal=12)
-        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [2.0, 0.0, 0.0], decimal=12)
-        np.testing.assert_array_almost_equal(v3(m.getNode(2)), [4.0, 0.0, 0.0], decimal=12)
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [2.0, 0.0, 0.0], decimal=12)
+        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [4.0, 0.0, 0.0], decimal=12)
 
     # ---- addNodeFront --------------------------------------------------------
 
     def test_addNodeFront_increases_size(self):
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         m.addNodeFront(1.0)
-        self.assertEqual(m.size(), 2)
+        self.assertEqual(m.size(), 1)
 
     def test_addNodeFront_increments_initial_node_index(self):
         """Each addNodeFront() prepends a node, shifting initialNodeIdx by 1."""
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         self.assertEqual(m.getInitialNodeIndex(), 0)
         m.addNodeFront(1.0)
         self.assertEqual(m.getInitialNodeIndex(), 1)
@@ -754,83 +754,172 @@ class TestMeristem(unittest.TestCase):
         self.assertEqual(m.getInitialNodeIndex(), 2)
 
     def test_addNodeFront_shifts_indices(self):
-        """addNodeFront prepends; old node 1 becomes node 2."""
-        m = pb.Meristem()
-        m.addNodeBack(5.0)  # deque: [{0,0,0,0}, {0,0,0,5}]; node 0=(0,0,0), node 1=(5,0,0)
-        m.addNodeFront(3.0)  # deque: [{0,0,0,3}, {0,0,0,0}, {0,0,0,5}]
+        """addNodeFront prepends; old node 0 becomes node 1."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(5.0)  # deque: [{0,0,0,5}]; node 0=(5,0,0)
+        m.addNodeFront(3.0)  # deque: [{0,0,0,3}, {0,0,0,5}]; initialNodeIdx=1
         np.testing.assert_array_almost_equal(v3(m.getNode(0)), [3.0, 0.0, 0.0], decimal=12)
-        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [3.0, 0.0, 0.0], decimal=12)  # initial node (dist=0)
-        np.testing.assert_array_almost_equal(v3(m.getNode(2)), [8.0, 0.0, 0.0], decimal=12)
+        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [8.0, 0.0, 0.0], decimal=12)
 
-    def test_initial_node_position_after_addNodeFront(self):
-        """getNode(getInitialNodeIndex()) always returns the initial node position."""
-        m = pb.Meristem()
-        m.addNodeBack(5.0)  # (5,0,0)
-        m.addNodeFront(3.0)  # prepend; initial node now at index 1
-        idx = m.getInitialNodeIndex()  # == 1
-        # initial node has dist=0, so its position equals the node before it
-        np.testing.assert_array_almost_equal(v3(m.getNode(idx)), v3(m.getNode(idx - 1)), decimal=12)
+    def test_initial_node_index_after_addNodeFront(self):
+        """initialNodeIdx is incremented by each addNodeFront call."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(5.0)  # initialNodeIdx stays 0
+        m.addNodeFront(3.0)  # prepended; initialNodeIdx becomes 1
+        self.assertEqual(m.getInitialNodeIndex(), 1)
+
+    # ---- getLength -----------------------------------------------------------
+
+    def test_getLength_empty(self):
+        """Default polyline has no nodes; total length == 0."""
+        m = pb.TurtlePolyline()
+        self.assertAlmostEqual(m.getLength(), 0.0)
+
+    def test_getLength_total(self):
+        """getLength() sums all segment distances."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(3.0)
+        m.addNodeBack(4.0)
+        m.addNodeBack(5.0)
+        self.assertAlmostEqual(m.getLength(), 12.0)
+
+    def test_getLength_n_zero(self):
+        """getLength(0) == 0."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(3.0)
+        self.assertAlmostEqual(m.getLength(0), 0.0)
+
+    def test_getLength_n_partial(self):
+        """getLength(n) returns cumulative length of first n nodes."""
+        m = pb.TurtlePolyline()
+        # deque: [{3}, {4}, {5}]
+        m.addNodeBack(3.0)
+        m.addNodeBack(4.0)
+        m.addNodeBack(5.0)
+        self.assertAlmostEqual(m.getLength(1), 3.0)  # first segment
+        self.assertAlmostEqual(m.getLength(2), 7.0)  # first two segments
+        self.assertAlmostEqual(m.getLength(3), 12.0)  # all nodes
+
+    def test_getLength_n_equals_total(self):
+        """getLength(size()) == getLength()."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(2.0)
+        m.addNodeBack(3.0)
+        self.assertAlmostEqual(m.getLength(m.size()), m.getLength())
+
+    def test_getLength_addNodeFront_counts(self):
+        """getLength() includes segments added at the front."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(5.0)
+        m.addNodeFront(3.0)
+        self.assertAlmostEqual(m.getLength(), 8.0)
+
+    # ---- getNodeIndexAtLength ------------------------------------------------
+
+    def test_getNodeIndexAtLength_zero(self):
+        """getNodeIndexAtLength(0) returns 0 (clamped)."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(3.0)
+        m.addNodeBack(4.0)
+        self.assertEqual(m.getNodeIndexAtLength(0.0), 0)
+
+    def test_getNodeIndexAtLength_exact_boundary(self):
+        """getNodeIndexAtLength at exact cumulative distance boundary."""
+        m = pb.TurtlePolyline()
+        # deque: [{3}, {4}]  cumulative: [3, 7]
+        m.addNodeBack(3.0)
+        m.addNodeBack(4.0)
+        # at s=3 the running sum first reaches 3 at index 0
+        # roundUp=False → return max(0, 0-1)=0; roundUp=True → return 0
+        self.assertEqual(m.getNodeIndexAtLength(3.0, False), 0)
+        self.assertEqual(m.getNodeIndexAtLength(3.0, True), 0)
+
+    def test_getNodeIndexAtLength_beyond_total(self):
+        """getNodeIndexAtLength(s) for s > total returns last index."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(3.0)
+        m.addNodeBack(4.0)
+        self.assertEqual(m.getNodeIndexAtLength(100.0), m.size() - 1)
+
+    # ---- getNodeFrame --------------------------------------------------------
+
+    def test_getNodeFrame_identity_anchor(self):
+        """With identity anchor frame, frame at any straight node is also identity."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(5.0)
+        m.addNodeBack(5.0)
+        for i in range(m.size()):
+            np.testing.assert_array_almost_equal(m3(m.getNodeFrame(i)), np.eye(3), decimal=12)
+
+    def test_getNodeFrame_after_yaw(self):
+        """After a yaw=pi/2 node the frame heading should be +y."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(1.0, yaw=math.pi / 2)
+        frame = m.getNodeFrame(0)
+        np.testing.assert_array_almost_equal(v3(frame.column(0)), [0.0, 1.0, 0.0], decimal=12)
+
+    def test_getNodeFrame_stays_orthonormal(self):
+        """Frame at every node must be an orthonormal matrix."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(2.0, yaw=0.3)
+        m.addNodeBack(2.0, pitch=0.5)
+        m.addNodeBack(2.0, roll=0.7)
+        for i in range(m.size()):
+            F = m3(m.getNodeFrame(i))
+            np.testing.assert_array_almost_equal(F @ F.T, np.eye(3), decimal=10, err_msg=f"frame at node {i} not orthonormal")
+            self.assertAlmostEqual(np.linalg.det(F), 1.0, places=10, msg=f"frame det != 1 at node {i}")
+
+    def test_getNodeFrame_anchor_frame_respected(self):
+        """Anchor frame rotZ(pi/2) means heading starts as +y; straight nodes keep +y."""
+        m = pb.TurtlePolyline()
+        m.setAnchorFrame(pb.Matrix3d.rotZ(math.pi / 2))
+        m.addNodeBack(3.0)
+        frame = m.getNodeFrame(0)
+        np.testing.assert_array_almost_equal(v3(frame.column(0)), [0.0, 1.0, 0.0], decimal=12)
 
     # ---- getPolyline ---------------------------------------------------------
 
     def test_getPolyline_length(self):
-        """getPolyline() has one entry per deque node (initial + 3 added = 4)."""
-        m = pb.Meristem()
+        """getPolyline() has one entry per deque node (3 added = 3)."""
+        m = pb.TurtlePolyline()
         m.addNodeBack(1.0)
         m.addNodeBack(1.0)
         m.addNodeBack(1.0)
-        self.assertEqual(len(m.getPolyline()), 4)
+        self.assertEqual(len(m.getPolyline()), 3)
 
     def test_getPolyline_straight(self):
-        """Initial node is at (0,0,0); subsequent steps of dist=2 increment x by 2."""
-        m = pb.Meristem()
+        """Steps of dist=2 give positions [2, 4, 6] along x."""
+        m = pb.TurtlePolyline()
         for _ in range(3):
             m.addNodeBack(2.0)
         pts = m.getPolyline()
-        # pts[0] = initial node at (0,0,0), pts[i] = (2*i, 0, 0)
         for i, p in enumerate(pts):
-            np.testing.assert_array_almost_equal(v3(p), [2.0 * i, 0.0, 0.0], decimal=12)
+            np.testing.assert_array_almost_equal(v3(p), [2.0 * (i + 1), 0.0, 0.0], decimal=12)
 
     # ---- getNodes and getTurtleNode (raw turtle data) -----------------------
 
-    def test_getNodes_includes_initial_node(self):
-        """getNodes() deque always starts with the initial {0,0,0,0} node."""
-        m = pb.Meristem()
+    def test_getNodes_empty_on_default_construction(self):
+        """getNodes() returns an empty list for a default-constructed TurtlePolyline."""
+        m = pb.TurtlePolyline()
         nodes = m.getNodes()
-        self.assertEqual(len(nodes), 1)
-        self.assertAlmostEqual(nodes[0].yaw, 0.0)
-        self.assertAlmostEqual(nodes[0].pitch, 0.0)
-        self.assertAlmostEqual(nodes[0].roll, 0.0)
-        self.assertAlmostEqual(nodes[0].dist, 0.0)
+        self.assertEqual(len(nodes), 0)
 
     def test_getNodes_returns_raw_nodes(self):
-        """getNodes() returns all deque entries; index 0 is initial, index 1 is added."""
-        m = pb.Meristem()
+        """getNodes() returns all deque entries."""
+        m = pb.TurtlePolyline()
         m.addNodeBack(1.0, yaw=0.5, pitch=0.3, roll=0.1)
         nodes = m.getNodes()
-        self.assertEqual(len(nodes), 2)
-        # index 0: initial node
-        self.assertAlmostEqual(nodes[0].dist, 0.0)
-        # index 1: the added node
-        self.assertAlmostEqual(nodes[1].yaw, 0.5)
-        self.assertAlmostEqual(nodes[1].pitch, 0.3)
-        self.assertAlmostEqual(nodes[1].roll, 0.1)
-        self.assertAlmostEqual(nodes[1].dist, 1.0)
-
-    def test_getTurtleNode_initial(self):
-        """getTurtleNode(0) returns the initial zero node."""
-        m = pb.Meristem()
-        n = m.getTurtleNode(0)
-        self.assertAlmostEqual(n.yaw, 0.0)
-        self.assertAlmostEqual(n.pitch, 0.0)
-        self.assertAlmostEqual(n.roll, 0.0)
-        self.assertAlmostEqual(n.dist, 0.0)
+        self.assertEqual(len(nodes), 1)
+        self.assertAlmostEqual(nodes[0].yaw, 0.5)
+        self.assertAlmostEqual(nodes[0].pitch, 0.3)
+        self.assertAlmostEqual(nodes[0].roll, 0.1)
+        self.assertAlmostEqual(nodes[0].dist, 1.0)
 
     def test_getTurtleNode_added(self):
         """getTurtleNode(i) returns the TurtleNode at deque index i."""
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         m.addNodeBack(2.5, yaw=0.1, pitch=0.2, roll=0.3)
-        n = m.getTurtleNode(1)
+        n = m.getTurtleNode(0)
         self.assertAlmostEqual(n.dist, 2.5)
         self.assertAlmostEqual(n.yaw, 0.1)
         self.assertAlmostEqual(n.pitch, 0.2)
@@ -838,7 +927,7 @@ class TestMeristem(unittest.TestCase):
 
     def test_getTurtleNode_matches_getNodes(self):
         """getTurtleNode(i) and getNodes()[i] refer to the same data."""
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         m.addNodeBack(3.0, yaw=0.7)
         nodes = m.getNodes()
         for i in range(m.size()):
@@ -851,30 +940,30 @@ class TestMeristem(unittest.TestCase):
     # ---- setters -------------------------------------------------------------
 
     def test_setAnchor(self):
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         m.setAnchor(pb.Vector3d(7.0, 8.0, 9.0))
         np.testing.assert_array_almost_equal(v3(m.getAnchor()), [7.0, 8.0, 9.0])
 
     def test_setAnchorFrame_changes_heading(self):
         """After setAnchorFrame(rotZ(pi/2)), forward moves along +y."""
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         m.setAnchorFrame(pb.Matrix3d.rotZ(math.pi / 2))
         m.addNodeBack(2.0)
-        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [0.0, 2.0, 0.0], decimal=12)
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [0.0, 2.0, 0.0], decimal=12)
 
     def test_setAnchorFrame_roundtrip(self):
         f = pb.Matrix3d.rotX(0.8)
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         m.setAnchorFrame(f)
         np.testing.assert_array_almost_equal(m3(m.getAnchorFrame()), m3(f))
 
     # ---- str -----------------------------------------------------------------
 
     def test_str(self):
-        m = pb.Meristem()
+        m = pb.TurtlePolyline()
         m.addNodeBack(1.0)
         s = str(m)
-        self.assertIn("Meristem", s)
+        self.assertIn("TurtlePolyline", s)
 
 
 if __name__ == "__main__":

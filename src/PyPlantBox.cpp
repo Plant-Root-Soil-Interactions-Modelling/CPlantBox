@@ -261,7 +261,7 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * Meristem
      */
-    auto meristemClass = py::class_<TurtlePolyline>(m, "Meristem")
+    auto meristemClass = py::class_<TurtlePolyline>(m, "TurtlePolyline")
                              .def(py::init<>())
                              .def(py::init<const Vector3d &, const Matrix3d &>())
                              .def("addNodeBack", &TurtlePolyline::addNodeBack, py::arg("dist"), py::arg("yaw") = 0., py::arg("pitch") = 0., py::arg("roll") = 0.)

@@ -124,7 +124,7 @@ for i in range(steps):
 #     p = gl.param()
 #     print("\n--- GrassLeaf ---")
 #     print(f"  age            = {gl.getAge():.2f} days")
-#     print(f"  total length   = {gl.getLength():.2f} cm")
+#     print(f"  total length   = {gl.getMeristem().getLength():.2f} cm")
 #     print(f"  sheathLength   = {gl.getSheathLength():.2f} / {p.sheathLength:.2f} cm")
 #     print(f"  bladeLengthGrown = {gl.getBladeLengthGrown():.2f} / {p.bladeLength:.2f} cm")
 #     print(f"  nodes          = {gl.getNumberOfNodes()}")
@@ -236,20 +236,20 @@ vp.plot_plant(ana, "age")
 #     print("3-D polyline saved to  grassleaf_3d.png")
 
 # # --------------------------------------------------------------------------- #
-# #  7.  Direct use of Turtle3D and Meristem (unit-level test)
+# #  7.  Direct use of Turtle3D and TurtlePolyline (unit-level test)
 # # --------------------------------------------------------------------------- #
 
-# print("\n--- Turtle3D / Meristem standalone ---")
+# print("\n--- Turtle3D / TurtlePolyline standalone ---")
 # t = pb.Turtle3D()
 # t.forward(5.0)
 # t.pitchDown(math.radians(30))
 # t.forward(8.0)
 # print("Turtle position after forward(5)+pitchDown(30°)+forward(8):", t.getPosition())
 
-# m = pb.Meristem()
+# m = pb.TurtlePolyline()
 # m.addNodeBack(5.0)  # straight segment
 # m.addNodeBack(8.0, 0.0, math.radians(30))  # pitch down 30°
-# print(f"Meristem size: {m.size()} nodes")
+# print(f"TurtlePolyline size: {m.size()} nodes")
 # poly = m.getPolyline()
 # print("Polyline tip:", poly[-1])
 
