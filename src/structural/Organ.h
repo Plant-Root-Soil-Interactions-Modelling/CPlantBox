@@ -83,7 +83,10 @@ class Organ : public std::enable_shared_from_this<Organ> {
 
     /* geometry */
     virtual int getNumberOfNodes() const { return nodes.size(); }                  ///< Returns the number of nodes
-    int getNumberOfSegments() const { return getNumberOfNodes() - 1; }           ///< Returns the number of polyline segments (nodes - 1)
+    int getNumberOfSegments() const {
+        const int numberOfNodes = getNumberOfNodes();
+        return (numberOfNodes > 0) ? (numberOfNodes - 1) : 0;
+    }                                                                             ///< Returns the number of polyline segments (nodes - 1), clamped to zero
     Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< Returns the absolute coordinate of the organ's attachment point on the parent
     virtual Vector3d getNode(int i) const { return nodes.at(i); }          ///< Returns the absolute (or relative) coordinate of node @p i
     int getNodeId(int i) const { return nodeIds.at(i); }                   ///< Returns the global node index of local node @p i
