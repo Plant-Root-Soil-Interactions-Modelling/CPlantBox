@@ -77,7 +77,7 @@ public:
     std::shared_ptr<GrassLeafRandomParameter> getGrassLeafRandomParameter() const;
     std::shared_ptr<const GrassLeafSpecificParameter> param() const;
 
-    std::vector<Vector3d> getLeafVis(int i);    ///< 3D edge points at node i: 2 for blade, 0 for sheath
+    std::vector<Vector3d> getLeafVis(int i);    ///< 3D edge points at node i; returns the two leaf edge points for both blade and sheath nodes.
 
 private:
 
