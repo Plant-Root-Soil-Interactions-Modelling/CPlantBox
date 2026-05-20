@@ -10,7 +10,7 @@ mycp = pb.MycorrhizalPlant()
 path = "tomatoparameters/"
 name = "TomatoJohanna_WildTypeTwoHyphaeTypes"
 
-animation = True
+animation = False
 local = False
 infbox = pb.SDF_PlantBox(4, 4, 4)
 # infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
@@ -54,7 +54,7 @@ mycp.initialize(True)
 # print(mycp.toString())
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-simtime = 30
+simtime = 20
 fps = 24
 anim_time = simtime
 N = fps * anim_time
