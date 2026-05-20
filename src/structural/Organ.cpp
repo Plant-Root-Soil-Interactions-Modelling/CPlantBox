@@ -619,9 +619,6 @@ Vector3d Organ::heading(int n) const {
     if (n < 0) {
         n = nodes.size() - 1;
     }
-    // if (this->has_rel_coord) {
-    //     return nodes.at(n-1);  // TODO: no idea if this is correct...       
-    // }
     if ((nodes.size() > 1) && (n > 0)) {
         n = std::min(int(nodes.size()), n);
         Vector3d h = getNode(n).minus(getNode(n - 1));
