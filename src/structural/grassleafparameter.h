@@ -25,16 +25,18 @@ public:
     GrassLeafSpecificParameter() : OrganSpecificParameter(-1, 0.) { }
     GrassLeafSpecificParameter(int subType, double a,
         double bladeAngle, double bladeWidth, double bladeLength,
-        double sheathLength, double leafGrowthDuration)
+        double sheathLength, double leafGrowthDuration, double bladeBending)
         : OrganSpecificParameter(subType, a),
           bladeAngle(bladeAngle), bladeWidth(bladeWidth), bladeLength(bladeLength),
-          sheathLength(sheathLength), leafGrowthDuration(leafGrowthDuration) { }
+          sheathLength(sheathLength), leafGrowthDuration(leafGrowthDuration),
+          bladeBending(bladeBending) { }
 
-    double bladeAngle = 0.;      ///< Angle between blade and stem [rad]
-    double bladeWidth = 0.;      ///< Width of the blade [cm]
-    double bladeLength = 0.;     ///< Length of the blade [cm]
-    double sheathLength = 0.;    ///< Length of the sheath [cm]
+    double bladeAngle = 0.;        ///< Angle between blade and stem at the leaf collar [rad]
+    double bladeWidth = 0.;        ///< Width of the blade [cm]
+    double bladeLength = 0.;       ///< Length of the blade [cm]
+    double sheathLength = 0.;      ///< Length of the sheath [cm]
     double leafGrowthDuration = 0.; ///< Total duration of leaf growth [day]
+    double bladeBending = 0.05;    ///< Curvature of the blade: pitch increment per cm of segment length [rad/cm]
 
     std::string toString() const override; ///< for debugging
 };
@@ -64,15 +66,16 @@ public:
     /*
      * Grass leaf parameters (mean and standard deviation)
      */
-    double bladeAngle = 0.3;     ///< Mean angle between blade and stem [rad]
-    double bladeAngles = 0.;     ///< Standard deviation of blade angle [rad]
-    double bladeWidth = 0.5;     ///< Mean width of the blade [cm]
-    double bladeWidths = 0.;     ///< Standard deviation of blade width [cm]
-    double bladeLength = 10.;    ///< Mean length of the blade [cm]
-    double bladeLengths = 0.;    ///< Standard deviation of blade length [cm]
-    double sheathLength = 5.;    ///< Mean length of the sheath [cm]
-    double sheathLengths = 0.;   ///< Standard deviation of sheath length [cm]
-
+    double bladeAngle = 0.3;      ///< Mean angle between blade and stem at the leaf collar [rad]
+    double bladeAngles = 0.;      ///< Standard deviation of blade angle [rad]
+    double bladeWidth = 0.5;      ///< Mean width of the blade [cm]
+    double bladeWidths = 0.;      ///< Standard deviation of blade width [cm]
+    double bladeLength = 10.;     ///< Mean length of the blade [cm]
+    double bladeLengths = 0.;     ///< Standard deviation of blade length [cm]
+    double sheathLength = 5.;     ///< Mean length of the sheath [cm]
+    double sheathLengths = 0.;    ///< Standard deviation of sheath length [cm]
+    double bladeBending = 0.05;   ///< Mean blade curvature: pitch increment per cm of segment length [rad/cm]
+    double bladeBendings = 0.;    ///< Standard deviation of blade bending [rad/cm]
     double leafGrowthDuration = 20.; ///< Mean total duration of leaf growth [day]
     double leafGrowthDurations = 0.; ///< Standard deviation of leaf growth duration [day]
 

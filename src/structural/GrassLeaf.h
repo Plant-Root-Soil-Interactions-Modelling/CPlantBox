@@ -16,14 +16,19 @@ namespace CPlantBox {
 class Plant;
 
 /**
- * @brief A grass leaf organ whose geometry is described by a polyline with Turtle coordinates.
+ * @brief A grass leaf organ whose geometry is stored as a TurtlePolyline.
  *
- * Growth phases in simulate():
- *  1. Elongation by creation of small segments (mimics cell division in the meristem)
- *  2. Seperation into sheath and blade segments (angular change at leaf collar)
- *  3. Blade and sheath grow by elongation of the existing segments
- * 
- * In reality cell divisions and elongation happen simultaneously, but we separate them here for simplicity. 
+ * The leaf is divided into two zones based on the ratio sheathLength/totalLength:
+ *  - Sheath: straight segments (pitch = 0) wrapping around the stem.
+ *  - Blade: gently curving segments (pitch proportional to segment length) emerging above the leaf collar.
+ *
+ * Growth is driven by a single logistic/linear growth function (f_gf) parameterised by
+ * leafGrowthDuration and the total leaf length (sheathLength + bladeLength).  New segments
+ * are prepended at the base each time step (intercalary meristem model).  After each growth
+ * step the pitch of every segment is updated by fixPitch() to reflect the current
+ * sheath/blade partition.
+ *
+ * Node 0 is the attachment point on the parent organ; turtle nodes are indexed from 1.
  */
 class GrassLeaf : public Organ
 {
@@ -56,7 +61,7 @@ public:
     void abs2rel() override {} ///< No-op: GrassLeaf geometry is meristem-managed, not nodes-based.
     void rel2abs() override {} ///< No-op: GrassLeaf geometry is meristem-managed, not nodes-based.
 
-    int getNumberOfNodes() const override { return meristem.size()+1; } ///< +1 because the anchor point is not stored in the meristem
+    int getNumberOfNodes() const override { return turtle.size()+1; } ///< +1 because the anchor point is not stored in the meristem
     Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
 
     double getParameter(std::string name) const override;
@@ -66,8 +71,8 @@ public:
     double calcLength(double age) override; 
     double calcAge(double length) const override; 
 
-    double getSheathLengthGrown() const { return sheathLengthGrown; }      ///< Returns the current sheath length grown so far [cm].
-    double getBladeLengthGrown() const { return bladeLengthGrown; }   ///< Returns the current blade length grown so far [cm].
+    double getSheathLength() const { return sheathLength; }      ///< Returns the current sheath length grown so far [cm].
+    double getBladeLength() const { return bladeLength; }   ///< Returns the current blade length grown so far [cm].
 
     std::shared_ptr<GrassLeafRandomParameter> getGrassLeafRandomParameter() const;
     std::shared_ptr<const GrassLeafSpecificParameter> param() const;
@@ -76,14 +81,13 @@ public:
 
 private:
 
-    int initialLength;  // legnth until all segments are created
+    void growLeaf(double dl, double dt); ///< Prepends new base segments totalling dl [cm] to the TurtlePolyline.
+    void fixPitch(); ///< Assigns pitch angles to every turtle node based on its position along the leaf (sheath vs blade).
 
-    void growLeaf(double dl, double dt); ///< Grows the sheath by dl [cm] by prepending nodes into the Meristem.
-    void elongateLeaf(double dl,double dt); ///< Elongates the leaf by dl [cm] by prepending nodes into the Meristem.
+    mutable TurtlePolyline turtle; ///< Turtle-coordinate polyline of the entire leaf; mutable so getNode() can set the anchor.
+    double sheathLength = 0.;        ///< Current sheath length = length * sheathLength/(sheathLength+bladeLength) [cm]
+    double bladeLength  = 0.;        ///< Current blade length  = length * bladeLength/(sheathLength+bladeLength) [cm]
 
-    mutable TurtlePolyline meristem;     ///< Polyline of the entire leaf in turtle coordinates
-    double sheathLengthGrown = 0.; ///< Accumulated sheath length [cm]
-    double bladeLengthGrown  = 0.; ///< Accumulated blade length [cm]
 };
 
 } // end namespace CPlantBox

@@ -15,10 +15,13 @@ namespace CPlantBox {
  */
 GrassLeaf::GrassLeaf(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_,
                      int pni, bool moved, int oldNON)
-    : Organ(id, param, alive, active, age, length, partialIHeading_, pni, moved, oldNON) {}
+    : Organ(id, param, alive, active, age, length, partialIHeading_, pni, moved, oldNON) { }
 
 /**
- * @brief Simulation constructor; realizes parameters from GrassLeafRandomParameter and initialises the Meristem anchor at the parent attachment point.
+ * @brief Simulation constructor; sets up the TurtlePolyline anchor at the parent attachment node.
+ *
+ * The anchor frame is aligned with the parent heading at @p pni, randomly rotated around that
+ * heading, then pitched slightly upward so the leaf initially grows along the parent axis.
  */
 GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay, std::shared_ptr<Organ> parent, int pni)
     : Organ(plant, parent, Organism::ot_leaf, subtype, delay, pni) {
@@ -45,13 +48,13 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
     }
     auto rotX = anchorFrame.rotX(2 * M_PI * this->plant.lock()->rand());    
     anchorFrame.times(rotX); // random rotation around the heading to make the leaf orientation truly random
-    meristem.setAnchor(anchorPos);
+    turtle.setAnchor(anchorPos);
     
     // rotate the anchor frame: pitch the heading up by 90° so the leaf grows upward along the parent axis
     Turtle3D t(Vector3d(0., 0., 0.), anchorFrame);
-    t.pitchUp(0.1 * M_PI / 2.0);
+    t.pitchUp(0.03 * M_PI / 2.0); // sheath is almost straight
     anchorFrame = t.getFrame();
-    meristem.setAnchorFrame(anchorFrame);
+    turtle.setAnchorFrame(anchorFrame);
 
     // Seed nodeIds/nodeCTs for the initial meristem node.
     double creationTime = parent->getNodeCT(pni) + std::max(delay, 0.0);
@@ -67,8 +70,8 @@ Vector3d GrassLeaf::getNode(int i) const {
     if (i==0) {
         return anchorPoint; 
     } else {
-        meristem.setAnchor(anchorPoint);
-        return meristem.getNode(i-1); // -1 because the initial node at index 0 
+        turtle.setAnchor(anchorPoint);
+        return turtle.getNode(i-1); // -1 because the initial node at index 0 
     }
 }
 
@@ -85,7 +88,36 @@ std::shared_ptr<Organ> GrassLeaf::copy(std::shared_ptr<Organism> p) {
 }
 
 /**
- * @brief Advances the leaf by @p dt days 
+ * @brief Returns total leaf length (sheath + blade) at @p age using the growth function f_gf.
+ *
+ * The maximum length k = sheathLength + bladeLength and the initial growth rate
+ * r = k / leafGrowthDuration are passed to f_gf.
+ */
+double GrassLeaf::calcLength(double age) {
+    double k = param()->sheathLength + param()->bladeLength;
+    double r = k / param()->leafGrowthDuration;
+    return getGrassLeafRandomParameter()->f_gf->getLength(age, r, k, shared_from_this());
+}
+
+/**
+ * @brief Returns the age at which the leaf reaches @p length; inverse of calcLength().
+ */
+double GrassLeaf::calcAge(double length) const {
+    double k = param()->sheathLength + param()->bladeLength;
+    double r = k / param()->leafGrowthDuration;
+    return getGrassLeafRandomParameter()->f_gf->getAge(length, r, k, shared_from_this());
+}
+
+
+/**
+ * @brief Advances the leaf simulation by @p dt days.
+ *
+ * Each step:
+ *  1. Computes the target length from the growth function.
+ *  2. Calls growLeaf() to prepend new base segments if the leaf is still growing.
+ *  3. Updates sheathLength and bladeLength from the current length ratio.
+ *  4. Calls fixPitch() to assign correct pitch values to sheath vs blade segments.
+ *  5. Deactivates the organ once full length is reached.
  */
 void GrassLeaf::simulate(double dt, bool verbose) {
 
@@ -101,35 +133,28 @@ void GrassLeaf::simulate(double dt, bool verbose) {
 
     age += dt;
     double dt_ = (age < dt) ? age : dt; // time step; age < dt means the organ emerged in this time step
-
     if (age <= 0.) {
-        return; // still in delay
+        return; // still in delay TODO check where it is set...
     }
 
-    // GrassLeaf hold no children
+    // GrassLeaf has no children
 
     if (active) {
 
-        // double age_ = calcAge(sheathLengthGrown, p.sheathLength, p.sheathLength/p.leafGrowthDuration); 
-        // double targetSheathLength = calcLength(age_ + dt_, p.sheathLength, p.sheathLength/p.leafGrowthDuration) + this->epsilonDx;        
-        // double dl = targetSheathLength - sheathLengthGrown; 
-        // if (dl > 0.) {
-        //     this->epsilonDx = 0; // its in dl already
-        //     growSheath(dl, dt);
-        // }
-
-        double age_ = calcAge(bladeLengthGrown); 
-        double targetBladeLength = calcLength(age_ + dt_) + this->epsilonDx;
-        double dl = targetBladeLength - bladeLengthGrown;
-        if (dl > 0.) {
-            growLeaf(dl, dt);
-        }
+        double age_ = calcAge(length); 
+        double targetLength = calcLength(age_ + dt_) + this->epsilonDx;
+        double dl = targetLength - length; // we should scale that for carbon limited growth        
         
+        if (dl > 0.) {
+            growLeaf(dl, dt_);
+        }
+        sheathLength = length * p.sheathLength / (p.sheathLength + p.bladeLength);
+        bladeLength = length * p.bladeLength / (p.sheathLength + p.bladeLength);
+        fixPitch(); // apply blade angle to the new segments
     }
 
-    // Sync the length field used by the base class infrastructure.
-    length = sheathLengthGrown + bladeLengthGrown;
-    active = (length < p.sheathLength + p.bladeLength) && alive;
+    // Sync the length field used by the base class infrastructure
+    active = (length < p.sheathLength + p.bladeLength - 1.e-6) && alive;
 }
 
 /**
@@ -154,11 +179,10 @@ double GrassLeaf::getParameter(std::string name) const {
  */
 std::string GrassLeaf::toString() const {
     std::ostringstream s;
-    s << "GrassLeaf id=" << getId() << " age=" << age << " sheath=" << sheathLengthGrown << "/" << param()->sheathLength << " blade=" << bladeLengthGrown << "/"
-      << param()->bladeLength << " nodes=" << meristem.size() << "\n";
+    s << "GrassLeaf id=" << getId() << " age=" << age << " sheath=" << sheathLength << "/" << param()->sheathLength << " blade=" << bladeLength << "/"
+      << param()->bladeLength << " nodes=" << turtle.size() << "\n";
     return s.str();
 }
-
 
 /**
  * @brief Returns the stochastic parameter set for this leaf's sub-type.
@@ -172,16 +196,19 @@ std::shared_ptr<GrassLeafRandomParameter> GrassLeaf::getGrassLeafRandomParameter
  */
 std::shared_ptr<const GrassLeafSpecificParameter> GrassLeaf::param() const { return std::dynamic_pointer_cast<const GrassLeafSpecificParameter>(param_); }
 
-
-
 /**
- * @brief Grows the blade by @p dl [cm]; applies bladeAngle yaw on the first segment, then subdivides via addMeristemNodes().
+ * @brief Prepends new segments totalling @p dl [cm] at the base of the TurtlePolyline.
+ *
+ * Implements intercalary meristem growth: new segments are inserted before the existing
+ * base so that older tissue moves toward the tip.  Each segment gets a creation time
+ * interpolated from the organ age and the base creation time.  Pitch angles are left at
+ * zero here and corrected afterwards by fixPitch().
  */
 void GrassLeaf::growLeaf(double dl, double dt) {
 
     const GrassLeafSpecificParameter &p = *param(); 
 
-    double baseCT = nodeCTs[meristem.getInitialNodeIndex()]; // organ creation time 
+    double baseCT = nodeCTs[turtle.getInitialNodeIndex()]; // organ creation time 
 
     int n = static_cast<int>(std::floor(dl / dx()));
     double last = dl - n * dx(); // if last piece is below dxMin, absorb it into epsilonDx and skip
@@ -196,43 +223,38 @@ void GrassLeaf::growLeaf(double dl, double dt) {
     // prepend in reverse order so that node 0 ends up as the new base
     for (int i = nSegs - 1; i >= 0; --i) {
         double sdx = (i < n) ? dx() : last;
-        bladeLengthGrown += sdx;
-        double age_ = calcAge(bladeLengthGrown);
-        double a = std::min(std::max(age_, age - dt), age);        
+        length += sdx;
+        double age_ = calcAge(length);
+        double a = std::min(std::max(age_, age - dt), age);  // in case of failing we fall back to temporal discretization   
         double ct = a + baseCT;
         int nid = plant.lock()->getNodeIndex();
-        meristem.addNodeFront(sdx, 0., 0.03, 0.);
+        turtle.addNodeFront(sdx, 0., 0., 0.);
         nodeIds.insert(nodeIds.begin()+1, nid); // +1 because the initial node at index 0 is the anchor and does not have a nodeId
         nodeCTs.insert(nodeCTs.begin()+1, ct);
     }
 }
 
 /**
- *  
+ * @brief Assigns pitch angles to every turtle node based on its position along the leaf.
+ *
+ * Sheath nodes (cumulative arc-length < sheathLength) get pitch = 0 (straight).
+ * Blade nodes get pitch = bladeBending * segment dist [rad/cm], producing a gentle outward curve.
+ * The sheath/blade boundary is located with TurtlePolyline::getNodeIndexAtLength().
+ *
+ * The node deque is mutated in place via const_cast (safe because @c turtle is mutable).
  */
-void GrassLeaf::elongateLeaf(double dl, double dt) {
-
-
+void GrassLeaf::fixPitch() {
+    if (turtle.size() == 0)
+        return;
+    int bladeStart = turtle.getNodeIndexAtLength(sheathLength);
+    auto &nodes = const_cast<std::deque<TurtlePolyline::TurtleNode> &>(turtle.getTurtleNodes());
+    for (int i = 0; i < nodes.size(); i++) {
+        nodes[i].pitch = (i < bladeStart) ? 0. : param()->bladeBending * nodes[i].dist;    
+    }
+    double p = length/(param()->sheathLength + param()->bladeLength);
+    nodes[bladeStart].pitch = param()->bladeAngle * p; 
 }
 
-
-/**
- * @brief Returns total leaf length (sheath + blade) at @p age_; piecewise-linear approximation.
- */
-double GrassLeaf::calcLength(double age) {
-    double k = param()->sheathLength + param()->bladeLength;
-    double r = k / param()->leafGrowthDuration;
-    return getGrassLeafRandomParameter()->f_gf->getLength(age, r, k, shared_from_this());
-}
-
-/**
- * @brief Returns the age at which the leaf reaches @p length_; inverse of calcLength().
- */
-double GrassLeaf::calcAge(double length) const {
-    double k = param()->sheathLength + param()->bladeLength;
-    double r = k / param()->leafGrowthDuration;
-    return getGrassLeafRandomParameter()->f_gf->getAge(length, r, k, shared_from_this());
-}
 
 /**
  * @brief Returns two 3D coordinates at node @p i for VTK polygon rendering.
@@ -241,39 +263,22 @@ double GrassLeaf::calcAge(double length) const {
  * @return   empty for sheath nodes, or {leftEdge, rightEdge} for blade nodes
  */
 std::vector<Vector3d> GrassLeaf::getLeafVis(int i) {
-    // Cumulative arc length to node i
-    double cumLen = 0.;
-    for (int j = 0; j < i; j++) {
-        cumLen += getNode(j + 1).minus(getNode(j)).length();
-    } // TODO meristem knows length, do shortcut
-    double p = cumLen/(getSheathLengthGrown() + getBladeLengthGrown());
 
-    // Local segment direction at node i
-    Vector3d dir;
-    if (i > 0) {
-        dir = getNode(i).minus(getNode(i - 1));
-    } else if (getNumberOfNodes() > 1) {
-        dir = getNode(1).minus(getNode(0));
-    } else {
-        return {};
-    }
-    if (dir.length() < 1e-12) {
-        return {};
-    }
-    dir.normalize();
+    int turtleIdx = std::max(0, i - 1); // Cumulative arc length to node i (turtle nodes are offset by 1 vs organ nodes)
+    double cumLen = turtle.getLength(turtleIdx); 
+    double p = (cumLen - getSheathLength()) / getBladeLength(); 
+    double a = getParent()->param()->a; // parent radius
+    Vector3d node = getNode(i);
+    Vector3d y1 = turtle.getNodeFrame(turtleIdx).column(1);
 
-    // Lateral direction: perpendicular to segment and world-up (0,0,1)
-    Vector3d up(0., 0., 1.);
-    Vector3d y1 = dir.cross(up);
-    if (y1.length() < 1e-6) {
-        y1 = Vector3d(1., 0., 0.);  // fallback when segment is nearly vertical
-    } else {
-        y1.normalize();
+    if (p<=0)  {
+        return { node.plus(y1.times(a)), node.minus(y1.times(a)) };
     }
 
     double bw; 
     double halfWidth = param()->bladeWidth / 2.;
-    double a = getParent()->param()->a; // parent radius
+    double halfWdith = std::min(length/2., halfWidth); // avoid unrealistic width at the very base of the blade  
+
     if (p<0.25) {
         bw = (halfWidth-a) * (p/0.25)+a;
     } else if (p<0.6) {
@@ -281,8 +286,7 @@ std::vector<Vector3d> GrassLeaf::getLeafVis(int i) {
     } else {
         bw = halfWidth*(1. - (p-0.6)/0.4);
     }
-    
-    Vector3d node = getNode(i);
+        
     return { node.plus(y1.times(bw)), node.minus(y1.times(bw)) };
 }
 

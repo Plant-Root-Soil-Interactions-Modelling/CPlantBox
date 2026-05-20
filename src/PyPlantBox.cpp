@@ -273,9 +273,13 @@ PYBIND11_MODULE(plantbox, m) {
                              .def("getAnchorFrame", &TurtlePolyline::getAnchorFrame)
                              .def("setAnchor", &TurtlePolyline::setAnchor, py::arg("p"))
                              .def("setAnchorFrame", &TurtlePolyline::setAnchorFrame, py::arg("f"))
-                             .def("getNodes", &TurtlePolyline::getNodes)
+                             .def("getNodes", &TurtlePolyline::getTurtleNodes)
                              .def("getTurtleNode", &TurtlePolyline::getTurtleNode, py::arg("i"))
                              .def("getInitialNodeIndex", &TurtlePolyline::getInitialNodeIndex)
+                             .def("getLength", py::overload_cast<>(&TurtlePolyline::getLength, py::const_), "Total arc-length of the polyline [cm]")
+                             .def("getLength", py::overload_cast<int>(&TurtlePolyline::getLength, py::const_), py::arg("n"), "Cumulative arc-length of the first n nodes [cm]")
+                             .def("getNodeIndexAtLength", &TurtlePolyline::getNodeIndexAtLength, py::arg("s"), py::arg("roundUp") = false)
+                             .def("getNodeFrame", &TurtlePolyline::getNodeFrame, py::arg("i"))
                              .def("__str__", &TurtlePolyline::toString);
     py::class_<TurtlePolyline::TurtleNode>(meristemClass, "TurtleNode")
         .def(py::init<>())
@@ -915,12 +919,13 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<GrassLeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<GrassLeafSpecificParameter>>(m, "GrassLeafSpecificParameter")
         .def(py::init<>())
-        .def(py::init<int, double, double, double, double, double, double>())
+        .def(py::init<int, double, double, double, double, double, double, double>())
         .def_readwrite("a", &GrassLeafSpecificParameter::a)
         .def_readwrite("bladeAngle", &GrassLeafSpecificParameter::bladeAngle)
         .def_readwrite("bladeWidth", &GrassLeafSpecificParameter::bladeWidth)
         .def_readwrite("bladeLength", &GrassLeafSpecificParameter::bladeLength)
         .def_readwrite("sheathLength", &GrassLeafSpecificParameter::sheathLength)
+        .def_readwrite("bladeBending", &GrassLeafSpecificParameter::bladeBending)
         .def_readwrite("leafGrowthDuration", &GrassLeafSpecificParameter::leafGrowthDuration)
         .def("__str__", &GrassLeafSpecificParameter::toString);
     py::class_<GrassLeafRandomParameter, OrganRandomParameter, std::shared_ptr<GrassLeafRandomParameter>>(m, "GrassLeafRandomParameter")
@@ -933,6 +938,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("bladeLengths", &GrassLeafRandomParameter::bladeLengths)
         .def_readwrite("sheathLength", &GrassLeafRandomParameter::sheathLength)
         .def_readwrite("sheathLengths", &GrassLeafRandomParameter::sheathLengths)
+        .def_readwrite("bladeBending", &GrassLeafRandomParameter::bladeBending)
+        .def_readwrite("bladeBendings", &GrassLeafRandomParameter::bladeBendings)
         .def_readwrite("leafGrowthDuration", &GrassLeafRandomParameter::leafGrowthDuration)
         .def_readwrite("leafGrowthDurations", &GrassLeafRandomParameter::leafGrowthDurations)
         .def("__str__", [](const GrassLeafRandomParameter &p) { return p.toString(true); });
@@ -964,8 +971,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("calcAge", &GrassLeaf::calcAge)
         .def("getGrassLeafRandomParameter", &GrassLeaf::getGrassLeafRandomParameter)
         .def("param", &GrassLeaf::param)
-        .def("getSheathLength", &GrassLeaf::getSheathLengthGrown)
-        .def("getBladeLengthGrown", &GrassLeaf::getBladeLengthGrown)
+        .def("getSheathLength", &GrassLeaf::getSheathLength)
+        .def("getBladeLength", &GrassLeaf::getBladeLength)
         .def("getLeafVis", &GrassLeaf::getLeafVis, py::arg("i"))
         .def("__str__", &GrassLeaf::toString);
     /**

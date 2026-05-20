@@ -15,6 +15,8 @@ Run from this directory:
     python grassleaf_animate.py
 """
 
+import numpy as np
+
 import plantbox as pb
 from plantbox.visualisation.vtk_animate import AnimateRoots
 
@@ -69,7 +71,7 @@ plant.setOrganRandomParameter(stem_rp)
 gl_rp = pb.GrassLeafRandomParameter(plant)
 gl_rp.subType = 1
 gl_rp.a = 0.02
-gl_rp.bladeAngle = 0.4
+gl_rp.bladeAngle = 0.5 * np.pi / 2
 gl_rp.bladeAngles = 0.0
 gl_rp.bladeLength = 12.0  # cm
 gl_rp.bladeLengths = 0.0
@@ -77,12 +79,9 @@ gl_rp.bladeWidth = 0.8  # cm
 gl_rp.bladeWidths = 0.0
 gl_rp.sheathLength = 6.0  # cm
 gl_rp.sheathLengths = 0.0
-gl_rp.sheathDuration = 8.0  # days
-gl_rp.sheathDurations = 0.0
-gl_rp.bladeDelay = 1.0  # days after sheath complete
-gl_rp.bladeDelays = 0.0
-gl_rp.bladeDuration = 15.0  # days to full blade
-gl_rp.bladeDurations = 0.0
+gl_rp.leafGrowthDuration = 20.0  # days to full leaf (sheath + blade)
+gl_rp.leafGrowthDurations = 0.0
+gl_rp.bladeBending = 0.2
 gl_rp.f_gf = pb.LinearGrowth()
 plant.setOrganRandomParameter(gl_rp)
 

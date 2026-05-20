@@ -447,6 +447,7 @@ class Turtle3D {
  *  - @c addNodeFront() – insert a at base
  */
 class TurtlePolyline {
+
   public:
     /// One segment of the polyline in turtle-relative coordinates.
     struct TurtleNode {
@@ -518,6 +519,48 @@ class TurtlePolyline {
     /// Returns the number of nodes (equals the deque size).
     int size() const { return static_cast<int>(nodes.size()); }
 
+    /// Returns the total length of the polyline (sum of all forward distances).
+    double getLength() const { return getLength(static_cast<int>(nodes.size())); }
+
+    /**
+     * Returns the cumulative arc-length of the first @p n nodes.
+     *
+     * @p n = size() (default) gives the total polyline length.
+     * @p n = 0 returns 0.
+     * Clamped to [0, size()].
+     */
+    double getLength(int n) const {
+        n = std::max(0, std::min(n, static_cast<int>(nodes.size())));
+        double len = 0.;
+        for (int i = 0; i < n; ++i)
+            len += nodes[i].dist;
+        return len;
+    }
+
+    /**
+     * Returns the deque index of the node at cumulative arc-length @p s.
+     *
+     * Walks the node deque accumulating forward distances until the running
+     * sum first reaches or exceeds @p s, then returns:
+     *  - @p roundUp = false (default): the last node whose cumulative length is <= s
+     *    (i.e. the node just *before* @p s is crossed), clamped to 0.
+     *  - @p roundUp = true            : the first node whose cumulative length is >= s
+     *    (i.e. the node just *after*  @p s is crossed), clamped to size()-1.
+     *
+     * @param s        target arc-length [cm]
+     * @param roundUp  false → node before, true → node after
+     * @return         deque index in [0, size()-1]
+     */
+    int getNodeIndexAtLength(double s, bool roundUp = false) const {
+        double cum = 0.;
+        for (int i = 0; i < static_cast<int>(nodes.size()); ++i) {
+            cum += nodes[i].dist;
+            if (cum >= s)
+                return roundUp ? i : std::max(0, i - 1);
+        }
+        return static_cast<int>(nodes.size()) - 1; // s >= total length: return last node
+    }
+
     /**
      * Returns the Cartesian position of node @p i.
      *
@@ -526,7 +569,7 @@ class TurtlePolyline {
      * @param i  node index in [0, size()-1]
      */
     Vector3d getNode(int i) const {
-        // std::cout << "Meristem size: " << size() << std::endl;
+        // std::cout << "TurtlePolyline size: " << size() << std::endl;
         assert(i >= 0 && i < size());
         Turtle3D t(anchor, anchorFrame);
         int idx = 0;
@@ -545,6 +588,30 @@ class TurtlePolyline {
 
     /// Returns the TurtleNode at deque index @p i.
     const TurtleNode &getTurtleNode(int i) const { return nodes.at(i); }
+
+    /**
+     * Returns the local coordinate frame at node @p i.
+     *
+     * Replays the deque from the anchor up to and including entry @p i,
+     * then returns the turtle's frame (columns: H, L, U).
+     *
+     * @param i  node index in [0, size()-1]
+     */
+    Matrix3d getNodeFrame(int i) const {
+        assert(i >= 0 && i < size());
+        Turtle3D t(anchor, anchorFrame);
+        int idx = 0;
+        for (const auto &n : nodes) {
+            t.turnLeft(n.yaw);
+            t.pitchUp(n.pitch);
+            t.rollLeft(n.roll);
+            t.forward(n.dist);
+            if (idx == i)
+                break;
+            ++idx;
+        }
+        return t.getFrame();
+    }
 
     /// Returns all nodes as a vector of Cartesian positions (one per deque entry).
     std::vector<Vector3d> getPolyline() const {
@@ -570,11 +637,11 @@ class TurtlePolyline {
     int getInitialNodeIndex() const { return initialNodeIdx; }
 
     /// Direct read access to the raw turtle-node deque.
-    const std::deque<TurtleNode> &getNodes() const { return nodes; }
+    const std::deque<TurtleNode> &getTurtleNodes() const { return nodes; }
 
     std::string toString() const {
         std::ostringstream s;
-        s << "Meristem [" << size() << " nodes]\n";
+        s << "TurtlePolyline [" << size() << " nodes]\n";
         auto pts = getPolyline();
         for (int i = 0; i < static_cast<int>(pts.size()); ++i) {
             s << "  " << i << ": " << pts[i].toString() << "\n";

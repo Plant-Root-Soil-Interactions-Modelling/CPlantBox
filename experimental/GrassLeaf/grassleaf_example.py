@@ -71,20 +71,17 @@ plant.setOrganRandomParameter(stem_rp)
 gl_rp = pb.GrassLeafRandomParameter(plant)
 gl_rp.subType = 1
 gl_rp.a = 0.02
-gl_rp.bladeAngle = 0.4  # ~23 deg bend at ligule
-gl_rp.bladeAngles = 0.05
+gl_rp.bladeAngle = 0.5 * np.pi / 2
+gl_rp.bladeAngles = 0.0
 gl_rp.bladeLength = 12.0  # cm
 gl_rp.bladeLengths = 1.0
 gl_rp.bladeWidth = 0.8  # cm
-gl_rp.bladeWidths = 0.05
+gl_rp.bladeWidths = 0.0
 gl_rp.sheathLength = 6.0  # cm
 gl_rp.sheathLengths = 2
-gl_rp.sheathDuration = 8.0  # days
-gl_rp.sheathDurations = 0.0
-gl_rp.bladeDelay = 1.0  # days after sheath complete
-gl_rp.bladeDelays = 0.0
-gl_rp.bladeDuration = 15.0  # days to full blade
-gl_rp.bladeDurations = 1.0
+gl_rp.leafGrowthDuration = 20.0  # days to full leaf (sheath + blade)
+gl_rp.leafGrowthDurations = 1.0
+gl_rp.bladeBending = 0.2
 gl_rp.f_gf = pb.LinearGrowth()  # for other organs this is set in initCallbacks() from parameters
 
 # print(gl_rp.successorNo, flush=True)
@@ -177,12 +174,8 @@ vp.plot_plant(ana, "age")
 # g2.bladeWidths = 0.0
 # g2.sheathLength = 6.0
 # g2.sheathLengths = 0.0
-# g2.sheathDuration = 8.0
-# g2.sheathDurations = 0.0
-# g2.bladeDelay = 1.0
-# g2.bladeDelays = 0.0
-# g2.bladeDuration = 15.0
-# g2.bladeDurations = 0.0
+# g2.leafGrowthDuration = 20.0
+# g2.leafGrowthDurations = 0.0
 # plant2.setOrganRandomParameter(g2)
 # plant2.initialize(verbose=False)
 

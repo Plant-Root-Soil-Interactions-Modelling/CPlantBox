@@ -23,6 +23,7 @@ std::string GrassLeafSpecificParameter::toString() const
     str << "bladeWidth\t"    << bladeWidth   << std::endl;
     str << "bladeLength\t"   << bladeLength  << std::endl;
     str << "sheathLength\t"  << sheathLength << std::endl;
+    str << "bladeBending\t"  << bladeBending << std::endl;
     str << "leafGrowthDuration\t" << leafGrowthDuration << std::endl;
     return str.str();
 }
@@ -68,12 +69,13 @@ std::shared_ptr<OrganSpecificParameter> GrassLeafRandomParameter::realize()
     double bladeWidth_   = std::max(bladeWidth   + p->randn() * bladeWidths,    0.);
     double bladeLength_  = std::max(bladeLength  + p->randn() * bladeLengths,   0.);
     double sheathLength_ = std::max(sheathLength + p->randn() * sheathLengths,  0.);
+    double bladeBending_    = std::max(bladeBending  + p->randn() * bladeBendings,   0.);
     double leafGrowthDuration_ = std::max(leafGrowthDuration + p->randn() * leafGrowthDurations, 0.);
 
     return std::make_shared<GrassLeafSpecificParameter>(
         subType, a_,
         bladeAngle_, bladeWidth_, bladeLength_,
-        sheathLength_, leafGrowthDuration_);
+        sheathLength_, leafGrowthDuration_, bladeBending_);
 }
 
 /**
@@ -103,6 +105,7 @@ void GrassLeafRandomParameter::bindParameters()
     bindParameter("bladeWidth",    &bladeWidth,    "Width of the blade [cm]",               &bladeWidths);
     bindParameter("bladeLength",   &bladeLength,   "Length of the blade [cm]",              &bladeLengths);
     bindParameter("sheathLength",  &sheathLength,  "Length of the sheath [cm]",             &sheathLengths);
+    bindParameter("bladeBending",  &bladeBending,  "Blade curvature: pitch per cm segment length [rad/cm]", &bladeBendings);
     bindParameter("leafGrowthDuration", &leafGrowthDuration, "Total duration of leaf growth [day]", &leafGrowthDurations);
 }
 

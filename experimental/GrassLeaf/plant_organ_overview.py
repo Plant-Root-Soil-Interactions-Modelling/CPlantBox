@@ -86,12 +86,8 @@ gl_rp.bladeWidth = 0.8
 gl_rp.bladeWidths = 0.05
 gl_rp.sheathLength = 6.0
 gl_rp.sheathLengths = 2.0
-gl_rp.sheathDuration = 8.0
-gl_rp.sheathDurations = 0.0
-gl_rp.bladeDelay = 1.0
-gl_rp.bladeDelays = 0.0
-gl_rp.bladeDuration = 15.0
-gl_rp.bladeDurations = 1.0
+gl_rp.leafGrowthDuration = 20.0  # days to full leaf (sheath + blade)
+gl_rp.leafGrowthDurations = 1.0
 gl_rp.f_gf = pb.LinearGrowth()
 plant.setOrganRandomParameter(gl_rp)
 
