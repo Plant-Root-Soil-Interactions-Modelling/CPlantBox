@@ -342,3 +342,62 @@ jobs:
         run: |
           set -euxo pipefail
           scripts/wheel/smoke-test-linux.sh
+
+  wheel-linux-x86_64:
+    name: Build Linux x86_64 wheel with cibuildwheel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: https://github.com/actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install host prerequisites
+        shell: bash
+        run: |
+          set -euxo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates \
+            python3 \
+            python3-pip \
+            python3-venv
+
+      - name: Check Docker availability
+        shell: bash
+        run: |
+          set -euxo pipefail
+          docker version
+          docker info
+
+      - name: Install cibuildwheel
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 -m venv /tmp/cplantbox-cibuildwheel-venv
+          /tmp/cplantbox-cibuildwheel-venv/bin/python -m pip install --upgrade pip
+          /tmp/cplantbox-cibuildwheel-venv/bin/python -m pip install cibuildwheel auditwheel
+
+      - name: Build and test wheel
+        shell: bash
+        run: |
+          set -euxo pipefail
+          /tmp/cplantbox-cibuildwheel-venv/bin/python -m cibuildwheel --platform linux --output-dir wheelhouse
+
+      - name: Audit wheel artifact
+        shell: bash
+        run: |
+          set -euxo pipefail
+          wheel_count=$(find wheelhouse -maxdepth 1 -type f -name '*.whl' | wc -l | tr -d ' ')
+          test "${wheel_count}" = "1"
+          for wheel in wheelhouse/*.whl; do
+            /tmp/cplantbox-cibuildwheel-venv/bin/auditwheel show "${wheel}"
+          done
+
+      - name: Upload wheel artifact
+        uses: https://github.com/actions/upload-artifact@v3
+        with:
+          name: cplantbox-cp311-manylinux-x86_64
+          path: wheelhouse/*.whl
+          if-no-files-found: error

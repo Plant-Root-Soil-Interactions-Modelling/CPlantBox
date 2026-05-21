@@ -165,14 +165,26 @@ for package in AMD BTF COLAMD KLU; do
 done
 
 log "Patching SUNDIALS ${SUNDIALS_VERSION} for CMake 4 compatibility"
-python3 - "${SUNDIALS_SOURCE}/config/SundialsKLU.cmake" <<'PY'
+python3 - "${SUNDIALS_SOURCE}" <<'PY'
 from pathlib import Path
+import re
 import sys
 
-path = Path(sys.argv[1])
-text = path.read_text()
-text = text.replace("CMAKE_MINIMUM_REQUIRED(VERSION 2.4)", "CMAKE_MINIMUM_REQUIRED(VERSION 3.5)")
-path.write_text(text)
+source = Path(sys.argv[1])
+pattern = re.compile(r"(CMAKE_MINIMUM_REQUIRED|cmake_minimum_required)\(VERSION (2\.4|3\.0\.2|3\.1\.3)\)")
+patched = []
+for path in source.rglob("*.cmake"):
+    text = path.read_text()
+    updated = pattern.sub(lambda match: f"{match.group(1)}(VERSION 3.5)", text)
+    if updated != text:
+        path.write_text(updated)
+        patched.append(path.relative_to(source))
+
+if not patched:
+    raise SystemExit("No SUNDIALS CMake compatibility declarations were patched")
+
+for path in patched:
+    print(f"patched {path}")
 PY
 
 log "Building SUNDIALS static libraries"
@@ -181,6 +193,7 @@ rm -rf "${SUNDIALS_BUILD}"
 cmake -S "${SUNDIALS_SOURCE}" -B "${SUNDIALS_BUILD}" \
   -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_INSTALL_LIBDIR=lib \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DCMAKE_C_FLAGS="${CFLAGS:--O2 -fPIC}" \

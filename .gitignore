@@ -43,6 +43,7 @@ __pycache__
 # Python build artifacts
 dist/
 _skbuild/
+wheelhouse/
 *.egg-info/
 
 # pyenv
