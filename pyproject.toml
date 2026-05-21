@@ -28,6 +28,13 @@ manylinux-x86_64-image = "manylinux_2_28"
 before-all = "bash {project}/scripts/ci/install-cibuildwheel-deps-linux.sh && bash {project}/scripts/deps/source-native-deps-linux.sh /tmp/cplantbox-cibuildwheel-native-deps"
 environment = { CMAKE_ARGS = "-DCPB_SUITESPARSE_PROVIDER=source -DCPB_SUNDIALS_PROVIDER=source -DCPB_NATIVE_DEPS_PREFIX=/tmp/cplantbox-cibuildwheel-native-deps" }
 
+[tool.cibuildwheel.macos]
+build = "cp311-macosx_* cp312-macosx_* cp313-macosx_* cp314-macosx_*"
+archs = ["native"]
+before-all = "bash {project}/scripts/deps/source-native-deps-macos.sh /tmp/cplantbox-cibuildwheel-native-deps"
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CFLAGS = "-mmacosx-version-min=11.0", CXXFLAGS = "-mmacosx-version-min=11.0", CMAKE_ARGS = "-DCPB_SUITESPARSE_PROVIDER=source -DCPB_SUNDIALS_PROVIDER=source -DCPB_NATIVE_DEPS_PREFIX=/tmp/cplantbox-cibuildwheel-native-deps -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0" }
+repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
+
 [tool.black]
 line-length = 320
 target-version = ["py311"]
