@@ -17,7 +17,7 @@ build-dir = "_skbuild/{wheel_tag}"
 wheel.packages = []
 
 [tool.cibuildwheel]
-build = "cp311-manylinux_x86_64"
+build = "cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp314-manylinux_x86_64"
 skip = "*-musllinux_*"
 build-verbosity = 1
 test-command = "python {project}/scripts/wheel/smoke_test.py"
