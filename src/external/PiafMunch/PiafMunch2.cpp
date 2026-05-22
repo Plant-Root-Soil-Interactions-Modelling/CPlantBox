@@ -182,8 +182,8 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		
 		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-max(0.,(CSTi - C_targMeso))* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
-		if(!isLeafBlade)
-		{
+		//if(!isLeafBlade)
+		//{
 			Q_S_ST_dot[i] = k_S_ST * (CSTi - C_targ) * vol_ST[i]; // (Vmax and kHyd) or k3 (below),  or all three, should be zero
 			
 			if((Q_S_ST[i] <= 0.) && (Q_S_ST_dot[i] < 0.)) { // control negative starch concentrations (remove 4-lines-block if not relevant)
@@ -191,7 +191,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 				Q_S_ST_dot[i] = 0. ;
 				Q_S_ST[i] = 0.;
 			}
-		}
+		//}
 		
 		
 		double CSTi_delta = max(0.,CSTi-Csoil_node[i-1]); //concentration gradient for passive exudation. TODO: take Csoil from dumux 

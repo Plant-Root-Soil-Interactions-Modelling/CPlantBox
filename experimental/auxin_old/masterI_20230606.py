@@ -515,7 +515,7 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
     r.k_S_ST = 5/25 *1000  #daudet2002 * 1000 
     r.k_S_meso = 0.# 5/25 *1000 
     print("change for the cmeso day/night")
-    r.C_targ = r.CSTimin # * 6
+    r.C_targ = r.CSTimin  * 6
     r.C_targ_meso = r.CSTimin 
     #r.surfMeso=0.0025
     #r.cs = weatherInit["cs"]
