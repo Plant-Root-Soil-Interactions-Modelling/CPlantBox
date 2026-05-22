@@ -163,6 +163,8 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double Gr_Y = 0.75;//growth efficiency
 	double k_S_ST = 0.;
 	double C_targ = 0.4;
+	//double k_S_meso = 0.;
+	double C_targMeso = 0.4;
 	double atol_double = 1e-017;//max absolute error
 	double rtol_double = 1e-023;//max realtive error
 	double initValST = 0.8;//initial concentration in sieve tube
@@ -193,7 +195,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double auxin_P = 0.3;//production rate
 	double auxin_D = 0.3;//decay
 	double auxin_alpha = 0.3;//there is only one way down so we should be fine
-    //Fortran_vector JAuxin_ST1;
+	//Fortran_vector JAuxin_ST1;
     //Fortran_vector JAuxin_ST2;
 	double initValAuxin = 0.9;//initial concentration in active tip
     std::vector<double> C_Auxinv;//Suc_ST for python byding

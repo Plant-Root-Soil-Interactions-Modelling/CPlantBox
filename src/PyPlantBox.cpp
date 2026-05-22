@@ -1270,7 +1270,9 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("Q10",&PhloemFlux::Q10)
 			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10)
 			.def_readwrite("k_S_ST",&PhloemFlux::k_S_ST)
-			.def_readwrite("C_targ",&PhloemFlux::C_targ);
+			.def_readwrite("C_targ",&PhloemFlux::C_targ)
+			//.def_readwrite("k_S_meso",&PhloemFlux::k_S_meso)
+			.def_readwrite("C_targMeso",&PhloemFlux::C_targMeso);
 
 #endif
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")

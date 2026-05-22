@@ -17,6 +17,7 @@ Q:
     - k_S_ST, C_me => correct growth at night when growth
     - get concentration pick after decapitation
     - reserve of S_ST at the beginning (change of density or An?)
+- the computation is slow again. but is it my computer or is it the setup?
 """
 import types
 import importlib
@@ -272,7 +273,7 @@ def killChildren(orgToKill):
         toFill = toFill + toFill_
     return toFill
           
-def runSim(directoryN_,doVTP, verbosebase,
+def runSim(startDate, directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, 
            Qmax_, thresholdSuc,useLength,
            maxLBud , maxLBudDormant,#maxLBudDormant_1,
@@ -303,7 +304,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     
     strDecap = str(nodeD)#[0]
     
-    dir4allResults ="_"+str(thread) #"_"+ strPRate_+ "_"+strThA+ "_"+strThRatioA + "_"+ strQ + "_"+strThS+"_"+strDecap+"_"+str(thread)
+    dir4allResults = "_"+str(thread) #"_"+ strPRate_+ "_"+strThA+ "_"+strThRatioA + "_"+ strQ + "_"+strThS+"_"+strDecap+"_"+str(thread)
     dir4allResults=dir4allResults.replace(".", "o")
     def write_file_array(name, data):
         if doPrint :
@@ -417,7 +418,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     leafArea = np.array([])
     budlength = np.array([])
     while (len(pl.getOrgans(3, False)) ==0 ) or (pl.getOrgans(3, False)[0].getNumberOfLinkingNodes() < (3)) or (len(leafArea)<3) or (sum(leafArea) < (0.69)):
-        pl.simulate(8, False) #20
+        pl.simulate(startDate, False) #20
         scalLeaves = pl.getOrgans(4, True)
         leafArea = np.array([org.getLength(True) * org.getParameter("Width_blade") for org in scalLeaves])
         stems = pl.getOrgans(3, True)[1:]
@@ -430,7 +431,7 @@ def runSim(directoryN_,doVTP, verbosebase,
             'numkid',pl.getOrgans(3, False)[0].getNumberOfChildren(),
             'length',pl.getOrgans(3, False)[0].getLength(True))
         leafArea[:2]
-        simDuration += dt
+        simDuration += startDate
     
     
     stems = np.array(pl.getOrgans(3, True))
@@ -503,15 +504,19 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.sameVolume_meso_seg = True
     r.withInitVal = True
     r.initValST = 0.3
-    r.initVal_S_ST = 1e10
+    if startDate < 10.:
+        r.initVal_S_ST = 1e10
     r.initValMeso = 0.#0.2
     r.beta_loading = 10
     r.Vmaxloading = 0.3 #mmol/d, needed mean loading rate:  0.3788921068507634
     r.Mloading = 3.3*1e-3#0.2#
     r.Gr_Y = 1#0.75
     r.CSTimin = 0.25#0.3#    
-    r.k_S_ST = 5/25 *1000  #daudet2002
-    r.C_targ = r.CSTimin * 6
+    r.k_S_ST = 5/25 *1000  #daudet2002 * 1000 
+    r.k_S_meso = 0.# 5/25 *1000 
+    print("change for the cmeso day/night")
+    r.C_targ = r.CSTimin # * 6
+    r.C_targ_meso = r.CSTimin 
     #r.surfMeso=0.0025
     #r.cs = weatherInit["cs"]
 
@@ -1439,6 +1444,8 @@ def runSim(directoryN_,doVTP, verbosebase,
 
 
 if __name__ == '__main__':
+    startDate = int(sys.argv[1])
+    
     start_time_ = time.time()
     print("intern pid_start",psutil.Process().memory_info())
     from CalibP1Database import toTry
@@ -1462,7 +1469,7 @@ if __name__ == '__main__':
     except:
         lightLevel = "high"
     main_dir=os.environ['PWD']#dir of the file
-    directoryN = "/"+os.path.basename(__file__)[:-3]+"_"+str(nameSim)+"_"+str(lightLevel)+"/"#"/a_threshold/"
+    directoryN = "/"+os.path.basename(__file__)[:-3]+"_"+str(nameSim)+"/"#+"_"+str(lightLevel)"/a_threshold/"
     results_dir = main_dir +"/results"+directoryN
 
     if not os.path.exists(results_dir):
@@ -1475,7 +1482,6 @@ if __name__ == '__main__':
             except:
                 pass
     
-    assert nameSim in np.array(["DW","SLM","WT","WTD"])
     assert lightLevel in np.array(["low","medium","high"])
     Qinit = 1000*1e-6 
     if lightLevel == "medium":
@@ -1487,7 +1493,7 @@ if __name__ == '__main__':
     BerthLim_ =  3.
     thresholdSuc_ = 1#3e-2 #*2*2
     simMax__ = -1
-    runSim(directoryN_ = directoryN, doVTP = 0, verbosebase = False,
+    runSim(startDate, directoryN_ = directoryN, doVTP = 0, verbosebase = False,
     PRate_ = 6.8e-3, thresholdAux = 0, 
      RatiothresholdAux = 1,useLength = 2,limLenActive_ = 1.5,
      Qmax_ = Qinit, Klight = 0.,

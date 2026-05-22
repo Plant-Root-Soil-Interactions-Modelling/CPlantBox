@@ -63,6 +63,7 @@ double * vol_Sympl_dot = NULL ; // (ml / h) Variation rate of lateral parenchyma
 // as components of function f argument double* y in the solving procedure, the first 3 are stored as double* ; all others are Fortran_vectors
 double* Q_AuxinOut = NULL;
 double* Q_Mesophyll = NULL						; // Amount of sugar in parenchyma symplasm										(mmol)
+//double* Q_S_Mesophyll = NULL						; // Amount of sugar in parenchyma symplasm										(mmol)
 double* Q_ST = NULL						; // Amount of sugar in sieve tubes	= C_TC * Vol_ST						(mmol)
 double* Q_Auxin = NULL						; // Amount of sugar in sieve tubes	= C_TC * Vol_ST						(mmol)
 double* Q_RespMaint = NULL						; // Amount of starch in parenchyma										(mmol)
@@ -110,7 +111,8 @@ Fortran_vector TracerC_SymplUpflow					;  // upflow tracer concentration (mmol /
 Fortran_vector TracerC_ApoUpflow ;				; // upflow tracer concentration (mmol / ml) for TracerJS_Apo
 
 /******* variation rate of any variable X is noted: X_dot = dX/dt : *******/
-double * Q_Mesophyll_dot = NULL, * Q_ST_dot = NULL,* Q_Auxin_dot = NULL, * Q_Rm_dot = NULL, *Q_Exud_dot = NULL, *Q_Gtot_dot = NULL,  *Q_AuxinOut_dot = NULL  ;
+//double * Q_S_Mesophyll_dot = NULL, ;
+double * Q_Mesophyll_dot = NULL,* Q_ST_dot = NULL,* Q_Auxin_dot = NULL, * Q_Rm_dot = NULL, *Q_Exud_dot = NULL, *Q_Gtot_dot = NULL,  *Q_AuxinOut_dot = NULL  ;
 double * TracerQ_Mesophyll_dot=NULL, * Q_Rmmax_dot=NULL, * TracerQ_Rm_dot=NULL, *Q_S_ST_dot=NULL, *Q_Gtotmax_dot=NULL ;
 // Next 2 variables are not considered as such, but as possible inputs to compute vol_Sympl_dot :
 Fortran_vector P_ST_dot, P_Sympl_dot			; //  dP_ST/dt , dP_Sympl/dt					(MPa h / h)    -- for elasticity...
@@ -124,7 +126,7 @@ Fortran_vector kMParMb			; // kinetic parameter / Michaelis - parenchyma crossme
 Fortran_vector vMParMb			; // kinetic parameter / Michaelis - parenchyma crossmembrane C flux					(mmol /h)
 Fortran_vector kM						; // kinetic parameter / Michaelis - starch Synthesis					(mmol / ml)
 Fortran_vector Vmax					; // kinetic parameter / starch Synthesis								(mmol ml-1 h-1)
-Fortran_vector C_targ			  	; // kinetic parameter / starch/sugar equilibrium. (regul. par. sugar conc.) 			(mmol / ml)
+//Fortran_vector C_targ			  	; // kinetic parameter / starch/sugar equilibrium. (regul. par. sugar conc.) 			(mmol / ml)
 Fortran_vector kHyd					; // kinetic parameter / starch hydrolysis								(h-1)
 Fortran_vector k1					; // kinetic parameter / maintenance respiration 						(h-1)
 Fortran_vector k2					; // kinetic parameter / maintenance respiration						(ml mmol-1 h-1)
@@ -166,21 +168,30 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 	{ // edit (make different loops) to enter specific equations for specific nodes or conn.orders
 		double CSTi = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
 		double Cmeso = max(0.,Q_Mesophyll[i]/vol_ParApo[i]);//concentration in meosphyll compartment
+		bool isLeafBlade = vol_ParApo[i] > 0.;
+		// if(isLeafBlade)
+		// {
+			// C_targ_ = C_targMeso;
+		// }else{
+			// C_targ_ = C_targ;
+		// }
 		//Q_Fl[i] = k_meso*max(Cmeso - CSTi, 0.);//flux from mesophyll to sieve tube
 		 
 		double Q_Rmmax_ ;double Q_Exudmax_;double Fu_lim;
 		//Q_AuxinOut_dot[i] = 0;// not used currently
 		
-		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-max(0.,(CSTi - C_targ))* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
+		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-max(0.,(CSTi - C_targMeso))* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
+		if(!isLeafBlade)
+		{
+			Q_S_ST_dot[i] = k_S_ST * (CSTi - C_targ) * vol_ST[i]; // (Vmax and kHyd) or k3 (below),  or all three, should be zero
 			
-		Q_S_ST_dot[i] = k_S_ST * (CSTi - C_targ) * vol_ST[i]; // (Vmax and kHyd) or k3 (below),  or all three, should be zero
-		
-        if((Q_S_ST[i] <= 0.) && (Q_S_ST_dot[i] < 0.)) { // control negative starch concentrations (remove 4-lines-block if not relevant)
-            //cout << "at t=" << t << ", node#" << i << ": Starch <= 0 and Starch_dot < 0  =>  Starch_dot set to zero" << endl ;
-            Q_S_ST_dot[i] = 0. ;
-			Q_S_ST[i] = 0.;
-        }
+			if((Q_S_ST[i] <= 0.) && (Q_S_ST_dot[i] < 0.)) { // control negative starch concentrations (remove 4-lines-block if not relevant)
+				//cout << "at t=" << t << ", node#" << i << ": Starch <= 0 and Starch_dot < 0  =>  Starch_dot set to zero" << endl ;
+				Q_S_ST_dot[i] = 0. ;
+				Q_S_ST[i] = 0.;
+			}
+		}
 		
 		
 		double CSTi_delta = max(0.,CSTi-Csoil_node[i-1]); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
@@ -193,7 +204,18 @@ void PhloemFlux::C_fluxes(double t, int Nt)
         Q_AuxinOut_dot[i] = C_Auxin[i] * (auxin_D * (1 - deleteAtRootTip) + auxin_D * isRootTip.at(i-1) * deleteAtRootTip);
         Q_Auxin_dot[i] = cpb_2_pm->AuxinSource.at(i-1) * auxin_P  + Delta_JA_ST[i] - Q_AuxinOut_dot[i];
 		//Q_meso_dot:
-		Q_Mesophyll_dot[i] = Ag[i] -Q_Fl[i];//variaiton of sucrose content in mesophyll compartment 
+		//if(vol_ParApo[i] > 0.)
+		//{
+			// Q_S_Mesophyll_dot[i] = k_S_meso * (Cmeso - C_targMeso) * vol_ParApo[i];
+			
+			// if((Q_S_Mesophyll[i] <= 0.) && (Q_S_Mesophyll_dot[i] < 0.)) { // control negative starch concentrations (remove 4-lines-block if not relevant)
+				// //cout << "at t=" << t << ", node#" << i << ": Starch <= 0 and Starch_dot < 0  =>  Starch_dot set to zero" << endl ;
+				// Q_S_Mesophyll_dot[i] = 0. ;
+				// Q_S_Mesophyll[i] = 0.;
+			// }
+			Q_Mesophyll_dot[i] = Ag[i] - Q_Fl[i];// - Q_S_Mesophyll_dot[i];//variaiton of sucrose content in mesophyll compartment
+		//}
+		 
 		
 		Input[i] = Q_Fl[i];//phloem loading
 		

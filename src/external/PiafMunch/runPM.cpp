@@ -64,8 +64,9 @@ extern int is, solver ; // (see below) solver config.# -- default = 1 = cvode (S
 void auxout(double t, double * y){phloem_.lock()->aux(t, y);} ;	// launch auxiliary calculations to store dynamics of temporary variables
 void fout(double t, double *y, double *y_dot){phloem_.lock()->f(t, y, y_dot);} ; // the function to be processed by the solver  (implemented in 'solve.cpp')
 
+extern double *Q_S_Mesophyll, *Q_Mesophyll_dot;
 extern double *Q_ST, *Q_Auxin, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_AuxinOut ;		  // *Q_Auxin, components of vector y as used in diff. system f()...
-extern double *Q_ST_dot,*Q_Auxin_dot,  *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_AuxinOut_dot ; //... and its derivatives.  ;
+extern double *Q_ST_dot,*Q_Auxin_dot,  *Q_S_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_AuxinOut_dot ; //... and its derivatives.  ;
 extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_S_ST, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
 extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_S_ST_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl, *vol_Sympl_dot ;
