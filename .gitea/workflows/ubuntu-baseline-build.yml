@@ -97,3 +97,13 @@ jobs:
           # README documents example1a_small.py. Use the no-plot variant in CI
           # to avoid requiring a display while still exercising the installed build.
           python example1a_small_noplot.py
+
+      - name: Run unit tests
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source cpbenv/bin/activate
+          cd test
+          for test_file in *.py; do
+            python "${test_file}"
+          done
