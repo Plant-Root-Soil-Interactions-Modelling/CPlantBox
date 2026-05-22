@@ -1,0 +1,85 @@
+name: Wheel Release Dry Run
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  release-readiness:
+    name: Generate wheel release readiness summary
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate release readiness summary
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p "${RUNNER_TEMP}/cplantbox-release-readiness"
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          from pathlib import Path
+          import os
+          import tomllib
+
+          root = Path.cwd()
+          pyproject = tomllib.loads((root / "pyproject.toml").read_text())
+          project = pyproject["project"]
+          cibw = pyproject["tool"]["cibuildwheel"]
+          linux = pyproject["tool"]["cibuildwheel"]["linux"]
+          macos = pyproject["tool"]["cibuildwheel"].get("macos", {})
+
+          required_docs = [
+              "docs/wheels.md",
+              "docs/release.md",
+              "docs/native-dependencies.md",
+              "docs/macos-wheels.md",
+          ]
+          missing_docs = [path for path in required_docs if not (root / path).is_file()]
+          if missing_docs:
+              raise SystemExit(f"missing release documentation: {missing_docs}")
+
+          summary = f"""# CPlantBox wheel release dry run
+
+          This workflow is a release-readiness dry run. It does not publish to TestPyPI or PyPI.
+
+          ## Project metadata
+
+          - package: `{project['name']}`
+          - version: `{project['version']}`
+          - requires-python: `{project['requires-python']}`
+          - cibuildwheel build selector: `{cibw['build']}`
+          - Linux architectures: `{', '.join(linux['archs'])}`
+          - macOS build selector: `{macos.get('build', 'not configured')}`
+          - macOS architectures: `{', '.join(macos.get('archs', [])) or 'not configured'}`
+
+          ## Supported release matrix
+
+          - Linux x86_64 manylinux: cp311, cp312, cp313, cp314
+          - macOS native architecture: cp311
+          - Linux aarch64 manylinux: deferred until native ARM64 runner capacity or acceptable QEMU runtime is available
+
+          ## Publishing status
+
+          Publishing is intentionally disabled. Before publishing, complete the checklist in `docs/release.md`, including third-party license/provenance metadata for SuiteSparse and SUNDIALS artifacts.
+          """
+          out = Path(os.environ["RUNNER_TEMP"]) / "cplantbox-release-readiness" / "wheel-release-readiness.md"
+          out.write_text("\n".join(line.strip() for line in summary.splitlines()) + "\n")
+          print(out.read_text())
+          PY
+
+      - name: Upload release-readiness artifact
+        if: ${{ env.ACT != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cplantbox-release-readiness
+          path: ${{ runner.temp }}/cplantbox-release-readiness/wheel-release-readiness.md
+          if-no-files-found: error
