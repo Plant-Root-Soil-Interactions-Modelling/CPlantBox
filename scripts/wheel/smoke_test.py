@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import importlib.util
 import site
 import sys
 import sysconfig
@@ -58,11 +59,17 @@ def _assert_installed_path(path: Path, site_paths: list[Path]) -> None:
         assert any(_is_relative_to(resolved, site_path) for site_path in site_paths), (resolved, site_paths)
 
 
-def _import_helper_modules() -> None:
-    """Import representative installed helper modules and subpackages."""
+def _assert_module_packaged(module_name: str, site_paths: list[Path]) -> None:
+    spec = importlib.util.find_spec(module_name)
+    assert spec is not None, module_name
+    assert spec.origin is not None, module_name
+    _assert_installed_path(Path(spec.origin), site_paths)
 
-    import plantbox.functional.CellVariablemod  # noqa: F401
-    import plantbox.functional.Mesh1Dmod  # noqa: F401
+
+def _check_helper_modules(site_paths: list[Path]) -> None:
+    """Check representative installed helper modules and subpackages."""
+
+    # Import helpers covered by the base runtime deps plus cibuildwheel's `vis` test extra.
     import plantbox.functional.Perirhizal  # noqa: F401
     import plantbox.functional.PlantHydraulicModel  # noqa: F401
     import plantbox.functional.van_genuchten  # noqa: F401
@@ -71,6 +78,11 @@ def _import_helper_modules() -> None:
     import plantbox.structural.MappedOrganism  # noqa: F401
     import plantbox.visualisation.vtk_plot  # noqa: F401
     import plantbox.visualisation.vtk_tools  # noqa: F401
+
+    # FiPy helper modules import mpi4py, which requires an external MPI runtime
+    # library. Verify they are packaged without executing those optional imports.
+    _assert_module_packaged("plantbox.functional.CellVariablemod", site_paths)
+    _assert_module_packaged("plantbox.functional.Mesh1Dmod", site_paths)
 
 
 def main() -> None:
@@ -84,7 +96,7 @@ def main() -> None:
     _assert_installed_path(module_path, site_paths)
     _assert_installed_path(extension_path, site_paths)
 
-    _import_helper_modules()
+    _check_helper_modules(site_paths)
 
     data_root = Path(pb.data_path()).resolve()
     _assert_installed_path(data_root, site_paths)

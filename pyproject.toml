@@ -24,7 +24,7 @@ fipy = [
 mpi = [
   "mpi4py",
 ]
-vtk = [
+vis = [
   "ipython",
   "vtk",
 ]
@@ -44,7 +44,7 @@ build = "cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp
 skip = "*-musllinux_*"
 build-verbosity = 1
 test-command = "python {project}/scripts/wheel/smoke_test.py"
-test-extras = ["all"]
+test-extras = ["vis"]
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64"]
