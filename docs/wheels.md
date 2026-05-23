@@ -4,10 +4,10 @@ CPlantBox platform wheels are built with `scikit-build-core` and `cibuildwheel`.
 
 ## Supported wheel matrix
 
-| Platform | Python tags | Artifact |
+| Platform | Python tags | Artifact names |
 | --- | --- | --- |
-| Linux x86_64 manylinux | `cp311`, `cp312`, `cp313`, `cp314` | `cplantbox-manylinux-x86_64` |
-| macOS native runner architecture | `cp311`, `cp312`, `cp313`, `cp314` | `cplantbox-macos-native` |
+| Linux x86_64 manylinux | `cp311`, `cp312`, `cp313`, `cp314` | `cplantbox-manylinux-x86_64-python-3.11` through `cplantbox-manylinux-x86_64-python-3.14` |
+| macOS native runner architecture | `cp311`, `cp312`, `cp313`, `cp314` | `cplantbox-macos-native-<arch>-python-3.11` through `cplantbox-macos-native-<arch>-python-3.14` |
 
 Linux aarch64, macOS universal2, and Windows wheels are not enabled in this PR.
 
@@ -37,7 +37,7 @@ The workflow:
 2. builds wheels with `cibuildwheel==3.4.1`
 3. runs `scripts/wheel/smoke_test.py` against each installed wheel
 4. audits native dependencies
-5. uploads wheel artifacts
+5. uploads one clearly named artifact per wheel
 
 ## Local smoke builds
 

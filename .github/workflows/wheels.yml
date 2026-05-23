@@ -7,9 +7,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  linux-x86_64:
+  linux_x86_64:
     name: Build Linux x86_64 wheels
     runs-on: ubuntu-latest
+    outputs:
+      cp311_url: ${{ steps.upload_linux_cp311.outputs['artifact-url'] }}
+      cp312_url: ${{ steps.upload_linux_cp312.outputs['artifact-url'] }}
+      cp313_url: ${{ steps.upload_linux_cp313.outputs['artifact-url'] }}
+      cp314_url: ${{ steps.upload_linux_cp314.outputs['artifact-url'] }}
 
     steps:
       - name: Checkout
@@ -60,16 +65,46 @@ jobs:
           AUDITWHEEL=/tmp/cplantbox-cibuildwheel-linux-venv/bin/auditwheel \
             scripts/ci/audit-wheelhouse-linux.sh wheelhouse
 
-      - name: Upload Linux wheel artifacts
+      - name: Upload Linux Python 3.11 wheel artifact
+        id: upload_linux_cp311
         uses: actions/upload-artifact@v7
         with:
-          name: cplantbox-manylinux-x86_64
-          path: wheelhouse/*.whl
+          name: cplantbox-manylinux-x86_64-python-3.11
+          path: wheelhouse/*-cp311-cp311-manylinux*x86_64.whl
           if-no-files-found: error
 
-  macos-native:
+      - name: Upload Linux Python 3.12 wheel artifact
+        id: upload_linux_cp312
+        uses: actions/upload-artifact@v7
+        with:
+          name: cplantbox-manylinux-x86_64-python-3.12
+          path: wheelhouse/*-cp312-cp312-manylinux*x86_64.whl
+          if-no-files-found: error
+
+      - name: Upload Linux Python 3.13 wheel artifact
+        id: upload_linux_cp313
+        uses: actions/upload-artifact@v7
+        with:
+          name: cplantbox-manylinux-x86_64-python-3.13
+          path: wheelhouse/*-cp313-cp313-manylinux*x86_64.whl
+          if-no-files-found: error
+
+      - name: Upload Linux Python 3.14 wheel artifact
+        id: upload_linux_cp314
+        uses: actions/upload-artifact@v7
+        with:
+          name: cplantbox-manylinux-x86_64-python-3.14
+          path: wheelhouse/*-cp314-cp314-manylinux*x86_64.whl
+          if-no-files-found: error
+
+  macos_native:
     name: Build macOS native wheels
     runs-on: macos-latest
+    outputs:
+      cp311_url: ${{ steps.upload_macos_cp311.outputs['artifact-url'] }}
+      cp312_url: ${{ steps.upload_macos_cp312.outputs['artifact-url'] }}
+      cp313_url: ${{ steps.upload_macos_cp313.outputs['artifact-url'] }}
+      cp314_url: ${{ steps.upload_macos_cp314.outputs['artifact-url'] }}
 
     steps:
       - name: Checkout
@@ -114,9 +149,87 @@ jobs:
           source /tmp/cplantbox-cibuildwheel-macos-venv/bin/activate
           CPB_EXPECTED_WHEEL_COUNT=4 scripts/ci/audit-wheelhouse-macos.sh wheelhouse
 
-      - name: Upload macOS wheel artifacts
+      - name: Upload macOS Python 3.11 wheel artifact
+        id: upload_macos_cp311
         uses: actions/upload-artifact@v7
         with:
-          name: cplantbox-macos-native
-          path: wheelhouse/*.whl
+          name: cplantbox-macos-native-${{ runner.arch }}-python-3.11
+          path: wheelhouse/*-cp311-cp311-macosx_*.whl
           if-no-files-found: error
+
+      - name: Upload macOS Python 3.12 wheel artifact
+        id: upload_macos_cp312
+        uses: actions/upload-artifact@v7
+        with:
+          name: cplantbox-macos-native-${{ runner.arch }}-python-3.12
+          path: wheelhouse/*-cp312-cp312-macosx_*.whl
+          if-no-files-found: error
+
+      - name: Upload macOS Python 3.13 wheel artifact
+        id: upload_macos_cp313
+        uses: actions/upload-artifact@v7
+        with:
+          name: cplantbox-macos-native-${{ runner.arch }}-python-3.13
+          path: wheelhouse/*-cp313-cp313-macosx_*.whl
+          if-no-files-found: error
+
+      - name: Upload macOS Python 3.14 wheel artifact
+        id: upload_macos_cp314
+        uses: actions/upload-artifact@v7
+        with:
+          name: cplantbox-macos-native-${{ runner.arch }}-python-3.14
+          path: wheelhouse/*-cp314-cp314-macosx_*.whl
+          if-no-files-found: error
+
+  artifact_summary:
+    name: Summarize wheel artifacts
+    runs-on: ubuntu-latest
+    needs:
+      - linux_x86_64
+      - macos_native
+    if: ${{ always() }}
+
+    steps:
+      - name: Write artifact links
+        shell: bash
+        env:
+          LINUX_RESULT: ${{ needs.linux_x86_64.result }}
+          LINUX_CP311_URL: ${{ needs.linux_x86_64.outputs.cp311_url }}
+          LINUX_CP312_URL: ${{ needs.linux_x86_64.outputs.cp312_url }}
+          LINUX_CP313_URL: ${{ needs.linux_x86_64.outputs.cp313_url }}
+          LINUX_CP314_URL: ${{ needs.linux_x86_64.outputs.cp314_url }}
+          MACOS_RESULT: ${{ needs.macos_native.result }}
+          MACOS_CP311_URL: ${{ needs.macos_native.outputs.cp311_url }}
+          MACOS_CP312_URL: ${{ needs.macos_native.outputs.cp312_url }}
+          MACOS_CP313_URL: ${{ needs.macos_native.outputs.cp313_url }}
+          MACOS_CP314_URL: ${{ needs.macos_native.outputs.cp314_url }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          artifact_link() {
+            local url=$1
+            local name=$2
+            if [[ -n "${url}" ]]; then
+              printf '[%s](%s)' "${name}" "${url}"
+            else
+              printf 'not uploaded'
+            fi
+          }
+
+          {
+            echo '## Wheel artifacts'
+            echo
+            echo '| Platform | Python | Job result | Artifact |'
+            echo '| --- | --- | --- | --- |'
+            printf '| Linux x86_64 manylinux | 3.11 | `%s` | %s |\n' "${LINUX_RESULT}" "$(artifact_link "${LINUX_CP311_URL}" 'cplantbox-manylinux-x86_64-python-3.11')"
+            printf '| Linux x86_64 manylinux | 3.12 | `%s` | %s |\n' "${LINUX_RESULT}" "$(artifact_link "${LINUX_CP312_URL}" 'cplantbox-manylinux-x86_64-python-3.12')"
+            printf '| Linux x86_64 manylinux | 3.13 | `%s` | %s |\n' "${LINUX_RESULT}" "$(artifact_link "${LINUX_CP313_URL}" 'cplantbox-manylinux-x86_64-python-3.13')"
+            printf '| Linux x86_64 manylinux | 3.14 | `%s` | %s |\n' "${LINUX_RESULT}" "$(artifact_link "${LINUX_CP314_URL}" 'cplantbox-manylinux-x86_64-python-3.14')"
+            printf '| macOS native | 3.11 | `%s` | %s |\n' "${MACOS_RESULT}" "$(artifact_link "${MACOS_CP311_URL}" 'cplantbox-macos-native-python-3.11')"
+            printf '| macOS native | 3.12 | `%s` | %s |\n' "${MACOS_RESULT}" "$(artifact_link "${MACOS_CP312_URL}" 'cplantbox-macos-native-python-3.12')"
+            printf '| macOS native | 3.13 | `%s` | %s |\n' "${MACOS_RESULT}" "$(artifact_link "${MACOS_CP313_URL}" 'cplantbox-macos-native-python-3.13')"
+            printf '| macOS native | 3.14 | `%s` | %s |\n' "${MACOS_RESULT}" "$(artifact_link "${MACOS_CP314_URL}" 'cplantbox-macos-native-python-3.14')"
+            echo
+            echo "Run page: ${RUN_URL}"
+          } >> "${GITHUB_STEP_SUMMARY}"
