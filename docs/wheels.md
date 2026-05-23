@@ -40,7 +40,7 @@ scripts/download-latest-wheel-artifacts.sh wheelhouse
 Then install from the local wheelhouse, for example in a separate `uv` project:
 
 ```bash
-uv add --no-index --find-links wheelhouse cplantbox
+uv add --find-links wheelhouse cplantbox
 ```
 
 The downloader defaults to the upstream `master` workflow. Override repo/branch when testing a fork:
@@ -87,4 +87,4 @@ The audit scripts fail on common portability blockers:
 
 This PR builds and uploads CI wheel artifacts only. It does not publish to TestPyPI or PyPI.
 
-Public publishing should wait until third-party license/provenance metadata for bundled/source-built SuiteSparse and SUNDIALS artifacts is complete.
+Wheel artifacts include the source-built SuiteSparse/SUNDIALS license and provenance files under `.dist-info/licenses/third_party/native-dependencies`. Public publishing to TestPyPI/PyPI remains out of scope for this PR.

@@ -78,7 +78,7 @@ python3 -m venv cpb
 source cpb/bin/activate
 pip install -r requirements.txt
 ```
-Finally, initialize CMake (3.18 or newer) and build and install CPlantBox:
+Finally, initialize CMake and build and install CPlantBox:
 ```
 cmake .
 make install

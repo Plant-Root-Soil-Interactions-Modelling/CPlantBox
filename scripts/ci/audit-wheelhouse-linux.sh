@@ -60,6 +60,26 @@ with zipfile.ZipFile(wheel) as archive:
     archive.extractall(dest)
 PY
 
+  python3 - "${extract_dir}" <<'PY'
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1])
+dist_infos = list(root.glob("*.dist-info"))
+if len(dist_infos) != 1:
+    raise SystemExit(f"expected one .dist-info directory, found {len(dist_infos)}")
+license_root = dist_infos[0] / "licenses" / "third_party" / "native-dependencies"
+required = [
+    "cplantbox-native-deps-provenance.txt",
+    "sundials/LICENSE",
+    "sundials/NOTICE",
+    "suitesparse/LICENSE.txt",
+]
+missing = [name for name in required if not (license_root / name).is_file()]
+if missing:
+    raise SystemExit(f"missing native dependency license/provenance files: {missing}")
+PY
+
   mapfile -t shared_objects < <(find "${extract_dir}" -type f \( -name '*.so' -o -name '*.so.*' \) | sort)
   [[ "${#shared_objects[@]}" -gt 0 ]] || die "no shared objects found in ${wheel_name}"
 

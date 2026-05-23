@@ -29,7 +29,7 @@ Examples:
     scripts/download-latest-wheel-artifacts.sh wheelhouse
 
 Install from the downloaded wheelhouse with uv:
-  uv add --no-index --find-links wheelhouse cplantbox
+  uv add --find-links wheelhouse cplantbox
 USAGE
 }
 

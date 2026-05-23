@@ -1,6 +1,6 @@
 # Native dependency policy
 
-CPlantBox requires CMake 3.18 or newer. It links SuiteSparse and SUNDIALS when `PIAFMUNCH=ON`.
+CPlantBox links SuiteSparse and SUNDIALS when `PIAFMUNCH=ON`.
 
 `PIAFMUNCH` remains enabled by default to preserve the existing documented build flow:
 
@@ -90,4 +90,4 @@ The wheel workflow enforces these with installed-wheel smoke tests and platform 
 
 ## Publishing status
 
-Do not publish release wheels to TestPyPI or PyPI until third-party license/provenance metadata for bundled/source-built SuiteSparse and SUNDIALS artifacts is complete.
+Wheel artifacts include the source-built SuiteSparse/SUNDIALS license and provenance files under `.dist-info/licenses/third_party/native-dependencies`. Publishing to TestPyPI/PyPI remains out of scope for this PR.
