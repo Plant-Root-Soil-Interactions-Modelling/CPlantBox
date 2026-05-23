@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -61,7 +61,7 @@ jobs:
             scripts/ci/audit-wheelhouse-linux.sh wheelhouse
 
       - name: Upload Linux wheel artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cplantbox-manylinux-x86_64
           path: wheelhouse/*.whl
@@ -73,7 +73,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -115,7 +115,7 @@ jobs:
           CPB_EXPECTED_WHEEL_COUNT=4 scripts/ci/audit-wheelhouse-macos.sh wheelhouse
 
       - name: Upload macOS wheel artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cplantbox-macos-native
           path: wheelhouse/*.whl
