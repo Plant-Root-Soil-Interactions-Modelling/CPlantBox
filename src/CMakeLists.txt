@@ -15,6 +15,10 @@ string(TOLOWER "${CPB_SUNDIALS_PROVIDER}" CPB_SUNDIALS_PROVIDER)
 set(CPB_SUITESPARSE_PROVIDER "${CPB_SUITESPARSE_PROVIDER}" CACHE STRING "SuiteSparse provider: bundled, source, or system" FORCE)
 set(CPB_SUNDIALS_PROVIDER "${CPB_SUNDIALS_PROVIDER}" CACHE STRING "SUNDIALS provider: bundled, source, or system" FORCE)
 
+if(SKBUILD AND APPLE AND PIAFMUNCH AND (CPB_SUITESPARSE_PROVIDER STREQUAL "bundled" OR CPB_SUNDIALS_PROVIDER STREQUAL "bundled"))
+    message(FATAL_ERROR "macOS Python source builds cannot use the bundled SuiteSparse/SUNDIALS archives because they are Linux archives. Set CMAKE_ARGS='-DCPB_SUITESPARSE_PROVIDER=source -DCPB_SUNDIALS_PROVIDER=source -DCPB_NATIVE_DEPS_PREFIX=/path/to/cplantbox-native-deps' after running scripts/deps/source-native-deps.sh, or disable PiafMunch with -DPIAFMUNCH=OFF.")
+endif()
+
 message(STATUS "Project dir: ${PROJECT_SOURCE_DIR}")
 message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "Project binary dir: ${PROJECT_BINARY_DIR}")

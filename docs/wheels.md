@@ -66,6 +66,8 @@ CPB_EXPECTED_WHEEL_COUNT=4 AUDITWHEEL=/tmp/cplantbox-cibuildwheel-venv/bin/audit
 
 macOS cibuildwheel validation is intended for GitHub-hosted macOS runners. Local macOS hosts may be unable to run `cibuildwheel --platform macos` unless they have the Python framework installations expected by cibuildwheel.
 
+Plain macOS `pip install .` / `python -m build` source builds need explicit native dependency settings because the default bundled archives are Linux archives. Build native dependencies with `scripts/deps/source-native-deps.sh` and pass `CPB_SUITESPARSE_PROVIDER=source`, `CPB_SUNDIALS_PROVIDER=source`, and `CPB_NATIVE_DEPS_PREFIX` through `CMAKE_ARGS`.
+
 ## Wheel checks
 
 The installed-wheel smoke test verifies that:

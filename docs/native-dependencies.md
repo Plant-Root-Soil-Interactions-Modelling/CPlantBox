@@ -18,7 +18,7 @@ SuiteSparse and SUNDIALS providers are selected independently:
 -DCPB_SUNDIALS_PROVIDER=bundled|source|system
 ```
 
-Defaults remain compatible with the current source tree:
+Defaults remain compatible with the current source tree for the existing native build path:
 
 ```bash
 -DCPB_SUITESPARSE_PROVIDER=bundled
@@ -62,7 +62,7 @@ src/external/sundials/include/
 src/external/sundials/lib/*.a
 ```
 
-Those archives are kept for compatibility with the existing native build. They are Linux archives and are not used by the new macOS wheel path.
+Those archives are kept for compatibility with the existing native build. They are Linux archives and are not used by the new macOS wheel path. macOS scikit-build source builds fail fast if these bundled archives would be used.
 
 ## System provider
 
