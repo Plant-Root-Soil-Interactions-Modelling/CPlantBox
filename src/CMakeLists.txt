@@ -26,60 +26,7 @@ else()
 endif()
 
 # -----------------------------
-# 1. Sources
-# -----------------------------
-set(CPB_SOURCES
-    structural/organparameter.cpp
-    structural/rootparameter.cpp
-    structural/seedparameter.cpp
-    structural/leafparameter.cpp
-    structural/stemparameter.cpp
-    structural/Organ.cpp
-    structural/Root.cpp
-    structural/RootDelay.cpp
-    structural/Seed.cpp
-    structural/Stem.cpp
-    structural/Leaf.cpp
-    structural/Plant.cpp
-    structural/Organism.cpp
-    structural/RootSystem.cpp
-    structural/MappedOrganism.cpp
-    structural/sdf.cpp
-    structural/SegmentAnalyser.cpp
-    structural/tropism.cpp
-
-    functional/Photosynthesis.cpp
-    functional/Perirhizal.cpp
-    functional/PlantHydraulicParameters.cpp
-    functional/PlantHydraulicModel.cpp
-
-    visualisation/Quaternion.h
-    visualisation/CatmullRomSpline.h
-    visualisation/PlantVisualiser.h
-    visualisation/PlantVisualiser.cpp
-
-    external/tinyxml2/tinyxml2.cpp
-    external/aabbcc/AABB.cc
-    external/gauss_legendre/gauss_legendre.cpp
-)
-
-if(PIAFMUNCH)
-    list(APPEND CPB_SOURCES
-        external/PiafMunch/runPM.cpp
-        external/PiafMunch/PiafMunch2.cpp
-        external/PiafMunch/index_vector.cpp
-        external/PiafMunch/initialize.cpp
-        external/PiafMunch/odepack.cpp
-        external/PiafMunch/PM_KLU.cpp
-        external/PiafMunch/PM_matrix.cpp
-        external/PiafMunch/PM_vector.cpp
-        external/PiafMunch/solve.cpp
-        external/PiafMunch/sparse_matrix.cpp
-    )
-endif()
-
-# -----------------------------
-# 2. Core library
+# Core library
 # -----------------------------
 if(CPB_BUILD_SHARED)
     set(CPB_LIBRARY_TYPE SHARED)
@@ -87,7 +34,43 @@ else()
     set(CPB_LIBRARY_TYPE STATIC)
 endif()
 
-add_library(CPlantBox ${CPB_LIBRARY_TYPE} ${CPB_SOURCES})
+add_library(CPlantBox ${CPB_LIBRARY_TYPE})
+target_sources(CPlantBox
+    PRIVATE
+        structural/organparameter.cpp
+        structural/rootparameter.cpp
+        structural/seedparameter.cpp
+        structural/leafparameter.cpp
+        structural/stemparameter.cpp
+        structural/Organ.cpp
+        structural/Root.cpp
+        structural/RootDelay.cpp
+        structural/Seed.cpp
+        structural/Stem.cpp
+        structural/Leaf.cpp
+        structural/Plant.cpp
+        structural/Organism.cpp
+        structural/RootSystem.cpp
+        structural/MappedOrganism.cpp
+        structural/sdf.cpp
+        structural/SegmentAnalyser.cpp
+        structural/tropism.cpp
+
+        functional/Photosynthesis.cpp
+        functional/Perirhizal.cpp
+        functional/PlantHydraulicParameters.cpp
+        functional/PlantHydraulicModel.cpp
+
+        visualisation/Quaternion.h
+        visualisation/CatmullRomSpline.h
+        visualisation/PlantVisualiser.h
+        visualisation/PlantVisualiser.cpp
+
+        external/tinyxml2/tinyxml2.cpp
+        external/aabbcc/AABB.cc
+        external/gauss_legendre/gauss_legendre.cpp
+)
+
 set_target_properties(CPlantBox PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
@@ -97,28 +80,23 @@ set_target_properties(CPlantBox PROPERTIES
 
 target_include_directories(CPlantBox
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/structural
-        ${CMAKE_CURRENT_SOURCE_DIR}/functional
-        ${CMAKE_CURRENT_SOURCE_DIR}/visualisation
-        ${CMAKE_CURRENT_SOURCE_DIR}/external/tinyxml2
-        ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen
-        ${CMAKE_CURRENT_SOURCE_DIR}/external
+        "${CMAKE_CURRENT_SOURCE_DIR}/structural"
+        "${CMAKE_CURRENT_SOURCE_DIR}/functional"
+        "${CMAKE_CURRENT_SOURCE_DIR}/visualisation"
+        "${CMAKE_CURRENT_SOURCE_DIR}/external/tinyxml2"
+        "${CMAKE_CURRENT_SOURCE_DIR}/external/eigen"
+        "${CMAKE_CURRENT_SOURCE_DIR}/external"
 )
 
 # -----------------------------
-# 3. Optional PiafMunch native dependencies
+# Optional features
 # -----------------------------
-include("${PROJECT_SOURCE_DIR}/cmake/CPlantBoxPiafMunch.cmake")
-
 if(PIAFMUNCH)
+    include("${CMAKE_CURRENT_LIST_DIR}/../cmake/CPlantBoxPiafMunch.cmake")
     cplantbox_configure_piafmunch(CPlantBox)
 endif()
 
-# -----------------------------
-# 4. Python binding and package install
-# -----------------------------
-include("${PROJECT_SOURCE_DIR}/cmake/CPlantBoxPython.cmake")
-
 if(CPB_BUILD_PYTHON)
+    include("${CMAKE_CURRENT_LIST_DIR}/../cmake/CPlantBoxPython.cmake")
     cplantbox_configure_python_bindings(CPlantBox)
 endif()

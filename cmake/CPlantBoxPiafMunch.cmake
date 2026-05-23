@@ -90,6 +90,20 @@ function(cplantbox_configure_piafmunch target)
     message(STATUS "CPlantBox SuiteSparse provider: ${CPB_SUITESPARSE_PROVIDER}")
     message(STATUS "CPlantBox SUNDIALS provider: ${CPB_SUNDIALS_PROVIDER}")
 
+    target_sources(${target}
+        PRIVATE
+            "${_CPB_PIAFMUNCH_SOURCE_DIR}/external/PiafMunch/runPM.cpp"
+            "${_CPB_PIAFMUNCH_SOURCE_DIR}/external/PiafMunch/PiafMunch2.cpp"
+            "${_CPB_PIAFMUNCH_SOURCE_DIR}/external/PiafMunch/index_vector.cpp"
+            "${_CPB_PIAFMUNCH_SOURCE_DIR}/external/PiafMunch/initialize.cpp"
+            "${_CPB_PIAFMUNCH_SOURCE_DIR}/external/PiafMunch/odepack.cpp"
+            "${_CPB_PIAFMUNCH_SOURCE_DIR}/external/PiafMunch/PM_KLU.cpp"
+            "${_CPB_PIAFMUNCH_SOURCE_DIR}/external/PiafMunch/PM_matrix.cpp"
+            "${_CPB_PIAFMUNCH_SOURCE_DIR}/external/PiafMunch/PM_vector.cpp"
+            "${_CPB_PIAFMUNCH_SOURCE_DIR}/external/PiafMunch/solve.cpp"
+            "${_CPB_PIAFMUNCH_SOURCE_DIR}/external/PiafMunch/sparse_matrix.cpp"
+    )
+
     target_compile_definitions(${target} PUBLIC ENABLE_PIAFMUNCH)
 
     if(CPB_SUITESPARSE_PROVIDER STREQUAL "bundled")
