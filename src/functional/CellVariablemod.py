@@ -7,10 +7,7 @@ from fipy.tools.numerix import MA
 import numpy as np
 from fipy.tools import numerix
 from fipy.tools import inline
-try:
-    from fipy.variables.meshVariable import MeshVariable as _MeshVariable
-except ImportError:  # FiPy < 4 exposed the private name used by this helper.
-    from fipy.variables.meshVariable import _MeshVariable
+from fipy.variables.meshVariable import MeshVariable
 from functools import reduce
 
 class CellVariablemod(CellVariable):
@@ -58,7 +55,7 @@ class _FaceGradVariablemod(_FaceGradVariable):
         """
         if other is None:
             return FaceVariablemod
-        return _MeshVariable._getArithmeticBaseClass(self, other)
+        return MeshVariable._getArithmeticBaseClass(self, other)
         
     @property
     def divergence(self): 
@@ -118,7 +115,7 @@ class FaceVariablemod(FaceVariable):
         if other is None:
             return FaceVariablemod
 
-        return _MeshVariable._getArithmeticBaseClass(self, other)        
+        return MeshVariable._getArithmeticBaseClass(self, other)
 
 
         

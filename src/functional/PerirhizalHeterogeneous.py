@@ -1,10 +1,7 @@
 import sys; sys.path.append(".."); sys.path.append("../..");
 
 import plantbox as pb
-if __package__:
-    from .Perirhizal import PerirhizalPython
-else:
-    from Perirhizal import PerirhizalPython
+from .Perirhizal import PerirhizalPython
 
 import plantbox.functional.van_genuchten as vg
 

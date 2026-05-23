@@ -16,7 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 fipy = [
-  "fipy",
+  "fipy>=4",
 ]
 mpi = [
   "mpi4py",
@@ -26,7 +26,7 @@ vis = [
   "vtk",
 ]
 all = [
-  "fipy",
+  "fipy>=4",
   "ipython",
   "mpi4py",
   "vtk",
