@@ -48,7 +48,7 @@ jobs:
         run: |
           set -euxo pipefail
           source /tmp/cplantbox-cibuildwheel-linux-venv/bin/activate
-          python -m cibuildwheel --platform linux --output-dir wheelhouse
+          GITHUB_STEP_SUMMARY= python -m cibuildwheel --platform linux --output-dir wheelhouse
 
       - name: Audit Linux wheels
         shell: bash
@@ -129,7 +129,7 @@ jobs:
         run: |
           set -euxo pipefail
           source /tmp/cplantbox-cibuildwheel-macos-venv/bin/activate
-          python -m cibuildwheel --platform macos --output-dir wheelhouse
+          GITHUB_STEP_SUMMARY= python -m cibuildwheel --platform macos --output-dir wheelhouse
 
       - name: Audit macOS wheels
         shell: bash
