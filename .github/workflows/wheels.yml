@@ -6,6 +6,9 @@ on:
       - master
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   linux_x86_64:
     name: Build Linux x86_64 wheels
@@ -145,7 +148,8 @@ jobs:
         run: |
           set -euxo pipefail
           brew update
-          brew install cmake ninja
+          brew list cmake >/dev/null 2>&1 || brew install cmake
+          brew list ninja >/dev/null 2>&1 || brew install ninja
 
       - name: Install cibuildwheel
         shell: bash
