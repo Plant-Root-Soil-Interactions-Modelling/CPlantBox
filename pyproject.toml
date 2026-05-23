@@ -12,12 +12,26 @@ name = "cplantbox"
 version = "2.1.0"
 requires-python = ">=3.11"
 dependencies = [
-  "fipy",
-  "ipython",
   "matplotlib",
-  "mpi4py",
   "numpy",
   "scipy",
+]
+
+[project.optional-dependencies]
+fipy = [
+  "fipy",
+]
+mpi = [
+  "mpi4py",
+]
+vtk = [
+  "ipython",
+  "vtk",
+]
+all = [
+  "fipy",
+  "ipython",
+  "mpi4py",
   "vtk",
 ]
 
@@ -30,6 +44,7 @@ build = "cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp
 skip = "*-musllinux_*"
 build-verbosity = 1
 test-command = "python {project}/scripts/wheel/smoke_test.py"
+test-extras = ["all"]
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64"]

@@ -99,4 +99,10 @@ endif()
 if(CPB_BUILD_PYTHON)
     include("${CMAKE_CURRENT_LIST_DIR}/../cmake/CPlantBoxPython.cmake")
     cplantbox_configure_python_bindings(CPlantBox)
+else()
+    include(GNUInstallDirs)
+    install(TARGETS CPlantBox
+            LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+            ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+            RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()

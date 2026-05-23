@@ -11,7 +11,7 @@ CPlantBox platform wheels are built with `scikit-build-core` and `cibuildwheel`.
 
 The macOS job builds the native architecture provided by the GitHub-hosted `macos-latest` runner. It does not cross-build other macOS architectures or universal2 wheels.
 
-Project metadata declares Python 3.11+ and the runtime dependencies imported by the installed helper modules (`numpy`, `scipy`, `matplotlib`, `vtk`, `fipy`, `mpi4py`, and `ipython`). ParaView-specific helpers still require a ParaView Python environment.
+Project metadata declares Python 3.11+ plus the core helper-module dependencies (`numpy`, `scipy`, and `matplotlib`). Heavier helper stacks are optional extras: `cplantbox[vtk]`, `cplantbox[fipy]`, `cplantbox[mpi]`, or `cplantbox[all]`. ParaView-specific helpers require a ParaView Python environment.
 
 ## GitHub workflow
 

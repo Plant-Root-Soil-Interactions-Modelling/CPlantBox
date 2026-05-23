@@ -58,6 +58,21 @@ def _assert_installed_path(path: Path, site_paths: list[Path]) -> None:
         assert any(_is_relative_to(resolved, site_path) for site_path in site_paths), (resolved, site_paths)
 
 
+def _import_helper_modules() -> None:
+    """Import representative installed helper modules and subpackages."""
+
+    import plantbox.functional.CellVariablemod  # noqa: F401
+    import plantbox.functional.Mesh1Dmod  # noqa: F401
+    import plantbox.functional.Perirhizal  # noqa: F401
+    import plantbox.functional.PlantHydraulicModel  # noqa: F401
+    import plantbox.functional.van_genuchten  # noqa: F401
+    import plantbox.rsml.rsml_reader  # noqa: F401
+    import plantbox.rsml.rsml_writer  # noqa: F401
+    import plantbox.structural.MappedOrganism  # noqa: F401
+    import plantbox.visualisation.vtk_plot  # noqa: F401
+    import plantbox.visualisation.vtk_tools  # noqa: F401
+
+
 def main() -> None:
     site_paths = _prefer_installed_package()
 
@@ -68,6 +83,8 @@ def main() -> None:
     extension_path = Path(extension.__file__).resolve()
     _assert_installed_path(module_path, site_paths)
     _assert_installed_path(extension_path, site_paths)
+
+    _import_helper_modules()
 
     data_root = Path(pb.data_path()).resolve()
     _assert_installed_path(data_root, site_paths)
