@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -67,7 +67,7 @@ jobs:
 
       - name: Upload Linux Python 3.11 wheel artifact
         id: upload_linux_cp311
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: cplantbox-manylinux-x86_64-python-3.11
           path: wheelhouse/*-cp311-cp311-manylinux*x86_64.whl
@@ -75,7 +75,7 @@ jobs:
 
       - name: Upload Linux Python 3.12 wheel artifact
         id: upload_linux_cp312
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: cplantbox-manylinux-x86_64-python-3.12
           path: wheelhouse/*-cp312-cp312-manylinux*x86_64.whl
@@ -83,7 +83,7 @@ jobs:
 
       - name: Upload Linux Python 3.13 wheel artifact
         id: upload_linux_cp313
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: cplantbox-manylinux-x86_64-python-3.13
           path: wheelhouse/*-cp313-cp313-manylinux*x86_64.whl
@@ -91,7 +91,7 @@ jobs:
 
       - name: Upload Linux Python 3.14 wheel artifact
         id: upload_linux_cp314
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: cplantbox-manylinux-x86_64-python-3.14
           path: wheelhouse/*-cp314-cp314-manylinux*x86_64.whl
@@ -108,7 +108,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -151,7 +151,7 @@ jobs:
 
       - name: Upload macOS Python 3.11 wheel artifact
         id: upload_macos_cp311
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: cplantbox-macos-native-${{ runner.arch }}-python-3.11
           path: wheelhouse/*-cp311-cp311-macosx_*.whl
@@ -159,7 +159,7 @@ jobs:
 
       - name: Upload macOS Python 3.12 wheel artifact
         id: upload_macos_cp312
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: cplantbox-macos-native-${{ runner.arch }}-python-3.12
           path: wheelhouse/*-cp312-cp312-macosx_*.whl
@@ -167,7 +167,7 @@ jobs:
 
       - name: Upload macOS Python 3.13 wheel artifact
         id: upload_macos_cp313
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: cplantbox-macos-native-${{ runner.arch }}-python-3.13
           path: wheelhouse/*-cp313-cp313-macosx_*.whl
@@ -175,7 +175,7 @@ jobs:
 
       - name: Upload macOS Python 3.14 wheel artifact
         id: upload_macos_cp314
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: cplantbox-macos-native-${{ runner.arch }}-python-3.14
           path: wheelhouse/*-cp314-cp314-macosx_*.whl
