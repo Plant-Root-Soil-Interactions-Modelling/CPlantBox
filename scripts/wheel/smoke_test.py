@@ -69,7 +69,7 @@ def _assert_module_packaged(module_name: str, site_paths: list[Path]) -> None:
 def _check_helper_modules(site_paths: list[Path]) -> None:
     """Check representative installed helper modules and subpackages."""
 
-    # Import helpers covered by the base runtime deps plus cibuildwheel's `vis` test extra.
+    # Import helpers covered by the base runtime deps plus cibuildwheel's fipy/vis test extras.
     import plantbox.functional.Perirhizal  # noqa: F401
     import plantbox.functional.PlantHydraulicModel  # noqa: F401
     import plantbox.functional.van_genuchten  # noqa: F401
@@ -79,10 +79,8 @@ def _check_helper_modules(site_paths: list[Path]) -> None:
     import plantbox.visualisation.vtk_plot  # noqa: F401
     import plantbox.visualisation.vtk_tools  # noqa: F401
 
-    # FiPy helper modules import mpi4py, which requires an external MPI runtime
-    # library. Verify they are packaged without executing those optional imports.
-    _assert_module_packaged("plantbox.functional.CellVariablemod", site_paths)
-    _assert_module_packaged("plantbox.functional.Mesh1Dmod", site_paths)
+    import plantbox.functional.CellVariablemod  # noqa: F401
+    import plantbox.functional.Mesh1Dmod  # noqa: F401
 
 
 def main() -> None:
