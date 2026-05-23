@@ -83,6 +83,7 @@ Wheel builds should have:
 
 - explicit source-built native dependencies
 - no runtime dependency on `libpython` / `Python.framework`
+- no native CPU tuning such as `-march=native`
 - no unexpected dynamic SuiteSparse/SUNDIALS dependencies
 - no Homebrew, `/tmp`, user-home, or CI build-directory runtime paths
 
