@@ -40,11 +40,11 @@ scripts/download-latest-wheel-artifacts.sh wheelhouse
 Then install from the local wheelhouse in a separate `uv` project:
 
 ```bash
-uv init --no-workspace
+uv init
 uv add --find-links /path/to/wheelhouse cplantbox
 ```
 
-Use `--no-workspace` when creating a temporary test project inside this repository; otherwise uv may add it to the repository workspace and resolve the local source tree instead of the wheel. Do not use `--no-index` unless the wheelhouse also contains all transitive dependencies such as `numpy`, `scipy`, and `matplotlib`.
+Do not use `--no-index` unless the wheelhouse also contains all transitive dependencies such as `numpy`, `scipy`, and `matplotlib`.
 
 A later `uv sync` works when both `uv.lock` and the local wheelhouse are present. A `pyproject.toml` alone is not enough until `cplantbox` is published on a package index.
 
