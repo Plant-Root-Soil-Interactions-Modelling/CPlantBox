@@ -44,8 +44,6 @@ uv init
 uv add --find-links /path/to/wheelhouse cplantbox
 ```
 
-Do not use `--no-index` unless the wheelhouse also contains all transitive dependencies such as `numpy`, `scipy`, and `matplotlib`.
-
 A later `uv sync` works when both `uv.lock` and the local wheelhouse are present. A `pyproject.toml` alone is not enough until `cplantbox` is published on a package index.
 
 The downloader defaults to the upstream `master` workflow. Override repo/branch when testing a fork:
