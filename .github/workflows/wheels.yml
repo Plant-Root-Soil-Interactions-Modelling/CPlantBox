@@ -91,41 +91,6 @@ jobs:
           path: wheelhouse/*-cp314-cp314-manylinux*x86_64.whl
           if-no-files-found: error
 
-      - name: Summarize Linux wheel artifacts
-        if: ${{ always() }}
-        shell: bash
-        env:
-          CP311_URL: ${{ steps.upload_linux_cp311.outputs['artifact-url'] }}
-          CP312_URL: ${{ steps.upload_linux_cp312.outputs['artifact-url'] }}
-          CP313_URL: ${{ steps.upload_linux_cp313.outputs['artifact-url'] }}
-          CP314_URL: ${{ steps.upload_linux_cp314.outputs['artifact-url'] }}
-          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          set -euo pipefail
-
-          artifact_link() {
-            local url=$1
-            local name=$2
-            if [[ -n "${url}" ]]; then
-              printf '[%s](%s)' "${name}" "${url}"
-            else
-              printf 'not uploaded'
-            fi
-          }
-
-          {
-            echo '## Linux x86_64 manylinux wheel artifacts'
-            echo
-            echo '| Python | Artifact |'
-            echo '| --- | --- |'
-            printf '| 3.11 | %s |\n' "$(artifact_link "${CP311_URL}" 'cplantbox-manylinux-x86_64-python-3.11')"
-            printf '| 3.12 | %s |\n' "$(artifact_link "${CP312_URL}" 'cplantbox-manylinux-x86_64-python-3.12')"
-            printf '| 3.13 | %s |\n' "$(artifact_link "${CP313_URL}" 'cplantbox-manylinux-x86_64-python-3.13')"
-            printf '| 3.14 | %s |\n' "$(artifact_link "${CP314_URL}" 'cplantbox-manylinux-x86_64-python-3.14')"
-            echo
-            echo "Run page: ${RUN_URL}"
-          } >> "${GITHUB_STEP_SUMMARY}"
-
   macos_native:
     name: Build macOS native wheels
     runs-on: macos-latest
@@ -204,38 +169,3 @@ jobs:
           name: cplantbox-macos-native-${{ runner.arch }}-python-3.14
           path: wheelhouse/*-cp314-cp314-macosx_*.whl
           if-no-files-found: error
-
-      - name: Summarize macOS wheel artifacts
-        if: ${{ always() }}
-        shell: bash
-        env:
-          CP311_URL: ${{ steps.upload_macos_cp311.outputs['artifact-url'] }}
-          CP312_URL: ${{ steps.upload_macos_cp312.outputs['artifact-url'] }}
-          CP313_URL: ${{ steps.upload_macos_cp313.outputs['artifact-url'] }}
-          CP314_URL: ${{ steps.upload_macos_cp314.outputs['artifact-url'] }}
-          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          set -euo pipefail
-
-          artifact_link() {
-            local url=$1
-            local name=$2
-            if [[ -n "${url}" ]]; then
-              printf '[%s](%s)' "${name}" "${url}"
-            else
-              printf 'not uploaded'
-            fi
-          }
-
-          {
-            echo '## macOS native wheel artifacts'
-            echo
-            echo '| Python | Artifact |'
-            echo '| --- | --- |'
-            printf '| 3.11 | %s |\n' "$(artifact_link "${CP311_URL}" 'cplantbox-macos-native-python-3.11')"
-            printf '| 3.12 | %s |\n' "$(artifact_link "${CP312_URL}" 'cplantbox-macos-native-python-3.12')"
-            printf '| 3.13 | %s |\n' "$(artifact_link "${CP313_URL}" 'cplantbox-macos-native-python-3.13')"
-            printf '| 3.14 | %s |\n' "$(artifact_link "${CP314_URL}" 'cplantbox-macos-native-python-3.14')"
-            echo
-            echo "Run page: ${RUN_URL}"
-          } >> "${GITHUB_STEP_SUMMARY}"
