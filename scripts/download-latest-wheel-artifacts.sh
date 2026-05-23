@@ -30,6 +30,9 @@ Examples:
 
 Install from the downloaded wheelhouse with uv:
   uv add --find-links wheelhouse cplantbox
+
+Do not use --no-index unless the wheelhouse also contains cplantbox's
+transitive dependencies.
 USAGE
 }
 
