@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.18)
 project (CPlantBox LANGUAGES CXX)
 
 option(PIAFMUNCH "Enable optional PIAFMUNCH code" ON)

@@ -11,11 +11,7 @@ CPlantBox platform wheels are built with `scikit-build-core` and `cibuildwheel`.
 
 The macOS job builds the native architecture provided by the GitHub-hosted `macos-latest` runner. It does not cross-build other macOS architectures or universal2 wheels.
 
-Project metadata declares:
-
-```toml
-requires-python = ">=3.11"
-```
+Project metadata declares Python 3.11+ and the runtime dependencies imported by the installed helper modules (`numpy`, `scipy`, `matplotlib`, `vtk`, `fipy`, `mpi4py`, and `ipython`). ParaView-specific helpers still require a ParaView Python environment.
 
 ## GitHub workflow
 
@@ -25,7 +21,7 @@ The wheel workflow is:
 .github/workflows/wheels.yml
 ```
 
-It runs on pull requests and manual dispatch. The workflow:
+It runs on pull requests, pushes to `master`, and manual dispatch. The workflow:
 
 1. builds pinned SuiteSparse/SUNDIALS dependencies from source
 2. builds wheels with `cibuildwheel==3.4.1`

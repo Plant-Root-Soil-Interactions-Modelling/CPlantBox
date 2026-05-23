@@ -1,6 +1,6 @@
 # Native dependency policy
 
-CPlantBox links SuiteSparse and SUNDIALS when `PIAFMUNCH=ON`.
+CPlantBox requires CMake 3.18 or newer. It links SuiteSparse and SUNDIALS when `PIAFMUNCH=ON`.
 
 `PIAFMUNCH` remains enabled by default to preserve the existing documented build flow:
 

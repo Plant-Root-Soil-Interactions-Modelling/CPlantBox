@@ -11,6 +11,15 @@ build-backend = "scikit_build_core.build"
 name = "cplantbox"
 version = "2.1.0"
 requires-python = ">=3.11"
+dependencies = [
+  "fipy",
+  "ipython",
+  "matplotlib",
+  "mpi4py",
+  "numpy",
+  "scipy",
+  "vtk",
+]
 
 [tool.scikit-build]
 build-dir = "_skbuild/{wheel_tag}"
