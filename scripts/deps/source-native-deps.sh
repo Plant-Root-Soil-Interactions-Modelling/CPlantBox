@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Shared SuiteSparse/SUNDIALS source build recipe used by Linux directly and
+# by macOS through scripts/deps/source-native-deps-macos.sh.
+
 usage() {
   cat <<'USAGE'
-Usage: scripts/deps/source-native-deps-linux.sh PREFIX
+Usage: scripts/deps/source-native-deps.sh PREFIX
 
 Build the native SuiteSparse/SUNDIALS dependencies needed by CPlantBox from
 pinned source inputs and install headers/static libraries into PREFIX.

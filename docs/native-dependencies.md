@@ -32,7 +32,7 @@ Wheel builds override these defaults and use the `source` provider explicitly.
 The source provider consumes a local prefix containing headers and static libraries built from pinned source inputs:
 
 ```bash
-scripts/deps/source-native-deps-linux.sh /tmp/cplantbox-native-deps
+scripts/deps/source-native-deps.sh /tmp/cplantbox-native-deps
 cmake . \
   -DCPB_SUITESPARSE_PROVIDER=source \
   -DCPB_SUNDIALS_PROVIDER=source \

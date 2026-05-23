@@ -16,7 +16,6 @@ case " ${CXXFLAGS:-} " in
   *) export CXXFLAGS="-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} ${CXXFLAGS:-}" ;;
 esac
 
-# The pinned SuiteSparse/SUNDIALS source recipe is intentionally shared with
-# Linux: it builds static archives from source into a dedicated cplantbox-*
-# prefix and avoids Homebrew runtime library dependencies in macOS wheels.
-exec "$(dirname "$0")/source-native-deps-linux.sh" "$@"
+# Reuse the shared SuiteSparse/SUNDIALS source build recipe after applying the
+# macOS deployment target flags required for portable macOS wheels.
+exec "$(dirname "$0")/source-native-deps.sh" "$@"
