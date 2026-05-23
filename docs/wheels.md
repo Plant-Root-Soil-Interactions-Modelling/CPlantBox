@@ -39,28 +39,6 @@ The workflow:
 4. audits native dependencies
 5. uploads one clearly named artifact per wheel
 
-## Local smoke builds
-
-Linux:
-
-```bash
-scripts/wheel/smoke-test-linux.sh
-```
-
-macOS:
-
-```bash
-scripts/wheel/smoke-test-macos.sh
-```
-
-The smoke helpers build source native dependencies, build one wheel with the active Python interpreter, install that wheel into a clean virtual environment, and run the installed-package smoke test from outside the source tree.
-
-On macOS, a specific interpreter can be selected with:
-
-```bash
-CPB_PYTHON="$(uv python find 3.12)" scripts/wheel/smoke-test-macos.sh
-```
-
 ## Local cibuildwheel build
 
 Linux x86_64 requires Docker:
@@ -74,7 +52,7 @@ CPB_EXPECTED_WHEEL_COUNT=4 AUDITWHEEL=/tmp/cplantbox-cibuildwheel-venv/bin/audit
   scripts/ci/audit-wheelhouse-linux.sh wheelhouse
 ```
 
-macOS cibuildwheel builds are intended for GitHub-hosted macOS runners. Local macOS hosts that do not have official python.org framework Python package receipts should use `scripts/wheel/smoke-test-macos.sh` for host validation.
+macOS cibuildwheel builds are intended for GitHub-hosted macOS runners. Local macOS hosts that do not have official python.org framework Python package receipts may be unable to run `cibuildwheel --platform macos` directly.
 
 ## Wheel audits
 

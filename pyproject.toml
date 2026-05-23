@@ -25,7 +25,7 @@ test-command = "python {project}/scripts/wheel/smoke_test.py"
 [tool.cibuildwheel.linux]
 archs = ["x86_64"]
 manylinux-x86_64-image = "manylinux_2_28"
-before-all = "bash {project}/scripts/ci/install-cibuildwheel-deps-linux.sh && bash {project}/scripts/deps/source-native-deps-linux.sh /tmp/cplantbox-cibuildwheel-native-deps"
+before-all = "bash -euxo pipefail -c 'if command -v dnf >/dev/null 2>&1; then dnf install -y --setopt=install_weak_deps=False git curl tar gzip make patch which gcc gcc-c++ cmake; elif command -v yum >/dev/null 2>&1; then yum install -y git curl tar gzip make patch which gcc gcc-c++ cmake; elif command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y --no-install-recommends git curl tar gzip make patch gcc g++ cmake; fi' && bash {project}/scripts/deps/source-native-deps-linux.sh /tmp/cplantbox-cibuildwheel-native-deps"
 environment = { CMAKE_ARGS = "-DCPB_SUITESPARSE_PROVIDER=source -DCPB_SUNDIALS_PROVIDER=source -DCPB_NATIVE_DEPS_PREFIX=/tmp/cplantbox-cibuildwheel-native-deps" }
 
 [tool.cibuildwheel.macos]

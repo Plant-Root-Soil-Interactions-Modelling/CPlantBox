@@ -22,24 +22,12 @@ The script builds static archives into a dedicated `cplantbox-*` prefix. This av
 
 ## Local validation on macOS
 
-Run the standalone smoke helper on a macOS host:
+GitHub-hosted macOS runners are the intended cibuildwheel validation path. Local `cibuildwheel --platform macos` may require official python.org framework Python package receipts.
+
+For manual installed-wheel checks, download workflow artifacts and install them from a local wheelhouse:
 
 ```bash
-scripts/wheel/smoke-test-macos.sh
+scripts/download-latest-wheel-artifacts.sh wheelhouse
+uv add --find-links wheelhouse cplantbox
+uv run python scripts/wheel/smoke_test.py
 ```
-
-To select a specific interpreter, set `CPB_PYTHON`:
-
-```bash
-CPB_PYTHON="$(uv python find 3.12)" scripts/wheel/smoke-test-macos.sh
-```
-
-The helper:
-
-- builds source native dependencies
-- builds a wheel
-- audits dependencies with `delocate-listdeps` and `otool`
-- installs the wheel into a clean virtual environment
-- runs `scripts/wheel/smoke_test.py` outside the source tree
-
-Local `cibuildwheel --platform macos` may require official python.org framework Python package receipts. GitHub-hosted macOS runners are the intended cibuildwheel validation path.
