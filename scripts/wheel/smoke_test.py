@@ -89,7 +89,10 @@ def main() -> None:
     site_paths = _prefer_installed_package()
 
     import plantbox as pb
+    import plantbox.functional.PerirhizalHeterogeneous as perirhizal_heterogeneous
     import plantbox.plantbox as extension
+
+    assert hasattr(perirhizal_heterogeneous, "PerirhizalHetereogeneous")
 
     module_path = Path(pb.__file__).resolve()
     extension_path = Path(extension.__file__).resolve()

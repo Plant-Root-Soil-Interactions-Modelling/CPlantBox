@@ -11,8 +11,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "-std=c++17 -O0 -ggdb -Wall")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# set default build type to release Release, Debug, RelWithDebInfo 
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
+# set default build type to release Release, Debug, RelWithDebInfo
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
+endif()
 
 # add subdirectories
 add_subdirectory(src)
