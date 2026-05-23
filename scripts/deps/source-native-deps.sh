@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Shared SuiteSparse/SUNDIALS source build recipe used by Linux directly and
-# by macOS through scripts/deps/source-native-deps-macos.sh.
+# Shared SuiteSparse/SUNDIALS source build recipe used by wheel builds.
+# macOS callers must set deployment-target flags before invoking this script.
 
 usage() {
   cat <<'USAGE'

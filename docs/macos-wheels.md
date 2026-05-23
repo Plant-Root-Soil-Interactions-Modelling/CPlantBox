@@ -15,10 +15,10 @@ It does not build universal2 wheels or cross-build another macOS architecture.
 macOS wheels use pinned SuiteSparse/SUNDIALS source builds via:
 
 ```bash
-scripts/deps/source-native-deps-macos.sh /tmp/cplantbox-native-deps-macos
+scripts/deps/source-native-deps.sh /tmp/cplantbox-native-deps
 ```
 
-The script builds static archives into a dedicated `cplantbox-*` prefix and avoids Homebrew shared-library runtime dependencies.
+The script builds static archives into a dedicated `cplantbox-*` prefix and avoids Homebrew shared-library runtime dependencies. The wheel config sets the macOS deployment-target flags before invoking it.
 
 ## Validation
 

@@ -40,11 +40,7 @@ cmake . \
 make install
 ```
 
-macOS uses the same source recipe through:
-
-```bash
-scripts/deps/source-native-deps-macos.sh /tmp/cplantbox-native-deps-macos
-```
+macOS uses the same source recipe, with deployment-target flags supplied by the wheel build before invoking the script.
 
 Current pins:
 
