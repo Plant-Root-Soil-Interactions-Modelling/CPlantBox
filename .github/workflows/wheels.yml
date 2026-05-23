@@ -1,0 +1,122 @@
+name: Wheels
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  linux-x86_64:
+    name: Build Linux x86_64 wheels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.16"
+
+      - name: Install host prerequisites
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            binutils \
+            ca-certificates \
+            python3
+          docker version
+
+      - name: Install cibuildwheel
+        shell: bash
+        run: |
+          set -euxo pipefail
+          unset UV_NATIVE_TLS
+          rm -rf /tmp/cplantbox-cibuildwheel-linux-venv
+          uv python install 3.11
+          uv venv /tmp/cplantbox-cibuildwheel-linux-venv --python 3.11
+          source /tmp/cplantbox-cibuildwheel-linux-venv/bin/activate
+          uv pip install cibuildwheel==3.4.1 auditwheel
+
+      - name: Build Linux wheels
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source /tmp/cplantbox-cibuildwheel-linux-venv/bin/activate
+          python -m cibuildwheel --platform linux --output-dir wheelhouse
+
+      - name: Audit Linux wheels
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source /tmp/cplantbox-cibuildwheel-linux-venv/bin/activate
+          CPB_EXPECTED_WHEEL_COUNT=4 \
+          AUDITWHEEL=/tmp/cplantbox-cibuildwheel-linux-venv/bin/auditwheel \
+            scripts/ci/audit-wheelhouse-linux.sh wheelhouse
+
+      - name: Upload Linux wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cplantbox-manylinux-x86_64
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  macos-native:
+    name: Build macOS native wheels
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.16"
+
+      - name: Install host build tools
+        shell: bash
+        run: |
+          set -euxo pipefail
+          brew update
+          brew install cmake ninja
+
+      - name: Install cibuildwheel
+        shell: bash
+        run: |
+          set -euxo pipefail
+          unset UV_NATIVE_TLS
+          rm -rf /tmp/cplantbox-cibuildwheel-macos-venv
+          uv python install 3.11
+          uv venv /tmp/cplantbox-cibuildwheel-macos-venv --python 3.11
+          source /tmp/cplantbox-cibuildwheel-macos-venv/bin/activate
+          uv pip install cibuildwheel==3.4.1 delocate
+
+      - name: Build macOS wheels
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source /tmp/cplantbox-cibuildwheel-macos-venv/bin/activate
+          python -m cibuildwheel --platform macos --output-dir wheelhouse
+
+      - name: Audit macOS wheels
+        shell: bash
+        run: |
+          set -euxo pipefail
+          source /tmp/cplantbox-cibuildwheel-macos-venv/bin/activate
+          CPB_EXPECTED_WHEEL_COUNT=4 scripts/ci/audit-wheelhouse-macos.sh wheelhouse
+
+      - name: Upload macOS wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cplantbox-macos-native
+          path: wheelhouse/*.whl
+          if-no-files-found: error
