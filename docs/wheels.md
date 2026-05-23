@@ -31,18 +31,15 @@ It runs on pull requests, pushes to `master`, and manual dispatch. The workflow:
 
 ## Downloading artifacts
 
-Download wheels from the latest completed successful `Wheels` run:
+Until wheels are published on a package index, install from the latest successful wheel artifacts:
 
 ```bash
-scripts/download-latest-wheel-artifacts.sh wheelhouse
+curl -O https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/scripts/download-latest-wheel-artifacts.sh
+bash download-latest-wheel-artifacts.sh wheelhouse
+uv add --find-links wheelhouse cplantbox
 ```
 
-Then install from the local wheelhouse in a separate `uv` project:
-
-```bash
-uv init
-uv add --find-links /path/to/wheelhouse cplantbox
-```
+This requires GitHub CLI authentication because GitHub Actions artifact downloads use `gh`.
 
 A later `uv sync` works when both `uv.lock` and the local wheelhouse are present. A `pyproject.toml` alone is not enough until `cplantbox` is published on a package index.
 
