@@ -198,7 +198,6 @@ for i in range(2, nRings):
     old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
     small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
     moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
-    vp.plot_container(moved_small_hyphae_dish)
     rings.append(moved_small_hyphae_dish)
 
 times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
