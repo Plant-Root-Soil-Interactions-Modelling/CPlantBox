@@ -7,11 +7,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
+from centrepoint import centre_between_three
+
 mycp = pb.MycorrhizalPlant(100)
 path = "tomatoparameters/"
 name = "TwoHyphaePlusBAS"
 
-animation = True
+animation = False
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
 ### initial root parameters
@@ -84,14 +86,10 @@ mycp.initialize(True)
 # set up simulation times etc.
 simtime = 5
 fps = 24
-anim_time = simtime
-N = fps * anim_time
+N = fps * simtime
 dt = simtime / N
 
 filename = "splitpetri_dish" + str(simtime)
-
-ana_total =[]
-ana_times = []
 # Start simulation
 start = time.perf_counter()
 for i in range(0, N):
@@ -132,6 +130,7 @@ print("Infection reached 50% after " + str(days) + " days.")
 
 print("Simulating hyphal growth until hyphae cross the barrier")
 crossed_barrier = 0
+nodes_crossed = []
 while crossed_barrier < 3:
     N+=1    
     mycp.simulateHyphalGrowth(dt,False)
@@ -141,8 +140,7 @@ while crossed_barrier < 3:
             for node in organ.getNodes():
                 if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
                     crossed_barrier += 1
-
-    ana = getMycSegmentAnalyser(mycp)
+                    nodes_crossed.append(node)
 
 small_dish = pb.SDF_PlantContainer(radius,radius,height,False)
 small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
@@ -175,31 +173,35 @@ for i in range(0, hours_hyphae):
                 stayactive = True
         organ.setActive(stayactive)
     ana = getMycSegmentAnalyser(mycp)
-    ana_total.append(ana)
-    ana_times.append(mycp.getSimTime())
     if animation:
         ana.crop(small_hyphae_dish)
         ana.write("animation/" + filename + "_" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
 end = time.perf_counter()
-
+ana = getMycSegmentAnalyser(mycp)
 
 if not animation:
     ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
 
 # set the observation "rings"
-nRings = 20
-radius = radius/2
+nRings = 50
+mean_x = np.mean([node.x for node in nodes_crossed])
+mean_y = np.mean([node.y for node in nodes_crossed])
+centrepoint = [mean_x, mean_y, 0]
 small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
+ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
+moved_ringone = pb.SDF_RotateTranslate(ringone, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
 rings = []
-rings.append(pb.SDF_Difference(small_dish, moved_helper_dish_hyphae))
-for i in range(1, nRings):
+rings.append(moved_ringone)
+for i in range(2, nRings):
     small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
     small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
     old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
     small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
-    rings.append(small_hyphae_dish)
+    moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
+    vp.plot_container(moved_small_hyphae_dish)
+    rings.append(moved_small_hyphae_dish)
 
-# times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.1, 100)
+times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
 
 def getParaDistperRing(parameter, times, plant, rings):
     paradenmat = np.zeros((len(rings),len(times[1:])))
@@ -209,51 +211,29 @@ def getParaDistperRing(parameter, times, plant, rings):
         for j in range(len(times[1:])):
             ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
             ringana.pack()
-            distrib = ringana.getSummed(parameter)
+            distrib = ringana.getSummed(parameter) #this does not yet consider anastomosis, but the behaviour is odd nonetheless
             paradenmat[k, len(times[1:])-1 -j] = np.array(distrib).sum() 
     return paradenmat
 
-def getParaDist2(parameter,plant, rings):
-    paradenmat = np.zeros((len(rings)))
-    for k, ring in enumerate(rings):
-        ringana = plant # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
-        ringana.crop(ring)
-        ringana.pack()
-        distrib = ringana.getSummed(parameter)
-        paradenmat[k] = np.array(distrib).sum() 
-    return paradenmat
-
-print(len(ana_times))
-tip_densities = np.array([getParaDist2("nodeTips", ana, rings) for ana in ana_total])
+tip_densities = getParaDistperRing("nodeTips", times, ana, rings)
 print(tip_densities)
-# hld_matrix = getParaDistperRing("nodeTips", times, ana, rings)
+## The problem is that the tips should be more evenly distributed i.e. more rings should have tips in them. but right now just a handful do
 
-# print("shape:", hld_matrix.shape)
-# print("min:", np.min(hld_matrix))
-# print("max:", np.max(hld_matrix))
-# print("mean:", np.mean(hld_matrix))
 
-# plt.figure(figsize=(8, 5))
 
-# extent = [
-#     times[1], times[-1],   # x: Zeit
-#     1, len(rings)          # y: Ringe
-# ]
+## This is not remotely right for visualisation 
+plt.figure(figsize=(8, 5))
 
-# plt.imshow(
-#     hld_matrix,
-#     aspect='auto',
-#     origin='lower',
-#     extent=extent,
-#     cmap='viridis'
-# )
+# print(np.indices(rings.size))
+colors = plt.cm.viridis(np.linspace(0, 1, tip_densities.shape[0]))
+for i in range(tip_densities.shape[1]):
+    scatter = plt.scatter(times[1:], tip_densities[i, :], label=f'Time {times[i+1]:.2f}', color=colors[i])
+#     # plt.colorbar(scatter, label='x-Wert')
 
-# plt.colorbar(label="Hyphal Length Density")
-
-# plt.xlabel("Time")
-# plt.ylabel("Ring (center → outside)")
-# plt.title("Radial movement of hyphal length density")
-
+# plt.legend()
+# plt.title('Versuch')
+# plt.grid(True)
 # plt.show()
-# # vp.plot_roots_and_container(mycp,hyphae_petri_dish)
-# # vp.write_container(petri_dish, "petri_dish.vtp")
+
+# vp.plot_roots_and_container(mycp,rings[99])
+# vp.write_container(petri_dish, "petri_dish.vtp")
