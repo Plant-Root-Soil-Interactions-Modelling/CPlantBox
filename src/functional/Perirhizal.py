@@ -151,7 +151,7 @@ class PerirhizalPython(Perirhizal):
     def soil_root_interface_simp_(self, inner_kr_b, base_mfp, sp):
         """
         finds matric potential at the soil root interface for as single segment
-        gives (numerically) the same "results as soil_root_interface_", but is much simpler to create a lookup table for
+        gives (numerically) the same results as "soil_root_interface_", but is much simpler to create a lookup table for
 
         rx             xylem matric potential [cm]
         sx             bulk soil matric potential [cm]
@@ -186,7 +186,7 @@ class PerirhizalPython(Perirhizal):
         base_mfp:      -((inner_kr * alpha)/(alpha_0 * Ks * b) * rx + vg.fast_mfp[sp_base*(alpha_0/alpha)](sx))
         vg_m:          van genuchten parameter m
         
-        (sp_base is the van genuchten parameter set of Ks = 1 and alpha = alpha_0, m is an input)
+        (sp_base is the van genuchten parameter set of Ks = 1 and alpha = alpha_0, m is an input, theta_r and theta_s are not important for the steady rate model computaiton right now)
         """
         
         
