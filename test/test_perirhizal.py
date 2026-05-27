@@ -24,15 +24,17 @@ import math
 import matplotlib.pyplot as plt
 from plantbox.visualisation import figure_style
 
+from scipy.optimize import fsolve, root_scalar
+
 # run the dumux implementation of root water and nitrate uptake an then compare it to the alpha omega model
 
 n_tests = 1 #try everything here for this many random parameter sets
-do_computation = True #should the computation be run or take the data from a saved file
+do_computation = False #should the computation be run or take the data from a saved file
 
 # general parameters
 
-max_time = 40 #d
-n_times = 400 # number of time intervals
+max_time = 25 #d
+n_times = 500 # number of time intervals
 times = np.linspace(0,max_time,n_times)[1:]
 r_prhiz = 0.6 # cm
 r_root = 0.02 # cm
@@ -54,6 +56,7 @@ watercontent_steadyrate = np.zeros((n_tests, n_times, n_sp+1))
 watercontent_steadyrate2 = np.zeros((n_tests, n_times, n_sp+1))
 soluteconcentration_steadyrate = np.zeros((n_tests, n_times, n_sp+1))
 
+matrixpotential_perirhizal1 = np.zeros((n_tests, n_times, n_sp+1))
 matrixpotential_perirhizal2 = np.zeros((n_tests, n_times, n_sp+1))
 
 soilVG = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam soil 
@@ -71,7 +74,7 @@ def run_perirhizal_test():
     
     #space for the outputs
     water_dumux = np.zeros((n_times, n_sp+1))
-    water2_dumux = np.zeros((n_times, n_sp+1))
+    water_sr2 = np.zeros((n_times, n_sp+1))
     solute_dumux = np.zeros((n_times, n_sp+1))
     water_ss = np.zeros((n_times, n_sp+1))
     solute_ss = np.zeros((n_times, n_sp+1))
@@ -79,6 +82,7 @@ def run_perirhizal_test():
     water_test = np.zeros((n_times, n_sp+1))
     solute_sr = np.zeros((n_times, n_sp+1))
     
+    mp_perirhizal1 = np.zeros((n_times, n_sp+1))
     mp_perirhizal2 = np.zeros((n_times, n_sp+1))
     
     mean_water = np.zeros((n_times))
@@ -242,9 +246,21 @@ def run_perirhizal_test():
         r_rel = CC[0] / r_prhiz
         print("Phi_out", Phi_out, "Phi_in", Phi_A*(r_rel**2-np.log(r_rel**2))+Phi_C)
         
+        #determine the critical matrix potential
+        h_out = [-200, -800, -3200, -6000,-10000,-13700, -14000] # cm
+        r_rel = 1/rho
+        MFP_root = lambda Phi : Phi+abs(waterdemand)*r_root*((r_rel*rho)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5))
+        MFP_root_stress = lambda Phi : Phi*((r_rel*rho)**2 - 1 + 2*rho**2*np.log(1/(r_rel*rho))/(rho**2 - 1 + 2*rho**2*np.log(1/rho)))
+        print(MFP_root_stress(vg.fast_mfp[sp](h_out[0])),MFP_root_stress(vg.fast_mfp[sp](h_out[-1])))
+        MFP_out = root_scalar(MFP_root, method="brentq", bracket=[ vg.fast_mfp[sp](h_out[0]), vg.fast_mfp[sp](h_out[-1])]).root
+        print(MFP_out)
+        #MFP_out = MFP_out /10000
+        
+        
         for j in range(NC-1):
             r_rel = CC[j] / r_prhiz
             Phi = Phi_A*(r_rel**2-np.log(r_rel**2))+Phi_C
+            mp_perirhizal1[r,j+1]=vg.fast_imfp[sp](Phi)
             #Phi_soil = Phi_out # TODO: remove this
             #if water_dumux[r,j+1]<soilVG[0]+0.02: # I model this as a threshhold for water stress
             #    Phi = Phi_soil+abs(waterdemand)*r_root*((r_rel*rho)**2/(2*(1-rho**2))-rho**2/(1-rho**2)*(np.log(r_rel**2)+0.5))
@@ -255,14 +271,29 @@ def run_perirhizal_test():
             else:
                 water_sr[r,j+1] = vg.water_content(vg.fast_imfp[sp](Phi),peri.sp)
             Phi = Phi_soil+abs(waterdemand)*r_root*((r_rel*rho)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) #waterdemand is usually negative
-            Phi = Phi_out+abs(waterdemand)*r_root*((r_rel*rho)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) #waterdemand is usually negative
             
-            mp_perirhizal2[r,j+1]=vg.fast_imfp[sp](Phi)
+            Phi_outer = vg.fast_mfp[sp](h_out[1])
+            Phi = Phi_outer+abs(waterdemand)*r_root*((r_rel*rho)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) #waterdemand is usually negative
+            
+            
+            MFP_root = lambda h_outer : vg.fast_mfp[sp](h_outer)+abs(waterdemand)*r_root*((r_rel*rho)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5))
+            
+            print(MFP_root(-14500),MFP_root(-10))
+            Phi_outer = root_scalar(MFP_root, method="brentq", bracket=[-14500,-10]).root
+            Phi = MFP_out+abs(waterdemand)*r_root*((r_rel*rho)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) #waterdemand is usually negative
+            MFP_root = lambda Phi : Phi+abs(waterdemand)*r_root*((r_rel*rho)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5))
+            MFP_root_stress = lambda Phi : Phi*((r_rel*rho)**2 - 1 + 2*rho**2*np.log(1/(r_rel*rho))/(rho**2 - 1 + 2*rho**2*np.log(1/rho)))
+            Phi = MFP_root(MFP_out)
+            if Phi<=0:
+                mp_perirhizal2[r,j+1]=vg.fast_imfp[sp](MFP_root_stress(MFP_out))
+            else:
+                mp_perirhizal2[r,j+1]=vg.fast_imfp[sp](MFP_root(MFP_out))
+            
             #alternative steady rate approximation            
             if Phi<=0: #water stress
-                water2_dumux[r,j+1] = soilVG[0]+0.001
+                water_sr2[r,j+1] = soilVG[0]+0.001
             else:
-                water2_dumux[r,j+1] = vg.water_content(vg.fast_imfp[sp](Phi),peri.sp)
+                water_sr2[r,j+1] = vg.water_content(vg.fast_imfp[sp](Phi),peri.sp)
 
         # run the alpha omega model on solute flow (both steady state and steady rate)
         waterflow = root_wateruptake
@@ -291,21 +322,22 @@ def run_perirhizal_test():
             F_tilde=math.exp(D_tilde*F)
             solute_ss[r,j+1] = result_solutes_ss * F_tilde + (1-F_tilde) * solute_ss[r,0] / waterflow
             solute_sr[r,j+1] = result_solutes_sr * F_tilde + (1-F_tilde) * solute_sr[r,0] / waterflow
-    return water_dumux, solute_dumux, solute_ss, water_sr, solute_sr, water2_dumux, mp_perirhizal2
+    return water_dumux, solute_dumux, solute_ss, water_sr, solute_sr, water_sr2, mp_perirhizal1, mp_perirhizal2
 
 if do_computation:
     # save everything in the np arrays
     for i in range(n_tests):
-        water_dumux, solute_dumux, solute_ss, water_sr, solute_sr, water2_dumux, mp_perirhizal2 = run_perirhizal_test()
+        water_dumux, solute_dumux, solute_ss, water_sr, solute_sr, water_sr2, mp_perirhizal1, mp_perirhizal2 = run_perirhizal_test()
         watercontent_dumux[i,:,:]=water_dumux[:,:]
         soluteconcentration_dumux[i,:,:]=solute_dumux[:,:]
         soluteconcentration_steadystate[i,:,:]=solute_ss[:,:]
         watercontent_steadyrate[i,:,:]=water_sr[:,:]
-        watercontent_steadyrate2[i,:,:]=water2_dumux[:,:] #TODO this is confusing
+        watercontent_steadyrate2[i,:,:]=water_sr2[:,:] #TODO this is confusing
         soluteconcentration_steadyrate[i,:,:]=solute_sr[:,:]
+        matrixpotential_perirhizal1[i,:,:]=mp_perirhizal1[:,:]
         matrixpotential_perirhizal2[i,:,:]=mp_perirhizal2[:,:]
     
-    np.savez("test_perirhizal.npz", watercontent_dumux=watercontent_dumux, watercontent_steadyrate2=watercontent_steadyrate2, matrixpotential_perirhizal2=matrixpotential_perirhizal2, soluteconcentration_dumux=soluteconcentration_dumux, soluteconcentration_steadystate=soluteconcentration_steadystate, watercontent_steadyrate=watercontent_steadyrate, soluteconcentration_steadyrate=soluteconcentration_steadyrate)
+    np.savez("test_perirhizal.npz", watercontent_dumux=watercontent_dumux, watercontent_steadyrate2=watercontent_steadyrate2, matrixpotential_perirhizal1=matrixpotential_perirhizal1, matrixpotential_perirhizal2=matrixpotential_perirhizal2, soluteconcentration_dumux=soluteconcentration_dumux, soluteconcentration_steadystate=soluteconcentration_steadystate, watercontent_steadyrate=watercontent_steadyrate, soluteconcentration_steadyrate=soluteconcentration_steadyrate)
 
 else:
     simulation_results = np.load("test_perirhizal.npz")
@@ -315,6 +347,7 @@ else:
     watercontent_steadyrate = simulation_results["watercontent_steadyrate"]
     soluteconcentration_steadyrate = simulation_results["soluteconcentration_steadyrate"]
     watercontent_steadyrate2 = simulation_results["watercontent_steadyrate2"]
+    matrixpotential_perirhizal1 = simulation_results["matrixpotential_perirhizal1"]
     matrixpotential_perirhizal2 = simulation_results["matrixpotential_perirhizal2"]
     
 
@@ -322,14 +355,16 @@ else:
 # compare both for the differint means of water / solute content
 run = 0
 timestep = [1,3,5,7,9]
+timestep = np.array(np.linspace(3.8,4.3,num=5)) #TODO remove
+print(timestep)
 for i in range(5):
     timestep[i] = int(n_times * timestep[i] / 10)
-
+timestep = timestep.astype(int)
 #plot water and nitrogen in that one voxel
 #fig, ax1 = figure_style.subplots12(1, 5)
 fig, ax1 = figure_style.subplots12(nrows=5, ncols=1)
 
-
+print(timestep)
 
 
 
@@ -393,6 +428,7 @@ for i in range(5):
     solute_steadystate = soluteconcentration_steadystate[run, timestep[i], 1:]
     solute_steadyrate = soluteconcentration_steadyrate[run, timestep[i], 1:]
     
+    mp_steadyrate1 = matrixpotential_perirhizal1[run, timestep[i], 1:]
     mp_steadyrate2 = matrixpotential_perirhizal2[run, timestep[i], 1:]
     
     
@@ -402,10 +438,11 @@ for i in range(5):
 
     ax1[i].plot(CC, water_dumux, "b", linestyle = linestyle_dumux, label = "water_dumux")
     #ax1[i].plot(CC, water_perirhizal, "b", linestyle = linestyle_steadyrate, label = "water_perirhizal")
-    ax1[i].plot(CC, mp_steadyrate2, "b", linestyle = linestyle_steadyrate, label = "water_perirhizal")
-    ax2.plot(CC, solute_dumux, "m", linestyle = linestyle_dumux, label = "solute_dumux")
-    ax2.plot(CC, solute_steadystate, "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
-    ax2.plot(CC, solute_steadyrate, "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
+    ax1[i].plot(CC, mp_steadyrate1, "b", linestyle = linestyle_steadyrate, label = "water_sr")
+    ax1[i].plot(CC, mp_steadyrate2, "b", linestyle = linestyle_steadystate, label = "water_sr_stress")
+    #ax2.plot(CC, solute_dumux, "m", linestyle = linestyle_dumux, label = "solute_dumux")
+    #ax2.plot(CC, solute_steadystate, "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
+    #ax2.plot(CC, solute_steadyrate, "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
 
     ax1[i].set_xlabel("distance root [cm]")
     ax1[i].set_ylabel("water")

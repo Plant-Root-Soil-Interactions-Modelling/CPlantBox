@@ -200,6 +200,50 @@ class PerirhizalPython(Perirhizal):
         rsx = root_scalar(fun, method="brentq", bracket=[x_int[0], x_int[1]])
         return rsx.root
     
+    def solutesuptake_RooseKirk_(self, Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow, sp):
+        """
+        finds solute concentration at the soil root interface for all segments following T. Roose and G. Kirk 2009 doi:10.1007/s11104-008-9777-z
+        
+        It assumes a constant watercontent with a constant waterflow
+
+        Phi_root       matrix flux potential at the root-soil-interface [cm2/d]
+        Phi_soil       matrix flux potential at the bulk soil [cm2/d]
+        c_bulk         solute concentration at the bulk soil [mol/cm3]
+        Vmax           maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
+        Km             half saturation constant Michaelis Menten Kinetics [mol/cm3]
+        Ds             Diffusion constant in water [cm2/d]
+        waterflow      steady state waterflow (entire root circumference) [cm2/d]
+        sp             van Genuchten parameter set
+        """
+        assert len(Phi_root) == len(Phi_soil) == len(c_bulk) == len(Vmax) == len(Km) == len(waterflow), "Phi_root, Phi_soil, c_bulk, Vmax, Km and waterflow must have the same length"
+        
+        n_segments = len(c_bulk)
+        
+        rsc = np.zeros(n_segments)
+        F = np.zeros(n_segments) #F is a helper values
+        F_tilde_inv = np.zeros(n_segments)
+        
+        if self.lookup_table_solutes:
+            F=[(self.lookup_table_solutes((Phi_soil[i],0))-self.lookup_table_solutes((Phi_root[i],0))) for i in range(0, len(c_bulk))]
+        else:
+            F=[(self.integral_overDiffusion_(Phi_soil[i],self.sp)-self.integral_overDiffusion_(Phi_root[i],self.sp)) for i in range(0, len(c_bulk))]
+        
+        #compute a prefactor
+        D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
+        
+        #solve quadratic eqation # TODO: Link to publication
+        for i in range(n_segments):
+            print("Dtilde",D_tilde,"F",F[i])
+            F_tilde_inv[i]=math.exp(-D_tilde*F[i])
+            a1=c_bulk[i]*F_tilde_inv[i]
+            a2=(1-F_tilde_inv[i])/(waterflow[i])
+            p=Km[i]-a2*Vmax[i]-a1
+            q=-Km[i]*a1
+            rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)
+        
+        
+        return rsc
+    
     def soil_root_solutes_ss_(self, Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow, sp):
         """
         finds solute concentration at the soil root interface for all segments assuming steady state
