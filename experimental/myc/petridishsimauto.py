@@ -205,7 +205,7 @@ times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
 def getParaDistperRing(parameter, times, plant, rings):
     paradenmat = np.zeros((len(rings),len(times[1:])))
     for k, ring in enumerate(rings):
-        ringana = plant # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
+        ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
         ringana.crop(ring)
         for j in range(len(times[1:])):
             ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
