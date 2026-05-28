@@ -44,7 +44,7 @@ ana.addData("h_x", h_x)  # xylem potentials (cm)
 ana.addData("SUF", hm.get_suf(initial_age))  # standard uptake fraction
 ana.addAge(initial_age)  # age (day) |\label{l41:age}|
 ana.addHydraulicConductivities(params, initial_age)  # kr (day-1), kx (cm3 day-1) |\label{l41:conductivities}|
-ana.addFluxes(hm, h_x, h_sr, initial_age)  # "axial_flux" (cm3 day-1), "radial_flux" (cm3 cm-3 day-1) |\label{l41:fluxes}|
+ana.addFluxes(hm, h_x, h_sr, initial_age)  # "axial_flux" (cm3 day-1), "radial_flux" (cm3 cm-2 day-1) |\label{l41:fluxes}|
 vp.plot_plant(ana, "radial_flux")  # |\label{l41:sa_end}|
 
 # Output for Paraview
