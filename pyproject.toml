@@ -61,6 +61,7 @@ line-length = 320
 target-version = ["py311"]
 
 [tool.isort]
+line_length = 320
 combine_as_imports = true
 known_first_party = ["rosi", "plantbox", "my_project"]
 sections = ["STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
