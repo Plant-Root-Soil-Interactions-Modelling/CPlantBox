@@ -1,3 +1,61 @@
+[build-system]
+requires = [
+  "scikit-build-core==0.12.2",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "cplantbox"
+version = "2.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "matplotlib",
+  "numpy",
+  "scipy",
+]
+
+[project.optional-dependencies]
+fipy = [
+  "fipy>=4",
+]
+mpi = [
+  "mpi4py",
+]
+vis = [
+  "ipython",
+  "vtk",
+]
+all = [
+  "fipy>=4",
+  "ipython",
+  "mpi4py",
+  "vtk",
+]
+
+[tool.scikit-build]
+build-dir = "_skbuild/{wheel_tag}"
+wheel.packages = []
+
+[tool.cibuildwheel]
+build = "cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp314-manylinux_x86_64"
+skip = "*-musllinux_*"
+build-verbosity = 1
+test-command = "python {project}/scripts/wheel/smoke_test.py"
+test-extras = ["fipy", "vis"]
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+manylinux-x86_64-image = "manylinux_2_28"
+before-all = "bash -euxo pipefail -c 'if command -v dnf >/dev/null 2>&1; then dnf install -y --setopt=install_weak_deps=False git curl tar gzip make patch which gcc gcc-c++ cmake; elif command -v yum >/dev/null 2>&1; then yum install -y git curl tar gzip make patch which gcc gcc-c++ cmake; elif command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y --no-install-recommends git curl tar gzip make patch gcc g++ cmake; fi' && bash {project}/scripts/deps/source-native-deps.sh /tmp/cplantbox-cibuildwheel-native-deps"
+environment = { CMAKE_ARGS = "-DCPB_SUITESPARSE_PROVIDER=source -DCPB_SUNDIALS_PROVIDER=source -DCPB_NATIVE_DEPS_PREFIX=/tmp/cplantbox-cibuildwheel-native-deps -DCPB_NATIVE_CPU_TUNING=OFF" }
+
+[tool.cibuildwheel.macos]
+build = "cp311-macosx_* cp312-macosx_* cp313-macosx_* cp314-macosx_*"
+archs = ["native"]
+before-all = "bash -euxo pipefail -c 'export MACOSX_DEPLOYMENT_TARGET=11.0; export CFLAGS=\"-mmacosx-version-min=11.0 ${CFLAGS:-}\"; export CXXFLAGS=\"-mmacosx-version-min=11.0 ${CXXFLAGS:-}\"; bash {project}/scripts/deps/source-native-deps.sh /tmp/cplantbox-cibuildwheel-native-deps'"
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CFLAGS = "-mmacosx-version-min=11.0", CXXFLAGS = "-mmacosx-version-min=11.0", CMAKE_ARGS = "-DCPB_SUITESPARSE_PROVIDER=source -DCPB_SUNDIALS_PROVIDER=source -DCPB_NATIVE_DEPS_PREFIX=/tmp/cplantbox-cibuildwheel-native-deps -DCPB_NATIVE_CPU_TUNING=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0" }
+repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
+
 [tool.black]
 line-length = 320
 target-version = ["py311"]
