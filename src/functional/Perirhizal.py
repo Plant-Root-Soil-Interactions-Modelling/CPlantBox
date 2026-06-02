@@ -137,7 +137,7 @@ class PerirhizalPython(Perirhizal):
         #print(vg.fast_mfp[sp](-16000))
         if inner_kr < 1.0e-7:
             return sx
-        k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint + 0.001)  # Vanderborgth et al. 2023, Eqn [7]
+        k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) * (hsoil - hint) / ((hsoil - hint)**2 + 0.001)  # Vanderborgth et al. 2023, Eqn [7]
         rho2 = np.square(rho)  # rho squared
         b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
         fun = lambda x: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
@@ -200,51 +200,134 @@ class PerirhizalPython(Perirhizal):
         rsx = root_scalar(fun, method="brentq", bracket=[x_int[0], x_int[1]])
         return rsx.root
     
-    def solutesuptake_RooseKirk_(self, Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow, sp):
+    def solutesuptake_convdiff_(self, watercontent, c_bulk, Vmax, Km, Ds, waterflow, r_root, E, t, sp):
         """
         finds solute concentration at the soil root interface for all segments following T. Roose and G. Kirk 2009 doi:10.1007/s11104-008-9777-z
         
-        It assumes a constant watercontent with a constant waterflow
-
-        Phi_root       matrix flux potential at the root-soil-interface [cm2/d]
-        Phi_soil       matrix flux potential at the bulk soil [cm2/d]
+        It assumes a constant watercontent with a constant wateruptake by the root
+        
+        watercontent   watercontent of the perirhizal zone [cm3/cm3]
         c_bulk         solute concentration at the bulk soil [mol/cm3]
         Vmax           maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
         Km             half saturation constant Michaelis Menten Kinetics [mol/cm3]
         Ds             Diffusion constant in water [cm2/d]
         waterflow      steady state waterflow (entire root circumference) [cm2/d]
+        r_root         root radius [cm]
+        E              minimum net influx into the plant [mol/cm2d]
+        t              root age [d]
         sp             van Genuchten parameter set
         """
-        assert len(Phi_root) == len(Phi_soil) == len(c_bulk) == len(Vmax) == len(Km) == len(waterflow), "Phi_root, Phi_soil, c_bulk, Vmax, Km and waterflow must have the same length"
+        assert len(watercontent) == len(c_bulk) == len(Vmax) == len(Km) == len(waterflow) == len(r_root) == len(E) == len(t), "error in Perirhizal.py, solutesuptake_convdiff_: watercontent, c_bulk, Vmax, Km, Ds, waterflow, r_root, E and t must have the same length"
         
         n_segments = len(c_bulk)
+        segLength = 1 #reference segment length, should not impact the results [cm]
         
-        rsc = np.zeros(n_segments)
-        F = np.zeros(n_segments) #F is a helper values
-        F_tilde_inv = np.zeros(n_segments)
+        rsc = np.zeros(n_segments) # solute concentration at the root soil interface
+        F = np.zeros(n_segments) # uptake of solutes mol/(cm2d)
+        gamma = 0.577 # Eulers constant
+        l_func = lambda time : 1/2*np.log(4*np.exp(-gamma)*time+1)
         
-        if self.lookup_table_solutes:
-            F=[(self.lookup_table_solutes((Phi_soil[i],0))-self.lookup_table_solutes((Phi_root[i],0))) for i in range(0, len(c_bulk))]
-        else:
-            F=[(self.integral_overDiffusion_(Phi_soil[i],self.sp)-self.integral_overDiffusion_(Phi_root[i],self.sp)) for i in range(0, len(c_bulk))]
         
-        #compute a prefactor
-        D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
-        
-        #solve quadratic eqation # TODO: Link to publication
         for i in range(n_segments):
-            print("Dtilde",D_tilde,"F",F[i])
-            F_tilde_inv[i]=math.exp(-D_tilde*F[i])
-            a1=c_bulk[i]*F_tilde_inv[i]
-            a2=(1-F_tilde_inv[i])/(waterflow[i])
-            p=Km[i]-a2*Vmax[i]-a1
-            q=-Km[i]*a1
-            rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)
-        
+            #compute diffusion coefficient according to Millington and Quirk
+            D = Ds * math.pow(watercontent[i], 10/3) / (sp.theta_S**2)
+            
+            #unit conversions at the end
+            unitconversion_F = Km[i] * D * r_root[i] # to [mol/cm2d] #TODO: look at this again, it doesn't seem right
+            unitconversion_c = Km[i] # to [mol/cm3]
+            
+            #express the inputs without units
+            c_inf = c_bulk[i] / Km[i]
+            Pe = waterflow[i]/D #Peclet number
+            lamb = segLength*r_root[i]*Vmax[i]/(D*Km[i])
+            epsilon = segLength*r_root[i]*E[i]/(D*Km[i])
+            
+            #compute the unitless uptake
+            if Pe<=(lamb/(1+c_inf)):
+                F[i] = 2*lamb*(c_inf+epsilon*l_func(t[i])) / (1+c_inf+l_func(t[i])*(lamb + epsilon) +math.sqrt(4*(c_inf+epsilon * l_func(t[i]))+(1-c_inf+(lamb-epsilon)*l_func(t[i]))**2)) #Eqn. [9]
+            else:
+                F[i] = 2*lamb*(c_inf+epsilon*l_func(t[i])) / (1+c_inf+l_func(t[i])*(lamb - Pe + epsilon) +math.sqrt(4*(c_inf+epsilon * l_func(t[i]))*(1-Pe*l_func(t[i]))+(1-c_inf+l_func(t[i])*(lamb-Pe-epsilon))**2)) #Eqm. [10]
+            #compute the unitless solute concentration next to the root
+            #F(t) = lamb * c / (1+c) - epsilon shortly after eq. (10)
+            #(1+c)*(F(t)+epsilon) = lamb * c
+            #F(t)+epsilon = (-F(t)-epsilon+lamb) * c
+            rsc[i] = (F[i]+epsilon)/(lamb-F[i]-epsilon)
+            
+            #add units
+            F[i] = F[i] * unitconversion_F
+            rsc[i] = rsc[i] * unitconversion_c
         
         return rsc
     
-    def soil_root_solutes_ss_(self, Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow, sp):
+    def soil_root_solutes_ss_(self, Phi_soil, rootwateruptake, soilwateruptake, rho, c_bulk, Vmax, Km, Ds, waterflow, sp, output_disc = False):
+        """
+        steady state assumption of solute uptake by roots TODO: insert citaiton
+        
+        Phi_out            outer matrix flux potential [cm2/d]
+        rootwateruptake    radial root water uptake [cm2/d]
+        soilwateruptake    radial water inflow [cm2/d]
+        rho                outer radius / root radius [cm/cm]
+        c_soil             mean solute concentration in the cylinder [mol/cm3]
+        Vmax               maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
+        Km                 half saturation constant Michaelis Menten Kinetics [mol/cm3]
+        Ds                 Diffusion constant in water [cm2/d]
+        sp                 van Genuchten parameter set
+        output_disc        should the discretisation be put out
+        
+        output:
+        c_root             solute concnetration next to the root [mol/cm3]
+        Uptake             solute uptake of the root [mol/(cm d)]
+        disc               discretisation of the solute computation [mol/cm3]
+        
+        """
+        assert len(Phi_A) == len(Phi_C) == len(c_bulk) == len(Vmax) == len(Km) == len(waterflow), "Phi_root, Phi_soil, c_bulk, Vmax, Km and waterflow must have the same length"
+        
+        n_segments = len(c_bulk)
+        
+        c_root = np.zeros(n_segments)
+        Uptake = np.zeros(n_segments)
+        
+        
+        #equations #TODO: remove them here
+        #U = d_r(c) * Ds * r + c * (waterflow * r) = const
+        #1 / (Ds * r) = d_r(c/U) + (c/U) * (waterflow * r) / (Ds * r)
+        #(c/U)(r) = exp(-int((waterflow * r) / (Ds * r))) * z(r) * (c/U)(start)
+        # z'(r) = exp(int((waterflow * r) / (Ds * r))) / (Ds * r), z(start) = 1
+        
+        #solve quadratic eqation # TODO: Link to publication
+        for i in range(n_segments):
+            Phi = lambda r_rel : Phi_out + (rootwateruptake-soilwateruptake)*(r_rel**2*rho**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(rho/r_rel)-0.5)) + soilwateruptake*np.log(r_rel)
+            radial_waterflow = lambda r_rel : soilwateruptake + (rootwateruptake-soilwateruptake) * (1 - r_rel**2) / (1-1/rho**2)
+            Ds = lambda r_rel : Ds * math.pow(vg.water_content(vg.fast_imfp[sp](Phi(r_rel), self.sp)),10/3) / (sp.theta_S**2) # Millington and Quirk 
+            
+        
+        return Vtilde, Ktilde
+    
+    def soil_root_solutes_combined(self, Phi_soil, rootwateruptake, soilwateruptake, c_bulk, Vmax, Km, Ds, waterflow, sp, output_disc = False):
+        """
+        combines a steady state assumption of solutes next to the roots with the far field approximation by Tiina Roose TODO: insert citaitons
+        The cutoff happens where the diffusion coefficient (following the Millington Quirk model) reaches 95% that of the mean diffusion coefficient
+        
+        Phi_out            outer matrix flux potential [cm2/d]
+        rootwateruptake    radial root water uptake [cm2/d]
+        soilwateruptake    radial water inflow [cm2/d]
+        c_soil             mean solute concentration in the cylinder [mol/cm3]
+        Vmax               maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
+        Km                 half saturation constant Michaelis Menten Kinetics [mol/cm3]
+        Ds                 Diffusion constant in water [cm2/d]
+        waterflow          steady state waterflow (entire root circumference) [cm2/d]
+        sp                 van Genuchten parameter set
+        output_disc        should the discretisation be put out
+        
+        output:
+        c_root             solute concnetration next to the root [mol/cm3]
+        disc               discretisation of the solute computation [mol/cm3]
+        
+        """
+    
+    
+    
+    def soil_root_solutes_ss_old(self, Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow, sp):
         """
         finds solute concentration at the soil root interface for all segments assuming steady state
         uses a look up tables if present (see create_lookup, and open_lookup)
@@ -275,6 +358,7 @@ class PerirhizalPython(Perirhizal):
         D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
         
         #solve quadratic eqation # TODO: Link to publication
+        print("test",Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow) #TODO remove
         for i in range(n_segments):
             print("Dtilde",D_tilde,"F",F[i])
             F_tilde_inv[i]=math.exp(-D_tilde*F[i])
@@ -287,6 +371,7 @@ class PerirhizalPython(Perirhizal):
         
         return rsc
         
+     
     def soil_root_solutes_sr_(self, Phi_root, Phi_soil, rho, c_bulk, Vmax, Km, Ds, waterflow, sp, approximate_rho = False):
         """
         finds solute concentration at the soil root interface for all segments assuming steady rate
@@ -370,11 +455,13 @@ class PerirhizalPython(Perirhizal):
         
         return integral_overD
     
-    def integral_overconcentration_(self, Ds, Phi_root, Phi_soil, rho, sp):
+    # deprecate this function. It is way to much work and the steady rate solution isn't even close to accurate
+    # instead the outer concentration can be used   
+    def integral_overconcentration_(self, Ds, Phi_root, Phi_soil, rho, sp): #TODO: use Phi_A and Phi_C as inputs here so that rho can more easily be varied
         """
         (2 pi * 0.9999 rprhiz^2 (c_rs-C_SW))/(Integral from 0.01*rprhiz to rprhiz of 2 pi s (c(s)-C_SW) ds)
         
-        Ds            Diffusion coefficient 
+        Ds            Diffusion coefficient [cm2/d]
         Phi_root, Phi_soil  matrix flux potential at the root and soil [cm2/d]
         rho           r_prhiz / r_root
         
