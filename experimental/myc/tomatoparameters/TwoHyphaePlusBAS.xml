@@ -280,9 +280,9 @@
         <!--Branching rate [1/day]-->
         <parameter name="b_prob" value="0"/>
         <!--Probability of branching to occur by tip splitting rather than lateral branching [1]-->
-        <parameter name="distTH" value="0.0099999998"/>
+        <parameter name="distTH" value="0.01"/>
         <!--Distance for tip-hyphae anastomosis [cm]-->
-        <parameter name="dx" value="0.0099999998"/>
+        <parameter name="dx" value="0.01"/>
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1e-06"/>
         <!--Axial resolution [cm] (minimal segment size)-->
@@ -290,21 +290,21 @@
         <!--Hyphal lifetime  [day]-->
         <parameter name="la" value="0.1" dev="0.050000001"/>
         <!--Apical zone [cm]-->
-        <parameter name="lb" value="0.1" dev="0.050000001"/>
+        <parameter name="lb" value="0.4" dev="0.01"/>
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral emergence delay [day]-->
         <parameter name="lmax" value="10" dev="3"/>
         <!--Maximal length of the hyphae [cm]-->
-        <parameter name="ln" value="0.1" dev="0.050000001"/>
+        <parameter name="ln" value="0.4" dev="0.01"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="theta" value="1.0471976" dev="0.10471976"/>
         <!--Branching angle [rad]-->
         <parameter name="tropismN" value="1"/>
         <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="1"/>
+        <parameter name="tropismS" value="1.0"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
-        <parameter name="v" value="0.24" dev="0.001"/>
+        <parameter name="v" value="0.672" dev="0.01"/>
         <!--Tip elongation rate [cm/day]-->
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2, 1" organType="6, 6" percentage="0.8, 0.2"/>
         <!--Sub type of lateral -->
@@ -320,13 +320,13 @@
         <!--Branching rate [1/day]-->
         <parameter name="b_prob" value="1"/>
         <!--Probability of branching to occur by tip splitting rather than lateral branching [1]-->
-        <parameter name="distTH" value="0.0099999998"/>
+        <parameter name="distTH" value="0.01"/>
         <!--Distance for tip-hyphae anastomosis [cm]-->
-        <parameter name="dx" value="0.0099999998"/>
+        <parameter name="dx" value="0.01"/>
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1e-06"/>
         <!--Axial resolution [cm] (minimal segment size)-->
-        <parameter name="hlt" value="7" dev="2"/>
+        <parameter name="hlt" value="4.1" dev="2"/>
         <!--Hyphal lifetime  [day]-->
         <parameter name="la" value="0.00044999999" dev="4.9999999e-05"/>
         <!--Apical zone [cm]-->
