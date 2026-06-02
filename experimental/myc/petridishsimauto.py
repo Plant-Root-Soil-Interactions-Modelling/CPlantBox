@@ -1,11 +1,14 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
+from matplotlib import cm
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
+from plantbox.visualisation import figure_style
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap, Normalize
 import time
-import AMFAnalysis
+
 
 mycp = pb.MycorrhizalPlant(100)
 path = "tomatoparameters/"
@@ -27,6 +30,14 @@ for rp in root:
     mycp.setOrganRandomParameter(rp)
 
 
+def getMycSegmentAnalyser(plant):
+    ana = pb.SegmentAnalyser(plant)
+    ana.addData("infection", plant.getNodeInfections(2))
+    ana.addData("infectionTime", plant.getNodeInfectionTime(2))
+    ana.addData("anastomosis", plant.getAnastomosisPoints(5))
+    ana.addData("nodeTips", plant.getNodeTips(5))
+    return ana
+
 ## Setting up petri dish
 diameter = 9.4
 radius = diameter / 2
@@ -37,6 +48,31 @@ barrier_height = height
 opening_length = 5.0
 opening_height = 0.2
 
+# petri dish has a radius of 9.4 cm and a height of 1.6 cm
+petri_dish = pb.SDF_PlantContainer(radius,radius,height,False)
+# the helper dish is used to cut the petri dish in half, it has the same radius and height as the petri dish but is rotated and translated to cut the petri dish in half
+helper_dish = pb.SDF_PlantContainer(radius,radius,height,True)
+# moving the helper dish such that it halves the petri dish and removes a bit more to restrict roots to the correct side of barrier
+moved_helper_dish = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(-(radius+barrier_thickness+root[0].a), 0, 0))
+half_dish = pb.SDF_Intersection(petri_dish, moved_helper_dish)
+
+# helper container for barrier
+helper_staff = pb.SDF_PlantBox(barrier_thickness,barrier_height,diameter)
+# helper container for opening in barrier
+helper_staff2 = pb.SDF_PlantBox(barrier_thickness,opening_height,opening_length)
+# have to  move the helper staff for the right position of the opening and barrier, the midpoint is the distance from the center of the helper staff to the center of the petri dish, the bottompoint is the distance from the center of the helper staff to the center of the petri dish in the y direction, and the helper staff is moved to the position of the opening and barrier
+midpoint = opening_length / 2 - diameter / 2
+bottompoint = opening_height / 2 - barrier_height / 2
+# container for opening moved to the right position
+helper_staff2 = pb.SDF_RotateTranslate(helper_staff2, 0,0,pb.Vector3d(0, bottompoint, midpoint))
+# opening made in the barrier
+helper_dish2 = pb.SDF_Difference(helper_staff, helper_staff2)
+# barrier moved to the right position
+moved_helper_dish2 = pb.SDF_RotateTranslate(helper_dish2, 90, pb.SDF_Axis.xaxis , pb.Vector3d(0, -radius, -height/2))
+petri_dish = pb.SDF_Difference(petri_dish, moved_helper_dish2)
+
+moved_helper_dish_hyphae = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(-(radius+barrier_thickness/2), 0, 0))
+hyphae_petri_dish = pb.SDF_Difference(petri_dish, moved_helper_dish_hyphae)
 
 # make sure to set the seed position to 0 because of the petri dish
 seed_parameter = pb.SeedRandomParameter(mycp)
@@ -45,10 +81,6 @@ seed_parameter.seedPos.x = - 1.0
 seed_parameter.seedPos.y = 0
 mycp.setOrganRandomParameter(seed_parameter)
 
-dishes = AMFAnalysis.PetriDishSetup(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height)
-petri_dish = dishes[0]
-half_dish = dishes[1]
-moved_helper_dish_hyphae = dishes[2]
 mycp.setGeometry(half_dish)
 mycp.initialize(True)
 
@@ -66,7 +98,7 @@ for i in range(0, N):
         print("Step " + str(i) + " of " + str(N))
     mycp.simulate(dt,True)
     if (animation):
-        ana = AMFAnalysis.getMycSegmentAnalyser(mycp)
+        ana = getMycSegmentAnalyser(mycp)
         ana.write("animation/" + filename + str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
 # look at roots and container
 # vp.plot_roots_and_container(mycp,half_dish)
@@ -111,6 +143,8 @@ while crossed_barrier < 3:
                     crossed_barrier += 1
                     nodes_crossed.append(node)
 
+small_dish = pb.SDF_PlantContainer(radius,radius,height,False)
+small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
 
 # inactivating those organs that are in the root part of the compartment
 print("Inactivating those hyphae that are in the root part of the petri dish")
@@ -132,7 +166,6 @@ tip_densities = list()
 for i in range(0, hours_hyphae):
     print("Simulating hyphal growth step " + str(i+1) + " of 60")
     mycp.simulateHyphae(dt,False)
-    AMFAnalysis.activeCondition(mycp, barrier_thickness, opening_height, barrier_height, opening_length)
     organs = mycp.getOrgans()
     for organ in organs:
         stayactive = False
@@ -140,12 +173,12 @@ for i in range(0, hours_hyphae):
             if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
                 stayactive = True
         organ.setActive(stayactive)
-    ana = AMFAnalysis.getMycSegmentAnalyser(mycp)
+    ana = getMycSegmentAnalyser(mycp)
     if animation:
-        ana.crop(half_dish)
+        ana.crop(small_hyphae_dish)
         ana.write("animation/" + filename + "_" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
 end = time.perf_counter()
-ana = AMFAnalysis.getMycSegmentAnalyser(mycp)
+ana = getMycSegmentAnalyser(mycp)
 
 if not animation:
     ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
@@ -154,11 +187,35 @@ if not animation:
 nRings = 50
 mean_x = np.mean([node.x for node in nodes_crossed])
 mean_y = np.mean([node.y for node in nodes_crossed])
-rings = AMFAnalysis.EquiAreaRings(nRings, radius, True, mean_x, mean_y, moved_helper_dish_hyphae, height)
+centrepoint = [mean_x, mean_y, 0]
+small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
+ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
+moved_ringone = pb.SDF_RotateTranslate(ringone, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
+rings = []
+rings.append(moved_ringone)
+for i in range(2, nRings+1):
+    small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
+    small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
+    old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
+    small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
+    moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
+    rings.append(moved_small_hyphae_dish)
 
 times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
 
-tip_densities = AMFAnalysis.getParaDistperRing("nodeTips", times, ana, rings, True)
+def getParaDistperRing(parameter, times, plant, rings):
+    paradenmat = np.zeros((len(rings),len(times[1:])))
+    for k, ring in enumerate(rings):
+        ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
+        ringana.crop(ring)
+        for j in range(len(times[1:])):
+            ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
+            ringana.pack()
+            distrib = ringana.getSummed(parameter) - ringana.getSummed("anastomosis")
+            paradenmat[k, len(times[1:])-1 -j] = np.array(distrib).sum() 
+    return paradenmat
+
+tip_densities = getParaDistperRing("nodeTips", times, ana, rings)
 # print(np.array(tip_densities).reshape((-1, len(tip_densities[0]))))
 ## The problem is that the tips should be more evenly distributed i.e. more rings should have tips in them. but right now just a handful do
 # tip_densities = np.array(tip_densities).reshape((-1, len(tip_densities[0])))
