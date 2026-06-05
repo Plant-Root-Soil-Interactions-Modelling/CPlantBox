@@ -23,8 +23,15 @@ class Poaceae(pb.Plant):
     """Plant subclass that creates GrassLeaf organs instead of the default Leaf."""
 
     def createLeaf(self, subType, delay, parent, pni):
-        print("wild things are going on", flush=True)
+        print("my own createLeaf is called", flush=True)
         return pb.GrassLeaf(self, subType, delay, parent, pni)
+
+    def initializeReader(self):
+        print("my own initializeReader is called", flush=True)
+        super().initializeReader()
+        glp = pb.GrassLeafRandomParameter(self)
+        glp.subType = 0
+        self.setOrganRandomParameter(glp)
 
 
 # --------------------------------------------------------------------------- #
@@ -111,6 +118,9 @@ for i in range(steps):
     print(i, end=" ", flush=True)
     plant.simulate(dt, verbose=False)
 
+
+plant.initializeReader()  # re-initialize reader to enable organ inspection (otherwise some data is not stored)
+plant.writeParameters("grassleaf_parameters.xml")
 
 # --------------------------------------------------------------------------- #
 #  3.  Inspect the GrassLeaf organs

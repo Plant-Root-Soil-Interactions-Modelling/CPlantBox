@@ -1077,6 +1077,7 @@ PYBIND11_MODULE(plantbox, m) {
      */
     struct PyPlant : Plant {
         using Plant::Plant;
+        void initializeReader() override { PYBIND11_OVERRIDE(void, Plant, initializeReader); }
         std::shared_ptr<Organ> createSeed() override { PYBIND11_OVERRIDE(std::shared_ptr<Organ>, Plant, createSeed); }
         std::shared_ptr<Organ> createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni) override {
             PYBIND11_OVERRIDE(std::shared_ptr<Organ>, Plant, createRoot, subType, delay, parent, pni);
@@ -1090,6 +1091,7 @@ PYBIND11_MODULE(plantbox, m) {
     };
     py::class_<Plant, Organism, PyPlant, std::shared_ptr<Plant>>(m, "Plant")
         .def(py::init<unsigned int>(), py::arg("seednum") = 0)
+        .def("initializeReader", [](Plant &self) { self.initializeReader(); })
         .def("createSeed", &Plant::createSeed)
         .def("createRoot", &Plant::createRoot)
         .def("createStem", &Plant::createStem)
