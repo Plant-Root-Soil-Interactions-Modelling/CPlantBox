@@ -46,12 +46,14 @@ target_sources(CPlantBox
         structural/seedparameter.cpp
         structural/leafparameter.cpp
         structural/stemparameter.cpp
+        structural/grassleafparameter.cpp
         structural/Organ.cpp
         structural/Root.cpp
         structural/RootDelay.cpp
         structural/Seed.cpp
         structural/Stem.cpp
         structural/Leaf.cpp
+        structural/GrassLeaf.cpp
         structural/Plant.cpp
         structural/Organism.cpp
         structural/RootSystem.cpp

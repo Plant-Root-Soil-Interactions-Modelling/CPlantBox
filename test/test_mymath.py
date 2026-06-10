@@ -5,13 +5,18 @@ exposed via the plantbox Python binding.
 Each test computes the expected result independently with numpy / pure Python
 so the assertions are not circular.
 """
-import sys
-sys.path.append("..")
-sys.path.append("../src/")
 
-import unittest
 import math
+import os
+import sys
+import unittest
+
 import numpy as np
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.abspath(os.path.join(_HERE, "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(_HERE, "../src")))
+
 import plantbox as pb
 
 
@@ -22,11 +27,13 @@ def v3(v):
 
 def m3(m):
     """Convert plantbox.Matrix3d to a 3x3 numpy array (row-major)."""
-    return np.array([
-        [m.r0.x, m.r0.y, m.r0.z],
-        [m.r1.x, m.r1.y, m.r1.z],
-        [m.r2.x, m.r2.y, m.r2.z],
-    ])
+    return np.array(
+        [
+            [m.r0.x, m.r0.y, m.r0.z],
+            [m.r1.x, m.r1.y, m.r1.z],
+            [m.r2.x, m.r2.y, m.r2.z],
+        ]
+    )
 
 
 EPS = 1e-12  # tolerance for floating-point comparisons
@@ -174,7 +181,7 @@ class TestVector3d(unittest.TestCase):
     def test_length_general(self):
         x, y, z = 1.2, 3.4, 5.6
         v = pb.Vector3d(x, y, z)
-        expected = math.sqrt(x*x + y*y + z*z)
+        expected = math.sqrt(x * x + y * y + z * z)
         self.assertAlmostEqual(v.length(), expected)
 
     # ---- normalize -----------------------------------------------------------
@@ -207,7 +214,7 @@ class TestVector3d(unittest.TestCase):
     def test_dot_product_general(self):
         v1 = pb.Vector3d(1.0, 2.0, 3.0)
         v2 = pb.Vector3d(4.0, -5.0, 6.0)
-        expected = 1*4 + 2*(-5) + 3*6  # = 12
+        expected = 1 * 4 + 2 * (-5) + 3 * 6  # = 12
         self.assertAlmostEqual(v1.times(v2), expected)
 
     # ---- scalar multiply (times with double) ---------------------------------
@@ -281,8 +288,7 @@ class TestVector3d(unittest.TestCase):
         """rotAB(a, b) should return a unit vector (first column of Rx(b)*Rz(a))."""
         for a, b in [(0.0, 0.0), (0.5, 0.3), (math.pi, math.pi / 4)]:
             result = pb.Vector3d.rotAB(a, b)
-            self.assertAlmostEqual(result.length(), 1.0, places=12,
-                                   msg=f"rotAB({a},{b}) not unit")
+            self.assertAlmostEqual(result.length(), 1.0, places=12, msg=f"rotAB({a},{b}) not unit")
 
     def test_rotAB_zero_angles(self):
         """rotAB(0,0) should be (1,0,0)."""
@@ -315,12 +321,8 @@ class TestMatrix3d(unittest.TestCase):
         np.testing.assert_array_almost_equal(m3(m), np.eye(3))
 
     def test_nine_double_constructor(self):
-        m = pb.Matrix3d(1, 2, 3,
-                        4, 5, 6,
-                        7, 8, 9)
-        expected = np.array([[1, 2, 3],
-                              [4, 5, 6],
-                              [7, 8, 9]], dtype=float)
+        m = pb.Matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9)
+        expected = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=float)
         np.testing.assert_array_almost_equal(m3(m), expected)
 
     def test_column_vector_constructor(self):
@@ -339,17 +341,13 @@ class TestMatrix3d(unittest.TestCase):
     # ---- row / column accessors ----------------------------------------------
 
     def test_column(self):
-        m = pb.Matrix3d(1, 2, 3,
-                        4, 5, 6,
-                        7, 8, 9)
+        m = pb.Matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9)
         np.testing.assert_array_almost_equal(v3(m.column(0)), [1, 4, 7])
         np.testing.assert_array_almost_equal(v3(m.column(1)), [2, 5, 8])
         np.testing.assert_array_almost_equal(v3(m.column(2)), [3, 6, 9])
 
     def test_row(self):
-        m = pb.Matrix3d(1, 2, 3,
-                        4, 5, 6,
-                        7, 8, 9)
+        m = pb.Matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9)
         np.testing.assert_array_almost_equal(v3(m.row(0)), [1, 2, 3])
         np.testing.assert_array_almost_equal(v3(m.row(1)), [4, 5, 6])
         np.testing.assert_array_almost_equal(v3(m.row(2)), [7, 8, 9])
@@ -359,22 +357,20 @@ class TestMatrix3d(unittest.TestCase):
     def _check_rotation(self, M, a, axis):
         """Rotation matrix must be orthogonal and have det = +1."""
         Mn = m3(M)
-        np.testing.assert_array_almost_equal(Mn @ Mn.T, np.eye(3),
-                                             err_msg=f"rot{axis}({a}) not orthogonal")
-        self.assertAlmostEqual(np.linalg.det(Mn), 1.0, places=12,
-                               msg=f"rot{axis}({a}) det != 1")
+        np.testing.assert_array_almost_equal(Mn @ Mn.T, np.eye(3), err_msg=f"rot{axis}({a}) not orthogonal")
+        self.assertAlmostEqual(np.linalg.det(Mn), 1.0, places=12, msg=f"rot{axis}({a}) det != 1")
 
     def test_rotX_orthogonal(self):
         for a in [0, 0.3, math.pi / 2, math.pi]:
-            self._check_rotation(pb.Matrix3d.rotX(a), a, 'X')
+            self._check_rotation(pb.Matrix3d.rotX(a), a, "X")
 
     def test_rotY_orthogonal(self):
         for a in [0, 0.3, math.pi / 2, math.pi]:
-            self._check_rotation(pb.Matrix3d.rotY(a), a, 'Y')
+            self._check_rotation(pb.Matrix3d.rotY(a), a, "Y")
 
     def test_rotZ_orthogonal(self):
         for a in [0, 0.3, math.pi / 2, math.pi]:
-            self._check_rotation(pb.Matrix3d.rotZ(a), a, 'Z')
+            self._check_rotation(pb.Matrix3d.rotZ(a), a, "Z")
 
     def test_rotX_known(self):
         """rotX(pi/2) should map e_y to e_z."""
@@ -417,17 +413,13 @@ class TestMatrix3d(unittest.TestCase):
 
     def test_det_known(self):
         # [[1,2,3],[4,5,6],[7,8,10]] -> det = -3
-        m = pb.Matrix3d(1, 2, 3,
-                        4, 5, 6,
-                        7, 8, 10)
+        m = pb.Matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 10)
         expected = np.linalg.det(m3(m))
         self.assertAlmostEqual(m.det(), expected, places=10)
 
     def test_det_singular(self):
         # Rows 1 and 2 are identical -> det = 0
-        m = pb.Matrix3d(1, 2, 3,
-                        1, 2, 3,
-                        7, 8, 9)
+        m = pb.Matrix3d(1, 2, 3, 1, 2, 3, 7, 8, 9)
         self.assertAlmostEqual(m.det(), 0.0, places=10)
 
     # ---- inverse -------------------------------------------------------------
@@ -438,18 +430,14 @@ class TestMatrix3d(unittest.TestCase):
 
     def test_inverse_roundtrip(self):
         """M * M^{-1} == I"""
-        m = pb.Matrix3d(1, 2, 3,
-                        4, 5, 6,
-                        7, 8, 10)
+        m = pb.Matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 10)
         Mn = m3(m)
         inv_np = np.linalg.inv(Mn)
         inv_pb = m3(m.inverse())
         np.testing.assert_array_almost_equal(inv_pb, inv_np, decimal=10)
 
     def test_inverse_product_is_identity(self):
-        m = pb.Matrix3d(1, 2, 3,
-                        0, 1, 4,
-                        5, 6, 0)
+        m = pb.Matrix3d(1, 2, 3, 0, 1, 4, 5, 6, 0)
         Mn = m3(m)
         inv = m3(m.inverse())
         np.testing.assert_array_almost_equal(Mn @ inv, np.eye(3), decimal=10)
@@ -457,11 +445,9 @@ class TestMatrix3d(unittest.TestCase):
     # ---- times (matrix * matrix) --------------------------------------------
 
     def test_times_matrix_identity(self):
-        m = pb.Matrix3d(1, 2, 3,
-                        4, 5, 6,
-                        7, 8, 9)
+        m = pb.Matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9)
         orig = m3(m).copy()
-        m.times(pb.Matrix3d())   # multiply by identity (in-place)
+        m.times(pb.Matrix3d())  # multiply by identity (in-place)
         np.testing.assert_array_almost_equal(m3(m), orig)
 
     def test_times_matrix_general(self):
@@ -482,8 +468,7 @@ class TestMatrix3d(unittest.TestCase):
         np.testing.assert_array_almost_equal(result_AB, expected_AB)
         # verify AB != BA
         result_BA = Bn @ An
-        self.assertFalse(np.allclose(result_AB, result_BA),
-                         "rotX and rotZ should not commute for these angles")
+        self.assertFalse(np.allclose(result_AB, result_BA), "rotX and rotZ should not commute for these angles")
 
     # ---- times (matrix * vector) --------------------------------------------
 
@@ -493,9 +478,7 @@ class TestMatrix3d(unittest.TestCase):
         np.testing.assert_array_almost_equal(v3(result), v3(v))
 
     def test_times_vector_general(self):
-        M = pb.Matrix3d(1, 2, 3,
-                        4, 5, 6,
-                        7, 8, 9)
+        M = pb.Matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9)
         v = pb.Vector3d(1.0, 0.0, 0.0)
         result = M.times(v)
         expected = m3(M) @ np.array([1.0, 0.0, 0.0])
@@ -519,22 +502,17 @@ class TestMatrix3d(unittest.TestCase):
 
     def test_ons_is_orthonormal(self):
         """Columns of ons result should be mutually orthogonal unit vectors."""
-        for xyz in [(1, 0, 0), (0, 1, 0), (0, 0, 1),
-                    (1, 2, 3), (-1, 0.5, 2), (0.1, -0.2, 0.9)]:
+        for xyz in [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 2, 3), (-1, 0.5, 2), (0.1, -0.2, 0.9)]:
             vec = pb.Vector3d(*xyz)
             M = pb.Matrix3d.ons(vec)
             Mn = m3(M)
             # columns should be unit vectors
             for i in range(3):
-                self.assertAlmostEqual(np.linalg.norm(Mn[:, i]), 1.0, places=12,
-                                       msg=f"column {i} not unit for input {xyz}")
+                self.assertAlmostEqual(np.linalg.norm(Mn[:, i]), 1.0, places=12, msg=f"column {i} not unit for input {xyz}")
             # columns should be mutually orthogonal
-            self.assertAlmostEqual(float(np.dot(Mn[:, 0], Mn[:, 1])), 0.0, places=12,
-                                   msg=f"col0·col1 != 0 for {xyz}")
-            self.assertAlmostEqual(float(np.dot(Mn[:, 0], Mn[:, 2])), 0.0, places=12,
-                                   msg=f"col0·col2 != 0 for {xyz}")
-            self.assertAlmostEqual(float(np.dot(Mn[:, 1], Mn[:, 2])), 0.0, places=12,
-                                   msg=f"col1·col2 != 0 for {xyz}")
+            self.assertAlmostEqual(float(np.dot(Mn[:, 0], Mn[:, 1])), 0.0, places=12, msg=f"col0·col1 != 0 for {xyz}")
+            self.assertAlmostEqual(float(np.dot(Mn[:, 0], Mn[:, 2])), 0.0, places=12, msg=f"col0·col2 != 0 for {xyz}")
+            self.assertAlmostEqual(float(np.dot(Mn[:, 1], Mn[:, 2])), 0.0, places=12, msg=f"col1·col2 != 0 for {xyz}")
 
     def test_ons_determinant_is_plus_one(self):
         """ons should produce a proper rotation (not a reflection)."""
@@ -542,15 +520,12 @@ class TestMatrix3d(unittest.TestCase):
             vec = pb.Vector3d(*xyz)
             M = pb.Matrix3d.ons(vec)
             det = np.linalg.det(m3(M))
-            self.assertAlmostEqual(det, 1.0, places=12,
-                                   msg=f"ons det != 1 for {xyz}")
+            self.assertAlmostEqual(det, 1.0, places=12, msg=f"ons det != 1 for {xyz}")
 
     # ---- buffer protocol -----------------------------------------------------
 
     def test_buffer_protocol_values(self):
-        m = pb.Matrix3d(1, 2, 3,
-                        4, 5, 6,
-                        7, 8, 9)
+        m = pb.Matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9)
         a = np.array(m, copy=False)
         expected = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=float)
         np.testing.assert_array_almost_equal(a, expected)
@@ -562,6 +537,439 @@ class TestMatrix3d(unittest.TestCase):
         s = str(m)
         self.assertIn("1", s)
         self.assertIn("0", s)
+
+
+class TestTurtle3D(unittest.TestCase):
+
+    # ---- construction --------------------------------------------------------
+
+    def test_default_construction(self):
+        t = pb.Turtle3D()
+        np.testing.assert_array_almost_equal(v3(t.getPosition()), [0.0, 0.0, 0.0])
+        np.testing.assert_array_almost_equal(v3(t.heading()), [1.0, 0.0, 0.0])
+        np.testing.assert_array_almost_equal(v3(t.left()), [0.0, 1.0, 0.0])
+        np.testing.assert_array_almost_equal(v3(t.up()), [0.0, 0.0, 1.0])
+
+    def test_custom_construction(self):
+        pos = pb.Vector3d(1.0, 2.0, 3.0)
+        frame = pb.Matrix3d.rotZ(math.pi / 4)
+        t = pb.Turtle3D(pos, frame)
+        np.testing.assert_array_almost_equal(v3(t.getPosition()), [1.0, 2.0, 3.0])
+        np.testing.assert_array_almost_equal(m3(t.getFrame()), m3(frame))
+
+    # ---- forward -------------------------------------------------------------
+
+    def test_forward_default_heading(self):
+        """Default heading is +x; forward(d) moves by d along +x."""
+        t = pb.Turtle3D()
+        t.forward(5.0)
+        np.testing.assert_array_almost_equal(v3(t.getPosition()), [5.0, 0.0, 0.0])
+
+    def test_forward_along_rotated_heading(self):
+        """After turnLeft(pi/2) heading is +y; forward(d) moves along +y."""
+        t = pb.Turtle3D()
+        t.turnLeft(math.pi / 2)
+        t.forward(3.0)
+        np.testing.assert_array_almost_equal(v3(t.getPosition()), [0.0, 3.0, 0.0], decimal=12)
+
+    def test_forward_does_not_change_frame(self):
+        t = pb.Turtle3D()
+        orig = m3(t.getFrame()).copy()
+        t.forward(10.0)
+        np.testing.assert_array_almost_equal(m3(t.getFrame()), orig)
+
+    # ---- yaw (turnLeft / turnRight) ------------------------------------------
+
+    def test_turnLeft_90(self):
+        """turnLeft(pi/2) rotates heading from +x to +y."""
+        t = pb.Turtle3D()
+        t.turnLeft(math.pi / 2)
+        np.testing.assert_array_almost_equal(v3(t.heading()), [0.0, 1.0, 0.0], decimal=12)
+
+    def test_turnRight_90(self):
+        """turnRight(pi/2) rotates heading from +x to -y."""
+        t = pb.Turtle3D()
+        t.turnRight(math.pi / 2)
+        np.testing.assert_array_almost_equal(v3(t.heading()), [0.0, -1.0, 0.0], decimal=12)
+
+    def test_turnLeft_turnRight_inverse(self):
+        t = pb.Turtle3D()
+        orig = m3(t.getFrame()).copy()
+        t.turnLeft(0.7)
+        t.turnRight(0.7)
+        np.testing.assert_array_almost_equal(m3(t.getFrame()), orig, decimal=12)
+
+    # ---- pitch (pitchUp / pitchDown) -----------------------------------------
+
+    def test_pitchUp_90(self):
+        """pitchUp(pi/2): heading rotates around L=(0,1,0); result = (0,0,-1)."""
+        t = pb.Turtle3D()
+        t.pitchUp(math.pi / 2)
+        np.testing.assert_array_almost_equal(v3(t.heading()), [0.0, 0.0, -1.0], decimal=12)
+
+    def test_pitchDown_90(self):
+        """pitchDown(pi/2): heading rotates to (0,0,1)."""
+        t = pb.Turtle3D()
+        t.pitchDown(math.pi / 2)
+        np.testing.assert_array_almost_equal(v3(t.heading()), [0.0, 0.0, 1.0], decimal=12)
+
+    def test_pitchUp_pitchDown_inverse(self):
+        t = pb.Turtle3D()
+        orig = m3(t.getFrame()).copy()
+        t.pitchUp(0.5)
+        t.pitchDown(0.5)
+        np.testing.assert_array_almost_equal(m3(t.getFrame()), orig, decimal=12)
+
+    # ---- roll (rollLeft / rollRight) -----------------------------------------
+
+    def test_rollLeft_90(self):
+        """rollLeft(pi/2): left moves from +y to +z."""
+        t = pb.Turtle3D()
+        t.rollLeft(math.pi / 2)
+        np.testing.assert_array_almost_equal(v3(t.left()), [0.0, 0.0, 1.0], decimal=12)
+
+    def test_rollRight_90(self):
+        """rollRight(pi/2): left moves from +y to -z."""
+        t = pb.Turtle3D()
+        t.rollRight(math.pi / 2)
+        np.testing.assert_array_almost_equal(v3(t.left()), [0.0, 0.0, -1.0], decimal=12)
+
+    def test_rollLeft_rollRight_inverse(self):
+        t = pb.Turtle3D()
+        orig = m3(t.getFrame()).copy()
+        t.rollLeft(1.1)
+        t.rollRight(1.1)
+        np.testing.assert_array_almost_equal(m3(t.getFrame()), orig, decimal=12)
+
+    # ---- frame orthonormality ------------------------------------------------
+
+    def test_frame_stays_orthonormal_after_many_rotations(self):
+        t = pb.Turtle3D()
+        for _ in range(10):
+            t.turnLeft(0.3)
+            t.pitchUp(0.7)
+            t.rollLeft(1.1)
+            t.turnRight(0.4)
+            t.pitchDown(0.2)
+        cols = [v3(t.heading()), v3(t.left()), v3(t.up())]
+        for i, c in enumerate(cols):
+            self.assertAlmostEqual(np.linalg.norm(c), 1.0, places=10, msg=f"column {i} not unit after rotations")
+        self.assertAlmostEqual(float(np.dot(cols[0], cols[1])), 0.0, places=10)
+        self.assertAlmostEqual(float(np.dot(cols[0], cols[2])), 0.0, places=10)
+        self.assertAlmostEqual(float(np.dot(cols[1], cols[2])), 0.0, places=10)
+
+    # ---- setters -------------------------------------------------------------
+
+    def test_setPosition(self):
+        t = pb.Turtle3D()
+        t.setPosition(pb.Vector3d(4.0, 5.0, 6.0))
+        np.testing.assert_array_almost_equal(v3(t.getPosition()), [4.0, 5.0, 6.0])
+
+    def test_setFrame(self):
+        t = pb.Turtle3D()
+        f = pb.Matrix3d.rotX(0.5)
+        t.setFrame(f)
+        np.testing.assert_array_almost_equal(m3(t.getFrame()), m3(f))
+
+    # ---- str -----------------------------------------------------------------
+
+    def test_str(self):
+        t = pb.Turtle3D()
+        s = str(t)
+        self.assertIn("pos", s)
+
+
+class TestTurtlePolyline(unittest.TestCase):
+    """Tests for TurtlePolyline (formerly Meristem) exposed as pb.TurtlePolyline."""
+
+    # ---- construction --------------------------------------------------------
+
+    def test_default_construction(self):
+        """Default TurtlePolyline starts with 0 nodes; anchor is at the origin."""
+        m = pb.TurtlePolyline()
+        self.assertEqual(m.size(), 0)
+        np.testing.assert_array_almost_equal(v3(m.getAnchor()), [0.0, 0.0, 0.0])
+
+    def test_default_initial_node_index(self):
+        """initialNodeIdx starts at 0 (deque index of the initial node)."""
+        m = pb.TurtlePolyline()
+        self.assertEqual(m.getInitialNodeIndex(), 0)
+
+    def test_custom_construction(self):
+        pos = pb.Vector3d(1.0, 2.0, 3.0)
+        m = pb.TurtlePolyline(pos, pb.Matrix3d())
+        np.testing.assert_array_almost_equal(v3(m.getAnchor()), [1.0, 2.0, 3.0])
+        self.assertEqual(m.size(), 0)
+
+    def test_custom_construction_first_node_at_anchor(self):
+        """getNode(0) after addNodeBack(0) returns the anchor position."""
+        pos = pb.Vector3d(1.0, 2.0, 3.0)
+        m = pb.TurtlePolyline(pos, pb.Matrix3d())
+        m.addNodeBack(0.0)
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [1.0, 2.0, 3.0])
+
+    # ---- addNodeBack ---------------------------------------------------------
+
+    def test_addNodeBack_increases_size(self):
+        m = pb.TurtlePolyline()
+        m.addNodeBack(1.0)
+        self.assertEqual(m.size(), 1)
+        m.addNodeBack(1.0)
+        self.assertEqual(m.size(), 2)
+
+    def test_addNodeBack_does_not_change_initial_node_index(self):
+        m = pb.TurtlePolyline()
+        m.addNodeBack(1.0)
+        m.addNodeBack(1.0)
+        self.assertEqual(m.getInitialNodeIndex(), 0)
+
+    def test_getNode0_straight(self):
+        """Node 0 = anchor + dist*heading."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(5.0)
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [5.0, 0.0, 0.0], decimal=12)
+
+    def test_getNode_with_yaw(self):
+        """Node after yaw=pi/2 then forward(3) should land on +y axis."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(3.0, yaw=math.pi / 2)
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [0.0, 3.0, 0.0], decimal=12)
+
+    def test_getNode_chained(self):
+        """Two straight steps of length 2 give cumulative positions."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(2.0)
+        m.addNodeBack(2.0)
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [2.0, 0.0, 0.0], decimal=12)
+        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [4.0, 0.0, 0.0], decimal=12)
+
+    # ---- addNodeFront --------------------------------------------------------
+
+    def test_addNodeFront_increases_size(self):
+        m = pb.TurtlePolyline()
+        m.addNodeFront(1.0)
+        self.assertEqual(m.size(), 1)
+
+    def test_addNodeFront_increments_initial_node_index(self):
+        """Each addNodeFront() prepends a node, shifting initialNodeIdx by 1."""
+        m = pb.TurtlePolyline()
+        self.assertEqual(m.getInitialNodeIndex(), 0)
+        m.addNodeFront(1.0)
+        self.assertEqual(m.getInitialNodeIndex(), 1)
+        m.addNodeFront(1.0)
+        self.assertEqual(m.getInitialNodeIndex(), 2)
+
+    def test_addNodeFront_shifts_indices(self):
+        """addNodeFront prepends; old node 0 becomes node 1."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(5.0)  # deque: [{0,0,0,5}]; node 0=(5,0,0)
+        m.addNodeFront(3.0)  # deque: [{0,0,0,3}, {0,0,0,5}]; initialNodeIdx=1
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [3.0, 0.0, 0.0], decimal=12)
+        np.testing.assert_array_almost_equal(v3(m.getNode(1)), [8.0, 0.0, 0.0], decimal=12)
+
+    def test_initial_node_index_after_addNodeFront(self):
+        """initialNodeIdx is incremented by each addNodeFront call."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(5.0)  # initialNodeIdx stays 0
+        m.addNodeFront(3.0)  # prepended; initialNodeIdx becomes 1
+        self.assertEqual(m.getInitialNodeIndex(), 1)
+
+    # ---- getLength -----------------------------------------------------------
+
+    def test_getLength_empty(self):
+        """Default polyline has no nodes; total length == 0."""
+        m = pb.TurtlePolyline()
+        self.assertAlmostEqual(m.getLength(), 0.0)
+
+    def test_getLength_total(self):
+        """getLength() sums all segment distances."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(3.0)
+        m.addNodeBack(4.0)
+        m.addNodeBack(5.0)
+        self.assertAlmostEqual(m.getLength(), 12.0)
+
+    def test_getLength_n_zero(self):
+        """getLength(0) == 0."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(3.0)
+        self.assertAlmostEqual(m.getLength(0), 0.0)
+
+    def test_getLength_n_partial(self):
+        """getLength(n) returns cumulative length of first n nodes."""
+        m = pb.TurtlePolyline()
+        # deque: [{3}, {4}, {5}]
+        m.addNodeBack(3.0)
+        m.addNodeBack(4.0)
+        m.addNodeBack(5.0)
+        self.assertAlmostEqual(m.getLength(1), 3.0)  # first segment
+        self.assertAlmostEqual(m.getLength(2), 7.0)  # first two segments
+        self.assertAlmostEqual(m.getLength(3), 12.0)  # all nodes
+
+    def test_getLength_n_equals_total(self):
+        """getLength(size()) == getLength()."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(2.0)
+        m.addNodeBack(3.0)
+        self.assertAlmostEqual(m.getLength(m.size()), m.getLength())
+
+    def test_getLength_addNodeFront_counts(self):
+        """getLength() includes segments added at the front."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(5.0)
+        m.addNodeFront(3.0)
+        self.assertAlmostEqual(m.getLength(), 8.0)
+
+    # ---- getNodeIndexAtLength ------------------------------------------------
+
+    def test_getNodeIndexAtLength_zero(self):
+        """getNodeIndexAtLength(0) returns 0 (clamped)."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(3.0)
+        m.addNodeBack(4.0)
+        self.assertEqual(m.getNodeIndexAtLength(0.0), 0)
+
+    def test_getNodeIndexAtLength_exact_boundary(self):
+        """getNodeIndexAtLength at exact cumulative distance boundary."""
+        m = pb.TurtlePolyline()
+        # deque: [{3}, {4}]  cumulative: [3, 7]
+        m.addNodeBack(3.0)
+        m.addNodeBack(4.0)
+        # at s=3 the running sum first reaches 3 at index 0
+        # roundUp=False → return max(0, 0-1)=0; roundUp=True → return 0
+        self.assertEqual(m.getNodeIndexAtLength(3.0, False), 0)
+        self.assertEqual(m.getNodeIndexAtLength(3.0, True), 0)
+
+    def test_getNodeIndexAtLength_beyond_total(self):
+        """getNodeIndexAtLength(s) for s > total returns last index."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(3.0)
+        m.addNodeBack(4.0)
+        self.assertEqual(m.getNodeIndexAtLength(100.0), m.size() - 1)
+
+    # ---- getNodeFrame --------------------------------------------------------
+
+    def test_getNodeFrame_identity_anchor(self):
+        """With identity anchor frame, frame at any straight node is also identity."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(5.0)
+        m.addNodeBack(5.0)
+        for i in range(m.size()):
+            np.testing.assert_array_almost_equal(m3(m.getNodeFrame(i)), np.eye(3), decimal=12)
+
+    def test_getNodeFrame_after_yaw(self):
+        """After a yaw=pi/2 node the frame heading should be +y."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(1.0, yaw=math.pi / 2)
+        frame = m.getNodeFrame(0)
+        np.testing.assert_array_almost_equal(v3(frame.column(0)), [0.0, 1.0, 0.0], decimal=12)
+
+    def test_getNodeFrame_stays_orthonormal(self):
+        """Frame at every node must be an orthonormal matrix."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(2.0, yaw=0.3)
+        m.addNodeBack(2.0, pitch=0.5)
+        m.addNodeBack(2.0, roll=0.7)
+        for i in range(m.size()):
+            F = m3(m.getNodeFrame(i))
+            np.testing.assert_array_almost_equal(F @ F.T, np.eye(3), decimal=10, err_msg=f"frame at node {i} not orthonormal")
+            self.assertAlmostEqual(np.linalg.det(F), 1.0, places=10, msg=f"frame det != 1 at node {i}")
+
+    def test_getNodeFrame_anchor_frame_respected(self):
+        """Anchor frame rotZ(pi/2) means heading starts as +y; straight nodes keep +y."""
+        m = pb.TurtlePolyline()
+        m.setAnchorFrame(pb.Matrix3d.rotZ(math.pi / 2))
+        m.addNodeBack(3.0)
+        frame = m.getNodeFrame(0)
+        np.testing.assert_array_almost_equal(v3(frame.column(0)), [0.0, 1.0, 0.0], decimal=12)
+
+    # ---- getPolyline ---------------------------------------------------------
+
+    def test_getPolyline_length(self):
+        """getPolyline() has one entry per deque node (3 added = 3)."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(1.0)
+        m.addNodeBack(1.0)
+        m.addNodeBack(1.0)
+        self.assertEqual(len(m.getPolyline()), 3)
+
+    def test_getPolyline_straight(self):
+        """Steps of dist=2 give positions [2, 4, 6] along x."""
+        m = pb.TurtlePolyline()
+        for _ in range(3):
+            m.addNodeBack(2.0)
+        pts = m.getPolyline()
+        for i, p in enumerate(pts):
+            np.testing.assert_array_almost_equal(v3(p), [2.0 * (i + 1), 0.0, 0.0], decimal=12)
+
+    # ---- getNodes and getTurtleNode (raw turtle data) -----------------------
+
+    def test_getNodes_empty_on_default_construction(self):
+        """getNodes() returns an empty list for a default-constructed TurtlePolyline."""
+        m = pb.TurtlePolyline()
+        nodes = m.getNodes()
+        self.assertEqual(len(nodes), 0)
+
+    def test_getNodes_returns_raw_nodes(self):
+        """getNodes() returns all deque entries."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(1.0, yaw=0.5, pitch=0.3, roll=0.1)
+        nodes = m.getNodes()
+        self.assertEqual(len(nodes), 1)
+        self.assertAlmostEqual(nodes[0].yaw, 0.5)
+        self.assertAlmostEqual(nodes[0].pitch, 0.3)
+        self.assertAlmostEqual(nodes[0].roll, 0.1)
+        self.assertAlmostEqual(nodes[0].dist, 1.0)
+
+    def test_getTurtleNode_added(self):
+        """getTurtleNode(i) returns the TurtleNode at deque index i."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(2.5, yaw=0.1, pitch=0.2, roll=0.3)
+        n = m.getTurtleNode(0)
+        self.assertAlmostEqual(n.dist, 2.5)
+        self.assertAlmostEqual(n.yaw, 0.1)
+        self.assertAlmostEqual(n.pitch, 0.2)
+        self.assertAlmostEqual(n.roll, 0.3)
+
+    def test_getTurtleNode_matches_getNodes(self):
+        """getTurtleNode(i) and getNodes()[i] refer to the same data."""
+        m = pb.TurtlePolyline()
+        m.addNodeBack(3.0, yaw=0.7)
+        nodes = m.getNodes()
+        for i in range(m.size()):
+            n = m.getTurtleNode(i)
+            self.assertAlmostEqual(n.dist, nodes[i].dist)
+            self.assertAlmostEqual(n.yaw, nodes[i].yaw)
+            self.assertAlmostEqual(n.pitch, nodes[i].pitch)
+            self.assertAlmostEqual(n.roll, nodes[i].roll)
+
+    # ---- setters -------------------------------------------------------------
+
+    def test_setAnchor(self):
+        m = pb.TurtlePolyline()
+        m.setAnchor(pb.Vector3d(7.0, 8.0, 9.0))
+        np.testing.assert_array_almost_equal(v3(m.getAnchor()), [7.0, 8.0, 9.0])
+
+    def test_setAnchorFrame_changes_heading(self):
+        """After setAnchorFrame(rotZ(pi/2)), forward moves along +y."""
+        m = pb.TurtlePolyline()
+        m.setAnchorFrame(pb.Matrix3d.rotZ(math.pi / 2))
+        m.addNodeBack(2.0)
+        np.testing.assert_array_almost_equal(v3(m.getNode(0)), [0.0, 2.0, 0.0], decimal=12)
+
+    def test_setAnchorFrame_roundtrip(self):
+        f = pb.Matrix3d.rotX(0.8)
+        m = pb.TurtlePolyline()
+        m.setAnchorFrame(f)
+        np.testing.assert_array_almost_equal(m3(m.getAnchorFrame()), m3(f))
+
+    # ---- str -----------------------------------------------------------------
+
+    def test_str(self):
+        m = pb.TurtlePolyline()
+        m.addNodeBack(1.0)
+        s = str(m)
+        self.assertIn("TurtlePolyline", s)
 
 
 if __name__ == "__main__":

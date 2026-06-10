@@ -643,9 +643,12 @@ double Leaf::orgVolume2Length(double volume_) {
 };
 
 /**
- * indicates if the node is in the leaf surface are and should be viusalized as polygon
+ * Returns whether the node at cumulative length l lies in the leaf blade and should be
+ * visualized as a polygon (true), or in the petiole/base zone or a branched leaf (false).
+ * Gates all getLeafVis* calls: only blade nodes produce polygon geometry.
  *
- * leaf base (false), branched leaf (false), or leaf surface area (true)
+ * @param l   cumulative length along the leaf axis [cm]
+ * @return    true if l >= lb (blade zone) and the leaf has no laterals; false otherwise
  */
 bool Leaf::nodeLeafVis(double l) {
     if (param()->laterals) {
@@ -656,7 +659,11 @@ bool Leaf::nodeLeafVis(double l) {
 }
 
 /**
- * Parameterization x value, at position l along the leaf axis
+ * Returns the lateral half-width of a cuboid-shaped leaf at cumulative length l.
+ * Returns width_blade in the blade zone (l >= lb), or width_petiole in the petiole zone.
+ *
+ * @param l   cumulative length along the leaf axis [cm]
+ * @return    single-element vector containing the lateral half-width [cm]
  */
 std::vector<double> Leaf::getLeafVisX_cuboid(double l) {
     if (nodeLeafVis(l)) {
@@ -667,7 +674,12 @@ std::vector<double> Leaf::getLeafVisX_cuboid(double l) {
 }
 
 /**
- * Parameterization x value, at position l along the leaf axis
+ * Returns the lateral half-width profile of a 2D-shaped leaf at cumulative length l,
+ * by linearly interpolating into the precomputed leafGeometry table.
+ * May return multiple values for non-convex cross-sections.
+ *
+ * @param l   cumulative length along the leaf axis [cm] (should be in the blade zone)
+ * @return    vector of lateral half-width values [cm], looked up from leafGeometry
  */
 std::vector<double> Leaf::getLeafVisX_2D(double l) {
     auto &lg = getLeafRandomParameter()->leafGeometry;
@@ -678,7 +690,12 @@ std::vector<double> Leaf::getLeafVisX_2D(double l) {
 }
 
 /**
- * for Python binding
+ * Python-accessible dispatcher: returns the lateral half-width profile at node i
+ * for the current leaf shape type (shape_cuboid or shape_2D).
+ * Used by vtk_plot.py to detect convex vs. normal cross-section transitions between nodes.
+ *
+ * @param i   node index (0-based local index within the leaf)
+ * @return    vector of lateral half-width values at node i [cm]
  */
 std::vector<double> Leaf::getLeafVisX(int i) {
     switch (int(getParameter("shapeType"))) {
@@ -693,6 +710,15 @@ std::vector<double> Leaf::getLeafVisX(int i) {
     }
 }
 
+/**
+ * Returns the 3D polygon edge coordinates at node i used to build the leaf surface mesh.
+ * Dispatches to getLeafVis_cuboid or getLeafVis_2D based on the current shapeType.
+ * Called per node by vtk_plot.py::create_leaf_() to generate quad polygons.
+ *
+ * @param i   node index (0-based local index within the leaf)
+ * @return    vector of 3D edge points: 2 for a normal blade node, 6 for a non-convex
+ *            cross-section, or empty for petiole/branched nodes
+ */
 std::vector<Vector3d> Leaf::getLeafVis(int i) {
     switch (int(getParameter("shapeType"))) {
     case LeafRandomParameter::shape_cuboid:
@@ -707,9 +733,14 @@ std::vector<Vector3d> Leaf::getLeafVis(int i) {
 }
 
 /**
- * Scales unit leaf shape to the specific leaf,
- * and returns leaf shape coordinates per node (normally 2 points, for convex domain it could be more points)
- * see used by vtk_plot.py to create a polygon representation of the leaf area
+ * Returns the 3D polygon edge coordinates at node i for a cuboid-shaped leaf.
+ * Computes a lateral direction y1 perpendicular to both the leaf's initial heading and (0,0,-1),
+ * then offsets node[i] by ±half_width * y1 to produce two edge points (left and right).
+ * Falls back to using the leaf-tip direction if the initial heading is nearly vertical.
+ * Called by vtk_plot.py::create_leaf_() to generate quad polygons.
+ *
+ * @param i   node index (0-based local index within the leaf)
+ * @return    vector of 2 edge points: { node[i] + y1*x,  node[i] - y1*x }
  */
 std::vector<Vector3d> Leaf::getLeafVis_cuboid(int i) {
     double l = getLength(i);
@@ -730,9 +761,15 @@ std::vector<Vector3d> Leaf::getLeafVis_cuboid(int i) {
 }
 
 /**
- * Scales unit leaf shape to the specific leaf,
- * and returns leaf shape coordinates per node (normally 2 points, for convex domain it could be more points)
- * see used by vtk_plot.py to create a polygon representation of the leaf area
+ * Returns the 3D polygon edge coordinates at node i for a 2D-shaped leaf.
+ * Looks up the normalized width profile from leafGeometry, scales it by (leafArea / leafLength),
+ * and mirrors all profile points to both sides of the leaf axis.
+ * Returns 2 edge points for convex profiles, 6 for non-convex profiles.
+ * Returns an empty vector for nodes in the petiole zone or if leafGeometry is not set.
+ * Called by vtk_plot.py::create_leaf_() to generate quad polygons.
+ *
+ * @param i   node index (0-based local index within the leaf)
+ * @return    vector of 2 or 6 edge points (mirrored profile), or empty for petiole nodes
  */
 std::vector<Vector3d> Leaf::getLeafVis_2D(int i) {
     double l = getLength(i);

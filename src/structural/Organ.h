@@ -77,12 +77,16 @@ class Organ : public std::enable_shared_from_this<Organ> {
     double getLength(int i) const;                  ///< Returns length from the first node up to node index @p i [cm]
     double getEpsilon() const { return epsilonDx; } ///< Returns residual growth not yet converted to a new segment [cm]
     int getParentNI() const { return parentNI; }    ///< Returns the local node index in the parent organ where this organ is attached
+    
     virtual double calcAge(double length) const { throw std::runtime_error("calcAge() not implemented"); }  ///< Maps length -> age; must be overridden; needed by getOrgans()
     virtual double calcLength(double age) { throw std::runtime_error("calcLength() not implemented"); }     ///< Maps age -> length; must be overridden
 
     /* geometry */
-    int getNumberOfNodes() const { return nodes.size(); }                  ///< Returns the number of nodes
-    int getNumberOfSegments() const { return nodes.size() - 1; }           ///< Returns the number of polyline segments (nodes - 1)
+    virtual int getNumberOfNodes() const { return nodes.size(); }                  ///< Returns the number of nodes
+    int getNumberOfSegments() const {
+        const int numberOfNodes = getNumberOfNodes();
+        return (numberOfNodes > 0) ? (numberOfNodes - 1) : 0;
+    }                                                                             ///< Returns the number of polyline segments (nodes - 1), clamped to zero
     Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< Returns the absolute coordinate of the organ's attachment point on the parent
     virtual Vector3d getNode(int i) const { return nodes.at(i); }          ///< Returns the absolute (or relative) coordinate of node @p i
     int getNodeId(int i) const { return nodeIds.at(i); }                   ///< Returns the global node index of local node @p i
@@ -97,8 +101,8 @@ class Organ : public std::enable_shared_from_this<Organ> {
 
     double dx() const;                                 ///< Returns the maximal axial segment length from the organ random parameter [cm]
     double dxMin() const;                              ///< Returns the minimal axial segment length from the organ random parameter [cm]
-    void rel2abs();                                    ///< Converts node coordinates from relative to absolute (recursive over children)
-    void abs2rel();                                    ///< Converts node coordinates from absolute to relative (recursive over children)
+    virtual void rel2abs();                            ///< Converts node coordinates from relative to absolute (recursive over children)
+    virtual void abs2rel();                            ///< Converts node coordinates from absolute to relative (recursive over children)
     void moveOrigin(int idx);                          ///< Updates the parent attachment node index (used during internodal growth)
     double calcCreationTime(double length, double dt); ///< Returns the analytical creation time of a node at @p length along the organ [days]
 

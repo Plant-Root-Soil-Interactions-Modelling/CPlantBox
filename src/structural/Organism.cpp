@@ -921,7 +921,7 @@ std::shared_ptr<Seed> Organism::getSeed() { return std::static_pointer_cast<Seed
  * @brief Creates a new Seed organ.
  * @return shared pointer to the newly created Seed
  */
-std::shared_ptr<Seed> Organism::createSeed() {
+std::shared_ptr<Organ> Organism::createSeed() {
     return std::make_shared<Seed>(shared_from_this()); // default base implementation
 }
 
@@ -933,7 +933,7 @@ std::shared_ptr<Seed> Organism::createSeed() {
  * @param pni parent node index where this root emerges
  * @return shared pointer to the newly created Root
  */
-std::shared_ptr<Root> Organism::createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
+std::shared_ptr<Organ> Organism::createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
     return std::make_shared<Root>(shared_from_this(), subType, delay, parent, pni);
 }
 
@@ -945,7 +945,7 @@ std::shared_ptr<Root> Organism::createRoot(int subType, double delay, std::share
  * @param pni parent node index where this stem emerges
  * @return shared pointer to the newly created Stem
  */
-std::shared_ptr<Stem> Organism::createStem(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
+std::shared_ptr<Organ> Organism::createStem(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
     return std::make_shared<Stem>(shared_from_this(), subType, delay, parent, pni);
 }
 
@@ -957,7 +957,7 @@ std::shared_ptr<Stem> Organism::createStem(int subType, double delay, std::share
  * @param pni parent node index where this leaf emerges
  * @return shared pointer to the newly created Leaf
  */
-std::shared_ptr<Leaf> Organism::createLeaf(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
+std::shared_ptr<Organ> Organism::createLeaf(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
     return std::make_shared<Leaf>(shared_from_this(), subType, delay, parent, pni);
 }
 

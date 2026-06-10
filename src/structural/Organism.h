@@ -21,9 +21,6 @@ namespace CPlantBox {
 class Organ;
 class OrganRandomParameter;
 class Seed;
-class Root;
-class Stem;
-class Leaf;
 
 /**
  * @brief Base container for plant organs and global simulation state.
@@ -138,10 +135,10 @@ class Organism : public std::enable_shared_from_this<Organism> {
 
     int plantId; ///< Unique organism id (mainly for debugging/copy tracing).
 
-    virtual std::shared_ptr<Seed> createSeed();                                                                    ///< Factory method for creating a seed organ.
-    virtual std::shared_ptr<Root> createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni);  ///< Factory method for creating roots, overridden by Plant to return Root instances.
-    virtual std::shared_ptr<Stem> createStem(int subType, double delay, std::shared_ptr<Organ> parent, int pni);  ///< Factory method for creating stems, overridden by Plant to return Stem instances.
-    virtual std::shared_ptr<Leaf> createLeaf(int subType, double delay, std::shared_ptr<Organ> parent, int pni);  ///< Factory method for creating leaves, overridden by Plant to return Leaf instances.
+    virtual std::shared_ptr<Organ> createSeed();                                                                     ///< Factory method for creating a seed organ; returns Organ so subclasses can substitute custom types.
+    virtual std::shared_ptr<Organ> createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni);  ///< Factory method for creating roots; returns Organ so subclasses can substitute custom types.
+    virtual std::shared_ptr<Organ> createStem(int subType, double delay, std::shared_ptr<Organ> parent, int pni);  ///< Factory method for creating stems; returns Organ so subclasses can substitute custom types.
+    virtual std::shared_ptr<Organ> createLeaf(int subType, double delay, std::shared_ptr<Organ> parent, int pni);  ///< Factory method for creating leaves; returns Organ so subclasses can substitute custom types.
 
   protected:
     virtual tinyxml2::XMLElement *getRSMLMetadata(tinyxml2::XMLDocument &doc) const; ///< Builds RSML metadata node.
