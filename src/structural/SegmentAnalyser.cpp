@@ -20,15 +20,13 @@
 namespace CPlantBox {
 
 /**
- * Creates segments, with data "creationTime" and "radius"
+ * Constructs from raw vectors, initialising data fields "creationTime" and "radius".
+ * Other parameters are retrieved on demand via getParameter(); missing values fall back to @p def or throw.
  *
- * The rest of parameters, that might be needed are either a default value, or
- * if not defined an exception is thrown, see SegmentAnalyser::getParameter.
- *
- * @param nodes     a list of nodes
- * @param segment   each segment is represented by two node indices the segment, the line segment is given by nodes[segment.x] to nodes[segment.y].
- * @param segCT     creation time of each segment
- * @param radii     the segment radii
+ * @param nodes     node coordinates
+ * @param segments  segment connectivity; each entry holds two node indices such that the segment runs from nodes[s.x] to nodes[s.y]
+ * @param segCTs    creation time of each segment [d]
+ * @param radii     radius of each segment [cm]
  */
 SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::vector<Vector2i>& segments,
     const std::vector<double>& segCTs, const std::vector<double>& radii) :nodes(nodes), segments(segments)
@@ -41,9 +39,10 @@ SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::
 }
 
 /**
- * Copies the line segments representing the plant to the analysis class
+ * Constructs from an Organism, copying all segments and extracting per-segment
+ * parameters (radius, subType, id, organType) from the organ objects.
  *
- * @param plant     the the organism that is analysed
+ * @param plant  organism to analyse
  */
 SegmentAnalyser::SegmentAnalyser(const Organism& plant) 
 {
@@ -73,9 +72,10 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
 }
 
 /**
- * Copies the line segments representing the plant to the analysis class
+ * Constructs from a MappedSegments object, copying nodes, segments, and per-segment
+ * parameters (radius, subType, organType). Creation times are derived from nodeCTs.
  *
- * @param plant     the the organism that is analysed
+ * @param plant  mapped segment structure to analyse
  */
 SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes), segments(plant.segments)
 {
@@ -99,7 +99,7 @@ SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes
 }
 
 /**
- * Adds all line segments from @param plant to the analysis
+ * Appends all segments from @p plant.
  */
 void SegmentAnalyser::addSegments(const Organism& plant)
 {
@@ -107,9 +107,8 @@ void SegmentAnalyser::addSegments(const Organism& plant)
 }
 
 /**
- * Adds all line segments from the analyser @param a to this analysis.
- *
- * Ignores any user data from @param a.
+ * Appends all segments from analyser @p a.
+ * Only data keys present in both objects are merged; keys missing in @p a are dropped.
  */
 void SegmentAnalyser::addSegments(const SegmentAnalyser& a)
 {
@@ -135,13 +134,13 @@ void SegmentAnalyser::addSegments(const SegmentAnalyser& a)
 }
 
 /**
- * Adds a single segment (e.g. an artificial shoot),
+ * Adds a single segment (e.g. an artificial shoot).
+ * All other data fields are padded with -1 for the new segment.
  *
- * @param seg       a single segment represented of two node indices of the analyser's node list.
- *                  care, some methods modify the node list order (e.g. pack)
- * @param ct        segment creation time
- * @param radius    segment radius
- * @param insert    inserts the segment at the first index (true), or appends it to the segment list (false)
+ * @param seg     segment as two node indices into the analyser's node list (note: pack() may reorder nodes)
+ * @param ct      creation time [d]
+ * @param radius  radius [cm]
+ * @param insert  if true, prepends the segment; otherwise appends it (default: false)
  */
 void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool insert)
 {
@@ -174,10 +173,10 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
     }
 }
 
-void SegmentAnalyser::addAge(double simTime)
 /**
- * adds "age" for vizualisation (cuts off negative values)
+ * Computes segment age as (@p simTime - creationTime), clamps to zero, and stores it as "age".
  */
+void SegmentAnalyser::addAge(double simTime)
 {
     std::vector<double> age(segments.size());
     for (size_t i=0; i<age.size(); i++) {
@@ -188,10 +187,13 @@ void SegmentAnalyser::addAge(double simTime)
 }
 
 /**
- * Evaluates kr and kx using PlantHydraulicParameters
- * and adds kr and kx per segment to the user data for vizualisation ("kr", "kx"),
+ * Evaluates radial (kr) and axial (kx) conductivities per segment using @p rs
+ * and stores them as "kr" and "kx". Values are clamped to @p kr_max and @p kx_max.
  *
- * @param rs    XylemFlux for determination of radial and axial conductivities (kr, and kx)
+ * @param rs      hydraulic parameter object providing kr_f() and kx_f()
+ * @param simTime current simulation time [d]
+ * @param kr_max  upper bound for kr (default 1e6)
+ * @param kx_max  upper bound for kx (default 1e6)
  */
 void SegmentAnalyser::addHydraulicConductivities(const PlantHydraulicParameters& rs, double simTime, double kr_max, double kx_max)
 {
@@ -210,10 +212,14 @@ void SegmentAnalyser::addHydraulicConductivities(const PlantHydraulicParameters&
 
 
 /**
- * Adds radial and axial fluxes to the user data for vizualisation,
- * ("radial_flux" [cm3/cm2 / day], and "axial_flux" [cm3/day])
+ * Computes radial flux [cm³/cm²/day] and axial flux [cm³/day] per segment
+ * and stores them as "radial_flux" and "axial_flux".
+ * Requires addHydraulicConductivities() to be called first.
  *
- * use addConductivities before!
+ * @param rs      hydraulic model providing getRadialFluxes()
+ * @param rx      xylem pressure head per node [cm]
+ * @param sx      soil pressure head per segment [cm]
+ * @param simTime current simulation time [d]
  */
 void SegmentAnalyser::addFluxes(const PlantHydraulicModel& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime) {
 
@@ -251,6 +257,11 @@ void SegmentAnalyser::addFluxes(const PlantHydraulicModel& rs, const std::vector
 }
 
 
+/**
+ * Stores the soil cell index for each segment as "cell_id".
+ *
+ * @param plant  mapped segment structure containing the seg2cell mapping
+ */
 void SegmentAnalyser::addCellIds(const MappedSegments& plant)
 {
     std::vector<double> cell_id(segments.size());
@@ -261,16 +272,16 @@ void SegmentAnalyser::addCellIds(const MappedSegments& plant)
 }
 
 /**
- * Returns a specific parameter per root segment.
+ * Returns a named parameter per segment.
  *
- * The parameters "creationTime" and "radius" are stored in. Additional parameters can be added by using addData.
- *
- * Other parameters are retrieved from the segment's organ.
- * If the pointer of the organ is expired the default value is returned, or if default is nan an exception is thrown.
+ * "creationTime" and "radius" are always available. Additional data can be registered via addData().
+ * "length", "surface", and "volume" are computed on the fly from geometry.
+ * All other names are forwarded to the owning organ; if the organ pointer is expired,
+ * @p def is returned, or an exception is thrown if @p def is NaN.
  *
  * @param name  parameter name
- * @param def	default parameter, if organ's origin is expired. If nan an exception is thrown.
- * @return      vector containing parameter value per segment
+ * @param def   fallback value for segments without a valid organ pointer; throws if NaN
+ * @return      per-segment values, one entry per segment
  */
 std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) const
 {
@@ -313,10 +324,10 @@ std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) 
 }
 
 /**
- * Returns the length of a segment
+ * Returns the Euclidean length of segment @p i.
  *
- * @param i 	index of the segment
- * @return 		the length of segment i
+ * @param i  segment index
+ * @return   length [cm]
  */
 double SegmentAnalyser::getSegmentLength(int i) const
 {
@@ -325,12 +336,11 @@ double SegmentAnalyser::getSegmentLength(int i) const
 }
 
 /**
- * Crops the segments with some geometry.
- * This is done exact, i.e. segments are cut in two at the geometry border.
+ * Crops segments to those lying inside @p geometry.
+ * Segments crossing the boundary are split exactly at the intersection point.
+ * Unused nodes are retained; call pack() afterwards to remove them.
  *
- * All nodes are kept, use pack() to remove unused nodes.
- *
- * @param geometry      signed distance function of the geometry
+ * @param geometry  signed distance function defining the domain (dist ≤ 0 = inside)
  */
 void SegmentAnalyser::crop(std::shared_ptr<SignedDistanceFunction> geometry)
 {
@@ -378,7 +388,7 @@ void SegmentAnalyser::crop(std::shared_ptr<SignedDistanceFunction> geometry)
 }
 
 /**
- *  Crops the segments to the domain [-xx/2, -yy/2, -zz] - [xx/2, yy/2, 0.]
+ * Crops to the box [-xx/2, xx/2] × [-yy/2, yy/2] × [-zz, 0]. @see SDF_PlantBox
  */
 void SegmentAnalyser::cropDomain(double xx, double yy, double zz)
 {
@@ -386,12 +396,12 @@ void SegmentAnalyser::cropDomain(double xx, double yy, double zz)
 }
 
 /**
- * Filters the segments to the ones, where the parameter is within the interval [min,max], @see SegmentAnalyser::getParameter,
- * i.e. all other segments are deleted.
+ * Keeps only segments where parameter @p name is in the closed interval [@p min, @p max].
+ * @see SegmentAnalyser::getParameter
  *
  * @param name  parameter name
- * @param min   minimal value
- * @param max   maximal value
+ * @param min   lower bound (inclusive)
+ * @param max   upper bound (inclusive)
  */
 void SegmentAnalyser::filter(std::string name, double min, double max)
 {
@@ -417,11 +427,11 @@ void SegmentAnalyser::filter(std::string name, double min, double max)
 }
 
 /**
- * Filters the segments to the ones, where parameter equals a specific value, @see SegmentAnalyser::getParameter,
- * i.e. all other segments are deleted.
+ * Keeps only segments where parameter @p name equals @p value.
+ * @see SegmentAnalyser::getParameter
  *
- * @param name      parameter name
- * @param value     parameter value of the segments that are kept
+ * @param name   parameter name
+ * @param value  required value
  */
 void SegmentAnalyser::filter(std::string name, double value)
 {
@@ -447,10 +457,8 @@ void SegmentAnalyser::filter(std::string name, double value)
 }
 
 /**
- * Sorts nodes by occurrence in the segment list, and deletes unused nodes.
- *
- * This can save a lot of memory, since SegmentAnalyser::crop and SegmentAnalyser::filter
- * only delete segments, not unused nodes
+ * Re-indexes nodes by order of first occurrence in the segment list and removes unreferenced nodes.
+ * Call after crop() or filter() to free memory.
  */
 void SegmentAnalyser::pack() {
     std::vector<double> ni(nodes.size());
@@ -474,9 +482,8 @@ void SegmentAnalyser::pack() {
 
 
 /**
- * Calculates the minimum of node coordinates
- * (e.g. minimum corner of bounding box)
- * value not cached
+ * Returns the component-wise minimum of all node coordinates (lower corner of the bounding box).
+ * Result is not cached.
  */
 Vector3d SegmentAnalyser::getMinBounds() {
     Vector3d min_ = Vector3d(1.e9, 1.e9, 1.e9); // much
@@ -495,9 +502,8 @@ Vector3d SegmentAnalyser::getMinBounds() {
 }
 
 /**
- * Calculates the maximum of node coordinates
- * (e.g. maximum corner of bounding box)
- * value not cached
+ * Returns the component-wise maximum of all node coordinates (upper corner of the bounding box).
+ * Result is not cached.
  */
 Vector3d SegmentAnalyser::getMaxBounds() {
     Vector3d max_ = Vector3d(-1.e9, -1.e9, -1.e9); // litte
@@ -516,13 +522,13 @@ Vector3d SegmentAnalyser::getMaxBounds() {
 }
 
 /**
- * Numerically computes the intersection point
+ * Numerically bisects the segment (@p in, @p out) to find its intersection with @p geometry.
  *
- * @param in       the node within the domain
- * @param out      the node outside of the domain
- * @param geometry signed distance function of the geometry
- * @param eps      accuracy of intersection (default = 1.e-6 cm)
- * @return         the intersection point
+ * @param in        node known to be inside the domain (dist ≤ 0)
+ * @param out       node known to be outside the domain (dist ≥ 0)
+ * @param geometry  signed distance function of the domain boundary
+ * @param eps       convergence tolerance [cm] (default 1e-6)
+ * @return          intersection point
  */
 Vector3d SegmentAnalyser::cut(Vector3d in, Vector3d out, const std::shared_ptr<SignedDistanceFunction>& geometry, double eps)
 {
@@ -543,7 +549,7 @@ Vector3d SegmentAnalyser::cut(Vector3d in, Vector3d out, const std::shared_ptr<S
 }
 
 /**
- * @return The sum of parameter @param name
+ * Returns the sum of parameter @p name over all segments.
  */
 double SegmentAnalyser::getSummed(std::string name) const {
     std::vector<double> v_ = getParameter(name);
@@ -551,12 +557,12 @@ double SegmentAnalyser::getSummed(std::string name) const {
 }
 
 /**
- * Returns the sum parameter of parameter @param name, within geometry @param g based
- * on the segment mid point (i.e. not exact).
+ * Returns the approximate sum of parameter @p name for segments whose midpoint lies inside geometry @p g.
+ * For an exact result, crop to the geometry first and then call getSummed(name).
  *
- * To sum up exactly, crop to the geometry, and then run SegmentAnalyser::getSummed(name).
- *
- * @return Approximated sum of parameter @param name within the geometry @param g
+ * @param name  parameter name
+ * @param g     bounding geometry
+ * @return      approximate sum within @p g
  */
 double SegmentAnalyser::getSummed(std::string name, std::shared_ptr<SignedDistanceFunction> g) const {
     std::vector<double> data = getParameter(name);
@@ -572,12 +578,11 @@ double SegmentAnalyser::getSummed(std::string name, std::shared_ptr<SignedDistan
 }
 
 /**
- * A unconfined rootsystem is mapped into a periodic domain with period xx.
+ * Maps segments into the periodic domain [-xx/2, xx/2) × [-yy/2, yy/2).
+ * Segments crossing the boundary are split; both resulting pieces are kept.
  *
- * Segments crossing the periodic boundary are split, nodes are mapped into [ [-xx/2, xx/2), [-yy/2, yy/2) ]
- *
- * @param xx    period in x direction
- * @param xx    period in y direction
+ * @param xx  period in x direction [cm]
+ * @param yy  period in y direction [cm]
  */
 void SegmentAnalyser::mapPeriodic(double xx, double yy) {
     mapPeriodic_(xx, Vector3d(1.,0,0), 1.e-6);
@@ -585,13 +590,12 @@ void SegmentAnalyser::mapPeriodic(double xx, double yy) {
 }
 
 /**
- * A unconfined rootsystem is mapped into a periodic domain with period xx.
+ * Maps segments into a 1-D periodic domain of width @p xx along @p axis.
+ * Segments crossing the boundary are split; nodes are mapped into [-xx/2, xx/2).
  *
- * Segments crossing the periodic boundary are split, nodes are mapped into [-xx/2, xx/2)
- *
- * @param xx    width
- * @param axis  unit vector in the periodic direction (e.g. Vector3d(1,0,0), or Vector(0,1,0)).
- * @param eps   accuracy at boundary
+ * @param xx    period width [cm]
+ * @param axis  unit vector of the periodic direction (e.g. Vector3d(1,0,0))
+ * @param eps   boundary tolerance [cm]
  */
 void SegmentAnalyser::mapPeriodic_(double xx, Vector3d axis, double eps) {
     /* 1. split segments at the boundaries */
@@ -664,7 +668,8 @@ void SegmentAnalyser::mapPeriodic_(double xx, Vector3d axis, double eps) {
 }
 
 /**
- * Maps the 3d coordinates to the x-z plan (sqrt(x2+y2), 0., z)
+ * Projects nodes to the x–z plane: (x, y, z) → (√(x²+y²), 0, z).
+ * The sign of the radial coordinate is taken from the first segment of each branch.
  */
 void SegmentAnalyser::map2D() {
 
@@ -697,7 +702,8 @@ void SegmentAnalyser::map2D() {
 }
 
 /**
- * @return The origin's of the segments, i.e. the organ's where the segments are part of (unique, no special ordering)
+ * Returns the unique set of organs that own the segments.
+ * Optionally filtered by organ type @p ot (pass -1 to return all types).
  */
 std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans(int ot) const
 {
@@ -711,7 +717,7 @@ std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans(int ot) const
 }
 
 /**
- * @return The number of different organs
+ * Returns the number of distinct organs in the segment set.
  */
 int SegmentAnalyser::getNumberOfOrgans() const
 {
@@ -719,13 +725,13 @@ int SegmentAnalyser::getNumberOfOrgans() const
 }
 
 /**
- * Projects the segments to an image plane (todo verify this code, its unfinished)
+ * Projects segments onto an image plane (perspective projection).
+ * TODO: unfinished and untested.
  *
- * @param pos       position of camera
- * @param ons       orthonormal system, row 1 is orthogonal to the image plane given by [row 2,row 3]
- * @param fl        focal length, alpha = 2*arctan(d/(2*fl)), were alpha is the angle of field, and d the image diagonal
- *
- * @return The image segments in the x-y plane (z=0)
+ * @param pos  camera position
+ * @param ons  orthonormal system; row 0 is the optical axis, rows 1–2 span the image plane
+ * @param fl   focal length [cm]
+ * @return     projected segments in the x–y plane (z = 0)
  */
 SegmentAnalyser SegmentAnalyser::foto(const Vector3d& pos, const Matrix3d& ons, double fl) const
 {
@@ -754,9 +760,10 @@ SegmentAnalyser SegmentAnalyser::foto(const Vector3d& pos, const Matrix3d& ons, 
 }
 
 /**
- * Keeps the segments that intersect with a plane  (e.g. simulating trenches).
+ * Returns a new SegmentAnalyser containing only the segments that intersect @p plane
+ * (e.g. for trench sampling). Unused nodes are removed via pack().
  *
- * @param plane 	half plane
+ * @param plane  signed distance function of the cutting plane
  */
 SegmentAnalyser SegmentAnalyser::cut(const SignedDistanceFunction& plane) const
 {
@@ -781,15 +788,14 @@ SegmentAnalyser SegmentAnalyser::cut(const SignedDistanceFunction& plane) const
 }
 
 /**
- * Creates a vertical distribution of the parameter @param name.
+ * Returns a vertical distribution of parameter @p name in @p n equal layers between @p bot and @p top.
  *
- * @param name      parameter name
- * @param top       vertical top position (cm) (normally = 0)
- * @param bot       vertical bot position (cm) (e.g. = -100 cm)
- * @param n         number of layers, each with a height of (top-bot)/n
- * @param exact     calculates the intersection with the layer boundaries (true), only based on segment midpoints (false)
- *                  (TODO) intersections do not work with user data
- * @return          vector of size @param n containing the summed parameter in this layer
+ * @param name   parameter name
+ * @param top    top of the domain [cm] (typically 0)
+ * @param bot    bottom of the domain [cm] (e.g. -100)
+ * @param n      number of layers
+ * @param exact  if true, crops exactly to each layer; if false, uses segment midpoints (faster)
+ * @return       vector of length @p n with the summed parameter per layer
  */
 std::vector<double> SegmentAnalyser::distribution(std::string name, double top, double bot, int n, bool exact) const
 {
@@ -812,12 +818,12 @@ std::vector<double> SegmentAnalyser::distribution(std::string name, double top, 
 }
 
 /**
- *  Creates a vertical distribution, of the geometry.
+ * Returns a vertical distribution as @p n SegmentAnalyser objects, one per layer (cropped exactly).
  *
- * @param top       vertical top position (cm) (normally = 0)
- * @param bot       vertical bot position (cm) (e.g. = -100 cm)
- * @param n         number of layers, each with a height of (top-bot)/n
- * @return          vector of size @param n containing an Analysis object of the layers (cropped exact)
+ * @param top  top of the domain [cm]
+ * @param bot  bottom of the domain [cm]
+ * @param n    number of layers
+ * @return     vector of length @p n
  */
 std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bot, int n) const
 {
@@ -835,17 +841,17 @@ std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bo
 }
 
 /**
- *  Creates a two-dimensional distribution of the parameter @param name.
+ * Returns a 2-D (x–z) distribution of parameter @p name on an @p n × @p m grid.
  *
- * @param name      parameter name
- * @param top       vertical top position (cm) (normally = 0)
- * @param bot       vertical bot position (cm) (e.g. = -100 cm)
- * @param left      left along x-axis (cm)
- * @param right     right along x-axis (cm)
- * @param n         number of layers, each with a height of (top-bot)/n
- * @param m 		number of horizontal grid elements (each with length of (right-left)/m)
- * @param exact     calculates the intersection with the layer boundaries (true), only based on segment midpoints (false)
- * @return          vector of size @param n containing the summed parameter in this layer
+ * @param name   parameter name
+ * @param top    top of the vertical domain [cm]
+ * @param bot    bottom of the vertical domain [cm]
+ * @param left   left boundary in x [cm]
+ * @param right  right boundary in x [cm]
+ * @param n      number of vertical layers
+ * @param m      number of horizontal columns
+ * @param exact  if true, crops exactly; if false, uses segment midpoints
+ * @return       n × m matrix of summed parameter values
  */
 std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name, double top, double bot, double left, double right, int n, int m, bool exact) const
 {
@@ -874,15 +880,15 @@ std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name
 }
 
 /**
- *  Creates a vertical distribution
+ * Returns a 2-D (x–z) grid of SegmentAnalyser objects, one per cell (cropped exactly).
  *
- * @param top       vertical top position (cm) (normally = 0)
- * @param bot       vertical bot position (cm) (e.g. = -100 cm)
- * @param left      left along x-axis (cm)
- * @param right     right along x-axis (cm)
- * @param n         number of layers, each with a height of (top-bot)/n
- * @param m 		number of horizontal grid elements (each with length of (right-left)/m)
- * @return          vector of size @param n containing the summed parameter in this layer
+ * @param top    top of the vertical domain [cm]
+ * @param bot    bottom of the vertical domain [cm]
+ * @param left   left boundary in x [cm]
+ * @param right  right boundary in x [cm]
+ * @param n      number of vertical layers
+ * @param m      number of horizontal columns
+ * @return       n × m matrix of SegmentAnalyser objects
  */
 std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double top, double bot, double left, double right, int n, int m) const
 {
@@ -904,11 +910,11 @@ std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double 
 }
 
 /**
- * Adds user data that can be accessed by SegmentAnalyser::getParameter, and that can be written to the VTP file
- * (e.g. used to add simulation results like xylem pressure to the output).
+ * Attaches named per-segment data accessible via getParameter() and written by writeVTP().
+ * Node-sized vectors are automatically converted to segment data using the tip node index.
  *
- * @param name      parameter name
- * @param values    segment or node data, node data are converted to segment data
+ * @param name    parameter name
+ * @param values  per-segment or per-node values; size must match segments or nodes
  */
 void SegmentAnalyser::addData(std::string name, std::vector<double> values)
 {
@@ -927,14 +933,12 @@ void SegmentAnalyser::addData(std::string name, std::vector<double> values)
 }
 
 /**
- * Exports the simulation results with the type from the file extension in name (must be lower case)
- * Currently its possible to write "vtp", "txt", or "dgf" files.
+ * Writes simulation results to @p name; format is determined by the file extension.
+ * Supported: ".vtp" (VTK PolyData), ".txt" (RootBox format), ".dgf" (DuMux format).
+ * pack() is called before writing.
  *
- * SegmentAnalyser::pack() is called before writing the file, i.e. nodes are sorted.
- *
- * @param name      file name e.g. output.vtp
- * @param types 	Optionally, for vtp we can determine the cell data by a vector of parameter names
- *                  (default = { "radius", "subType", "creationTime", "organType" })
+ * @param name   output file path (extension must be lower-case)
+ * @param types  cell-data fields to include in VTP output
  */
 void SegmentAnalyser::write(std::string name, std::vector<std::string> types)
 {
@@ -958,10 +962,10 @@ void SegmentAnalyser::write(std::string name, std::vector<std::string> types)
 }
 
 /**
- * Writes a VTP file with @param types data per segment.
+ * Writes a VTK PolyData (.vtp) file with the specified cell-data fields.
  *
- * @param os        a file out stream
- * @param types     parameter names of the cell data  (default = { "radius", "subType", "creationTime", "organType" })
+ * @param os     output stream
+ * @param types  names of per-segment data fields to include as CellData
  */
 void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> types) const
 {
@@ -1003,10 +1007,10 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> types
 }
 
 /**
- * Writes the (line)segments of the root system, and
- * mimics the Matlab script getSegments() of RootBox
+ * Writes segments in RootBox text format, sorted by creation time.
+ * Mimics the Matlab getSegments() script from RootBox.
  *
- * @param os      a file out stream
+ * @param os  output stream
  */
 void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 {
@@ -1075,26 +1079,21 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 }
 
 /**
- * Writes the (line)segments of the root system in dgf format used by DuMux
+ * Writes segments in DGF format for use with DuMux.
  *
- * For parameters, the IBG-3 default is:
- * 0 order (starting from 0)
- * 1 brnID (the unique organ id, for RootSystem starting at 1 because seed has id 0) ,
- * 2 surf [cm2],
- * 3 length [cm],
- * 4 radius [cm],
- * 5 kz [cm4 hPa-1 d-1],  axial root conductivity (unknown to CPlantBox) is set to 0.
- * 6 kr [cm hPa-1 d-1],   radial root conductivity (unknown to CPlantBox) is set to 0.
- * 7 emergence time [d],
- * 8 subType, (normally, starting from 1, type is set in the parameter xml files)
- * 9 organType (seed=1, root=2 ,stem=3, leaf=4)
+ * Column layout (IBG-3 convention):
+ *  - 0: order (branching order, starting from 0; -1 for artificial shoots)
+ *  - 1: brnID (unique organ id)
+ *  - 2: surface [cm²]
+ *  - 3: length [cm]
+ *  - 4: radius [cm]
+ *  - 5: kz [cm⁴ hPa⁻¹ d⁻¹] (set to 0; unknown to CPlantBox)
+ *  - 6: kr [cm hPa⁻¹ d⁻¹] (set to 0; unknown to CPlantBox)
+ *  - 7: emergence time [d]
+ *  - 8: subType
+ *  - 9: organType (seed=1, root=2, stem=3, leaf=4; -1 for artificial shoots)
  *
- * For artificial shoot segments (that can be added with SegmentAnalyser::addSegment)
- * order = -1
- * subType = -1
- * organType = -1.
- *
- * @param os      typically a file out stream
+ * @param os  output stream
  */
 void SegmentAnalyser::writeDGF(std::ostream & os) const
 {

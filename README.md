@@ -8,6 +8,10 @@ CPlantBox is a functional-structural plant model that is built in a modular way 
 
 # Installation
 
+## Python wheels
+
+CPlantBox Python wheel support is being validated for Python 3.11+ on Linux and macOS. See [docs/wheels.md](docs/wheels.md) for the current supported-platform matrix, local wheel build commands, and CI artifact usage.
+
 ## Linux - with Python script
 This installation method requires Ubuntu >= 20.04 and Python (>= 3.7, <3.14). For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox.py", and run it:
 ```bash
@@ -74,7 +78,7 @@ python3 -m venv cpb
 source cpb/bin/activate
 pip install -r requirements.txt
 ```
-Finally, initialize cmake and build and install CPlantBox:
+Finally, initialize CMake and build and install CPlantBox:
 ```
 cmake .
 make install
