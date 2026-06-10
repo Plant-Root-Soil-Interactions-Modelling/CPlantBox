@@ -1,6 +1,19 @@
 cmake_minimum_required (VERSION 3.12)
 project (CPlantBox VERSION 2.1.0 LANGUAGES CXX)
 
+# Initialize git submodules if not already done
+find_package(Git QUIET)
+if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        RESULT_VARIABLE GIT_SUBMODULE_RESULT
+    )
+    if(NOT GIT_SUBMODULE_RESULT EQUAL 0)
+        message(WARNING "git submodule update --init --recursive failed (exit code ${GIT_SUBMODULE_RESULT})")
+    endif()
+endif()
+
 option(PIAFMUNCH "Enable optional PIAFMUNCH code" ON)
 if(SKBUILD)
     set(CPB_NATIVE_CPU_TUNING_DEFAULT OFF)
