@@ -275,14 +275,14 @@ std::vector<Vector3d> GrassLeaf::getLeafVis(int i) {
 
     double bw; 
     double halfWidth = param()->bladeWidth / 2.;
-    double halfWdith = std::min(length/2., halfWidth); // avoid unrealistic width at the very base of the blade  
+    double halfWidth_ = std::min(length/2., halfWidth); // avoid unrealistic width at the very base of the blade  
 
     if (p<0.25) {
-        bw = (halfWidth-a) * (p/0.25)+a;
+        bw = (halfWidth_-a) * (p/0.25)+a;
     } else if (p<0.6) {
-        bw = halfWidth;
+        bw = halfWidth_;
     } else {
-        bw = halfWidth*(1. - (p-0.6)/0.4);
+        bw = halfWidth_*(1. - (p-0.6)/0.4);
     }
         
     return { node.plus(y1.times(bw)), node.minus(y1.times(bw)) };
