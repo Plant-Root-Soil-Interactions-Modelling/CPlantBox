@@ -4,7 +4,7 @@ Generate the HTML documentation by running from this folder:
 
     doxygen Doxyfile
 
-Output is written to docs/html/. Open docs/html/index.html in a browser.
+Output is written to doxygen/html/. Open doxygen/html/index.html in a browser.
 
 Configuration:
 - Input:   ../src  (recursive, external/ excluded)
