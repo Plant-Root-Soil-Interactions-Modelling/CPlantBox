@@ -10,7 +10,7 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 
-class Poaceae(pb.Plant):
+class Poaceae(pb.Plant):  # |\label{l81:plant}|
     """Plant subclass that creates GrassLeaf organs instead of the default Leaf."""
 
     def createLeaf(self, subType, delay, parent, pni):  # |\label{l81:createLeaf}|
