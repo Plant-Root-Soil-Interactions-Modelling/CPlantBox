@@ -132,7 +132,7 @@ ageLN = tap_root.calcAge(tap_root.getLength(True)) # theoretical age of root whe
 ageLG = tap_root.calcAge(tap_root.getLength(True) + effectiveLa) # age of the root, when the lateral starts growing (i.e when the apical zone is developed)
 growthDelay = ageLG - ageLN # time the lateral has to wait
 
-print("\n=== Part C: Mixed – distance (roots) + self-defined (shoot) ===")
+print("\n=== Part C: Mixed distance (roots) + self-defined (shoot) ===")
 print(f"  Root delay : {growthDelay:.2f} days  (effectiveLa = {effectiveLa:.2f} cm)")
 print(f"  Leaf delay : {lrp.ldelay} days  (std {lrp.ldelays})")
 
