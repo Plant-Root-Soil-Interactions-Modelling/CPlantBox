@@ -69,7 +69,7 @@ rrp.ldelays = 0.   # std dev of delay  [days]    |\label{l2_1_3:root_ldelaysB}|
 # Stem subType 1 (main stem): shoot laterals wait 5 days.
 srp = plant.getOrganRandomParameter(pb.stem)[1]
 srp.ldelay  = 2.5   # |\label{l2_1_3:stem_ldelayB}|
-srp.ldelays = 0.    # |\label{l2_1_3:stem_ldelayB}|
+srp.ldelays = 0.    # |\label{l2_1_3:stem_ldelaysB}|
 
 plant.initialize(False)
 
