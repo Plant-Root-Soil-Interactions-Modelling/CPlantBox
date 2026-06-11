@@ -30,13 +30,13 @@ xml_path = os.path.join(os.path.dirname(__file__), "grassleaf_parameters.xml")
 plant.readParameters(xml_path)
 plant.initialize(verbose=False)
 
-total_days = 25.0
+sim_time = 25.0
 dt = 0.5
-steps = int(total_days / dt)
+n_steps = int(sim_time / dt)
 
-for i in range(steps):
+for i in range(n_steps):
     plant.simulate(dt, verbose=False)
 
 ana = pb.SegmentAnalyser(plant)
-ana.addAge(total_days)
+ana.addAge(sim_time)
 vp.plot_plant(ana, "age")
