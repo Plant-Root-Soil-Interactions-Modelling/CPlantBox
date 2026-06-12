@@ -49,7 +49,7 @@ print(f"  Root delay : {growthDelay:.2f} days  (or {effectiveLa:.2f} cm)")
 # Part B - Time-based delay (defined for the laterals)
 # ---------------------------------------------------------------------------
 plant = pb.MappedPlant(2)
-plant.readParameters(path + "example2_1_2.xml")
+plant.readParameters(path + "example2_1_3.xml")
 
 srp = plant.getOrganRandomParameter(pb.seed)[0]
 srp.delayDefinition      = 1  # parent decides delay for root laterals    |\label{l2_1_3:ddRootB}|
@@ -62,6 +62,7 @@ rrp.ldelay  = 2.5  # mean lateral delay [days]   |\label{l2_1_3:root_ldelayB}|
 rrp.ldelays = 0.   # std dev of delay  [days]    |\label{l2_1_3:root_ldelaysB}|
 
 # Stem subType 1 (main stem)
+srp = plant.getOrganRandomParameter(pb.stem)[1]
 srp.ldelay  = 2.5   # |\label{l2_1_3:stem_ldelayB}|
 srp.ldelays = 0.    # |\label{l2_1_3:stem_ldelaysB}|
 
@@ -80,20 +81,25 @@ for i in range(0, N):
 vp.plot_plant(plant, "creationTime") 
 
 print("\n=== Part B: Time-based delay (defined for the laterals) ===")
-print(f"  Root    delay : {rrp.ldelay} days (std {rrp.ldelays})")
-print(f"  Leaf    delay : {srp.ldelay} days (std {srp.ldelays})")
+print(f"  Root delay : {rrp.ldelay} days (std {rrp.ldelays})")
+print(f"  Leaf delay : {srp.ldelay} days (std {srp.ldelays})")
 
 # ---------------------------------------------------------------------------
 # Part C - Mixed distance-based delays for roots, time-based for shoot (self-defined fixed delay)
 # ---------------------------------------------------------------------------
 plant = pb.MappedPlant(2)
-plant.readParameters(path + "example2_x.xml")
+plant.readParameters(path + "example2_1_3.xml")
 
 srp = plant.getOrganRandomParameter(pb.seed)[0]
 srp.delayDefinition      = 0  # roots: use distance-based delay       |\label{l2_1_3:ddRootC}|
 srp.delayDefinitionShoot = 2  # shoot: lateral decides its own delay       |\label{l2_1_3:ddShootC}|
 
-# Leaf subType 1: shoot laterals wait 5 days.
+# Stem subType 1 (main stem)
+srp = plant.getOrganRandomParameter(pb.stem)[1]
+srp.delayNGStart = 3
+srp.delayNGEnd   = 7
+
+# Leaf subType 1
 lrp = plant.getOrganRandomParameter(pb.leaf)[1]
 lrp.ldelay  = 2.5  # |\label{l2_1_3:leaf_ldelayC}|
 lrp.ldelays = 0.   # |\label{l2_1_3:leaf_ldelaysC}|
