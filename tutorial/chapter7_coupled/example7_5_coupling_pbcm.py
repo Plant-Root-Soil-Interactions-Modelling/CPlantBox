@@ -26,7 +26,7 @@ sim_time = 600  # maximum simulation time-n_steps (days)
 dt = 1  # simulation timestep (days)
 plot = False  # plot root system at the end
 paramName = "lengthTh"  # carbon use is proportional to this parameter
-scales = {1.0, 1.0, 1.0, 1.0, 1.0}  # weighting factors for the different organ types
+scales = [1.0, 1.0, 1.0, 1.0, 1.0]  # weighting factors for the different organ types
 
 
 # Feddes parameters for root elongation restriction due to soil water potential
