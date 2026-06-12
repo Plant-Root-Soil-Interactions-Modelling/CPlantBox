@@ -141,8 +141,9 @@ void GrassLeaf::simulate(double dt, bool verbose) {
 
         double age_ = calcAge(length); 
         double targetLength = calcLength(age_ + dt_) + this->epsilonDx;
-        double dl = targetLength - length; // we should scale that for carbon limited growth        
-        
+        double scale = getGrassLeafRandomParameter()->f_se->getValue(getNode(0), shared_from_this());
+        double dl = std::max(scale * (targetLength - length), 0.);
+
         if (dl > 0.) {
             growLeaf(dl, dt_);
         }

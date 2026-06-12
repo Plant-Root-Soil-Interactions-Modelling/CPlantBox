@@ -942,6 +942,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("bladeBendings", &GrassLeafRandomParameter::bladeBendings)
         .def_readwrite("leafGrowthDuration", &GrassLeafRandomParameter::leafGrowthDuration)
         .def_readwrite("leafGrowthDurations", &GrassLeafRandomParameter::leafGrowthDurations)
+        .def_readwrite("f_se", &GrassLeafRandomParameter::f_se)
         .def("__str__", [](const GrassLeafRandomParameter &p) { return p.toString(true); });
     /**
      * Leaf.h

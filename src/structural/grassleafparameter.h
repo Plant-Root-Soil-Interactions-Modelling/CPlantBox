@@ -79,6 +79,8 @@ public:
     double leafGrowthDuration = 20.; ///< Mean total duration of leaf growth [day]
     double leafGrowthDurations = 0.; ///< Standard deviation of leaf growth duration [day]
 
+    std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
+
 protected:
 
     void bindParameters() override; ///< sets up class introspection
