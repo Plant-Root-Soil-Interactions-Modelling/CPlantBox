@@ -36,7 +36,7 @@ public:
     double bladeWidth = 0.;        // Width of the blade [cm]
     double bladeLength = 0.;       // Length of the blade [cm]
     double sheathLength = 0.;      // Length of the sheath [cm]
-    double leafGrowthDuration = 0.; // Total duration of growth [day]
+    double leafGrowthDuration = 0.;// Total duration of growth [day]
     double bladeBending = 0.05;    // Curvature of the blade
 
     std::string toString() const override; ///< for debugging
@@ -77,7 +77,7 @@ public:
     double leafGrowthDuration = 20.; // Mean duration of growth [day]
     double leafGrowthDurations = 0.; // SD of duration [day]
 
-    std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
+    std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); 
 
 protected:
 

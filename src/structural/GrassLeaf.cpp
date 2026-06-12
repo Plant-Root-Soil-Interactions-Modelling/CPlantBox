@@ -118,7 +118,8 @@ double GrassLeaf::calcAge(double length) const {
  *  5. Deactivates the organ once full length is reached.
  */
 void GrassLeaf::simulate(double dt, bool verbose) {
-
+    firstCall = true;
+    moved = false;
     oldNumberOfNodes = getNumberOfNodes();
 
     if (!alive) {
@@ -230,6 +231,7 @@ void GrassLeaf::growLeaf(double dl, double dt) {
         turtle.addNodeFront(sdx, 0., 0., 0.);
         nodeIds.insert(nodeIds.begin()+1, nid); // +1 because the initial node at index 0 is the anchor and does not have a nodeId
         nodeCTs.insert(nodeCTs.begin()+1, ct);
+        moved = true;
     }
 }
 

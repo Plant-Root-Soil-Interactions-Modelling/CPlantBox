@@ -125,18 +125,13 @@ void GrassLeaf::simulate(double dt, bool verbose) {
         return; // leafs don't die (yet)
     }
 
-    // std::cout << "Simulating GrassLeaf id=" << getId() << " age=" << age << " dt=" << dt << "\n" << std::flush;
-
-    const GrassLeafSpecificParameter &p = *param();
-
     age += dt;
     double dt_ = (age < dt) ? age : dt; // time step; age < dt means the organ emerged in this time step
     if (age <= 0.) {
-        return; // still in delay TODO check where it is set...
+        return; 
     }
 
-    // GrassLeaf has no children
-
+    const GrassLeafSpecificParameter &p = *param();
     if (active) {
 
         double age_ = calcAge(length); 
@@ -152,7 +147,6 @@ void GrassLeaf::simulate(double dt, bool verbose) {
         fixPitch(); // apply blade angle to the new segments
     }
 
-    // Sync the length field used by the base class infrastructure
     active = (length < p.sheathLength + p.bladeLength - 1.e-6) && alive;
 }
 
@@ -204,7 +198,8 @@ std::shared_ptr<const GrassLeafSpecificParameter> GrassLeaf::param() const { ret
  * zero here and corrected afterwards by fixPitch().
  */
 void GrassLeaf::growLeaf(double dl, double dt) {
-
+    firstCall = true;
+    moved = false;
     const GrassLeafSpecificParameter &p = *param(); 
 
     double baseCT = nodeCTs[turtle.getInitialNodeIndex()]; // organ creation time 
@@ -230,6 +225,7 @@ void GrassLeaf::growLeaf(double dl, double dt) {
         turtle.addNodeFront(sdx, 0., 0., 0.);
         nodeIds.insert(nodeIds.begin()+1, nid); // +1 because the initial node at index 0 is the anchor and does not have a nodeId
         nodeCTs.insert(nodeCTs.begin()+1, ct);
+        moved = true;
     }
 }
 
