@@ -33,8 +33,8 @@ do_computation = True #should the computation be run or take the data from a sav
 
 # general parameters
 
-max_time = 1 #d
-n_times = 50 # number of time intervals
+max_time = 10 #d
+n_times = 500 # number of time intervals
 times = np.linspace(0,max_time,n_times)[1:]
 r_prhiz = 0.6 # cm
 r_root = 0.02 # cm
@@ -375,7 +375,7 @@ def run_perirhizal_test():
             solute_ss[r,j+1] = result_solutes_ss * F_tilde - (1-F_tilde) * solute_ss[r,0] / abs(waterdemand)#waterdemand is assumed to be negative
             solute_sr[r,j+1] = result_solutes_sr * F_tilde - (1-F_tilde) * solute_sr[r,0] / abs(waterdemand)#waterdemand is assumed to be negative
 
-        solutes_Tiina[r,0] = peri.solutesuptake_convdiff_([mean_water],[outer_conc], [Vmax], [Km], Ds, [waterflow], [r_root], [0.], [time], peri.sp)[0] 
+        solutes_Tiina[r,0] = peri.solutesuptake_convdiff_([mean_water],[outer_conc], [Vmax], [Km], Ds, [waterflow], [r_root], [0.], [time/1.5], peri.sp)[0] 
     return water_dumux, solute_dumux, solute_ss, water_sr, solute_sr, water_sr2, mp_perirhizal1, mp_perirhizal2, solutes_Tiina
 
 if do_computation:
@@ -501,8 +501,8 @@ for i in range(5):
     #ax1[i].plot(CC, mp_steadyrate2, "b", linestyle = linestyle_steadystate, label = "water_sr_stress")
     ax2.plot(CC, solute_dumux, "m", linestyle = linestyle_dumux, label = "solute_dumux")
     #ax2.plot(CC, solute_steadystate, "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
-    #ax2.plot(CC, solute_steadyrate * solute_dumux[-1] / solute_steadyrate[-1], "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
-    ax2.plot(CC, solute_steadystate * solute_dumux[-1] / solute_steadystate[-1], "m", linestyle = linestyle_steadyrate, label = "solute_steadystate")
+    ax2.plot(CC, solute_steadyrate * solute_dumux[-1] / solute_steadyrate[-1], "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
+    ax2.plot(CC, solute_steadystate * solute_dumux[10] / solute_steadystate[10], "m", linestyle = linestyle_steadyrate, label = "solute_steadystate")
     #ax2.plot(CC, solute_Tiina, "m", linestyle = linestyle_steadystate, label = "solute_Tiina")
     ax2.plot(CC, solute_Tiina * solute_dumux[-1] / outer_conc, "m", linestyle = linestyle_special, label = "solute_Tiina_scaled")
 

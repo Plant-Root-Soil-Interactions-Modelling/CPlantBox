@@ -4,7 +4,9 @@ import scipy.linalg as la
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import fsolve, root_scalar
 from scipy.spatial import ConvexHull, Voronoi
+from scipy.integrate import odeint
 from scipy import integrate
+
 
 import math
 
@@ -207,7 +209,7 @@ class PerirhizalPython(Perirhizal):
         It assumes a constant watercontent with a constant wateruptake by the root
         
         watercontent   watercontent of the perirhizal zone [cm3/cm3]
-        c_bulk         solute concentration at the bulk soil [mol/cm3]
+        c_bulk         starting solute concentration at the bulk soil [mol/cm3]
         Vmax           maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
         Km             half saturation constant Michaelis Menten Kinetics [mol/cm3]
         Ds             Diffusion constant in water [cm2/d]
@@ -242,13 +244,15 @@ class PerirhizalPython(Perirhizal):
             lamb = segLength*r_root[i]*Vmax[i]/(D*Km[i])
             epsilon = segLength*r_root[i]*E[i]/(D*Km[i])
             
+            print("Tiinatest", t[i], c_inf,epsilon,l_func(t[i]),Pe,lamb,Pe)
+            
             #compute the unitless uptake
             if Pe<=(lamb/(1+c_inf)):
                 F[i] = 2*lamb*(c_inf+epsilon*l_func(t[i])) / (1+c_inf+l_func(t[i])*(lamb + epsilon) +math.sqrt(4*(c_inf+epsilon * l_func(t[i]))+(1-c_inf+(lamb-epsilon)*l_func(t[i]))**2)) #Eqn. [9]
             else:
                 F[i] = 2*lamb*(c_inf+epsilon*l_func(t[i])) / (1+c_inf+l_func(t[i])*(lamb - Pe + epsilon) +math.sqrt(4*(c_inf+epsilon * l_func(t[i]))*(1-Pe*l_func(t[i]))+(1-c_inf+l_func(t[i])*(lamb-Pe-epsilon))**2)) #Eqm. [10]
             #compute the unitless solute concentration next to the root
-            #F(t) = lamb * c / (1+c) - epsilon shortly after eq. (10)
+            #F(t) = lamb * c / (1+c) - epsilon shortly after Eqn. [10]
             #(1+c)*(F(t)+epsilon) = lamb * c
             #F(t)+epsilon = (-F(t)-epsilon+lamb) * c
             rsc[i] = (F[i]+epsilon)/(lamb-F[i]-epsilon)
@@ -259,15 +263,16 @@ class PerirhizalPython(Perirhizal):
         
         return rsc
     
-    def soil_root_solutes_ss_(self, Phi_soil, rootwateruptake, soilwateruptake, rho, c_bulk, Vmax, Km, Ds, waterflow, sp, output_disc = False):
+    def soil_root_solutes_new(self, Phi_soil, rootwateruptake, waterinflow, r_root, r_prhiz, c_bulk, Vmax, Km, Ds, waterflow, sp, output_disc = False):
         """
         steady state assumption of solute uptake by roots TODO: insert citaiton
         
         Phi_out            outer matrix flux potential [cm2/d]
         rootwateruptake    radial root water uptake [cm2/d]
-        soilwateruptake    radial water inflow [cm2/d]
-        rho                outer radius / root radius [cm/cm]
-        c_soil             mean solute concentration in the cylinder [mol/cm3]
+        waterinflow        radial water inflow [cm2/d]
+        r_root             root radius [cm]
+        r_prhiz            outer radius [cm]
+        c_soil             outer solute concentration of the cylinder [mol/cm3]
         Vmax               maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
         Km                 half saturation constant Michaelis Menten Kinetics [mol/cm3]
         Ds                 Diffusion constant in water [cm2/d]
@@ -275,7 +280,7 @@ class PerirhizalPython(Perirhizal):
         output_disc        should the discretisation be put out
         
         output:
-        c_root             solute concnetration next to the root [mol/cm3]
+        rsc                solute concnetration next to the root [mol/cm3]
         Uptake             solute uptake of the root [mol/(cm d)]
         disc               discretisation of the solute computation [mol/cm3]
         
@@ -286,27 +291,118 @@ class PerirhizalPython(Perirhizal):
         
         c_root = np.zeros(n_segments)
         Uptake = np.zeros(n_segments)
+        disc = 0
         
-        
-        #equations #TODO: remove them here
-        #U = d_r(c) * Ds * r + c * (waterflow * r) = const
-        #1 / (Ds * r) = d_r(c/U) + (c/U) * (waterflow * r) / (Ds * r)
-        #(c/U)(r) = exp(-int((waterflow * r) / (Ds * r))) * z(r) * (c/U)(start)
-        # z'(r) = exp(int((waterflow * r) / (Ds * r))) / (Ds * r), z(start) = 1
+        conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c
         
         #solve quadratic eqation # TODO: Link to publication
         for i in range(n_segments):
-            Phi = lambda r_rel : Phi_out + (rootwateruptake-soilwateruptake)*(r_rel**2*rho**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(rho/r_rel)-0.5)) + soilwateruptake*np.log(r_rel)
+            Phi = lambda r_rel : Phi_out + (rootwateruptake-soilwateruptake)*(r_rel**2*rho**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) + soilwateruptake*np.log(r_rel)
             radial_waterflow = lambda r_rel : soilwateruptake + (rootwateruptake-soilwateruptake) * (1 - r_rel**2) / (1-1/rho**2)
-            Ds = lambda r_rel : Ds * math.pow(vg.water_content(vg.fast_imfp[sp](Phi(r_rel), self.sp)),10/3) / (sp.theta_S**2) # Millington and Quirk 
+            Ds_func = lambda r_rel : Ds * math.pow(vg.water_content(vg.fast_imfp[sp](Phi(r_rel), self.sp)),10/3) / (sp.theta_S**2) # Millington and Quirk 
+            linearODEterm = lambda r_rel : radial_waterflow(r_rel) / (Ds_func(r_rel) * r_rel)
+            absoluteODEterm = lambda r_rel : 1 / (Ds_func(r_rel) * r_rel)
+            Y = odeint(f, ic, t, args=([ka1, ka2, ka3], [kd1, kd2, kd3], [b1, b2, b3]))
+            
             
         
-        return Vtilde, Ktilde
+        return rsc, Uptake
     
-    def soil_root_solutes_combined(self, Phi_soil, rootwateruptake, soilwateruptake, c_bulk, Vmax, Km, Ds, waterflow, sp, output_disc = False):
+    def watersolutes_disc(self, Phi_soil, rootwateruptake, waterinflow, r_root, r_prhiz, c_bulk, c_root, Ds0, soluteuptake, sp):
+        """
+        given the water and solute uptake data this computes the discretisation of the steady rate solutions
+        
+        """
+        
+        #initialize the lambda functions
+        watercontent = lambda r : 0
+        waterpotential = lambda r : 0
+        soluteconcentration = lambda r : 0
+        
+        #simple computaitons
+        rho = r_prhiz / r_root
+        #reference radius for the solute implementation is either at the perirhizal radius (steady state water uptake) or at the radius without wateruptake
+        #in both cases it is scaled by Ds0 / self.Ds0
+        r_rel0 = r_prhiz * Ds0 / self.Ds0
+        
+        #water is easy
+        Phi = lambda r : Phi_soil + (rootwateruptake - waterinflow) * ((r_rel/r_root)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(r_prhiz/r)-0.5)) + waterinflow * np.log(r / r_prhiz)
+        waterpotential = lambda r : vg.fast_imfp(Phi(r),sp)
+        watercontent = lambda r : vg.watercontent(Phi(r),sp)
+        
+        #solutes
+        #check if there is a lookup table
+        if self.lookup_table_sr_solutes:
+            c_solutes = lambda r: self.lookup_table_sr_solutes((Phi_ref, wateruptake_rel, [r]))
+        else:
+            abc
+        
+        return watercontent, waterpotential, soluteconcentration
+    
+    def solute_linearequation_sr_(Ds0, critical_wateruptake, wateruptake_rel, r_eval, sp):
+        """
+        computes a linear equation from the diffusion advection ODE on the perirhizal solute flow #TODO: insert equation number
+        
+        r_rel[0] corresponds to the critical radius at which the permanent wilting point is reached (Phi = 0)
+        r_rel = 1 corresponds to the perirhizal radius
+        
+        Ds0 diffusion coefficient of the solute in water [cm2/d]
+        critical_wateruptake the theoretical radial wateruptake at the radius for which Phi = 0[cm2/d]
+        wateruptake_rel wateruptake in each volume, both wateruptake and volume are scaled according to r_rel [cm3/(cm3d)]
+        r_eval (1d array) the equation is solved from r_rel[0] to r_eval [-1]. 
+        
+        outputs:
+        
+        conc_rel_c         ratio of c(r_rel[i]) to c(r_rel[0]) for d_r c(1)=0
+        conc_mean_c        mean solute concentrations for the steady state solute uptake
+        inflow_rel_c       ratio of c(r_rel[i]) to d_r c(1) for c(1)=0
+        inflow_mean_c      mean solute concentration for c(1)=0
+        Uptake_rel_c       ratio of c(r_rel[i]) to rel_soluteUptake for c(1)=0, d_r c(1)=0 (steady rate uptake case)
+        Uptake_mean_c      mean solute concentrations relative to  rel_soluteUptake
+        """
+        
+        r_crit = r_eval[0]
+        
+        n = len(r_eval)
+        
+        conc_rel_c = np.ones(n) 
+        conc_mean_c = np.ones(n)
+        inflow_rel_c = np.ones(n)
+        inflow_mean_c = np.ones(n)  
+        Uptake_rel_c = np.ones(n)
+        Uptake_mean_c = np.ones(n) 
+
+        #used for weighting
+        watercontent_times_r = np.ones(n)      
+                
+        #waterflow
+        Phi = lambda r_rel : wateruptake_rel*(r_rel**2/2 - r_crit**2/2 - np.log(r_rel / r_crit)) #[cm2/d]
+        radial_waterflow = lambda r_rel : critical_wateruptake - wateruptake_rel*(r_rel**2 - r_crit**2)*pi
+        watercontent = lambda r_rel : vg.water_content(vg.fast_imfp[sp](Phi(r_rel)), sp)
+        Ds = lambda r_rel : Ds0 * math.pow(watercontent(r_rel),10/3) / (sp.theta_S**2)
+        
+        f_homogen = lambda r_rel, c : ( - radial_waterflow(r_rel) * c) / (Ds(r_rel) * r_rel) #TODO: add reference
+        f_steadystate = lambda r_rel, c : (1 - radial_waterflow(r_rel) * c) / (Ds(r_rel) * r_rel) #TODO: add reference
+        f_steadyrate = lambda r_rel, c : ((r_rel**2 - r_crit**2)*pi - radial_waterflow(r_rel) * c) / (Ds(r_rel) * r_rel) #TODO: add reference
+
+        #numerically solve the ODE c' = f(r_rel,c) starting at r_rel=1
+        conc_rel_c = solve_ivp(f_homogen, t_span = r_eval[-1], 1, t_eval = r_eval)
+        inflow_rel_c = solve_ivp(f_steadystate, t_span = r_eval[-1], 0, t_eval = r_eval)
+        Uptake_rel_c = solve_ivp(f_steadyrate, t_span = r_eval[-1], 0, t_eval = r_eval)
+        
+        #compute the means
+        watercontent_times_r = np.array([watercontent(r_rel)*r_rel for r_rel in r_eval])
+        conc_mean_c = np.array([np.average(conc_rel_c[0:j], weights=watercontent_times_r[0:j]) for j in range(n)])       
+        inflow_mean_c = np.array([np.average(inflow_rel_c[0:j], weights=watercontent_times_r[0:j]) for j in range(n)])       
+        Uptake_mean_c = np.array([np.average(Uptake_rel_c[0:j], weights=watercontent_times_r[0:j]) for j in range(n)])       
+        
+        return conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c
+    
+    def soil_root_solutes_combined(self, Phi_soil, rootwateruptake, soilwateruptake, c_prhiz, c_bulk, Vmax, Km, Ds, waterflow, sp):
         """
         combines a steady state assumption of solutes next to the roots with the far field approximation by Tiina Roose TODO: insert citaitons
-        The cutoff happens where the diffusion coefficient (following the Millington Quirk model) reaches 95% that of the mean diffusion coefficient
+        In the perirhizal zone it is a steady rate uptake with defined mean concentration.
+        The relation of c(r_prhiz) and d_r c(r_prhiz) is given by Roose
         
         Phi_out            outer matrix flux potential [cm2/d]
         rootwateruptake    radial root water uptake [cm2/d]
@@ -324,10 +420,10 @@ class PerirhizalPython(Perirhizal):
         disc               discretisation of the solute computation [mol/cm3]
         
         """
+        return 1
     
     
-    
-    def soil_root_solutes_ss_old(self, Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow, sp):
+    def soil_root_solutes_ss_(self, Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow, sp):
         """
         finds solute concentration at the soil root interface for all segments assuming steady state
         uses a look up tables if present (see create_lookup, and open_lookup)
@@ -533,7 +629,7 @@ class PerirhizalPython(Perirhizal):
         l_root = rld * dz  # [cm-1]
         return 2 * np.pi * np.multiply(l_root, np.multiply(b, k_prhiz(h_bs, h_sr)))  # [day-1], see Vanderborght et al. (2023), Eqn [6]
 
-    # depricated, leave the function in in case we ever want to compute big lookup tables again
+    # depricated, leave the function in, in case we ever want to compute big lookup tables again
     def create_lookup_mpi(self, filename, sp):
         """
         depricated
