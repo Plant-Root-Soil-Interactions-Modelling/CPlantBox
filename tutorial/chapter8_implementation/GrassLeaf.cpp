@@ -131,15 +131,14 @@ void GrassLeaf::simulate(double dt, bool verbose) {
     if (age <= 0.) {
         return; 
     }
-
+    
     const GrassLeafSpecificParameter &p = *param();
+    
     if (active) {
-
         double age_ = calcAge(length);  // |\label{l81:age}|
         double targetLength = calcLength(age_ + dt_) + this->epsilonDx;
         double scale = getGrassLeafRandomParameter()->f_se->getValue(getNode(0), shared_from_this());
         double dl = std::max(scale * (targetLength - length), 0.); // |\label{l81:age_end}|
-
         if (dl > 0.) {
             growLeaf(dl, dt_); // |\label{l81:growLeaf}|
         }
@@ -147,7 +146,7 @@ void GrassLeaf::simulate(double dt, bool verbose) {
         bladeLength = length * p.bladeLength / (p.sheathLength + p.bladeLength);
         fixPitch(); // apply blade angle to the new segments |\label{l81:fixPitch}|
     }
-
+    
     active = (length < p.sheathLength + p.bladeLength - 1.e-6) && alive;
 }
 
