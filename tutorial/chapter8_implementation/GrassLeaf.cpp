@@ -118,15 +118,16 @@ double GrassLeaf::calcAge(double length) const {
  *  5. Deactivates the organ once full length is reached.
  */
 void GrassLeaf::simulate(double dt, bool verbose) {
-
-    oldNumberOfNodes = getNumberOfNodes();
+    firstCall = true; // |\label{l81:incremental}|
+    moved = false;
+    oldNumberOfNodes = getNumberOfNodes(); // |\label{l81:incremental_end}|
 
     if (!alive) {
-        return; // leafs don't die (yet)
+        return; 
     }
 
     age += dt;
-    double dt_ = (age < dt) ? age : dt; // time step; age < dt means the organ emerged in this time step
+    double dt_ = (age < dt) ? age : dt; //age < dt emerged in this time step
     if (age <= 0.) {
         return; 
     }
@@ -134,17 +135,17 @@ void GrassLeaf::simulate(double dt, bool verbose) {
     const GrassLeafSpecificParameter &p = *param();
     if (active) {
 
-        double age_ = calcAge(length); 
+        double age_ = calcAge(length);  // |\label{l81:age}|
         double targetLength = calcLength(age_ + dt_) + this->epsilonDx;
         double scale = getGrassLeafRandomParameter()->f_se->getValue(getNode(0), shared_from_this());
-        double dl = std::max(scale * (targetLength - length), 0.);
+        double dl = std::max(scale * (targetLength - length), 0.); // |\label{l81:age_end}|
 
         if (dl > 0.) {
-            growLeaf(dl, dt_);
+            growLeaf(dl, dt_); // |\label{l81:growLeaf}|
         }
         sheathLength = length * p.sheathLength / (p.sheathLength + p.bladeLength);
         bladeLength = length * p.bladeLength / (p.sheathLength + p.bladeLength);
-        fixPitch(); // apply blade angle to the new segments
+        fixPitch(); // apply blade angle to the new segments |\label{l81:fixPitch}|
     }
 
     active = (length < p.sheathLength + p.bladeLength - 1.e-6) && alive;
@@ -198,8 +199,6 @@ std::shared_ptr<const GrassLeafSpecificParameter> GrassLeaf::param() const { ret
  * zero here and corrected afterwards by fixPitch().
  */
 void GrassLeaf::growLeaf(double dl, double dt) {
-    firstCall = true;
-    moved = false;
     const GrassLeafSpecificParameter &p = *param(); 
 
     double baseCT = nodeCTs[turtle.getInitialNodeIndex()]; // organ creation time 
