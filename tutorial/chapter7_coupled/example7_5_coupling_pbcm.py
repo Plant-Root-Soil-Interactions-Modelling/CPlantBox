@@ -25,6 +25,9 @@ area = 6 * 12.5  # plant area (cm2)
 sim_time = 600  # maximum simulation time-n_steps (days)
 dt = 1  # simulation timestep (days)
 plot = False  # plot root system at the end
+paramName = "lengthTh"  # carbon use is proportional to this parameter
+scales = [1.0, 1.0, 1.0, 1.0, 1.0]  # weighting factors for the different organ types
+
 
 # Feddes parameters for root elongation restriction due to soil water potential
 # Eq. 10 of https://doi.org/10.3389/fpls.2022.865188
@@ -82,14 +85,14 @@ scale_elongation.data = np.ones((layers))
 se = pb.ProportionalElongation()
 se.setBaseLookUp(scale_elongation)
 
-rs = pb.Plant()
-rs.setRandomSeed(0)
-rs.readParameters(rootparname)
-for p in rs.getOrganRandomParameter(pb.root):
+plant = pb.Plant()
+plant.setRandomSeed(0)
+plant.readParameters(rootparname)
+for p in plant.getOrganRandomParameter(pb.root):
     p.f_se = se  # set scale elongation function
 
 # intialize root system
-rs.initialize()
+plant.initialize()
 
 # initialize length and rld states
 ol = 0
@@ -104,7 +107,7 @@ warns = [str(datetime.datetime.now())]
 # Simulation loop
 for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
     # simulate simplace step to get maxinc and re_reduction dinamically
-    (date, maxinc, doharvest, tranrf, yld, rld_s, re_reduction, re_q, re_w, h, init_pb, frr_s, md95_s) = sp_int.getSimplaceValuesExtended(sim, gram_per_cm, h1, h2, h3, h4, area=area)  # |\label{l7_5_simplace:MaxInc_simplace}|
+    date, maxinc, doharvest, tranrf, yld, rld_s, re_reduction, re_q, re_w, h, init_pb, frr_s, md95_s = sp_int.getSimplaceValuesExtended(sim, gram_per_cm, h1, h2, h3, h4, area=area)  # |\label{l7_5_simplace:MaxInc_simplace}|
 
     # if not using re_reduction from simplace set args.elongationrestriction == 0
     if elongationrestriction == 0:
@@ -116,11 +119,12 @@ for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
     print("Simulating: ", date, " MaxIncr:", round(maxinc, 2), " Tranrf:", round(tranrf, 2), " Yield:", round(yld, 2), " Step:", s)
     # run CPlantBox if there's any root increment
     if maxinc > 0:  # |\label{l7_5_simplace:RunCPB}|
+
         # simulate root system
-        rs.simulate(dt, maxinc, se, True)
+        plant.simulateLimited(dt, maxinc, paramName, scales, se, True)
 
         # get simulated root length increment
-        l = np.sum(rs.getParameter("length"))
+        l = np.sum(plant.getParameter("length"))
         inc = l - ol
         ol = l
         print("increase was " + str(round(inc, 2)))
@@ -130,16 +134,16 @@ for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
             warns.append(msg)
 
         # calculate RLD for each soil layer using pb.SegmentAnalyser(rs)
-        vRLD = sp_int.calculateRLD(rs, soildepth, layers, area)  # |\label{l7_5_simplace:RLD_CPB}|
+        vRLD = sp_int.calculateRLD(plant, soildepth, layers, area)  # |\label{l7_5_simplace:RLD_CPB}|
 
     # update vRLD in simplace
     sp_int.setSimplaceRoots(sim, vRLD, maxinc - inc, gram_per_cm, init_pb_switch, frr_s, md95_s, re_reduction, re_q, re_w, h)  # |\label{l7_5_simplace:RLD_update_simplace}|
 
     # get pb-related variables
     if s == 0:
-        out_pb = getRootOutputs.asDataFrame(rs, date)
+        out_pb = getRootOutputs.asDataFrame(plant, date)
     else:
-        out_pb = out_pb.append(getRootOutputs.asDataFrame(rs, date), ignore_index=True)
+        out_pb = out_pb.append(getRootOutputs.asDataFrame(plant, date), ignore_index=True)
 
     # Initialize PB in next timestep
     if init_pb:
@@ -151,14 +155,14 @@ for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
         break  # |\label{l7_5_simplace:LoopEnd}|
 
 # write pb outputs |\label{l7_5_simplace:OutStart}|
-rs.write(od + "/milena/PyPlantBox/lintul5/Lintul5Slim_PlantBox.vtp")
+plant.write(od + "/milena/PyPlantBox/lintul5/Lintul5Slim_PlantBox.vtp")
 out_pb.to_csv(od + "/milena/PyPlantBox/lintul5/PlantBox_outputs.csv", index=False)
 
 # plot on screen?
 if plot:
-    vp.plot_roots(rs, "type")
+    vp.plot_roots(plant, "type")
 
 # check RootAges and shutdown simplace instance
-warns = checkRuns.checkRootAge(rs, warns)
+warns = checkRuns.checkRootAge(plant, warns)
 sim.closeProject()
 sim.shutDown()  # |\label{l7_5_simplace:OutEnd}|
