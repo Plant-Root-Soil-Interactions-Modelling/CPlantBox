@@ -1,4 +1,5 @@
 import sys; sys.path.append(".."); sys.path.append("../src/")
+import os
 import unittest
 
 import plantbox as pb
@@ -61,7 +62,12 @@ class TestPlant(unittest.TestCase):
 
         p.initialize(False)
         p.simulate(76, False)
-        p.write("Heliantus_Pagès_2013.vtp")
+        fname = "Heliantus_Pagès_2013.vtp"
+        try:
+            p.write(fname)
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_CPlantBox_analysis(self):
         """tests the functions needed by CPlantBox_analysis defined in CPlantBox_PiafMunch.py"""
@@ -71,7 +77,12 @@ class TestPlant(unittest.TestCase):
         p.initialize(False)
         p.simulate(76)
         ana = pb.SegmentAnalyser(p)
-        ana.write("Heliantus_Pagès_2013_ana.vtp")
+        fname = "Heliantus_Pagès_2013_ana.vtp"
+        try:
+            ana.write(fname)
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_convert(self):
         """tests the functions needed by the convert function of CPlantBox_PiafMunch.py"""
@@ -100,23 +111,30 @@ class TestPlant(unittest.TestCase):
             
         p1.initialize(verbose = False)#, stochastic = False)
         p1.simulate(time, False)
-        p1.write("test_CPlantBox_1step.vtp")
+        fname1 = "test_CPlantBox_1step.vtp"
+        fname2 = "test_CPlantBox_100step.vtp"
+        try:
+            p1.write(fname1)
 
-        p2 = pb.MappedPlant(2)
-        p2.readParameters(path + "fspm2023.xml", fromFile = True, verbose = False)
-        p2.initialize(verbose = False)#, stochastic = False)
-        for i in range(100):
-            p2.simulate(time / 100, False)
-        p2.write("test_CPlantBox_100step.vtp")
-        root1 = p1.getOrgans(2)
-        root2 = p2.getOrgans(2)
-        self.assertAlmostEqual(len(root1), len(root2), 10, "number of root organs do not agree")
-        root1 = p1.getOrgans(3)
-        root2 = p2.getOrgans(3)
-        self.assertAlmostEqual(len(root1), len(root2), 10, "number of stem organs do not agree")
-        root1 = p1.getOrgans(4)
-        root2 = p2.getOrgans(4)
-        self.assertAlmostEqual(len(root1), len(root2), 10, "number of leaf organs do not agree")
+            p2 = pb.MappedPlant(2)
+            p2.readParameters(path + "fspm2023.xml", fromFile = True, verbose = False)
+            p2.initialize(verbose = False)#, stochastic = False)
+            for i in range(100):
+                p2.simulate(time / 100, False)
+            p2.write(fname2)
+            root1 = p1.getOrgans(2)
+            root2 = p2.getOrgans(2)
+            self.assertAlmostEqual(len(root1), len(root2), 10, "number of root organs do not agree")
+            root1 = p1.getOrgans(3)
+            root2 = p2.getOrgans(3)
+            self.assertAlmostEqual(len(root1), len(root2), 10, "number of stem organs do not agree")
+            root1 = p1.getOrgans(4)
+            root2 = p2.getOrgans(4)
+            self.assertAlmostEqual(len(root1), len(root2), 10, "number of leaf organs do not agree")
+        finally:
+            for fname in [fname1, fname2]:
+                if os.path.exists(fname):
+                    os.remove(fname)
 
     def test_DB_delay(self):
         p = pb.MappedPlant(2)
@@ -164,7 +182,12 @@ class TestPlant(unittest.TestCase):
         p.initialize(False)
         time = 76
         p.simulate(time, False)
-        p.write("test_missing_laterals.vtp")
+        fname = "test_missing_laterals.vtp"
+        try:
+            p.write(fname)
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
 
 if __name__ == '__main__':

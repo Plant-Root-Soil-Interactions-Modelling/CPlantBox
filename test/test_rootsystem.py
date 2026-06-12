@@ -1,4 +1,5 @@
 import sys; sys.path.append(".."); sys.path.append("../src/")
+import os
 import unittest
 
 import plantbox as pb
@@ -241,11 +242,16 @@ class TestRootSystem(unittest.TestCase):
         simtime = 60
         self.rs.simulate(simtime)
         name = "test_rootsystem"
-        self.rs.writeRSML(name + ".rsml")
-        pl, props, funcs, _ = read_rsml(name + ".rsml")
-        self.assertEqual(len(pl), 18, "number of roots is wrong")
-        self.assertEqual(list(props.keys()), ['parent-poly', 'organType', 'subType', 'length', 'age', 'parent-node', 'diameter'], "properties names are unexpected")
-        self.assertEqual(list(funcs.keys()), ['node_creation_time', 'node_index'], "function names are unexpected")
+        fname = name + ".rsml"
+        try:
+            self.rs.writeRSML(fname)
+            pl, props, funcs, _ = read_rsml(fname)
+            self.assertEqual(len(pl), 18, "number of roots is wrong")
+            self.assertEqual(list(props.keys()), ['parent-poly', 'organType', 'subType', 'length', 'age', 'parent-node', 'diameter'], "properties names are unexpected")
+            self.assertEqual(list(funcs.keys()), ['node_creation_time', 'node_index'], "function names are unexpected")
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_vtp(self):
         """ checks rsml functionality with Python rsml reader """
@@ -254,16 +260,21 @@ class TestRootSystem(unittest.TestCase):
         simtime = 60
         self.rs.simulate(simtime)
         name = "test_rootsystem"
-        self.rs.write(name + ".vtp")
-        with open(name + ".vtp", "r+") as file:
-            for i in range(0, 18):
-                check_str = file.readline()
-                if "creationTime" in check_str:
-                    break
-        check_str = check_str.split(">")[1]
-        check_str = check_str.split("<")[0]
-        floats = [int(item) for item in check_str.split()]
-        self.assertEqual(floats, [0, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58], "creation times are unexpected")
+        fname = name + ".vtp"
+        try:
+            self.rs.write(fname)
+            with open(fname, "r+") as file:
+                for i in range(0, 18):
+                    check_str = file.readline()
+                    if "creationTime" in check_str:
+                        break
+            check_str = check_str.split(">")[1]
+            check_str = check_str.split("<")[0]
+            floats = [int(item) for item in check_str.split()]
+            self.assertEqual(floats, [0, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58], "creation times are unexpected")
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_stack(self):
         """ checks if push and pop are working """

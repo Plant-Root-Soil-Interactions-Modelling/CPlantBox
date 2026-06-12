@@ -1,4 +1,5 @@
 import sys; sys.path.append(".."); sys.path.append("../src/")
+import os
 import unittest
 
 import plantbox as pb
@@ -58,41 +59,46 @@ class TestOrganism(unittest.TestCase):
 
     def test_organ_random_parameters(self):
         """ test ability to set, get, read, and write type parameters """
-        human1 = pb.Organism()  # same example as in test_constructor ...
-        otp1 = pb.OrganRandomParameter(human1)
-        otp1.name = "nose"
-        otp1.subType = 1
-        otp2 = pb.OrganRandomParameter(human1)
-        otp2.subType = 2
-        otp2.name = "eye"
-        human1.setOrganRandomParameter(otp1)  # set
-        human1.setOrganRandomParameter(otp2)
-        otps = human1.getOrganRandomParameter(pb.OrganTypes.organ)
-        self.assertEqual(otps[0].name, "nose", "otp: name not expected ")
-        self.assertEqual(otps[1].name, "eye", "otp: name not expected ")
-        otp3 = pb.OrganRandomParameter(human1)
-        otp3.organType = pb.OrganTypes.root
-        otp3.subType = 1
-        otp3.name = "rootyhand"
-        human1.setOrganRandomParameter(otp3)
-        human1.writeParameters("human.xml")
-        human2 = pb.Organism()  # read again
-        prototype1 = pb.OrganRandomParameter(human2)
-        prototype1.organType = pb.OrganTypes.organ
-        prototype2 = pb.OrganRandomParameter(human2)
-        prototype2.organType = pb.OrganTypes.root
-        human2.setOrganRandomParameter(prototype1)  # set prototypes for reading, subTypes are overwritten if equal
-        human2.setOrganRandomParameter(prototype2)
-        human2.readParameters("human.xml")
-        otp1 = human2.getOrganRandomParameter(pb.OrganTypes.organ, 1)
-        otp2 = human2.getOrganRandomParameter(pb.OrganTypes.organ, 2)
-        self.assertEqual(otp1.name, "nose", "otp: name not expected ")
-        self.assertEqual(otp2.name, "eye", "otp: name not expected ")
-        self.assertEqual(otp1.subType, 1, "otp: subType not expected ")
-        self.assertEqual(otp2.subType, 2, "otp: subType not expected ")
-        rtp = human2.getOrganRandomParameter(pb.OrganTypes.root, 1)
-        self.assertEqual(rtp.name, "rootyhand", "otp: name not expected ")
-        self.assertEqual(rtp.subType, 1, "otp: subType not expected ")
+        fname = "human.xml"
+        try:
+            human1 = pb.Organism()  # same example as in test_constructor ...
+            otp1 = pb.OrganRandomParameter(human1)
+            otp1.name = "nose"
+            otp1.subType = 1
+            otp2 = pb.OrganRandomParameter(human1)
+            otp2.subType = 2
+            otp2.name = "eye"
+            human1.setOrganRandomParameter(otp1)  # set
+            human1.setOrganRandomParameter(otp2)
+            otps = human1.getOrganRandomParameter(pb.OrganTypes.organ)
+            self.assertEqual(otps[0].name, "nose", "otp: name not expected ")
+            self.assertEqual(otps[1].name, "eye", "otp: name not expected ")
+            otp3 = pb.OrganRandomParameter(human1)
+            otp3.organType = pb.OrganTypes.root
+            otp3.subType = 1
+            otp3.name = "rootyhand"
+            human1.setOrganRandomParameter(otp3)
+            human1.writeParameters(fname)
+            human2 = pb.Organism()  # read again
+            prototype1 = pb.OrganRandomParameter(human2)
+            prototype1.organType = pb.OrganTypes.organ
+            prototype2 = pb.OrganRandomParameter(human2)
+            prototype2.organType = pb.OrganTypes.root
+            human2.setOrganRandomParameter(prototype1)  # set prototypes for reading, subTypes are overwritten if equal
+            human2.setOrganRandomParameter(prototype2)
+            human2.readParameters(fname)
+            otp1 = human2.getOrganRandomParameter(pb.OrganTypes.organ, 1)
+            otp2 = human2.getOrganRandomParameter(pb.OrganTypes.organ, 2)
+            self.assertEqual(otp1.name, "nose", "otp: name not expected ")
+            self.assertEqual(otp2.name, "eye", "otp: name not expected ")
+            self.assertEqual(otp1.subType, 1, "otp: subType not expected ")
+            self.assertEqual(otp2.subType, 2, "otp: subType not expected ")
+            rtp = human2.getOrganRandomParameter(pb.OrganTypes.root, 1)
+            self.assertEqual(rtp.name, "rootyhand", "otp: name not expected ")
+            self.assertEqual(rtp.subType, 1, "otp: subType not expected ")
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_simulation(self):
         """ tests if the organs have the right age after simulation """
@@ -131,13 +137,18 @@ class TestOrganism(unittest.TestCase):
 
     def test_rsml(self):
         """ checks rmsl functionality with Python rsml reader """
-        self.hand_example()
-        self.add_nodes()
-        self.human1.writeRSML("organism.rsml")
-        pl, props, funcs, _ = read_rsml("organism.rsml")
-        pl2 = [[[0.0, 0.0, 0.0], [0.0, 0.0, -1.5], [0.0, -1.0, -1.6], [0.0, 1.0, -1.6]], [[0.0, -2.0, -2.5]], [[0.0, 1.7, -2.5]]]
-        self.assertEqual(pl, pl2, "rsml: polylines are not equal")
-        self.assertEqual(props["age"], [0, -4, -3] , "rsml: polylines are not equal")
+        fname = "organism.rsml"
+        try:
+            self.hand_example()
+            self.add_nodes()
+            self.human1.writeRSML(fname)
+            pl, props, funcs, _ = read_rsml(fname)
+            pl2 = [[[0.0, 0.0, 0.0], [0.0, 0.0, -1.5], [0.0, -1.0, -1.6], [0.0, 1.0, -1.6]], [[0.0, -2.0, -2.5]], [[0.0, 1.7, -2.5]]]
+            self.assertEqual(pl, pl2, "rsml: polylines are not equal")
+            self.assertEqual(props["age"], [0, -4, -3] , "rsml: polylines are not equal")
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
 
 if __name__ == '__main__':

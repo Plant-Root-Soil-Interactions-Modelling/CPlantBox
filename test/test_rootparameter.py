@@ -1,4 +1,5 @@
 import sys; sys.path.append(".."); sys.path.append("../src/")
+import os
 import unittest
 
 import plantbox as pb
@@ -74,24 +75,29 @@ class TestStemParameter(unittest.TestCase):
 
     def test_xml(self):
         """ write the organ as xml, and rereads it """
-        self.root_example()
-        rrp = self.rrp  # rename
-        rrp.name = "lateral"
-        rrp.subType = 2
-        rrp.writeXML("root.xml")
-        otp2 = pb.RootRandomParameter(self.plant)
-        otp2.readXML("root.xml")
-        self.assertEqual(otp2.ldelay, rrp.ldelay, "xml: value unexpected")
-        self.assertEqual(otp2.ldelays, rrp.ldelays, "xml: value unexpected")
-        self.assertEqual(otp2.name, rrp.name, "xml: value unexpected")
-        self.assertEqual(otp2.organType, rrp.organType, "xml: value unexpected")
-        self.assertEqual(otp2.subType, rrp.subType, "xml: value unexpected")
-        self.assertEqual(otp2.nob(), rrp.nob(), "xml: value unexpected")  # value
-        self.assertEqual(otp2.lns, rrp.lns, "xml: value unexpected")  # dev
-        for i in range(0, 3):
-            self.assertEqual(otp2.successor[0][i], rrp.successor[0][i], "xml: value unexpected")
-        for i in range(0, 3):
-            self.assertAlmostEqual(otp2.successorP[0][i], rrp.successorP[0][i], 7, "xml: value unexpected")
+        fname = "root.xml"
+        try:
+            self.root_example()
+            rrp = self.rrp  # rename
+            rrp.name = "lateral"
+            rrp.subType = 2
+            rrp.writeXML(fname)
+            otp2 = pb.RootRandomParameter(self.plant)
+            otp2.readXML(fname)
+            self.assertEqual(otp2.ldelay, rrp.ldelay, "xml: value unexpected")
+            self.assertEqual(otp2.ldelays, rrp.ldelays, "xml: value unexpected")
+            self.assertEqual(otp2.name, rrp.name, "xml: value unexpected")
+            self.assertEqual(otp2.organType, rrp.organType, "xml: value unexpected")
+            self.assertEqual(otp2.subType, rrp.subType, "xml: value unexpected")
+            self.assertEqual(otp2.nob(), rrp.nob(), "xml: value unexpected")  # value
+            self.assertEqual(otp2.lns, rrp.lns, "xml: value unexpected")  # dev
+            for i in range(0, 3):
+                self.assertEqual(otp2.successor[0][i], rrp.successor[0][i], "xml: value unexpected")
+            for i in range(0, 3):
+                self.assertAlmostEqual(otp2.successorP[0][i], rrp.successorP[0][i], 7, "xml: value unexpected")
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_realize(self):
         """ calls realize """
