@@ -64,13 +64,13 @@ std::shared_ptr<OrganSpecificParameter> GrassLeafRandomParameter::realize()
 {
     auto p = plant.lock();
 
-    double a_            = std::max(a            + p->randn() * as,             0.);
-    double bladeAngle_   = std::max(bladeAngle   + p->randn() * bladeAngles,    0.);
-    double bladeWidth_   = std::max(bladeWidth   + p->randn() * bladeWidths,    0.);
-    double bladeLength_  = std::max(bladeLength  + p->randn() * bladeLengths,   0.);
-    double sheathLength_ = std::max(sheathLength + p->randn() * sheathLengths,  0.);
-    double bladeBending_    = std::max(bladeBending  + p->randn() * bladeBendings,   0.);
-    double leafGrowthDuration_ = std::max(leafGrowthDuration + p->randn() * leafGrowthDurations, 0.);
+    double a_ = std::max(a+ p->randn()* as,0.);
+    double bladeAngle_= std::max(bladeAngle + p->randn() * bladeAngles, 0.);
+    double bladeWidth_= std::max(bladeWidth + p->randn() * bladeWidths, 0.);
+    double bladeLength_= std::max(bladeLength + p->randn() * bladeLengths, 0.);
+    double sheathLength_= std::max(sheathLength + p->randn() * sheathLengths,0.);
+    double bladeBending_= std::max(bladeBending + p->randn() * bladeBendings,0.);
+    double leafGrowthDuration_= std::max(leafGrowthDuration + p->randn() * leafGrowthDurations, 0.);
 
     return std::make_shared<GrassLeafSpecificParameter>(
         subType, a_,
@@ -101,11 +101,11 @@ void GrassLeafRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbo
 void GrassLeafRandomParameter::bindParameters()
 {
     OrganRandomParameter::bindParameters();
-    bindParameter("bladeAngle",    &bladeAngle,    "Angle between blade and stem [rad]",    &bladeAngles);
-    bindParameter("bladeWidth",    &bladeWidth,    "Width of the blade [cm]",               &bladeWidths);
-    bindParameter("bladeLength",   &bladeLength,   "Length of the blade [cm]",              &bladeLengths);
-    bindParameter("sheathLength",  &sheathLength,  "Length of the sheath [cm]",             &sheathLengths);
-    bindParameter("bladeBending",  &bladeBending,  "Blade curvature: pitch per cm segment length [rad/cm]", &bladeBendings);
+    bindParameter("bladeAngle", &bladeAngle, "Angle between blade and stem [rad]", &bladeAngles);
+    bindParameter("bladeWidth", &bladeWidth, "Width of the blade [cm]", &bladeWidths);
+    bindParameter("bladeLength", &bladeLength, "Length of the blade [cm]", &bladeLengths);
+    bindParameter("sheathLength", &sheathLength, "Length of the sheath [cm]", &sheathLengths);
+    bindParameter("bladeBending", &bladeBending, "Blade curvature: pitch per cm segment length [rad/cm]", &bladeBendings);
     bindParameter("leafGrowthDuration", &leafGrowthDuration, "Total duration of leaf growth [day]", &leafGrowthDurations);
 }
 

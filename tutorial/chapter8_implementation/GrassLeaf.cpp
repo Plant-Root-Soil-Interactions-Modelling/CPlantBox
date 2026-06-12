@@ -124,21 +124,13 @@ void GrassLeaf::simulate(double dt, bool verbose) {
     if (!alive) {
         return; // leafs don't die (yet)
     }
-
-    // std::cout << "Simulating GrassLeaf id=" << getId() << " age=" << age << " dt=" << dt << "\n" << std::flush;
-
-    const GrassLeafSpecificParameter &p = *param();
-
     age += dt;
-    double dt_ = (age < dt) ? age : dt; // time step; age < dt means the organ emerged in this time step
+    double dt_ = (age < dt) ? age : dt; 
     if (age <= 0.) {
-        return; // still in delay TODO check where it is set...
+        return; 
     }
-
-    // GrassLeaf has no children
-
-    if (active) {
-
+    const GrassLeafSpecificParameter &p = *param();
+    if (active) {        
         double age_ = calcAge(length); 
         double targetLength = calcLength(age_ + dt_) + this->epsilonDx;
         double dl = targetLength - length; // we should scale that for carbon limited growth        
