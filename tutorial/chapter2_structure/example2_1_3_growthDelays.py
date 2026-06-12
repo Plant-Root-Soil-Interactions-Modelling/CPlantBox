@@ -96,8 +96,8 @@ srp.delayDefinitionShoot = 2  # shoot: lateral decides its own delay       |\lab
 
 # Stem subType 1 (main stem)
 srp = plant.getOrganRandomParameter(pb.stem)[1]
-srp.delayNGStart = 3
-srp.delayNGEnd   = 7
+srp.delayNGStart = 3  # |\label{l2_1_3:delayNGStart}|
+srp.delayNGEnd   = 7  # |\label{l2_1_3:delayNGEnd}|
 
 # Leaf subType 1
 lrp = plant.getOrganRandomParameter(pb.leaf)[1]
