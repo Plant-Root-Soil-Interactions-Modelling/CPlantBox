@@ -172,14 +172,19 @@ class TestRootSystem(unittest.TestCase):
 
     def test_root_random_parameters(self):
         """ root random parameters xml read and write """
-        self.rs_example_rtp()
+        fname = "rs_parameters.xml"
+        try:
+            self.rs_example_rtp()
 #         print(self.p0.__str__(False))
 #         print(self.p1.__str__(False))
-        # print(pb.Organism.organTypeName(self.p0.organType))
-        self.rs.writeParameters("rs_parameters.xml", "plant", False)  # include comments
-        rs1 = pb.RootSystem
-        # rs1.readParameters("test_parameters.xml", "RootBox")
-        # TODO
+            # print(pb.Organism.organTypeName(self.p0.organType))
+            self.rs.writeParameters(fname, "plant", False)  # include comments
+            rs1 = pb.RootSystem
+            # rs1.readParameters("test_parameters.xml", "RootBox")
+            # TODO
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_adjacency_matrix(self):
         """ builds an adjacency matrix, and checks if everything is connected"""
