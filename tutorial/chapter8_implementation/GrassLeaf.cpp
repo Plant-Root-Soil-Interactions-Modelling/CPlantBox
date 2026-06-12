@@ -122,7 +122,7 @@ void GrassLeaf::simulate(double dt, bool verbose) {
     moved = false;
     oldNumberOfNodes = getNumberOfNodes(); // |\label{l81:incremental_end}|
 
-    if (!alive) {
+    if (!alive) { // |\label{l81:alive}| 
         return; 
     }
 
@@ -130,7 +130,7 @@ void GrassLeaf::simulate(double dt, bool verbose) {
     double dt_ = (age < dt) ? age : dt; //age < dt emerged in this time step
     if (age <= 0.) {
         return; 
-    }
+    } // |\label{l81:alive_end}| 
     
     const GrassLeafSpecificParameter &p = *param();
     
