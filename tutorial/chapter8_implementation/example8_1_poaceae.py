@@ -1,10 +1,6 @@
 """How to define a custom Plant subclass for Poaceae that creates GrassLeaf organs instead of the default Leaf"""
 
-import math
-
-import matplotlib.pyplot as plt
-import numpy as np
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+import os
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -30,7 +26,7 @@ xml_path = os.path.join(os.path.dirname(__file__), "grassleaf_parameters.xml")
 plant.readParameters(xml_path)
 plant.initialize(verbose=False)
 
-sim_time = 25.0
+sim_time = 15.0
 dt = 0.5
 n_steps = int(sim_time / dt)
 
