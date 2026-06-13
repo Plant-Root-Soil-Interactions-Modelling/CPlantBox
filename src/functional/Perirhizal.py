@@ -263,52 +263,164 @@ class PerirhizalPython(Perirhizal):
         
         return rsc
     
-    def soil_root_solutes_new(self, Phi_soil, rootwateruptake, waterinflow, r_root, r_prhiz, c_bulk, Vmax, Km, Ds, waterflow, sp, output_disc = False):
+    def soil_root_solutes_new(self, Phi_soil, rootwateruptake, waterinflow, r_root, r_prhiz, c_bulk, Vmax, Km, Ds, sp, mode = "sr_ff"):
         """
         steady state assumption of solute uptake by roots TODO: insert citaiton
         
-        Phi_out            outer matrix flux potential [cm2/d]
+        Phi_soil           outer matrix flux potential [cm2/d]
         rootwateruptake    radial root water uptake [cm2/d]
-        waterinflow        radial water inflow [cm2/d]
+        waterinflow        radial water inflow at r_prhiz [cm2/d]
         r_root             root radius [cm]
         r_prhiz            outer radius [cm]
-        c_soil             outer solute concentration of the cylinder [mol/cm3]
+        c_soil             solute concentration of the cylinder [mol/cm3]
+        c_outer            solute concentration outside of the cylinder [mol/cm3], only used in the general steady rate case
         Vmax               maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
         Km                 half saturation constant Michaelis Menten Kinetics [mol/cm3]
         Ds                 Diffusion constant in water [cm2/d]
         sp                 van Genuchten parameter set
-        output_disc        should the discretisation be put out
+        mode               what model is used? pure ss, sr with no flux or sr with the far field approximation
         
         output:
-        rsc                solute concnetration next to the root [mol/cm3]
+        rsc                solute concentration next to the root [mol/cm3]
         Uptake             solute uptake of the root [mol/(cm d)]
-        disc               discretisation of the solute computation [mol/cm3]
         
         """
         assert len(Phi_A) == len(Phi_C) == len(c_bulk) == len(Vmax) == len(Km) == len(waterflow), "Phi_root, Phi_soil, c_bulk, Vmax, Km and waterflow must have the same length"
         
         n_segments = len(c_bulk)
         
-        c_root = np.zeros(n_segments)
+        rsc = np.zeros(n_segments)
         Uptake = np.zeros(n_segments)
-        disc = 0
+        ss_uptake = np.zeros(n_segments)
+        sr_uptake = np.zeros(n_segments)
         
-        conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c
-        
-        #solve quadratic eqation # TODO: Link to publication
+        #solve quadratic eqation for root uptake # TODO: Link to publication
         for i in range(n_segments):
-            Phi = lambda r_rel : Phi_out + (rootwateruptake-soilwateruptake)*(r_rel**2*rho**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) + soilwateruptake*np.log(r_rel)
-            radial_waterflow = lambda r_rel : soilwateruptake + (rootwateruptake-soilwateruptake) * (1 - r_rel**2) / (1-1/rho**2)
-            Ds_func = lambda r_rel : Ds * math.pow(vg.water_content(vg.fast_imfp[sp](Phi(r_rel), self.sp)),10/3) / (sp.theta_S**2) # Millington and Quirk 
-            linearODEterm = lambda r_rel : radial_waterflow(r_rel) / (Ds_func(r_rel) * r_rel)
-            absoluteODEterm = lambda r_rel : 1 / (Ds_func(r_rel) * r_rel)
-            Y = odeint(f, ic, t, args=([ka1, ka2, ka3], [kd1, kd2, kd3], [b1, b2, b3]))
+            Phi = lambda r_rel : Phi_soil[i] + (rootwateruptake[i]-waterinflow[i])*(r_rel**2*rho**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) + waterinflow[i]*np.log(r_rel)
+            radial_waterflow = lambda r_rel : waterinlow[i] + (rootwateruptake[i]-waterinflow[i]) * (1 - r_rel**2) / (1-1/rho**2)
+            Ds_func = lambda r_rel : Ds[i] * math.pow(vg.water_content(vg.fast_imfp[sp](Phi(r_rel), self.sp)),10/3) / (sp.theta_S**2) # Millington and Quirk 
             
+            #values for the subfunction
+            r_crit = root_scalar(Phi, method="brentq", bracket=[1e-5, r_prhiz])
+            Ds0 = Ds[i]
+            wateruptake_rel = (rootwateruptake[i] - waterinflow[i]) / ((r_prhiz[i]**2 - r_root[i]**2) * pi)
+            critical_wateruptake = rootwateruptake[i] + wateruptake_rel * ((r_root[i]**2 - r_crit[i]**2) * pi)
+            r_eval = [r_crit, r_root, r_prhiz]
             
+            #use the subfunction #TODO: alternative lookup table
+            conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = solute_linearequation_sr_(Ds0, critical_wateruptake, wateruptake_rel, r_eval, sp)
+            
+            #fix discrepancy between critical and root radius
+            conc_rel_c = conc_rel_c[1:]/conc_rel_c[1]
+            conc_mean_c = (conc_mean_c[1:]*(r_prhiz**2-r_crit**2)-conc_mean_c[1]*(r_root**2-r_crit*2))/(r_prhiz**2-r_root**2)
+            inflow_rel_c = inflow_rel_c[1:]/inflow_rel_c[1]
+            inflow_mean_c = (inflow_mean_c[1:]*(r_prhiz**2-r_crit**2)-inflow_mean_c[1]*(r_root**2-r_crit*2))/(r_prhiz**2-r_root**2)
+            Uptake_rel_c = Uptake_rel_c[1:]/Uptake_rel_c[1]
+            Uptake_mean_c = (Uptake_mean_c[1:]*(r_prhiz**2-r_crit**2)-Uptake_mean_c[1]*(r_root**2-r_crit*2))/(r_prhiz**2-r_root**2)
+            
+            #default prefactors for the steady state case
+            pre_c = 0
+            pre_srUptake = 1
+            pre_inflow = 0
+            absolute = 0
+            #pre_c * c(r_prhiz) + pre_srUptake * srUptake + pre_inflow * inflow = absolute
+            
+            match mode:
+                case "ss": #steady state
+                    pre_c, pre_srUptake, pre_inflow, absolute = 0, 1, 0, 0
+                case "sr_nf": #steady rate uptake, no influx
+                    pre_c, pre_srUptake, pre_inflow, absolute = 0, 0, 1, 0
+                case "sr_ff": #far field approximation # TODO insert link to Tiina Roose publication
+                    #E_1(x)=int(x,inf) exp(-y)/y dy = -exp(x) - int(x,inf) -exp(-y) -exp(
+                    #c(r_prhiz) = c_inf + B*E(r**2)
+                    #inflow = Ds * B * exp(-r_prhiz)/r_prhiz + waterflow * c(r_prhiz)
+                    #c_inf = outer c ?
+                    # outer c = c_inf + B*mean(E)(2*r**2,r**2)
+                    
+                    # B = (outer_c - c(r_prhiz)) / (mean(E)-E)
+                    # mean(E)(2*r**2,r**2)=E(r**2)+int(E(x)-E(r**2),r**2,2*r**2)=E(r**2)-int(r**2,2*r**2,y*exp(-y)/y)=E(r**2)+exp(-2*r**2)-exp(r**2)
+                    # B = (outer_c - c(r_prhiz)) / (exp(-2*r**2)-exp(-r**2))
+                    # this means inflow can be computed
+                    B_abs = c_outer / (math.exp(-2*r_prhiz**2)-math.exp(-r_prhiz**2))
+                    B_cprhiz = -1 / (math.exp(-2*r_prhiz**2)-math.exp(-r_prhiz**2))
+                    
+                    pre_inflow = 1
+                    pre_c = - Ds_func(r_prhiz) * B_cprhiz * math.exp(-r_prhiz**2) / r_prhiz**2 - waterinflow
+                    absolute = Ds_func(r_prhiz) * B_abs * math.exp(-r_prhiz**2) / r_prhiz**2
+                    pre_srUptake = 0
+                case _:    #default
+                    pre_c, pre_srUptake, pre_inflow, absolute = 0, 1, 0, 0
+            #equation
+            #c11 * ss flow + c12 * sr uptake + c13 * rsc = c_mean
+            #c21 * ss flow + c22 * sr uptake + c23 * rsc = c_prhiz 
+            #ss flow + sr uptake = Uptake = f(rsc)
+            #pre_c * c(r_prhiz) + pre_srUptake * srUptake + pre_inflow * inflow (= ssflow) = absolute
+            #pre_c * (c21 * ss flow + c22 * sr uptake + c23 * rsc) + pre_srUptake * srUptake + pre_inflow * inflow = absolute
+            
+            #variables to eliminate: ss flow, sr uptake, c_prhiz, Uptake
+            # variable for the final equations: rsc
+            A = np.zeros((4,4))
+            b = np.zeros((4,2)) #right hand side of the linear equation, one for absolute values, one for the rsc value
+            
+            #c11 * ss flow + c12 * sr uptake + c13 * rsc = c_mean
+            A[0,0] = inflow_mean_c
+            A[0,1] = Uptake_mean_c
+            b[0,1] = -conc_mean_c
+            b[0,0] = c_soil
+            
+            #c21 * ss flow + c22 * sr uptake + c23 * rsc = c_prhiz
+            A[1,0] = inflow_rel_c
+            A[1,1] = Uptake_rel_c
+            A[1,2] = -1
+            b[1,1] = -conc_rel_c
+            
+            #ss flow + sr uptake = Uptake
+            A[2,0] = 1
+            A[2,1] = 1
+            A[2,3] = -1
+            
+            #pre_c * c(r_prhiz) + pre_srUptake * srUptake + pre_inflow * inflow (= ssflow) = absolute
+            A[3,0] = pre_inflow
+            A[3,1] = pre_srUptake
+            A[3,2] = pre_c1
+            b[3,0] = absolute
+            
+            #m*rsc+n = [ss uptake, sr uptake, c(rprhiz), Uptake]
+            n = la.solve(A,b[:,0])
+            m = la.solve(A,b[:,1])
+            
+            #solve quadratic equation 
+            #Uptake = Vmax * rsc / (Km + rsc)
+            #(Km + rsc) * (m[3]*rsc+n[3]) = Vmax * rsc
+            # m[3] * rsc**2 + (Km[i]*m[3]+n[3]-Vmax[i]) * rsc + Km[i]*n[3] = 0 
+            
+            if abs(m[3])<tol:
+                rsc[i] = - (Km[i]*n[3]) / (Km[i]*m[3]+n[3]-Vmax[i])
+            else:
+                A = m[3]
+                B = (Km[i]*m[3]+n[3]-Vmax[i])
+                C = Km[i]*n[3]
+                p = B/A
+                q = C/A
+                rsc[i] = - p/2 + math.sqrt(p**2/4-q) #only the positive solution makes sense
+            Uptake[i] = m[3]*rsc[i]+n[3]
+            ss_uptake[i] = m[0]*rsc[i]+n[0]
+            sr_uptake[i] = m[1]*rsc[i]+n[1]
+            #1 more equation necessary, multiple possibilities:
+            # only ss: sr uptake = 0, but how? maybe just advection?
+            # only sr: ss flow = 0, set the solute inflow to advection?
+            # combination: set the inflow to a preset number based on either another model (Tiina) or diffusion?
+            # best: cite Tiina that mostly Diffusion is important (on the outside of the interval?) and then compute the inflow through a resistance + Advection (both take into account the outer concentration and diffusion coefficient
+            # far field solution c = c_inf - B*E_1, E_1(x)=\int_1înf exp(-y)/y dy -use this to determine the outsides concentration gradient
+            # c_inf is the outer concentration, for a given c(r_prhiz) this then determines the solute inflow (thrrough the gradient
         
-        return rsc, Uptake
+            # similarities? sr and combination both give the inflow rate depending on c(r_prhiz) (sr has 0), ss gives a linear combination of sr-Uptake
+            # so this can be generalised through c(r_prhiz), sr-Uptake and inflow (linear equation)
+            
+            #linear equations for c_prhiz, rsc, ss_flow, sr_uptake, Uptake (4 linear, 1 quadratic)
+        return rsc, Uptake, ss_uptake, sr_uptake
     
-    def watersolutes_disc(self, Phi_soil, rootwateruptake, waterinflow, r_root, r_prhiz, c_bulk, c_root, Ds0, soluteuptake, sp):
+    def watersolutes_disc(self, Phi_soil, rootwateruptake, waterinflow, r_root, r_prhiz, c_bulk, c_root, Ds0, ss_uptake, sr_uptake, sp, N):
         """
         given the water and solute uptake data this computes the discretisation of the steady rate solutions
         
@@ -330,7 +442,15 @@ class PerirhizalPython(Perirhizal):
         waterpotential = lambda r : vg.fast_imfp(Phi(r),sp)
         watercontent = lambda r : vg.watercontent(Phi(r),sp)
         
+        r_crit = root_scalar(Phi, method="brentq", bracket=[1e-5, r_prhiz])
+        
         #solutes
+        r_eval = [r_crit, np.linspace(r_root,r_prhiz,N)]
+        #use the subfunction #TODO: alternative lookup table
+        conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = solute_linearequation_sr_(Ds0, critical_wateruptake, wateruptake_rel, r_eval, sp)
+        
+        soluteconcentration = c_root * conc_rel_c[1:] + ss_uptake * inflow_rel_c[1:] + sr_uptake * Uptake_rel_c[1:]     
+        
         #check if there is a lookup table
         if self.lookup_table_sr_solutes:
             c_solutes = lambda r: self.lookup_table_sr_solutes((Phi_ref, wateruptake_rel, [r]))
@@ -386,9 +506,9 @@ class PerirhizalPython(Perirhizal):
         f_steadyrate = lambda r_rel, c : ((r_rel**2 - r_crit**2)*pi - radial_waterflow(r_rel) * c) / (Ds(r_rel) * r_rel) #TODO: add reference
 
         #numerically solve the ODE c' = f(r_rel,c) starting at r_rel=1
-        conc_rel_c = solve_ivp(f_homogen, t_span = r_eval[-1], 1, t_eval = r_eval)
-        inflow_rel_c = solve_ivp(f_steadystate, t_span = r_eval[-1], 0, t_eval = r_eval)
-        Uptake_rel_c = solve_ivp(f_steadyrate, t_span = r_eval[-1], 0, t_eval = r_eval)
+        conc_rel_c = solve_ivp(f_homogen, t_span = [r_crit, r_eval[-1]], 1, t_eval = r_eval)
+        inflow_rel_c = solve_ivp(f_steadystate, t_span = [r_crit, r_eval[-1]], 0, t_eval = r_eval)
+        Uptake_rel_c = solve_ivp(f_steadyrate, t_span = [r_crit, r_eval[-1]], 0, t_eval = r_eval)
         
         #compute the means
         watercontent_times_r = np.array([watercontent(r_rel)*r_rel for r_rel in r_eval])
