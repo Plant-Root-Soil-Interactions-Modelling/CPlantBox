@@ -77,6 +77,8 @@ outer_conc = initial_soluteconcentration
 
 def run_perirhizal_test():
     
+    global r_root, r_prhiz
+    
     #space for the outputs
     water_dumux = np.zeros((n_times, n_sp+1))
     water_sr2 = np.zeros((n_times, n_sp+1))
@@ -129,6 +131,30 @@ def run_perirhizal_test():
     sp = vg.Parameters(soilVG)
     peri.set_soil(sp)
     #no lookup tables are used here as there arent many simulations
+    
+    
+    #test the plots
+    Phi_soil = vg.fast_mfp[peri.sp](-100)
+    r_root = 0.02
+    r_prhiz = 1
+    r_eval = np.linspace(r_root, r_prhiz, 100)
+    rootwateruptake = 0.2
+    waterinflow = 0.1
+    c_root = 0* 1e-7
+    Ds0 = Ds
+    ss_uptake = 0*1.e-7
+    sr_uptake = 1*1.e-7
+    watercontent, waterpotential, soluteconcentration = peri.watersolutes_disc(Phi_soil, rootwateruptake, waterinflow, r_root, r_prhiz, r_eval, c_root, Ds0, ss_uptake, sr_uptake, sp)
+    print("watercontent", watercontent, "waterpotential", waterpotential, "soluteconcentration", soluteconcentration)
+
+    plt.plot(r_eval, soluteconcentration)
+
+    plt.xlabel('X-axis')
+    plt.ylabel('Y-axis')
+    plt.title('Simple Plot')
+
+    plt.show()
+    return 0
 
     outer_watercontent = vg.water_content(outer_waterpotential, peri.sp)
     
