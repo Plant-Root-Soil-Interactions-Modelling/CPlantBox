@@ -297,6 +297,7 @@ class PerirhizalPython(Perirhizal):
         #solve quadratic eqation for root uptake # TODO: Link to publication
         for i in range(n_segments):
             rho = r_prhiz[i] / r_root[i]
+            print("rootwateruptake",rootwateruptake[i],waterinflow[i])
             Phi = lambda r_rel : Phi_soil[i] + (rootwateruptake[i]-waterinflow[i])*(r_rel**2*rho**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) + waterinflow[i]*np.log(r_rel)
             radial_waterflow = lambda r_rel : waterinlow[i] + (rootwateruptake[i]-waterinflow[i]) * (1 - r_rel**2) / (1-1/rho**2)
             Ds_func = lambda r_rel : Ds[i] * math.pow(vg.water_content(vg.fast_imfp[sp](Phi(r_rel)),sp),10/3) / (sp.theta_S**2) # Millington and Quirk 
@@ -457,8 +458,8 @@ class PerirhizalPython(Perirhizal):
         
         #water is easy
         Phi = lambda r : Phi_soil + (rootwateruptake - waterinflow) * ((r/r_root)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(r_prhiz/r)-0.5)) + waterinflow * np.log(r / r_prhiz)
-        waterpotential = lambda r : vg.fast_imfp[sp](Phi(r))
-        watercontent = lambda r : vg.watercontent[sp](waterpotential(r))
+        waterpotential_func = lambda r : vg.fast_imfp[sp](Phi(r))
+        watercontent_func = lambda r : vg.water_content(waterpotential(r),sp)
         
         print("Phi_root",Phi(1e-10), Phi(r_prhiz))
         r_crit = root_scalar(Phi, method="brentq", bracket=[1e-10,r_prhiz]).root
@@ -474,6 +475,8 @@ class PerirhizalPython(Perirhizal):
         
         soluteconcentration = c_root * conc_rel_c[1:] + ss_uptake * inflow_rel_c[1:] + sr_uptake * Uptake_rel_c[1:]     
         
+        watercontent = np.array([watercontent_func(r) for r in r_eval])
+        waterpotential = np.array([waterpotential_func(r) for r in r_eval])
         
         return watercontent, waterpotential, soluteconcentration
     
