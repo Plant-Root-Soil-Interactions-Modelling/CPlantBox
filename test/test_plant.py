@@ -7,12 +7,29 @@ from plantbox.rsml.rsml_reader import *
 
 path = "../modelparameter/structural/plant/"
 
+class TestPlant(unittest.TestCase): # |\label{test_example:TestClass}|
 
-def rootLength(t, r, k):  # root length at a certain age
-    return k * (1 - np.exp(-r * t / k))
+    def test_CPlantBox(self): # |\label{test_example:TestClass_method1}|
+        """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
+        p = pb.Plant()
+        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
 
+        seeds = p.getOrganRandomParameter(pb.OrganTypes.seed)
+        roots = p.getOrganRandomParameter(pb.OrganTypes.root)
+        stems = p.getOrganRandomParameter(pb.OrganTypes.stem)
+        leafs = p.getOrganRandomParameter(pb.OrganTypes.leaf)
 
-class TestPlant(unittest.TestCase):
+        self.assertEqual([len(seeds), len(roots[1:]), len(stems[1:]), len(leafs[1:])], [1, 3, 3, 1],
+                         "test_CPlantBox: read wrong number of random parameter from xml") # |\label{test_example:TestClass_method1_assert}|
+
+        p.initialize(False)
+        p.simulate(76, False)
+        fname = "Heliantus_Pagès_2013.vtp"
+        try:
+            p.write(fname)
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_copy(self):
         """ checks if the root system can be copied, and if randomness works """
@@ -38,36 +55,6 @@ class TestPlant(unittest.TestCase):
         self.assertEqual(rs3.rand(), n1, "copy: random generator seed was not copied")
         rs3.simulate(10)
         self.assertEqual(rs3.rand(), n2, "copy: simulation is not deterministic")
-
-    def test_CPlantBox(self):
-        """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
-        p = pb.Plant()
-        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
-
-        seeds = p.getOrganRandomParameter(pb.OrganTypes.seed)
-        roots = p.getOrganRandomParameter(pb.OrganTypes.root)
-        stems = p.getOrganRandomParameter(pb.OrganTypes.stem)
-        leafs = p.getOrganRandomParameter(pb.OrganTypes.leaf)
-#         for p_ in seeds:
-#             print(p_)
-#         for p_ in roots[1:]:
-#             print(p_)
-#         for p_ in stems[1:]:
-#             print(p_)
-#         for p_ in leafs[1:]:
-#             print(p_)
-
-        self.assertEqual([len(seeds), len(roots[1:]), len(stems[1:]), len(leafs[1:])], [1, 3, 3, 1],
-                         "test_CPlantBox: read wrong number of random parameter from xml")
-
-        p.initialize(False)
-        p.simulate(76, False)
-        fname = "Heliantus_Pagès_2013.vtp"
-        try:
-            p.write(fname)
-        finally:
-            if os.path.exists(fname):
-                os.remove(fname)
 
     def test_CPlantBox_analysis(self):
         """tests the functions needed by CPlantBox_analysis defined in CPlantBox_PiafMunch.py"""

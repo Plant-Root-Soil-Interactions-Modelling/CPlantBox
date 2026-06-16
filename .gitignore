@@ -36,6 +36,7 @@ Codeblocks
 CMakeFiles
 Makefile
 *CMakeCache*
+install_manifest.txt
 
 # something python related
 *.pyc
