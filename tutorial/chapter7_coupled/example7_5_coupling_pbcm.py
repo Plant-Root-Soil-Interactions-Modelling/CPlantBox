@@ -82,14 +82,14 @@ scale_elongation.data = np.ones((layers))
 se = pb.ProportionalElongation()
 se.setBaseLookUp(scale_elongation)
 
-rs = pb.Plant()
-rs.setRandomSeed(0)
-rs.readParameters(rootparname)
-for p in rs.getOrganRandomParameter(pb.root):
+plant = pb.Plant()
+plant.setRandomSeed(0)
+plant.readParameters(rootparname)
+for p in plant.getOrganRandomParameter(pb.root):
     p.f_se = se  # set scale elongation function
 
 # intialize root system
-rs.initialize()
+plant.initialize()
 
 # initialize length and rld states
 ol = 0
@@ -117,10 +117,10 @@ for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
     # run CPlantBox if there's any root increment
     if maxinc > 0:  # |\label{l7_5_simplace:RunCPB}|
         # simulate root system
-        rs.simulate(dt, maxinc, se, True)
+        plant.simulateLimited(dt, maxinc, "lengthTh", [1., 1., 1., 1., 1.], se, True)
 
         # get simulated root length increment
-        l = np.sum(rs.getParameter("length"))
+        l = np.sum(plant.getParameter("length"))
         inc = l - ol
         ol = l
         print("increase was " + str(round(inc, 2)))
@@ -129,17 +129,17 @@ for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
             print(msg)
             warns.append(msg)
 
-        # calculate RLD for each soil layer using pb.SegmentAnalyser(rs)
-        vRLD = sp_int.calculateRLD(rs, soildepth, layers, area)  # |\label{l7_5_simplace:RLD_CPB}|
+        # calculate RLD for each soil layer using pb.SegmentAnalyser(plant)
+        vRLD = sp_int.calculateRLD(plant, soildepth, layers, area)  # |\label{l7_5_simplace:RLD_CPB}|
 
     # update vRLD in simplace
     sp_int.setSimplaceRoots(sim, vRLD, maxinc - inc, gram_per_cm, init_pb_switch, frr_s, md95_s, re_reduction, re_q, re_w, h)  # |\label{l7_5_simplace:RLD_update_simplace}|
 
     # get pb-related variables
     if s == 0:
-        out_pb = getRootOutputs.asDataFrame(rs, date)
+        out_pb = getRootOutputs.asDataFrame(plant, date)
     else:
-        out_pb = out_pb.append(getRootOutputs.asDataFrame(rs, date), ignore_index=True)
+        out_pb = out_pb.append(getRootOutputs.asDataFrame(plant, date), ignore_index=True)
 
     # Initialize PB in next timestep
     if init_pb:
@@ -151,14 +151,14 @@ for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
         break  # |\label{l7_5_simplace:LoopEnd}|
 
 # write pb outputs |\label{l7_5_simplace:OutStart}|
-rs.write(od + "/milena/PyPlantBox/lintul5/Lintul5Slim_PlantBox.vtp")
+plant.write(od + "/milena/PyPlantBox/lintul5/Lintul5Slim_PlantBox.vtp")
 out_pb.to_csv(od + "/milena/PyPlantBox/lintul5/PlantBox_outputs.csv", index=False)
 
 # plot on screen?
 if plot:
-    vp.plot_roots(rs, "type")
+    vp.plot_roots(plant, "type")
 
 # check RootAges and shutdown simplace instance
-warns = checkRuns.checkRootAge(rs, warns)
+warns = checkRuns.checkRootAge(plant, warns)
 sim.closeProject()
 sim.shutDown()  # |\label{l7_5_simplace:OutEnd}|
