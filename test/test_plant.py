@@ -12,7 +12,7 @@ class TestPlant(unittest.TestCase): # |\label{test_example:TestClass}|
     def test_CPlantBox(self): # |\label{test_example:TestClass_method1}|
         """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
+        p.readParameters(path + "Heliantus_Pages_2013.xml", fromFile = True, verbose = False)
 
         seeds = p.getOrganRandomParameter(pb.OrganTypes.seed)
         roots = p.getOrganRandomParameter(pb.OrganTypes.root)
@@ -24,7 +24,7 @@ class TestPlant(unittest.TestCase): # |\label{test_example:TestClass}|
 
         p.initialize(False)
         p.simulate(76, False)
-        fname = "Heliantus_Pagès_2013.vtp"
+        fname = "Heliantus_Pages_2013.vtp"
         try:
             p.write(fname)
         finally:
@@ -59,12 +59,12 @@ class TestPlant(unittest.TestCase): # |\label{test_example:TestClass}|
     def test_CPlantBox_analysis(self):
         """tests the functions needed by CPlantBox_analysis defined in CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
+        p.readParameters(path + "Heliantus_Pages_2013.xml", fromFile = True, verbose = False)
             
         p.initialize(False)
         p.simulate(76)
         ana = pb.SegmentAnalyser(p)
-        fname = "Heliantus_Pagès_2013_ana.vtp"
+        fname = "Heliantus_Pages_2013_ana.vtp"
         try:
             ana.write(fname)
         finally:
@@ -74,7 +74,7 @@ class TestPlant(unittest.TestCase): # |\label{test_example:TestClass}|
     def test_convert(self):
         """tests the functions needed by the convert function of CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
+        p.readParameters(path + "Heliantus_Pages_2013.xml", fromFile = True, verbose = False)
         p.initialize(False)
         p.simulate(76)
         nodes = np.array([np.array(a) / 100 for a in p.getNodes()])  # convert to numpy array, and from cm to m
@@ -125,7 +125,7 @@ class TestPlant(unittest.TestCase): # |\label{test_example:TestClass}|
 
     def test_DB_delay(self):
         p = pb.MappedPlant(2)
-        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
+        p.readParameters(path + "Heliantus_Pages_2013.xml", fromFile = True, verbose = False)
 
         p.initializeDB()
         srp = p.getOrganRandomParameter(1)[0]
