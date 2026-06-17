@@ -20,7 +20,7 @@ scale_elongation.data = np.ones(len(scale_elongation.data) - 1) # No scaling
 se = pb.ProportionalElongation()  # Elongation function
 se.setBaseLookUp(scale_elongation) # |\label{l3_1_carbon:GridEnd}|
 
-# Instantiate root system for a maize plant
+# Instantiate a maize plant
 plant = pb.Plant()
 plant.setRandomSeed(0)
 filename = "../../modelparameter/structural/rootsystem/Zea_mays_4_Leitner_2014"

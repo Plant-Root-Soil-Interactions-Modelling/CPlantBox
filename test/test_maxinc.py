@@ -9,6 +9,8 @@ sys.path.append('..')
 
 import plantbox as pb
 
+rootparfiles = ['../modelparameter/structural/rootsystem/Zea_mays_3_Postma_2011.xml']
+
 class TestMaxInc(unittest.TestCase):
     def _short_sim(self, dt: int, soildepth: float, layers: float, rootparfile: str, maxinc: float, re_reduction: np.array):
         """ A short root growth simulation (1 step) using RootSystem::simulate(double dt, double maxinc_, ProportionalElongation* se, bool verbose) """
@@ -22,41 +24,41 @@ class TestMaxInc(unittest.TestCase):
         se.setBaseLookUp(scale_elongation)
 
         #--- Update root parameters
-        rs = pb.RootSystem()
-        rs.setSeed(0)
-        rs.readParameters(rootparname)
-        for p in rs.getRootRandomParameter():
+        plant = pb.Plant()
+        plant.setSeed(0)
+        plant.readParameters(rootparname)
+        for p in plant.getOrganRandomParameter(pb.OrganTypes.root):
             p.f_se = se  # set scale elongation function
             p.r = 5. # set a high initial growth
         
         #--- intialize root system
-        rs.initialize()
+        plant.initialize()
 
         #--- set a low maxinc and simulate        
         ol = 0.
-        rs.simulate(dt, maxinc, se, True)
+        plant.simulateLimited(dt, maxinc, "lengthTh", [1., 1., 1., 1., 1.], se, True)
         
         #--- get actual root increment
-        l = np.sum(rs.getParameter('length'))
+        l = np.sum(plant.getParameter('length'))
         self.inc =  l - ol
 
     def test_WithoutReduction(self):
         """ Tests RootSystem::simulate(double dt, double maxinc_, ProportionalElongation* se, bool verbose) without re_reduction"""
-        rootparfile = '../modelparameter/structural/rootsystem/Zea_mays_3_Postma_2011.xml'        
-        tol = 0.1 # set tolerance as maxinc runs binary search [cm]        
+        tol = 0.1 # set tolerance as maxinc runs binary search [cm]
         maxinc = 4.
         layers=60
-        self._short_sim(dt=1, soildepth=180, layers=layers, rootparfile=rootparfile, maxinc=maxinc, re_reduction=np.ones((layers-1,)))
-        self.assertGreater(maxinc+tol, self.inc, 'maxinc not taking an effect')
+        for rootparfile in rootparfiles:
+            self._short_sim(dt=1, soildepth=180, layers=layers, rootparfile=rootparfile, maxinc=maxinc, re_reduction=np.ones((layers-1,)))
+            self.assertGreater(maxinc+tol, self.inc, 'maxinc not taking an effect')
 
     def test_WithReduction(self):
         """ Tests RootSystem::simulate(double dt, double maxinc_, ProportionalElongation* se, bool verbose) with re_reduction"""
-        rootparfile = '../modelparameter/structural/rootsystem/Zea_mays_3_Postma_2011.xml'        
-        tol = 0.1 # set tolerance as maxinc runs binary search [cm]        
+        tol = 0.1 # set tolerance as maxinc runs binary search [cm]
         maxinc = 4.
         layers=60
-        self._short_sim(dt=1, soildepth=180, layers=layers, rootparfile=rootparfile, maxinc=maxinc, re_reduction=np.ones((layers-1,))*0.9) # -10% reduction
-        self.assertGreater(maxinc+tol, self.inc, 'maxinc not taking an effect')
+        for rootparfile in rootparfiles:
+            self._short_sim(dt=1, soildepth=180, layers=layers, rootparfile=rootparfile, maxinc=maxinc, re_reduction=np.ones((layers-1,))*0.9) # -10% reduction
+            self.assertGreater(maxinc+tol, self.inc, 'maxinc not taking an effect')
  
 if __name__ == '__main__':
     unittest.main(verbosity=2)
