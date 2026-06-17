@@ -11,6 +11,8 @@ dt = 1  # days
 n_steps = round(sim_time / dt)
 carbon_source = 30.0  # Constant carbon to root system (g_Root/day) |\label{l3_1_carbon:SetStart}|
 root_SRL = 2.5  # Constant specific root length (cm_Root)/g_Root) |\label{l3_1_carbon:SetEnd}|
+paramName = "lengthTh"  # parameter name used to calculate the carbon use per organ
+scales = [1.0, 1.0, 1.0, 1.0, 1.0]  # weighting factors for the different organ types
 
 # Set up depth dependent elongation scaling function
 scale_elongation = pb.EquidistantGrid1D(0, -50, 100)  # |\label{l3_1_carbon:GridStart}|
@@ -40,7 +42,7 @@ for step in range(0, n_steps):  # |\label{l3_1_carbon:LoopStart}|
     maxinc = carbon_source * root_SRL
 
     # Simulate growth considering max root increment
-    plant.simulate(dt, maxinc, se, True)
+    plant.simulateLimited(dt, maxinc, paramName, scales, se, True)
 
     # Root growth and carbon balance
     total_root_len_ = plant.getSummed("length")
