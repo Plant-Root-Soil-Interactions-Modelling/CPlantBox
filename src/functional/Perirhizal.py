@@ -7,6 +7,7 @@ from scipy.spatial import ConvexHull, Voronoi
 from scipy.integrate import odeint
 from scipy import integrate
 
+import time #only used for a test
 
 import math
 
@@ -298,12 +299,18 @@ class PerirhizalPython(Perirhizal):
         for i in range(n_segments):
             rho = r_prhiz[i] / r_root[i]
             print("rootwateruptake",rootwateruptake[i],waterinflow[i])
-            Phi = lambda r_rel : Phi_soil[i] + (rootwateruptake[i]-waterinflow[i])*(r_rel**2*rho**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) + waterinflow[i]*np.log(r_rel)
-            radial_waterflow = lambda r_rel : waterinlow[i] + (rootwateruptake[i]-waterinflow[i]) * (1 - r_rel**2) / (1-1/rho**2)
+            Phi_out =  Phi_soil[i] -( (rootwateruptake[i]-waterinflow[i])*((0.53**2)*(rho**2)/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/0.53)-0.5)) + waterinflow[i]*np.log(0.53) )
+            #Phi_out = root_scalar(Phi_diff, method="brentq", bracket=[1e-5, Phi_soil]).root
+            Phi = lambda r_rel : Phi_out + (rootwateruptake[i]-waterinflow[i])*((r_rel**2)*(rho**2)/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) + waterinflow[i]*np.log(r_rel) #TODO: test using Phi_soil instead of Phi_outer
+            radial_waterflow = lambda r_rel : waterinflow[i] + (rootwateruptake[i]-waterinflow[i]) * (1 - r_rel**2) / (1-1/rho**2)
             Ds_func = lambda r_rel : Ds[i] * math.pow(vg.water_content(vg.fast_imfp[sp](Phi(r_rel)),sp),10/3) / (sp.theta_S**2) # Millington and Quirk 
             
             #values for the subfunction
-            r_crit = root_scalar(Phi, method="brentq", bracket=[1e-5, r_prhiz[i]]).root
+            print("Phi", Phi(1e-10), Phi(r_prhiz[i]))
+            # = root_scalar(Phi, method="brentq", bracket=[1e-10, r_prhiz[i]]).root
+            
+            r_crit = r_root[i] / 100
+            
             Ds0 = Ds[i]
             wateruptake_rel = (rootwateruptake[i] - waterinflow[i]) / ((r_prhiz[i]**2 - r_root[i]**2) * np.pi)
             critical_wateruptake = rootwateruptake[i] + wateruptake_rel * ((r_root[i]**2 - r_crit**2) * np.pi)
@@ -341,11 +348,11 @@ class PerirhizalPython(Perirhizal):
                     # outer c = c_inf + B*mean(E)(2*r**2,r**2)
                     
                     # B = (outer_c - c(r_prhiz)) / (mean(E)-E)
-                    # mean(E)(2*r**2,r**2)=E(r**2)+int(E(x)-E(r**2),r**2,2*r**2)=E(r**2)-int(r**2,2*r**2,y*exp(-y)/y)=E(r**2)+exp(-2*r**2)-exp(r**2)
-                    # B = (outer_c - c(r_prhiz)) / (exp(-2*r**2)-exp(-r**2))
+                    # mean(E)(2*r**2,r**2)=E(r**2)+int(E(x)-E(r**2),r**2,2*r**2) / r**2=E(r**2)-int(r**2,2*r**2,y*exp(-y)/y) / r**2=E(r**2)+(exp(-2*r**2)-exp(r**2)) / r**2
+                    # B = (outer_c - c(r_prhiz)) * (r_prhiz**2) / (exp(-2*r**2)-exp(-r**2))
                     # this means inflow can be computed
-                    B_abs = c_outer[i] / (math.exp(-2*r_prhiz[i]**2)-math.exp(-r_prhiz[i]**2))
-                    B_cprhiz = -1 / (math.exp(-2*r_prhiz[i]**2)-math.exp(-r_prhiz[i]**2))
+                    B_abs = c_outer[i] * (r_prhiz[i]**2)/ (math.exp(-2*r_prhiz[i]**2)-math.exp(-r_prhiz[i]**2))
+                    B_cprhiz = -1 * (r_prhiz[i]**2) / (math.exp(-2*r_prhiz[i]**2)-math.exp(-r_prhiz[i]**2))
                     
                     pre_inflow = 1
                     pre_c = - Ds_func(r_prhiz[i]) * B_cprhiz * math.exp(-r_prhiz[i]**2) / r_prhiz[i]**2 - waterinflow[i]
@@ -402,12 +409,15 @@ class PerirhizalPython(Perirhizal):
             if abs(m[3])<tol:
                 rsc[i] = - (Km[i]*n[3]) / (Km[i]*m[3]+n[3]-Vmax[i])
             else:
-                A = m[3]
+                A = m[3] #TODO: use a different letter here than the name of the matrix
                 B = (Km[i]*m[3]+n[3]-Vmax[i])
                 C = Km[i]*n[3]
                 p = B/A
                 q = C/A
-                rsc[i] = - p/2 + math.sqrt(p**2/4-q) #only the positive solution makes sense
+                if p>0:
+                    rsc[i] = - p/2 + math.sqrt(p**2/4-q) #only the positive solution makes sense #test for negative
+                else:
+                    rsc[i] = - p/2 - math.sqrt(p**2/4-q) #this is the standard case as m[3] will usually be negative
             Uptake[i] = m[3]*rsc[i]+n[3]
             ss_uptake[i] = m[0]*rsc[i]+n[0]
             sr_uptake[i] = m[1]*rsc[i]+n[1]
@@ -445,10 +455,6 @@ class PerirhizalPython(Perirhizal):
         watercontent, waterpotential, soluteconcentration discretisations
         """
         
-        #initialize the lambda functions
-        watercontent = lambda r : 0
-        waterpotential = lambda r : 0
-        soluteconcentration = lambda r : 0
         
         #simple computaitons
         rho = r_prhiz / r_root
@@ -457,13 +463,15 @@ class PerirhizalPython(Perirhizal):
         #r_rel0 = r_prhiz * Ds0 / self.Ds0
         
         #water is easy
-        Phi = lambda r : Phi_soil + (rootwateruptake - waterinflow) * ((r/r_root)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(r_prhiz/r)-0.5)) + waterinflow * np.log(r / r_prhiz)
+        Phi_out =  Phi_soil -( (rootwateruptake-waterinflow)*((0.53**2)*(rho**2)/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/0.53)-0.5)) + waterinflow*np.log(0.53) )
+        Phi = lambda r : Phi_out + (rootwateruptake - waterinflow) * ((r/r_root)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(r_prhiz/r)-0.5)) + waterinflow * np.log(r / r_prhiz)
+        Phi = lambda r : Phi_soil #TODO: remove test
         waterpotential_func = lambda r : vg.fast_imfp[sp](Phi(r))
-        watercontent_func = lambda r : vg.water_content(waterpotential(r),sp)
+        watercontent_func = lambda r : vg.water_content(waterpotential_func(r),sp)
         
         print("Phi_root",Phi(1e-10), Phi(r_prhiz))
-        r_crit = root_scalar(Phi, method="brentq", bracket=[1e-10,r_prhiz]).root
-        
+        #r_crit = root_scalar(Phi, method="brentq", bracket=[1e-10,r_prhiz]).root
+        r_crit = r_root / 100
         #solutes
         #r_eval = [r_crit, r_eval]
         r_eval = np.concatenate(([r_crit],r_eval))
@@ -519,7 +527,8 @@ class PerirhizalPython(Perirhizal):
         watercontent_times_r = np.ones(n)      
                 
         #waterflow
-        Phi = lambda r_rel : wateruptake_rel*(r_rel**2/2 - r_crit**2/2 - np.log(r_rel / r_crit)) #[cm2/d]
+        Phi = lambda r_rel : wateruptake_rel*(r_rel**2/2 - r_crit**2/2 - np.log(r_rel / r_crit)) + (critical_wateruptake - wateruptake_rel *(1-r_crit**2)*np.pi)*np.log(r_rel)#[cm2/d]
+        Phi = lambda r_rel : vg.fast_imfp[sp](-200)
         radial_waterflow = lambda r_rel : - (critical_wateruptake - wateruptake_rel*(r_rel**2 - r_crit**2)*np.pi)
         watercontent = lambda r_rel : vg.water_content(vg.fast_imfp[sp](Phi(r_rel)), sp)
         Ds = lambda r_rel : Ds0 * math.pow(watercontent(r_rel),10/3) / (sp.theta_S**2)
@@ -592,9 +601,9 @@ class PerirhizalPython(Perirhizal):
         F_tilde_inv = np.zeros(n_segments)
         
         if self.lookup_table_solutes:
-            F=[(self.lookup_table_solutes((Phi_soil[i],0))-self.lookup_table_solutes((Phi_root[i],0))) for i in range(0, len(c_bulk))]
+            F=[(self.lookup_table_solutes((Phi_soil[i],0))-self.lookup_table_solutes((Phi_root[i],0))) for i in range(0, n_segments)]
         else:
-            F=[(self.integral_overDiffusion_(Phi_soil[i],self.sp)-self.integral_overDiffusion_(Phi_root[i],self.sp)) for i in range(0, len(c_bulk))]
+            F=[(self.integral_overDiffusion_(Phi_soil[i],self.sp)-self.integral_overDiffusion_(Phi_root[i],self.sp)) for i in range(0, n_segments)]
         
         #compute a prefactor
         D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
@@ -608,7 +617,7 @@ class PerirhizalPython(Perirhizal):
             a2=(1-F_tilde_inv[i])/(waterflow[i])
             p=Km[i]-a2*Vmax[i]-a1
             q=-Km[i]*a1
-            rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)
+            rsc[i]=-p/2-math.sqrt(pow(p/2,2)-q)
         
         
         return rsc
@@ -676,7 +685,7 @@ class PerirhizalPython(Perirhizal):
             if q>0:
                 print("q>0",Km[i],a1,F_tilde_inv[i],R_sr[i],c_bulk[i],watercontent[i])
                 q=0
-            rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)
+            rsc[i]=-p/2-math.sqrt(pow(p/2,2)-q)
         
 
         return rsc
@@ -916,15 +925,18 @@ class PerirhizalPython(Perirhizal):
         np.savez(filename, interface=interface, inner_kr_b_=inner_kr_b_, base_mfp_=base_mfp_, soil=list(sp))
         self.lookup_table = RegularGridInterpolator((inner_kr_b_, base_mfp_), interface)
         self.sp = sp
+        
+        print("Done with creating a lookup table for the hydraulic perirhizal resistance model")
+        return 0
 
-    def create_lookup_global(self, filename, sp):
+    def create_lookup_global(self, filename, dummy_sp = vg.Parameters([0.078, 0.43, 0.036, 1.56, 24.96])):
         """
         Precomputes all soil root interface potentials for a specific soil type
         and saves results into a 3D lookup table
 
         filename       three files are written (filename, filename_, and filename_soil)
-        sp             van genuchten soil parameters, , call
-                       vg.create_mfp_lookup(sp) before
+        dummy_sp       van genuchten soil parameters set for the perirhizal zone, not needed in the actual lookup table
+                       has been set to hydrus loam as a default
         """
 
         
@@ -952,7 +964,7 @@ class PerirhizalPython(Perirhizal):
         interface_vg = np.zeros((vg_m_n,sx_n))
         
         #construct a smaller lookup table for the simplified matrix flux potential
-        print("Creating a global lookup table for the matrix flux potential")
+        print("Creating a general lookup table for the matrix flux potential")
         for i, vg_m in enumerate(vg_m_):
             print(i, " / ", vg_m_n)
             sp_dummy = vg.Parameters([0.1,0.4,self.alpha_0,1./(1.-vg_m),1.0])
@@ -988,7 +1000,10 @@ class PerirhizalPython(Perirhizal):
                     interface[i, j, k] = PerirhizalPython.soil_root_interface_global_(self, inner_kr_b, base_mfp, vg_m)
         np.savez(filename, interface=interface, interface_vg=interface_vg, vg_m_=vg_m_, inner_kr_b_=inner_kr_b_, base_mfp_=base_mfp_, sx_=sx_, soil=list(sp))
         self.global_lookup_table = RegularGridInterpolator((vg_m_, inner_kr_b_, base_mfp_), interface)
-        self.sp = sp
+        self.sp = dummy_sp
+        
+        print("Doen with creating a general lookup table for the matrix flux potential")
+        return 0
     
     def create_integralDiffusion_lookup(self, filename, sp):
         """      
@@ -1605,13 +1620,20 @@ if __name__ == "__main__":
     # sand = [0.045, 0.43, 0.15, 3, 1000]
     # loam = [0.08, 0.43, 0.04, 1.6, 50]
     # clay = [0.1, 0.4, 0.01, 1.1, 10]
+    hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
     filename = "hydrus_loam"
     sp = vg.Parameters(hydrus_loam)
     vg.create_mfp_lookup(sp)
     peri = PerirhizalPython()
     #peri.create_lookup_mpi(filename, sp)  # takes some hours; mpiexec -n 4 python Perirhizal.py
+    start = time.time()
     peri.create_lookup(filename, sp)  # should be better
+    end = time.time()
+    print("Creating the simplified lookup table for hydrus loam took ", end - start, " seconds.")
+    start = time.time()
     peri.create_lookup_global(peri.water_filename)  # this is global
+    end = time.time()
+    print("Creating the general lookup table for all van Genuchten sets took ", end - start, " seconds.")
     
     # generate some tests
     
