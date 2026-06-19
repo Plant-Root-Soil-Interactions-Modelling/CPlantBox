@@ -617,7 +617,7 @@ class PerirhizalPython(Perirhizal):
             a2=(1-F_tilde_inv[i])/(waterflow[i])
             p=Km[i]-a2*Vmax[i]-a1
             q=-Km[i]*a1
-            rsc[i]=-p/2-math.sqrt(pow(p/2,2)-q)
+            rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)
         
         
         return rsc
@@ -685,7 +685,7 @@ class PerirhizalPython(Perirhizal):
             if q>0:
                 print("q>0",Km[i],a1,F_tilde_inv[i],R_sr[i],c_bulk[i],watercontent[i])
                 q=0
-            rsc[i]=-p/2-math.sqrt(pow(p/2,2)-q)
+            rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)
         
 
         return rsc

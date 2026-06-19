@@ -150,7 +150,7 @@ def run_perirhizal_test():
     #test the plots
     Phi_soil = vg.fast_mfp[peri.sp](-100)
     r_root = 0.02
-    r_prhiz = 1
+    r_prhiz = 0.6
     r_eval = CC#np.linspace(r_root, r_prhiz, 100)
     rootwateruptake = 0.2
     waterinflow = 0.1
@@ -314,7 +314,7 @@ def run_perirhizal_test():
         Phi_C = Phi_soil - (0.53**2+2*np.log(1/0.53))*Phi_A
         
         Phi_root_srnf = Phi_A*(1/rho**2+2*np.log(rho))+Phi_C
-        Phi_outer_srnf = Phi_C
+        Phi_outer_srnf = Phi_A + Phi_C
         
         #if waterstress, then Phi_A = - rho**2*Phi_C
         if Phi_A*(1/rho**2-np.log(1/rho**2))+Phi_C <=0:
@@ -402,8 +402,8 @@ def run_perirhizal_test():
         Phi_out = Phi_A*(1.0**2-np.log(1.0**2))+Phi_C
         # run the alpha omega model on solute flow (both steady state and steady rate)
         waterflow = root_wateruptake
-        result_solutes_ss = peri.soil_root_solutes_ss_([Phi_root_srnf], [Phi_outer_srnf], [mean_solute], [Vmax], [Km], Ds, [abs(radial_waterdemand)], peri.sp)
-        result_solutes_srnf = peri.soil_root_solutes_sr_([Phi_root_srnf], [Phi_outer_srnf], [rho], [mean_solute], [Vmax], [Km], Ds, [abs(radial_waterdemand)], peri.sp)
+        result_solutes_ss = peri.soil_root_solutes_ss_([Phi_root_srnf], [Phi_outer_srnf], [mean_solute], [Vmax], [Km], Ds, [-abs(radial_waterdemand)], peri.sp)
+        result_solutes_srnf = peri.soil_root_solutes_sr_([Phi_root_srnf], [Phi_outer_srnf], [rho], [mean_solute], [Vmax], [Km], Ds, [-abs(radial_waterdemand)], peri.sp)
         result_solutes_ss = result_solutes_ss[0]
         result_solutes_srnf = result_solutes_srnf[0]
         print("steadystate", result_solutes_ss, "steadyrate", result_solutes_srnf)
@@ -421,7 +421,13 @@ def run_perirhizal_test():
         for j in range(NC-1):
             
             r_rel = CC[j] / r_prhiz
+            #Phi_root_srnf = Phi_A*(1/rho**2+2*np.log(rho))+Phi_C
+            #Phi_outer_srnf = Phi_A + Phi_C
+            det = (1/rho**2+2*np.log(rho)) - 1
+            Phi_A = (1 * Phi_root_srnf - 1 * Phi_outer_srnf)/det
+            Phi_C = ( -1 * Phi_root_srnf + (1/rho**2+2*np.log(rho)) * Phi_outer_srnf)/det
             Phi_current = Phi_A*(r_rel**2-np.log(r_rel**2))+Phi_C
+            print("Phi_current",Phi_current,Phi_outer_srnf)
             #Phi_current = waterdemand*r_root*((r_rel*rho)**2/(2*(1-rho**2))-rho**2/(1-rho**2)*(np.log(r_rel**2)+0.5))+Phi_soil
             #F = peri.lookup_table_solutes((Phi_current,0))-F0
             F = peri.integral_overDiffusion_(Phi_current,peri.sp)-F0
@@ -429,8 +435,8 @@ def run_perirhizal_test():
             F_tilde=math.exp(D_tilde*F)
             F_tilde_inv=math.exp(-D_tilde*F)
             print("F_tilde", F_tilde)
-            solute_ss[r,j+1] = result_solutes_ss * F_tilde + (1-F_tilde) * solute_ss[r,0] / abs(radial_waterdemand)#waterdemand is assumed to be negative
-            solute_srnf[r,j+1] = result_solutes_srnf * F_tilde + (1-F_tilde) * solute_srnf[r,0] / abs(radial_waterdemand) #an uptake of both water and solute is assumed
+            solute_ss[r,j+1] = result_solutes_ss * F_tilde - (1-F_tilde) * solute_ss[r,0] / abs(radial_waterdemand)#waterdemand is assumed to be negative
+            solute_srnf[r,j+1] = result_solutes_srnf * F_tilde - (1-F_tilde) * solute_srnf[r,0] / abs(radial_waterdemand) #an uptake of both water and solute is assumed
         
         solutes_Tiina[r,0] = peri.solutesuptake_convdiff_([mean_water],[outer_conc], [Vmax], [Km], Ds, [waterflow], [r_root], [0.], [time/1.5], peri.sp)[0] 
         
