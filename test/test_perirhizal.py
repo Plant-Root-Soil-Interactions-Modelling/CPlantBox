@@ -645,8 +645,8 @@ for i in range(5):
     ax2.plot(CC, solute_dumux, "m", linestyle = linestyle_dumux, label = "solute_dumux")
     #ax2.plot(CC, solute_steadystate, "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
     #ax2.plot(CC, solute_steadyrate * solute_dumux[-1] / solute_steadyrate[-1], "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
-    ax2.plot(CC, solute_steadystate * solute_dumux[-1] / solute_steadystate[-1], "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
-    ax2.plot(CC, solute_farfield * solute_dumux[-1] / solute_farfield[-1], "m", linestyle = linestyle_special, label = "solute_farfield")
+    ax2.plot(CC, solute_steadystate , "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
+    ax2.plot(CC, solute_farfield , "m", linestyle = linestyle_special, label = "solute_farfield")
     #ax2.plot(CC, solute_Tiina * solute_dumux[-1] / outer_conc, "m", linestyle = linestyle_special, label = "solute_Tiina_scaled")
 
     ax1[i,1].set_xlabel("distance root [cm]")

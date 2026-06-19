@@ -314,19 +314,19 @@ class PerirhizalPython(Perirhizal):
             Ds0 = Ds[i]
             wateruptake_rel = (rootwateruptake[i] - waterinflow[i]) / ((r_prhiz[i]**2 - r_root[i]**2) * np.pi)
             critical_wateruptake = rootwateruptake[i] + wateruptake_rel * ((r_root[i]**2 - r_crit**2) * np.pi)
-            r_eval = [r_crit, r_root[i], r_prhiz[i]]
+            r_eval = [r_crit, r_root[i], (r_root[i]+r_prhiz[i])/2, r_prhiz[i]]
             
             #use the subfunction #TODO: alternative lookup table
             conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(Ds0, critical_wateruptake, wateruptake_rel, r_eval, sp)
             
             #fix discrepancy between critical and root radius
             #TODO: turn the means into floats instead of lists with one entry
-            conc_rel_c = conc_rel_c[1:]/conc_rel_c[1]
-            conc_mean_c = (conc_mean_c[1:]*(r_prhiz[i]**2-r_crit**2)-conc_mean_c[1]*(r_root[i]**2-r_crit*2))/(r_prhiz[i]**2-r_root[i]**2)
-            inflow_rel_c = inflow_rel_c[1:]/inflow_rel_c[1]
-            inflow_mean_c = (inflow_mean_c[1:]*(r_prhiz[i]**2-r_crit**2)-inflow_mean_c[1]*(r_root[i]**2-r_crit*2))/(r_prhiz[i]**2-r_root[i]**2)
-            Uptake_rel_c = Uptake_rel_c[1:]/Uptake_rel_c[1]
-            Uptake_mean_c = (Uptake_mean_c[1:]*(r_prhiz[i]**2-r_crit**2)-Uptake_mean_c[1]*(r_root[i]**2-r_crit*2))/(r_prhiz[i]**2-r_root[i]**2)
+            #conc_rel_c = conc_rel_c[1:]#/conc_rel_c[1]
+            #conc_mean_c = (conc_mean_c[1:]*(r_prhiz[i]**2-r_crit**2)-conc_mean_c[1]*(r_root[i]**2-r_crit*2))/(r_prhiz[i]**2-r_root[i]**2)
+            #inflow_rel_c = inflow_rel_c[1:]#/inflow_rel_c[1]
+            #inflow_mean_c = (inflow_mean_c[1:]*(r_prhiz[i]**2-r_crit**2)-inflow_mean_c[1]*(r_root[i]**2-r_crit*2))/(r_prhiz[i]**2-r_root[i]**2)
+            #Uptake_rel_c = Uptake_rel_c[1:]#/Uptake_rel_c[1]
+            #Uptake_mean_c = (Uptake_mean_c[1:]*(r_prhiz[i]**2-r_crit**2)-Uptake_mean_c[1]*(r_root[i]**2-r_crit*2))/(r_prhiz[i]**2-r_root[i]**2)
             
             #default prefactors for the steady state case
             pre_c = 0
@@ -373,16 +373,16 @@ class PerirhizalPython(Perirhizal):
             b = np.zeros((4,2)) #right hand side of the linear equation, one for absolute values, one for the rsc value
             
             #c11 * ss flow + c12 * sr uptake + c13 * rsc = c_mean
-            A[0,0] = inflow_mean_c[0]
-            A[0,1] = Uptake_mean_c[0]
-            b[0,1] = -conc_mean_c[0]
+            A[0,0] = inflow_mean_c[-1]
+            A[0,1] = Uptake_mean_c[-1]
+            b[0,1] = -conc_mean_c[-1]
             b[0,0] = c_soil[i]
             
             #c21 * ss flow + c22 * sr uptake + c23 * rsc = c_prhiz
-            A[1,0] = inflow_rel_c[0]
-            A[1,1] = Uptake_rel_c[0]
+            A[1,0] = inflow_rel_c[-1]
+            A[1,1] = Uptake_rel_c[-1]
             A[1,2] = -1
-            b[1,1] = -conc_rel_c[0]
+            b[1,1] = -conc_rel_c[-1]
             
             #ss flow + sr uptake = Uptake
             A[2,0] = 1
@@ -481,7 +481,7 @@ class PerirhizalPython(Perirhizal):
         
         conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(Ds0, critical_wateruptake, wateruptake_rel, r_eval, sp)
         
-        soluteconcentration = c_root * conc_rel_c[1:] + ss_uptake * inflow_rel_c[1:] + sr_uptake * Uptake_rel_c[1:]     
+        soluteconcentration = c_root * conc_rel_c + ss_uptake * inflow_rel_c + sr_uptake * Uptake_rel_c     
         
         watercontent = np.array([watercontent_func(r) for r in r_eval])
         waterpotential = np.array([waterpotential_func(r) for r in r_eval])
@@ -513,7 +513,7 @@ class PerirhizalPython(Perirhizal):
         #TODO:formulate this for ln r so as to make it more robust against small critical radii
         
         r_crit = r_eval[0]
-        
+        r_eval = r_eval[1:]
         n = len(r_eval)
         
         conc_rel_c = np.ones(n) 
@@ -550,7 +550,7 @@ class PerirhizalPython(Perirhizal):
         conc_mean_c = np.array([np.average(conc_rel_c[0:j], weights=watercontent_times_r[0:j]) for j in range(1,n)])       
         inflow_mean_c = np.array([np.average(inflow_rel_c[0:j], weights=watercontent_times_r[0:j]) for j in range(1,n)])       
         Uptake_mean_c = np.array([np.average(Uptake_rel_c[0:j], weights=watercontent_times_r[0:j]) for j in range(1,n)])       
-        
+        print("n conc_mean_c",n,len(conc_mean_c), conc_mean_c)
         return conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c
     
     def soil_root_solutes_combined(self, Phi_soil, rootwateruptake, soilwateruptake, c_prhiz, c_bulk, Vmax, Km, Ds, waterflow, sp):
