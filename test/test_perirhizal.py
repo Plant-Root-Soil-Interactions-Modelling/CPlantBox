@@ -33,8 +33,8 @@ do_computation = True #should the computation be run or take the data from a sav
 
 # general parameters
 
-max_time = 1 #d
-n_times = 2 # number of time intervals
+max_time = 10 #d
+n_times = 2000 # number of time intervals
 times = np.linspace(0,max_time,n_times)[1:]
 r_prhiz = 0.6 # cm
 r_root = 0.02 # cm
@@ -217,7 +217,7 @@ def run_perirhizal_test():
     
     for r, dt in enumerate(dt_):
         
-        dampening = 0*0.01 #slow down the inflow from outside
+        dampening = 0.01 #slow down the inflow from outside
 
         time = simtimes[r] 
         print('time',time)
@@ -262,8 +262,8 @@ def run_perirhizal_test():
         #s.setParameter( "Soil.BC.Bot.SValue", str(root_soluteuptake))
         #s.initializeProblem(maxDt = 0.01)
         
-        s.setSource({NC-2: 1 * outer_watersource * volumes[-1] *length})
-        s.setSource({0: root_soluteuptake * 62, NC-2: 1* outer_solutesource * volumes[-1] * length * 62}, eq_idx = 1) #factor 1000 is important for dumux as in the richards wrapper it is divided by 1000
+        s.setSource({NC-2: 100 * outer_watersource * volumes[-1] *length})
+        s.setSource({0: 10*root_soluteuptake * 62, NC-2: 1* outer_solutesource * volumes[-1] * length * 62}, eq_idx = 1) #factor 1000 is important for dumux as in the richards wrapper it is divided by 1000
         
         s.solve(dt, saveInnerFluxes_ = True)
         Wvolafter = cellVolumes*s.getWaterContent() # cm3
