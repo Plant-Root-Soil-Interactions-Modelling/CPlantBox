@@ -46,7 +46,7 @@ p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer |\lab
 # Plant
 plant = pb.MappedPlant()  # |\label{l51:plant}|
 path = "../../modelparameter/structural/plant/"
-filename = "Triticum_aestivum_test_2021"
+filename = "Triticum_aestivum_test_2021_shapeType2"
 plant.readParameters(path + filename + ".xml")
 
 plant.setGeometry(soil_domain)  # creates soil space to stop roots from growing out of the soil
@@ -84,7 +84,7 @@ for i in range(n_steps):  # |\label{l51:loop}|
         cells=True,
         ea=ea,
         es=es,
-        PAR=weather_data_i["PAR"] * (24 * 3600) / 1e4,  # (mol m-2 s-1) -> (mol cm-2 d-1)
+        PAR=weatherData_i["PAR"] * (24 * 3600) / 1e4,  # (mol m-2 s-1) -> (mol cm-2 d-1)
         TairC=weatherData_i["Tair"],
         verbose=0,
     )  # |\label{l51:solve}|

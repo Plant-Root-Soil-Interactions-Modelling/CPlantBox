@@ -200,7 +200,7 @@
         <!--delay between latteral creation and start of nodal growth-->
         <parameter name="lmax" value="35"/>
         <!--Maximal stem length [cm]-->
-        <parameter name="ln" value="8"/>
+        <parameter name="ln" value="8.75"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="r" value="1"/>
         <!--Initial growth rate [cm day-1]-->
@@ -221,7 +221,6 @@
         <parameter name="geometryN" value="100"/>
         <!--leaf geometry resolution-->
         <parameter name="gf" value="3"/>
-        <parameter name="ldelay" value="5"/>
         <!--Growth function number [1]-->
         <parameter name="isPseudostem" value="1"/>
         <!--Do the leaf sheaths make a pseudostem?-->
@@ -251,16 +250,17 @@
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1"/>
         <!--Axial resolution [cm] (minimal segment size)-->
-        <parameter name="la" value="35"/>
+        <parameter name="la" value="0"/>
         <!--Apical zone [cm]-->
-        <parameter name="lb" value="3"/>
+        <parameter name="lb" value="8"/>
         <!--Basal zone [cm]-->
+        <parameter name="ldelay" value="-1"/>
         <!--Lateral emergence delay [day]-->
         <parameter name="lmax" value="43"/>
         <!--Maximal leaf length [cm]-->
         <parameter name="ln" value="0"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="r" value="1"/>
+        <parameter name="r" value="4"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Leaf life time [day]-->
@@ -272,15 +272,14 @@
         <!--Number of trials of leaf tropism-->
         <parameter name="tropismS" value="0.02"/>
         <!--Mean value of expected change of leaf tropism [1/cm]-->
-        <parameter name="leafGeometry" phi="-3" x="1"/>
+        <parameter name="leafGeometry" phi="-35" x="0"/>
         <!--Leaf geometry parametrisation parameter-->
-        <parameter name="leafGeometry" phi="-2.1000000000000001" x="1"/>
+        <parameter name="leafGeometry" phi="-30" x="1"/>
         <!--Leaf geometry parametrisation parameter-->
-        <parameter name="leafGeometry" phi="0" x="1"/>
         <!--Leaf geometry parametrisation parameter-->
-        <parameter name="leafGeometry" phi="2.4500000000000002" x="1"/>
+        <parameter name="leafGeometry" phi="-5" x="1"/>
         <!--Leaf geometry parametrisation parameter-->
-        <parameter name="leafGeometry" phi="3.5" x="1"/>
+        <parameter name="leafGeometry" phi="0" x="0"/>
         <!--Leaf geometry parametrisation parameter-->
     </leaf>
 </plant>

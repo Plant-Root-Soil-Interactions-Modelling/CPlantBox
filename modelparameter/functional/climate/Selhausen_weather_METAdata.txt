@@ -6,6 +6,6 @@ data from the TERENO database https://ddp.tereno.net/ddp/
 "co2": CO2 partial pressure [mol mol-1]
 "RH": relative air humidity [-]	
 "Tair": air temperature [°C]	
-"Pair": athmospheric pressure [Pa]	
-"ps": soil water potential [cm]?	
+"Pair": athmospheric pressure [kPa]	
+"ps": soil water potential [cm]	
 "nm": ?

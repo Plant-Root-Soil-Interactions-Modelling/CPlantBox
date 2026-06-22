@@ -1,4 +1,4 @@
-{"InitialValues": {"initValST": {"value": 0.2, "description": "Initial concentration in sieve tube"},
+{"InitialValues": {"initValST": {"value": 0.3, "description": "Initial concentration in sieve tube"},
 "initValMeso": {"value": 0, "description": "Initial concentration in mesophyll"}, 
 "withInitVal": {"value": true, "description": "Use initial values"}}, 
 "Growth": {
