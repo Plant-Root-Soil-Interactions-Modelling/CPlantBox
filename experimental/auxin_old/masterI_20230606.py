@@ -18,6 +18,8 @@ Q:
     - get concentration pick after decapitation
     - reserve of S_ST at the beginning (change of density or An?)
 - the computation is slow again. but is it my computer or is it the setup?
+- currently testing 6 days vs 20
+-to check node activation try?? 21d (21d 5h?)
 """
 import types
 import importlib
@@ -266,6 +268,7 @@ def killChildren(orgToKill):
     toFill = orgToKill.getNodeIds()
     orgToKill.alive = False
     orgToKill.active = False
+    #print('killChildren', orgToKill.getId(), orgToKill.isActive(), orgToKill.isAlive())
     orgToKill.budStage = -1
     if orgToKill.getNumberOfChildren() > 0:
         toFill_ = [killChildren(orgToKill.getChild(ni)) for ni in range(orgToKill.getNumberOfChildren())]
@@ -284,7 +287,7 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
            fileparam ="UQ_1Leaf" , doCondition = doConditionDefault,
            Klight = 0.05, BerthLim = -1,
           simMax_= -1.,
-          leafAsIAASource_ = True, limLenActive_ = 0.9, growthUpToNode = 9, successPoints = successPointsDefault):
+          leafAsIAASource_ = True, limLenActive_ = 0.9, successPoints = successPointsDefault):
     outcondition = 0
     useCWGr = True
     dt_lastWrote = time.time() - dt_write * 2
@@ -512,7 +515,7 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
     r.Mloading = 3.3*1e-3#0.2#
     r.Gr_Y = 1#0.75
     r.CSTimin = 0.25#0.3#    
-    r.k_S_ST = 5/25 *1000  #daudet2002 * 1000 
+    r.k_S_ST = 5/25 *1000 *0. #daudet2002 * 1000 
     r.k_S_meso = 0.# 5/25 *1000 
     print("change for the cmeso day/night")
     r.C_targ = r.CSTimin  * 6
@@ -688,6 +691,8 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
     idRoots = np.array([ll_.getId() for ll_ in roots])
     lr = dict(zip(idRoots, lr))
     grr_th = np.array([np.nan])
+    didDecapitation = False
+    numLNodes = -1
     while  simDuration < simMax:#
         temp_time = time.time()
         
@@ -870,7 +875,7 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
         if __name__ == '__main__':
             #int(((simDuration%1)%24)*(24*60)),"mn",
             print("\n\n\n\t\tat ", int(np.floor(simDuration)),"d", int((simDuration%1)*24),"h",round(weatherX["Qlight"] *1e6),"mumol m-2 s-1",
-                    'burnInTime?',r.burnInTime,'doDecapitation?',doDecapitation)
+                    'burnInTime?',r.burnInTime,'didDecapitation?',didDecapitation, numLNodes, nodeD)
             if Q_in >0.:
                 print("Error in Suc_balance:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(error, div0f(error,Q_in, 1.)))
             #print("Error in growth:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(errorGri, relErrorGri))
@@ -925,30 +930,15 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
         
         dtreal = ( time.time() - dt_lastWrote)
         dtsimsim = simDuration - dt - dtSIM_lastWrote
+        budStage = np.array([org.budStage for org in orgs]) 
         if(not r.burnInTime) and (doDict or ((dtreal >= dt_write) and (dtsimsim >= dtSIM_write) )):
             write_file_array("time_all", np.array([thread, simDuration,simMax,temp_time , start_time,temp_time - start_time]))
             write_file_float("time", simDuration)
-            #write_file_array("OutAuxin", OutAuxin)
-            #write_file_array("Q_Auxin", Q_Auxin)
             write_file_array("C_Auxin", C_Auxin)
             auxTested= np.array([org.auxTested for org in orgs])
             write_file_array("auxTested", auxTested)
             write_file_array("InAuxinAll", np.array(r.cpb_2_pm.AuxinSource)* r.auxin_P * dt)
-            #write_file_array("Delta_JA_ST", Delta_JA_ST)
-            #write_file_array("JAuxin_ST2", JAuxin_ST2)
-
-
-            #write_file_float("doDecapitation", doDecapitation)
-            #write_file_float("simMax", simMax)
-            #write_file_float("numLNodes",numLNodes)
-            #id_orgs = [np.full(org.getNumberOfNodes()-1,org.getId()) for org in orgs]
-            #id_orgs = np.array([item for sublist in id_orgs for item in sublist])
-            #write_file_array("id_orgsPerNodes", id_orgs)
-
-            #write_file_array("idnodeOfOrg", idnodeOfOrg)
             
-                
-            #write_file_array("length_org", length_org)
             write_file_array("lengthth_org", lengthth_org)
             
             if((min(lengthth_org[:2]) == 0) and (min(maxLBudDormant)>0)):
@@ -975,7 +965,6 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
             #write_file_array("activatedSUC", activated)
             agesStems = np.array([org.getAge() for org in orgs]) 
             write_file_array("agesStems", agesStems)
-            budStage = np.array([org.budStage for org in orgs]) 
             write_file_array("budStage", budStage)
             BerthFact = np.array([org.BerthFact for org in orgs]) 
             write_file_array("BerthFact", BerthFact)
@@ -992,62 +981,62 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
             write_file_array("C_ST_s1",C_ST[stemNodes])
             write_file_float("Qexudi",sum(Q_Exud_i))
             write_file_float("Qrmi",sum(Q_Rm_i))
+        
+        if (__name__ == '__main__') and (simDuration > startDate):
+            print("numLNodes",numLNodes,simMax)
+            print("sucTested",sucTested)
+            print("auxTested",auxTested)
+            print("lengthth_buds",lengthth_org)
+            print("buds_age",buds_age)
+            print("BerthFact",BerthFact)
+            print("budStage",budStage)
+            print("sum aux source", sum(AuxinSource))
+            print("stem length",lln)
+            print("growth rate",(lln - lln_old)/dt)
+            print("leaf_th length",ll)
+            #print('true', ll_true)
+            print("growth rate",(ll - ll_old)/dt)
+            print('leaf ages',leaf_ages)
+            #print("get ids",idRoots)
+            print("root_th length",sum([value.item() for key, value in lr.items()]))
+            gr_real = []
+            for key, value in lr.items():
+                if key in lr_old:
+                    gr_real.append((value.item() - lr_old[key].item())/dt)
+                else:
+                    gr_real.append(value.item()/dt)
+            print("growth rate",sum(gr_real))
+            print("growth_th",sum(grr_th))
+            #print("leaf_obs length",np.array([ll.getLength(True) for ll in leaves]))
+            print("leaf",nodeD,len(leaves),leafArea,maxLeafArea)
+            print("do decapitate?",numLNodes,  (not r.burnInTime), nodeD  , (not changedSimMax))
+        if(changedSimMax):
+            timeSinceDecap = simDuration - (simMax - testTime)
+            if((not (budStage[(nodeD):] ==-1).all()) and (nodeD>0)):
+                print(thread, "not (arr[(nodeD+1):] ==-1).all()")
+                print(budStage,nodeD,budStage[(nodeD+1):] ,(budStage[(nodeD):] ==-1),(not (budStage[(nodeD):] ==-1).all()))
+                errorMessage = str(thread)+" not (arr[(nodeD+1):] ==-1).all() "
+                erM2 = str(budStage) +" "+str(nodeD) +" "+str(budStage[(nodeD+1):]) \
+                    +" "+str((budStage[(nodeD):] ==-1)) +" "+str((not (budStage[(nodeD):] ==-1).all()))
+                raise Exception(errorMessage + erM2)
+        else:
+            timeSinceDecap = -1
+        
+        outcondition = doCondition(r,timeSinceDecap, thread,(temp_time - start_time)/(60*60*24), outcondition, nodeD,allInputsdict)
+        ctoohigh = (budStage[0]==2)and (max(C_ST)>3)
+        if (((temp_time - start_time)/(60*60*24) > 2) or (outcondition != 0) or ctoohigh): #success or falur
+            simMax = -1
             
-            if __name__ == '__main__':
-                print("numLNodes",numLNodes,simMax)
-                print("sucTested",sucTested)
-                print("auxTested",auxTested)
-                print("lengthth_buds",lengthth_org)
-                print("buds_age",buds_age)
-                print("BerthFact",BerthFact)
-                print("budStage",budStage)
-                print("sum aux source", sum(AuxinSource))
-                print("stem length",lln)
-                print("growth rate",(lln - lln_old)/dt)
-                print("leaf_th length",ll)
-                #print('true', ll_true)
-                print("growth rate",(ll - ll_old)/dt)
-                print('leaf ages',leaf_ages)
-                #print("get ids",idRoots)
-                print("root_th length",sum([value.item() for key, value in lr.items()]))
-                gr_real = []
-                for key, value in lr.items():
-                    if key in lr_old:
-                        gr_real.append((value.item() - lr_old[key].item())/dt)
-                    else:
-                        gr_real.append(value.item()/dt)
-                print("growth rate",sum(gr_real))
-                print("growth_th",sum(grr_th))
-                #print("leaf_obs length",np.array([ll.getLength(True) for ll in leaves]))
-                print("leaf",nodeD,growthUpToNode,len(leaves),leafArea,maxLeafArea)
-                print("do decapitate?",numLNodes, growthUpToNode, (not r.burnInTime), nodeD  , (not changedSimMax))
-            if(changedSimMax):
-                timeSinceDecap = simDuration - (simMax - testTime)
-                if((not (budStage[(nodeD):] ==-1).all()) and (nodeD>0)):
-                    print(thread, "not (arr[(nodeD+1):] ==-1).all()")
-                    print(budStage,nodeD,budStage[(nodeD+1):] ,(budStage[(nodeD):] ==-1),(not (budStage[(nodeD):] ==-1).all()))
-                    errorMessage = str(thread)+" not (arr[(nodeD+1):] ==-1).all() "
-                    erM2 = str(budStage) +" "+str(nodeD) +" "+str(budStage[(nodeD+1):]) \
-                        +" "+str((budStage[(nodeD):] ==-1)) +" "+str((not (budStage[(nodeD):] ==-1).all()))
-                    raise Exception(errorMessage + erM2)
-            else:
-                timeSinceDecap = -1
+        if len(orgs) != len(budStage):
+            print(budStage, len(budStage))
+            print(ot_orgs,len(ot_orgs))
+            print(len(orgs))
+            raise Exception
+        if not doDict:
+            dt_lastWrote = time.time()
+            dtSIM_lastWrote = simDuration - dt
             
-            outcondition = doCondition(r,timeSinceDecap, thread,(temp_time - start_time)/(60*60*24), outcondition, nodeD,allInputsdict)
-            ctoohigh = (budStage[0]==2)and (max(C_ST)>3)
-            if (((temp_time - start_time)/(60*60*24) > 2) or (outcondition != 0) or ctoohigh): #success or falur
-                simMax = -1
-                
-            if len(orgs) != len(budStage):
-                print(budStage, len(budStage))
-                print(ot_orgs,len(ot_orgs))
-                print(len(orgs))
-                raise Exception
-            if not doDict:
-                dt_lastWrote = time.time()
-                dtSIM_lastWrote = simDuration - dt
-                
-            stem = r.plant.getOrgans(3, False)[0]
+        stem = r.plant.getOrgans(3, False)[0]
         
         ### size of phytomeres
         
@@ -1082,34 +1071,36 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
         leafArea = leaves[-1].getLength(False) * leaves[-1].getParameter("Width_blade")  
         maxLeafArea = leaves[-1].getParameter("k") * leaves[-1].getParameter("Width_blade") 
         
-        forDecapitate = (numLNodes >= growthUpToNode) and (not r.burnInTime) and (nodeD !=0)  and (not changedSimMax)
+        forDecapitate = (numLNodes >= nodeD) and (not r.burnInTime) and (nodeD !=0)  and (not changedSimMax)
         
-        if  (numLNodes >= growthUpToNode) and (not r.burnInTime) and (nodeD !=0) and (not changedSimMax): 
-            print('do decapitate')
-            raise Exception
+        if  (numLNodes >= nodeD) and (not r.burnInTime) and (nodeD !=0) and (not changedSimMax): 
             org_ = r.plant.getOrgans(3, False)[0] #get first (==main) stem
             org_.active = False
+            if(org_.isActive()):
+                raise Exception
+            print('do decapitate', org_.getId(), org_.isActive())
             org_.budStage = -1
             lastNode = leaves[nodeD -1].parentNI-1
             toKil = np.array([org_.getNodeId(nnid) for nnid in range(lastNode,org_.getNumberOfNodes())])#-1
             kid_pni = np.array([org_.getChild(kkiidd).getNodeId(0) for kkiidd in range(org_.getNumberOfChildren())])
             kid_id = np.array([org_.getChild(kkiidd).getId() for kkiidd in range(org_.getNumberOfChildren())])
             
-            if __name__ == '__main__':
-                print(toKil,org_.getNumberOfChildren())
-                print("kid_pni",kid_pni,kid_id)
+            # if __name__ == '__main__':
+                # print(toKil,org_.getNumberOfChildren())
+                # print("kid_pni",kid_pni,kid_id)
                 
             if len(kid_pni) > 0:
                 selectKids =np.concatenate(([np.where( kid_pni ==toKill_)[0] for toKill_ in toKil]))#,np.where(kid_pni==toKil[1])[0]
-                if __name__ == '__main__':
-                    print("selectKids",selectKids)
                 dying_kids = np.array([org_.getChild(kkiidd) for kkiidd in selectKids])
+                if __name__ == '__main__':
+                    print("selectKids", np.array([org_.getId() for org_ in dying_kids]))
                 k_ =[killChildren(ni) for ni in dying_kids]
                 toFill_ = [item for sublist in k_ for item in sublist]
                 toFill_= np.concatenate((toFill_,toKil))
                 toKil  = np.array(np.unique(toFill_),dtype = np.int32)
             r.plant.node_Decapitate = toKil[1:]
             doDecapitation = False
+            didDecapitation = True
             if __name__ == '__main__':
                 print("toKil end",toKil)
             if not changedSimMax:
@@ -1118,11 +1109,10 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
                 changedSimMax = True
                 dt = dtAfter #1MIN
                 toAdd = np.ceil(simDuration) - simDuration #to have start of day after decapitation
-        #assert numLNodes <= growthUpToNode
         #if doDecapitation and (numLNodes > nodeD): 
          #   raise Exception("too many linking nodes")
         
-        if (not doDecapitation) and (not changedSimMax) and (nodeD ==0) and (numLNodes >=growthUpToNode): 
+        if (not doDecapitation) and (not changedSimMax) and (nodeD ==0) and (numLNodes >=nodeD): 
             if simMax_ <0:
                 simMax = simDuration + testTime
             changedSimMax = True
@@ -1271,7 +1261,8 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
         if not r.burnInTime:
             grr_th = np.array([ll_.getTheoreticalGrowth(dt) for ll_ in roots])/dt
             r.plant.simulate(dt, False)
-              
+            org_ = r.plant.getOrgans(3, False)[0] #get first (==main) stem
+            print('after simulate', org_.getId(), org_.isActive())  
             
         Ntbu = Nt
         Nt = len(r.plant.nodes)
@@ -1304,7 +1295,7 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
         # if r.burnInTime and \
         #  ((activeAtThreshold_suc and (min(C_ST)>0.)) or \
         #  (activeAtThreshold_auxin and (mainStemAux_std < 0.01) and (mainStemAux_mean > 1) )):
-        r.burnInTime = False
+
         if r.burnInTime and (mainStemAux_std < 0.01) and (mainStemAux_mean > 1) : 
             r.burnInTime = False
             r.auxin_init_mean = mainStemAux_mean
@@ -1444,7 +1435,7 @@ def runSim(startDate, directoryN_,doVTP, verbosebase,
 
 
 if __name__ == '__main__':
-    startDate = int(sys.argv[1])
+    startDate = float(sys.argv[1])
     
     start_time_ = time.time()
     print("intern pid_start",psutil.Process().memory_info())
@@ -1491,7 +1482,7 @@ if __name__ == '__main__':
     fileparam_ = "UQ_1LeafRS"
         
     BerthLim_ =  3.
-    thresholdSuc_ = 1#3e-2 #*2*2
+    thresholdSuc_ = 0.6 * 0.15#3e-2 #*2*2
     simMax__ = -1
     runSim(startDate, directoryN_ = directoryN, doVTP = 0, verbosebase = False,
     PRate_ = 6.8e-3, thresholdAux = 0, 
@@ -1510,7 +1501,7 @@ if __name__ == '__main__':
     #doCondition = doCondition_
            simMax_ = simMax__,
            fileparam =fileparam_,
-           leafAsIAASource_ = True, growthUpToNode =9
+           leafAsIAASource_ = True,
           )
     end_time_ = time.time()
     print(end_time_ - start_time_ )

@@ -62,12 +62,12 @@ void CPB_to_PM::computeAuxinValue(std::shared_ptr<CPlantBox::Organ> org)
 	}else{
 		if(org->getNumberOfNodes() >1)//concentration base - concentration next to it
 		{
-			externalAuxin = piafmunch->C_Auxinv.at(org->getNodeId(0) ) -  piafmunch->C_Auxinv.at(org->getNodeId(1) ) ;
+			externalAuxin = std::max(0.,piafmunch->C_Auxinv.at(org->getNodeId(0) ) -  piafmunch->C_Auxinv.at(org->getNodeId(1) )) ;
 		}else{
 			externalAuxin = piafmunch->C_Auxinv.at(org->getNodeId(0) )  ;//no solutions
 		}
 	}
-	if(org->auxTested > externalAuxin) // theory of canal created and maintained
+	if((org->auxTested > externalAuxin) || (org->auxTested < 0.)) // theory of canal created and maintained
 	{
 		org->setAuxTested(externalAuxin);
 	}
@@ -115,6 +115,7 @@ void CPB_to_PM::updateBudStage(double dt)// TODO: check at each time step
 					{
 						org->setBudStage(1);
 						org->setAge(0.); //reset age
+						updateBudStage(dt); // redo as might switch to level in one go
 						
 					}//congrats! you are released
 					break;
@@ -183,15 +184,14 @@ void CPB_to_PM::getRmaxLmax_st_f(std::shared_ptr<CPlantBox::Organ> org, int st, 
 {
     if(org->getBudStage() != 2)//org->getParameter("isBudType"))
 	{		
-		double maxLBudDormant_ = plant->maxLBudDormant.at(st);// todo check
-		double maxLBud_ = plant->maxLBud.at(st);// todo check
 		switch(org->getBudStage()) 
 		{
-				case -1:{rmax =  Rmax_st_f(st,ot); Lmax = org->getLength(false);break;}
+				case -1:{rmax =  Rmax_st_f(st,ot); // do not set rmax to 0 as create issues with the negative exponential growth
+						Lmax = org->getLength(false);break;}
 				case 0:{rmax = plant->budGR;//1 mm/d
-						Lmax = maxLBudDormant_; 
+						Lmax = plant->maxLBudDormant.at(st); 
 						break;}
-				case 1 :{rmax = plant->budGR;Lmax = maxLBud_;break;}//1 mm/d
+				case 1 :{rmax = plant->budGR;Lmax = plant->maxLBud.at(st);break;}//1 mm/d
 				//case 2 :{rmax =  Rmax_st_f(st,ot);//org->getParameter("r");
 				//		 Lmax = org->getParameter("k");break;}//1 mm/d
 				default:{std::cout<<"stem::simulate: budStage not recognised "<< org->getBudStage() <<std::flush;
@@ -228,6 +228,7 @@ double CPB_to_PM::getMaxVolumicGrowth(std::shared_ptr<CPlantBox::Organ> org, dou
 	if((org->organType() == 3)&&(org->getNumberOfLinkingNodes() > 0))
 	{
 		e = std::static_pointer_cast<CPlantBox::Stem>(org)->internodalGrowth_theory(rmax, dt, false);
+		e = std::max(0.,std::min(e, Lmax- org->getLength(false)));
 	}else{
 		double age_ = f_gf->getAge(Linit, rmax, Lmax, org->shared_from_this());		
 		//	params to compute growth

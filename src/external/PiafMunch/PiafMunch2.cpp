@@ -249,9 +249,9 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 			std::ofstream outfile;
 			outfile.open("errors.txt", std::ios_base::app); // append instead of overwrite
 			outfile<< std::endl<<"C_fluxes "<<t<<" "<<i<<" "<<CSTi<<" "<<CSTimin<<" "<<Q_ST[i]<<" qdot: "<<Q_ST_dot[i]<<", Fu: "<<Fu_lim <<std::flush;
-			outfile<<" rm:"<<Q_Rm_dot[i]<<" maxrm: "<<Q_Rmmax_dot[i]<<std::flush;
-			outfile<<" gr:"<<Q_Gtot_dot[i]<<" grmax: "<<Q_Gtotmax_dot[i]<<" exud:"<<Q_Exud_dot[i]<<" js:"<<Delta_JS_ST[i]<<std::flush;
-			outfile<<" ja:"<<Delta_JA_ST[i]<<" vol_ST:"<<vol_ST[i]<<std::flush;
+			outfile<<" rm:"<<Q_Rm_dot[i]<<" maxrm: "<<Q_Rmmax_dot[i]<<" exud"<<Q_Exudmax_<<std::flush;
+			outfile<<" gr:"<<Q_Gtot_dot[i]<<" grmax: "<<Q_Gtotmax_dot[i]<<" exud:"<<Q_Exud_dot[i]<<" js:"<<Delta_JS_ST[i]<<" Q_S_ST_dot:"<<Q_S_ST_dot[i]<<std::flush;
+			outfile<<" ja:"<<Delta_JA_ST[i]<<" vol_ST:"<<vol_ST[i]<<" Q_Fl[i]:"<<Q_Fl[i]<<std::flush;
 			outfile<<std::endl<<std::flush;
 			errorID = i; //will stop computation in PhloemFlux::f
 		}

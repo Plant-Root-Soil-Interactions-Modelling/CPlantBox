@@ -301,7 +301,9 @@ void Stem::simulate(double dt, bool verbose)
 			//set limit below 1e-10, as the test files see if correct length
 			//once rounded at the 10th decimal
 			//@see test/test_stem_ng.py
-			active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+			if(active){
+				active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+			}
 		}
 	} // if alive
 }
