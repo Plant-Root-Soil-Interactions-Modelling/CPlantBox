@@ -368,8 +368,8 @@ double Leaf::leafArea(bool realized, bool withPetiole) const {
                 // surface of basal zone
                 surfacePetiole = perimeter * param()->lb / 2;
                 // surface rest of leaf
-
-                surface_ = param()->areaMax * (leafLength(realized) / param()->leafLength());
+                double p = (leafLength(realized) / param()->leafLength());
+                surface_ = param()->areaMax * p*p;
             }
             if (withPetiole) {
                 surface_ += surfacePetiole;
