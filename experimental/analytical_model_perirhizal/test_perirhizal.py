@@ -34,7 +34,7 @@ do_computation = True #should the computation be run or take the data from a sav
 # general parameters
 
 max_time = 10 #d
-n_times = 2000 # number of time intervals
+n_times = 1000 # number of time intervals
 times = np.linspace(0,max_time,n_times)[1:]
 r_prhiz = 0.6 # cm
 r_root = 0.02 # cm
@@ -51,6 +51,8 @@ dt = max_time / n_times
 #space for the oupputs
 watercontent_dumux = np.zeros((n_tests, n_times, n_sp+1))
 soluteconcentration_dumux = np.zeros((n_tests, n_times, n_sp+1))
+watercontent_dumux2 = np.zeros((n_tests, n_times, n_sp+1))
+soluteconcentration_dumux2 = np.zeros((n_tests, n_times, n_sp+1))
 soluteconcentration_steadystate = np.zeros((n_tests, n_times, n_sp+1))
 watercontent_steadyrate = np.zeros((n_tests, n_times, n_sp+1))
 watercontent_steadyrate2 = np.zeros((n_tests, n_times, n_sp+1))
@@ -88,8 +90,10 @@ def run_perirhizal_test():
     
     #space for the outputs
     water_dumux = np.zeros((n_times, n_sp+1))
+    water_dumux2 = np.zeros((n_times, n_sp+1))
     water_sr2 = np.zeros((n_times, n_sp+1))
     solute_dumux = np.zeros((n_times, n_sp+1))
+    solute_dumux2 = np.zeros((n_times, n_sp+1))
     water_ss = np.zeros((n_times, n_sp+1))
     solute_ss = np.zeros((n_times, n_sp+1))
     water_sr = np.zeros((n_times, n_sp+1))
@@ -119,7 +123,7 @@ def run_perirhizal_test():
     # root conductivity and solute uptake parameters, it is chosen to be constant throughout the entire simulation time
     root_conductivity = 1e-4 #1/d
     inner_kr = root_conductivity * r_root * 2 * 3.14
-    waterdemand = -0.1 #cm/d
+    waterdemand = -0.05 #cm/d
     radial_waterdemand = 2*3.14*r_root * waterdemand #cm2/d
     Vmax = 4.0e-11 * 1 * (2*3.14*r_root) * (24*3600)  #mol/(cm2 s) * cm * cm * (s/d) -> mol / d 
     Vmax_per_area = Vmax / (1 * (2*3.14*r_root)) #mol / d /cm2 = mol/(cm2d)
@@ -127,7 +131,7 @@ def run_perirhizal_test():
     
     #DS_W = 1.902e-5 #cm2/s
     #Ds = DS_W / 10000#m2/s
-    Ds = 1.902e-5 #cm2/s # division by 2: from NO3 to H2PO4
+    Ds = 1.902e-5 / 2  #cm2/s # division by 2: from NO3 to H2PO4
     Ds = Ds * 24 * 3600 #cm2/d 
     
     outer_waterpotential = initial_waterpotential #cm
@@ -153,7 +157,7 @@ def run_perirhizal_test():
     r_prhiz = 0.6
     r_eval = CC#np.linspace(r_root, r_prhiz, 100)
     rootwateruptake = 0.2
-    waterinflow = 0.1
+    waterinflow = 0.05
     c_root = 0* 1e-7
     Ds0 = Ds
     ss_uptake = 0*1.e-7
@@ -181,6 +185,7 @@ def run_perirhizal_test():
 
     # initialise the dumux model
     s = RichardsWrapper(RichardsNCCylFoam())
+    s2 = RichardsWrapper(RichardsNCCylFoam())
 
     s.initialize()
     s.createGrid1d(np.linspace(r_root, r_prhiz, NC), length = length/100)  # [m] -> [cm]
@@ -203,8 +208,32 @@ def run_perirhizal_test():
     #s.setParameter("Component.MolarMass", "1.8e-2")
     s.setParameter("Component.MolarMass", "62.0")    
 
-    s.setParameter("Component.LiquidDiffusionCoefficient", str(Ds / 1.e4 / (24*3600)))  # m2 s-1
+    s.setParameter("Component.LiquidDiffusionCoefficient", str(Ds / 1.e4 / (24*3600) / 1000))  # m2 s-1 #TODO: this is not doing anything
     s.initializeProblem(maxDt = 0.01)
+    
+    s2.initialize()
+    s2.createGrid1d(np.linspace(r_root, r_prhiz, NC), length = length/100)  # [m] -> [cm]
+    s2.setVGParameters([soilVG])
+
+    # theta = 0.378, benchmark is set be nearly fully saturated, so we don't care too much about the specific values
+    s2.setHomogeneousIC(initial_waterpotential)  # cm pressure head
+
+    s2.setTopBC("constantFluxCyl",0.0)  #  [cm/day] "noFlux")#
+    #s.setTopBC("constantPressure",-200)  #  [cm/day] "noFlux")#
+    #s.setBotBC("constantFluxCyl",0.0) # "noFlux")#
+    s2.setBotBC("constantFluxCyl",waterdemand) # "noFlux")# Flux in cm/d
+    s2.setParameter("Soil.BC.Top.SType", "3")  # michaelisMenten=8 (SType = Solute Type)
+    s2.setParameter("Soil.BC.Top.CValue", "0.0")  # michaelisMenten=8 (SType = Solute Type)
+    s2.setParameter("Soil.BC.Bot.SType", "3")  # michaelisMenten=8 (SType = Solute Type)
+    s2.setParameter("Soil.BC.Bot.CValue", "0.0")
+
+    s2.setParameter("Soil.IC.C", str(initial_soluteconcentration))  # g / cm3  # TODO specialised setter?
+
+    #s.setParameter("Component.MolarMass", "1.8e-2")
+    s2.setParameter("Component.MolarMass", "62.0")    
+
+    s2.setParameter("Component.LiquidDiffusionCoefficient", str(Ds / 1.e4 / (24*3600)))  # m2 s-1
+    s2.initializeProblem(maxDt = 0.01)
 
     cellVolumes = s.getCellSurfacesCyl() * length # cm3
     print("cellVolumes",cellVolumes)
@@ -235,6 +264,8 @@ def run_perirhizal_test():
         
         current_potential = s.getSolutionHead()
         water_dumux[r,1:] = vg.water_content(current_potential,peri.sp)
+        current_potential2 = s2.getSolutionHead()
+        water_dumux2[r,1:] = vg.water_content(current_potential2,peri.sp)
         current_rs_potential = current_potential[0]
         current_outer_potential = current_potential[-1]
         current_outer_watercontent = vg.water_content(current_outer_potential, peri.sp)
@@ -247,15 +278,20 @@ def run_perirhizal_test():
         
         #alternative: adapt root matrix potential for a steady uptake:
         rx = max(waterdemand / root_conductivity + current_rs_potential, -14750) #note: waterdemand is assumed to be negative
+        rx2 = max(waterdemand / root_conductivity + current_potential2[0], -14750)
         #rx = current_rs_potential
         
         #model root solute uptake
         #note: solutes are given in g
         current_concentration = s.getSolution(1)
+        current_concentration2 = s2.getSolution(1)
         solute_dumux[r,1:] = current_concentration
+        solute_dumux2[r,1:] = current_concentration
         current_rs_concentration = current_concentration[0]
         current_outer_concentration = current_concentration[-1]
         root_soluteuptake = - Vmax * max(current_rs_concentration,0) / (Km + current_rs_concentration) # mol / d
+        root_soluteuptake2 = - Vmax * max(current_concentration2[0],0) / (Km + max(current_concentration2[0],0)) # mol / d
+        
         outer_solutesource = ( outer_conc - current_outer_concentration ) * current_outer_watercontent / dt * dampening
         solute_dumux[r,0] = root_soluteuptake
         print(solute_dumux)
@@ -263,11 +299,16 @@ def run_perirhizal_test():
         #s.initializeProblem(maxDt = 0.01)
         
         s.setSource({NC-2: 100 * outer_watersource * volumes[-1] *length})
-        s.setSource({0: 10*root_soluteuptake * 62, NC-2: 1* outer_solutesource * volumes[-1] * length * 62}, eq_idx = 1) #factor 1000 is important for dumux as in the richards wrapper it is divided by 1000
+        s.setSource({0: root_soluteuptake*62*10, NC-2: outer_solutesource * volumes[-1] * length * 62}, eq_idx = 1) #factor 1000 is important for dumux as in the richards wrapper it is divided by 1000
+        s2.setSource({0: root_soluteuptake2*1000})
         
         s.solve(dt, saveInnerFluxes_ = True)
+        s2.solve(dt, saveInnerFluxes_ = True)
         Wvolafter = cellVolumes*s.getWaterContent() # cm3
         Smassafter = s.getSolution(1) * Wvolafter # mol
+        
+        Wvolafter2 = cellVolumes*s2.getWaterContent() # cm3
+        Smassafter2 = s.getSolution(1) * Wvolafter2 # mol
         
             
         rootSoilFluxes = s.getInnerFlow(0, length) * dt # cm3
@@ -277,7 +318,7 @@ def run_perirhizal_test():
         
         rootwateruptake = abs(rootSoilFluxes) /length
         #rootwateruptake = [abs(waterdemand)] #test TODO: remove this
-        waterinflow = np.array([abs(outer_watersource * volumes[-1])])
+        waterinflow = np.array([abs(100*outer_watersource * volumes[-1])])
 
     
 
@@ -286,35 +327,52 @@ def run_perirhizal_test():
         # mean water content of the rhizosphere
         total_water = 0
         total_solute = 0
+        total_water2 = 0
+        total_solute2 = 0
         for j in range(NC-1):
             total_water = total_water + water_dumux[r,j+1]*(points[j+1]**2 - points[j]**2)
             total_solute = total_solute + water_dumux[r,j+1]*solute_dumux[r,j+1]*(points[j+1]**2 - points[j]**2)
+            total_water2 = total_water2 + water_dumux2[r,j+1]*(points[j+1]**2 - points[j]**2)
+            total_solute2 = total_solute2 + water_dumux2[r,j+1]*solute_dumux2[r,j+1]*(points[j+1]**2 - points[j]**2)
         mean_water = total_water / (points[NC-1]**2 - points[0]**2)
         total_solute = total_solute / (points[NC-1]**2 - points[0]**2)
         mean_solute = total_solute / mean_water
+        mean_water2 = total_water2 / (points[NC-1]**2 - points[0]**2)
+        total_solute2 = total_solute2 / (points[NC-1]**2 - points[0]**2)
+        mean_solute2 = total_solute2 / mean_water
         print("mean solute",mean_solute)
         
         #translate the mean water content to a mean matrix potential
         sx = vg.pressure_head(mean_water, peri.sp)
+        sx2 = vg.pressure_head(mean_water2, peri.sp)
         
         #start the steady rate solver
         h_sr = peri.soil_root_interface_(rx, sx, inner_kr, rho, peri.sp)
+        h_sr2 = peri.soil_root_interface_(rx2, sx2, inner_kr, rho, peri.sp)
         
         #compute both matrix flux potentials:
         Phi_root = np.array(vg.fast_mfp[sp](h_sr))
         Phi_soil = np.array(vg.fast_mfp[sp](sx))
         Phi_soil_dumux = Phi_soil
         
+        Phi_root2 = np.array(vg.fast_mfp[sp](h_sr2))
+        Phi_soil2 = np.array(vg.fast_mfp[sp](sx2))
+        
         #compute the spatial watercontents
         Phi_A, Phi_C = peri.determine_mfp_function(Phi_root, Phi_soil, rho)
+        Phi_A2, Phi_C2 = peri.determine_mfp_function(Phi_root2, Phi_soil2, rho)
         
         #alternative computation using the waterdemand
         Phi_A = (abs(waterdemand)*r_root)*((rho)**2/(2*(1-rho**2))) #TODO. why *10?
+        Phi_A2 = (abs(waterdemand)*r_root)*((rho)**2/(2*(1-rho**2))) 
         #Phi_C = Phi_soil - Phi_A #inaccurate, as the mean mfp will then only be reached at the outer boundary
         Phi_C = Phi_soil - (0.53**2+2*np.log(1/0.53))*Phi_A
+        Phi_C2 = Phi_soil2 - (0.53**2+2*np.log(1/0.53))*Phi_A2
         
         Phi_root_srnf = Phi_A*(1/rho**2+2*np.log(rho))+Phi_C
         Phi_outer_srnf = Phi_A + Phi_C
+        Phi_root_srnf2 = Phi_A2*(1/rho**2+2*np.log(rho))+Phi_C2
+        Phi_outer_srnf2 = Phi_A2 + Phi_C2
         
         #if waterstress, then Phi_A = - rho**2*Phi_C
         if Phi_A*(1/rho**2-np.log(1/rho**2))+Phi_C <=0:
@@ -348,11 +406,17 @@ def run_perirhizal_test():
         print(MFP_out)
         #MFP_out = MFP_out /10000
         
-        
+        r_rel = CC[0] / r_prhiz
+        Phi = Phi_A*(r_rel**2-np.log(r_rel**2))+Phi_C
+        mp_perirhizal1[r,0]=vg.fast_imfp[sp](Phi)
+        Phi2 = Phi_A2*(r_rel**2-np.log(r_rel**2))+Phi_C2
+        mp_perirhizal2[r,0]=vg.fast_imfp[sp](Phi2)
         for j in range(NC-1):
             r_rel = CC[j] / r_prhiz
             Phi = Phi_A*(r_rel**2-np.log(r_rel**2))+Phi_C
             mp_perirhizal1[r,j+1]=vg.fast_imfp[sp](Phi) # TODO: adapt this to stress maybe?
+            Phi2 = Phi_A2*(r_rel**2-np.log(r_rel**2))+Phi_C2
+            mp_perirhizal2[r,j+1]=vg.fast_imfp[sp](Phi2) # TODO: adapt this to stress maybe?
             
             #Phi_soil = Phi_out # TODO: remove this
             #if water_dumux[r,j+1]<soilVG[0]+0.02: # I model this as a threshhold for water stress
@@ -382,10 +446,10 @@ def run_perirhizal_test():
             MFP_root = lambda Phi : Phi+abs(waterdemand)*r_root*((r_rel*rho)**2/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5))
             MFP_root_stress = lambda Phi : Phi*((r_rel*rho)**2 - 1 + 2*rho**2*np.log(1/(r_rel*rho)))/(rho**2 - 1 + 2*rho**2*np.log(1/rho))
             Phi = MFP_root(MFP_out)
-            if Phi<=0:
-                mp_perirhizal2[r,j+1]=vg.fast_imfp[sp](MFP_root_stress(MFP_out))
-            else:
-                mp_perirhizal2[r,j+1]=vg.fast_imfp[sp](MFP_root(MFP_out))
+            #if Phi<=0:
+            #    mp_perirhizal2[r,j+1]=vg.fast_imfp[sp](MFP_root_stress(MFP_out))
+            #else:
+            #    mp_perirhizal2[r,j+1]=vg.fast_imfp[sp](MFP_root(MFP_out))
             
             #alternative steady rate approximation            
             if Phi<=0: #water stress
@@ -403,7 +467,7 @@ def run_perirhizal_test():
         # run the alpha omega model on solute flow (both steady state and steady rate)
         waterflow = root_wateruptake
         result_solutes_ss = peri.soil_root_solutes_ss_([Phi_root_srnf], [Phi_outer_srnf], [mean_solute], [Vmax], [Km], Ds, [-abs(radial_waterdemand)], peri.sp)
-        result_solutes_srnf = peri.soil_root_solutes_sr_([Phi_root_srnf], [Phi_outer_srnf], [rho], [mean_solute], [Vmax], [Km], Ds, [-abs(radial_waterdemand)], peri.sp)
+        result_solutes_srnf = peri.soil_root_solutes_sr_([Phi_root_srnf2], [Phi_outer_srnf2], [rho], [mean_solute2], [Vmax], [Km], Ds, [-abs(radial_waterdemand)], peri.sp)
         result_solutes_ss = result_solutes_ss[0]
         result_solutes_srnf = result_solutes_srnf[0]
         print("steadystate", result_solutes_ss, "steadyrate", result_solutes_srnf)
@@ -454,7 +518,7 @@ def run_perirhizal_test():
         rsc, Uptake, ss_uptake, sr_uptake = peri.soil_root_solutes_new([Phi_soil_dumux], rootwateruptake, waterinflow, [r_root], [r_prhiz], [mean_solute], [outer_conc], [Vmax], [Km], [Ds], peri.sp, mode = "sr_nf")
         _, _, soluteconcentration = peri.watersolutes_disc(Phi_soil_dumux, rootwateruptake[0], waterinflow[0], r_root, r_prhiz, r_eval, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
         general_sr[r,1:] = soluteconcentration[:]
-    return water_dumux, solute_dumux, solute_ss, water_sr, solute_srnf, water_sr2, mp_perirhizal1, mp_perirhizal2, solutes_Tiina, general_water, general_waterpotential, general_ss, general_sr, general_ff
+    return water_dumux, water_dumux2, solute_dumux, solute_dumux2, solute_ss, water_sr, solute_srnf, water_sr2, mp_perirhizal1, mp_perirhizal2, solutes_Tiina, general_water, general_waterpotential, general_ss, general_sr, general_ff
 
 general_waterpotential_plot = np.zeros((n_tests, n_times, n_sp+1))
 general_water_plot = np.zeros((n_tests, n_times, n_sp+1))
@@ -466,9 +530,11 @@ general_ff_plot = np.zeros((n_tests, n_times, n_sp+1))
 if do_computation:
     # save everything in the np arrays
     for i in range(n_tests):
-        water_dumux, solute_dumux, solute_ss, water_sr, solute_srnf, water_sr2, mp_perirhizal1, mp_perirhizal2, solutes_Tiina, general_water, general_waterpotential, general_ss, general_sr, general_ff = run_perirhizal_test()
+        water_dumux, water_dumux2, solute_dumux, solute_dumux2, solute_ss, water_sr, solute_srnf, water_sr2, mp_perirhizal1, mp_perirhizal2, solutes_Tiina, general_water, general_waterpotential, general_ss, general_sr, general_ff = run_perirhizal_test()
         watercontent_dumux[i,:,:]=water_dumux[:,:]
         soluteconcentration_dumux[i,:,:]=solute_dumux[:,:]
+        watercontent_dumux2[i,:,:]=water_dumux2[:,:]
+        soluteconcentration_dumux2[i,:,:]=solute_dumux2[:,:]
         soluteconcentration_steadystate[i,:,:]=solute_ss[:,:]
         watercontent_steadyrate[i,:,:]=water_sr[:,:]
         watercontent_steadyrate2[i,:,:]=water_sr2[:,:] #TODO this is confusing
@@ -483,12 +549,14 @@ if do_computation:
         general_sr_plot[i,:,:]=general_sr[:,:]
         general_ff_plot[i,:,:]=general_ff[:,:]
     
-    np.savez("test_perirhizal.npz", general_waterpotential_plot=general_waterpotential_plot,general_water_plot=general_water_plot,general_ss_plot=general_ss_plot,general_sr_plot=general_sr_plot,general_ff_plot=general_ff_plot,watercontent_dumux=watercontent_dumux, soluteconcentration_Tiina=soluteconcentration_Tiina, watercontent_steadyrate2=watercontent_steadyrate2, matrixpotential_perirhizal1=matrixpotential_perirhizal1, matrixpotential_perirhizal2=matrixpotential_perirhizal2, soluteconcentration_dumux=soluteconcentration_dumux, soluteconcentration_steadystate=soluteconcentration_steadystate, watercontent_steadyrate=watercontent_steadyrate, soluteconcentration_steadyrate=soluteconcentration_steadyrate)
+    np.savez("test_perirhizal.npz", watercontent_dumux2=watercontent_dumux2, soluteconcentration_dumux2=soluteconcentration_dumux2, general_waterpotential_plot=general_waterpotential_plot,general_water_plot=general_water_plot,general_ss_plot=general_ss_plot,general_sr_plot=general_sr_plot,general_ff_plot=general_ff_plot,watercontent_dumux=watercontent_dumux, soluteconcentration_Tiina=soluteconcentration_Tiina, watercontent_steadyrate2=watercontent_steadyrate2, matrixpotential_perirhizal1=matrixpotential_perirhizal1, matrixpotential_perirhizal2=matrixpotential_perirhizal2, soluteconcentration_dumux=soluteconcentration_dumux, soluteconcentration_steadystate=soluteconcentration_steadystate, watercontent_steadyrate=watercontent_steadyrate, soluteconcentration_steadyrate=soluteconcentration_steadyrate)
 
 else:
     simulation_results = np.load("test_perirhizal.npz")
     watercontent_dumux = simulation_results["watercontent_dumux"]
     soluteconcentration_dumux = simulation_results["soluteconcentration_dumux"]
+    watercontent_dumux2 = simulation_results["watercontent_dumux2"]
+    soluteconcentration_dumux2 = simulation_results["soluteconcentration_dumux2"]
     soluteconcentration_steadystate = simulation_results["soluteconcentration_steadystate"]
     watercontent_steadyrate = simulation_results["watercontent_steadyrate"]
     soluteconcentration_steadyrate = simulation_results["soluteconcentration_steadyrate"]
@@ -507,7 +575,7 @@ else:
 # compare both for the differint means of water / solute content
 run = 0
 timestep = np.array([1,3,5,7,9])
-timestep = np.array(np.linspace(1,6,num=5)) #TODO remove
+timestep = np.array(np.linspace(0.1,1,num=5)) #TODO remove
 print(timestep)
 for i in range(5):
     timestep[i] = int(n_times * timestep[i] / 10)
@@ -579,9 +647,11 @@ for i in range(5):
     ax2 = ax1[i,0].twinx()
     
     water_dumux = watercontent_dumux[run, timestep[i], 1:]
+    water_dumux2 = watercontent_dumux2[run, timestep[i], 1:]
     water_perirhizal = watercontent_steadyrate[run, timestep[i], 1:]
     water_steadyrate2 = watercontent_steadyrate2[run, timestep[i], 1:]
     solute_dumux = soluteconcentration_dumux[run, timestep[i], 1:]
+    solute_dumux2 = soluteconcentration_dumux2[run, timestep[i], 1:]
     solute_steadystate = soluteconcentration_steadystate[run, timestep[i], 1:]
     solute_steadyrate = soluteconcentration_steadyrate[run, timestep[i], 1:]
     
@@ -590,23 +660,25 @@ for i in range(5):
     
     
     water_dumux = vg.pressure_head(water_dumux, peri.sp)
+    water_dumux2 = vg.pressure_head(water_dumux2, peri.sp)
     water_perirhizal = vg.pressure_head(water_perirhizal, peri.sp)
     #water_perirhizal2 = vg.pressure_head(water_steadyrate2, peri.sp)
     
     solute_Tiina = np.array([soluteconcentration_Tiina[run, timestep[i], 0] + 1*(outer_conc - soluteconcentration_Tiina[run, timestep[i], 0]) * cc / r_prhiz for cc in CC]) #np.linspace(soluteconcentration_steadyrate[run, timestep[i], 0], outer_conc, NC-1)
 
-    ax1[i,0].plot(CC, water_dumux, "b", linestyle = linestyle_dumux, label = "water_dumux")
+    ax1[i,0].plot(CC, water_dumux2, "b", linestyle = linestyle_dumux, label = "water_dumux")
     #ax1[i].plot(CC, water_perirhizal, "b", linestyle = linestyle_steadyrate, label = "water_perirhizal") #this and the following line give the same results, as they should
-    ax1[i,0].plot(CC, mp_steadyrate1, "b", linestyle = linestyle_steadyrate, label = "water_sr")
+    ax1[i,0].plot(CC, mp_steadyrate2, "b", linestyle = linestyle_steadyrate, label = "water_sr")
     #ax1[i].plot(CC, mp_steadyrate2, "b", linestyle = linestyle_steadystate, label = "water_sr_stress")
-    ax2.plot(CC, solute_dumux, "m", linestyle = linestyle_dumux, label = "solute_dumux")
-    ax2.plot(CC, solute_steadystate, "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
+    ax2.plot(CC, solute_dumux2, "m", linestyle = linestyle_dumux, label = "solute_dumux")
+    #ax2.plot(CC, solute_steadystate, "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
     #ax2.plot(CC, solute_steadyrate, "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
-    ax2.plot(CC, solute_steadyrate, "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
+    #ax2.plot(CC, solute_steadyrate, "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
+    ax2.plot(CC, solute_steadystate, "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
     #ax2.plot(CC, solute_steadyrate * solute_dumux[-1] / solute_steadyrate[-1], "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
     #ax2.plot(CC, solute_steadystate * solute_dumux[26] / solute_steadystate[26], "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
     #ax2.plot(CC, solute_Tiina, "m", linestyle = linestyle_steadystate, label = "solute_Tiina")
-    ax2.plot(CC, solute_Tiina * solute_dumux[-1] / outer_conc, "m", linestyle = linestyle_special, label = "solute_Tiina_scaled")
+    #ax2.plot(CC, solute_Tiina * solute_dumux[-1] / outer_conc, "m", linestyle = linestyle_special, label = "solute_Tiina_scaled")
 
     ax1[i,0].set_xlabel("distance root [cm]")
     ax1[i,0].set_ylabel("water")
@@ -646,7 +718,7 @@ for i in range(5):
     #ax2.plot(CC, solute_steadystate, "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
     #ax2.plot(CC, solute_steadyrate * solute_dumux[-1] / solute_steadyrate[-1], "m", linestyle = linestyle_steadyrate, label = "solute_steadyrate")
     ax2.plot(CC, solute_steadystate , "m", linestyle = linestyle_steadystate, label = "solute_steadystate")
-    ax2.plot(CC, solute_farfield , "m", linestyle = linestyle_special, label = "solute_farfield")
+    #ax2.plot(CC, solute_farfield , "m", linestyle = linestyle_special, label = "solute_farfield")
     #ax2.plot(CC, solute_Tiina * solute_dumux[-1] / outer_conc, "m", linestyle = linestyle_special, label = "solute_Tiina_scaled")
 
     ax1[i,1].set_xlabel("distance root [cm]")
