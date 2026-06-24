@@ -10,11 +10,12 @@ import subprocess
 from pathlib import Path
 
 import numpy as np
+from leafs import example, long_leaf, mint, parsley
 
 import plantbox as pb
 from plantbox.visualisation.vtk_animate import AnimateRoots
 
-DURATION_SECONDS = 4.0
+DURATION_SECONDS = 8.0
 TOTAL_SIM_DAYS = 30.0
 FPS = 25
 N_FRAMES = int(DURATION_SECONDS * FPS)
@@ -55,17 +56,16 @@ def build_leaf_plant():
     leaf_rp.parametrisationType = 0
     leaf_rp.shapeType = 2
     leaf_rp.subType = 2
-    leaf_rp.lmax = 10
+    leaf_rp.dx = 0.1
+    leaf_rp.a = 0.05
+
     leaf_rp.tropismS = 0.0
     leaf_rp.theta = 90.0 / (2 * np.pi)
 
-    # Mint leaf shape
-    leaf_rp.la, leaf_rp.lb, leaf_rp.lmax, leaf_rp.ln, leaf_rp.r, leaf_rp.dx = 3.5, 1.0, 7.5, 3, 1, 0.5
-    phi = np.array([-90, -45, 0.0, 45, 90]) / 180.0 * np.pi
-    l = np.array([3, 2.2, 1.7, 2, 3.5])
-    leaf_rp.createLeafRadialGeometry(phi, l, 30)
-
-    leaf_rp.areaMax = 50
+    # mint(leaf_rp)
+    # parsley(leaf_rp)
+    # example(leaf_rp)
+    long_leaf(leaf_rp)
     plant.setOrganRandomParameter(leaf_rp)
 
     return plant
