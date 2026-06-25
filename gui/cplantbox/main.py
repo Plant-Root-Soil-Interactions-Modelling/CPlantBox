@@ -228,6 +228,7 @@ app.layout = dbc.Container(
         dcc.Download(id="download-xml"),
         dcc.Download(id="download-vtk"),
         dcc.Download(id="download-rsml"),
+        dcc.Download(id="download-mp4"),
         dcc.Download(id="download-profiles-xls"),
         dcc.Download(id="download-dynamics-xls"),
         html.Div(
@@ -289,6 +290,7 @@ app.layout = dbc.Container(
                             dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),
                             dcc.Loading(id="loading-spinner2", type="circle", children=html.Div(id="loading-spinner-output2")),
                             dcc.Loading(id="loading-spinner3", type="circle", children=html.Div(id="loading-spinner-output3")),
+                            dcc.Loading(id="loading-spinner4", type="circle", children=html.Div(id="loading-spinner-output4")),
                         ],
                         width=2,
                         style={"minWidth": "160px"},
@@ -947,7 +949,8 @@ def update_leaf_store(slider_values, store_data):
 def create_geometry_buttons():
     vtk_btn = small_button("vtp", "vkt-download-button", "Download plant architecture as Paraview VTP file")
     rsml_btn = small_button("rsml", "rsml-download-button", "Download plant architecture root system markup language file (RSML)")
-    return html.Div([vtk_btn, rsml_btn])
+    mp4_btn = small_button("mp4", "mp4-download-button", "Download 4-second MP4 animation of the simulation")
+    return html.Div([vtk_btn, rsml_btn, mp4_btn])
 
 
 def attach_buttons(graph, buttons):
@@ -1072,6 +1075,31 @@ def download_rsml(n_clicks, time_slider, plant_value, seed_data, root_data, stem
     filename = "cplantbox_" + param_names[int(plant_value)][0] + ".rsml"
     vtp_string = plant.write(filename, False)
     return dict(content=vtp_string, filename=filename, type="application/rsml"), html.H6("")
+
+
+@app.callback(
+    Output("download-mp4", "data"),
+    Output("loading-spinner-output4", "children"),
+    Input("mp4-download-button", "n_clicks"),
+    State("time-slider", "value"),
+    State("plant-dropdown", "value"),
+    State("seed-store", "data"),
+    State("root-store", "data"),
+    State("stem-store", "data"),
+    State("leaf-store", "data"),
+    State("settings-store", "data"),
+    State("xml-store", "data"),
+    State("result-tabs", "value"),
+    prevent_initial_call=True,
+)
+def download_mp4(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data, result_tab):
+    if n_clicks is None:
+        return dash.no_update, dash.no_update
+    base64_mp4 = simulate_plant.generate_mp4(
+        plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"], xml_data, result_tab
+    )
+    filename = "cplantbox_" + param_names[int(plant_value)][0] + "_animation.mp4"
+    return dict(content=base64_mp4, filename=filename, base64=True, type="video/mp4"), html.H6("")
 
 
 @app.callback(
