@@ -162,7 +162,7 @@ for organ in organs:
 
 middelsimHyphae = time.perf_counter()
 
-hours_hyphae = 20
+hours_hyphae = 30 ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
 tip_densities = list()
 for i in range(0, hours_hyphae):
     print("Simulating hyphal growth step " + str(i+1) + " of " + str(hours_hyphae))
@@ -186,7 +186,7 @@ if not animation:
 
 # set the observation "rings"
 nRings = 50
-centrepoint = [0, 1.5, 0]
+centrepoint = [0, 1.5, 0] ## Set a different centre for the rings for analysis, so that growth is more centred
 small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
 ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
 moved_ringone = pb.SDF_RotateTranslate(ringone, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], centrepoint[2]))
