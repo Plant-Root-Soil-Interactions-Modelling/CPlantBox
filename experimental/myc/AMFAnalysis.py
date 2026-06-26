@@ -86,12 +86,3 @@ def EquiAreaRings(nRings, radius,shift, xshift, yshift,moved_helper_dish_hyphae,
         else:
             rings.append(small_hyphae_dish)
     return rings
-
-def activeCondition(plant, barrier_thickness, opening_height, barrier_height, opening_length):
-    organs = plant.getOrgans()
-    for organ in organs:
-        stayactive = False
-        for node in organ.getNodes():
-            if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
-                stayactive = True
-        organ.setActive(stayactive)

@@ -227,7 +227,7 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
     for (const auto & h : hyphae) {
         sdf->excludeTreeId = h->getParameter("hyphalTreeIndex");
 
-        if (h->isActive()) {
+        if (h->isActive() && h->getParameter("subType") == 1) { // only check for anastomosis for active hyphae tips
             auto tip = h->getNode(h->getNumberOfNodes()-1);
             dist = sdf->getDist(tip);
             if (fabs(dist) < h->getParameter("distTH") && rand() < h->getParameter("ana")) 
@@ -289,13 +289,15 @@ std::vector<int> MycorrhizalPlant::getNodeTips( int ot) const {
     auto organs = this -> getOrgans(ot);
     std::vector<int> tips(getNumberOfNodes(), 0);
     for (const auto& o : baseOrgans) {
-        if (o->organType() == ot) {
+        if (o->organType() == ot && o->isActive()) {
             tips.at(o->getNodeId(o->getNumberOfNodes()-1)) = 1;
         }    
     }
 
     for (const auto & o : organs) {
-        tips.at(o->getNodeId(o->getNumberOfNodes()-1)) = 1;
+        if (o->isActive()) {
+            tips.at(o->getNodeId(o->getNumberOfNodes()-1)) = 1;
+        }
     }
     return tips;
 };
