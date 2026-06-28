@@ -72,7 +72,7 @@ void SDF_RootSystem::buildTree() {
     size_t c = 0;
     for (const auto& s : segments_) { // fill the tree
         Vector3d mid = nodes_[s.x].plus(nodes_[s.y]).times(0.5);
-        std::vector<double> d = { mid.x, mid.y, mid.z };
+        std::array<double, 3> d = { mid.x, mid.y, mid.z };
         tree.insertParticle(c, d, radii_[c]);
         c++;
     }
@@ -81,8 +81,8 @@ void SDF_RootSystem::buildTree() {
 
 double SDF_RootSystem::getDist(const Vector3d& p) const {
 
-    std::vector<double> a = { p.x-dx_, p.y-dx_, p.z-dx_ };
-    std::vector<double> b = { p.x+dx_, p.y+dx_, p.z+dx_ };
+    std::array<double, 3> a = { p.x-dx_, p.y-dx_, p.z-dx_ };
+    std::array<double, 3> b = { p.x+dx_, p.y+dx_, p.z+dx_ };
     aabb::AABB box = aabb::AABB(a,b);
     double mdist = 1e100; // far far away
     auto indices = tree.query(box);

@@ -35,6 +35,7 @@
 #include <map>
 #include <stdexcept>
 #include <vector>
+#include <array>
 
 /// Null node flag.
 const unsigned int NULL_NODE = 0xffffffff;
@@ -55,13 +56,14 @@ namespace aabb
     {
     public:
         /// Constructor.
-        AABB();
+        AABB(){};
 
         //! Constructor.
         /*! \param dimension
                 The dimensionality of the system.
          */
-        AABB(unsigned int);
+        AABB(unsigned int dimension)
+		{};
 
         //! Constructor.
         /*! \param lowerBound_
@@ -70,13 +72,38 @@ namespace aabb
             \param upperBound_
                 The upper bound in each dimension.
          */
-        AABB(const std::vector<double>&, const std::vector<double>&);
+        AABB(const std::array<double, 3>& lowerBound_, const std::array<double, 3>& upperBound_) :
+        lowerBound(lowerBound_), upperBound(upperBound_)
+    {
+
+
+        // Validate that the upper bounds exceed the lower bounds.
+		// that is just check/trouble shooting
+        // for (unsigned int i=0;i<lowerBound.size();i++)
+        // {
+            // // Validate the bound.
+            // if (lowerBound[i] > upperBound[i])
+            // {
+                // throw std::invalid_argument("[ERROR]: AABB lower bound is greater than the upper bound!");
+            // }
+        // }
+
+        surfaceArea = computeSurfaceArea();
+        computeCentre();//centre = 
+    };
 
         /// Compute the surface area of the box.
-        double computeSurfaceArea() const;
+		inline double computeSurfaceArea() const{
+			double dx = upperBound[0] - lowerBound[0];
+			double dy = upperBound[1] - lowerBound[1];
+			double dz = upperBound[2] - lowerBound[2];
+			return 2.0 * (dx*dy + dy*dz + dx*dz);
+		};
 
         /// Get the surface area of the box.
-        double getSurfaceArea() const;
+        double getSurfaceArea() const {
+			return surfaceArea;
+		};
 
         //! Merge two AABBs into this one.
         /*! \param aabb1
@@ -85,7 +112,22 @@ namespace aabb
             \param aabb2
                 A reference to the second AABB.
          */
-        void merge(const AABB&, const AABB&);
+        inline void merge(const AABB& aabb1, const AABB& aabb2)
+    {
+		assert(aabb1.lowerBound.size() == 3);
+		assert(aabb2.lowerBound.size() == 3);
+
+		lowerBound[0] = std::min(aabb1.lowerBound[0], aabb2.lowerBound[0]);
+		lowerBound[1] = std::min(aabb1.lowerBound[1], aabb2.lowerBound[1]);
+		lowerBound[2] = std::min(aabb1.lowerBound[2], aabb2.lowerBound[2]);
+
+		upperBound[0] = std::max(aabb1.upperBound[0], aabb2.upperBound[0]);
+		upperBound[1] = std::max(aabb1.upperBound[1], aabb2.upperBound[1]);
+		upperBound[2] = std::max(aabb1.upperBound[2], aabb2.upperBound[2]);
+
+        surfaceArea = computeSurfaceArea();
+        computeCentre();//centre =
+    };
 
         //! Test whether the AABB is contained within this one.
         /*! \param aabb
@@ -94,7 +136,16 @@ namespace aabb
             \return
                 Whether the AABB is fully contained.
          */
-        bool contains(const AABB&) const;
+        bool contains(const AABB& aabb) const
+		{
+			return
+				aabb.lowerBound[0] >= lowerBound[0] &&
+				aabb.lowerBound[1] >= lowerBound[1] &&
+				aabb.lowerBound[2] >= lowerBound[2] &&
+				aabb.upperBound[0] <= upperBound[0] &&
+				aabb.upperBound[1] <= upperBound[1] &&
+				aabb.upperBound[2] <= upperBound[2];
+		};
 
         //! Test whether the AABB overlaps this one.
         /*! \param aabb
@@ -106,28 +157,41 @@ namespace aabb
             \return
                 Whether the AABB overlaps.
          */
-        bool overlaps(const AABB&, bool touchIsOverlap) const;
+        bool overlaps(const AABB& aabb, bool touchIsOverlap) const
+		{
+        return
+            !(aabb.upperBound[0] < lowerBound[0] ||
+              aabb.lowerBound[0] > upperBound[0] ||
+              aabb.upperBound[1] < lowerBound[1] ||
+              aabb.lowerBound[1] > upperBound[1] ||
+              aabb.upperBound[2] < lowerBound[2] ||
+              aabb.lowerBound[2] > upperBound[2]);
+    };
 
         //! Compute the centre of the AABB.
         /*! \returns
                 The position vector of the AABB centre.
          */
-        std::vector<double> computeCentre();
+        inline void computeCentre()
+		 {
+		
+		//    std::vector<double> position(lowerBound.size());
+		centre[0] = 0.5 * (lowerBound[0] + upperBound[0]);
+		centre[1] = 0.5 * (lowerBound[1] + upperBound[1]);
+		centre[2] = 0.5 * (lowerBound[2] + upperBound[2]);
+        //return centre;
+    };
 
         //! Set the dimensionality of the AABB.
         /*! \param dimension
                 The dimensionality of the system.
          */
-        void setDimension(unsigned int);
+        void setDimension(unsigned int)
+		{};
 
-        /// Lower bound of AABB in each dimension.
-        std::vector<double> lowerBound;
-
-        /// Upper bound of AABB in each dimension.
-        std::vector<double> upperBound;
-
-        /// The position of the AABB centre.
-        std::vector<double> centre;
+		std::array<double, 3> lowerBound;
+		std::array<double, 3> upperBound;
+		std::array<double, 3> centre;
 
         /// The AABB's surface area.
         double surfaceArea;
@@ -148,7 +212,7 @@ namespace aabb
     struct Node
     {
         /// Constructor.
-        Node();
+        Node(){};
 
         /// The fattened axis-aligned bounding box.
         AABB aabb;
@@ -175,7 +239,9 @@ namespace aabb
         /*! \return
                 Whether the node is a leaf node.
          */
-        bool isLeaf() const;
+        bool isLeaf() const{
+			return (left == NULL_NODE);
+		};
     };
 
     /*! \brief The dynamic AABB tree.
@@ -226,20 +292,26 @@ namespace aabb
             \param touchIsOverlap
                 Does touching count as overlapping in query operations?
          */
-        Tree(unsigned int, double, const std::vector<bool>&, const std::vector<double>&,
+        Tree(unsigned int, double, const std::array<bool, 3>&, const std::array<double, 3>&,
             unsigned int nParticles = 16, bool touchIsOverlap=true);
 
         //! Set the periodicity of the simulation box.
         /*! \param periodicity_
                 Whether the system is periodic in each dimension.
          */
-        void setPeriodicity(const std::vector<bool>&);
+        void setPeriodicity(const std::array<bool, 3>& periodicity_)
+		{
+			periodicity = periodicity_;
+		};
 
         //! Set the size of the simulation box.
         /*! \param boxSize_
                 The size of the simulation box in each dimension.
          */
-        void setBoxSize(const std::vector<double>&);
+        void setBoxSize(const std::array<double, 3>& boxSize_)
+		{
+			boxSize = boxSize_;
+		};
 
         //! Insert a particle into the tree (point particle).
         /*! \param index
@@ -251,7 +323,7 @@ namespace aabb
             \param radius
                 The radius of the particle.
          */
-        void insertParticle(unsigned int, std::vector<double>&, double);
+        void insertParticle(unsigned int, std::array<double, 3>&, double);
 
         //! Insert a particle into the tree (arbitrary shape with bounding box).
         /*! \param index
@@ -263,10 +335,13 @@ namespace aabb
             \param upperBound
                 The upper bound in each dimension.
          */
-        void insertParticle(unsigned int, std::vector<double>&, std::vector<double>&);
+        void insertParticle(unsigned int, std::array<double, 3>&, std::array<double, 3>&);
 
         /// Return the number of particles in the tree.
-        unsigned int nParticles();
+        unsigned int nParticles()
+		{
+			return particleMap.size();
+		};
 
         //! Remove a particle from the tree.
         /*! \param particle
@@ -293,7 +368,7 @@ namespace aabb
             \return
                 Whether the particle was reinserted.
          */
-        bool updateParticle(unsigned int, std::vector<double>&, double, bool alwaysReinsert=false);
+        bool updateParticle(unsigned int, std::array<double, 3>&, double, bool alwaysReinsert=false);
 
         //! Update the tree if a particle moves outside its fattened AABB.
         /*! \param particle
@@ -308,7 +383,7 @@ namespace aabb
             \param alwaysReinsert
                 Always reinsert the particle, even if it's within its old AABB (default: false)
          */
-        bool updateParticle(unsigned int, std::vector<double>&, std::vector<double>&, bool alwaysReinsert=false);
+        bool updateParticle(unsigned int, std::array<double, 3>&, std::array<double, 3>&, bool alwaysReinsert=false);
 
         //! Query the tree to find candidate interactions for a particle.
         /*! \param particle
@@ -338,7 +413,17 @@ namespace aabb
             \return particles
                 A vector of particle indices.
          */
-        std::vector<unsigned int> query(const AABB&);
+        std::vector<unsigned int> query(const AABB& aabb)
+    {
+        // Make sure the tree isn't empty.
+        if (particleMap.size() == 0)
+        {
+            return std::vector<unsigned int>();
+        }
+
+        // Test overlap of AABB against all particles.
+        return query(std::numeric_limits<unsigned int>::max(), aabb);
+    };
 
         //! Get a particle AABB.
         /*! \param particle
@@ -404,16 +489,16 @@ namespace aabb
         double skinThickness;
 
         /// Whether the system is periodic along each axis.
-        std::vector<bool> periodicity;
+        std::array<bool, 3> periodicity;
 
         /// The size of the system in each dimension.
-        std::vector<double> boxSize;
+        std::array<double, 3> boxSize;
 
         /// The position of the negative minimum image.
-        std::vector<double> negMinImage;
+        std::array<double, 3> negMinImage;
 
         /// The position of the positive minimum image.
-        std::vector<double> posMinImage;
+        std::array<double, 3> posMinImage;
 
         /// A map between particle and node indices.
         std::map<unsigned int, unsigned int> particleMap;
@@ -482,7 +567,7 @@ namespace aabb
         /* \param position
                 The position vector.
          */
-        void periodicBoundaries(std::vector<double>&);
+        void periodicBoundaries(std::array<double, 3>&);
 
         //! Compute minimum image separation.
         /*! \param separation
@@ -494,7 +579,7 @@ namespace aabb
             \return
                 Whether a periodic shift has been applied.
          */
-        bool minimumImage(std::vector<double>&, std::vector<double>&);
+        bool minimumImage(std::array<double, 3>&, std::array<double, 3>&);
     };
 }
 
