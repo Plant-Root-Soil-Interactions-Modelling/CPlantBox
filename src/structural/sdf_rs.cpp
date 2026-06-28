@@ -69,6 +69,7 @@ SDF_RootSystem::SDF_RootSystem(std::vector<Vector3d> nodes, const std::vector<Ve
 }
 
 void SDF_RootSystem::buildTree() {
+	tree = aabb::Tree(static_cast<unsigned int>(segments_.size()));
     size_t c = 0;
     for (const auto& s : segments_) { // fill the tree
         Vector3d mid = nodes_[s.x].plus(nodes_[s.y]).times(0.5);

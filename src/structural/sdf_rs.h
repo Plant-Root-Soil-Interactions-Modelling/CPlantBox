@@ -56,7 +56,7 @@ protected:
 
     void buildTree();
 
-    mutable aabb::Tree tree = aabb::Tree();
+    mutable aabb::Tree tree;// = aabb::Tree();
 
 };
 

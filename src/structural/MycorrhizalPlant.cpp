@@ -132,6 +132,22 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     rel2abs();
 }
 
+void MycorrhizalPlant::turnOffSidePetriDish(double minnodex, double maxnodez, double maxnodey, double minnodey) {
+	auto organs = getOrgans();
+    for (auto & org : organs) {
+		bool active = false;
+		for (const auto & n : org->getNodes()) {
+			if ((n.x > minnodex) && (n.z < maxnodez) && (n.y < maxnodey) && (n.y > minnodey)){
+				bool active = true;
+				break;
+			}
+		}
+		org->setActive(active);		
+	}	
+}
+
+
+
 void MycorrhizalPlant::simulateHyphae(double dt, bool verbose) {
     auto hyphae = getOrgans(5);
     this->dt = dt;
@@ -223,14 +239,16 @@ void MycorrhizalPlant::simulateHyphalGrowth(double dt, bool verbose)
 void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
     auto hyphae = this->getOrgans(Organism::ot_hyphae);
     double dist = 1000;
+	// parallelize this as the merge does not affect the sdf
+    for (const auto & h1 : hyphae) {
+		auto h = std::dynamic_pointer_cast<Hyphae>(h1);
+		
+        sdf->excludeTreeId = h->getHyphalTreeIndex();//getParameter("hyphalTreeIndex");
 
-    for (const auto & h : hyphae) {
-        sdf->excludeTreeId = h->getParameter("hyphalTreeIndex");
-
-        if (h->isActive() && h->getParameter("subType") == 1) { // only check for anastomosis for active hyphae tips
+        if (h->isActive() && h->param()->subType == 1) { // only check for anastomosis for active hyphae tips
             auto tip = h->getNode(h->getNumberOfNodes()-1);
             dist = sdf->getDist(tip);
-            if (fabs(dist) < h->getParameter("distTH") && rand() < h->getParameter("ana")) 
+            if (fabs(dist) < h->getHyphaeRandomParameter()->distTH && rand() < h->getHyphaeRandomParameter()->ana) 
             {
                 auto lastIndex = sdf->distIndex; 
                 auto connected_to_hyphae = std::dynamic_pointer_cast<Hyphae>(sdf->lastOrgan.lock());
@@ -252,9 +270,9 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
                 }
                 
                 h->setActive(false); // deactivate hyphae after anastomosis
-                std::dynamic_pointer_cast<Hyphae>(h)->setMergePointID(lastIndex); // set node ID where anastomosis happened
-                std::dynamic_pointer_cast<Hyphae>(h)->setMergedHyphae(connected_to_hyphae); // set merged hyphae
-                std::dynamic_pointer_cast<Hyphae>(h)->addNode(connected_to_hyphae->getNode(locallastIndex), getNodeIndex(), h->getNodeCT(h->getNumberOfNodes()-1), h->getNumberOfNodes(),false); // add anastomosis point as new node to the hyphae
+                h->setMergePointID(lastIndex); // set node ID where anastomosis happened
+                h->setMergedHyphae(connected_to_hyphae); // set merged hyphae
+                h->addNode(connected_to_hyphae->getNode(locallastIndex), getNodeIndex(), h->getNodeCT(h->getNumberOfNodes()-1), h->getNumberOfNodes(),false); // add anastomosis point as new node to the hyphae
             }
         }
 

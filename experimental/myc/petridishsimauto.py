@@ -97,8 +97,8 @@ for i in range(0, N):
         print("Step " + str(i) + " of " + str(N))
     mycp.simulate(dt,True)
     if (animation):
-        ana = getMycSegmentAnalyser(mycp)
-        ana.write("animation/" + filename + str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+       ana = getMycSegmentAnalyser(mycp)
+       ana.write("animation/" + filename + str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
 # look at roots and container
 # vp.plot_roots_and_container(mycp,half_dish)
 
@@ -149,203 +149,209 @@ small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
 
 # inactivating those organs that are in the root part of the compartment
 print("Inactivating those hyphae that are in the root part of the petri dish")
-organs = mycp.getOrgans()
-for organ in organs:
-    stayactive = False
-    for node in organ.getNodes():
-        if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
-            stayactive = True
-    organ.setActive(stayactive)
+mycp.turnOffSidePetriDish(-barrier_thickness/2,opening_height-barrier_height,  opening_length/2, -opening_length/2)
+# organs = mycp.getOrgans()
+# for organ in organs:
+    # #organ.turnOffSidePetriDish(-barrier_thickness/2,opening_height-barrier_height,  opening_length/2, -opening_length/2)
+    # stayactive = False
+    # for node in organ.getNodes():
+        # if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
+            # stayactive = True
+    # organ.setActive(stayactive)
 
 # look at system to see how active
 # vp.plot_roots(mycp,"active")   
 
 middelsimHyphae = time.perf_counter()
 
-hours_hyphae = 30 ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
+hours_hyphae = 120 ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
 tip_densities = list()
 for i in range(0, hours_hyphae):
     print("Simulating hyphal growth step " + str(i+1) + " of " + str(hours_hyphae))
     mycp.simulateHyphae(dt,False)
-    organs = mycp.getOrgans()
-    for organ in organs:
-        stayactive = False
-        for node in organ.getNodes():
-            if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
-                stayactive = True
-        organ.setActive(stayactive)
+    mycp.turnOffSidePetriDish(-barrier_thickness/2,opening_height-barrier_height,  opening_length/2, -opening_length/2)
+    # organs = mycp.getOrgans()
+    # for organ in organs:
+        # stayactive = False
+        # for node in organ.getNodes():
+            # if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
+                # stayactive = True
+        # organ.setActive(stayactive)
     ana = getMycSegmentAnalyser(mycp)
     if animation:
-        ana.crop(small_hyphae_dish)
-        ana.write("animation/" + filename + "_" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+       ana.crop(small_hyphae_dish)
+       ana.write("animation/" + filename + "_" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
 endsim = time.perf_counter()
-ana = getMycSegmentAnalyser(mycp)
-
-if not animation:
-    ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
-
-# set the observation "rings"
-nRings = 50
-centrepoint = [0, 1.5, 0] ## Set a different centre for the rings for analysis, so that growth is more centred
-small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
-ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
-moved_ringone = pb.SDF_RotateTranslate(ringone, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], centrepoint[2]))
-rings = []
-rings.append(moved_ringone)
-for i in range(2, nRings+1):
-    small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
-    small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
-    old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
-    small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
-    moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
-    rings.append(moved_small_hyphae_dish)
-
-times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
-
-def getParaDistperRing(parameter, times, plant, rings):
-    paradenmat = np.zeros((len(rings),len(times[1:])))
-    for k, ring in enumerate(rings):
-        ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
-        ringana.crop(ring)
-        for j in range(len(times[1:])-1):
-            ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
-            ringana.pack()
-            distrib = ringana.getSummed(parameter)
-            ringana.filter("creationTime",0,np.flip(np.asarray(times))[j+1])
-            ringana.pack()
-            summed = ringana.getSummed(parameter)
-            paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum() 
-        ringana.filter("creationTime",0,np.flip(np.asarray(times))[len(times[1:])])
-        ringana.pack()
-        summed = ringana.getSummed(parameter)
-        paradenmat[k, -1] = np.array(summed).sum() 
-    return paradenmat
-
-
-
-tip_densities = getParaDistperRing("nodeTips", times, ana, rings)
-
-# print(np.array(tip_densities).reshape((-1, len(tip_densities[0]))))
-## The problem is that the tips should be more evenly distributed i.e. more rings should have tips in them. but right now just a handful do
-# tip_densities = np.array(tip_densities).reshape((-1, len(tip_densities[0])))
-# tip_densities = np.transpose(tip_densities)
-
-location = np.array([radius*np.sqrt(i/nRings) for i in range(1, nRings+1)])
-Z = np.array(tip_densities)   # (r, t)
-
-n_r, n_t = Z.shape
-times_arr = np.array(times[1:])  # muss 99 lang sein
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11,4))
-
-cmap = plt.get_cmap("plasma")
-norm = mpl.colors.Normalize(vmin=times_arr.min(), vmax=times_arr.max())
-
-sm = mpl.cm.ScalarMappable(cmap=cmap, norm=norm)
-sm.set_array([])
-
-for i, t in enumerate(times_arr):
-    ax2.plot(
-        location,
-        Z[:, i],
-        color=cmap(norm(t)),
-        alpha=0.8,
-        lw=1
-    )
-
-ax2.set_xlabel("Radius r (mm)")
-ax2.set_ylabel("Tip density (mm$^{-2}$)")
-ax2.set_title("Active tip density over time")
-
-threshold = 0.2 * np.max(Z)
-aligned_curves = []
-
-for i in range(Z.shape[1]):
-
-    curve = Z[:, i]
-
-    # arrival = first position where activity starts
-    idx = np.argmax(curve > threshold)
-
-    arrival_r = location[idx] if idx > 0 else location[0]
-
-    shifted_r = location - arrival_r
-
-    ax1.plot(
-        shifted_r,
-        curve,
-        color=cmap(norm(times_arr[i])),
-        alpha=0.8,
-        lw=1
-    )
-ax1.set_xlabel(r"Shifted radius $r - r_{\mathrm{arrival}}$ (mm)")
-ax1.set_ylabel("Tip density (mm$^{-2}$)")
-ax1.set_title("Wave-aligned activity")
-cbar = fig.colorbar(sm, ax=[ax1, ax2])
-cbar.set_label("Time (days)")
-plt.tight_layout()
-endplot = time.perf_counter()
-plt.show()
 
 print("Time for simulation: ", endsim-start)
-print("Time for plotting: ", endplot-endsim)
-print("Total time: ", endplot-start)
-# loc_grid, time_grid = np.meshgrid(location, times[1:],indexing='ij')
-# loc_flat = loc_grid.ravel()
-# time_flat = time_grid.ravel()
-# tips_flat = tip_densities.ravel()
+# raise Exception
+# ana = getMycSegmentAnalyser(mycp)
 
-# print("Lengths: ", len(loc_flat), len(time_flat), len(tips_flat))
+# if not animation:
+    # ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
 
-# cmap = plt.get_cmap('viridis')
+# # set the observation "rings"
+# nRings = 50
+# centrepoint = [0, 1.5, 0] ## Set a different centre for the rings for analysis, so that growth is more centred
+# small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
+# ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
+# moved_ringone = pb.SDF_RotateTranslate(ringone, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], centrepoint[2]))
+# rings = []
+# rings.append(moved_ringone)
+# for i in range(2, nRings+1):
+    # small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
+    # small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
+    # old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
+    # small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
+    # moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
+    # rings.append(moved_small_hyphae_dish)
 
-# plt.figure(figsize=(9, 5))
+# times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
 
-# extent = [
-#     times[1], times[-1],   # x: Zeit
-#     1, len(rings)          # y: Ringe
-# ]
+# def getParaDistperRing(parameter, times, plant, rings):
+    # paradenmat = np.zeros((len(rings),len(times[1:])))
+    # for k, ring in enumerate(rings):
+        # ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
+        # ringana.crop(ring)
+        # for j in range(len(times[1:])-1):
+            # ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
+            # ringana.pack()
+            # distrib = ringana.getSummed(parameter)
+            # ringana.filter("creationTime",0,np.flip(np.asarray(times))[j+1])
+            # ringana.pack()
+            # summed = ringana.getSummed(parameter)
+            # paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum() 
+        # ringana.filter("creationTime",0,np.flip(np.asarray(times))[len(times[1:])])
+        # ringana.pack()
+        # summed = ringana.getSummed(parameter)
+        # paradenmat[k, -1] = np.array(summed).sum() 
+    # return paradenmat
 
-# plt.contour(location, timesuse, tip_densities, levels=50, cmap='viridis')
-# plt.xlabel("Number of Ring")
-# plt.title("Radial movement of hyphal tip density")
 
-# plt.show()
 
-# sc = plt.scatter(
-#     loc_flat,                 # x = Distanz
-#     tips_flat,                # y = Messwert (kann auch 0 sein, wenn du nur Farben willst)
-#     c=time_flat,              # Farbe = Zeitstempel
-#     cmap=cmap,
-#     s=50,                     # Marker‑Größe
-#     edgecolor='k',
-#     linewidth=0.4,
-# )
+# tip_densities = getParaDistperRing("nodeTips", times, ana, rings)
 
-# cbar = plt.colorbar(sc, label='Time [h]')   # Legende für die Zeitfarbe
-# plt.xlabel('distance from centre [cm]')
-# plt.ylabel('Tip Count')
-# plt.grid(True, ls='--', alpha=0.5)
+# # print(np.array(tip_densities).reshape((-1, len(tip_densities[0]))))
+# ## The problem is that the tips should be more evenly distributed i.e. more rings should have tips in them. but right now just a handful do
+# # tip_densities = np.array(tip_densities).reshape((-1, len(tip_densities[0])))
+# # tip_densities = np.transpose(tip_densities)
+
+# location = np.array([radius*np.sqrt(i/nRings) for i in range(1, nRings+1)])
+# Z = np.array(tip_densities)   # (r, t)
+
+# n_r, n_t = Z.shape
+# times_arr = np.array(times[1:])  # muss 99 lang sein
+# fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11,4))
+
+# cmap = plt.get_cmap("plasma")
+# norm = mpl.colors.Normalize(vmin=times_arr.min(), vmax=times_arr.max())
+
+# sm = mpl.cm.ScalarMappable(cmap=cmap, norm=norm)
+# sm.set_array([])
+
+# for i, t in enumerate(times_arr):
+    # ax2.plot(
+        # location,
+        # Z[:, i],
+        # color=cmap(norm(t)),
+        # alpha=0.8,
+        # lw=1
+    # )
+
+# ax2.set_xlabel("Radius r (mm)")
+# ax2.set_ylabel("Tip density (mm$^{-2}$)")
+# ax2.set_title("Active tip density over time")
+
+# threshold = 0.2 * np.max(Z)
+# aligned_curves = []
+
+# for i in range(Z.shape[1]):
+
+    # curve = Z[:, i]
+
+    # # arrival = first position where activity starts
+    # idx = np.argmax(curve > threshold)
+
+    # arrival_r = location[idx] if idx > 0 else location[0]
+
+    # shifted_r = location - arrival_r
+
+    # ax1.plot(
+        # shifted_r,
+        # curve,
+        # color=cmap(norm(times_arr[i])),
+        # alpha=0.8,
+        # lw=1
+    # )
+# ax1.set_xlabel(r"Shifted radius $r - r_{\mathrm{arrival}}$ (mm)")
+# ax1.set_ylabel("Tip density (mm$^{-2}$)")
+# ax1.set_title("Wave-aligned activity")
+# cbar = fig.colorbar(sm, ax=[ax1, ax2])
+# cbar.set_label("Time (days)")
 # plt.tight_layout()
+# endplot = time.perf_counter()
 # plt.show()
 
-# for ti, t in enumerate(time_grid):
-#     if ti % 2 == 0:  # nur jede 10. Zeitstufe plotten, um Überladung zu vermeiden
-#         plt.plot(
-#             loc_grid,               # x‑Achse: Ort
-#             tip_densities[:, ti],                # y‑Achse: Messwerte dieser Zeit
-#             label=f't={t}s',
-#             color=cmap(ti/len(time_grid)),   # gleiche Farbskala wie beim Scatter
-#             linewidth=2,
-#             marker='o',
-#             markersize=2,
-#             # markeredgecolor='k',
-#         )
+# print("Time for simulation: ", endsim-start)
+# print("Time for plotting: ", endplot-endsim)
+# print("Total time: ", endplot-start)
+# # loc_grid, time_grid = np.meshgrid(location, times[1:],indexing='ij')
+# # loc_flat = loc_grid.ravel()
+# # time_flat = time_grid.ravel()
+# # tips_flat = tip_densities.ravel()
 
-# plt.xlabel('distance [cm]')
-# plt.ylabel('Tip Count')
-# plt.title('TipCount over distance and time')
-# plt.grid(True, ls='--', alpha=0.5)
-# plt.tight_layout()
-# plt.show()
-# vp.plot_roots_and_container(mycp,rings[99])
-# vp.write_container(petri_dish, "petri_dish.vtp")
+# # print("Lengths: ", len(loc_flat), len(time_flat), len(tips_flat))
+
+# # cmap = plt.get_cmap('viridis')
+
+# # plt.figure(figsize=(9, 5))
+
+# # extent = [
+# #     times[1], times[-1],   # x: Zeit
+# #     1, len(rings)          # y: Ringe
+# # ]
+
+# # plt.contour(location, timesuse, tip_densities, levels=50, cmap='viridis')
+# # plt.xlabel("Number of Ring")
+# # plt.title("Radial movement of hyphal tip density")
+
+# # plt.show()
+
+# # sc = plt.scatter(
+# #     loc_flat,                 # x = Distanz
+# #     tips_flat,                # y = Messwert (kann auch 0 sein, wenn du nur Farben willst)
+# #     c=time_flat,              # Farbe = Zeitstempel
+# #     cmap=cmap,
+# #     s=50,                     # Marker‑Größe
+# #     edgecolor='k',
+# #     linewidth=0.4,
+# # )
+
+# # cbar = plt.colorbar(sc, label='Time [h]')   # Legende für die Zeitfarbe
+# # plt.xlabel('distance from centre [cm]')
+# # plt.ylabel('Tip Count')
+# # plt.grid(True, ls='--', alpha=0.5)
+# # plt.tight_layout()
+# # plt.show()
+
+# # for ti, t in enumerate(time_grid):
+# #     if ti % 2 == 0:  # nur jede 10. Zeitstufe plotten, um Überladung zu vermeiden
+# #         plt.plot(
+# #             loc_grid,               # x‑Achse: Ort
+# #             tip_densities[:, ti],                # y‑Achse: Messwerte dieser Zeit
+# #             label=f't={t}s',
+# #             color=cmap(ti/len(time_grid)),   # gleiche Farbskala wie beim Scatter
+# #             linewidth=2,
+# #             marker='o',
+# #             markersize=2,
+# #             # markeredgecolor='k',
+# #         )
+
+# # plt.xlabel('distance [cm]')
+# # plt.ylabel('Tip Count')
+# # plt.title('TipCount over distance and time')
+# # plt.grid(True, ls='--', alpha=0.5)
+# # plt.tight_layout()
+# # plt.show()
+# # vp.plot_roots_and_container(mycp,rings[99])
+# # vp.write_container(petri_dish, "petri_dish.vtp")

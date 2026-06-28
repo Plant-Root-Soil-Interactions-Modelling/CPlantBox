@@ -36,6 +36,7 @@
 #include <stdexcept>
 #include <vector>
 #include <array>
+#include <unordered_map>
 
 /// Null node flag.
 const unsigned int NULL_NODE = 0xffffffff;
@@ -100,6 +101,7 @@ namespace aabb
 			return 2.0 * (dx*dy + dy*dz + dx*dz);
 		};
 
+		
         /// Get the surface area of the box.
         double getSurfaceArea() const {
 			return surfaceArea;
@@ -114,9 +116,6 @@ namespace aabb
          */
         inline void merge(const AABB& aabb1, const AABB& aabb2)
     {
-		assert(aabb1.lowerBound.size() == 3);
-		assert(aabb2.lowerBound.size() == 3);
-
 		lowerBound[0] = std::min(aabb1.lowerBound[0], aabb2.lowerBound[0]);
 		lowerBound[1] = std::min(aabb1.lowerBound[1], aabb2.lowerBound[1]);
 		lowerBound[2] = std::min(aabb1.lowerBound[2], aabb2.lowerBound[2]);
@@ -269,8 +268,10 @@ namespace aabb
             \param touchIsOverlap
                 Does touching count as overlapping in query operations?
          */
-        Tree(unsigned int dimension_= 3, double skinThickness_ = 0.05,
-            unsigned int nParticles = 16, bool touchIsOverlap=true);
+        Tree(){};
+			
+        Tree(unsigned int nParticles, double skinThickness_ = 0.05,
+            bool touchIsOverlap=true);
 
         //! Constructor (custom periodicity).
         /*! \param dimension_
@@ -292,8 +293,8 @@ namespace aabb
             \param touchIsOverlap
                 Does touching count as overlapping in query operations?
          */
-        Tree(unsigned int, double, const std::array<bool, 3>&, const std::array<double, 3>&,
-            unsigned int nParticles = 16, bool touchIsOverlap=true);
+        Tree( unsigned int nParticles ,double, const std::array<bool, 3>&, const std::array<double, 3>&,
+             bool touchIsOverlap=true);
 
         //! Set the periodicity of the simulation box.
         /*! \param periodicity_
@@ -347,7 +348,7 @@ namespace aabb
         /*! \param particle
                 The particle index (particleMap will be used to map the node).
          */
-        void removeParticle(unsigned int);
+        // void removeParticle(unsigned int);
 
         /// Remove all particles from the tree.
         void removeAll();
@@ -368,7 +369,7 @@ namespace aabb
             \return
                 Whether the particle was reinserted.
          */
-        bool updateParticle(unsigned int, std::array<double, 3>&, double, bool alwaysReinsert=false);
+        // bool updateParticle(unsigned int, std::array<double, 3>&, double, bool alwaysReinsert=false);
 
         //! Update the tree if a particle moves outside its fattened AABB.
         /*! \param particle
@@ -383,7 +384,7 @@ namespace aabb
             \param alwaysReinsert
                 Always reinsert the particle, even if it's within its old AABB (default: false)
          */
-        bool updateParticle(unsigned int, std::array<double, 3>&, std::array<double, 3>&, bool alwaysReinsert=false);
+        // bool updateParticle(unsigned int, std::array<double, 3>&, std::array<double, 3>&, bool alwaysReinsert=false);
 
         //! Query the tree to find candidate interactions for a particle.
         /*! \param particle
@@ -405,6 +406,7 @@ namespace aabb
                 A vector of particle indices.
          */
         std::vector<unsigned int> query(unsigned int, const AABB&);
+        std::vector<unsigned int> query(const AABB& aabb);
 
         //! Query the tree to find candidate interactions for an AABB.
         /*! \param aabb
@@ -413,7 +415,7 @@ namespace aabb
             \return particles
                 A vector of particle indices.
          */
-        std::vector<unsigned int> query(const AABB& aabb)
+        std::vector<unsigned int> queryMax(const AABB& aabb)
     {
         // Make sure the tree isn't empty.
         if (particleMap.size() == 0)
@@ -462,6 +464,14 @@ namespace aabb
 
         /// Rebuild an optimal tree.
         void rebuild();
+		
+		static inline double mergedSurfaceArea(const AABB& a, const AABB& b) {
+			double dx = std::max(a.upperBound[0], b.upperBound[0]) - std::min(a.lowerBound[0], b.lowerBound[0]);
+			double dy = std::max(a.upperBound[1], b.upperBound[1]) - std::min(a.lowerBound[1], b.lowerBound[1]);
+			double dz = std::max(a.upperBound[2], b.upperBound[2]) - std::min(a.lowerBound[2], b.lowerBound[2]);
+			return 2.0 * (dx*dy + dy*dz + dx*dz);
+		}
+
 
     private:
         /// The index of the root node.
@@ -488,6 +498,7 @@ namespace aabb
         /// The skin thickness of the fattened AABBs, as a fraction of the AABB base length.
         double skinThickness;
 
+        std::array<double, 3> size;
         /// Whether the system is periodic along each axis.
         std::array<bool, 3> periodicity;
 
@@ -501,7 +512,7 @@ namespace aabb
         std::array<double, 3> posMinImage;
 
         /// A map between particle and node indices.
-        std::map<unsigned int, unsigned int> particleMap;
+        std::vector<unsigned int> particleMap;
 
         /// Does touching count as overlapping in tree queries?
         bool touchIsOverlap;

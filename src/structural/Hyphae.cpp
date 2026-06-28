@@ -149,7 +149,7 @@ void Hyphae::simulate(double dt, bool verbose)
                         } else setActive(false);
                         
                         // if (dl == 0.) active = false; // if no length increment, hyphae become inactive
-                        if (age * getParameter("b")>1. ){
+                        if (age * p.b>1. ){
                             setActive(false); // become inactive, if enough time has passed for branching
                             createLateral(dt_ ,verbose); // create a lateral hyphae
                             createLateral(dt_,verbose); // create a lateral hyphae
@@ -349,7 +349,7 @@ void Hyphae::createLateral(double dt_, bool verbose)
 
                     if((rp->successorOT.size()>i)&&(rp->successorOT.at(i).size()>p_id)){
                         ot = rp->successorOT.at(i).at(p_id);
-                    }else{ot = getParameter("organType");}//default
+                    }else{ot = organType() ;}//default
 
                     int st = rp->successorST.at(i).at(p_id);
 
