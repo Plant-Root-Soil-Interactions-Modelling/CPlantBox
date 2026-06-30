@@ -85,7 +85,7 @@ mycp.initialize(True)
 
 # set up simulation times etc.
 simtime = 5
-fps = 12
+fps = 24
 N = fps * simtime
 dt = simtime / N
 
@@ -164,7 +164,7 @@ mycp.turnOffSidePetriDish(-barrier_thickness/2,opening_height-barrier_height,  o
 
 middelsimHyphae = time.perf_counter()
 
-hours_hyphae = 120 ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
+hours_hyphae = 60 ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
 tip_densities = list()
 for i in range(0, hours_hyphae):
     print("Simulating hyphal growth step " + str(i+1) + " of " + str(hours_hyphae))
@@ -353,5 +353,5 @@ print("Time for simulation: ", endsim-start)
 # # plt.grid(True, ls='--', alpha=0.5)
 # # plt.tight_layout()
 # # plt.show()
-# # vp.plot_roots_and_container(mycp,rings[99])
+vp.plot_roots_and_container(mycp,petri_dish)
 # # vp.write_container(petri_dish, "petri_dish.vtp")

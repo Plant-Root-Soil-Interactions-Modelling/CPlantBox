@@ -138,7 +138,8 @@ void MycorrhizalPlant::turnOffSidePetriDish(double minnodex, double maxnodez, do
 		bool active = false;
 		for (const auto & n : org->getNodes()) {
 			if ((n.x > minnodex) && (n.z < maxnodez) && (n.y < maxnodey) && (n.y > minnodey)){
-				bool active = true;
+				// bool active = true;
+                active = true;
 				break;
 			}
 		}
