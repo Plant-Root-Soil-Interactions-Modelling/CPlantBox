@@ -14,7 +14,7 @@ path = "tomatoparameters/"
 name = "TwoHyphaePlusBAS"
 
 start = time.perf_counter()
-animation = True
+animation = False
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
 ### initial root parameters
@@ -164,7 +164,7 @@ mycp.turnOffSidePetriDish(-barrier_thickness/2,opening_height-barrier_height,  o
 
 middelsimHyphae = time.perf_counter()
 
-hours_hyphae = 60 ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
+hours_hyphae = 120 ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
 tip_densities = list()
 for i in range(0, hours_hyphae):
     print("Simulating hyphal growth step " + str(i+1) + " of " + str(hours_hyphae))
@@ -188,7 +188,7 @@ print("Time for simulation: ", endsim-start)
 # ana = getMycSegmentAnalyser(mycp)
 
 # if not animation:
-    # ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
+#     ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
 
 # # set the observation "rings"
 # nRings = 50
@@ -199,33 +199,33 @@ print("Time for simulation: ", endsim-start)
 # rings = []
 # rings.append(moved_ringone)
 # for i in range(2, nRings+1):
-    # small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
-    # small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
-    # old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
-    # small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
-    # moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
-    # rings.append(moved_small_hyphae_dish)
+#     small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
+#     small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
+#     old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
+#     small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
+#     moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
+#     rings.append(moved_small_hyphae_dish)
 
 # times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
 
 # def getParaDistperRing(parameter, times, plant, rings):
-    # paradenmat = np.zeros((len(rings),len(times[1:])))
-    # for k, ring in enumerate(rings):
-        # ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
-        # ringana.crop(ring)
-        # for j in range(len(times[1:])-1):
-            # ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
-            # ringana.pack()
-            # distrib = ringana.getSummed(parameter)
-            # ringana.filter("creationTime",0,np.flip(np.asarray(times))[j+1])
-            # ringana.pack()
-            # summed = ringana.getSummed(parameter)
-            # paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum() 
-        # ringana.filter("creationTime",0,np.flip(np.asarray(times))[len(times[1:])])
-        # ringana.pack()
-        # summed = ringana.getSummed(parameter)
-        # paradenmat[k, -1] = np.array(summed).sum() 
-    # return paradenmat
+#     paradenmat = np.zeros((len(rings),len(times[1:])))
+#     for k, ring in enumerate(rings):
+#         ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
+#         ringana.crop(ring)
+#         for j in range(len(times[1:])-1):
+#             ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
+#             ringana.pack()
+#             distrib = ringana.getSummed(parameter)
+#             ringana.filter("creationTime",0,np.flip(np.asarray(times))[j+1])
+#             ringana.pack()
+#             summed = ringana.getSummed(parameter)
+#             paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum() 
+#         ringana.filter("creationTime",0,np.flip(np.asarray(times))[len(times[1:])])
+#         ringana.pack()
+#         summed = ringana.getSummed(parameter)
+#         paradenmat[k, -1] = np.array(summed).sum() 
+#     return paradenmat
 
 
 
@@ -250,13 +250,13 @@ print("Time for simulation: ", endsim-start)
 # sm.set_array([])
 
 # for i, t in enumerate(times_arr):
-    # ax2.plot(
-        # location,
-        # Z[:, i],
-        # color=cmap(norm(t)),
-        # alpha=0.8,
-        # lw=1
-    # )
+#     ax2.plot(
+#         location,
+#         Z[:, i],
+#         color=cmap(norm(t)),
+#         alpha=0.8,
+#         lw=1
+#     )
 
 # ax2.set_xlabel("Radius r (mm)")
 # ax2.set_ylabel("Tip density (mm$^{-2}$)")
@@ -267,22 +267,22 @@ print("Time for simulation: ", endsim-start)
 
 # for i in range(Z.shape[1]):
 
-    # curve = Z[:, i]
+#     curve = Z[:, i]
 
-    # # arrival = first position where activity starts
-    # idx = np.argmax(curve > threshold)
+#     # arrival = first position where activity starts
+#     idx = np.argmax(curve > threshold)
 
-    # arrival_r = location[idx] if idx > 0 else location[0]
+#     arrival_r = location[idx] if idx > 0 else location[0]
 
-    # shifted_r = location - arrival_r
+#     shifted_r = location - arrival_r
 
-    # ax1.plot(
-        # shifted_r,
-        # curve,
-        # color=cmap(norm(times_arr[i])),
-        # alpha=0.8,
-        # lw=1
-    # )
+#     ax1.plot(
+#         shifted_r,
+#         curve,
+#         color=cmap(norm(times_arr[i])),
+#         alpha=0.8,
+#         lw=1
+#     )
 # ax1.set_xlabel(r"Shifted radius $r - r_{\mathrm{arrival}}$ (mm)")
 # ax1.set_ylabel("Tip density (mm$^{-2}$)")
 # ax1.set_title("Wave-aligned activity")
@@ -295,63 +295,63 @@ print("Time for simulation: ", endsim-start)
 # print("Time for simulation: ", endsim-start)
 # print("Time for plotting: ", endplot-endsim)
 # print("Total time: ", endplot-start)
-# # loc_grid, time_grid = np.meshgrid(location, times[1:],indexing='ij')
-# # loc_flat = loc_grid.ravel()
-# # time_flat = time_grid.ravel()
-# # tips_flat = tip_densities.ravel()
+# loc_grid, time_grid = np.meshgrid(location, times[1:],indexing='ij')
+# loc_flat = loc_grid.ravel()
+# time_flat = time_grid.ravel()
+# tips_flat = tip_densities.ravel()
 
-# # print("Lengths: ", len(loc_flat), len(time_flat), len(tips_flat))
+# print("Lengths: ", len(loc_flat), len(time_flat), len(tips_flat))
 
-# # cmap = plt.get_cmap('viridis')
+# cmap = plt.get_cmap('viridis')
 
-# # plt.figure(figsize=(9, 5))
+# plt.figure(figsize=(9, 5))
 
-# # extent = [
-# #     times[1], times[-1],   # x: Zeit
-# #     1, len(rings)          # y: Ringe
-# # ]
+# extent = [
+#     times[1], times[-1],   # x: Zeit
+#     1, len(rings)          # y: Ringe
+# ]
 
-# # plt.contour(location, timesuse, tip_densities, levels=50, cmap='viridis')
-# # plt.xlabel("Number of Ring")
-# # plt.title("Radial movement of hyphal tip density")
+# plt.contour(location, timesuse, tip_densities, levels=50, cmap='viridis')
+# plt.xlabel("Number of Ring")
+# plt.title("Radial movement of hyphal tip density")
 
-# # plt.show()
+# plt.show()
 
-# # sc = plt.scatter(
-# #     loc_flat,                 # x = Distanz
-# #     tips_flat,                # y = Messwert (kann auch 0 sein, wenn du nur Farben willst)
-# #     c=time_flat,              # Farbe = Zeitstempel
-# #     cmap=cmap,
-# #     s=50,                     # Marker‑Größe
-# #     edgecolor='k',
-# #     linewidth=0.4,
-# # )
+# sc = plt.scatter(
+#     loc_flat,                 # x = Distanz
+#     tips_flat,                # y = Messwert (kann auch 0 sein, wenn du nur Farben willst)
+#     c=time_flat,              # Farbe = Zeitstempel
+#     cmap=cmap,
+#     s=50,                     # Marker‑Größe
+#     edgecolor='k',
+#     linewidth=0.4,
+# )
 
-# # cbar = plt.colorbar(sc, label='Time [h]')   # Legende für die Zeitfarbe
-# # plt.xlabel('distance from centre [cm]')
-# # plt.ylabel('Tip Count')
-# # plt.grid(True, ls='--', alpha=0.5)
-# # plt.tight_layout()
-# # plt.show()
+# cbar = plt.colorbar(sc, label='Time [h]')   # Legende für die Zeitfarbe
+# plt.xlabel('distance from centre [cm]')
+# plt.ylabel('Tip Count')
+# plt.grid(True, ls='--', alpha=0.5)
+# plt.tight_layout()
+# plt.show()
 
-# # for ti, t in enumerate(time_grid):
-# #     if ti % 2 == 0:  # nur jede 10. Zeitstufe plotten, um Überladung zu vermeiden
-# #         plt.plot(
-# #             loc_grid,               # x‑Achse: Ort
-# #             tip_densities[:, ti],                # y‑Achse: Messwerte dieser Zeit
-# #             label=f't={t}s',
-# #             color=cmap(ti/len(time_grid)),   # gleiche Farbskala wie beim Scatter
-# #             linewidth=2,
-# #             marker='o',
-# #             markersize=2,
-# #             # markeredgecolor='k',
-# #         )
+# for ti, t in enumerate(time_grid):
+#     if ti % 2 == 0:  # nur jede 10. Zeitstufe plotten, um Überladung zu vermeiden
+#         plt.plot(
+#             loc_grid,               # x‑Achse: Ort
+#             tip_densities[:, ti],                # y‑Achse: Messwerte dieser Zeit
+#             label=f't={t}s',
+#             color=cmap(ti/len(time_grid)),   # gleiche Farbskala wie beim Scatter
+#             linewidth=2,
+#             marker='o',
+#             markersize=2,
+#             # markeredgecolor='k',
+#         )
 
-# # plt.xlabel('distance [cm]')
-# # plt.ylabel('Tip Count')
-# # plt.title('TipCount over distance and time')
-# # plt.grid(True, ls='--', alpha=0.5)
-# # plt.tight_layout()
-# # plt.show()
-vp.plot_roots_and_container(mycp,petri_dish)
-# # vp.write_container(petri_dish, "petri_dish.vtp")
+# plt.xlabel('distance [cm]')
+# plt.ylabel('Tip Count')
+# plt.title('TipCount over distance and time')
+# plt.grid(True, ls='--', alpha=0.5)
+# plt.tight_layout()
+# plt.show()
+# vp.plot_roots_and_container(mycp,petri_dish)
+# vp.write_container(petri_dish, "petri_dish.vtp")
