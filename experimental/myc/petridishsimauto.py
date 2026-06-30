@@ -14,7 +14,7 @@ path = "tomatoparameters/"
 name = "TwoHyphaePlusBAS"
 
 start = time.perf_counter()
-animation = False
+animation = True
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
 ### initial root parameters
@@ -182,115 +182,116 @@ for i in range(0, hours_hyphae):
        ana.crop(small_hyphae_dish)
        ana.write("animation/" + filename + "_" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
 endsim = time.perf_counter()
-
 print("Time for simulation: ", endsim-start)
+
+
 # raise Exception
 # ana = getMycSegmentAnalyser(mycp)
 
-# if not animation:
-#     ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
+if not animation:
+    ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
 
-# # set the observation "rings"
-# nRings = 50
-# centrepoint = [0, 1.5, 0] ## Set a different centre for the rings for analysis, so that growth is more centred
-# small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
-# ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
-# moved_ringone = pb.SDF_RotateTranslate(ringone, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], centrepoint[2]))
-# rings = []
-# rings.append(moved_ringone)
-# for i in range(2, nRings+1):
-#     small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
-#     small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
-#     old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
-#     small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
-#     moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
-#     rings.append(moved_small_hyphae_dish)
+# set the observation "rings"
+nRings = 50
+centrepoint = [0, 1.5, 0] ## Set a different centre for the rings for analysis, so that growth is more centred
+small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
+ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
+moved_ringone = pb.SDF_RotateTranslate(ringone, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], centrepoint[2]))
+rings = []
+rings.append(moved_ringone)
+for i in range(2, nRings+1):
+    small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
+    small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
+    old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
+    small_hyphae_dish = pb.SDF_Difference(small_hyphae_dish,old_dish)
+    moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
+    rings.append(moved_small_hyphae_dish)
 
-# times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
+times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
 
-# def getParaDistperRing(parameter, times, plant, rings):
-#     paradenmat = np.zeros((len(rings),len(times[1:])))
-#     for k, ring in enumerate(rings):
-#         ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
-#         ringana.crop(ring)
-#         for j in range(len(times[1:])-1):
-#             ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
-#             ringana.pack()
-#             distrib = ringana.getSummed(parameter)
-#             ringana.filter("creationTime",0,np.flip(np.asarray(times))[j+1])
-#             ringana.pack()
-#             summed = ringana.getSummed(parameter)
-#             paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum() 
-#         ringana.filter("creationTime",0,np.flip(np.asarray(times))[len(times[1:])])
-#         ringana.pack()
-#         summed = ringana.getSummed(parameter)
-#         paradenmat[k, -1] = np.array(summed).sum() 
-#     return paradenmat
+def getParaDistperRing(parameter, times, plant, rings):
+    paradenmat = np.zeros((len(rings),len(times[1:])))
+    for k, ring in enumerate(rings):
+        ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
+        ringana.crop(ring)
+        for j in range(len(times[1:])-1):
+            ringana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
+            ringana.pack()
+            distrib = ringana.getSummed(parameter)
+            ringana.filter("creationTime",0,np.flip(np.asarray(times))[j+1])
+            ringana.pack()
+            summed = ringana.getSummed(parameter)
+            paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum() 
+        ringana.filter("creationTime",0,np.flip(np.asarray(times))[len(times[1:])])
+        ringana.pack()
+        summed = ringana.getSummed(parameter)
+        paradenmat[k, -1] = np.array(summed).sum() 
+    return paradenmat
 
 
 
-# tip_densities = getParaDistperRing("nodeTips", times, ana, rings)
+tip_densities = getParaDistperRing("nodeTips", times, ana, rings)
 
-# # print(np.array(tip_densities).reshape((-1, len(tip_densities[0]))))
-# ## The problem is that the tips should be more evenly distributed i.e. more rings should have tips in them. but right now just a handful do
-# # tip_densities = np.array(tip_densities).reshape((-1, len(tip_densities[0])))
-# # tip_densities = np.transpose(tip_densities)
+# print(np.array(tip_densities).reshape((-1, len(tip_densities[0]))))
+## The problem is that the tips should be more evenly distributed i.e. more rings should have tips in them. but right now just a handful do
+# tip_densities = np.array(tip_densities).reshape((-1, len(tip_densities[0])))
+# tip_densities = np.transpose(tip_densities)
 
-# location = np.array([radius*np.sqrt(i/nRings) for i in range(1, nRings+1)])
-# Z = np.array(tip_densities)   # (r, t)
+location = np.array([radius*np.sqrt(i/nRings) for i in range(1, nRings+1)])
+Z = np.array(tip_densities)   # (r, t)
 
-# n_r, n_t = Z.shape
-# times_arr = np.array(times[1:])  # muss 99 lang sein
-# fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11,4))
+n_r, n_t = Z.shape
+times_arr = np.array(times[1:])  # muss 99 lang sein
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11,4))
 
-# cmap = plt.get_cmap("plasma")
-# norm = mpl.colors.Normalize(vmin=times_arr.min(), vmax=times_arr.max())
+cmap = plt.get_cmap("plasma")
+norm = mpl.colors.Normalize(vmin=times_arr.min(), vmax=times_arr.max())
 
-# sm = mpl.cm.ScalarMappable(cmap=cmap, norm=norm)
-# sm.set_array([])
+sm = mpl.cm.ScalarMappable(cmap=cmap, norm=norm)
+sm.set_array([])
 
-# for i, t in enumerate(times_arr):
-#     ax2.plot(
-#         location,
-#         Z[:, i],
-#         color=cmap(norm(t)),
-#         alpha=0.8,
-#         lw=1
-#     )
+for i, t in enumerate(times_arr):
+    ax2.plot(
+        location,
+        Z[:, i],
+        color=cmap(norm(t)),
+        alpha=0.8,
+        lw=1
+    )
 
-# ax2.set_xlabel("Radius r (mm)")
-# ax2.set_ylabel("Tip density (mm$^{-2}$)")
-# ax2.set_title("Active tip density over time")
+ax2.set_xlabel("Radius r (mm)")
+ax2.set_ylabel("Tip density (mm$^{-2}$)")
+ax2.set_title("Active tip density over time")
 
-# threshold = 0.2 * np.max(Z)
-# aligned_curves = []
+threshold = 0.2 * np.max(Z)
+aligned_curves = []
 
-# for i in range(Z.shape[1]):
+for i in range(Z.shape[1]):
 
-#     curve = Z[:, i]
+    curve = Z[:, i]
 
-#     # arrival = first position where activity starts
-#     idx = np.argmax(curve > threshold)
+    # arrival = first position where activity starts
+    idx = np.argmax(curve > threshold)
 
-#     arrival_r = location[idx] if idx > 0 else location[0]
+    arrival_r = location[idx] if idx > 0 else location[0]
 
-#     shifted_r = location - arrival_r
+    shifted_r = location - arrival_r
 
-#     ax1.plot(
-#         shifted_r,
-#         curve,
-#         color=cmap(norm(times_arr[i])),
-#         alpha=0.8,
-#         lw=1
-#     )
-# ax1.set_xlabel(r"Shifted radius $r - r_{\mathrm{arrival}}$ (mm)")
-# ax1.set_ylabel("Tip density (mm$^{-2}$)")
-# ax1.set_title("Wave-aligned activity")
-# cbar = fig.colorbar(sm, ax=[ax1, ax2])
-# cbar.set_label("Time (days)")
+    ax1.plot(
+        shifted_r,
+        curve,
+        color=cmap(norm(times_arr[i])),
+        alpha=0.8,
+        lw=1
+    )
+ax1.set_xlabel(r"Shifted radius $r - r_{\mathrm{arrival}}$ (mm)")
+ax1.set_ylabel("Tip density (mm$^{-2}$)")
+ax1.set_title("Wave-aligned activity")
+cbar = fig.colorbar(sm, ax=[ax1, ax2])
+cbar.set_label("Time (days)")
 # plt.tight_layout()
-# endplot = time.perf_counter()
-# plt.show()
+endplot = time.perf_counter()
+plt.show()
 
 # print("Time for simulation: ", endsim-start)
 # print("Time for plotting: ", endplot-endsim)
