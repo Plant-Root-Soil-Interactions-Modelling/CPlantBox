@@ -137,7 +137,7 @@ public:
     double getValue(const Vector3d& pos, const std::shared_ptr<Organ> o  = nullptr) const override {
         Vector3d p = periodic(pos);
         double c = -sdf->getDist(p)/slope*2.; ///< *(-1), because inside the geometry the value is largest
-        c += (fmax-fmin)/2.; // thats the value at the boundary
+        c += (fmax + fmin)/2.; // thats the value at the boundary
         return std::max(std::min(c,fmax),fmin);
     }
 
