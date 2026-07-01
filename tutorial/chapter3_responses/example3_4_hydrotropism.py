@@ -9,7 +9,7 @@ path = "../../modelparameter/structural/rootsystem/"
 filename = "Glycine_max_Moraes2020"
 plant.readParameters(path + filename + ".xml")
 
-box = pb.SDF_PlantBox(4, 4, 4)  # nutrient rich patch  # |\label{l36:patch2}|
+box = pb.SDF_PlantBox(4, 4, 4)  # patch with high water content # |\label{l36:patch2}|
 patch = pb.SDF_RotateTranslate(box, pb.Vector3d(-20, -20, -30))
 
 max_ = -300  # maximal
