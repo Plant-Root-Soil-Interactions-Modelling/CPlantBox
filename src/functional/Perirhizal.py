@@ -113,6 +113,11 @@ class PerirhizalPython(Perirhizal):
         """
         assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length"
         
+        for i in range(len(rx)):
+            if rx[i] < -15989:
+                rx[i] = -15989
+            if sx[i] > -1:
+                sx[i] = -1
         
         if self.lookup_table:
             rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
@@ -298,7 +303,7 @@ class PerirhizalPython(Perirhizal):
         #solve quadratic eqation for root uptake # TODO: Link to publication
         for i in range(n_segments):
             rho = r_prhiz[i] / r_root[i]
-            print("rootwateruptake",rootwateruptake[i],waterinflow[i])
+            #print("rootwateruptake",rootwateruptake[i],waterinflow[i])
             Phi_out =  Phi_soil[i] -( (rootwateruptake[i]-waterinflow[i])*((0.53**2)*(rho**2)/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/0.53)-0.5)) + waterinflow[i]*np.log(0.53) )
             #Phi_out = root_scalar(Phi_diff, method="brentq", bracket=[1e-5, Phi_soil]).root
             Phi = lambda r_rel : Phi_out + (rootwateruptake[i]-waterinflow[i])*((r_rel**2)*(rho**2)/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) + waterinflow[i]*np.log(r_rel) #TODO: test using Phi_soil instead of Phi_outer
@@ -306,7 +311,7 @@ class PerirhizalPython(Perirhizal):
             Ds_func = lambda r_rel : Ds[i] * math.pow(vg.water_content(vg.fast_imfp[sp](Phi(r_rel)),sp),10/3) / (sp.theta_S**2) # Millington and Quirk 
             
             #values for the subfunction
-            print("Phi", Phi(1e-10), Phi(r_prhiz[i]))
+            #print("Phi", Phi(1e-10), Phi(r_prhiz[i]))
             # = root_scalar(Phi, method="brentq", bracket=[1e-10, r_prhiz[i]]).root
             
             r_crit = r_root[i] / 100
@@ -417,7 +422,8 @@ class PerirhizalPython(Perirhizal):
                 if p>0:
                     rsc[i] = - p/2 + math.sqrt(p**2/4-q) #only the positive solution makes sense #test for negative
                 else:
-                    rsc[i] = - p/2 - math.sqrt(p**2/4-q) #this is the standard case as m[3] will usually be negative
+                    rsc[i] = - p/2 + math.sqrt(p**2/4-q) #this is the standard case as m[3] will usually be negative
+            # TODO: twice the same sign in the lines before
             Uptake[i] = m[3]*rsc[i]+n[3]
             ss_uptake[i] = m[0]*rsc[i]+n[0]
             sr_uptake[i] = m[1]*rsc[i]+n[1]
@@ -469,7 +475,7 @@ class PerirhizalPython(Perirhizal):
         waterpotential_func = lambda r : vg.fast_imfp[sp](Phi(r))
         watercontent_func = lambda r : vg.water_content(waterpotential_func(r),sp)
         
-        print("Phi_root",Phi(1e-10), Phi(r_prhiz))
+        #print("Phi_root",Phi(1e-10), Phi(r_prhiz))
         #r_crit = root_scalar(Phi, method="brentq", bracket=[1e-10,r_prhiz]).root
         r_crit = r_root / 100
         #solutes
@@ -599,7 +605,7 @@ class PerirhizalPython(Perirhizal):
         rsc = np.zeros(n_segments)
         F = np.zeros(n_segments) #F is a helper values
         F_tilde_inv = np.zeros(n_segments)
-        
+        #print("test",Phi_root[0], Phi_soil[0], c_bulk, Vmax, Km, Ds, waterflow) #TODO remove
         if self.lookup_table_solutes:
             F=[(self.lookup_table_solutes((Phi_soil[i],0))-self.lookup_table_solutes((Phi_root[i],0))) for i in range(0, n_segments)]
         else:
@@ -609,9 +615,9 @@ class PerirhizalPython(Perirhizal):
         D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
         
         #solve quadratic eqation # TODO: Link to publication
-        print("test",Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow) #TODO remove
+        
         for i in range(n_segments):
-            print("Dtilde",D_tilde,"F",F[i])
+            #print("Dtilde",D_tilde,"F",F[i])
             F_tilde_inv[i]=math.exp(-D_tilde*F[i])
             a1=c_bulk[i]*F_tilde_inv[i]
             a2=(1-F_tilde_inv[i])/(waterflow[i])
@@ -676,7 +682,7 @@ class PerirhizalPython(Perirhizal):
         #reuse steady state case
         #solve quadratic eqation # TODO: Link to publication
         for i in range(n_segments):
-            print("C_d",C_d,"F",F[i])
+            #print("C_d",C_d,"F",F[i])
             F_tilde_inv[i]=math.exp(-C_d*F[i])
             a1=(c_bulk[i]*watercontent[i])/(R_sr[i])*F_tilde_inv[i]
             a2=(1-watercontent[i]/R_sr[i]*F_tilde_inv[i])/waterflow[i]
@@ -701,6 +707,7 @@ class PerirhizalPython(Perirhizal):
         if Phi <=0:
             return 0
         theta_rel = sp.theta_R/(sp.theta_S-sp.theta_R)
+        #print("Phi",Phi)
         integral_fun = lambda Phi: pow(theta_rel+vg.effective_saturation(vg.fast_imfp[sp](Phi),sp),-13/3)
         integral_overD, _ = integrate.quad(integral_fun, 1.0e-3, Phi)
         
