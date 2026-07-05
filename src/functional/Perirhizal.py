@@ -6,6 +6,7 @@ from scipy.optimize import fsolve, root_scalar
 from scipy.spatial import ConvexHull, Voronoi
 from scipy.integrate import odeint
 from scipy import integrate
+from scipy.special.orthogonal import ts_roots
 
 import time #only used for a test
 
@@ -584,43 +585,94 @@ class PerirhizalPython(Perirhizal):
         return 1
     
     
-    def soil_root_solutes_ss_(self, Phi_root, Phi_soil, c_bulk, Vmax, Km, Ds, waterflow, sp):
+    def soil_root_solutes_steadyrate_simplified_(self, Phi_root, Phi_soil, r_root, r_prhiz, c_bulk, Vmax, Km, Ds, waterflow, sp, n_approx = 1):
         """
-        finds solute concentration at the soil root interface for all segments assuming steady state
-        uses a look up tables if present (see create_lookup, and open_lookup)
+        finds solute concentration at the soil root interface for all segments assuming that the waterflow and soluteflow are proportional throughout the perirhizal zone
+        in this simplification the mode of soluteuptake (steady state, steady rate with no influx, other steady rate) is prescribed by the water uptake
+        uses a look up tables if present (see create_lookup, and open_lookup) #TODO: add links to the exact lookup table
 
         Phi_root       matrix flux potential at the root-soil-interface [cm2/d]
         Phi_soil       matrix flux potential at the bulk soil [cm2/d]
+        r_root         root radius [cm]
+        r_prhiz        perirhizal radius [cm]
         c_bulk         solute concentration at the bulk soil [mol/cm3]
         Vmax           maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
         Km             half saturation constant Michaelis Menten Kinetics [mol/cm3]
         Ds             Diffusion constant in water [cm2/d]
         waterflow      steady state waterflow (entire root circumference) [cm2/d]
         sp             van Genuchten parameter set
+        n_approx       how many points are used to approximate the perirhizal solute concentration? 
+                       n_approx = 1 means only approximation at the perirhizal radius        
         """
         assert len(Phi_root) == len(Phi_soil) == len(c_bulk) == len(Vmax) == len(Km) == len(waterflow), "Phi_root, Phi_soil, c_bulk, Vmax, Km and waterflow must have the same length"
         
         n_segments = len(c_bulk)
         
-        rsc = np.zeros(n_segments)
-        F = np.zeros(n_segments) #F is a helper values
-        F_tilde_inv = np.zeros(n_segments)
-        #print("test",Phi_root[0], Phi_soil[0], c_bulk, Vmax, Km, Ds, waterflow) #TODO remove
-        if self.lookup_table_solutes:
-            F=[(self.lookup_table_solutes((Phi_soil[i],0))-self.lookup_table_solutes((Phi_root[i],0))) for i in range(0, n_segments)]
+        #the radii at which the solute concentration will be tested. They are given as relative values between r_root and r_prhiz. r=1 means r_prhiz.
+        if n_approx ==1:
+            test_radii = [r_prhiz]
+            weights = [1]
         else:
-            F=[(self.integral_overDiffusion_(Phi_soil[i],self.sp)-self.integral_overDiffusion_(Phi_root[i],self.sp)) for i in range(0, n_segments)]
+            [x,weights] = ts_roots(n_approx) # returns the nodes and weights for the chebyshev numterical integration
+            
+        
+        rho = [r_prhiz[i]/r_root[i] for i in range(n_segments)]
+        c_sol_mean2root = np.zeros(n_segments) # ratio of the mean solute concentration to solute concentration next to the root
+        c_sol_prhiz2root = np.zeros(n_segments)
+        mean_watercontent = np.zeros(n_segments) #watercontent next to the root
+        rsc = np.zeros(n_segments) #solute concentration next to the root (output)
+        F = np.zeros(n_segments) #F is a helper values
+        F0 = np.zeros(n_segments) #helper value for the ratio of solute next to the root
         
         #compute a prefactor
         D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
         
+        #root watercontent
+        #root_watercontent = [vg.water_content(vg.fast_imfp[self.sp](Phi_root[i]),self.sp) for i in range(n_segments)]
+        
+        #determine mfp depending on r
+        Phi_A = np.zeros(n_segments)
+        Phi_C = np.zeros(n_segments)
+        for i in range(n_segments):
+            Phi_A[i], Phi_C[i] = self.determine_mfp_function(Phi_root[i], Phi_soil[i], rho[i]) #Phi(r/r_prhiz)= A(s^2-ln(s^2))+C
+
+
+        
+        #determine F0
+        if self.lookup_table_solutes:
+            F0=[self.lookup_table_solutes((Phi_root[i],0)) for i in range(n_segments)]
+        else:
+            F0=[self.integral_overDiffusion_(Phi_root[i],self.sp) for i in range(n_segments)]
+        
+        for j in range(n_approx):
+            test_radii = np.array([math.sqrt(x[j] * (r_prhiz[i]**2-r_root[i]**2)+r_root[i]**2) for i in range(n_segments)]) #scale according to volume
+            s = [test_radii[i]/r_prhiz[i] for i in range(n_segments)]
+            Phi_current = [Phi_A[i]* (s[i]**2-2*np.log(s[i])) + Phi_C[i] for i in range(n_segments)]
+            current_watercontent = [vg.water_content(vg.fast_imfp[self.sp](Phi_current[i]),self.sp) for i in range(n_segments)]
+            if self.lookup_table_solutes:
+                F=[(self.lookup_table_solutes((Phi_current[i],0))-F0[i]) for i in range(n_segments)]
+            else:
+                F=[(self.integral_overDiffusion_(Phi_current[i],self.sp)-F0[i]) for i in range(n_segments)]
+            for i in range(n_segments):
+                c_sol_mean2root[i] += weights[j] * math.exp(D_tilde*F[i]) * current_watercontent[i]
+                mean_watercontent[i] += weights[j] * current_watercontent[i]
+        for i in range(n_segments):
+            c_sol_mean2root[i] = c_sol_mean2root[i] / mean_watercontent[i]
+        Phi_outer = [Phi_A[i] + Phi_C[i] for i in range(n_segments)]
+        if self.lookup_table_solutes:
+            F=[(self.lookup_table_solutes((Phi_outer[i],0))-F0[i]) for i in range(n_segments)]
+        else:
+            F=[(self.integral_overDiffusion_(Phi_outer[i],self.sp)-F0[i]) for i in range(n_segments)]
+        
+        for i in range(n_segments):
+            c_sol_prhiz2root[i] = math.exp(D_tilde*F[i])
+        
+        print("c_sol_mean2root", c_sol_mean2root, c_sol_prhiz2root)
         #solve quadratic eqation # TODO: Link to publication
         
         for i in range(n_segments):
-            #print("Dtilde",D_tilde,"F",F[i])
-            F_tilde_inv[i]=math.exp(-D_tilde*F[i])
-            a1=c_bulk[i]*F_tilde_inv[i]
-            a2=(1-F_tilde_inv[i])/(waterflow[i])
+            a1=c_bulk[i]/c_sol_mean2root[i]/
+            a2=(1-1/c_sol_mean2root[i])/(waterflow[i])
             p=Km[i]-a2*Vmax[i]-a1
             q=-Km[i]*a1
             rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)

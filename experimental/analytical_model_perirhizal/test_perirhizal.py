@@ -38,8 +38,8 @@ n_tests = 1 #try everything here for this many random parameter sets
 do_computation = False #should the computation be run or take the data from a saved file
 
 # general parameters
-max_time = 10 #d
-n_times = 1000 # number of time intervals
+max_time = 0.1 #d
+n_times = 10 # number of time intervals
 r_prhiz = 0.6 # perirhizal radius[cm]
 r_root = 0.02 # root radius [cm]
 NC = 40 # number of spatial discretisations
@@ -315,9 +315,11 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         #use the outer concentration for the steady state approximation here, even if that is not necessarily known in the macroscopic model
         #(the outer concentration can be computed as a mean of all surrounding voxels?
         #TODO: check weather Vmax or Vmax per area
-        result_solutes_ss_nf = peri.soil_root_solutes_ss_([Phi_root_nf], [Phi_outer_nf], [solutes_nf[-1]], [Vmax_per_area], [Km], Ds, [radial_waterdemand], peri.sp)
-        result_solutes_sr_nf = peri.soil_root_solutes_sr_([Phi_root_nf], [Phi_outer_nf], [rho], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [radial_waterdemand], peri.sp)
+        #result_solutes_ss_nf = peri.soil_root_solutes_ss_([Phi_root_nf], [Phi_outer_nf], [solutes_nf[-1]], [Vmax_per_area], [Km], Ds, [radial_waterdemand], peri.sp)
+        #result_solutes_sr_nf = peri.soil_root_solutes_sr_([Phi_root_nf], [Phi_outer_nf], [rho], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [radial_waterdemand], peri.sp)
         
+        result_solutes_ss_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_soil_nf], [r_root], [r_prhiz], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [radial_waterdemand], peri.sp, n_approx = 5)
+        result_solutes_sr_nf = result_solutes_ss_nf
         #safe the results
         #(here there is no computed inflow, so index 1 doesn't do anything)
         result_solutes_ss_nf = result_solutes_ss_nf[0]
@@ -461,7 +463,7 @@ for i in range(5):
     ax2_1.plot(CC, solute_ff_g, "m", linestyle = linestyle_special, label = "solute_ff")
     #print(solute_ss_g)  
     #print(solute_sr_g)
-    print(solutes_dumux[run, 1, timestep[i], :])    
+    #print(solutes_dumux[run, 1, timestep[i], :])    
 ax1[i,0].set_xlabel("distance root [cm]")
 ax1[i,0].set_ylabel("water")
 ax2_0.set_ylabel("nitrogen")
