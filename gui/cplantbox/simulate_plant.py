@@ -180,6 +180,17 @@ def generate_mp4(plant_, time_slider, seed_data, root_data, stem_data, leaf_data
     import subprocess
     import tempfile
 
+    # Ensure ffmpeg is reachable (server PATH may differ from interactive shell)
+    ffmpeg_exe = shutil.which("ffmpeg")
+    if ffmpeg_exe is None:
+        raise RuntimeError("ffmpeg not found in PATH. On a server, set the full path explicitly or " "ensure ffmpeg is on the system PATH for the server process.")
+
+    # VTK needs a real OpenGL context even with SetOffScreenRendering(1).
+    # On headless servers, hint VTK to prefer EGL (no DISPLAY required).
+    # This must be set before vtkRenderWindow is created.
+    if not os.environ.get("DISPLAY"):
+        os.environ.setdefault("VTK_DEFAULT_OPENGL_WINDOW", "vtkEGLRenderWindow")
+
     NUM_FRAMES = 96  # 4 s × 24 fps
 
     # ---- 1. First-pass simulation to determine final scene bounds ----
@@ -260,31 +271,51 @@ def generate_mp4(plant_, time_slider, seed_data, root_data, stem_data, leaf_data
         # ---- 4. Assemble MP4 with ffmpeg and return base64-encoded bytes ----
         mp4_path = os.path.join(tmpdir, "animation.mp4")
         logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "cplantbox.png")
+
+        def _run_ffmpeg(cmd):
+            try:
+                subprocess.run(cmd, check=True, capture_output=True)
+            except subprocess.CalledProcessError as exc:
+                stderr = exc.stderr.decode(errors="replace") if exc.stderr else ""
+                raise RuntimeError(f"ffmpeg failed (exit {exc.returncode}):\n{stderr}") from exc
+
         if os.path.isfile(logo_path):
             # Overlay logo: scale to 150 px wide, place in lower-left with 10 px margin
             filter_complex = "[1:v]scale=150:-1[logo];[0:v][logo]overlay=10:H-h-10"
-            subprocess.run(
+            _run_ffmpeg(
                 [
-                    "ffmpeg", "-y", "-r", "24",
-                    "-i", os.path.join(tmpdir, "frame_%d.jpg"),
-                    "-i", logo_path,
-                    "-filter_complex", filter_complex,
-                    "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                    ffmpeg_exe,
+                    "-y",
+                    "-r",
+                    "24",
+                    "-i",
+                    os.path.join(tmpdir, "frame_%d.jpg"),
+                    "-i",
+                    logo_path,
+                    "-filter_complex",
+                    filter_complex,
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
                     mp4_path,
                 ],
-                check=True,
-                capture_output=True,
             )
         else:
-            subprocess.run(
+            _run_ffmpeg(
                 [
-                    "ffmpeg", "-y", "-r", "24",
-                    "-i", os.path.join(tmpdir, "frame_%d.jpg"),
-                    "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                    ffmpeg_exe,
+                    "-y",
+                    "-r",
+                    "24",
+                    "-i",
+                    os.path.join(tmpdir, "frame_%d.jpg"),
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
                     mp4_path,
                 ],
-                check=True,
-                capture_output=True,
             )
         with open(mp4_path, "rb") as f:
             return base64.b64encode(f.read()).decode("ascii")
