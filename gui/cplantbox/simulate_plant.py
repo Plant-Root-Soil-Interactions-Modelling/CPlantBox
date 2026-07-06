@@ -180,7 +180,7 @@ def generate_mp4(plant_, time_slider, seed_data, root_data, stem_data, leaf_data
     import subprocess
     import tempfile
 
-    NUM_FRAMES = 40  # 4 s × 10 fps
+    NUM_FRAMES = 96  # 4 s × 24 fps
 
     # ---- 1. First-pass simulation to determine final scene bounds ----
     plant_b, _, _ = get_plant(plant_, seed_data, root_data, stem_data, leaf_data, xml_data)
@@ -259,16 +259,33 @@ def generate_mp4(plant_, time_slider, seed_data, root_data, stem_data, leaf_data
 
         # ---- 4. Assemble MP4 with ffmpeg and return base64-encoded bytes ----
         mp4_path = os.path.join(tmpdir, "animation.mp4")
-        subprocess.run(
-            [
-                "ffmpeg", "-y", "-r", "10",
-                "-i", os.path.join(tmpdir, "frame_%d.jpg"),
-                "-c:v", "libx264", "-pix_fmt", "yuv420p",
-                mp4_path,
-            ],
-            check=True,
-            capture_output=True,
-        )
+        logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "cplantbox.png")
+        if os.path.isfile(logo_path):
+            # Overlay logo: scale to 150 px wide, place in lower-left with 10 px margin
+            filter_complex = "[1:v]scale=150:-1[logo];[0:v][logo]overlay=10:H-h-10"
+            subprocess.run(
+                [
+                    "ffmpeg", "-y", "-r", "24",
+                    "-i", os.path.join(tmpdir, "frame_%d.jpg"),
+                    "-i", logo_path,
+                    "-filter_complex", filter_complex,
+                    "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                    mp4_path,
+                ],
+                check=True,
+                capture_output=True,
+            )
+        else:
+            subprocess.run(
+                [
+                    "ffmpeg", "-y", "-r", "24",
+                    "-i", os.path.join(tmpdir, "frame_%d.jpg"),
+                    "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                    mp4_path,
+                ],
+                check=True,
+                capture_output=True,
+            )
         with open(mp4_path, "rb") as f:
             return base64.b64encode(f.read()).decode("ascii")
     finally:
