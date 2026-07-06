@@ -38,8 +38,8 @@ n_tests = 1 #try everything here for this many random parameter sets
 do_computation = False #should the computation be run or take the data from a saved file
 
 # general parameters
-max_time = 0.1 #d
-n_times = 10 # number of time intervals
+max_time = 10.0 #d
+n_times = 1000 # number of time intervals
 r_prhiz = 0.6 # perirhizal radius[cm]
 r_root = 0.02 # root radius [cm]
 NC = 40 # number of spatial discretisations
@@ -155,7 +155,8 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
             s.setParameter("Soil.BC.Top.CValue", str(initial_soluteconcentration*molarMassSolute)) 
         s.setParameter("Soil.BC.Bot.SType", "8")  # michaelisMenten=8 (SType = Solute Type)
         s.setParameter("Soil.BC.Bot.CValue", "0.0") #should not matter
-        s.setParameter("RootSystem.Uptake.Vmax", str(Vmax_per_area*molarMassSolute)) #mol/(cm2d) -> g/(cm2 d)
+        #s.setParameter("RootSystem.Uptake.Vmax", str(Vmax_per_area*molarMassSolute)) #mol/(cm2d) -> g/(cm2 d)
+        s.setParameter("RootSystem.Uptake.Vmax", str(Vmax*molarMassSolute)) #mol/d -> g/d #TODO: Vmax or Vmax per area?
         s.setParameter("RootSystem.Uptake.Km", str(Km*molarMassSolute)) # mol/cm3 -> g/cm3
         "RootSystem.Uptake.Vmax"
         "RootSystem.Uptake.Km"
@@ -318,8 +319,9 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         #result_solutes_ss_nf = peri.soil_root_solutes_ss_([Phi_root_nf], [Phi_outer_nf], [solutes_nf[-1]], [Vmax_per_area], [Km], Ds, [radial_waterdemand], peri.sp)
         #result_solutes_sr_nf = peri.soil_root_solutes_sr_([Phi_root_nf], [Phi_outer_nf], [rho], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [radial_waterdemand], peri.sp)
         
-        result_solutes_ss_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_soil_nf], [r_root], [r_prhiz], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [radial_waterdemand], peri.sp, n_approx = 5)
-        result_solutes_sr_nf = result_solutes_ss_nf
+        result_solutes_ss_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_soil_nf], [r_root], [r_prhiz], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [abs(waterdemand)], peri.sp, n_approx = 1)
+        result_solutes_sr_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_soil_nf], [r_root], [r_prhiz], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [abs(radial_waterdemand)], peri.sp, n_approx = 1)
+        
         #safe the results
         #(here there is no computed inflow, so index 1 doesn't do anything)
         result_solutes_ss_nf = result_solutes_ss_nf[0]
@@ -337,8 +339,8 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
             F_g = peri.integral_overDiffusion_(Phi_g(r_current),peri.sp)-F0_g
             F_tilde_nf=math.exp(D_tilde*F_nf)
             F_tilde_g=math.exp(D_tilde*F_g)
-            solutes_dumux_ss[0,r,2+j] = result_solutes_ss_nf * F_tilde_nf - (1-F_tilde_nf) * solutes_dumux_ss[0,r,0] / radial_waterdemand#waterdemand is assumed to be negative #TODO: look at the signs
-            solutes_dumux_sr[0,r,2+j] = result_solutes_sr_nf * F_tilde_nf - (1-F_tilde_nf) * solutes_dumux_sr[0,r,0] / radial_waterdemand #an uptake of both water and solute is assumed
+            solutes_dumux_ss[0,r,2+j] = result_solutes_ss_nf * F_tilde_nf + (1-F_tilde_nf) * solutes_dumux_ss[0,r,0] / waterdemand#waterdemand is assumed to be negative #TODO: look at the signs
+            solutes_dumux_sr[0,r,2+j] = result_solutes_sr_nf * F_tilde_nf + (1-F_tilde_nf) * solutes_dumux_sr[0,r,0] / radial_waterdemand #an uptake of both water and solute is assumed
         
         #case of general steady rate water uptake
         #for the steady state take again the outer concentration
