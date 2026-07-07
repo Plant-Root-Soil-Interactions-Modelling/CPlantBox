@@ -1,7 +1,7 @@
 import numpy as np
 
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp
 
 
 class EmptyPlant(pb.Plant):
@@ -26,9 +26,7 @@ plant = EmptyPlant()
 
 leaf_rp = pb.LeafRandomParameter(plant)
 leaf_rp.parametrisationType = 0  # 2D shape type : 0 .. radial, 1..along main axis
-leaf_rp.shapeType = (
-    2  # Shape of the leaf: 0: cylinder (a = radius), 1: cuboid (a = thickness, Width_blade, Width_petiole), 2: 2D (leafGeometryPhi, leafGeometryX, areaMax)
-)
+leaf_rp.shapeType = 2  # Shape of the leaf: 0: cylinder (a = radius), 1: cuboid (a = thickness, Width_blade, Width_petiole), 2: 2D (leafGeometryPhi, leafGeometryX, areaMax)
 leaf_rp.subType = 1
 leaf_rp.lmax = 10
 leaf_rp.tropismS = 0.0
@@ -63,6 +61,7 @@ plant.setOrganRandomParameter(leaf_rp)
 plant.initialize_empty()
 
 leaf = pb.Leaf(plant, 1, 0, plant.getSeed(), 0)  # create a leaf organ with the given random parameter
+leaf.addNode(plant.getSeed().getNode(0), 0, 0.0)  # base node required before plant.simulate(); reuse seed's node ID so SegmentAnalyser indices stay contiguous
 plant.getSeed().addChild(leaf)  # defined in Organism
 
 print("**********")
