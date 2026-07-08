@@ -282,11 +282,11 @@ class PerirhizalPython(Perirhizal):
         
         return rsc
     
-    def soil_root_solutes_sr(self, Phi_soil, rootwateruptake, waterinflow, r_root, r_prhiz, c_soil, c_outer, Vmax, Km, Ds, sp, mode = "ff"):
+    def soil_root_solutes_sr(self, Phi_out, rootwateruptake, waterinflow, r_root, r_prhiz, c_soil, c_outer, Vmax, Km, Ds, sp, mode = "ff"):
         """
         steady rate assumption of solute uptake by roots TODO: insert citaiton
         
-        Phi_soil           outer matrix flux potential [cm2/d]
+        Phi_out           outer matrix flux potential [cm2/d]
         rootwateruptake    radial root water uptake [cm2/d]
         waterinflow        radial water inflow at r_prhiz [cm2/d]
         r_root             root radius [cm]
@@ -307,7 +307,7 @@ class PerirhizalPython(Perirhizal):
         Uptake             solute uptake of the root [mol/(cm d)]
         
         """
-        assert len(Phi_soil) == len(rootwateruptake) == len(waterinflow) == len(r_root) == len(r_prhiz) == len(c_soil) == len(c_outer) == len(Vmax) == len(Km), "Phi_soil, rootwateruptake, waterinflow, r_root, r_prhiz, c_soil, c_outer, Vmax and Km must have the same length"
+        assert len(Phi_out) == len(rootwateruptake) == len(waterinflow) == len(r_root) == len(r_prhiz) == len(c_soil) == len(c_outer) == len(Vmax) == len(Km) == len(Ds), "Phi_soil, rootwateruptake, waterinflow, r_root, r_prhiz, c_soil, c_outer, Vmax, Km and Ds must have the same length"
         
         n_segments = len(c_soil)
         
@@ -319,28 +319,36 @@ class PerirhizalPython(Perirhizal):
         #solve quadratic eqation for root uptake # TODO: Link to publication
         for i in range(n_segments):
             rho = r_prhiz[i] / r_root[i]
-            Phi_out =  Phi_soil[i] -( (rootwateruptake[i]-waterinflow[i])*((0.53**2)*(rho**2)/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/0.53)-0.5)) + waterinflow[i]*np.log(0.53) )
+            Phi_0 = Phi_out[i] - 1/2 *(rootwateruptake[i] - waterinflow[i]) * rho**2 / (1 - rho**2)
+            Phi_1 = waterinflow[i] - 1/2 * (rootwateruptake[i] - waterinflow[i]) * rho**2 / (1 - rho**2)
+            Phi_2 = (rootwateruptake[i] - waterinflow[i]) * rho**2 / (1 - rho**2)
+            Phi = lambda r : Phi_2 * (r/r_prhiz[i])**2 + Phi_1 * np.log(r/r_prhiz[i]) + Phi_0
+            #Phi_out =  Phi_soil[i] -( (rootwateruptake[i]-waterinflow[i])*((0.53**2)*(rho**2)/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/0.53)-0.5)) + waterinflow[i]*np.log(0.53) )
             #Phi = lambda r_rel : Phi_out + (rootwateruptake[i]-waterinflow[i])*((r_rel**2)*(rho**2)/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/r_rel)-0.5)) + waterinflow[i]*np.log(r_rel) #TODO: test using Phi_soil instead of Phi_outer
-            Phi = lambda r : Phi_out + (rootwateruptake[i] - waterinflow[i]) * ((r/r_prhiz[i])**2/2-1/2+np.log(r_prhiz[i]/r)) * rho**2 / (1 - rho**2) + waterinflow[i] * np.log(r / r_prhiz[i])
-            Phi = lambda r : 1.0 #TODO: remove times 3
+            #Phi = lambda r : Phi_out[i] + (rootwateruptake[i] - waterinflow[i]) * ((r/r_prhiz[i])**2/2-1/2+np.log(r_prhiz[i]/r)) * rho**2 / (1 - rho**2) + waterinflow[i] * np.log(r / r_prhiz[i])
+            #Phi = lambda r : 1.0 #TODO: remove times 3
             radial_waterflow = lambda r : (waterinflow[i] + (rootwateruptake[i]-waterinflow[i]) * (r_prhiz[i]**2 - r**2) / (r_prhiz[i]**2 - r_root[i]**2)) / (2 * np.pi * r)
             Ds_func = lambda r_rel : Ds[i] * math.pow(vg.water_content(vg.fast_imfp[sp](Phi(r_rel)),sp),10/3) / (sp.theta_S**2) # Millington and Quirk 
             
             Ds0 = self.Ds0_ref 
-            scaling = math.sqrt(Ds[i] / Ds0) #I am an idiot I am an idiot. I messed up the ordering
-            Phi1 = Phi(1/scaling) - waterinflow[i] * np.log(scaling) - (rootwateruptake[i] - waterinflow[i]) * r_prhiz[i]**2 / (r_prhiz[i]**2 - r_root[i]**2) * (np.log(scaling)-1/2 * (1-1/scaling**2))
-            waterflow = radial_waterflow(scaling) / scaling 
-            wateruptake = (rootwateruptake[i] - waterinflow[i]) * r_prhiz[i]**2 / (r_prhiz[i]**2 - r_root[i]**2) / scaling**2 
+            scaling = math.sqrt(Ds[i] / Ds0) # Ds_i > Ds0 means scaling >1, the region is modeled to be smaller than it actually is
+            Phi_2 = Phi_2 * (scaling**2)
+            Phi_1 = Phi_1
+            Phi_0 = Phi_0 + Phi_1 * np.log(scaling)
+            radial_waterflow = lambda r : 4 * np.pi * (r**2) * Phi_2 + 2 * np.pi * Phi_1 #for the new scaling
+            #Phi = lambda r : Phi_2 * (r/r_prhiz[i])**2 + Phi_1 * np.log(r/r_prhiz[i]) + Phi_0
+            #Phi1 = Phi(scaling*) - waterinflow[i] * np.log(scaling) - (rootwateruptake[i] - waterinflow[i]) / (r_prhiz[i]**2 - r_root[i]**2) * (np.log(scaling) * r_prhiz[i]**2 - 1/2 * (r_prhiz[i]**2-1/scaling**2))
+            #wateruptake = (rootwateruptake[i] - waterinflow[i]) / (r_prhiz[i]**2 - r_root[i]**2) * scaling**2  #* r_prhiz[i]**2
+            #waterflow = radial_waterflow(scaling*r_prhiz[i]) - (rootwateruptake[i]-waterinflow[i]) / (r_prhiz[i]**2 - r_root[i]**2) * r_prhiz[i]**2 * (1 - scaling**2)
+            
+            #TODO: implement using the lookup table here
             
             r_eval = np.logspace(np.log10(r_root[i]), np.log10(r_prhiz[i]), num = 40)
-            r_eval = [r * scaling for r in r_eval]
-            Phi1 = 1
-            waterflow = 0
-            wateruptake = 0
-            print("r_eval equation before",r_root[i], r_prhiz[i],r_eval)
-            conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(Phi1, waterflow, wateruptake, r_eval, sp)
-            
-            print("r_eval equation",r_root[i], r_prhiz[i],r_eval)
+            r_eval = [r * scaling / r_prhiz[i] for r in r_eval]
+            #Phi1 = 1
+            #waterflow = 0
+            #wateruptake = 0
+            conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(Phi_2, Phi_1, Phi_0, r_eval, sp)
             
             #default prefactors for the steady state case
             pre_c = 0
@@ -457,37 +465,48 @@ class PerirhizalPython(Perirhizal):
         
         #water
         #Phi_out =  Phi_soil -( (rootwateruptake-waterinflow)*((0.53**2)*(rho**2)/(2*(1-rho**2))+rho**2/(1-rho**2)*(np.log(1/0.53)-0.5)) + waterinflow*np.log(0.53) )
-        Phi = lambda r : Phi_out - (rootwateruptake - waterinflow) * ((r/r_prhiz)**2/2-1/2+np.log(r_prhiz/r)) * r_prhiz**2 / (r_prhiz**2 - r_root**2) + waterinflow * np.log(r / r_prhiz)
-        Phi = lambda r : 1.0 #TODO: remove times 3
+        Phi = lambda r : Phi_out + (rootwateruptake - waterinflow) / (2*np.pi) * ((r/r_prhiz)**2/2-1/2+np.log(r_prhiz/r)) *(rho**2)/(1-rho**2) + waterinflow / (2*np.pi) * np.log(r / r_prhiz)
+        #Phi = lambda r : 1.0 #TODO: remove times 3
         wateruptake = (rootwateruptake - waterinflow) / (np.pi * (r_prhiz**2 - r_root**2))#TODO doublecheck
         radial_waterflow = lambda r : (waterinflow + wateruptake * np.pi * (r_prhiz**2 - r**2)) / (2 * np.pi * r) #TODO: rename
+        #waterpotential_func = lambda r : vg.fast_imfp[sp](Phi(r))
+        #watercontent_func = lambda r : vg.water_content(waterpotential_func(r),sp)
+        
+        rho = r_prhiz / r_root
+        Phi_0 = Phi_out + 1/2 *(rootwateruptake - waterinflow) * rho**2 / (1 - rho**2)
+        Phi_1 = waterinflow + (rootwateruptake - waterinflow) * rho**2 / (1 - rho**2)
+        Phi_2 = -(rootwateruptake - waterinflow) * rho**2 / (1 - rho**2)
+        #Phi = lambda r : Phi_2 * (r/r_prhiz)**2/2 + Phi_1 * np.log(r/r_prhiz) + Phi_0
         waterpotential_func = lambda r : vg.fast_imfp[sp](Phi(r))
         watercontent_func = lambda r : vg.water_content(waterpotential_func(r),sp)
         
-        
         #solutes
         #use the subfunction #TODO: alternative lookup table
-        scaling = math.sqrt(Ds0 / self.Ds0_ref)
+        scaling = math.sqrt(Ds0 / self.Ds0_ref) # Ds0 > Ds0_ref means scaling >1, the region is modeled to be smaller than it actually is
         Phi1 = Phi(1/scaling) - waterinflow * np.log(scaling) - (rootwateruptake - waterinflow) * r_prhiz**2 / (r_prhiz**2 - r_root**2) * (np.log(scaling)-1/2 * (1-1/scaling**2))
         waterflow = radial_waterflow(scaling) / scaling 
-        r_eval = [r * scaling for r in r_eval]
-        wateruptake = (rootwateruptake - waterinflow) * r_prhiz**2 / (r_prhiz**2 - r_root**2) / scaling**2 
+        #r_eval = [r * scaling / r_prhiz for r in r_eval]
+        wateruptake = (rootwateruptake - waterinflow) / (r_prhiz**2 - r_root**2) / scaling**2 #* r_prhiz**2
         
-        Phi1 = 1
-        waterflow = 0
-        wateruptake = 0
+        Phi_2 = Phi_2 * (scaling**2)
+        Phi_1 = Phi_1
+        Phi_0 = Phi_0 + Phi_1 * np.log(scaling)
+        radial_waterflow = lambda r : 2 * np.pi * (r**2) * Phi_2 + 2 * np.pi * Phi_1 #for the new scaling
+        
+        #Phi1 = 1
+        #waterflow = 0
+        #wateruptake = 0
         
         Vmax = 4.0e-11 * 1 * (2*3.14*r_root) * (24*3600)  #mol/(cm2 s) * cm * cm * (s/d) -> mol / d 
         Vmax_per_area = Vmax / (1 * (2*3.14*r_root)) #mol / d /cm2 = mol/(cm2d)
         Km = 1.5e-7   #mol/cm3
         
         #rsc, Uptake, ss_uptake, sr_uptake, inflow_mean_c_0 = self.soil_root_solutes_sr([Phi_out], [rootwateruptake], [waterinflow], [r_root], [r_prhiz], [1.98e-5], [2.0e-5], [Vmax], [Km], [Ds0], sp, mode = "ss")
-        rsc, Uptake, ss_uptake, sr_uptake, inflow_mean_c_0 = self.soil_root_solutes_sr([1], [0], [0], [r_root], [r_prhiz], [1.98e-5], [2.0e-5], [Vmax], [Km], [Ds0], sp, mode = "ss")
-        #conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(Phi1, waterflow, wateruptake, r_eval, sp)
-        conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(1, 0, 0, r_eval, sp)
-        c_root = rsc
-        print("compareinflow", inflow_mean_c_0, inflow_mean_c)
-        print("r_eval disc", r_eval)
+        #rsc, Uptake, ss_uptake, sr_uptake, inflow_mean_c_0 = self.soil_root_solutes_sr([1], [0], [0], [r_root], [r_prhiz], [1.98e-5], [2.0e-5], [Vmax], [Km], [Ds0], sp, mode = "ss")
+        conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(Phi_2, Phi_1, Phi_0, r_eval, sp)
+        #conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(1, 0, 0, r_eval, sp)
+        #c_root = rsc
+        #print("compareinflow", inflow_mean_c_0, inflow_mean_c)
         
         soluteconcentration = c_root * conc_rel_c + ss_uptake * inflow_rel_c + sr_uptake * Uptake_rel_c   
         soluteconcentration_mean = c_root * conc_mean_c + ss_uptake * inflow_mean_c + sr_uptake * Uptake_mean_c           
@@ -502,7 +521,7 @@ class PerirhizalPython(Perirhizal):
         
         return watercontent, waterpotential, soluteconcentration
     
-    def solute_linearequation_sr_(self, Phi1, waterflow, wateruptake, r_eval, sp):
+    def solute_linearequation_sr_(self, Phi_2, Phi_1, Phi_0, r_eval, sp):
         """
         computes a linear equation from the diffusion advection ODE on the perirhizal solute flow #TODO: insert equation number
         the radius (and steady rate wateruptake) are scaled by the diffusion coefficient of the solute
@@ -538,11 +557,17 @@ class PerirhizalPython(Perirhizal):
         watercontent_times_r = np.ones(n)      
                 
         #waterflow
-        Phi = lambda r : Phi1 - wateruptake * (r**2/2 - 1/2 - np.log(r)) + waterflow * 2 * np.pi * 1 * np.log(r) # TODO add citation
-        Phi = lambda r : 1.0 #TODO: remove times 3
-        radial_waterflow = lambda r : (2 * np.pi * 1 * waterflow + wateruptake * np.pi * (1 - r**2)) #TODO: distinct waterflow [cm/d] and radial waterflow [cm2/d]
+        #Phi = lambda r : Phi1 - wateruptake * (r**2/2 - 1/2 - np.log(r)) + waterflow * 2 * np.pi * 1 * np.log(r) # TODO add citation
+        #Phi = lambda r : 1.0 #TODO: remove times 3
+        #radial_waterflow = lambda r : (2 * np.pi * 1 * waterflow + wateruptake * np.pi * (1 - r**2)) #TODO: distinct waterflow [cm/d] and radial waterflow [cm2/d]
+        #watercontent = lambda r : vg.water_content(vg.fast_imfp[sp](Phi(r)), sp)
+        #print("what is python doing?", watercontent(0.1), Ds0, Phi(0.1))
+        Phi = lambda r : Phi_2 * r**2 + Phi_1 * np.log(r) + Phi_0
+        radial_waterflow = lambda r : 4 * np.pi * (r**2) * Phi_2 + 2 * np.pi * Phi_1 #for the new scaling
         watercontent = lambda r : vg.water_content(vg.fast_imfp[sp](Phi(r)), sp)
         Ds = lambda r : Ds0 * math.pow(watercontent(r),10/3) / (sp.theta_S**2)
+        
+        
         
         f_homogen = lambda c, r : ( radial_waterflow(r) * c) / (Ds(r) * r) #TODO: add reference
         f_steadystate = lambda c, r : (1 + radial_waterflow(r) * c) / (Ds(r) * r) #TODO: add reference

@@ -38,8 +38,8 @@ n_tests = 1 #try everything here for this many random parameter sets
 do_computation = True #should the computation be run or take the data from a saved file
 
 # general parameters
-max_time = 0.1 # d
-n_times = 10 # number of time intervals
+max_time = 0.2 # d
+n_times = 20 # number of time intervals
 r_prhiz = 0.6 # perirhizal radius[cm]
 r_root = 0.02 # root radius [cm]
 NC = 40 # number of spatial discretisations
@@ -244,8 +244,8 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         inflow_s_nf = inflow_s_nf[0]
         rootuptake_w_g = rootuptake_w_g[0]
         rootuptake_s_g = rootuptake_s_g[0]
-        inflow_w_g = inflow_w_g[0]
-        inflow_s_g = inflow_s_g[0]
+        inflow_w_g = abs(inflow_w_g[0])
+        inflow_s_g = abs(inflow_s_g[0]) #TODO take all the flows to the root as negative?
         
         #store the dumux outputs
         #scenario no flux outer BC
@@ -291,9 +291,10 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         Phi_root_nf = Phi_nf(r_root)#mfp next to the root 
         #general outer BC: Dirichlet BC to a fixed potential
         Phi_soil_g = vg.fast_mfp[peri.sp](mean_waterpotential_g) #mfp of the mean soil
-        Phi_outer_g = Phi_soil_g - (rootuptake_w_g*r_root-inflow_w_g*r_prhiz)*(rho**2)/(1-rho**2)*(((0.53)**2-1)/2-np.log(0.53))-(inflow_w_g*r_prhiz)*r_prhiz*np.log(0.53) #mfp at the outer perirhizal radius
-        Phi_g = lambda r: Phi_outer_g + (rootuptake_w_g*r_root-inflow_w_g*r_prhiz)*(rho**2)/(1-rho**2)*(((r/r_prhiz)**2-1)/2-np.log(r/r_prhiz))+(inflow_w_g*r_prhiz)*r_prhiz*np.log(r/r_prhiz)#mfp function depending on radius
+        Phi_outer_g = Phi_soil_g - (rootuptake_w_g*r_root-inflow_w_g*r_prhiz)*(rho**2)/(1-rho**2)*(((0.53)**2-1)/2-np.log(0.53))-(inflow_w_g*r_prhiz)*np.log(0.53) #mfp at the outer perirhizal radius
+        Phi_g = lambda r: Phi_outer_g + (rootuptake_w_g*r_root-inflow_w_g*r_prhiz)*(rho**2)/(1-rho**2)*(((r/r_prhiz)**2-1)/2-np.log(r/r_prhiz))+(inflow_w_g*r_prhiz)*np.log(r/r_prhiz)#mfp function depending on radius
         Phi_root_g = Phi_nf(r_root)#mfp next to the root 
+        print("inflow", inflow_w_g)
     
         #write the steady rate approximations for the water as outputs
         waterpotential_sr[0,r,0] = rootuptake_w_nf
@@ -345,26 +346,27 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         #case of general steady rate water uptake
         #for the steady state take again the outer concentration
         #TODO: check weather Vmax or Vmax per area
-        rsc, Uptake, ss_uptake, sr_uptake, _ = peri.soil_root_solutes_sr([Phi_soil_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax_per_area], [Km], [Ds], peri.sp, mode = "ss")
-        _, _, soluteconcentration = peri.watersolutes_disc(Phi_outer_nf, rootuptake_w_g*r_root, inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
+        rsc, Uptake, ss_uptake, sr_uptake, _ = peri.soil_root_solutes_sr([Phi_outer_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax_per_area], [Km], [Ds], peri.sp, mode = "ss")
+        _, _, soluteconcentration = peri.watersolutes_disc(Phi_outer_g, rootuptake_w_g*r_root, inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
         solutes_dumux_ss[1,r,0] = -Uptake[0]
         solutes_dumux_ss[1,r,1] = -ss_uptake[0]
         solutes_dumux_ss[1,r,2:] = soluteconcentration[:]
         solutes_dumux_ss[1,r,0] = -Vmax_per_area * soluteconcentration[0] / (Km + soluteconcentration[0]) #TODO: check weather Vmax or Vmax per area
         #steady rate no flux outer BC
-        #rsc, Uptake, ss_uptake, sr_uptake, _ = peri.soil_root_solutes_sr([Phi_soil_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax_per_area], [Km], [Ds], peri.sp, mode = "sr")
-        #_, _, soluteconcentration = peri.watersolutes_disc(Phi_outer_nf, rootuptake_w_g*r_root, inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
-        #solutes_dumux_sr[1,r,0] = -Uptake[0]
-        #solutes_dumux_sr[1,r,1] = -ss_uptake[0]
-        #solutes_dumux_sr[1,r,2:] = soluteconcentration[:]
-        #solutes_dumux_sr[1,r,0] = -Vmax_per_area * soluteconcentration[0] / (Km + soluteconcentration[0]) #TODO: check weather Vmax or Vmax per area
+        rsc, Uptake, ss_uptake, sr_uptake, _ = peri.soil_root_solutes_sr([Phi_outer_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax_per_area], [Km], [Ds], peri.sp, mode = "sr")
+        _, _, soluteconcentration = peri.watersolutes_disc(Phi_outer_g, rootuptake_w_g*r_root, inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
+        solutes_dumux_sr[1,r,0] = -Uptake[0]
+        solutes_dumux_sr[1,r,1] = -ss_uptake[0]
+        solutes_dumux_sr[1,r,2:] = soluteconcentration[:]
+        solutes_dumux_sr[1,r,0] = -Vmax_per_area * soluteconcentration[0] / (Km + soluteconcentration[0]) #TODO: check weather Vmax or Vmax per area
         #steady rate solute uptake with the farfield approximation 
-        #rsc, Uptake, ss_uptake, sr_uptake, _ = peri.soil_root_solutes_sr([Phi_soil_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax_per_area], [Km], [Ds], peri.sp, mode = "ff")
-        #_, _, soluteconcentration = peri.watersolutes_disc(Phi_outer_nf, rootuptake_w_g*r_root, inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
-        #solutes_dumux_ff[1,r,0] = -Uptake[0]
-        #solutes_dumux_ff[1,r,1] = -ss_uptake[0]
-        #solutes_dumux_ff[1,r,2:] = soluteconcentration[:]
-        #solutes_dumux_ff[1,r,0] = -Vmax_per_area * soluteconcentration[0] / (Km + soluteconcentration[0]) #TODO: check weather Vmax or Vmax per area
+        rsc, Uptake, ss_uptake, sr_uptake, _ = peri.soil_root_solutes_sr([Phi_outer_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax_per_area], [Km], [Ds], peri.sp, mode = "ff")
+        _, waterpotential, soluteconcentration = peri.watersolutes_disc(vg.fast_mfp[peri.sp](waterpotential_dumux[1,r,-1]), 2*np.pi * rootuptake_w_g*r_root, 2*np.pi * inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
+        waterpotential_sr[1,r,2:] = waterpotential #TODO: this is a test
+        solutes_dumux_ff[1,r,0] = -Uptake[0]
+        solutes_dumux_ff[1,r,1] = -ss_uptake[0]
+        solutes_dumux_ff[1,r,2:] = soluteconcentration[:]
+        solutes_dumux_ff[1,r,0] = -Vmax_per_area * soluteconcentration[0] / (Km + soluteconcentration[0]) #TODO: check weather Vmax or Vmax per area
         
         
     return watercontent_dumux, waterpotential_dumux, watercontent_sr, waterpotential_sr, solutes_dumux, solutes_dumux_sr, solutes_dumux_ss, solutes_dumux_ff
