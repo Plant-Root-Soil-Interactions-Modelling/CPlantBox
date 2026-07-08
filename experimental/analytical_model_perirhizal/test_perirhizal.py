@@ -38,11 +38,11 @@ n_tests = 1 #try everything here for this many random parameter sets
 do_computation = True #should the computation be run or take the data from a saved file
 
 # general parameters
-max_time = 0.1 # d
-n_times = 10 # number of time intervals
+max_time = 1.0 # d
+n_times = 100 # number of time intervals
 r_prhiz = 0.6 # perirhizal radius[cm]
 r_root = 0.02 # root radius [cm]
-NC = 40 # number of spatial discretisations
+NC = 30 # number of spatial discretisations
 length = 1 #default length of the segment, will not change the outcpme as all variables are constant in this direction [cm]
 
 #two scenarios will be computed: one without inflow, another with a Dirichlet BC
@@ -50,7 +50,7 @@ n_scenarios = 2
 
 #initial conditions
 initial_waterpotential = -200
-initial_soluteconcentration = 2e-5#mol/cm3
+initial_soluteconcentration = 2e-6#mol/cm3
 
 #space for the outputs
 # number of tests, number of scenarios, number of timesteps, (rootuptake, inflow, discretisation)
@@ -320,8 +320,8 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         #result_solutes_ss_nf = peri.soil_root_solutes_ss_([Phi_root_nf], [Phi_outer_nf], [solutes_nf[-1]], [Vmax_per_area], [Km], Ds, [radial_waterdemand], peri.sp)
         #result_solutes_sr_nf = peri.soil_root_solutes_sr_([Phi_root_nf], [Phi_outer_nf], [rho], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [radial_waterdemand], peri.sp)
         
-        result_solutes_ss_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_soil_nf], [r_root], [r_prhiz], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [abs(waterdemand)], peri.sp, n_approx = 5)
-        result_solutes_sr_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_soil_nf], [r_root], [r_prhiz], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [abs(radial_waterdemand)], peri.sp, n_approx = 1)
+        result_solutes_ss_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_soil_nf], [r_root], [r_prhiz], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [-abs(waterdemand)], peri.sp, n_approx = 5)
+        result_solutes_sr_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_soil_nf], [r_root], [r_prhiz], [mean_soluteconcent_nf], [Vmax_per_area], [Km], Ds, [-abs(radial_waterdemand)], peri.sp, n_approx = 1)
         
         #safe the results
         #(here there is no computed inflow, so index 1 doesn't do anything)
@@ -329,6 +329,7 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         solutes_dumux_ss[0,r,0]=-Vmax_per_area * result_solutes_ss_nf / (Km + result_solutes_ss_nf)
         result_solutes_sr_nf = result_solutes_sr_nf[0]
         solutes_dumux_sr[0,r,0]=-Vmax_per_area * result_solutes_sr_nf / (Km + result_solutes_sr_nf)
+        print("concentration sr nf ", result_solutes_ss_nf, Km, solutes_dumux_ss[0,r,0])
         
         F0_nf = peri.integral_AdvectionDiffusion_(Phi_root_nf,peri.sp)
         F0_g = peri.integral_AdvectionDiffusion_(Phi_root_g,peri.sp)
@@ -340,31 +341,31 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
             F_g = peri.integral_AdvectionDiffusion_(Phi_g(r_current),peri.sp)-F0_g
             F_tilde_nf=math.exp(D_tilde*F_nf)
             F_tilde_g=math.exp(D_tilde*F_g)
-            solutes_dumux_ss[0,r,2+j] = result_solutes_ss_nf * F_tilde_nf + (1-F_tilde_nf) * solutes_dumux_ss[0,r,0] / waterdemand#waterdemand is assumed to be negative #TODO: look at the signs
-            solutes_dumux_sr[0,r,2+j] = result_solutes_sr_nf * F_tilde_nf + (1-F_tilde_nf) * solutes_dumux_sr[0,r,0] / radial_waterdemand #an uptake of both water and solute is assumed
+            solutes_dumux_ss[0,r,2+j] = result_solutes_ss_nf * F_tilde_nf - (1-F_tilde_nf) * solutes_dumux_ss[0,r,0] / waterdemand#waterdemand is assumed to be negative #TODO: look at the signs
+            solutes_dumux_sr[0,r,2+j] = result_solutes_sr_nf * F_tilde_nf - (1-F_tilde_nf) * solutes_dumux_sr[0,r,0] / radial_waterdemand #an uptake of both water and solute is assumed
         
         #case of general steady rate water uptake
         #for the steady state take again the outer concentration
         #TODO: check weather Vmax or Vmax per area
-        rsc, Uptake, ss_uptake, sr_uptake, _ = peri.soil_root_solutes_sr([Phi_outer_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax_per_area], [Km], [Ds], peri.sp, mode = "ss")
-        _, _, soluteconcentration = peri.watersolutes_disc(Phi_outer_g, rootuptake_w_g*r_root, inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
+        rsc, Uptake, quadratic_flow = peri.soil_root_solutes_sr([Phi_outer_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax], [Km], [Ds], peri.sp, mode = "ss")
+        _, _, soluteconcentration = peri.watersolutes_disc(Phi_outer_g, rootuptake_w_g*r_root, inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, Uptake, quadratic_flow, peri.sp)
         solutes_dumux_ss[1,r,0] = -Uptake[0]
-        solutes_dumux_ss[1,r,1] = -ss_uptake[0]
+        solutes_dumux_ss[1,r,1] = -(Uptake[0] + r_prhiz**2 * quadratic_flow[0])
         solutes_dumux_ss[1,r,2:] = soluteconcentration[:]
         solutes_dumux_ss[1,r,0] = -Vmax_per_area * soluteconcentration[0] / (Km + soluteconcentration[0]) #TODO: check weather Vmax or Vmax per area
         #steady rate no flux outer BC
-        rsc, Uptake, ss_uptake, sr_uptake, _ = peri.soil_root_solutes_sr([Phi_outer_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax_per_area], [Km], [Ds], peri.sp, mode = "sr")
-        _, _, soluteconcentration = peri.watersolutes_disc(Phi_outer_g, rootuptake_w_g*r_root, inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
+        rsc, Uptake, quadratic_flow = peri.soil_root_solutes_sr([Phi_outer_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax], [Km], [Ds], peri.sp, mode = "sr")
+        _, _, soluteconcentration = peri.watersolutes_disc(Phi_outer_g, rootuptake_w_g*r_root, inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, Uptake, quadratic_flow, peri.sp)
         solutes_dumux_sr[1,r,0] = -Uptake[0]
-        solutes_dumux_sr[1,r,1] = -ss_uptake[0]
+        solutes_dumux_sr[1,r,1] = -(Uptake[0] + r_prhiz**2 * quadratic_flow[0])
         solutes_dumux_sr[1,r,2:] = soluteconcentration[:]
         solutes_dumux_sr[1,r,0] = -Vmax_per_area * soluteconcentration[0] / (Km + soluteconcentration[0]) #TODO: check weather Vmax or Vmax per area
         #steady rate solute uptake with the farfield approximation 
-        rsc, Uptake, ss_uptake, sr_uptake, _ = peri.soil_root_solutes_sr([Phi_outer_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax_per_area], [Km], [Ds], peri.sp, mode = "ff")
-        _, waterpotential, soluteconcentration = peri.watersolutes_disc(Phi_outer_g, 2*np.pi * rootuptake_w_g*r_root, 2*np.pi * inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
+        rsc, Uptake, quadratic_flow = peri.soil_root_solutes_sr([Phi_outer_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax], [Km], [Ds], peri.sp, mode = "dirichlet") #doublecheck Vmax and Vmax per area
+        _, waterpotential, soluteconcentration = peri.watersolutes_disc(Phi_outer_g, 2*np.pi * rootuptake_w_g*r_root, 2*np.pi * inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, Uptake, quadratic_flow, peri.sp)
         waterpotential_sr[1,r,2:] = waterpotential #TODO: this is a test #vg.fast_mfp[peri.sp](waterpotential_dumux[1,r,-1])
         solutes_dumux_ff[1,r,0] = -Uptake[0]
-        solutes_dumux_ff[1,r,1] = -ss_uptake[0]
+        solutes_dumux_ff[1,r,1] = -(Uptake[0] + r_prhiz**2 * quadratic_flow[0])
         solutes_dumux_ff[1,r,2:] = soluteconcentration[:]
         solutes_dumux_ff[1,r,0] = -Vmax_per_area * soluteconcentration[0] / (Km + soluteconcentration[0]) #TODO: check weather Vmax or Vmax per area
         
@@ -508,12 +509,12 @@ Vmax = 4.0e-11 * 1 * (2*3.14*r_root) * (24*3600)  #mol/(cm2 s) * cm * cm * (s/d)
 Vmax_per_area = Vmax / (1 * (2*3.14*r_root)) #mol / d /cm2 = mol/(cm2d)
 Km = 1.5e-7   #mol/cm3
 
-for i in range(len(solute_sr_nf_conc)):
-    solute_sr_nf[i]=-Vmax_per_area*solute_sr_nf_conc[i]/(Km+solute_sr_nf_conc[i])
-    solute_ss_nf[i]=-Vmax_per_area*solute_ss_nf_conc[i]/(Km+solute_ss_nf_conc[i])
-    solute_sr[i]=-Vmax_per_area*solute_sr_conc[i]/(Km+solute_sr_conc[i])
-    solute_ss[i]=-Vmax_per_area*solute_ss_conc[i]/(Km+solute_ss_conc[i])
-    solute_ff[i]=-Vmax_per_area*solute_ff_conc[i]/(Km+solute_ff_conc[i])
+#for i in range(len(solute_sr_nf_conc)):
+    #solute_sr_nf[i]=-Vmax_per_area*solute_sr_nf_conc[i]/(Km+solute_sr_nf_conc[i])
+    #solute_ss_nf[i]=-Vmax_per_area*solute_ss_nf_conc[i]/(Km+solute_ss_nf_conc[i])
+    #solute_sr[i]=-Vmax_per_area*solute_sr_conc[i]/(Km+solute_sr_conc[i])
+    #solute_ss[i]=-Vmax_per_area*solute_ss_conc[i]/(Km+solute_ss_conc[i])
+    #solute_ff[i]=-Vmax_per_area*solute_ff_conc[i]/(Km+solute_ff_conc[i])
 
 #print(suptake_dumux)
 #print(solute_ss)

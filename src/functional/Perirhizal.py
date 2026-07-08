@@ -95,24 +95,24 @@ class PerirhizalPython(Perirhizal):
     def open_lookup_solutes(self, filename):
         """opens an additional look-up table from a file to quickly find soil root solute concentrations in the steady rate case"""
         npzfile_sr = np.load(filename + ".npz")
-        Ds_, outer_mfp_, inner_mfp_ = npzfile_sr["Phi1_"], npzfile_sr["waterflow_"], npzfile_sr["wateruptake_"], npzfile_sr["r_eval_"]
+        Phi_2_, Phi_1_, Phi_0_, r_eval_ = npzfile_sr["Phi_2_"], npzfile_sr["Phi_1_"], npzfile_sr["Phi_0_"], npzfile_sr["r_eval_"]
         soil = npzfile_sr["soil"]
-        conc_rel_c, inflow_rel_c, Uptake_rel_c = npzfile_sr["conc_rel_c"], npzfile_sr["inflow_rel_c"], npzfile_sr["Uptake_rel_c"]
-        conc_mean_c, inflow_mean_c, Uptake_mean_c = npzfile_sr["conc_mean_c"], npzfile_sr["inflow_mean_c"], npzfile_sr["Uptake_mean_c"]
+        conc_rel_c, Uptake_rel_c, quadratic_rel_c = npzfile_sr["conc_rel_c"], npzfile_sr["Uptake_rel_c"], npzfile_sr["quadratic_rel_c"]
+        conc_mean_c, Uptake_mean_c, quatratic_mean_c = npzfile_sr["conc_mean_c"], npzfile_sr["Uptake_mean_c"], npzfile_sr["quatratic_mean_c"]
         self.lookup_table_sr_solutes = {
                 "conc_rel_c" : [0],
                 "conc_mean_c" : [0],
-                "inflow_rel_c" : [0],   
-                "inflow_mean_c" : [0],
-                "Uptake_rel_c" : [0],
-                "Uptake_mean_c" : [0]
+                "Uptake_rel_c" : [0],   
+                "Uptake_mean_c" : [0],
+                "quadratic_rel_c" : [0],
+                "quatratic_mean_c" : [0]
                 }                
-        self.lookup_table_sr_solutes["conc_rel_c"] = RegularGridInterpolator((Phi1_, waterflow_, wateruptake_, r_eval_) , conc_rel_c)  # method = "nearest" fill_value = None , bounds_error=False
-        self.lookup_table_sr_solutes["conc_mean_c"] = RegularGridInterpolator((Phi1_, waterflow_, wateruptake_, r_eval_) , conc_mean_c)
-        self.lookup_table_sr_solutes["inflow_rel_c"] = RegularGridInterpolator((Phi1_, waterflow_, wateruptake_, r_eval_) , inflow_rel_c)
-        self.lookup_table_sr_solutes["inflow_mean_c"] = RegularGridInterpolator((Phi1_, waterflow_, wateruptake_, r_eval_) , inflow_mean_c)
-        self.lookup_table_sr_solutes["Uptake_rel_c"] = RegularGridInterpolator((Phi1_, waterflow_, wateruptake_, r_eval_) , Uptake_rel_c)
-        self.lookup_table_sr_solutes["Uptake_mean_c"] = RegularGridInterpolator((Phi1_, waterflow_, wateruptake_, r_eval_) , Uptake_mean_c)
+        self.lookup_table_sr_solutes["conc_rel_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , conc_rel_c)  # method = "nearest" fill_value = None , bounds_error=False
+        self.lookup_table_sr_solutes["conc_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , conc_mean_c)
+        self.lookup_table_sr_solutes["Uptake_rel_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , Uptake_rel_c)
+        self.lookup_table_sr_solutes["Uptake_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , Uptake_mean_c)
+        self.lookup_table_sr_solutes["quadratic_rel_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , quadratic_rel_c)
+        self.lookup_table_sr_solutes["quatratic_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , quatratic_mean_c)
         self.sp = vg.Parameters(soil)
         vg.create_mfp_lookup(self.sp) # does this have to be repeated here?
         
@@ -284,9 +284,9 @@ class PerirhizalPython(Perirhizal):
     
     def soil_root_solutes_sr(self, Phi_out, rootwateruptake, waterinflow, r_root, r_prhiz, c_soil, c_outer, Vmax, Km, Ds, sp, mode = "ff"):
         """
-        steady rate assumption of solute uptake by roots TODO: insert citaiton
+        steady rate assumption of solute uptake by roots TODO: insert citation
         
-        Phi_out           outer matrix flux potential [cm2/d]
+        Phi_out            outer matrix flux potential [cm2/d]
         rootwateruptake    radial root water uptake [cm2/d]
         waterinflow        radial water inflow at r_prhiz [cm2/d]
         r_root             root radius [cm]
@@ -313,8 +313,7 @@ class PerirhizalPython(Perirhizal):
         
         rsc = np.zeros(n_segments) #conentration next to the root
         Uptake = np.zeros(n_segments) #total solute uptake of the root
-        ss_uptake = np.zeros(n_segments) #inflow into the parirhizal zone
-        sr_uptake = np.zeros(n_segments) #solute depletion rate of the perirhizal zone
+        quadratic_flow = np.zeros(n_segments) #quadratic flow into the parirhizal zone
         
         #solve quadratic eqation for root uptake # TODO: Link to publication
         for i in range(n_segments):
@@ -344,70 +343,64 @@ class PerirhizalPython(Perirhizal):
             #TODO: implement using the lookup table here
             
             r_eval = np.logspace(np.log10(r_root[i]), np.log10(r_prhiz[i]), num = 40)
-            r_eval = [r / scaling / r_prhiz[i] for r in r_eval]
-            #Phi1 = 1
-            #waterflow = 0
-            #wateruptake = 0
-            conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(Phi_2, Phi_1, Phi_0, r_eval, sp)
+            r_eval = [r / scaling for r in r_eval]
+            
+            conc_rel_c, conc_mean_c, Uptake_rel_c, Uptake_mean_c, quadratic_rel_c, quatratic_mean_c = self.solute_linearequation_sr_(Phi_2, Phi_1, Phi_0, r_eval, sp)
+            
             
             #default prefactors for the steady state case
             pre_c = 0
-            pre_srUptake = 1
-            pre_inflow = 0
+            pre_Uptake = 0
+            pre_quadratic = 1
             absolute = 0
-            #pre_c * c(r_prhiz) + pre_srUptake * srUptake + pre_inflow * inflow = absolute
             
+            #pre_c * c(r_prhiz) + pre_Uptake * Uptake + pre_quadratic * quadratic = absolute
             match mode:
                 case "ss": #steady state
-                    pre_c, pre_srUptake, pre_inflow, absolute = 0, 1, 0, 0
+                    pre_c, pre_Uptake, pre_quadratic, absolute = 0, 0, 1, 0
                 case "sr": #steady rate uptake, no influx
-                    pre_c, pre_srUptake, pre_inflow, absolute = 0, -1, 1, 0
+                    pre_c, pre_Uptake, pre_quadratic, absolute = 0, r_prhiz[i]**2, -1, 0
                 case "ff": #far field approximation # TODO insert link to Tiina Roose publication, and current application
                     B_abs = c_outer[i] * (r_prhiz[i]**2)/ (math.exp(-2*r_prhiz[i]**2)-math.exp(-r_prhiz[i]**2))
                     B_cprhiz = -1 * (r_prhiz[i]**2) / (math.exp(-2*r_prhiz[i]**2)-math.exp(-r_prhiz[i]**2))
                     
-                    pre_inflow = 1
-                    pre_c = - Ds_func(r_prhiz[i]) * B_cprhiz * math.exp(-r_prhiz[i]**2) / r_prhiz[i]**2 - waterinflow[i] / (2 * np.pi * r_prhiz[i]) #TODO check sign
+                    pre_Uptake = 1
+                    pre_quadratic = r_prhiz[i]**2
+                    pre_c = Ds_func(r_prhiz[i]) * B_cprhiz * math.exp(-r_prhiz[i]**2) / r_prhiz[i]**2 + waterinflow[i] / (2 * np.pi * r_prhiz[i])
                     absolute = Ds_func(r_prhiz[i]) * B_abs * math.exp(-r_prhiz[i]**2) / r_prhiz[i]**2
-                    #pre_c = - Ds_func(r_prhiz[i]) * B_cprhiz * math.exp(-r_prhiz[i]) / r_prhiz[i] - waterinflow[i] / (2 * np.pi * r_prhiz[i]) #TODO check sign
-                    #absolute = Ds_func(r_prhiz[i]) * B_abs * math.exp(-r_prhiz[i]) / r_prhiz[i]
-                    pre_srUptake = 1
                 case "dirichlet":
                     pre_c = 1
-                    absolute =  c_outer[i]                   
+                    pre_Uptake = 0
+                    pre_quadratic = 0
+                    absolute =  c_outer[i]                    
                 case _:    #default
-                    pre_c, pre_srUptake, pre_inflow, absolute = 0, 1, 0, 0
+                    pre_c, pre_Uptake, pre_quadratic, absolute = 0, 0, 1, 0
+                    print("The mode of a steady rate solute flow approximation could not be identified, use steady state.")
             
-            #variables to eliminate: ss flow, sr uptake, c_prhiz, Uptake
+            #variables to eliminate: Uptake, quadratic, c_prhiz
             # variable for the final equations: rsc
-            A = np.zeros((4,4))
-            b = np.zeros((4,2)) #right hand side of the linear equation, one for absolute values, one for the rsc value
+            A = np.zeros((3,3))
+            b = np.zeros((3,2)) #right hand side of the linear equation, one for absolute values, one for the rsc value
             
-            #linear equations for c_prhiz, rsc, ss_flow, sr_uptake, Uptake (4 linear, 1 quadratic)
+            #linear equations for c_prhiz, Uptake, quadratic, rsc (3 linear, 1 quadratic)
             
-            #c11 * ss flow + c12 * sr uptake + c13 * rsc = c_mean
-            A[0,0] = inflow_mean_c[-1]
-            A[0,1] = Uptake_mean_c[-1]
+            #c11 * Uptake + c12 * quadratic + c13 * rsc = c_mean
+            A[0,0] = Uptake_mean_c[-1]
+            A[0,1] = quatratic_mean_c[-1]
             b[0,1] = -conc_mean_c[-1]
             b[0,0] = c_soil[i]
             
-            #c21 * ss flow + c22 * sr uptake + c23 * rsc = c_prhiz
-            A[1,0] = inflow_rel_c[-1]
-            A[1,1] = Uptake_rel_c[-1]
+            #c21 * Uptake + c22 * quadratic + c23 * rsc = c_prhiz
+            A[1,0] = Uptake_rel_c[-1]
+            A[1,1] = quadratic_rel_c[-1]
             A[1,2] = -1
             b[1,1] = -conc_rel_c[-1]
             
-            #ss flow + sr uptake = Uptake
-            A[2,0] = 1
-            #A[2,1] = 1
-            A[2,1] = 0
-            A[2,3] = -1
-            
-            #pre_c * c(r_prhiz) + pre_srUptake * srUptake + pre_inflow * inflow (= ssflow) = absolute
-            A[3,0] = pre_inflow
-            A[3,1] = pre_srUptake
-            A[3,2] = pre_c
-            b[3,0] = absolute
+            #pre_uptake * Uptake + pre_quadratic * quadratic + pre_c * c_prhiz = absolute
+            A[2,0] = pre_Uptake
+            A[2,1] = pre_quadratic
+            A[2,2] = pre_c
+            b[2,0] = absolute
             
             #m*rsc+n = [ss uptake, sr uptake, c(rprhiz), Uptake]
             n = la.solve(A,b[:,0])
@@ -415,33 +408,31 @@ class PerirhizalPython(Perirhizal):
             
             #solve quadratic equation 
             #Uptake = Vmax * rsc / (Km + rsc)
-            #(Km + rsc) * (m[3]*rsc+n[3]) = Vmax * rsc
-            # m[3] * rsc**2 + (Km[i]*m[3]+n[3]-Vmax[i]) * rsc + Km[i]*n[3] = 0 
+            #Uptake = m[0]*rsc+n[0]
+            #(Km + rsc) * (m[0]*rsc+n[0]) = Vmax * rsc
+            # m[0] * rsc**2 + (Km[i]*m[0]+n[0]-Vmax[i]) * rsc + Km[i]*n[0] = 0 
             
             tol = 1e-9 #arbitrary for now, TODO think of a reasonable tolerance
             
-            if abs(m[3])<tol:
-                rsc[i] = - (Km[i]*n[3]) / (Km[i]*m[3]+n[3]-Vmax[i])
+            if abs(m[0])<tol:
+                rsc[i] = - (Km[i]*n[0]) / (Km[i]*m[0]+n[0]-Vmax[i])
+                print("Tolerance reached in the steady rate computation for the solute flow. File Perirhizal.py")
             else:
-                A = m[3] #TODO: use a different letter here than the name of the matrix
-                B = (Km[i]*m[3]+n[3]-Vmax[i])
-                C = Km[i]*n[3]
-                p = B/A
-                q = C/A
+                A_qe = m[0] #TODO: use a different letter here than the name of the matrix
+                B_qe = (Km[i]*m[0]+n[0]-Vmax[i])
+                C_qe = Km[i]*n[0]
+                p = B_qe/A_qe
+                q = C_qe/A_qe
                 if p<0:
                     rsc[i] = - p/2 - math.sqrt(p**2/4-q)
                 else:
                     rsc[i] = - p/2 + math.sqrt(p**2/4-q)
-            Uptake[i] = m[3]*rsc[i]+n[3]
-            ss_uptake[i] = m[0]*rsc[i]+n[0]
-            sr_uptake[i] = m[1]*rsc[i]+n[1]
-            
-            print("output", conc_mean_c[-1], inflow_mean_c[-1], Uptake_mean_c[-1], c_soil)
-            print("linear", rsc*conc_mean_c[-1]+ss_uptake* inflow_mean_c[-1]+sr_uptake* Uptake_mean_c[-1], c_soil)
-            #print("r_eval", r_eval, Phi_0, Phi_1, Phi_2)
-        return rsc, Uptake, ss_uptake, sr_uptake, inflow_mean_c
+            Uptake[i] = m[0]*rsc[i]+n[0]
+            quadratic_flow[i] = m[1]*rsc[i]+n[1]
+
+        return rsc, Uptake, quadratic_flow
     
-    def watersolutes_disc(self, Phi_out, rootwateruptake, waterinflow, r_root, r_prhiz, r_eval, c_root, Ds0, ss_uptake, sr_uptake, sp):
+    def watersolutes_disc(self, Phi_out, rootwateruptake, waterinflow, r_root, r_prhiz, r_eval, c_root, Ds0, Uptake, quadratic_flow, sp):
         """
         given the water and solute uptake data this computes the discretisation of the steady rate solutions
         
@@ -453,8 +444,8 @@ class PerirhizalPython(Perirhizal):
         r_eval             positions at which the solute concentration should be evaluated [cm]
         c_root             solute concentration next to the root [mol/cm3]
         Ds0                Diffusion constant in water [cm2/d]
-        ss_uptake          outer inflow of solutes [mol/(cm d)]
-        sr_uptake          solute uptake from the perirhizal zone [mol/(cm3d)]
+        Uptake             root of solutes [mol/(cm d)]
+        quadratic_flow     quadratic solute flow the perirhizal zone [mol/(cm3d)]
         sp                 van Genuchten parameter set
         
         output:
@@ -480,37 +471,32 @@ class PerirhizalPython(Perirhizal):
         
         #solutes
         #use the subfunction #TODO: alternative lookup table
+        
+        #scaling of the perirhizal zone for the diffusion coefficient
         scaling = math.sqrt(Ds0 / self.Ds0_ref) # Ds0 > Ds0_ref means scaling >1, the region is modeled to be smaller than it actually is
         scaling = Ds0 / self.Ds0_ref # Ds0 > Ds0_ref means scaling >1, the region is modeled to be smaller than it actually is
-        #Phi1 = Phi(1/scaling) - waterinflow * np.log(scaling) - (rootwateruptake - waterinflow) * r_prhiz**2 / (r_prhiz**2 - r_root**2) * (np.log(scaling)-1/2 * (1-1/scaling**2))
-        #waterflow = radial_waterflow(scaling) / scaling 
-        r_eval = [r / scaling / r_prhiz for r in r_eval]
-        #wateruptake = (rootwateruptake - waterinflow) / (r_prhiz**2 - r_root**2) / scaling**2 #* r_prhiz**2
-        
-        Phi_2 = Phi_2 * ((scaling*r_prhiz)**2)
+        r_eval = [r / scaling for r in r_eval]
+        Phi_2 = Phi_2 * (scaling**2)
         Phi_1 = Phi_1
-        Phi_0 = Phi_0 + Phi_1 * np.log(scaling*r_prhiz)
-        #radial_waterflow = lambda r : 2 * np.pi * (r**2) * Phi_2 + 2 * np.pi * Phi_1 #for the new scaling
+        Phi_0 = Phi_0 + Phi_1 * np.log(scaling)
         
+        #values necessary for plotting
+        n = len(r_eval)
+        conc_rel_c, conc_mean_c, Uptake_rel_c, Uptake_mean_c, quadratic_rel_c, quatratic_mean_c = np.zeros(n), np.zeros(n), np.zeros(n), np.zeros(n), np.zeros(n), np.zeros(n)
         
-        Vmax = 4.0e-11 * 1 * (2*3.14*r_root) * (24*3600)  #mol/(cm2 s) * cm * cm * (s/d) -> mol / d 
-        Vmax_per_area = Vmax / (1 * (2*3.14*r_root)) #mol / d /cm2 = mol/(cm2d)
-        Km = 1.5e-7   #mol/cm3
+        if self.lookup_table_sr_solutes:
+            for i in range(n):
+                 conc_rel_c[i] = self.lookup_table_sr_solutes["conc_rel_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
+                 conc_mean_c[i] = self.lookup_table_sr_solutes["conc_mean_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
+                 Uptake_rel_c[i] = self.lookup_table_sr_solutes["Uptake_rel_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
+                 Uptake_mean_c[i] = self.lookup_table_sr_solutes["Uptake_mean_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
+                 quadratic_rel_c[i] = self.lookup_table_sr_solutes["quadratic_rel_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
+                 quatratic_mean_c[i] = self.lookup_table_sr_solutes["quatratic_mean_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
+        else:
+            conc_rel_c, conc_mean_c, Uptake_rel_c, Uptake_mean_c, quadratic_rel_c, quatratic_mean_c = self.solute_linearequation_sr_(Phi_2, Phi_1, Phi_0, r_eval, sp)
         
-        #rsc, Uptake, ss_uptake, sr_uptake, inflow_mean_c_0 = self.soil_root_solutes_sr([Phi_out], [rootwateruptake], [waterinflow], [r_root], [r_prhiz], [1.98e-5], [2.0e-5], [Vmax], [Km], [Ds0], sp, mode = "ss")
-        rsc, Uptake, ss_uptake, sr_uptake, inflow_mean_c_0 = self.soil_root_solutes_sr([Phi_out], [rootwateruptake], [waterinflow], [r_eval[0]], [r_eval[-1]], [1.98e-5], [2.0e-5], [Vmax], [Km], [Ds0], sp, mode = "ss")
-        conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(Phi_2, Phi_1, Phi_0, r_eval, sp)
-        #conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c = self.solute_linearequation_sr_(1, 0, 0, r_eval, sp)
-        #c_root = rsc
-        #print("compareinflow", inflow_mean_c_0, inflow_mean_c)
-        
-        soluteconcentration = c_root * conc_rel_c + ss_uptake * inflow_rel_c + sr_uptake * Uptake_rel_c   
-        soluteconcentration_mean = c_root * conc_mean_c + ss_uptake * inflow_mean_c + sr_uptake * Uptake_mean_c           
-        
-        print("output disc1", c_root, ss_uptake, sr_uptake, scaling)
-        print("output disc2", conc_rel_c[0], inflow_rel_c[0], Uptake_rel_c[0], soluteconcentration[0])
-        print("output disc3", conc_rel_c[-1], inflow_rel_c[-1], Uptake_rel_c[-1], soluteconcentration[-1])
-        print("output disc4", conc_mean_c[-1], inflow_mean_c[-1], Uptake_mean_c[-1], soluteconcentration_mean[-1])
+        soluteconcentration = c_root * conc_rel_c + Uptake * Uptake_rel_c + quadratic_flow * quadratic_rel_c   
+        soluteconcentration_mean = c_root * conc_mean_c + Uptake * Uptake_mean_c + quadratic_flow * quatratic_mean_c           
         
         
         
@@ -577,8 +563,6 @@ class PerirhizalPython(Perirhizal):
         conc_mean_c[1:] = np.array([np.average(conc_rel_c[0:(j+1)], weights=watercontent_times_r[0:(j+1)]) for j in range(1,n)])
         inflow_mean_c[1:] = np.array([np.average(inflow_rel_c[0:(j+1)], weights=watercontent_times_r[0:(j+1)]) for j in range(1,n)])       
         Uptake_mean_c[1:] = np.array([np.average(Uptake_rel_c[0:(j+1)], weights=watercontent_times_r[0:(j+1)]) for j in range(1,n)])       
-        
-        print("Phis", Phi_0, Phi_1, Phi_2)
         
         return conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c
     
@@ -664,7 +648,8 @@ class PerirhizalPython(Perirhizal):
             if p<0:
                 rsc[i]=-p/2-math.sqrt(pow(p/2,2)-q)
             else:
-                rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)                
+                rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)   
+        print("concentration sr nf f", rsc[i], -p/2-math.sqrt(pow(p/2,2)-q), -p/2+math.sqrt(pow(p/2,2)-q))                
         
         return rsc
     
