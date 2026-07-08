@@ -38,8 +38,8 @@ n_tests = 1 #try everything here for this many random parameter sets
 do_computation = True #should the computation be run or take the data from a saved file
 
 # general parameters
-max_time = 0.2 # d
-n_times = 20 # number of time intervals
+max_time = 0.1 # d
+n_times = 10 # number of time intervals
 r_prhiz = 0.6 # perirhizal radius[cm]
 r_root = 0.02 # root radius [cm]
 NC = 40 # number of spatial discretisations
@@ -361,8 +361,8 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         solutes_dumux_sr[1,r,0] = -Vmax_per_area * soluteconcentration[0] / (Km + soluteconcentration[0]) #TODO: check weather Vmax or Vmax per area
         #steady rate solute uptake with the farfield approximation 
         rsc, Uptake, ss_uptake, sr_uptake, _ = peri.soil_root_solutes_sr([Phi_outer_g], [rootuptake_w_g*2*np.pi*r_root], [inflow_w_g*2*np.pi*r_prhiz], [r_root], [r_prhiz], [mean_soluteconcent_g], [initial_soluteconcentration], [Vmax_per_area], [Km], [Ds], peri.sp, mode = "ff")
-        _, waterpotential, soluteconcentration = peri.watersolutes_disc(vg.fast_mfp[peri.sp](waterpotential_dumux[1,r,-1]), 2*np.pi * rootuptake_w_g*r_root, 2*np.pi * inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
-        waterpotential_sr[1,r,2:] = waterpotential #TODO: this is a test
+        _, waterpotential, soluteconcentration = peri.watersolutes_disc(Phi_outer_g, 2*np.pi * rootuptake_w_g*r_root, 2*np.pi * inflow_w_g*r_prhiz, r_root, r_prhiz, CC, rsc, Ds, ss_uptake, sr_uptake, peri.sp)
+        waterpotential_sr[1,r,2:] = waterpotential #TODO: this is a test #vg.fast_mfp[peri.sp](waterpotential_dumux[1,r,-1])
         solutes_dumux_ff[1,r,0] = -Uptake[0]
         solutes_dumux_ff[1,r,1] = -ss_uptake[0]
         solutes_dumux_ff[1,r,2:] = soluteconcentration[:]
