@@ -441,10 +441,12 @@ class PerirhizalPython(Perirhizal):
                 C_qe = Km[i]*v
                 p = B_qe/A_qe
                 q = C_qe/A_qe
-                if (p<0) and (q>0):
-                    rsc[i] = - p/2 - math.sqrt(p**2/4-q)
+                r1=- p/2 - math.sqrt(p**2/4-q)
+                r2=- p/2 + math.sqrt(p**2/4-q)
+                if r1<0:
+                    rsc[i]=r2
                 else:
-                    rsc[i] = - p/2 + math.sqrt(p**2/4-q)
+                    rsc[i]=r1 
             Uptake[i] = m[0] * rsc[i] + n[0]
             quadratic_flow[i] = m[1] * rsc[i] + n[1]
             noflux[i] = m[2] * rsc[i] + n[2]
@@ -673,11 +675,12 @@ class PerirhizalPython(Perirhizal):
             a2=(1-1/c_sol_mean2root[i])/(waterflow[i])
             p=Km[i]-a2*Vmax[i]-a1
             q=-Km[i]*a1
-            if (p<0) and (q>0):
-                rsc[i]=-p/2-math.sqrt(pow(p/2,2)-q)
+            r1=-p/2-math.sqrt(pow(p/2,2)-q)
+            r2=-p/2+math.sqrt(pow(p/2,2)-q)
+            if r1<0:
+                rsc[i]=r2
             else:
-                rsc[i]=-p/2+math.sqrt(pow(p/2,2)-q)                 
-        
+                rsc[i]=r1                
         return rsc
     
     @staticmethod
