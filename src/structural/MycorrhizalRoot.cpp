@@ -60,7 +60,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 		nodeCTs.insert(nodeCTs.begin() + index-1, t);
         infected.insert(infected.begin()+index-1, infected.at(index-1));
         emergedHyphae.insert(emergedHyphae.begin()+index-1, 0);
-        infectionTime.insert(infectionTime.begin()+index-1, infectionTime.at(index-1));
+        infectionTime.insert(infectionTime.begin()+index-1, std::max(infectionTime.at(index-1), t));
 
         for(auto kid : children){//if carries children after the added node, update their "parent node index"
 			if((kid->parentNI >= index-1 )&&(kid->parentNI > 0)){
@@ -86,7 +86,6 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 void MycorrhizalRoot::primaryInfection(double dt, bool silence){
     double lmbd;
     double highres = getRootRandomParameter()->highresolution;
-
     // Determine the appropriate colonization rate for each node based on soil properties and age  
     for (size_t i = 1; i < nodes.size(); i++){
         if (std::dynamic_pointer_cast<SoilLookUpSDF>(getRootRandomParameter()->f_inf))
@@ -98,7 +97,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         }
         if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {lmbd = 0;}//account for minimal age in rate
         lmbd = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * lmbd; // account for maximal age in rate
-        
+
         // Determine the probability for colonization of the current node and infect if successful
         // Also refine the root if the segment is too long and a new node is inserted, which inherits the infection status based on parent node
         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
@@ -108,27 +107,29 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
             setInfection(i,1,age);
             if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
                 int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
+                Vector3d fromNode = nodes.at(i-1);   // freeze endpoints before any insertion
+                Vector3d toNode   = nodes.at(i);
+                double toCT = nodeCTs.at(i);
                 for (size_t j = 0; j < newNodesNumber; j++)
                 {
-                    double newx = nodes.at(i-1).x + (nodes.at(i).x - nodes.at(i-1).x) *(j+1)/(newNodesNumber +1) ;
-                    double newy = nodes.at(i-1).y + (nodes.at(i).y - nodes.at(i-1).y) *(j+1)/(newNodesNumber +1);
-                    double newz = nodes.at(i-1).z + (nodes.at(i).z - nodes.at(i-1).z) *(j+1)/(newNodesNumber +1);
+                    double newx = fromNode.x + (toNode.x - fromNode.x) *(j+1)/(newNodesNumber +1) ;
+                    double newy = fromNode.y + (toNode.y - fromNode.y) *(j+1)/(newNodesNumber +1);
+                    double newz = fromNode.z + (toNode.z - fromNode.z) *(j+1)/(newNodesNumber +1);
                     Vector3d newNode = Vector3d(newx,newy,newz);
-                    addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(i), i, true);
+                    addNode(newNode,plant.lock()->getNodeIndex(), toCT, i, true);
+                    // insertion happens at i-1, shifting i (the infected endpoint) up by 1
+                    i++;
                 }
             }
         }
     }
 }
 
+// TODO: this functino is a bit hard to read, might be good to break it up in smaller parts.
 void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
-
     double max_length_infection = age*getRootRandomParameter()->vi;
-
     double infTime;
-
     double highres = getRootRandomParameter()->highresolution;
-
     for (size_t i = 0; i < nodes.size(); ++i)
     {
         if (infected.at(i) == 1 || infected.at(i)== 3)
@@ -141,32 +142,45 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                 while(basalnode > 0) {
                     cursegLength = abs(nodes.at(oldNode).minus(nodes.at(basalnode)).length());
                     infectionLength += cursegLength;
-                    infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
 
                     if (infectionLength > max_length_infection) {break;}
 
-                    if (infected.at(basalnode) == 0 && infTime <= age)
-                    {
-                        // insert node here if segment too long and set all nodes to be infected
-                        setInfection(basalnode,2,infTime);
-                        if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
-                            int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
-                            for (size_t j = 0; j < newNodesNumber; j++)
-                            {
-                                double newx = nodes.at(oldNode).x + (nodes.at(basalnode).x - nodes.at(oldNode).x) *(j+1)/(newNodesNumber +1);
-                                double newy = nodes.at(oldNode).y + (nodes.at(basalnode).y - nodes.at(oldNode).y) *(j+1)/(newNodesNumber +1);
-                                double newz = nodes.at(oldNode).z + (nodes.at(basalnode).z - nodes.at(oldNode).z) *(j+1)/(newNodesNumber +1);
-                                Vector3d newNode = Vector3d(newx,newy,newz);
-                                addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(basalnode), basalnode, true);
-                            }
-                        }
+                    if (infected.at(basalnode) != 0) {
+                        // already infected (this call or earlier) — valid anchor, keep walking
+                        oldNode = basalnode;
+                        basalnode--;
+                        continue;
+                    }
 
-                        if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()))
+                    infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
+                    if (infTime > age) {break;}  // front hasn't reached here yet; farther nodes are worse
+
+                    setInfection(basalnode,2,infTime);
+
+                    if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
+                        int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
+                        Vector3d fromNode = nodes.at(oldNode);
+                        Vector3d toNode   = nodes.at(basalnode);
+                        double toCT = nodeCTs.at(basalnode);
+                        for (size_t j = 0; j < newNodesNumber; j++)
                         {
-                            std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->setInfection(parentNI,3,infTime);
-                            std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->simulateInfection(dt,silence);
+                            double newx = fromNode.x + (toNode.x - fromNode.x) *(j+1)/(newNodesNumber +1);
+                            double newy = fromNode.y + (toNode.y - fromNode.y) *(j+1)/(newNodesNumber +1);
+                            double newz = fromNode.z + (toNode.z - fromNode.z) *(j+1)/(newNodesNumber +1);
+                            Vector3d newNode = Vector3d(newx,newy,newz);
+                            addNode(newNode,plant.lock()->getNodeIndex(), toCT, basalnode, true);
+                            basalnode++;
+                            oldNode++;
                         }
                     }
+
+                    // TODO: Y is this hier? we will never get basalnode==0  in that loop
+                    if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()))
+                    {
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->setInfection(parentNI,3,infTime);
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->simulateInfection(dt,silence);
+                    }
+
                     oldNode = basalnode;
                     basalnode--;
                 }
@@ -180,23 +194,33 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
             {
                 cursegLength = abs(nodes.at(oldNode).minus(nodes.at(apicalnode)).length());
                 infectionLength += cursegLength;
-                infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
+
                 if (infectionLength > max_length_infection) {break;}
-                if (infected.at(apicalnode) == 0 && infTime <= age)
-                {
-                    // insert node here if segment too long and set all nodes to be infected
-                    setInfection(apicalnode,2,infTime);
-                    if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
-                            int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
-                            for (size_t j = 0; j < newNodesNumber; j++)
-                            {
-                                double newx = nodes.at(oldNode).x + (nodes.at(apicalnode).x - nodes.at(oldNode).x) *(j+1)/(newNodesNumber +1);
-                                double newy = nodes.at(oldNode).y + (nodes.at(apicalnode).y - nodes.at(oldNode).y) *(j+1)/(newNodesNumber +1);
-                                double newz = nodes.at(oldNode).z + (nodes.at(apicalnode).z - nodes.at(oldNode).z) *(j+1)/(newNodesNumber +1);
-                                Vector3d newNode = Vector3d(newx,newy,newz);
-                                infTime = infectionTime.at(oldNode) + abs(nodes.at(oldNode).minus(newNode).length())/getRootRandomParameter()->vi;
-                                addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(apicalnode), apicalnode, true);
-                            }
+
+                if (infected.at(apicalnode) != 0) {
+                    oldNode = apicalnode;
+                    apicalnode++;
+                    continue;
+                }
+
+                infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
+                if (infTime > age) {break;}
+
+                setInfection(apicalnode,2,infTime);
+                if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
+                    int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
+                    Vector3d fromNode = nodes.at(oldNode);
+                    Vector3d toNode   = nodes.at(apicalnode);
+                    double toCT = nodeCTs.at(apicalnode);
+                    for (size_t j = 0; j < newNodesNumber; j++)
+                    {
+                        double newx = fromNode.x + (toNode.x - fromNode.x) *(j+1)/(newNodesNumber +1);
+                        double newy = fromNode.y + (toNode.y - fromNode.y) *(j+1)/(newNodesNumber +1);
+                        double newz = fromNode.z + (toNode.z - fromNode.z) *(j+1)/(newNodesNumber +1);
+                        Vector3d newNode = Vector3d(newx,newy,newz);
+                        addNode(newNode,plant.lock()->getNodeIndex(), toCT, apicalnode, true);
+                        oldNode++;
+                        apicalnode++;
                     }
                 }
                 oldNode = apicalnode;
@@ -272,7 +296,8 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
             if (l->organType()==Organism::ot_root) {
                 if (infected.at(l->parentNI) != 0) { // the base of root l is infected
                     if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0) {
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, 
+								std::max( l->getNodeCT(0), infectionTime.at(l->parentNI))); //root can only be infected after it is born (and need to account for growth delay)
                     }
                 }
                 std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateInfection(dt, verbose);
@@ -335,6 +360,8 @@ void MycorrhizalRoot::setInfection(int i, int infection, double t)
 {
     infected.at(i) = infection;
     infectionTime.at(i) = t;
+	assert(infectionTime.at(i) >= 0 && "MycorrhizalRoot::setInfection infectionTime.at(i) < 0");
+	assert(infectionTime.at(i) >= nodeCTs.at(i) && "MycorrhizalRoot::setInfection infectionTime.at(i) < nodeCTs.at(i)");
 }
 
 void MycorrhizalRoot::createLateral(double dt, bool verbose)
@@ -398,8 +425,10 @@ void MycorrhizalRoot::createHyphae(int pni)
 {
     double delay = getRootRandomParameter()->hyphalDelay;
     double dt_ = plant.lock()->getSimTime() - infectionTime.at(pni) - delay; // time the hyphae should have grown
+	double delay_for_creation = infectionTime.at(pni) + delay - shared_from_this()->getNodeCT(pni);//difference between creation of parent node and that of the hyphae
+    assert(delay_for_creation >= 0 && "MycorrhizalRoot::createHyphae delay_for_creation < 0");
     int subType = 1;
-    auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay, shared_from_this(), pni); // delay - dt_
+    auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay_for_creation, shared_from_this(), pni); // delay - dt_
     children.push_back(hyphae);
     emergedHyphae.at(pni) += 1;
     hyphae->setHyphalTreeIndex(-1);

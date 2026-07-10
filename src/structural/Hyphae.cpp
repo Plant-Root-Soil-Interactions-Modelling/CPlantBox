@@ -55,7 +55,10 @@ Hyphae::Hyphae(std::shared_ptr<Organism> plant, int type,  double delay, std::sh
     double beta = 2*M_PI*plant->rand(); // initial rotation
     double theta = param()->theta;
     this->partialIHeading = Vector3d::rotAB(theta,beta);
-    double creationTime= parent->getNodeCT(pni)+delay;//default
+    double creationTime= parent->getNodeCT(pni)+delay;//default	
+    // assert(creationTime >= 0 && "Hyphae::Hyphae creationTime < 0");
+    assert(creationTime >= parent->getNodeCT(pni) && "Hyphae::Hyphae creationTime < parent->getNodeCT(pni)");
+    assert(creationTime <= plant->getSimTime() + plant->getDt() && "Hyphae::Hyphae creationTime > plant->simtime + plant->dt");
     addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
 }
 

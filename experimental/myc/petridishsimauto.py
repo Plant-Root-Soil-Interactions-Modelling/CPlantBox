@@ -9,6 +9,7 @@ from matplotlib.colors import ListedColormap, Normalize
 import time
 import matplotlib as mpl
 
+# I changed the c++ code, so set might not be valid anymore
 good_seeds = [10, 20, 30, 60, 70, 80, 90, 100] # these are seeds where hyphae cross the barrier, but have not been assessed in any other way for any required behaviour
 
 def getMycSegmentAnalyser(plant):
@@ -202,12 +203,19 @@ def makesimulation(seed):
 
     # vp.plot_roots_and_container(mycp,petri_dish)
 
-    print("Simulating hyphal growth until hyphae cross the barrier")
+    # print("Simulating hyphal growth until hyphae cross the barrier")
+    # print(mycp.getSimTime(), max(mycp.getParameter("creationTime")))
     while crossed_barrier < 3:
         N+=1    
         # mycp.simulateHyphalGrowth(dt,False)
         # mycp.simulateHyphae(dt,False)
         mycp.simulate(dt,False)
+        # print(mycp.getSimTime(), max(mycp.getParameter("creationTime")))
+        ctrs = np.array([hh.getParameter("creationTime") for hh in mycp.getOrgans(pb.root)])
+        cthhs = np.array([hh.getParameter("creationTime") for hh in  mycp.getOrgans(pb.hyphae)])
+        # print(min(ctrs), max(ctrs), min(cthhs), max(cthhs))
+        # print(mycp.getParameter("creationTime"))
+        # raise Exception
         for organ in mycp.getOrgans(pb.hyphae):
             if organ.getParameter("subType") < 3:
                 for node in organ.getNodes():
@@ -226,6 +234,8 @@ def makesimulation(seed):
     # print(crossed_time)
     hours_hyphae = 60 ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
     tip_densities = list()
+    print(crossed_time,mycp.getSimTime(), max(mycp.getParameter("creationTime")))
+    
     for i in range(0, hours_hyphae):
         print("Simulating hyphal growth step " + str(i+1) + " of " + str(hours_hyphae))
         # mycp.simulateHyphae(dt,False)
@@ -235,6 +245,9 @@ def makesimulation(seed):
         if animation:
             ana.crop(small_hyphae_dish)
             ana.write("animation/" + filename + "_hoursACB_" +str(i+1) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+            
+        # print(crossed_time, mycp.getSimTime(), max(mycp.getParameter("creationTime")))
+        # raise Exception
     endsim = time.perf_counter()
     print("Time for simulation: ", endsim-start)
 
@@ -246,7 +259,8 @@ def makesimulation(seed):
         ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
 
     times = np.linspace(crossed_time, max(mycp.getParameter("creationTime"))+0.01, 100)
-    print(max(mycp.getParameter("creationTime")))
+    print('mycp.getSimTime()',mycp.getSimTime(),'max(mycp.getParameter("creationTime"))',max(mycp.getParameter("creationTime")))
+    
     # times = np.linspace(0, 28, 100)
 
     tip_densities = getParaDistperRing("nodeTips", times, ana, rings)
