@@ -1,7 +1,11 @@
+import shutil
+from pathlib import Path
+
 import numpy as np
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
+from plantbox.visualisation.vtk_animate import AnimateRoots
 
 
 def mint(leaf_rp):
@@ -56,7 +60,7 @@ if __name__ == "__main__":
 
     plant = pb.Plant()
     seed_rp = pb.SeedRandomParameter(plant)
-    seed_rp.delayDefinitionShoot = pb.dd_distance
+    seed_rp.delayDefinitionShoot = pb.dd_time_lat  # pb.dd_time_self  #  pb.dd_time_self  # pb.dd_time_lat
     plant.setOrganRandomParameter(seed_rp)
 
     root_rp = pb.RootRandomParameter(plant)
@@ -71,15 +75,18 @@ if __name__ == "__main__":
     stem_rp.la = 2.0
     stem_rp.ln = 2.0
     stem_rp.lb = 2
-    stem_rp.lmax = 6  # 7.5  # 8.0
-    stem_rp.r = 0.2
+    stem_rp.lmax = 10  # 7.5  # 8.0
     stem_rp.successor = [[2]]
     stem_rp.successorP = [[1]]
     stem_rp.successorOT = [[pb.leaf]]
     stem_rp.successorNo = [1]
     stem_rp.ldelay = 4
+    stem_rp.r = 0.5
+    stem_rp.dx = 0.1
 
-    print(stem_rp.dx, stem_rp.dxMin)
+    print("delayNGStart", stem_rp.delayNGStart)
+    print("delayNGEnd", stem_rp.delayNGEnd)
+    print("dx, dxMin", stem_rp.dx, stem_rp.dxMin)
     plant.setOrganRandomParameter(stem_rp)
 
     leaf_rp = pb.LeafRandomParameter(plant)
@@ -89,20 +96,45 @@ if __name__ == "__main__":
     leaf_rp.theta = 70.0 / (2 * np.pi)
     leaf_rp.dx = 0.1
     leaf_rp.a = 0.05
-    leaf_rp.rotBeta = np.pi  #####################
+    leaf_rp.rotBeta = np.pi / 2  #####################
     leaf_rp.betaDev = 0.0
     leaf_rp.initBeta = 0.0
     leaf_rp.ldelay = 4  # parent decides delay for leaf laterals
-    leaf_rp.r = 1  # growth rate of centerline [cm/day]
+    leaf_rp.r = 0.5  # growth rate of centerline [cm/day]
 
-    # parsley(leaf_rp)
-    long_leaf(leaf_rp)
+    mint(leaf_rp)
+    # long_leaf(leaf_rp)
 
     plant.setOrganRandomParameter(leaf_rp)
 
     plant.initialize()
-    plant.simulate(22)
-    vp.plot_plant(plant, "subType")  # creationTime
+
+    # plant.simulate(30)  # 22 # 24
+    # vp.plot_plant(plant, "subType")  # creationTime
+
+    DURATION_SECONDS = 8.0
+    TOTAL_SIM_DAYS = 80.0
+    FPS = 25
+    N_FRAMES = int(DURATION_SECONDS * FPS)
+    FRAME_DIR = Path("leafs_frames")
+    OUTPUT_MP4 = Path("leafs_animation.mp4")
+
+    anim = AnimateRoots(plant)
+    anim.root_name = "creationTime"
+    anim.plant = True
+    anim.avi_name = str(FRAME_DIR)
+    anim.start(axis="v")
+
+    dt = TOTAL_SIM_DAYS / N_FRAMES
+    elapsed = 0.0
+    for _ in range(N_FRAMES):
+        plant.simulate(dt, verbose=False)
+        elapsed += dt
+        anim.simtime = elapsed
+        anim.update()
+
+    anim.make_video(output_file=str(OUTPUT_MP4), fps=FPS)
+    shutil.rmtree(FRAME_DIR)
 
 
 # problems:
