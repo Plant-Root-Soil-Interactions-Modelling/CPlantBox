@@ -503,6 +503,11 @@ PYBIND11_MODULE(plantbox, m) {
         .value("stem", Organism::OrganTypes::ot_stem)
         .value("leaf", Organism::OrganTypes::ot_leaf)
         .export_values();
+    py::enum_<Organism::DelayDefinition>(m, "DelayDefinition")
+        .value("dd_distance", Organism::DelayDefinition::dd_distance)
+        .value("dd_time_lat", Organism::DelayDefinition::dd_time_lat)
+        .value("dd_time_self", Organism::DelayDefinition::dd_time_self)
+        .export_values();
     /*
      * soil.h
      */
