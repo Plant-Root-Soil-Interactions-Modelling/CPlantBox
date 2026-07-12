@@ -178,29 +178,29 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
     #initial solute concentration for the analytical approximations
     #simplified steady rate no flux (1d lookup table)
     solutes_sr_simp = np.zeros((n_scenarios, n_times, NC+2))
-    solutes_sr_simp[0,0,2:]=np.ones(NC) * initial_soluteconcentration
-    solutes_sr_simp[1,0,2:]=np.ones(NC) * initial_soluteconcentration
-    solutes_sr_simp[2,0,2:]=np.ones(NC) * initial_soluteconcentration
+    solutes_sr_simp[0,0,1]= initial_soluteconcentration
+    solutes_sr_simp[1,0,1]= initial_soluteconcentration
+    solutes_sr_simp[2,0,1]= initial_soluteconcentration
     
     #steady state solute flow
     solutes_ss = np.zeros((n_scenarios, n_times, NC+2))
-    solutes_ss[1,0,2:]=np.ones(NC) * initial_soluteconcentration
-    solutes_ss[2,0,2:]=np.ones(NC) * initial_soluteconcentration
+    solutes_ss[1,0,1]= initial_soluteconcentration
+    solutes_ss[2,0,1]= initial_soluteconcentration
     
     #steady rate no flux outer BC solute flow in the general water flow
     solutes_sr = np.zeros((n_scenarios, n_times, NC+2))
-    solutes_sr[1,0,2:]=np.ones(NC) * initial_soluteconcentration
-    solutes_sr[2,0,2:]=np.ones(NC) * initial_soluteconcentration
+    solutes_sr[1,0,1]= initial_soluteconcentration
+    solutes_sr[2,0,1]= initial_soluteconcentration
     
     #Dirichlet BC
     solutes_d = np.zeros((n_scenarios, n_times, NC+2))
-    solutes_d[2,0,2:]=np.ones(NC) * initial_soluteconcentration
+    solutes_d[2,0,1]= initial_soluteconcentration
     
     #uniform concentration (= no analytical approximation)
     solutes_u = np.zeros((n_scenarios, n_times, NC+2))
-    solutes_u[0,0,2:]=np.ones(NC) * initial_soluteconcentration
-    solutes_u[1,0,2:]=np.ones(NC) * initial_soluteconcentration
-    solutes_u[2,0,2:]=np.ones(NC) * initial_soluteconcentration
+    solutes_u[0,0,1]= initial_soluteconcentration
+    solutes_u[1,0,1]= initial_soluteconcentration
+    solutes_u[2,0,1]= initial_soluteconcentration
     
     
     #variables for the no flux case
@@ -343,17 +343,20 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         mean_watercontent_nf = np.average(watercontent_nf, weights=volumes)
         mean_waterpotential_nf = vg.pressure_head(mean_watercontent_nf, peri.sp)
         mean_soluteconcent_nf = np.average(solutecontents_nf, weights=np.multiply(mean_watercontent_nf, volumes))
-        mean_soluteconcent_sr_simp_nf = np.average(solutes_sr_simp[0,r-1,2:], weights=np.multiply(watercontent_nf, volumes))+(f_root*solutes_sr_simp[0,r-1,0])*dt
+        mean_soluteconcent_sr_simp_nf = solutes_sr_simp[0,r-1,1]+(f_root*solutes_sr_simp[0,r-1,0])*dt
+        solutes_sr_simp[0,r,1] = mean_soluteconcent_sr_simp_nf
         #advective flow
         mean_watercontent_af = np.average(watercontent_af, weights=volumes)
         mean_waterpotential_af = vg.pressure_head(mean_watercontent_af, peri.sp)
         mean_soluteconcent_af = np.average(solutecontents_af, weights=np.multiply(mean_watercontent_af, volumes))
-        mean_soluteconcent_sr_simp_af = np.average(solutes_sr_simp[1,r-1,2:], weights=np.multiply(watercontent_af, volumes))+(f_root*solutes_sr_simp[1,r-1,0])*dt
+        mean_soluteconcent_sr_simp_af = solutes_sr_simp[1,r-1,1]+(f_root*solutes_sr_simp[1,r-1,0])*dt
+        solutes_sr_simp[1,r,1] = mean_soluteconcent_sr_simp_af
         #Dirichlet BC
         mean_watercontent_d = np.average(watercontent_d, weights=volumes)
         mean_waterpotential_d = vg.pressure_head(mean_watercontent_d, peri.sp)
         mean_soluteconcent_d = np.average(solutecontents_d, weights=np.multiply(mean_watercontent_d, volumes))
-        mean_soluteconcent_sr_simp_d = np.average(solutes_sr_simp[2,r-1,2:], weights=np.multiply(watercontent_d, volumes))+(f_root*solutes_sr_simp[2,r-1,0]+f_prhiz*(IC-solutes_sr_simp[2,r-1,-1]))*dt
+        mean_soluteconcent_sr_simp_d = solutes_sr_simp[2,r-1,1]+(f_root*solutes_sr_simp[2,r-1,0]+f_prhiz*(IC-solutes_sr_simp[2,r-1,-1]))*dt
+        solutes_sr_simp[2,r,1] = mean_soluteconcent_sr_simp_d
         print("mean", mean_soluteconcent_sr_simp_d, mean_soluteconcent_sr_simp_nf, f_root, dt, (f_root*solutes_sr_simp[0,r-1,0])*dt)
         #determine coefficients for the analytical approximation
         #equation [4] in Schroeder2008 doi:10.2136/vzj2007.0114
@@ -438,14 +441,23 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         # safe the means, they are computed via the explicit Euler timestepping scheme
         # TODO: technically the concentrations of the last timestep and the current watercontents are mixed, shoul dnot be an issue for small timesteps
         
-        mean_soluteconcent_ss_af = np.average(solutes_ss[1,r-1,2:], weights=np.multiply(mean_watercontent_af, volumes))+f_root*solutes_ss[1,r-1,0]*dt #TODO: add inflow from outside
-        mean_soluteconcent_ss_d = np.average(solutes_ss[2,r-1,2:], weights=np.multiply(mean_watercontent_d, volumes))+(f_root*solutes_ss[2,r-1,0]+f_prhiz*(IC-solutes_ss[2,r-1,-1]))*dt
-        mean_soluteconcent_sr_af = np.average(solutes_sr[1,r-1,2:], weights=np.multiply(mean_watercontent_af, volumes))+f_root*solutes_sr[1,r-1,0]*dt
-        mean_soluteconcent_sr_d = np.average(solutes_sr[2,r-1,2:], weights=np.multiply(mean_watercontent_d, volumes))+f_root*solutes_sr[2,r-1,0]*dt
-        mean_soluteconcent_d_d = np.average(solutes_d[2,r-1,2:], weights=np.multiply(mean_watercontent_d, volumes))+(f_root*solutes_d[2,r-1,0]+f_prhiz*(IC-solutes_d[1,r-1,-1]))*dt
-        mean_soluteconcent_u_nf = np.average(solutes_u[0,r-1,2:], weights=np.multiply(mean_watercontent_nf, volumes))+f_root*solutes_u[0,r-1,0]*dt
-        mean_soluteconcent_u_af = np.average(solutes_u[1,r-1,2:], weights=np.multiply(mean_watercontent_af, volumes))+f_root*solutes_u[1,r-1,0]*dt
-        mean_soluteconcent_u_d = np.average(solutes_u[2,r-1,2:], weights=np.multiply(mean_watercontent_d, volumes))+(f_root*solutes_u[2,r-1,0]+f_prhiz*(IC-solutes_u[2,r-1,-1]))*dt
+        mean_soluteconcent_ss_af = solutes_ss[1,r-1,1]+f_root*solutes_ss[1,r-1,0]*dt #TODO: add inflow from outside
+        mean_soluteconcent_ss_d = solutes_ss[2,r-1,1]+(f_root*solutes_ss[2,r-1,0]+f_prhiz*(IC-solutes_ss[2,r-1,-1]))*dt
+        mean_soluteconcent_sr_af = solutes_sr[1,r-1,1]+f_root*solutes_sr[1,r-1,0]*dt
+        mean_soluteconcent_sr_d = solutes_sr[2,r-1,1]+f_root*solutes_sr[2,r-1,0]*dt
+        mean_soluteconcent_d_d = solutes_d[2,r-1,1]+(f_root*solutes_d[2,r-1,0]+f_prhiz*(IC-solutes_d[1,r-1,-1]))*dt
+        mean_soluteconcent_u_nf = solutes_u[0,r-1,1]+f_root*solutes_u[0,r-1,0]*dt
+        mean_soluteconcent_u_af = solutes_u[1,r-1,1]+f_root*solutes_u[1,r-1,0]*dt
+        mean_soluteconcent_u_d = solutes_u[2,r-1,1]+(f_root*solutes_u[2,r-1,0]+f_prhiz*(IC-solutes_u[2,r-1,-1]))*dt
+        
+        solutes_ss[1,r,1] = mean_soluteconcent_ss_af
+        solutes_ss[2,r,1] = mean_soluteconcent_ss_d 
+        solutes_sr[1,r,1] = mean_soluteconcent_sr_af 
+        solutes_sr[2,r,1] = mean_soluteconcent_sr_d 
+        solutes_d[2,r,1] = mean_soluteconcent_d_d 
+        solutes_u[0,r,1] = mean_soluteconcent_u_nf
+        solutes_u[1,r,1] = mean_soluteconcent_u_af 
+        solutes_u[2,r,1] = mean_soluteconcent_u_d 
         
         #for the steady state take again the outer concentration
         #general steady state
