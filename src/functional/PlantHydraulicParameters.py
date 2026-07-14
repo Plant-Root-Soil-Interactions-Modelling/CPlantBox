@@ -121,7 +121,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         self.setKxValues(json_dict["kxPerSegment"])
         for ot in [int(pb.OrganTypes.root), int(pb.OrganTypes.stem), int(pb.OrganTypes.leaf)]:
             maxSubTypes_ot = min(self.maxSubTypes, len(json_dict["kx_ages"][str(ot)]))
-            for st in range(0, maxSubTypes_ot):git 
+            for st in range(0, maxSubTypes_ot):
                 age_ = json_dict["kx_ages"][str(ot)][st]
                 value_ = json_dict["kx_values"][str(ot)][st]
                 self.setKxAgeDependent(age_, value_, st, ot)
