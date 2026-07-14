@@ -664,7 +664,7 @@ class PerirhizalPython(Perirhizal):
             else:
                 F=[(self.integral_AdvectionDiffusion_(Phi_current[i],self.sp)-F0[i]) for i in range(n_segments)]
             for i in range(n_segments):
-                c_sol_mean2root[i] += weights[j] * math.exp(D_tilde*F[i]) * current_watercontent[i]
+                c_sol_mean2root[i] += weights[j] * math.exp(max(min(D_tilde*F[i],10),-10)) * current_watercontent[i]
                 mean_watercontent[i] += weights[j] * current_watercontent[i]
         for i in range(n_segments):
             c_sol_mean2root[i] = c_sol_mean2root[i] / mean_watercontent[i]
@@ -877,7 +877,7 @@ class PerirhizalPython(Perirhizal):
         base_mfp_interval1= -np.logspace(np.log10(-base_mfp_int[0]), np.log10(1.0e-9), base_mfp_n_1)
         base_mfp_interval2= np.logspace(np.log10(1.0e-9), np.log10(base_mfp_int[1]), base_mfp_n_2)
         base_mfp_ = np.concatenate((base_mfp_interval1,base_mfp_interval2))
-        
+        print("boundaries lookup", base_mfp_[0], base_mfp_[1])
         interface = np.zeros((inner_kr_bn,base_mfp_n))
         
         print("Creating a lookup table for the hydraulic perirhizal resistance model")
@@ -980,16 +980,16 @@ class PerirhizalPython(Perirhizal):
         Phin = 300
         Phi_ = np.logspace(np.log10(1.0e-9), np.log10(500), Phin)
         base_mfp_=Phi_
-        integral_overD_ = np.zeros((Phin, 2))
+        integral_AdvDiff_ = np.zeros((Phin, 2))
         print("Creating a lookup table for the steady state solute flow")
         for i, Phi in enumerate(Phi_):
             print(i, " / ", Phin)
-            integral_overD_[i,0] = PerirhizalPython.integral_overDiffusion_(Phi, sp)
-            integral_overD_[i,1] = integral_overD_[i,0]
+            integral_AdvDiff_[i,0] = PerirhizalPython.integral_AdvectionDiffusion_(Phi, sp)
+            integral_AdvDiff_[i,1] = integral_AdvDiff_[i,0]
         np.savez(filename, integral_AdvDiff_ = integral_AdvDiff_, base_mfp_ = base_mfp_, soil = list(sp))
-        self.lookup_table_solutes = RegularGridInterpolator((base_mfp_,[0,1]) , integral_overD_)
+        self.lookup_table_sr_solutes_simplified = RegularGridInterpolator((base_mfp_,[0,1]) , integral_AdvDiff_)
         self.sp = sp
-        return integral_overD_, base_mfp_
+        return integral_AdvDiff_, base_mfp_
     
     def create_solute_sr_lookup(self, filename, sp):
         """      
@@ -1080,12 +1080,13 @@ class PerirhizalPython(Perirhizal):
             
             #compute two inputs for the lookup table
             rho = np.array(rho_)
+            rho[rho > 199] = 199#maximal for rho
             rho2 = np.multiply(rho,rho)
             b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
             inner_kr_b = np.divide(inner_kr_,b)
             base_mfp = - (inner_kr_b * rx + vg.fast_mfp[self.sp](sx))
             
-            rsx = self.lookup_table((inner_kr_b, np.array([max(min(base_mfp[i],500),-500) for i in range(len(base_mfp))])))
+            rsx = self.lookup_table((inner_kr_b, np.array([max(min(base_mfp[i],-51.01),-53.59) for i in range(len(base_mfp))])))
             rsx[mask] = sx[mask]  # if inner_kr is zero, there is no flow, and the interface potential is the same as the soil potential
         except:
             if np.max(rx) > 0:
