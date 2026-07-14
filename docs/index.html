@@ -1,122 +1,352 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CPlantBox Documentation</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem;
-      color: #333;
-      line-height: 1.6;
-    }
-    header {
-      border-bottom: 2px solid #4a7c59;
-      padding-bottom: 1rem;
-      margin-bottom: 2rem;
-    }
-    h1 { color: #4a7c59; }
-    h2 { color: #2e5c3e; margin-top: 2rem; }
-    a { color: #4a7c59; }
-    .badge {
-      display: inline-block;
-      background: #4a7c59;
-      color: #fff;
-      border-radius: 4px;
-      padding: 0.2rem 0.6rem;
-      font-size: 0.85rem;
-      margin-right: 0.4rem;
-    }
-    footer {
-      margin-top: 3rem;
-      border-top: 1px solid #ccc;
-      padding-top: 1rem;
-      font-size: 0.85rem;
-      color: #666;
-    }
-  </style>
-</head>
-<body>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="CPlantBox is a computational framework for plant architecture, model coupling, and plant-soil-atmosphere interaction modelling." />
+        <title>CPlantBox | Plant modelling framework</title>
+        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+            <div class="container cpb-webapp-container">
+                <a class="navbar-brand cpb-brand" href="#page-top">
+                    CPlantBox
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars ms-1"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="#overview">Overview</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#gallery">Gallery</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#webapp">Web app</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#install">Install</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#resources">Resources</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#publications">Publications</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
 
-  <header>
-    <h1>CPlantBox</h1>
-    <p>
-      <span class="badge">Functional-Structural Plant Model</span>
-      <span class="badge">Python &amp; C++</span>
-    </p>
-    <p>
-      A modular, functional-structural plant modelling framework for simulating
-      plant growth, water dynamics, and plant–soil interactions.
-    </p>
-  </header>
+        <header class="masthead cpb-hero">
+            <div class="container">
+                <img class="cpb-hero-logo" src="assets/img/general/logo-long-white.png" alt="CPlantBox" />
+                <h2 class="section-heading text-uppercase cpb-hero-heading">A fully coupled functional-structural plant-soil modelling platform</h2>
+                <div class="cpb-actions">
+                    <a class="btn btn-primary btn-xl text-uppercase" href="https://cplantbox.com/"><i class="fas fa-arrow-up-right-from-square me-2"></i>Try the Web App</a>
+                    <a class="btn btn-outline-light btn-xl text-uppercase" href="https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox"><i class="fab fa-github me-2"></i>GitHub</a>
+                </div>
+            </div>
+        </header>
 
-  <section>
-    <h2>Overview</h2>
-    <p>
-      CPlantBox is a functional-structural plant model built in a modular way,
-      usable at several levels of complexity. It describes plant geometry through
-      individual organs — roots, stems, and leaves — that evolve over time. The
-      framework can model functional aspects such as water and carbon dynamics
-      within the plant and provides general tools to build plant–soil-interaction
-      models.
-    </p>
-    <p>
-      To solve partial differential equations, CPlantBox can be coupled with the
-      finite-volume solver <strong>DuMu<sup>x</sup></strong> via the companion
-      repository
-      <a href="https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi"
-         target="_blank" rel="noopener">dumux-rosi</a>.
-    </p>
-  </section>
+        <section class="page-section" id="overview">
+            <div class="container cpb-overview-container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Model Overview</h2>
+                    <p class="cpb-section-intro">
+                        CPlantBox creates plant geometry from parameter sets and can incorporate feedback from external functional models.
+                        This flexibility supports model coupling, plant-soil-atmosphere interaction modelling, and complex Python-based workflows that integrate environmental feedback.
+                    </p>
+                </div>
+                <div class="row text-center g-5 cpb-overview-grid">
+                    <div class="col-md-4">
+                        <div class="cpb-overview-card">
+                            <span class="fa-stack fa-3x">
+                                <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                                <i class="fas fa-seedling fa-stack-1x fa-inverse"></i>
+                            </span>
+                            <h4 class="my-3">Plant Geometry</h4>
+                            <p class="text-muted">Generate parameter-driven, growing plant architectures for your simulation studies.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="cpb-overview-card">
+                            <span class="fa-stack fa-3x">
+                                <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                                <i class="fas fa-chart-line fa-stack-1x fa-inverse"></i>
+                            </span>
+                            <h4 class="my-3">Process Simulation</h4>
+                            <p class="text-muted">Use mechanistic process descriptions to simulate water and carbon flow within the plant, photosynthesis, and root-soil interactions.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="cpb-overview-card">
+                            <span class="fa-stack fa-3x">
+                                <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                                <i class="fas fa-code-branch fa-stack-1x fa-inverse"></i>
+                            </span>
+                            <h4 class="my-3">Model Coupling</h4>
+                            <p class="text-muted">Connect CPlantBox to external functional models and environmental feedback loops to build coupled plant-soil-atmosphere workflows.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <section>
-    <h2>Key Features</h2>
-    <ul>
-      <li>Organ-level plant geometry (roots, stems, leaves) with temporal evolution</li>
-      <li>Water and carbon transport models</li>
-      <li>Coupling to DuMu<sup>x</sup> for PDE-based soil simulations</li>
-      <li>Python bindings for rapid scripting and post-processing</li>
-      <li>RSML import/export support</li>
-      <li>VTP visualisation output compatible with ParaView</li>
-    </ul>
-  </section>
+        <section class="page-section" id="gallery">
+            <div class="container cpb-gallery-container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Gallery</h2>
+                </div>
+                <div class="cpb-gallery-filters" aria-label="Gallery filters">
+                    <button class="btn btn-primary active" type="button" data-gallery-filter="highlight" aria-pressed="true">Overview</button>
+                    <button class="btn btn-outline-primary" type="button" data-gallery-filter="structure" aria-pressed="false">Plant Structure</button>
+                    <button class="btn btn-outline-primary" type="button" data-gallery-filter="plant-soil" aria-pressed="false">Plant &amp; Soil</button>
+                    <button class="btn btn-outline-primary" type="button" data-gallery-filter="analysis-schemes" aria-pressed="false">Analysis</button>
+                    <button class="btn btn-outline-primary" type="button" data-gallery-filter="all" aria-pressed="false">All</button>
+                </div>
+                <div class="cpb-gallery-grid">
+                    <div class="cpb-gallery-item" data-gallery-category="structure" data-gallery-featured="true">
+                        <a class="cpb-gallery-link" href="assets/img/general/hello-plant.jpg" data-gallery-title="Plant Structure">
+                            <img src="assets/img/general/hello-plant.jpg" alt="Plant Structure CPlantBox geometry example" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Plant Structure</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item" data-gallery-category="structure" data-gallery-featured="true">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/structure/multiple-plants-cropped.png" data-gallery-title="Multi-plant setup">
+                            <img src="assets/img/gallery/structure/multiple-plants-cropped.png" alt="Multiple plant structures" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Multi-plant setup</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item" data-gallery-category="plant-soil" data-gallery-featured="true">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/plant-soil/plant-soil-sim.png" data-gallery-title="Root water uptake from soil">
+                            <img src="assets/img/gallery/plant-soil/plant-soil-sim.png" alt="Root water uptake from soil visualization" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Root water uptake from soil</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item" data-gallery-category="structure" data-gallery-featured="true">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/structure/root-orders-cropped.png" data-gallery-title="Root topology">
+                            <img src="assets/img/gallery/structure/root-orders-cropped.png" alt="Root order structure visualization" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Root topology</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item" data-gallery-category="structure" data-gallery-featured="true">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/structure/root-system-container-4-cropped.jpg" data-gallery-title="Complex container geometries">
+                            <img src="assets/img/gallery/structure/root-system-container-4-cropped.jpg" alt="Complex container geometries" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Complex container geometries</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item is-hidden" data-gallery-category="plant-soil">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/plant-soil/soil-compaction-modelling.png" data-gallery-title="Soil compaction modelling">
+                            <img src="assets/img/gallery/plant-soil/soil-compaction-modelling.png" alt="Soil compaction modelling visualization" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Soil compaction modelling</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item is-hidden" data-gallery-category="plant-soil">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/plant-soil/fig-4-15.jpeg" data-gallery-title="MRI in-silico">
+                            <img src="assets/img/gallery/plant-soil/fig-4-15.jpeg" alt="MRI in-silico visualization" />
+                            <span class="cpb-gallery-caption">
+                                <strong>MRI in-silico</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item" data-gallery-category="analysis-schemes" data-gallery-featured="true">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/analysis-schemes/root-system-suf-graph-cropped.png" data-gallery-title="Root system SUF &amp; Krs">
+                            <img src="assets/img/gallery/analysis-schemes/root-system-suf-graph-cropped.png" alt="Root system SUF and Krs graph" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Root system SUF &amp; Krs</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item is-hidden" data-gallery-category="structure">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/structure/rhizotron-cropped.png" data-gallery-title="Rhizotron in-silico">
+                            <img src="assets/img/gallery/structure/rhizotron-cropped.png" alt="Rhizotron structure visualization" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Rhizotron in-silico</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item is-hidden" data-gallery-category="analysis-schemes">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/analysis-schemes/tact-tpot.jpg" data-gallery-title="Plant water uptake">
+                            <img src="assets/img/gallery/analysis-schemes/tact-tpot.jpg" alt="Plant water uptake plot" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Plant water uptake</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item is-hidden" data-gallery-category="analysis-schemes">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/analysis-schemes/root-volume-graph.png" data-gallery-title="Root volume over depth">
+                            <img src="assets/img/gallery/analysis-schemes/root-volume-graph.png" alt="Root volume over depth graph" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Root volume over depth</strong>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="cpb-gallery-item is-hidden" data-gallery-category="analysis-schemes">
+                        <a class="cpb-gallery-link" href="assets/img/gallery/analysis-schemes/test-output.png" data-gallery-title="Topological analysis">
+                            <img src="assets/img/gallery/analysis-schemes/test-output.png" alt="CPlantBox test output visualization" />
+                            <span class="cpb-gallery-caption">
+                                <strong>Topological analysis</strong>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <section>
-    <h2>Getting Started</h2>
-    <p>
-      Full installation instructions for Linux and macOS are available in the
-      <a href="https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/README.md"
-         target="_blank" rel="noopener">README</a>.
-      An interactive web demo is hosted at
-      <a href="https://cplantbox.fz-juelich.de" target="_blank" rel="noopener">
-        cplantbox.fz-juelich.de</a>.
-    </p>
-  </section>
+        <section class="page-section" id="webapp">
+            <div class="container cpb-webapp-container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Try the Web App</h2>
+                </div>
+                <div class="row align-items-center justify-content-center g-5 cpb-webapp-row">
+                    <div class="col-lg-8 cpb-webapp-visual">
+                        <img class="img-fluid rounded cpb-shadow cpb-webapp-image" src="assets/img/general/webapp-picture-2.png" alt="Screenshot of the CPlantBox web app" />
+                    </div>
+                    <div class="col-lg-3 cpb-webapp-copy">
+                        <div class="cpb-webapp-copy-inner">
+                            <p class="text-muted">
+                                The WebApp showcases the plant geometry generation of CPlantBox, and provides an interactive interface to visualize and experiment with plant parameters.
+                            </p>
+                            <a class="btn btn-primary btn-xl text-uppercase" href="https://cplantbox.com/"><i class="fas fa-arrow-up-right-from-square me-2"></i>Open Web App</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <section>
-    <h2>Documentation</h2>
-    <p>
-      API reference and class diagrams generated by Doxygen are located in the
-      <a href="html/index.html">html/</a> subdirectory (built locally).
-      Tutorial notebooks and example scripts can be found in the
-      <code>tutorial/</code> directory of the repository.
-    </p>
-  </section>
+        <section class="page-section" id="install">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Installation</h2>
+                    <h3 class="section-subheading text-muted">Start from the GitHub repository today. We are currently developing an installation option via Python wheels, coming soon.</h3>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="cpb-panel">
+                            <h4>Source and documentation</h4>
+                            <p class="text-muted">The current installation manual can be found in the CPlantBox GitHub repository.</p>
+                            <a class="btn btn-primary btn-xl text-uppercase" href="https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox"><i class="fab fa-github me-2"></i>View GitHub</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="cpb-panel">
+                            <h4>Python wheel installation</h4>
+                            <p class="text-muted">A wheel-based installation path is currently in development.</p>
+                            <a class="btn btn-dark btn-xl text-uppercase disabled" href="#!" aria-disabled="true" tabindex="-1"><i class="fas fa-clock me-2"></i>Wheel Instructions Coming Soon</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <footer>
-    <p>
-      CPlantBox is developed by the
-      <a href="https://www.fz-juelich.de" target="_blank" rel="noopener">
-        Forschungszentrum Jülich</a>
-      Plant-Root-Soil Interactions Modelling group and contributors.
-      Released under the
-      <a href="../LICENSE" target="_blank" rel="noopener">open-source license</a>.
-    </p>
-    <p><em>This page is a placeholder. Replace with generated documentation as needed.</em></p>
-  </footer>
+        <section class="page-section" id="resources">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Resources</h2>
+                </div>
+                <div class="row align-items-stretch g-4">
+                    <div class="col-lg-6">
+                        <div class="cpb-panel">
+                            <h4>Tutorial</h4>
+                            <p class="text-muted">
+                                Check out our illustrated CPlantBox examples in our published tutorial, including code snippets and step-by-step explanations.
+                                The tutorial walks through workflows from simple plant geometry to fully coupled simulations.
+                            </p>
+                            <a class="btn btn-dark btn-xl text-uppercase disabled" href="#!" aria-disabled="true" tabindex="-1"><i class="fas fa-clock me-2"></i>Tutorial Coming Soon</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="cpb-panel">
+                            <h4>CPlantBox Lecture</h4>
+                            <p class="text-muted">
+                                Watch an introductory lecture on CPlantBox and its modelling concepts on YouTube.
+                                The video opens externally only after clicking the link.
+                            </p>
+                            <a class="btn btn-primary btn-xl text-uppercase" href="https://www.youtube.com/watch?v=-YgDnsC3BV8"><i class="fab fa-youtube me-2"></i>Watch Lecture</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-</body>
+        <section class="page-section" id="publications">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Publications</h2>
+                    <h3 class="section-subheading text-muted">Key references for CPlantBox. If you use the model, please cite DOI: 10.1093/insilicoplants/diad009.</h3>
+                </div>
+                <div class="cpb-publication-list">
+                    <article class="cpb-publication">
+                        <h4>CPlantBox: a fully coupled modelling platform</h4>
+                        <p>M. Giraud, S. L. Gall, M. Harings, M. Javaux, D. Leitner, F. Meunier, Y. Rothfuss, D. van Dusschoten, J. Vanderborght, H. Vereecken, et al. in silico Plants, 5(2):diad009, 2023.</p>
+                        <a class="cpb-doi-link" href="https://doi.org/10.1093/insilicoplants/diad009">DOI: 10.1093/insilicoplants/diad009</a>
+                    </article>
+                    <article class="cpb-publication">
+                        <h4>CPlantBox: a whole-plant modelling framework</h4>
+                        <p>X. R. Zhou, A. Schnepf, J. Vanderborght, D. Leitner, A. Lacointe, H. Vereecken, and G. Lobet. in silico Plants, 2(1), 2020.</p>
+                        <a class="cpb-doi-link" href="https://doi.org/10.1093/insilicoplants/diaa001">DOI: 10.1093/insilicoplants/diaa001</a>
+                    </article>
+                    <article class="cpb-publication">
+                        <h4>CRootBox: a structural-functional modelling framework</h4>
+                        <p>A. Schnepf, D. Leitner, M. Landl, G. Lobet, T. H. Mai, S. Morandage, C. Sheng, M. Z&ouml;rner, J. Vanderborght, and H. Vereecken. Annals of Botany, 121(5):1033-1053, 2018.</p>
+                        <a class="cpb-doi-link" href="https://doi.org/10.1093/aob/mcx221">DOI: 10.1093/aob/mcx221</a>
+                    </article>
+                    <article class="cpb-publication cpb-placeholder">
+                        <h4>Tutorial paper</h4>
+                        <p>A CPlantBox tutorial paper is currently in preparation.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-section" id="about">
+            <div class="container">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-7">
+                        <h2 class="section-heading text-uppercase">About</h2>
+                        <p class="text-muted">
+                            CPlantBox is a functional-structural plant model developed at Forschungszentrum J&uuml;lich GmbH, IBG-3,
+                            in the lab of Andrea Schnepf.
+                        </p>
+                        <div class="cpb-actions cpb-actions-left">
+                            <a class="btn btn-primary btn-xl text-uppercase" href="mailto:a.schnepf@fz-juelich.de"><i class="fas fa-envelope me-2"></i>Contact us</a>
+                            <a class="btn btn-outline-dark btn-xl text-uppercase" href="#publications"><i class="fas fa-book-open me-2"></i>Cite CPlantBox</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="modal fade cpb-gallery-modal" id="galleryModal" tabindex="-1" aria-labelledby="galleryModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <button type="button" class="btn-close cpb-gallery-modal-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="cpb-gallery-modal-nav cpb-gallery-modal-prev" aria-label="Previous image">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button type="button" class="cpb-gallery-modal-nav cpb-gallery-modal-next" aria-label="Next image">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="modal-body">
+                        <img class="cpb-gallery-modal-image" src="" alt="" />
+                        <div class="cpb-gallery-modal-caption">
+                            <h3 id="galleryModalLabel"></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="js/scripts.js"></script>
+    </body>
 </html>
