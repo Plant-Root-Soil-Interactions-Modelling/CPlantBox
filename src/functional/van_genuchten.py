@@ -154,9 +154,10 @@ fast_imfp = {}
     call create_mfp_lookup first, once for each soil parameter @param sp"""
 
 
-def create_mfp_lookup(sp, wilting_point = -16000, n = 16001):
+def create_mfp_lookup(sp, wilting_point = -16000, n = 16001, verbose = True):
     """ initializes the look up tables for soil parameter to use fast_mfp, and fast_imfp """
-    print("initializing look up tables")
+    if verbose:
+        print("initializing mfp look up tables")
     global fast_mfp
     global fast_imfp
 
@@ -176,7 +177,8 @@ def create_mfp_lookup(sp, wilting_point = -16000, n = 16001):
         imfp[i] = h_[i]
     fast_imfp[sp] = interpolate.interp1d(mfp, imfp, bounds_error = False, fill_value = (imfp[0], imfp[-1]))  #
 
-    print("done")
+    if verbose:
+        print("done")
 
 # fast_specific_moisture_storage = {}
 # fast_water_content = {}
