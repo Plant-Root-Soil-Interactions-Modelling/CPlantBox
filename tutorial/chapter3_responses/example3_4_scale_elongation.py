@@ -4,6 +4,7 @@ import numpy as np
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_animate as vp_animate
 
 plant = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
@@ -27,7 +28,7 @@ plant.initialize()
 sim_time = 30.0  # days
 dt = 0.1  # small, for animation (cm)
 
-anim = vp.AnimateRoots(plant)
+anim = vp_animate.AnimateRoots(plant)
 anim.root_name = "creationTime"
 anim.file = "example3_4_scale_elongation"
 
