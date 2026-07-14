@@ -1,0 +1,15 @@
+Doxygen documentation
+
+Generate the HTML documentation by running from this folder:
+
+    doxygen Doxyfile
+
+Output is written to doxygen/html/. Open doxygen/html/index.html in a browser.
+
+Configuration:
+- Input:   ../src  (recursive, external/ excluded)
+- Output:  html/
+- Graphs:  call graphs and caller graphs enabled (requires graphviz)
+
+UML collaboration diagrams for the main classes are in the uml/ subfolder.
+

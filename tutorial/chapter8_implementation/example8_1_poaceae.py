@@ -1,0 +1,38 @@
+"""How to define a custom Plant subclass for Poaceae that creates GrassLeaf organs instead of the default Leaf"""
+
+import os
+
+import plantbox as pb
+import plantbox.visualisation.vtk_plot as vp
+
+
+class Poaceae(pb.Plant):  # |\label{l81:plant}|
+    """Plant subclass that creates GrassLeaf organs instead of the default Leaf."""
+
+    def createLeaf(self, subType, delay, parent, pni):  # |\label{l81:createLeaf}|
+        return pb.GrassLeaf(self, subType, delay, parent, pni)  # |\label{l81:createLeaf_end}|
+
+    def initializeReader(self):  # |\label{l81:initializeReader}|
+        super().initializeReader()
+        glp = pb.GrassLeafRandomParameter(self)
+        glp.subType = 0
+        self.setOrganRandomParameter(glp)  # |\label{l81:initializeReader_end}|
+
+
+# Simulate a Poaceae plant with GrassLeaf organs |\label{l81:sim_start}|
+plant = Poaceae()
+
+xml_path = os.path.join(os.path.dirname(__file__), "grassleaf_parameters.xml")
+plant.readParameters(xml_path)
+plant.initialize(verbose=False)
+
+sim_time = 15.0
+dt = 0.5
+n_steps = int(sim_time / dt)
+
+for i in range(n_steps):
+    plant.simulate(dt, verbose=False)
+
+ana = pb.SegmentAnalyser(plant)
+ana.addAge(sim_time)
+vp.plot_plant(ana, "age")  # |\label{l81:end}|

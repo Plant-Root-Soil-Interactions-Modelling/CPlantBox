@@ -164,3 +164,160 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     # print("simulate_plant():", vtk_data.keys(), result_data.keys())
 
     return vtk_data, result_data
+
+
+def generate_mp4(plant_, time_slider, seed_data, root_data, stem_data, leaf_data, random_seed, xml_data, result_tab="VTK3D"):
+    """Generate an MP4 animation (40 frames = 4 s at 10 fps) using offscreen VTK rendering.
+
+    Simulates the plant twice: once to determine final scene bounds for a
+    stable fixed camera, then again to capture 40 evenly-spaced frames.
+    Returns a base64-encoded MP4 byte string suitable for dcc.Download with
+    base64=True.
+    """
+    p_name = "age" if result_tab == "VTK3DAge" else "subType"
+    import base64
+    import shutil
+    import subprocess
+    import tempfile
+
+    # Ensure ffmpeg is reachable (server PATH may differ from interactive shell)
+    ffmpeg_exe = shutil.which("ffmpeg")
+    if ffmpeg_exe is None:
+        raise RuntimeError("ffmpeg not found in PATH. On a server, set the full path explicitly or " "ensure ffmpeg is on the system PATH for the server process.")
+
+    # VTK needs a real OpenGL context even with SetOffScreenRendering(1).
+    # On headless servers, hint VTK to prefer EGL (no DISPLAY required).
+    # This must be set before vtkRenderWindow is created.
+    if not os.environ.get("DISPLAY"):
+        os.environ.setdefault("VTK_DEFAULT_OPENGL_WINDOW", "vtkEGLRenderWindow")
+
+    NUM_FRAMES = 96  # 4 s × 24 fps
+
+    # ---- 1. First-pass simulation to determine final scene bounds ----
+    plant_b, _, _ = get_plant(plant_, seed_data, root_data, stem_data, leaf_data, xml_data)
+    plant_b.setSeed(random_seed)
+    plant_b.initialize()
+    N = max(1, int(time_slider))
+    for dt_b in np.diff(np.linspace(0.0, time_slider, N + 1)):
+        plant_b.simulate(dt_b)
+    # Compute bounding-sphere the same way prepare_vtk_render_data does it in main.py
+    pd_b = vp.segs_to_polydata(plant_b, 1.0, ["subType", "radius"])
+    if pd_b.GetNumberOfPoints() > 0:
+        pts_b = numpy_support.vtk_to_numpy(pd_b.GetPoints().GetData()).reshape(-1, 3)
+        center = pts_b.mean(axis=0)
+        radius = np.linalg.norm(pts_b - center, axis=1).max()
+        radius = max(float(radius), 1.0)
+    else:
+        center = np.array([0.0, 0.0, -5.0])
+        radius = 10.0
+    distance = 1.5 * radius
+
+    # ---- 2. Set up offscreen renderer with fixed oblique camera ----
+    colors = vtk.vtkNamedColors()
+    ren = vtk.vtkRenderer()
+    ren.SetBackground(colors.GetColor3d("White"))
+    renWin = vtk.vtkRenderWindow()
+    renWin.SetSize(900, 750)
+    renWin.SetOffScreenRendering(1)
+    renWin.AddRenderer(ren)
+
+    # Add the final-state actors temporarily so ResetCamera() can compute
+    # the correct ParallelScale (same approach as render_window in vtk_plot.py)
+    ana_final = pb.SegmentAnalyser(plant_b)
+    ana_final.addAge(float(time_slider))
+    tmp_actors, _ = vp.plot_plant(ana_final, p_name, render=False)
+    for a in tmp_actors:
+        ren.AddActor(a)
+    ren.ResetCamera()
+    for a in tmp_actors:
+        ren.RemoveActor(a)
+
+    camera = ren.GetActiveCamera()
+    camera.ParallelProjectionOn()
+    camera.SetFocalPoint(center.tolist())
+    cam_pos = center + np.array([-distance, -distance, distance])
+    camera.SetPosition(cam_pos.tolist())
+    camera.SetViewUp(0, 0, 1)
+    camera.OrthogonalizeViewUp()
+    camera.SetClippingRange(0.1, distance * 10)
+
+    # ---- 3. Second-pass simulation + frame capture ----
+    plant_a, _, _ = get_plant(plant_, seed_data, root_data, stem_data, leaf_data, xml_data)
+    plant_a.setSeed(random_seed)
+    plant_a.initialize()
+
+    tmpdir = tempfile.mkdtemp(prefix="cplantbox_mp4_")
+    t_steps = np.linspace(0.0, time_slider, NUM_FRAMES + 1)
+    cur_actors, cur_bar = [], None
+    try:
+        for i, (t0, t1) in enumerate(zip(t_steps, t_steps[1:])):
+            plant_a.simulate(t1 - t0)
+            ana = pb.SegmentAnalyser(plant_a)
+            ana.addAge(t1)
+            actors, scalar_bar = vp.plot_plant(ana, p_name, render=False)
+
+            for a in cur_actors:
+                ren.RemoveActor(a)
+            if cur_bar is not None:
+                ren.RemoveActor2D(cur_bar)
+            for a in actors:
+                ren.AddActor(a)
+            if scalar_bar:
+                ren.AddActor2D(scalar_bar)
+            cur_actors, cur_bar = actors, scalar_bar
+
+            vp.write_jpg(renWin, os.path.join(tmpdir, f"frame_{i}"), magnification=1)
+
+        # ---- 4. Assemble MP4 with ffmpeg and return base64-encoded bytes ----
+        mp4_path = os.path.join(tmpdir, "animation.mp4")
+        logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "cplantbox.png")
+
+        def _run_ffmpeg(cmd):
+            try:
+                subprocess.run(cmd, check=True, capture_output=True)
+            except subprocess.CalledProcessError as exc:
+                stderr = exc.stderr.decode(errors="replace") if exc.stderr else ""
+                raise RuntimeError(f"ffmpeg failed (exit {exc.returncode}):\n{stderr}") from exc
+
+        if os.path.isfile(logo_path):
+            # Overlay logo: scale to 150 px wide, place in lower-left with 10 px margin
+            filter_complex = "[1:v]scale=150:-1[logo];[0:v][logo]overlay=10:H-h-10"
+            _run_ffmpeg(
+                [
+                    ffmpeg_exe,
+                    "-y",
+                    "-r",
+                    "24",
+                    "-i",
+                    os.path.join(tmpdir, "frame_%d.jpg"),
+                    "-i",
+                    logo_path,
+                    "-filter_complex",
+                    filter_complex,
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
+                    mp4_path,
+                ],
+            )
+        else:
+            _run_ffmpeg(
+                [
+                    ffmpeg_exe,
+                    "-y",
+                    "-r",
+                    "24",
+                    "-i",
+                    os.path.join(tmpdir, "frame_%d.jpg"),
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
+                    mp4_path,
+                ],
+            )
+        with open(mp4_path, "rb") as f:
+            return base64.b64encode(f.read()).decode("ascii")
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)

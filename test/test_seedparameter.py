@@ -1,4 +1,5 @@
 import sys; sys.path.append(".."); sys.path.append("../src/")
+import os
 import unittest
 
 import plantbox as pb
@@ -74,20 +75,25 @@ class TestShootParameter(unittest.TestCase):
 
     def test_xml(self):
         """ write the organ as xml, and rereads it """
-        self.shoot_example()
-        otp = self.srp  # rename
-        otp.name = "best_seed"
-        otp.subType = 0
-        otp.writeXML("seed.xml")
-        otp2 = pb.SeedRandomParameter(self.plant)
-        otp2.readXML("seed.xml")
-        self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
-        self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
-        self.assertEqual(otp2.subType, otp.subType, "xml: value unexpected")
-        self.assertEqual(otp2.firstB, otp.firstB, "xml: value unexpected")  # value
-        self.assertEqual(otp2.delayRC, otp.delayRC, "xml: value unexpected")  # value
-        self.assertEqual(otp2.firstBs, otp.firstBs, "xml: value unexpected")  # dev
-        self.assertEqual(otp2.delayRCs, otp.delayRCs, "xml: value unexpected")  # dev
+        fname = "seed.xml"
+        try:
+            self.shoot_example()
+            otp = self.srp  # rename
+            otp.name = "best_seed"
+            otp.subType = 0
+            otp.writeXML(fname)
+            otp2 = pb.SeedRandomParameter(self.plant)
+            otp2.readXML(fname)
+            self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
+            self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
+            self.assertEqual(otp2.subType, otp.subType, "xml: value unexpected")
+            self.assertEqual(otp2.firstB, otp.firstB, "xml: value unexpected")  # value
+            self.assertEqual(otp2.delayRC, otp.delayRC, "xml: value unexpected")  # value
+            self.assertEqual(otp2.firstBs, otp.firstBs, "xml: value unexpected")  # dev
+            self.assertEqual(otp2.delayRCs, otp.delayRCs, "xml: value unexpected")  # dev
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_realize(self):
         """ calls realize """

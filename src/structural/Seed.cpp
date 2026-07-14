@@ -270,14 +270,14 @@ std::string Seed::toString() const {
  * todo doc
  */
 std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, double delay) {
-    return std::make_shared<Root>(plant, type, delay, shared_from_this(), 0);
+    return plant->createRoot(type, delay, shared_from_this(), 0);
 }
 
 /**
  * todo doc// overwrite if you want to change the types
  */
 std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, double delay) {
-    return std::make_shared<Stem>(plant, type, delay, shared_from_this(), 0);
+    return plant->createStem(type, delay, shared_from_this(), 0);
 }
 
 } // namespace CPlantBox

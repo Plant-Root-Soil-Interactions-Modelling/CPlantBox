@@ -33,9 +33,16 @@ def plot_leaf(leaf):
 
 
 def plot_plant(plant, p_name, render=True, interactiveImage=True):
-    """
-    @param interactiveImage         make image interactive or static (should be static for google Colab)
-    plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons
+    """Plots a whole plant: roots and stems as tubes, leaf blades as polygon meshes.
+
+    Both the tube actor and the leaf polygon actor share the same color lookup table,
+    so the scalar p_name is consistently colorized across all organ types.
+
+    @param plant            a pb.Organism (Plant, RootSystem) or pb.MappedSegments
+    @param p_name           parameter name to visualize (e.g. "age", "organType", "radius")
+    @param render           if True, opens an interactive VTK render window (default = True)
+    @param interactiveImage make image interactive or static (should be static for Google Colab)
+    @return ([tube_actor, leaf_actor], color_bar)
     """
     # plant as tube plot
     if isinstance(plant, pb.MappedSegments):
@@ -97,7 +104,20 @@ def plot_plant(plant, p_name, render=True, interactiveImage=True):
 
 
 def create_leaf_(leaf, leaf_points, leaf_polys):
-    """used by plot plant, and cplantbox dash gui; adds to leaf_points, and leaf_polys"""
+    """Tessellates a single leaf object into VTK polygon geometry.
+
+    Iterates over consecutive node pairs (i, i+1). For each pair, getLeafVis() returns
+    3D edge coordinates whose count encodes the cross-section shape:
+      - 2 points: simple convex blade  -> 2 quads (left and right half)
+      - 6 points: non-convex blade     -> 4 quads per segment
+      - 0 points: petiole / branched   -> segment is skipped
+    Transition segments (2->6 or 6->2) are handled with optional extra quads.
+
+    @param leaf         a pb.Leaf organ object
+    @param leaf_points  vtkPoints container to append polygon corner points to
+    @param leaf_polys   vtkCellArray container to append quad polygon cells to
+    @return list of global node IDs (y-index) for each generated quad, used for scalar coloring
+    """
     offs = leaf_points.GetNumberOfPoints()
     globalIdx_y = []  # index of y node
     for i in range(0, leaf.getNumberOfNodes() - 1):  #
@@ -143,7 +163,17 @@ def create_leaf_(leaf, leaf_points, leaf_polys):
 
 
 def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
-    """used by create_leaf_"""
+    """Appends a single quadrilateral polygon (a, b, c, d) to the VTK geometry containers.
+
+    Points are inserted in winding order: axis node, left edge, right edge, next axis node.
+    The polygon cell references these four points by consecutive indices starting at offs.
+
+    @param a, b, c, d   four Vector3d corner points of the quad
+    @param leaf_points  vtkPoints container to append to
+    @param leaf_polys   vtkCellArray container to append the quad cell to
+    @param offs         current point offset index
+    @return updated offset (offs + 4)
+    """
     q = vtk.vtkPolygon()
     q.GetPointIds().SetNumberOfIds(4)
     for j in range(0, 4):
@@ -894,116 +924,6 @@ def plot_roots_and_soil_files(filename: str, pname_mesh: str, pname: str, path="
         ren.Start()
     else:
         return ren
-
-
-class AnimateRoots:
-    """class to make an interactive animation (TODO unfinished and doc)"""
-
-    def __init__(self, rootsystem=None, container_sdf=None):
-        self.rootsystem = rootsystem
-        self.root_name = "subType"
-        self.container_sdf = container_sdf
-        self.container_actor = None
-        # self.soil_name = "subType"
-        #
-        self.min = None
-        self.max = None
-        self.res = None
-        self.soil_data = True  # soil data
-        self.soil = None
-        self.cuts = False  # Wireframe, or cuts
-        self.plant = False  # use plot_roots or plot_plant
-        #
-        self.actors = []
-        self.iren = None
-        self.color_bar = None
-        self.bounds = None
-        self.avi_name = None
-        self.fram_c = 0
-
-    def start(self, axis="x", avi_file=None):
-        """creates plot and adjusts camera"""
-        if self.container_sdf:
-            # Create the container actor once and store it, so it does not have to be recalculated each frame
-            container_actors, _, _ = plot_container(self.container_sdf, render=False)
-            self.container_actor = container_actors[0]
-
-        self.create_root_actors()
-        self.create_soil_actors()
-        if self.container_actor:
-            self.actors.append(self.container_actor)
-
-        self.iren = render_window(self.actors, "AnimateRoots", self.color_bar, self.bounds)
-        renWin = self.iren.GetRenderWindow()
-        ren = renWin.GetRenderers().GetItemAsObject(0)
-        camera = ren.GetActiveCamera()
-        if axis == "x":
-            camera.SetPosition([100, 0, 0.5 * (self.bounds[4] + self.bounds[5])])
-            camera.SetViewUp(0, 0, 1)
-        if axis == "y":
-            camera.SetPosition([0, 100, 0.5 * (self.bounds[4] + self.bounds[5])])
-            camera.SetViewUp(0, 0, 1)
-        if axis == "z":
-            camera.SetPosition([0, 0, 100])
-            camera.SetViewUp(0, 1, 0)
-        if axis == "v":
-            camera.SetPosition([100, 0, 0.5 * (self.bounds[4] + self.bounds[5])])
-            camera.SetViewUp(0, 0, 1)
-            camera.Azimuth(30)
-            camera.Elevation(30)
-
-    def update(self):
-        """animation call back function (called every 0.1 second)"""
-        renWin = self.iren.GetRenderWindow()
-        ren = renWin.GetRenderers().GetFirstRenderer()
-        for a in self.actors:
-            ren.RemoveActor(a)
-        for a in ren.GetActors2D():
-            ren.RemoveActor2D(a)
-        ren.AddActor2D(self.color_bar)
-        self.actors = []
-        self.create_root_actors()
-        self.create_soil_actors()
-
-        if self.container_actor:
-            self.actors.append(self.container_actor)
-        for a in self.actors:
-            ren.AddActor(a)
-
-        self.iren.Render()
-        if self.avi_name:
-            write_jpg(renWin, self.avi_name + str(self.fram_c))
-            print("saved", self.avi_name + str(self.fram_c) + ".jpg")
-            self.fram_c = self.fram_c + 1
-
-    def create_root_actors(self):
-        if self.rootsystem:
-            pd = segs_to_polydata(self.rootsystem, 1.0, [self.root_name, "radius"])
-
-            if self.plant:
-                newRootActor, rootCBar = plot_plant(self.rootsystem, self.root_name, False)
-            else:
-                newRootActor, rootCBar = plot_roots(pd, self.root_name, "", False)
-            if isinstance(newRootActor, list):
-                for a in newRootActor:
-                    self.actors.append(a)
-            else:
-                self.actors.append(newRootActor)
-            self.color_bar = rootCBar
-            self.bounds = pd.GetBounds()
-
-    def create_soil_actors(self):
-        if self.soil_data:
-            if self.cuts:
-                # meshActor, meshCBar = plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", False):
-                meshActor, meshCBar, grid = plot_mesh_yz(self.soil, "pressure head", self.min, self.max, self.res)
-                self.color_bar = meshCBar
-            else:
-                grid = uniform_grid(self.min, self.max, self.res)
-                meshActor, meshCBar = plot_mesh(grid, "", "", False)
-
-            self.actors.extend(meshActor)
-            self.bounds = grid.GetBounds()
 
 
 def sdf_to_vtk_mesh(sdf, initial_resolution=100, expansion_factor=1.5, resolution=100):

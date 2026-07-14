@@ -1,10 +1,13 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+// own header
 #include "Organ.h"
 
+// project headers
 #include "Organism.h"
 #include "Plant.h"
 #include "organparameter.h"
 
+// standard library
 #include <algorithm>
 #include <iostream>
 
@@ -32,17 +35,17 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
       moved(moved), oldNumberOfNodes(oldNON) {}
 
 /**
- * The constructor is used for simulation.
- * The organ parameters are chosen from random distributions within the the OrganTypeParameter class.
- * The next organ id is retrieved from the plant,
- * and the organ starts growing after a delay (starts with age = -delay).
+ * @brief Simulation constructor.
  *
- * @param plant     the plant the new organ will be part of
- * @param parent    the parent organ, equals nullptr if there is no parent
- * @param ot        organ type
- * @param st        sub type of the organ type, e.g. different root types
- * @param delay     time delay in days when the organ will start to grow
- * @param pni       parent node index
+ * Parameters are drawn via OrganRandomParameter::realize(); the organ starts with
+ * age = -delay so it begins growing after @p delay days.
+ *
+ * @param plant   Organism that owns this organ.
+ * @param parent  Parent organ (nullptr for base organs).
+ * @param ot      Organ type.
+ * @param st      Sub-type index.
+ * @param delay   Growth delay [days]; organ age is initialised to -delay.
+ * @param pni     Local node index in the parent where this organ attaches.
  */
 Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int ot, int st, double delay, int pni)
     : parentNI(pni), plant(plant), parent(parent), id(plant->getOrganIndex()),
@@ -67,17 +70,22 @@ std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism> p) {
 }
 
 /**
- * @return the organs length from start node up to the node with index @param i.
+ * @brief Returns length from the first node up to node index @p i.
+ *
+ * Works correctly in both relative and absolute coordinate modes.
+ *
+ * @param i  Local node index (exclusive upper bound).
+ * @return   Length [cm].
  */
 double Organ::getLength(int i) const {
     double l = 0.;       // length until node i
     if (hasRelCoord()) { // is currently using relative coordinates?
         for (int j = 0; j < i; j++) {
-            l += nodes.at(j + 1).length(); // relative length equals absolute length
+            l += getNode(j + 1).length(); // relative length equals absolute length
         }
     } else {
         for (int j = 0; j < i; j++) {
-            l += nodes.at(j + 1).minus(nodes.at(j)).length(); // relative length equals absolute length
+            l += getNode(j + 1).minus(getNode(j)).length(); // relative length equals absolute length
         }
     }
     return l;
@@ -97,27 +105,31 @@ double Organ::getLength(bool realized) const {
 }
 
 /**
- * @return The organ type, which is a coarse classification of the organs,
- * for a string representation see see Organism::organTypeNames
+ * @brief Returns the organ type.
  *
- * Currently there are: ot_organ (for unspecified organs) = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, and ot_leaf = 4.
- * There can be different classes with the same organ type.
+ * Coarse classification: ot_organ=0, ot_seed=1, ot_root=2, ot_stem=3, ot_leaf=4.
+ * Override in each derived class.
+ * For string names see Organism::organTypeNames.
  */
 int Organ::organType() const { return Organism::ot_organ; }
 
 /**
- * @return The organ type parameter is retrieved from the plant organism.
- * The Organism class manages all organs type parameters.
+ * @brief Returns the stochastic parameter set for this organ's sub-type.
+ *
+ * Delegates to the owning organism, which manages all OrganRandomParameter sets.
  */
 std::shared_ptr<OrganRandomParameter> Organ::getOrganRandomParameter() const {
     return plant.lock()->getOrganRandomParameter(this->organType(), param_->subType);
 }
 
 /**
- * Simulates the development of the organ in a time span of @param dt days.
+ * @brief Advances organ development by @p dt days.
  *
- * @param dt        time step [day]
- * @param verbose   turns console output on or off
+ * Increments age and recursively simulates all children.
+ * Override in derived classes to implement organ-specific growth (segment creation, lateral initiation).
+ *
+ * @param dt       Time step [days].
+ * @param verbose  If true, print diagnostic output.
  */
 void Organ::simulate(double dt, bool verbose) {
     // store information of this time step
@@ -134,7 +146,8 @@ void Organ::simulate(double dt, bool verbose) {
 }
 
 /**
- * Donwcast to Plant class, which is the parent organism of the organ.
+ * @brief Downcast the owning organism to Plant.
+ * @return Shared pointer to the Plant, or nullptr if the organism is not a Plant.
  */
 std::shared_ptr<Plant> Organ::getPlant() const { return std::dynamic_pointer_cast<Plant>(plant.lock()); }
 
@@ -148,15 +161,16 @@ void Organ::addChild(std::shared_ptr<Organ> c) {
 }
 
 /**
- * Adds a node to the organ. Overriden by @see Stem::addNode
+ * @brief Adds a node with an explicit global id.
  *
- * For simplicity nodes can not be deleted, organs can only become deactivated or die
+ * Nodes cannot be deleted; organs become deactivated or die instead.
+ * Override in Stem for phytomere (internodal) handling.
  *
- * @param n        new node
- * @param id       global node index
- * @param t        exact creation time of the node
- * @param index	   position were new node is to be added
- * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
+ * @param n      Node coordinate.
+ * @param id     Global node index.
+ * @param t      Creation time [days].
+ * @param index  Position at which to insert the node.
+ * @param shift  True if the new node is inserted between existing nodes (internodal growth).
  */
 void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
     nodes.push_back(n);    // node
@@ -165,9 +179,12 @@ void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
 }
 
 /**
- * change idx of node linking to parent organ (in case of internodal growth)
- * @see Organ::addNode
- * @param idx      new idx
+ * @brief Updates the parent attachment node index.
+ *
+ * Used during internodal (stem) growth.  Also updates the first nodeId to match
+ * the new attachment node.
+ *
+ * @param idx  New local parent node index.
  */
 void Organ::moveOrigin(int idx) {
     this->parentNI = idx;
@@ -175,28 +192,29 @@ void Organ::moveOrigin(int idx) {
 }
 
 /**
- * Adds the node with the next global index to the root
+ * @brief Adds a node using the next global index from the organism.
  *
- * For simplicity nodes can not be deleted, organs can only become deactivated or die
+ * Convenience wrapper around addNode(n, id, t, index, shift) that fetches
+ * the next available global node index from the owning organism.
  *
- * @param n        the new node
- * @param t        exact creation time of the node
- * @param index	   position were new node is to be added
- * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
+ * @param n      Node coordinate.
+ * @param t      Creation time [days].
+ * @param index  Insertion position.
+ * @param shift  True if inserting between existing nodes.
  */
 void Organ::addNode(Vector3d n, double t, size_t index, bool shift) { addNode(n, plant.lock()->getNodeIndex(), t, index, shift); }
 
 /**
- * By default the organ is represented by a polyline,
- * i.e. the segments of the nodes {n1, n2, n3, n4}, are { [i1,i2], [i2,i3], [i3,i4] }, where i1-i4 are node indices.
+ * @brief Returns all polyline segments as pairs of global node indices.
  *
- * @return A vector of line segments, where each line segment is described as two global node indices.
- * If there are less than two nodes an empty vector is returned.
+ * The polyline {n0, n1, n2, n3} produces segments {[i0,i1], [i1,i2], [i2,i3]}.
+ * Returns an empty vector if fewer than two nodes exist.
  */
 std::vector<Vector2i> Organ::getSegments() const {
-    if (this->nodes.size() > 1) {
-        std::vector<Vector2i> segs = std::vector<Vector2i>(nodes.size() - 1);
-        for (size_t i = 0; i < nodes.size() - 1; i++) {
+    int n = this->getNumberOfNodes();
+    if (n > 1) {
+        std::vector<Vector2i> segs = std::vector<Vector2i>(n - 1);
+        for (size_t i = 0; i < n - 1; i++) {
             Vector2i s(getNodeId(i), getNodeId(i + 1));
             segs[i] = s;
         }
@@ -219,13 +237,14 @@ double Organ::dx() const { return getOrganRandomParameter()->dx; }
 double Organ::dxMin() const { return getOrganRandomParameter()->dxMin; }
 
 /**
- * Returns the organs as sequential list, copies only organs with more than one node.
+ * @brief Returns this organ and all descendants as a flat list.
  *
- * @param ot        the expected organ type, where -1 denotes all organ types (default).
- * @param all       get also the organs with only one node? default: false. Sometimes true for carbon-limited growth
+ * Only organs with more than one node are included unless @p all is true.
+ * If @p all is true, organs with age > 0 (but possibly only one node, e.g. carbon-limited growth)
+ * are also included, except for seeds.
  *
- * @return A sequential list of organs. If there is less than one node,
- * or another organ type is expected, an empty vector is returned.
+ * @param ot   Filter by organ type; -1 returns all types.
+ * @param all  If true, also include organs with a single node (age > 0).
  */
 std::vector<std::shared_ptr<Organ>> Organ::getOrgans(int ot, bool all) {
     auto v = std::vector<std::shared_ptr<Organ>>();
@@ -234,21 +253,20 @@ std::vector<std::shared_ptr<Organ>> Organ::getOrgans(int ot, bool all) {
 }
 
 /**
- * Returns the organs as sequential list, if all == false,copies only organs with more than one node.
- * if all == true return all born organs (age > 0 ) except for the seed and bulb (i.e., organs which do not grow)
- * @param ot        the expected organ type, where -1 denotes all organ types (default).
- * @param all       get also the organs with only one node? default: false. Sometimes true for carbon-limited growth
- * @param v         vector of organs where the subtree is added,
- *                  only expected organ types with more than one nodes are added.
+ * @brief Appends this organ and all descendants to @p v (in-place variant).
+ *
+ * @param ot   Filter by organ type; -1 returns all types.
+ * @param v    Output vector; qualifying organs are appended.
+ * @param all  If true, also include organs with a single node (age > 0).
  */
 void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>> &v, bool all) {
     // deprecated: do not need bulb anymore, stems of subtype 2 are normal stems
     // bool notBulb = !((this->organType() == Organism::ot_stem)&&(this->getParameter("subType") == 2));//do not count leaf bulb
     // might have age <0 and node.size()> 1 when adding organ manuelly @see test_organ.py
-    bool forCarbon_limitedGrowth = (all && (this->getAge() > 0)); // when ask for "all" organs which have age > 0 even if nodes.size() == 1
+    bool forCarbon_limitedGrowth = (all && (this->getAge() > 0)); // when ask for "all" organs which have age > 0 even if getNumberOfNodes() == 1
     bool notSeed = (this->organType() != Organism::ot_seed);
 
-    if ((this->nodes.size() > 1 || forCarbon_limitedGrowth) && notSeed) { //&& notBulb
+    if ((this->getNumberOfNodes() > 1 || forCarbon_limitedGrowth) && notSeed) { //&& notBulb
         if ((ot < 0) || (ot == this->organType())) {
             v.push_back(shared_from_this());
         }
@@ -260,9 +278,8 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>> &v, bool all) 
 }
 
 /**
- * @return The number of emerged laterals (i.e. number of children with age>0)
- * @see Organ::getNumberOfChildren
- * needed for the test files
+ * @brief Returns the number of children whose age > 0 (i.e. emerged laterals).
+ * @see getNumberOfChildren()
  */
 int Organ::getNumberOfLaterals() const {
     int nol = 0;
@@ -275,14 +292,15 @@ int Organ::getNumberOfLaterals() const {
 }
 
 /**
- * Returns a single scalar parameter called @param name of the organ.
- * This method is for post processing, since it is flexible but slow.
- * Overwrite to add more parameters for specific organs.
+ * @brief Returns a named scalar parameter of the organ.
  *
- * For OrganRandomParameters add '_mean', or '_dev',
- * to avoid naming conflicts with the organ specific parameters.
+ * Recognises organ-specific fields (subType, a, radius, diameter, iHeadingX/Y/Z, parentNI,
+ * parent-node), member variables (organType, id, alive, active, age, length, lengthTh,
+ * numberOfNodes, numberOfSegments, hasMoved, oldNumberOfNodes, numberOfLaterals, creationTime,
+ * order, one), and delegates to OrganRandomParameter::getParameter() for anything else.
  *
- * @return The parameter value, if unknown NaN
+ * Intended for post-processing; flexible but slower than direct member access.
+ * Override in derived classes to expose additional parameters.
  */
 double Organ::getParameter(std::string name) const {
     // specific parameters
@@ -388,12 +406,14 @@ double Organ::getParameter(std::string name) const {
 }
 
 /**
- * Writes the organs RSML root tag, if it has more than one node.
+ * @brief Writes an RSML @c <root> element for this organ.
  *
- * Called by Organism::getRSMLScene, not exposed to Python
+ * Skips organs with fewer than two nodes.  Writes geometry (polyline), properties,
+ * lateral children, and functions (node_creation_time, node_index).
+ * Called by Organism::getRSMLScene(); not exposed to Python.
  *
- * @param doc          the xml document (supplies factory functions)
- * @param parent       the parent xml element, where the organ's tag is added
+ * @param doc     XML document supplying element factory functions.
+ * @param parent  Parent XML element to which the new @c <root> tag is appended.
  */
 void Organ::writeRSML(tinyxml2::XMLDocument &doc, tinyxml2::XMLElement *parent) const {
     if (this->nodes.size() > 1) {
@@ -467,8 +487,9 @@ void Organ::writeRSML(tinyxml2::XMLDocument &doc, tinyxml2::XMLElement *parent) 
 }
 
 /**
- * @return Quick info about the object for debugging,
- * additionally, use param()->toString() and getOrganRandomParameter()->toString() to obtain all information.
+ * @brief Returns a compact human-readable summary for debugging.
+ *
+ * For full details call param()->toString() and getOrganRandomParameter()->toString().
  */
 std::string Organ::toString() const {
     std::stringstream str;
@@ -479,7 +500,10 @@ std::string Organ::toString() const {
 }
 
 /**
- * convert the nodes' positions from relative to absolute coordinates
+ * @brief Converts node coordinates from relative to absolute (recursive over children).
+ *
+ * Recomputes absolute positions using the parent heading at each node.
+ * Sets moved=true so MappedSegments can update.
  */
 void Organ::rel2abs() {
     if (hasRelCoord()) {
@@ -513,7 +537,10 @@ void Organ::rel2abs() {
 }
 
 /**
- *  convert the nodes' positions from absolute to relative coordinates
+ * @brief Converts node coordinates from absolute to relative (recursive over children).
+ *
+ * Only affects shoot organs (stems and leaves) or root organs carried by a shoot parent.
+ * Sets moved=true so MappedSegments can update.
  */
 void Organ::abs2rel() {
     for (size_t i = 0; i < children.size(); i++) {
@@ -532,9 +559,7 @@ void Organ::abs2rel() {
         }
         hasShootParent = ot_parent > 2;
     }
-
-    if ((isShoot || hasShootParent) && (!hasRelCoord())) // convert to relative coordinate if is shoot organ or carried by shoot organs
-    {
+    if ((isShoot || hasShootParent) && (!hasRelCoord())) { // convert to relative coordinate if is shoot organ or carried by shoot organs
         for (int j = nodes.size(); j > 1; j--) {
             auto nodes_j_1 = nodes.at(j - 1).minus(nodes.at(j - 2));
             Vector3d h = heading(j - 2);
@@ -548,7 +573,10 @@ void Organ::abs2rel() {
 }
 
 /**
- * @return Initial absolute heading of the organ
+ * @brief Returns the initial absolute heading when the organ was created.
+ *
+ * Reconstructed from partialIHeading and the parent's heading at parentNI.
+ * Handles base organs (no parent), shoot-borne roots, and root-borne shoots as special cases.
  */
 Vector3d Organ::getiHeading0() const {
     if (!getParent()) { // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created manually have no parent
@@ -565,7 +593,7 @@ Vector3d Organ::getiHeading0() const {
     bool isBaseOrgan = (getParent()->organType() == Organism::ot_seed);
     bool isShootBornRoot = ((getParent()->organType() == Organism::ot_stem) && (organType() == Organism::ot_root));
     bool isRootBornShoot = ((getParent()->organType() == Organism::ot_root) && ((organType() == Organism::ot_stem) || (organType() == Organism::ot_leaf)));
-    if (isBaseOrgan || isShootBornRoot || isRootBornShoot) { // from seed?
+    if (isBaseOrgan || isShootBornRoot || isRootBornShoot) {
         if (organType() == Organism::ot_root) {
             parentHeading = Matrix3d(Vector3d(0, 0, -1), Vector3d(0, -1, 0), Vector3d(-1, 0, 0));
         } else {
@@ -579,11 +607,15 @@ Vector3d Organ::getiHeading0() const {
     Vector3d new_heading = Matrix3d::ons(heading).times(this->partialIHeading);
     return Matrix3d::ons(new_heading).column(0);
 }
+
 /**
- * @return Current absolute heading of the organ at node n, based on initial heading, or direction of the segment going from node n-1 to node n
+ * @brief Returns the absolute heading at node @p n.
+ *
+ * For n > 0 and at least two nodes: direction of segment [n-1, n], normalised.
+ * For n == 0 or single-node organs: falls back to getiHeading0().
+ * Negative @p n is treated as the last node.
  */
 Vector3d Organ::heading(int n) const {
-
     if (n < 0) {
         n = nodes.size() - 1;
     }
@@ -598,11 +630,13 @@ Vector3d Organ::heading(int n) const {
 }
 
 /**
- * Needed for carbon-limited growth: to know sucrose necessary for length increase
- * Overwritten by @Leaf::orgVolume
- * @param length   length for which volume is calculated. if length = -1, use current organ length
- * @param realized for length = -1: use current theoratical or realized length
- * @return Volume for specific or current length. Overriden for @Leaf::orgVolume
+ * @brief Returns organ volume [cm³].
+ *
+ * Uses a cylinder approximation: V = π·r²·L.
+ * Override in Leaf (and other non-cylindrical organs), e.g. for carbon limited growth
+ *
+ * @param length_   Length to use; -1 means use current organ length.
+ * @param realized  When length_=-1: true uses realised length, false uses theoretical length.
  */
 double Organ::orgVolume(double length_, bool realized) const {
     if (length_ == -1) {
@@ -612,11 +646,16 @@ double Organ::orgVolume(double length_, bool realized) const {
 };
 
 /**
- * Returns the increment of the next segments
+ * @brief Returns the growth increment vector for the next segment.
  *
- *  @param p       coordinates of previous node
- *  @param sdx     length of next segment [cm]
- *  @return        the vector representing the increment
+ * Queries the tropism function (f_tf) to obtain heading angles alpha/beta,
+ * then rotates the heading frame accordingly.
+ * Override in Leaf.
+ *
+ * @param p    Coordinates of the previous node.
+ * @param sdx  Length of the next segment [cm].
+ * @param n    Node index used to determine the current heading (-1 = last node).
+ * @return     Increment vector of length @p sdx in the growth direction.
  */
 Vector3d Organ::getIncrement(const Vector3d &p, double sdx, int n) {
     Vector3d h = heading(n);
@@ -629,12 +668,13 @@ Vector3d Organ::getIncrement(const Vector3d &p, double sdx, int n) {
 }
 
 /**
- * Analytical creation (=emergence) time of a point along the already grown root
+ * @brief Returns the analytical creation time of a node at @p length along the organ.
  *
- * @param length   length along the organ, where the point is located [cm]
- * @param dt 	   current time step [day]
- * @return         the analytic time when this point was reached by the growing root [day],
- * 				   if growth is impeded, the value is not exact, but approximated dependent on the temporal resolution.
+ * If growth was impeded the result is an approximation bounded to [age-dt, age].
+ *
+ * @param length  Distance along the organ from its base [cm].
+ * @param dt      Current simulation time step [days].
+ * @return        Absolute creation time [days].
  */
 double Organ::calcCreationTime(double length, double dt) {
     assert(length >= 0 && "Organ::getCreationTime() negative length");
@@ -646,14 +686,16 @@ double Organ::calcCreationTime(double length, double dt) {
 }
 
 /**
- *  Creates nodes and node emergence times for a length l
+ * @brief Creates polyline segments totalling length @p l.
  *
- *  Checks that each new segments length is <= dx but >= parent->minDx
+ * On the first call (or during internodal growth) shifts the last existing node
+ * if it is shorter than dx(), then appends new nodes at intervals of dx().
+ * Residual growth smaller than dxMin() is stored in epsilonDx.
  *
- *  @param l        total length of the segments that are created [cm]
- *  @param dt       time step [day]
- *  @param phytoIdx index of phytomere node to elongate (optional) [1]
- *  @param verbose  turns console output on or off
+ * @param l         Total length of new segments to create [cm].
+ * @param dt        Current time step [days] (used for creation-time calculation).
+ * @param verbose   If true, print diagnostic output.
+ * @param phytoIdx  Node index for internodal elongation; -1 for tip growth.
  */
 void Organ::createSegments(double l, double dt, bool verbose, int phytoIdx) {
     if (l == 0) {
@@ -761,9 +803,14 @@ void Organ::createSegments(double l, double dt, bool verbose, int phytoIdx) {
 }
 
 /**
- * Creates a new lateral
- *  @param dt       time step [day]
- *  @param verbose  turns console output on or off
+ * @brief Creates a new lateral organ at the current organ tip.
+ *
+ * Iterates over all successor rules; for each rule that applies at the current
+ * linking node, draws a lateral type stochastically and constructs the
+ * corresponding Root, Stem, or Leaf child.
+ *
+ * @param dt       Time step received by the parent organ [days].
+ * @param verbose  If true, print diagnostic output.
  */
 void Organ::createLateral(double dt, bool verbose) {
     auto rp = getOrganRandomParameter(); // rename
@@ -798,21 +845,21 @@ void Organ::createLateral(double dt, bool verbose) {
 
                     switch (ot) {
                     case Organism::ot_root: {
-                        auto lateral = std::make_shared<Root>(plant.lock(), st, delay, shared_from_this(), nodes.size() - 1);
+                        auto lateral = plant.lock()->createRoot(st, delay, shared_from_this(), nodes.size() - 1);
                         lateral->has_rel_coord = this->has_rel_coord;
                         children.push_back(lateral);
                         lateral->simulate(growth_dt, verbose);
                         break;
                     }
                     case Organism::ot_stem: {
-                        auto lateral = std::make_shared<Stem>(plant.lock(), st, delay, shared_from_this(), nodes.size() - 1);
+                        auto lateral = plant.lock()->createStem(st, delay, shared_from_this(), nodes.size() - 1);
                         lateral->has_rel_coord = this->has_rel_coord;
                         children.push_back(lateral);
                         lateral->simulate(growth_dt, verbose);
                         break;
                     }
                     case Organism::ot_leaf: {
-                        auto lateral = std::make_shared<Leaf>(plant.lock(), st, delay, shared_from_this(), nodes.size() - 1);
+                        auto lateral = plant.lock()->createLeaf(st, delay, shared_from_this(), nodes.size() - 1);
                         lateral->has_rel_coord = this->has_rel_coord;
                         children.push_back(lateral);
                         lateral->simulate(growth_dt, verbose); // age-ageLN,verbose);
@@ -828,9 +875,12 @@ void Organ::createLateral(double dt, bool verbose) {
 }
 
 /**
- * See if should apply successor rule at a specific linking node, @see Organ::createLateral
- *  @param i       rule id
- *  @return whether to apply the rule
+ * @brief Returns true if successor rule @p i applies at the current linking node.
+ *
+ * Checks successorWhere[i]: positive values list included nodes, negative values
+ * list excluded nodes.  An empty successorWhere entry means the rule applies everywhere.
+ *
+ * @param i  Successor rule index.
  */
 bool Organ::getApplyHere(int i) const {
     bool applyHere;
@@ -851,9 +901,13 @@ bool Organ::getApplyHere(int i) const {
 }
 
 /**
- *  @see Organ::createLateral
- *  @param dt       time step recieved by parent organ [day]
- *  @return growth period to send to lateral after creation
+ * @brief Returns the initial growth period to pass to a newly created lateral.
+ *
+ * Computed as the time elapsed between the lateral node's creation and the
+ * current simulation time, so the lateral immediately receives its "missed" growth.
+ *
+ * @param dt  Time step received by the parent organ [days].
+ * @return    Growth period to give to the new lateral [days].
  */
 double Organ::getLatInitialGrowth(double dt) {
     double ageLN = this->calcAge(getLength(true)); // MINIMUM age of root when lateral node is created
@@ -862,11 +916,17 @@ double Organ::getLatInitialGrowth(double dt) {
 }
 
 /**
- *  @see Organ::createLateral
- *  @param ot_lat       organType of lateral to create
- *  @param st_lat       subType of lateral to create
- *  @param dt       time step recieved by parent organ [day]
- *  @return emergence delay to send to lateral after creation
+ * @brief Returns the emergence delay for a new lateral organ.
+ *
+ * Behaviour depends on the delay-definition mode set in the owning organism:
+ * - dd_distance: lateral waits until the parent's apical zone has developed.
+ * - dd_time_lat: fixed delay drawn from the parent's ldelay/ldelays parameters.
+ * - dd_time_self: fixed delay drawn from the lateral's own ldelay/ldelays parameters.
+ *
+ * @param ot_lat  Organ type of the lateral to create.
+ * @param st_lat  Sub-type of the lateral to create.
+ * @param dt      Time step received by the parent organ [days].
+ * @return        Emergence delay [days].
  */
 double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // override for stems
 {

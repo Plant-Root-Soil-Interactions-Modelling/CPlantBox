@@ -1,7 +1,27 @@
-CPlantBox source code 
+CPlantBox source code
 
-structural/ 		CPlantBox code describing plant geometry (C++ and Python)
-functional/ 		Functional models (Xylem water movement, StomataModel, Carbon movement, etc.) (C++ and Python)
-rsml/ 				RSML reader and writer (Python)
-visualisation/		Visualization related scripts (Python)
+structural/         Plant geometry and growth models (C++ and Python)
+                    Includes organs (Root, Stem, Leaf, Seed, GrassLeaf), organism-level
+                    classes (Plant, RootSystem, Organism, MappedOrganism), organ parameters,
+                    tropism, soil, signed distance functions (sdf), and segment analysis.
+
+functional/         Functional models (C++ and Python)
+                    Includes plant hydraulics (PlantHydraulicModel, PlantHydraulicParameters),
+                    photosynthesis, phloem flux, perirhizal zone models, exudation,
+                    root-soil solute interaction, plant/root conductivities, and
+                    van Genuchten soil hydraulic functions.
+
+rsml/               RSML reader and writer (Python)
+
+visualisation/      Visualization related scripts (Python)
+
+tools/              Utility scripts (Python)
+                    Includes parameter helper functions.
+
+external/           Third-party libraries and dependencies
+                    Includes pybind11, Eigen, tinyxml2, SuiteSparse, SUNDIALS,
+                    Gauss-Legendre quadrature, aabbcc, and PiafMunch.
+
+PyPlantBox.cpp      pybind11 bindings exposing the C++ library to Python
+__init__.py         Python package entry point
 

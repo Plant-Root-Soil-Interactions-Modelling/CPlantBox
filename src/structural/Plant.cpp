@@ -1,5 +1,7 @@
 #include "Plant.h"
 
+#include "GrassLeaf.h"
+#include "grassleafparameter.h"
 #include "RootDelay.h"
 
 #include <iostream>
@@ -44,7 +46,7 @@ std::shared_ptr<Organism> Plant::copy() {
 }
 
 /**
- * Sets up the XML Reader for the Plant class
+ * Sets up the XML Reader for the Plant class, subType = 0 stores the protoype to read the parameters with readXML()
  */
 void Plant::initializeReader() {
     auto rrp = std::make_shared<RootRandomParameter>(shared_from_this());
@@ -108,9 +110,13 @@ void Plant::initialize(bool verbose, std::string mode) {
 
 void Plant::initializeLB(bool verbose) {
     reset(); // just in case
-    auto seed = std::make_shared<Seed>(shared_from_this());
+    auto seed = createSeed();
     this->addOrgan(seed);
-    seed->initialize(verbose);
+    auto typedSeed = std::dynamic_pointer_cast<Seed>(seed);
+    if (!typedSeed) {
+        throw std::runtime_error("Plant::initializeLB: createSeed() must return a Seed-compatible organ for plant initialization");
+    }
+    typedSeed->initialize(verbose);
     initialize_(verbose);
 }
 
@@ -159,7 +165,8 @@ std::shared_ptr<SeedRandomParameter> Plant::getSeedRandomParameter() {
 void Plant::initCallbacks() {
     // Create tropisms and growth functions per random root parameter
     for (auto &p_otp : organParam[Organism::ot_root]) {
-        auto rp = std::static_pointer_cast<RootRandomParameter>(p_otp.second);
+        auto rp = std::dynamic_pointer_cast<RootRandomParameter>(p_otp.second);
+        if (!rp) continue; // skip non-RootRandomParameter entries 
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
         tropism->setGeometry(geometry);
         rp->f_tf = tropism; // set new one
@@ -169,7 +176,8 @@ void Plant::initCallbacks() {
     }
     // Create tropisms and growth functions per random leaf parameter
     for (auto &p_otp : organParam[Organism::ot_leaf]) {
-        auto rp = std::static_pointer_cast<LeafRandomParameter>(p_otp.second);
+        auto rp = std::dynamic_pointer_cast<LeafRandomParameter>(p_otp.second);
+        if (!rp) continue; // skip non-LeafRandomParameter entries (e.g. GrassLeafRandomParameter)
         double tAge = rp->tropismAge + rp->tropismAges * randn();
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, tAge);
         tropism->setGeometry(geometry);
@@ -180,7 +188,8 @@ void Plant::initCallbacks() {
     }
     // Create tropisms and growth functions per random stem parameter
     for (auto &p_otp : organParam[Organism::ot_stem]) {
-        auto rp = std::static_pointer_cast<StemRandomParameter>(p_otp.second);
+        auto rp = std::dynamic_pointer_cast<StemRandomParameter>(p_otp.second);
+        if (!rp) continue; // skip non-StemRandomParameter entries 
         double tAge = rp->tropismAge + rp->tropismAges * randn();
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, tAge);
         tropism->setGeometry(geometry);

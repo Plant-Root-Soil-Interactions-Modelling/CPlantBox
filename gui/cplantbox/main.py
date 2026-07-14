@@ -153,9 +153,7 @@ app = dash.Dash(
         {"property": "og:title", "content": "CPlantBox WebApp"},
         {
             "property": "og:description",
-            "content": (
-                "Interactive plant architecture simulation — visualize and experiment with " "plant parameters for soil-plant-atmosphere interaction models."
-            ),
+            "content": ("Interactive plant architecture simulation — visualize and experiment with " "plant parameters for soil-plant-atmosphere interaction models."),
         },
         {"property": "og:type", "content": "website"},
     ],
@@ -215,9 +213,7 @@ def small_button(label, id_, tool_tip="", url="cloud-download.svg"):
 #
 app.layout = dbc.Container(
     [
-        dcc.Store(
-            id="seed-store", data={"seed": SEED_SLIDER_INITIALS, "basal-checkbox": False, "shoot-checkbox": False, "tillers-checkbox": False}
-        ),  # seed slider values
+        dcc.Store(id="seed-store", data={"seed": SEED_SLIDER_INITIALS, "basal-checkbox": False, "shoot-checkbox": False, "tillers-checkbox": False}),  # seed slider values
         dcc.Store(id="root-store", data={f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)}),  # root slider values
         dcc.Store(id="stem-store", data={f"tab-{i}": STEM_SLIDER_INITIALS for i in range(1, 5)}),  # stem slider values
         dcc.Store(id="leaf-store", data={"leaf": LEAF_SLIDER_INITIALS}),  # leaf slider values
@@ -228,6 +224,7 @@ app.layout = dbc.Container(
         dcc.Download(id="download-xml"),
         dcc.Download(id="download-vtk"),
         dcc.Download(id="download-rsml"),
+        dcc.Download(id="download-mp4"),
         dcc.Download(id="download-profiles-xls"),
         dcc.Download(id="download-dynamics-xls"),
         html.Div(
@@ -254,16 +251,12 @@ app.layout = dbc.Container(
                                     html.Div(className="smallSpacer"),
                                     html.Div(
                                         [
-                                            html.Div(
-                                                children=small_button("xml", "xml-download-button", "Download the XML parameter file")
-                                            ),  # ohterwise the layout is a pixel wrong
+                                            html.Div(children=small_button("xml", "xml-download-button", "Download the XML parameter file")),  # ohterwise the layout is a pixel wrong
                                             dcc.Upload(
                                                 id="xml-upload-button",
                                                 accept=".xml",
                                                 multiple=False,
-                                                children=small_button(
-                                                    "xml", "xml-upload-button-hidden", "Upload your XML parameter file", url="cloud-upload.svg"
-                                                ),
+                                                children=small_button("xml", "xml-upload-button-hidden", "Upload your XML parameter file", url="cloud-upload.svg"),
                                             ),
                                         ],
                                         style={"display": "flex", "alignItems": "center"},  # vertical alignment
@@ -289,6 +282,7 @@ app.layout = dbc.Container(
                             dcc.Loading(id="loading-spinner", type="circle", children=html.Div(id="loading-spinner-output")),
                             dcc.Loading(id="loading-spinner2", type="circle", children=html.Div(id="loading-spinner-output2")),
                             dcc.Loading(id="loading-spinner3", type="circle", children=html.Div(id="loading-spinner-output3")),
+                            dcc.Loading(id="loading-spinner4", type="circle", children=html.Div(id="loading-spinner-output4")),
                         ],
                         width=2,
                         style={"minWidth": "160px"},
@@ -405,9 +399,7 @@ def plant_dropdown(plant_value, seed_data, root_data, stem_data, leaf_data, type
     State("settings-store", "data"),
     State("xml-store", "data"),
 )
-def handle_simulation(
-    create_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data
-):
+def handle_simulation(create_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, result_value, settings_data, xml_data):
     triggered = ctx.triggered_id
     print("**[handle_simulation()", triggered, create_clicks, time_slider)
 
@@ -423,9 +415,7 @@ def handle_simulation(
         settings_data["reset"] = False
 
     # ---- Run simulation (common part) ----
-    vtk_data, result_data = simulate_plant.simulate_plant(
-        plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"], xml_data
-    )
+    vtk_data, result_data = simulate_plant.simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"], xml_data)
     run_id = cache_simulation_run(vtk_data, result_data)
 
     content = render_result_content(result_value, run_id, typename_data, settings_data)
@@ -947,7 +937,8 @@ def update_leaf_store(slider_values, store_data):
 def create_geometry_buttons():
     vtk_btn = small_button("vtp", "vkt-download-button", "Download plant architecture as Paraview VTP file")
     rsml_btn = small_button("rsml", "rsml-download-button", "Download plant architecture root system markup language file (RSML)")
-    return html.Div([vtk_btn, rsml_btn])
+    mp4_btn = small_button("mp4", "mp4-download-button", "Download 4-second MP4 animation of the simulation")
+    return html.Div([vtk_btn, rsml_btn, mp4_btn])
 
 
 def attach_buttons(graph, buttons):
@@ -1072,6 +1063,33 @@ def download_rsml(n_clicks, time_slider, plant_value, seed_data, root_data, stem
     filename = "cplantbox_" + param_names[int(plant_value)][0] + ".rsml"
     vtp_string = plant.write(filename, False)
     return dict(content=vtp_string, filename=filename, type="application/rsml"), html.H6("")
+
+
+@app.callback(
+    Output("download-mp4", "data"),
+    Output("loading-spinner-output4", "children"),
+    Input("mp4-download-button", "n_clicks"),
+    State("time-slider", "value"),
+    State("plant-dropdown", "value"),
+    State("seed-store", "data"),
+    State("root-store", "data"),
+    State("stem-store", "data"),
+    State("leaf-store", "data"),
+    State("settings-store", "data"),
+    State("xml-store", "data"),
+    State("result-tabs", "value"),
+    prevent_initial_call=True,
+)
+def download_mp4(n_clicks, time_slider, plant_value, seed_data, root_data, stem_data, leaf_data, settings_data, xml_data, result_tab):
+    if n_clicks is None:
+        return dash.no_update, dash.no_update
+    try:
+        base64_mp4 = simulate_plant.generate_mp4(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"], xml_data, result_tab)
+    except Exception as exc:
+        print(f"generate_mp4 failed: {exc}")
+        return dash.no_update, html.H6(f"Animation failed: {exc}", style={"color": "red"})
+    filename = "cplantbox_" + param_names[int(plant_value)][0] + "_animation.mp4"
+    return dict(content=base64_mp4, filename=filename, base64=True, type="video/mp4"), html.H6("")
 
 
 @app.callback(

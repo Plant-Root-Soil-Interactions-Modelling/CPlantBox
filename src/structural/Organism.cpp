@@ -4,6 +4,9 @@
 #include "Organ.h"
 #include "Seed.h"
 #include "organparameter.h"
+#include "Root.h"
+#include "Stem.h"
+#include "Leaf.h"
 
 #include <chrono>
 #include <ctime>
@@ -913,5 +916,49 @@ void Organism::setSeed(unsigned int seed) { this->gen = std::mt19937(seed); }
  * @brief Returns the seed organ.
  */
 std::shared_ptr<Seed> Organism::getSeed() { return std::static_pointer_cast<Seed>(baseOrgans.at(0)); }
+
+/**
+ * @brief Creates a new Seed organ.
+ * @return shared pointer to the newly created Seed
+ */
+std::shared_ptr<Organ> Organism::createSeed() {
+    return std::make_shared<Seed>(shared_from_this()); // default base implementation
+}
+
+/**
+ * @brief Creates a new Root organ.
+ * @param subType sub-type index used to select root random parameters
+ * @param delay emergence delay [days]
+ * @param parent parent organ that bears this root
+ * @param pni parent node index where this root emerges
+ * @return shared pointer to the newly created Root
+ */
+std::shared_ptr<Organ> Organism::createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
+    return std::make_shared<Root>(shared_from_this(), subType, delay, parent, pni);
+}
+
+/**
+ * @brief Creates a new Stem organ.
+ * @param subType sub-type index used to select stem random parameters
+ * @param delay emergence delay [days]
+ * @param parent parent organ that bears this stem
+ * @param pni parent node index where this stem emerges
+ * @return shared pointer to the newly created Stem
+ */
+std::shared_ptr<Organ> Organism::createStem(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
+    return std::make_shared<Stem>(shared_from_this(), subType, delay, parent, pni);
+}
+
+/**
+ * @brief Creates a new Leaf organ.
+ * @param subType sub-type index used to select leaf random parameters
+ * @param delay emergence delay [days]
+ * @param parent parent organ that bears this leaf
+ * @param pni parent node index where this leaf emerges
+ * @return shared pointer to the newly created Leaf
+ */
+std::shared_ptr<Organ> Organism::createLeaf(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
+    return std::make_shared<Leaf>(shared_from_this(), subType, delay, parent, pni);
+}
 
 } // namespace CPlantBox

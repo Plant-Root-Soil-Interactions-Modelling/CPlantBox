@@ -8,6 +8,10 @@ CPlantBox is a functional-structural plant model that is built in a modular way 
 
 # Installation
 
+## Python wheels
+
+CPlantBox Python wheel support is being validated for Python 3.11+ on Linux and macOS. See [doxygen/wheels.md](doxygen/wheels.md) for the current supported-platform matrix, local wheel build commands, and CI artifact usage.
+
 ## Linux - with Python script
 This installation method requires Ubuntu >= 20.04 and Python (>= 3.7, <3.14). For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox.py", and run it:
 ```bash
@@ -74,7 +78,7 @@ python3 -m venv cpb
 source cpb/bin/activate
 pip install -r requirements.txt
 ```
-Finally, initialize cmake and build and install CPlantBox:
+Finally, initialize CMake and build and install CPlantBox:
 ```
 cmake .
 make install
@@ -116,7 +120,7 @@ Please refer to the [wiki](https://github.com/Plant-Root-Soil-Interactions-Model
 
 # Folder sructure
 
-`/docs`		Code documentation\
+`/doxygen`		Code documentation\
 `/modelparameter`		Plant parameter files\
 `/src`			CPlantBox C++ codes\
 `/test`   Python tests for all CPlantBox classes\
@@ -129,12 +133,12 @@ Install doxygen and graphviz (for call graphs):
 ```bash
 sudo apt install doxygen graphviz
 ```
-Create the documentation by running doxygen from the `docs/` folder:
+Create the documentation by running doxygen from the `doxygen/` folder:
 ```bash
-cd docs/
+cd doxygen/
 doxygen Doxyfile
 ```
-The HTML documentation will be written to `docs/html/`. Open `docs/html/index.html` in a browser to browse the documentation. Collaboration diagrams giving an overview of the code are in the `docs/uml/` folder.
+The HTML documentation will be written to `doxygen/html/`. Open `doxygen/html/index.html` in a browser to browse the documentation. Collaboration diagrams giving an overview of the code are in the `doxygen/uml/` folder.
 
 # Online resources
 
