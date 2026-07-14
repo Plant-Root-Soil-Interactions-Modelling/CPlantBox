@@ -2,12 +2,8 @@
 Checks parameter sets for plausibility
 """
 
-import sys
-
-sys.path.append("..")
-sys.path.append("../..")
-
 import os
+import sys
 
 import numpy as np
 
@@ -87,7 +83,7 @@ SeedParameterRanges = {
 
 
 def checkFolder(folder_path):
-
+    """Runs checkFile() on every file in folder_path, printing the path before each attempt."""
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
         if os.path.isfile(file_path):
@@ -96,7 +92,13 @@ def checkFolder(folder_path):
 
 
 def checkFile(file):
+    """
+    Load a CPlantBox XML parameter file, initialise the plant, and run plausibility
+    checks on all organ types (seed, root, stem, leaf).
 
+    Returns a nested dict  results[organType][subType] -> bool (True = passed).
+    Raises an Exception if the file cannot be opened or an organType mismatch is found.
+    """
     results = {}
 
     try:
@@ -123,6 +125,16 @@ def checkFile(file):
 
 
 def check_root(p):
+    """
+    Check plausibility of a RootRandomParameter set p.
+
+    In addition to the shared organ checks, verifies:
+    - la + lb <= lmax  (apical + basal zones must fit within total length)
+    - lmaxs <= lmax    (std dev must not allow near-zero or negative lengths)
+    - rs <= r          (std dev must not allow negative growth rates)
+
+    Returns True if all checks pass, False otherwise.
+    """
     name = "Root '{:s}' (subType {:d})".format(p.name, p.subType)
     ok = check_organ(p, name)
     ok = check_range_(p, RootParameterRanges, name) and ok
@@ -140,6 +152,15 @@ def check_root(p):
 
 
 def check_seed(p):
+    """
+    Check plausibility of a SeedRandomParameter set p.
+
+    In addition to the shared organ checks, verifies:
+    - seedPos.z <= 0   (seed must be at or below the soil surface)
+    - firstB <= simtime when maxB > 0  (at least one basal root must emerge within the simulation)
+
+    Returns True if all checks pass, False otherwise.
+    """
     name = "Seed '{:s}' (subType {:d})".format(p.name, p.subType)
     ok = check_organ(p, name)
     ok = check_range_(p, SeedParameterRanges, name) and ok
@@ -153,6 +174,16 @@ def check_seed(p):
 
 
 def check_stem(p):
+    """
+    Check plausibility of a StemRandomParameter set p.
+
+    In addition to the shared organ checks, verifies:
+    - la + lb <= lmax  (apical + basal zones must fit within total length)
+    - lmaxs <= lmax    (std dev must not allow near-zero or negative lengths)
+    - rs <= r          (std dev must not allow negative growth rates)
+
+    Returns True if all checks pass, False otherwise.
+    """
     name = "Stem '{:s}' (subType {:d})".format(p.name, p.subType)
     ok = check_organ(p, name)
     ok = check_range_(p, StemParameterRanges, name) and ok
@@ -170,6 +201,16 @@ def check_stem(p):
 
 
 def check_leaf(p):
+    """
+    Check plausibility of a LeafRandomParameter set p.
+
+    In addition to the shared organ checks, verifies:
+    - la + lb <= lmax      (petiole + apical zones must fit within total length)
+    - lmaxs <= lmax        (std dev must not allow near-zero or negative lengths)
+    - leafGeometryX present when shapeType == 2  (2D shape requires geometry data)
+
+    Returns True if all checks pass, False otherwise.
+    """
     name = "Leaf '{:s}' (subType {:d})".format(p.name, p.subType)
     ok = check_organ(p, name)
     ok = check_range_(p, LeafParameterRanges, name) and ok
@@ -187,6 +228,16 @@ def check_leaf(p):
 
 
 def check_organ(p, msg=""):
+    """
+    Run checks that apply to every organ type (root, stem, leaf, seed).
+
+    Checks OrganParameterRanges (a, dx, dxMin) and OrganParameterValues
+    (organType, subType), then validates:
+    - name length between 2 and 20 characters
+    - dxMin >= dx/10  (minimum segment size should not be excessively small relative to dx)
+
+    Returns True if all checks pass, False otherwise.
+    """
     pass_ = True
     pass_ = check_range_(p, OrganParameterRanges, msg) and pass_
     pass_ = check_values_(p, OrganParameterValues, msg) and pass_
@@ -203,6 +254,12 @@ def check_organ(p, msg=""):
 
 
 def check_range_(p, ranges, msg=""):
+    """
+    Verify that each parameter listed in *ranges* falls within [min, max].
+
+    ranges: dict mapping parameter name -> [min, max]
+    Returns True if every parameter is within bounds, False on first violation.
+    """
     for name, r in ranges.items():
         v = p.getParameter(name)
         if v < r[0]:
@@ -215,6 +272,12 @@ def check_range_(p, ranges, msg=""):
 
 
 def check_values_(p, ranges, msg=""):
+    """
+    Verify that each parameter listed in *ranges* holds one of the allowed values.
+
+    ranges: dict mapping parameter name -> list/range of valid values
+    Returns True if every parameter is valid, False on first violation.
+    """
     for name, r in ranges.items():
         v = p.getParameter(name)
         if not v in r:
