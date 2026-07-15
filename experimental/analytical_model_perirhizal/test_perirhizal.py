@@ -449,32 +449,32 @@ def run_perirhizal_test(max_time, n_times, r_prhiz, r_root, NC, points, CC, volu
         DS_TR = Ds * math.pow(mean_watercontent_nf,10/3)/(sp.theta_S**2)
         waterflow_TR = 2*np.pi*r_root*waterdemand
         waterflow_TR = waterdemand
-        rsc = peri.solutesuptake_convdiff_([mean_watercontent_nf], [initial_soluteconcentration], [Vmax_per_area], [Km], DS_TR, [waterflow_TR], [r_root], [E], [simtimes[r]], sp)
+        rsc = peri.solutesuptake_convdiff_([mean_watercontent_nf], [initial_soluteconcentration], [Vmax_per_area], [Km], Ds, [waterflow_TR], [r_root], [E], [simtimes[r]], sp)
         solutes_TR[0,r,0]=-Vmax_per_area*rsc[0]/(Km + rsc[0])
         solutes_TR[0,r,2]=rsc[0]
         
         DS_TR = Ds * math.pow(mean_watercontent_af,10/3)/(sp.theta_S**2)
-        rsc = peri.solutesuptake_convdiff_([mean_watercontent_af], [initial_soluteconcentration], [Vmax_per_area], [Km], DS_TR, [waterflow_TR], [r_root], [E], [simtimes[r]], sp)
+        rsc = peri.solutesuptake_convdiff_([mean_watercontent_af], [initial_soluteconcentration], [Vmax_per_area], [Km], Ds, [waterflow_TR], [r_root], [E], [simtimes[r]], sp)
         solutes_TR[1,r,0]=-Vmax_per_area*rsc[0]/(Km + rsc[0])
         solutes_TR[1,r,2]=rsc[0]
         
         DS_TR = Ds * math.pow(mean_watercontent_d,10/3)/(sp.theta_S**2)
-        rsc = peri.solutesuptake_convdiff_([mean_watercontent_d], [initial_soluteconcentration], [Vmax_per_area], [Km], DS_TR, [waterflow_TR], [r_root], [E], [simtimes[r]], sp)
+        rsc = peri.solutesuptake_convdiff_([mean_watercontent_d], [initial_soluteconcentration], [Vmax_per_area], [Km], Ds, [waterflow_TR], [r_root], [E], [simtimes[r]], sp)
         solutes_TR[2,r,0]=-Vmax_per_area*rsc[0]/(Km + rsc[0])
         solutes_TR[2,r,2]=rsc[0]
         
         # case of general steady rate water uptake
         # safe the means, they are computed via the explicit Euler timestepping scheme
         
-        mean_soluteconcent_ss_af = solutes_ss[1,r-1,1]+f_root*solutes_ss[1,r-1,0]*dt
-        mean_soluteconcent_ss_d = solutes_ss[2,r-1,1]+(f_root*solutes_ss[2,r-1,0]+f_prhiz*(IC-solutes_ss[2,r-1,-1]))*dt
-        mean_soluteconcent_sr_nf = solutes_sr[0,r-1,1]+f_root*solutes_sr[0,r-1,0]*dt
-        mean_soluteconcent_sr_af = solutes_sr[1,r-1,1]+f_root*solutes_sr[1,r-1,0]*dt
-        mean_soluteconcent_sr_d = solutes_sr[2,r-1,1]+f_root*solutes_sr[2,r-1,0]*dt
-        mean_soluteconcent_d_d = solutes_d[2,r-1,1]+(f_root*solutes_d[2,r-1,0]+f_prhiz*(IC-solutes_d[2,r-1,-1]))*dt
-        mean_soluteconcent_u_nf = solutes_u[0,r-1,1]+f_root*solutes_u[0,r-1,0]*dt
-        mean_soluteconcent_u_af = solutes_u[1,r-1,1]+f_root*solutes_u[1,r-1,0]*dt
-        mean_soluteconcent_u_d = solutes_u[2,r-1,1]+(f_root*solutes_u[2,r-1,0]+f_prhiz*(IC-solutes_u[2,r-1,-1]))*dt
+        mean_soluteconcent_ss_af = solutes_ss[1,r-1,1]+f_root*solutes_ss[1,r-1,0]*dt/mean_watercontent_af
+        mean_soluteconcent_ss_d = solutes_ss[2,r-1,1]+(f_root*solutes_ss[2,r-1,0]+f_prhiz*(IC-solutes_ss[2,r-1,-1]))*dt/mean_watercontent_d
+        mean_soluteconcent_sr_nf = solutes_sr[0,r-1,1]+f_root*solutes_sr[0,r-1,0]*dt/mean_watercontent_nf
+        mean_soluteconcent_sr_af = solutes_sr[1,r-1,1]+f_root*solutes_sr[1,r-1,0]*dt/mean_watercontent_af
+        mean_soluteconcent_sr_d = solutes_sr[2,r-1,1]+f_root*solutes_sr[2,r-1,0]*dt/mean_watercontent_d
+        mean_soluteconcent_d_d = solutes_d[2,r-1,1]+(f_root*solutes_d[2,r-1,0]+f_prhiz*(IC-solutes_d[2,r-1,-1]))*dt/mean_watercontent_d
+        mean_soluteconcent_u_nf = solutes_u[0,r-1,1]+f_root*solutes_u[0,r-1,0]*dt/mean_watercontent_nf
+        mean_soluteconcent_u_af = solutes_u[1,r-1,1]+f_root*solutes_u[1,r-1,0]*dt/mean_watercontent_af
+        mean_soluteconcent_u_d = solutes_u[2,r-1,1]+(f_root*solutes_u[2,r-1,0]+f_prhiz*(IC-solutes_u[2,r-1,-1]))*dt/mean_watercontent_d
         
         solutes_ss[1,r,1] = mean_soluteconcent_ss_af
         solutes_ss[2,r,1] = mean_soluteconcent_ss_d 
