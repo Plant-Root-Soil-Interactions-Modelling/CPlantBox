@@ -35,13 +35,13 @@ from numpy import linalg as LA
 # run the dumux implementation of root water and nitrate uptake, later compare it to the analytical approximation
 
 n_tests = 1 #try everything here for this many random parameter sets
-do_computation = False #should the computation be run or take the data from a saved file
+do_computation = True #should the computation be run or take the data from a saved file
 showuniform = True #should the uniform implementation be shown
 showTiina = True #should Tiinas implementation be shown
 
 # general parameters
-max_time = 10  # d
-n_times = 1000+1 # number of time slots, -1 for intervals
+max_time = 1.0  # d
+n_times = 100+1 # number of time slots, -1 for intervals
 r_prhiz = 0.6 # perirhizal radius[cm], computed for a RLD above 1cm/cm3
 r_root = 0.02 # root radius [cm]
 NC = 10 # number of spatial discretisations
