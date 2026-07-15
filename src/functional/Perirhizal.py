@@ -1086,7 +1086,7 @@ class PerirhizalPython(Perirhizal):
             inner_kr_b = np.divide(inner_kr_,b)
             base_mfp = - (inner_kr_b * rx + vg.fast_mfp[self.sp](sx))
             
-            rsx = self.lookup_table((inner_kr_b, np.array([max(min(base_mfp[i],-51.01),-53.59) for i in range(len(base_mfp))])))
+            rsx = self.lookup_table((inner_kr_b, base_mfp))
             rsx[mask] = sx[mask]  # if inner_kr is zero, there is no flow, and the interface potential is the same as the soil potential
         except:
             if np.max(rx) > 0:
