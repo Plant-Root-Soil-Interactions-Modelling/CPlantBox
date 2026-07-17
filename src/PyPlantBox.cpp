@@ -369,7 +369,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("ldelays", &OrganRandomParameter::ldelays)
         .def_readwrite("plant", &OrganRandomParameter::plant)
         .def_readwrite("f_gf", &OrganRandomParameter::f_gf)
-        .def_readwrite("f_tf", &OrganRandomParameter::f_tf);
+        .def_readwrite("f_tf", &OrganRandomParameter::f_tf)
+        .def_readwrite("multDelay", &OrganRandomParameter::multDelay);
     /**
      * Organ.h
      */
@@ -711,7 +712,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def(py::init<std::shared_ptr<Organism>>())
         .def_readwrite("seedPos", &SeedRandomParameter::seedPos)
         .def_readwrite("seedPoss", &SeedRandomParameter::seedPoss)
-        .def_readwrite("delayDefinition", &SeedRandomParameter::delayDefinition)
+        .def_readwrite("delayDefinitionRoot", &SeedRandomParameter::delayDefinitionRoot)
         .def_readwrite("delayDefinitionShoot", &SeedRandomParameter::delayDefinitionShoot)
         .def_readwrite("firstB", &SeedRandomParameter::firstB)
         .def_readwrite("firstBs", &SeedRandomParameter::firstBs)

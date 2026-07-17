@@ -81,9 +81,9 @@ public:
     /* Plant parameters */
     Vector3d seedPos  = Vector3d(0.,0.,-3.); ///< Mean position of the seed [cm]
     Vector3d seedPoss = Vector3d(0.,0.,0.);  ///< Standard deviation of position  [cm]
-	int delayDefinition; ///< how is the delay of the laterals defined
-	int delayDefinitionShoot; ///< how is the delay of the laterals defined
-
+	int delayDefinitionRoot = 0; ///< how is the delay of the laterals defined
+	int delayDefinitionShoot = 2; ///< how is the delay of the laterals defined
+	
     // Basal roots (nodal roots)
     double firstB = 1.e9;  ///< Mean emergence of first basal root [day]
     double firstBs = 0.;   ///< Standard deviation of emergence of first basal root [day]

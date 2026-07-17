@@ -143,7 +143,7 @@ void Plant::initializeDB(bool verbose) {
     auto seed = std::make_shared<SeedDB>(shared_from_this());
     this->addOrgan(seed);
     auto srp = this->getSeedRandomParameter();
-    srp->delayDefinition = Organism::dd_time_self;
+    srp->delayDefinitionRoot = Organism::dd_time_self;
     srp->delayDefinitionShoot = Organism::dd_time_self;
     this->setOrganRandomParameter(srp);
     seed->initialize(verbose);

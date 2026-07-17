@@ -38,8 +38,8 @@ SeedRandomParameter::SeedRandomParameter(std::shared_ptr<Organism> plant) :Organ
     organType = Organism::ot_seed;
     subType = 0;
     bindParameters();
-    delayDefinition = Organism::dd_distance; // for roots 
-    delayDefinitionShoot = Organism::dd_distance; // for leaf or stem laterals
+    delayDefinitionRoot = Organism::dd_distance; // for roots 
+    delayDefinitionShoot = Organism::dd_time_self; // for leaf or stem laterals
 }
 
 /**
@@ -128,7 +128,7 @@ void SeedRandomParameter::bindParameters()
     bindParameter("delayTil", &delayTil, "Time delay between the tillers [day]", &delayTils);
     bindParameter("maxTil", &maxTil, "Maximal number of tillers [1]", &maxTils);
     bindParameter("simulationTime", &simtime, "Recommended final simulation time  [day]", &simtimes );
-	bindParameter("delayDefinition", &delayDefinition, "method implemented to evaluate root lateral growth delay (0: distance based, 1: delay based defined by parent organ)");
+	bindParameter("delayDefinitionRoot", &delayDefinitionRoot, "method implemented to evaluate root lateral growth delay (0: distance based, 1: delay based defined by parent organ)");
 	bindParameter("delayDefinitionShoot", &delayDefinitionShoot, "method implemented to evaluate shoot lateral growth delay (0: distance based, 1: delay based defined by parent organ)");
 }
 
