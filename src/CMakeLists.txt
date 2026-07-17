@@ -112,3 +112,14 @@ else()
             ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
             RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
+
+# -----------------------------
+# Optional preCICE coupling
+# -----------------------------
+option(CPB_PRECICE "Build the preCICE adapter (CoupledPlant)" OFF)
+if(CPB_PRECICE)
+    find_package(precice 3 REQUIRED CONFIG)
+    target_sources(CPlantBox PRIVATE structural/CoupledPlant.cpp)
+    target_link_libraries(CPlantBox PUBLIC precice::precice)
+    message(STATUS "preCICE adapter enabled (CoupledPlant)")
+endif()
