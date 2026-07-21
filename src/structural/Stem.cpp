@@ -307,7 +307,8 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     case Organism::dd_time_lat: { // lateral has to wait for a fixed time (defined by parent organ)
         // time the lateral has to wait
         forDelay = std::max(rp->ldelay + plant.lock()->randn() * rp->ldelays, 0.);
-        if (verbose) {
+        multiplyDelay *= rp->multDelay;
+		if (verbose) {
             std::cout << "Organism::dd_time_lat " << rp->ldelay << " " << rp->ldelays << " " << forDelay << std::endl;
         }
         break;
@@ -315,7 +316,8 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     case Organism::dd_time_self: {                                          // lateral has to wait for a fixed time (defined by lateral organ itself)
         auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
         forDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
-        if (verbose) {
+        multiplyDelay *= latRp->multDelay;
+		if (verbose) {
             std::cout << "create lat, delay output " << forDelay << std::endl;
             std::cout << "						 " << ot_lat << ", " << st_lat << " " << latRp->ldelay << " " << latRp->ldelays << " "
                       << forDelay << " " << nodes.size() << std::endl;

@@ -544,7 +544,7 @@ int Organism::getDelayDefinition(int ot_lat) {
     if ((ot_lat == Organism::ot_stem) || (ot_lat == Organism::ot_leaf)) {
         return srp->delayDefinitionShoot;
     } else {
-        return srp->delayDefinition;
+        return srp->delayDefinitionRoot;
     }
 }
 
