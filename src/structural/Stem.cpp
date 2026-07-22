@@ -266,7 +266,7 @@ double Stem::getLatInitialGrowth(double dt) {
  */
 double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // override for stems
     bool verbose = false;
-    auto rp = getOrganRandomParameter(); // rename
+    auto rp = getStemRandomParameter(); // rename
     double forDelay;                     // store necessary variables to define lateral growth delay
     int delayDefinition = getOrganism()->getDelayDefinition(ot_lat);
 
@@ -283,11 +283,12 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     auto correctST = [ot_lat, st_lat](std::shared_ptr<Organ> org) -> double {
         return double((org->getParameter("organType") == ot_lat) && (org->getParameter("subType") == st_lat));
     }; // return 1. if organ of correct type and subtype, 0. otherwise
-    double multiplyDelay = double(std::count_if(children.begin(), children.end(),
+    double numberOfLaterals = double(std::count_if(children.begin(), children.end(),
                                                 correctST)); // coun how may children of the correct type and subtype exists (they do not have to be emerged)
 
     switch (delayDefinition) {
     case Organism::dd_distance: {
+        // Depricated (just use dd_time_lat or _self and with rp->multDelay == 0)
         double meanLn = getParameter("lnMean");                             // mean inter-lateral distance
         double effectiveLa = std::max(getParameter("la") - meanLn / 2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
         if (param()->lb + effectiveLa == param()->getK()) {
@@ -301,13 +302,12 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
         ageLN = std::max(ageLN, age - dt);
         double ageLG = this->calcAge(param()->lb + effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
         forDelay = ageLG - ageLN;                                // time the lateral has to wait
-        multiplyDelay = 1;                                       // in this case, even for stems, it does not matter how many laterals there were before.
+        numberOfLaterals = 0;                                       // in this case, even for stems, it does not matter how many laterals there were before.
         break;
     }
     case Organism::dd_time_lat: { // lateral has to wait for a fixed time (defined by parent organ)
         // time the lateral has to wait
         forDelay = std::max(rp->ldelay + plant.lock()->randn() * rp->ldelays, 0.);
-        multiplyDelay *= rp->multDelay;
 		if (verbose) {
             std::cout << "Organism::dd_time_lat " << rp->ldelay << " " << rp->ldelays << " " << forDelay << std::endl;
         }
@@ -316,7 +316,6 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     case Organism::dd_time_self: {                                          // lateral has to wait for a fixed time (defined by lateral organ itself)
         auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
         forDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
-        multiplyDelay *= latRp->multDelay;
 		if (verbose) {
             std::cout << "create lat, delay output " << forDelay << std::endl;
             std::cout << "						 " << ot_lat << ", " << st_lat << " " << latRp->ldelay << " " << latRp->ldelays << " "
@@ -333,9 +332,9 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     }
     }
     if (verbose) {
-        std::cout << "create lat, delay defEND " << forDelay << " " << multiplyDelay << std::endl;
+        std::cout << "create lat, delay defEND " << forDelay << " " << numberOfLaterals << std::endl;
     }
-    return forDelay * multiplyDelay;
+    return forDelay + numberOfLaterals*rp->multDelay;
 }
 /**
  * Simulates internodal growth of dl for this stem
