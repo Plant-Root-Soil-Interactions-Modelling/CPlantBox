@@ -97,23 +97,24 @@ class PerirhizalPython(Perirhizal):
         """opens an additional look-up table from a file to quickly find soil root solute concentrations in the steady rate case"""
         npzfile_sr = np.load(filename + ".npz")
         Phi_2_, Phi_1_, Phi_0_, r_eval_ = npzfile_sr["Phi_2_"], npzfile_sr["Phi_1_"], npzfile_sr["Phi_0_"], npzfile_sr["r_eval_"]
+        print("boundaries",Phi_2_, Phi_1_, Phi_0_, r_eval_)
         soil = npzfile_sr["soil"]
         conc_rel_c, Uptake_rel_c, quadratic_rel_c = npzfile_sr["conc_rel_c"], npzfile_sr["Uptake_rel_c"], npzfile_sr["quadratic_rel_c"]
-        conc_mean_c, Uptake_mean_c, quatratic_mean_c = npzfile_sr["conc_mean_c"], npzfile_sr["Uptake_mean_c"], npzfile_sr["quatratic_mean_c"]
+        conc_mean_c, Uptake_mean_c, quadratic_mean_c = npzfile_sr["conc_mean_c"], npzfile_sr["Uptake_mean_c"], npzfile_sr["quadratic_mean_c"]
         self.lookup_table_sr_solutes = {
                 "conc_rel_c" : [0],
                 "conc_mean_c" : [0],
                 "Uptake_rel_c" : [0],   
                 "Uptake_mean_c" : [0],
                 "quadratic_rel_c" : [0],
-                "quatratic_mean_c" : [0]
+                "quadratic_mean_c" : [0]
                 }                
         self.lookup_table_sr_solutes["conc_rel_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , conc_rel_c)  # method = "nearest" fill_value = None , bounds_error=False
         self.lookup_table_sr_solutes["conc_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , conc_mean_c)
         self.lookup_table_sr_solutes["Uptake_rel_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , Uptake_rel_c)
         self.lookup_table_sr_solutes["Uptake_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , Uptake_mean_c)
         self.lookup_table_sr_solutes["quadratic_rel_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , quadratic_rel_c)
-        self.lookup_table_sr_solutes["quatratic_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , quatratic_mean_c)
+        self.lookup_table_sr_solutes["quadratic_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , quadratic_mean_c)
         self.sp = vg.Parameters(soil)
         vg.create_mfp_lookup(self.sp) # does this have to be repeated here?
         
@@ -129,11 +130,13 @@ class PerirhizalPython(Perirhizal):
         """
         assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length"
         
-        for i in range(len(rx)):
-            if rx[i] < -15989:
-                rx[i] = -15989
-            if sx[i] > -1:
-                sx[i] = -1
+        #for i in range(len(rx)):
+        #    if rx[i] < -15989:
+        #        rx[i] = -15989
+        #    if sx[i] > -1:
+        #        sx[i] = -1
+        np.clip(rx,-15989,-1)
+        np.clip(sx,-15989,-1)
         
         if self.lookup_table:
             rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
@@ -157,8 +160,7 @@ class PerirhizalPython(Perirhizal):
         rho            geometry factor [1] (outer_radius / inner_radius)
         sp             soil parameter: van Genuchten parameter set (type vg.Parameters)
         """
-        #vg.create_mfp_lookup(sp)
-        #print(vg.fast_mfp[sp](-16000))
+        
         if inner_kr < 1.0e-7:
             return sx
         k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) * (hsoil - hint) / ((hsoil - hint)**2 + 0.001)  # Vanderborgth et al. 2023, Eqn [7]
@@ -321,20 +323,25 @@ class PerirhizalPython(Perirhizal):
         r_prhiz = r_prhiz.copy() # make sure that the original does not get scaled
         r_root = r_root.copy() # make sure that the original does not get scaled
         
+        rootwateruptake = np.clip(rootwateruptake,1.0e-7, np.inf) #only allow root water uptake
+        #waterinflow = np.clip(waterinflow,0, np.inf) #only allow inflow into the rhizosphere
+        
+        Phi_0, Phi_1, Phi_2 = np.zeros(n_segments), np.zeros(n_segments), np.zeros(n_segments)
+        
         #solve quadratic eqation for root uptake # TODO: Link to publication
         for i in range(n_segments):
             #waterflow
             rho = r_prhiz[i] / r_root[i]
-            Phi_0 = Phi_out[i] - 1/2 *(rootwateruptake[i] - waterinflow[i]) / (2*np.pi) * (rho**2) / (1 - rho**2)
-            Phi_1 = waterinflow[i] / (2*np.pi) - (rootwateruptake[i] - waterinflow[i]) / (2*np.pi) * rho**2 / (1 - rho**2)
-            Phi_2 = (rootwateruptake[i] - waterinflow[i]) / (2*np.pi) * (rho**2) / (1 - rho**2)
+            Phi_0[i] = Phi_out[i] - 1/2 *(rootwateruptake[i] - waterinflow[i]) / (2*np.pi) * (rho**2) / (1 - rho**2)
+            Phi_1[i] = waterinflow[i] / (2*np.pi) - (rootwateruptake[i] - waterinflow[i]) / (2*np.pi) * rho**2 / (1 - rho**2)
+            Phi_2[i] = (rootwateruptake[i] - waterinflow[i]) / (2*np.pi) * (rho**2) / (1 - rho**2)
             
             Ds0 = self.Ds0_ref 
             scaling = math.sqrt(Ds[i] / Ds0) # Ds_i > Ds0 means scaling >1, the region is modeled to be smaller than it actually is
             #scaling = Ds[i] / Ds0 # Ds_i > Ds0 means scaling >1, the region is modeled to be smaller than it actually is
-            Phi_2 = Phi_2 * (scaling**2)
-            Phi_1 = Phi_1
-            Phi_0 = Phi_0 + Phi_1 * np.log(scaling)
+            Phi_2[i] = np.clip(Phi_2[i] * (scaling**2),-1.0e-7,-0.01)
+            Phi_1[i] = np.clip(Phi_1[i],1.0e-7,1.0e-3)
+            Phi_0[i] = np.clip(Phi_0[i] + Phi_1[i] * np.log(scaling),1.0e-3,1.0)
             #Phi = lambda r : Phi_2 * r**2/2 + Phi_1 * np.log(r) + Phi_0  
             #waterpotential_func = lambda r : vg.fast_imfp[sp](Phi(r))
             #watercontent_func = lambda r : vg.water_content(waterpotential_func(r),sp)
@@ -343,20 +350,39 @@ class PerirhizalPython(Perirhizal):
             
             r_eval = np.logspace(np.log10(r_root[i]), np.log10(r_prhiz[i]), num = 30)
             r_eval = [r / scaling for r in r_eval]
-            r_prhiz[i] = r_prhiz[i] / scaling
+            r_prhiz[i] = min(r_prhiz[i] / scaling, 1.0)
             r_root[i] = r_root[i] / scaling
             
-            if self.lookup_table_sr_solutes:
-                for i in range(n):
-                    conc_rel_c[i] = self.lookup_table_sr_solutes["conc_rel_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
-                    conc_mean_c[i] = self.lookup_table_sr_solutes["conc_mean_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
-                    Uptake_rel_c[i] = self.lookup_table_sr_solutes["Uptake_rel_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
-                    Uptake_mean_c[i] = self.lookup_table_sr_solutes["Uptake_mean_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
-                    quadratic_rel_c[i] = self.lookup_table_sr_solutes["quadratic_rel_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
-                    quatratic_mean_c[i] = self.lookup_table_sr_solutes["quatratic_mean_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
-            else:
-                conc_rel_c, conc_mean_c, Uptake_rel_c, Uptake_mean_c, quadratic_rel_c, quadratic_mean_c = self.solute_linearequation_sr_(Phi_2, Phi_1, Phi_0, r_eval, sp)
+            #print("Phis", Phi_2, Phi_1, Phi_0, rootwateruptake[i], waterinflow[i], Phi_out[i],  r_root[i], r_prhiz[i])
             
+        if self.lookup_table_sr_solutes:
+            r_eval = np.zeros((n_segments,2))
+            r_eval[:,0] = r_root[:] #only two important values from the lookup
+            r_eval[:,1] = r_prhiz[:]
+            conc_rel_c_l = np.zeros((n_segments,2))
+            conc_mean_c_l = np.zeros((n_segments,2))
+            Uptake_rel_c_l = np.zeros((n_segments,2))
+            Uptake_mean_c_l = np.zeros((n_segments,2))
+            quadratic_rel_c_l = np.zeros((n_segments,2))
+            quadratic_mean_c_l = np.zeros((n_segments,2))
+            for j in range(2):
+                Tupels = [(Phi_2[i], Phi_1[i], Phi_0[i], r_eval[i,j]) for i in range(n_segments)]
+                #print("Tupels", Tupels)
+                conc_rel_c_l[:,j] = self.lookup_table_sr_solutes["conc_rel_c"](Tupels)
+                conc_mean_c_l[:,j] = self.lookup_table_sr_solutes["conc_mean_c"](Tupels)#(Phi_2, Phi_1, Phi_0, r_eval[j]))
+                Uptake_rel_c_l[:,j] = self.lookup_table_sr_solutes["Uptake_rel_c"](Tupels)
+                Uptake_mean_c_l[:,j] = self.lookup_table_sr_solutes["Uptake_mean_c"](Tupels)
+                quadratic_rel_c_l[:,j] = self.lookup_table_sr_solutes["quadratic_rel_c"](Tupels)
+                quadratic_mean_c_l[:,j] = self.lookup_table_sr_solutes["quadratic_mean_c"](Tupels)
+        
+        for i in range(n_segments):    
+            if self.lookup_table_sr_solutes:
+                conc_rel_c, conc_mean_c, Uptake_rel_c, Uptake_mean_c, quadratic_rel_c, quadratic_mean_c = conc_rel_c_l[i,:], conc_mean_c_l[i,:], Uptake_rel_c_l[i,:], Uptake_mean_c_l[i,:], quadratic_rel_c_l[i,:], quadratic_mean_c_l[i,:]
+            else:
+                #in this case the discretisaiton of r_eval is necessary to compute accurate means
+                conc_rel_c, conc_mean_c, Uptake_rel_c, Uptake_mean_c, quadratic_rel_c, quadratic_mean_c = self.solute_linearequation_sr_(Phi_2[i], Phi_1[i], Phi_0[i], r_eval[i,:], sp)
+            #print("concentrations",conc_rel_c[0], conc_mean_c[0], Uptake_rel_c[0], Uptake_mean_c[0], quadratic_rel_c[0], quadratic_mean_c[0])
+            #print("concentrations",conc_rel_c[-1], conc_mean_c[-1], Uptake_rel_c[-1], Uptake_mean_c[-1], quadratic_rel_c[-1], quadratic_mean_c[-1])
             
             #default prefactors for the steady state case
             pre_c = 0
@@ -385,7 +411,7 @@ class PerirhizalPython(Perirhizal):
                     absolute =  c_outer[i]                    
                 case _:    #default
                     pre_c, pre_Uptake, pre_quadratic, absolute = 0, 0, 1, 0
-                    print("The mode of a steady rate solute flow approximation could not be identified, use steady state.")
+                    print("The mode of a steady rate solute flow approximation could not be identified, use steady state. File Perirhizal.py")
             
             #variables to eliminate: Uptake, quadratic, c_prhiz
             # variable for the final equations: rsc
@@ -395,9 +421,9 @@ class PerirhizalPython(Perirhizal):
             #linear equations for c_prhiz, Uptake, quadratic, rsc (3 linear, 1 quadratic)
             
             #c11 * Uptake + c12 * quadratic + c13 * c0 = c_mean
-            A[0,0] = (Uptake_mean_c[-1]*(r_prhiz[i]**2)- Uptake_mean_c[0]*(r_root[i]**2))/(r_prhiz[i]**2-r_root[i]**2)
-            A[0,1] = (quadratic_mean_c[-1]*(r_prhiz[i]**2)- quadratic_mean_c[0]*(r_root[i]**2))/(r_prhiz[i]**2-r_root[i]**2)
-            A[0,2] = (conc_mean_c[-1]*(r_prhiz[i]**2)- conc_mean_c[0]*(r_root[i]**2))/(r_prhiz[i]**2-r_root[i]**2)
+            A[0,0] = (Uptake_mean_c[-1]*(r_prhiz[i]**2-self.r0_ref**2)- Uptake_mean_c[0]*(r_root[i]**2-self.r0_ref**2))/(r_prhiz[i]**2-r_root[i]**2)
+            A[0,1] = (quadratic_mean_c[-1]*(r_prhiz[i]**2-self.r0_ref**2)- quadratic_mean_c[0]*(r_root[i]**2-self.r0_ref**2))/(r_prhiz[i]**2-r_root[i]**2)
+            A[0,2] = (conc_mean_c[-1]*(r_prhiz[i]**2-self.r0_ref**2)- conc_mean_c[0]*(r_root[i]**2-self.r0_ref**2))/(r_prhiz[i]**2-r_root[i]**2)
             b[0,0] = c_soil[i]
             
             #c21 * Uptake + c22 * quadratic + c23 * c0 = c_prhiz
@@ -432,6 +458,8 @@ class PerirhizalPython(Perirhizal):
             v = (n[0] + (r_root[i]**2) * n[1]) #*(2*np.pi*r_root[i])
             tol = 1e-9 #arbitrary for now, TODO think of a reasonable tolerance
             
+            #print("wv", w,v)
+            
             if abs(w)<tol:
                 rsc[i] = - (Km[i]*v) / (Km[i]*w+v-Vmax[i])
                 print("Tolerance reached in the steady rate computation for the solute flow. File Perirhizal.py")
@@ -450,6 +478,8 @@ class PerirhizalPython(Perirhizal):
             Uptake[i] = m[0] * rsc[i] + n[0]
             quadratic_flow[i] = m[1] * rsc[i] + n[1]
             noflux[i] = m[2] * rsc[i] + n[2]
+            
+            #print("Uqnoflux", rsc[i], Uptake[i], quadratic_flow[i], noflux[i], c_soil[i])
             
         return rsc, Uptake, quadratic_flow, noflux
     
@@ -495,9 +525,9 @@ class PerirhizalPython(Perirhizal):
         scaling = math.sqrt(Ds0 / self.Ds0_ref) # Ds0 > Ds0_ref means scaling >1, the region is modeled to be smaller than it actually is
         #scaling = Ds0 / self.Ds0_ref # Ds0 > Ds0_ref means scaling >1, the region is modeled to be smaller than it actually is
         r_eval = [r / scaling for r in r_eval]
-        Phi_2 = Phi_2 * (scaling**2)
-        Phi_1 = Phi_1
-        Phi_0 = Phi_0 + Phi_1 * np.log(scaling)
+        Phi_2 = np.clip(Phi_2 * (scaling**2),-1.0e-7,-0.01)
+        Phi_1 = np.clip(Phi_1,1.0e-7,1.0e-3)
+        Phi_0 = np.clip(Phi_0 + Phi_1 * np.log(scaling),1.0e-3,1.0)
         
         #values necessary for plotting
         n = len(r_eval)
@@ -510,7 +540,7 @@ class PerirhizalPython(Perirhizal):
                  Uptake_rel_c[i] = self.lookup_table_sr_solutes["Uptake_rel_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
                  Uptake_mean_c[i] = self.lookup_table_sr_solutes["Uptake_mean_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
                  quadratic_rel_c[i] = self.lookup_table_sr_solutes["quadratic_rel_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
-                 quatratic_mean_c[i] = self.lookup_table_sr_solutes["quatratic_mean_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
+                 quadratic_mean_c[i] = self.lookup_table_sr_solutes["quadratic_mean_c"]((Phi_2, Phi_1, Phi_0, r_eval[i]))
         else:
             conc_rel_c, conc_mean_c, Uptake_rel_c, Uptake_mean_c, quadratic_rel_c, quadratic_mean_c = self.solute_linearequation_sr_(Phi_2, Phi_1, Phi_0, r_eval, sp)
         
@@ -544,13 +574,19 @@ class PerirhizalPython(Perirhizal):
         #begin at a predefined 
         n = len(r_eval)
         r0 = self.r0_ref
-        insertion = False #was the radius inserted in the beginning?
-        if r_eval[0]==r0: 
-            pass
-        else:
-            r_eval = np.insert(r_eval, 0, r0, axis=0)
-            insertion = True
-            n = n+1
+        insertion = 0 #was the radius inserted in the beginning?
+        replicate = False #
+        tol = 1e-6
+        for i, r in enumerate(r_eval):
+            if abs(r-r0)<tol:
+                replicate=True
+                break
+            if r>r0:
+                insertion = i
+                break
+        
+        if not replicate:
+            r_eval = np.insert(r_eval,insertion,r0)
         
         conc_rel_c = np.ones(n) 
         conc_mean_c = np.ones(n)
@@ -591,10 +627,20 @@ class PerirhizalPython(Perirhizal):
         Uptake_mean_c[1:] = np.array([np.average(Uptake_rel_c[0:(j+1)], weights=watercontent_times_r[0:(j+1)]) for j in range(1,n)])       
         
         #remove the inserted start at self.r0_ref
-        if insertion:
-            return conc_rel_c[1:], conc_mean_c[1:], inflow_rel_c[1:], inflow_mean_c[1:], Uptake_rel_c[1:], Uptake_mean_c[1:]
-        else:
-            return conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c
+        if not replicate:
+            conc_rel_c = np.delete(conc_rel_c, insertion, axis = 0)
+            conc_mean_c = np.delete(conc_mean_c, insertion, axis = 0)
+            inflow_rel_c = np.delete(inflow_rel_c, insertion, axis = 0)
+            inflow_mean_c = np.delete(inflow_mean_c, insertion, axis = 0)
+            Uptake_rel_c = np.delete(Uptake_rel_c, insertion, axis = 0)
+            Uptake_mean_c = np.delete(Uptake_mean_c, insertion, axis = 0)
+        
+        #if insertion:
+        #    return conc_rel_c[1:], conc_mean_c[1:], inflow_rel_c[1:], inflow_mean_c[1:], Uptake_rel_c[1:], Uptake_mean_c[1:]
+        #else:
+        #print("length",len(conc_rel_c), len(r_eval))
+        
+        return conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c
     
     
     def soil_root_solutes_steadyrate_simplified_(self, Phi_root, Phi_soil, r_root, r_prhiz, c_bulk, Vmax, Km, Ds, waterflow, sp, n_approx = 1):
@@ -725,7 +771,27 @@ class PerirhizalPython(Perirhizal):
         Phi_C = max((a*Phi_root-c*Phi_soil) / det + c * Phi_A, 1.0e-6) - c * Phi_A
         
         return Phi_A, Phi_C
-
+    
+    def determine_mfp_function_influx(self, Phi_soil, rootwateruptake, waterinflow, rho):
+        """
+        determine the spatial function of the mfp
+        Phi_soil       matrix flux potential at the bulk soil [cm2/d]
+        rootwateruptake flow of water into the root, positive [cm/d]
+        waterinflow flow of water into the rhizosphere, positive [cm/d]
+        rho            geometry factor (outer_radius / inner_radius) [1]
+        
+        Phi = lambda r : Phi_2 * (r/r_prhiz)**2/2 + Phi_1 * np.log(r/r_prhiz) + Phi_0
+        (steady rate kinetics)
+        
+        """ 
+        
+        Phi_2 = (rootwateruptake - waterinflow) / (2*np.pi) * (rho**2) / (1 - rho**2)
+        Phi_1 = waterinflow / (2*np.pi) - (rootwateruptake - waterinflow) / (2*np.pi) * rho**2 / (1 - rho**2)
+        Phi_0 = Phi_soil - (Phi_2 * (0.53)**2/2 + Phi_1 * np.log(0.53))
+            
+        Phi = lambda r_rel : Phi_2 * (r_rel)**2/2 + Phi_1 * np.log(r_rel) + Phi_0
+        
+        return Phi_0, Phi_1, Phi_2, Phi
 
     def perirhizal_conductance_per_layer(self, h_bs, h_sr, sp):
         """
@@ -869,18 +935,23 @@ class PerirhizalPython(Perirhizal):
         inner_kr_b_= np.logspace(np.log10(inner_kr_b_int[0]), np.log10(inner_kr_b_int[1]), inner_kr_bn)
         
         min_int, max_int = vg.fast_mfp[sp](-sx_int_abs[1]), vg.fast_mfp[sp](-sx_int_abs[0])
+        #print("int",min_int, max_int)
         base_mfp_n_1 = 500
         base_mfp_n_2 = 500
         base_mfp_n = base_mfp_n_1 + base_mfp_n_2
-        base_mfp_int = [inner_kr_b_int[0]*(0*self.h_wilt-(-rx_int_abs[0])) - vg.fast_mfp[sp](-sx_int_abs[0]), inner_kr_b_int[1]*(0*self.h_wilt-(-rx_int_abs[1])) - vg.fast_mfp[sp](-sx_int_abs[1])]
+        inner_kr_b_rx = [-inner_kr_b_int[0]*rx_int_abs[0],-inner_kr_b_int[1]*rx_int_abs[0],-inner_kr_b_int[0]*rx_int_abs[1],-inner_kr_b_int[1]*rx_int_abs[1]]
+        inner_kr_b_rx = [min(inner_kr_b_rx),max(inner_kr_b_rx)]
+        base_mfp_int = [-(inner_kr_b_rx[1] + max_int), -(inner_kr_b_rx[0] + min_int)]
         #base_mfp_int are negative and positive
         base_mfp_interval1= -np.logspace(np.log10(-base_mfp_int[0]), np.log10(1.0e-9), base_mfp_n_1)
-        base_mfp_interval2= np.logspace(np.log10(1.0e-9), np.log10(base_mfp_int[1]), base_mfp_n_2)
+        base_mfp_interval2= np.logspace(np.log10(1.0e-9), np.log10(base_mfp_int[-1]), base_mfp_n_2)
         base_mfp_ = np.concatenate((base_mfp_interval1,base_mfp_interval2))
-        print("boundaries lookup", base_mfp_[0], base_mfp_[1])
+        #print("boundaries lookup", base_mfp_[0], base_mfp_[-1], base_mfp_)
         interface = np.zeros((inner_kr_bn,base_mfp_n))
         
-        print("Creating a lookup table for the hydraulic perirhizal resistance model")
+        #base_mfp = - (inner_kr_b * rx + vg.fast_mfp[self.sp](sx))
+        
+        #print("Creating a lookup table for the hydraulic perirhizal resistance model")
         
         for i, inner_kr_b in enumerate(inner_kr_b_):
             print(i, " / ", inner_kr_bn)
@@ -1003,33 +1074,33 @@ class PerirhizalPython(Perirhizal):
         
         #repeat steady state case
         
-        n_Ds = len(Ds_)
         
-        Phi_2_n = 100
-        Phi_1_n = 100
-        Phi_0_n = 100
+        Phi_2_n = 10
+        Phi_1_n = 13
+        Phi_0_n = 30
         r_eval_n = 100
-        r_eval_ = np.logspace(np.log(self.r0_ref), np.log(10))
+        r_eval_ = np.logspace(np.log(self.r0_ref), np.log(10), r_eval_n, base=np.e)
         
         conc_rel_c = np.zeros((Phi_2_n, Phi_1_n, Phi_0_n, r_eval_n))
         conc_mean_c = np.zeros((Phi_2_n, Phi_1_n, Phi_0_n, r_eval_n))
         Uptake_rel_c = np.zeros((Phi_2_n, Phi_1_n, Phi_0_n, r_eval_n))
         Uptake_mean_c = np.zeros((Phi_2_n, Phi_1_n, Phi_0_n, r_eval_n))
         quadratic_rel_c = np.zeros((Phi_2_n, Phi_1_n, Phi_0_n, r_eval_n))
-        quatratic_mean_c = np.zeros((Phi_2_n, Phi_1_n, Phi_0_n, r_eval_n))
+        quadratic_mean_c = np.zeros((Phi_2_n, Phi_1_n, Phi_0_n, r_eval_n))
         
         
-        Phi_2_ = -np.logspace(np.log(1.0e-5), np.log(1.0e-9), Phi_2_n)
+        Phi_2_ = -np.logspace(np.log10(1.0e-2), np.log10(1.0e-7), Phi_2_n,)
         print("Creating a big lookup table for the steady rate solute flow")
         for i, Phi_2 in enumerate(Phi_2_):
-            print("Done with ", str(i+1), " out of ", str(Phi_2_n))
-            Phi_1_ = np.logspace(np.log(1.0e-5), np.log(1.0e-1), Phi_1_n)
+            print("Starting with ", str(i+1), " out of ", str(Phi_2_n))
+            Phi_1_ = np.logspace(np.log10(1.0e-7), np.log10(1.0e-3), Phi_1_n)
             for j, Phi_1 in enumerate(Phi_1_):
-                Phi_0_ = np.logspace(np.log(1.0e-9), np.log(1.0e1), Phi_0_n)
+                print("Iteration2 starting with ", str(j+1), " out of ", str(Phi_1_n))
+                Phi_0_ = np.logspace(np.log10(1.0e-3), np.log10(1.0e0), Phi_0_n)
                 for k, Phi_0 in enumerate(Phi_0_):
-                    conc_rel_c[i,j,k,:], conc_mean_c[i,j,k,:], Uptake_rel_c[i,j,k,:], Uptake_mean_c[i,j,k,:], quadratic_rel_c[i,j,k,:], quatratic_mean_c[i,j,k,:] = self.solute_linearequation_sr_(Phi_2, Phi_1, Phi_0, r_eval_, sp)
+                    conc_rel_c[i,j,k,:], conc_mean_c[i,j,k,:], Uptake_rel_c[i,j,k,:], Uptake_mean_c[i,j,k,:], quadratic_rel_c[i,j,k,:], quadratic_mean_c[i,j,k,:] = self.solute_linearequation_sr_(Phi_2, Phi_1, Phi_0, r_eval_, sp)
         
-        np.savez(filename, Phi_2_n=Phi_2_n, Phi_1_n=Phi_1_n, Phi_0_n = Phi_0_n, r_eval_n = r_eval_n, conc_rel_c = conc_rel_c, conc_mean_c = conc_mean_c, Uptake_rel_c = Uptake_rel_c, Uptake_mean_c = Uptake_mean_c, quatratic_rel_c = quatratic_rel_c, quatratic_mean_c = quatratic_mean_c, soil = list(sp))
+        np.savez(filename, Phi_2_=Phi_2_, Phi_1_=Phi_1_, Phi_0_ = Phi_0_, r_eval_ = r_eval_, conc_rel_c = conc_rel_c, conc_mean_c = conc_mean_c, Uptake_rel_c = Uptake_rel_c, Uptake_mean_c = Uptake_mean_c, quadratic_rel_c = quadratic_rel_c, quadratic_mean_c = quadratic_mean_c, soil = list(sp))
         #like 3 GB?
         self.lookup_table_sr_solutes = {
                 "conc_rel_c" : conc_rel_c,
@@ -1037,15 +1108,15 @@ class PerirhizalPython(Perirhizal):
                 "Uptake_rel_c" : Uptake_rel_c,   
                 "Uptake_mean_c" : Uptake_mean_c,
                 "quadratic_rel_c" : quadratic_rel_c,
-                "quatratic_mean_c" : quatratic_mean_c
+                "quadratic_mean_c" : quadratic_mean_c
                 }                
         self.lookup_table_sr_solutes["conc_rel_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , conc_rel_c)  # method = "nearest" fill_value = None , bounds_error=False
         self.lookup_table_sr_solutes["conc_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , conc_mean_c)
         self.lookup_table_sr_solutes["Uptake_rel_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , Uptake_rel_c)
         self.lookup_table_sr_solutes["Uptake_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , Uptake_mean_c)
         self.lookup_table_sr_solutes["quadratic_rel_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , quadratic_rel_c)
-        self.lookup_table_sr_solutes["quatratic_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , quatratic_mean_c)
-        self.sp = vg.Parameters(soil)
+        self.lookup_table_sr_solutes["quadratic_mean_c"] = RegularGridInterpolator((Phi_2_, Phi_1_, Phi_0_, r_eval_) , quadratic_mean_c)
+        self.sp = sp
         vg.create_mfp_lookup(self.sp) # does this have to be repeated here?
         
     
@@ -1077,14 +1148,24 @@ class PerirhizalPython(Perirhizal):
             sx = np.array(sx)
             mask = inner_kr_ == 0
             inner_kr_[mask] = 1.0e-7
+            #np.clip(inner_kr_,1.0e-7,1.0e-4)
             
             #compute two inputs for the lookup table
             rho = np.array(rho_)
-            rho[rho > 199] = 199#maximal for rho
+            #rho[rho > 199] = 199#maximal for rho
+            inner_kr_ = np.clip(inner_kr_,1.1e-7,0.99e-4)
+            rho = np.clip(rho,2.0,199.0)
+            sx = np.clip(sx,-14999.0,-2.0)
+            rx = np.clip(rx,-14999.0,-2.0)
             rho2 = np.multiply(rho,rho)
             b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Vanderborgth et al. 2023, Eqn [8]
             inner_kr_b = np.divide(inner_kr_,b)
             base_mfp = - (inner_kr_b * rx + vg.fast_mfp[self.sp](sx))
+            #print("base_mfp",base_mfp)
+            #print("sx",sx, vg.fast_mfp[self.sp](sx))
+            #print("rx",rx)
+            #print("rho",rho)
+            #print("inner_kr_",inner_kr_)
             
             rsx = self.lookup_table((inner_kr_b, base_mfp))
             rsx[mask] = sx[mask]  # if inner_kr is zero, there is no flow, and the interface potential is the same as the soil potential
@@ -1120,6 +1201,12 @@ class PerirhizalPython(Perirhizal):
                 "rho",
                 np.min(rho_),
                 np.max(rho_),
+                "inner_kr_b",
+                np.min(inner_kr_b),
+                np.max(inner_kr_b),
+                "base_mfp",
+                np.min(base_mfp),
+                np.max(base_mfp),
             )
             raise
 
