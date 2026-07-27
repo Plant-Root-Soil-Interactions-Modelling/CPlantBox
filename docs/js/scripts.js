@@ -111,9 +111,13 @@ window.addEventListener('DOMContentLoaded', event => {
         };
 
         document.querySelectorAll('.cpb-gallery-link').forEach((galleryLink) => {
-            galleryLink.addEventListener('click', (event) => {
+galleryLink.addEventListener('click', (event) => {
+                if (galleryLink.dataset.videoLink === 'true') {
+                    return;
+                }
+            
                 event.preventDefault();
-
+            
                 currentGalleryIndex = getVisibleGalleryLinks().indexOf(galleryLink);
                 showGalleryImage(currentGalleryIndex);
                 galleryModal.show();
