@@ -1143,58 +1143,19 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
     geometry_texture_coordinates_.resize(std::max(static_cast<std::size_t>((p_o / 3 * 2) + total_points * 2), geometry_texture_coordinates_.size()), -1.0);
     geometry_node_ids_.resize(std::max(static_cast<std::size_t>(p_o / 3 + total_points), geometry_node_ids_.size()), -1);
 
-    // --- Compute global frame once for the entire leaf ---
-
-    // as the leaf is centered around the midvein, we really need to find the midvein's geometric center
-    Vector3d midvein_center = midVein(0.5);  // Midpoint of the spline
-    Vector3d midvein_direction = midVein.derivative(0.5).normalized();  // Tangent at midpoint
-    int midvein_center_idx = midVein.selectSpline(0.5).closestId(0.5);  // Closest node index to midpoint
-
-    auto leaf_attachment = midvein_center;  // attach in center because: we mesh from middle out.
-    
-    // Find the t parameter for this node on the spline
-    double t_attachment = 0.0;
-    for (double t = 0.0; t <= 1.0; t += 0.01) {
-        Vector3d pt = midVein(t);
-        if ((pt - leaf_attachment).length() < 0.01) {
-            t_attachment = t;
-            break;
-        }
-    }
-    
+    // ----------------------------------------------------
+    // --- Compute local frame once for the entire leaf ---
+    // --- THIS IS STAGE 2 --------------------------------
     // Compute forward direction along midvein at attachment point
-    Vector3d global_forward = midvein_direction.normalized();
+    Vector3d global_forward{1.0, 0.0, 0.0};  // Default forward
     Vector3d global_right, global_up;
     global_up = Vector3d(0, 0, 1);
-    global_right = global_forward.cross(global_up).normalized();
-    global_up = global_forward.cross(global_right).normalized();
-
-    // --- Compute scaling factor ---
-    // The radial definition is normalized to area=1, length=1
-    // Scale by (currentLeafArea / currentLeafLength) to get actual dimensions
-    // See Leaf.cpp:794 - this matches the vtk_plot.py visualization path
-    double leaf_length = leaf->getLength(false);  // Current blade length [cm]
-    double leaf_area = leaf->leafArea();           // Current leaf area [cm²]
-    double scaling_factor = leaf_area / leaf_length;  // [cm] - matches Leaf::getLeafVis_2D
+    global_right = Vector3d(0, 1, 0);
+    // scaling: Make sure that the leaf is within [0,1] in local space
+    double max_radius = *std::max_element(r_def.begin(), r_def.end());
+    double scaling_factor_local = 1.0 / max_radius;
+    // scale the r_def values to fit within [0,1]
     
-    // Constraint: outer points should be at most leafLength/2 from midpoint
-    // This ensures the leaf fits within its expected bounding box
-    // Find the maximum radius in the radial definition
-    double max_r_def = 0;
-    for (size_t i = 0; i < r_def.size(); i++) {
-        if (r_def[i] > max_r_def) max_r_def = r_def[i];
-    }
-    // Scale down if needed to ensure max_radius <= leaf_length/2
-    double max_allowed_radius = leaf_length / 2.0;
-    double current_max_radius = max_r_def * scaling_factor;
-    if (current_max_radius > max_allowed_radius) {
-        scaling_factor *= (max_allowed_radius / current_max_radius);
-        if (verbose_) {
-            std::cout << "CreateRadialFromDefinition: scaled factor to fit in leafLength/2: " 
-                      << scaling_factor << std::endl;
-        }
-    }
-
     // --- Interpolate r(phi) for the original side ---
     auto interpolate_radius = [&](double phi_target) -> double {
         double p = phi_target;
@@ -1212,19 +1173,15 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
         }
         return r_def.back();
     };
-
     // --- Sample N/2 points and write both original and mirrored ---
     unsigned int point_offset = p_o;
     unsigned int index_offset = c_o;
-
     // --- Write geometry (single section) ---
     // Use the attachment point on the midvein as the leaf center
-    Vector3d midpoint = midVein(t_attachment);
-
+    Vector3d midpoint{0.5, 0.5, 0.0};  // Midpoint in local leaf space
     // Get the leaf's actual nodes for closest-node ID assignment
     const auto& leaf_nodes = leaf->getNodes();
     const auto& leaf_node_ids = leaf->getNodeIds();
-    
     // Helper lambda to find the closest leaf node ID for a given point
     auto findClosestLeafNodeId = [&](const Vector3d& pt) -> int {
         int closest_id = leaf_node_ids.front();
@@ -1238,7 +1195,6 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
         }
         return closest_id;
     };
-
     // Write middle point (midvein)
     unsigned int middle_idx = point_offset / 3;
     STEPOUT("Writing middle point at index " << middle_idx << ": " << midpoint.toString());
@@ -1253,19 +1209,18 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
     geometry_node_ids_[point_offset / 3] = findClosestLeafNodeId(midpoint);
     point_offset += 3;
     STEPOUT("Point offset after writing middle point: " << point_offset);
-    
     double phi_range = phi_def.back() - phi_def.front();
     for (int j = 0; j < half_res; ++j)
     {
         double frac = static_cast<double>(j) / (half_res - 1);
         double phi = phi_def.front() + frac * phi_range;
-        double r_val = interpolate_radius(phi) * scaling_factor * leaf_width_scale_factor_;
+        double r_val = interpolate_radius(phi) * scaling_factor_local * leaf_width_scale_factor_;
         STEPOUT("Sampling point j=" << j << ": phi=" << phi << ", r_val=" << r_val);
         
         // Original side: +90° (front) points along global_forward
         // phi=0 gives r along global_right, phi=90° gives r along global_up
         // We want phi=+90° (front edge) to point in global_forward direction
-        Vector3d original = r_val * (std::cos(phi) * global_right + std::sin(phi) * global_forward) + midvein_center;
+        Vector3d original = r_val * (std::cos(phi) * global_right + std::sin(phi) * global_forward) + midpoint;
         auto original_idx = point_offset / 3;
         STEPOUT("Writing original point at index " << original_idx << ": " << original.toString());
         geometry_[point_offset + 0] = original.x;
@@ -1277,7 +1232,7 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
         geometry_node_ids_[original_idx] = findClosestLeafNodeId(original);
         
         // Mirrored point: negate global_right component
-        Vector3d mirrored = r_val * (-std::cos(phi) * global_right + std::sin(phi) * global_forward) + midvein_center;
+        Vector3d mirrored = r_val * (-std::cos(phi) * global_right + std::sin(phi) * global_forward) + midpoint;
         unsigned int mirror_offset = point_offset + half_res * 3;  // Offset for mirrored points
         auto mirrored_idx = mirror_offset / 3;
         STEPOUT("Writing mirrored point at index " << mirrored_idx << ": " << mirrored.toString());
@@ -1312,6 +1267,76 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
         }
     }
     point_offset += half_res * 3;  // Skip over the mirrored points we already wrote
+
+    // --- Spline-based leaf bending ---
+    // Transform points from flat local [0,1]² space to 3D bent space using midvein spline
+    
+    // Sample spline to get frame sequence for bending
+    int num_frame_samples = 20;
+    std::vector<Matrix3d> spline_frames;
+    std::vector<Vector3d> spline_positions;
+    
+    Vector3d prev_up = Vector3d(0, 0, 1);
+    for (int i = 0; i < num_frame_samples; ++i) {
+        double t = static_cast<double>(i) / std::max(1, num_frame_samples - 1);
+        Vector3d pos = midVein(t);
+        Vector3d forward = midVein.derivative(t).normalized();
+        
+        Quaternion frame_q = Quaternion::ParallelTransportFrame(forward, prev_up);
+        Matrix3d frame = frame_q.ToMatrix3d();
+        
+        spline_frames.push_back(frame);
+        spline_positions.push_back(pos);
+        prev_up = frame.column(2);
+    }
+    
+    // Biological scaling factor for actual leaf dimensions
+    double leaf_length = leaf->getLength(false);
+    double leaf_area = leaf->leafArea();
+    double scaling_factor_biological = leaf_area / leaf_length;
+    
+    // Transform each point using its Y coordinate as spline parameter
+    unsigned int start_point_idx = p_o / 3;
+    unsigned int end_point_idx = point_offset / 3;
+    
+    for (unsigned int i = start_point_idx; i < end_point_idx; ++i) {
+        double x = geometry_[i * 3 + 0];
+        double y = geometry_[i * 3 + 1];
+        double z = geometry_[i * 3 + 2];
+        
+        // Y coordinate maps to spline parameter t in [0,1]
+        double t_val = y;
+        t_val = std::clamp(t_val, 0.0, 1.0);
+        
+        // Find corresponding spline frame
+        int frame_idx = static_cast<int>(t_val * (num_frame_samples - 1));
+        frame_idx = std::clamp(frame_idx, 0, num_frame_samples - 1);
+        
+        const Matrix3d& frame = spline_frames[frame_idx];
+        const Vector3d& spline_pos = spline_positions[frame_idx];
+        
+        // X offset from midvein (0.5 is center in local space)
+        double x_offset = (x - 0.5) * scaling_factor_biological;
+        
+        // Transform: spline_pos + x_offset * local_right
+        Vector3d bent_pos = spline_pos + x_offset * frame.column(1);
+        
+        // Update geometry
+        geometry_[i * 3 + 0] = bent_pos.x;
+        geometry_[i * 3 + 1] = bent_pos.y;
+        geometry_[i * 3 + 2] = bent_pos.z;
+        
+        // Update normal to follow the bent surface
+        Vector3d normal = frame.column(2);
+        geometry_normals_[i * 3 + 0] = normal.x;
+        geometry_normals_[i * 3 + 1] = normal.y;
+        geometry_normals_[i * 3 + 2] = normal.z;
+    }
+    
+    // For the bending, we do a brief debug-focused logging of the point indices we will change
+    auto start_index_points = p_o / 3;
+    auto end_index_points = point_offset / 3;
+STEPOUT("Bending leaf points from index " << start_index_points << " to " << end_index_points - 1);
     
 
     if (verbose_)
