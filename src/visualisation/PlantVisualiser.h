@@ -44,6 +44,8 @@ public :
 
   void SetGeometryResolution(int resolution) { this->geometry_resolution_ = resolution; } // set the resolution of the geometry (number of cells in each direction
   void SetLeafResolution(int resolution) { this->leaf_resolution_ = resolution;}
+  void SetLeafRadialResolution(int resolution) { this->leaf_radial_resolution_ = resolution; }
+  int LeafRadialResolution() const { return leaf_radial_resolution_; }
   void SetComputeMidlineInLeaf(bool inCompute) { this->include_midline_in_leaf_ = inCompute; }
 
   void setPlant(const std::shared_ptr<MappedPlant>& plant);
@@ -165,6 +167,39 @@ protected:
    * @note using a shared_ptr as parameter might be less efficient, but only O(1)
    */
     void GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned int p_o = 0, unsigned int c_o = 0);
+
+    /**
+     * @brief Creates triangulation for a radially-defined leaf.
+     *
+     * Generates middle (midvein) and outer (angular offset) points from the leaf's
+     * radial definition (phi, radius pairs), then triangulates as a fan strip.
+     * Uses the midvein spline only for 3D placement, not for geometrization.
+     *
+     * @param leaf the leaf to generate geometry for
+     * @param radial_resolution number of angular samples around the midvein (0..2pi)
+     * @param p_o point offset
+     * @param c_o cell offset
+     */
+    void CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int radial_resolution, unsigned int p_o, unsigned int c_o);
+
+    /**
+     * @brief Estimates outer ring points for a radial cross-section.
+     *
+     * Given the midpoint on the midvein, the forward (tangent) direction,
+     * the up vector, the leaf width scaling, and the radial resolution,
+     * produces N outer points at angular offsets.
+     *
+     * @param midpoint position on the midvein
+     * @param forward tangent direction at the midpoint
+     * @param up reference up direction
+     * @param r radius / distance from midvein per angular sample
+     * @param radial_resolution number of angular samples
+     * @param out buffer to write N points into (sequential x,y,z)
+     * @param out_offset starting index in out
+     */
+    void EstimatePointsFromRadial(const Vector3d& midpoint, const Vector3d& forward, const Vector3d& up,
+                                   const std::vector<double>& r, int radial_resolution,
+                                   std::vector<double>& out, unsigned int out_offset);
     
   std::map<int, std::pair<int, Vector3d>> leaf_attachment_map_;
 
@@ -176,7 +211,8 @@ protected:
   std::vector<double> geometry_texture_coordinates_; // u,v coordinates
   std::vector<int> geometry_node_ids_; // the node ids for each vertex
   unsigned int geometry_resolution_{8}; // the resolution of the cylindric geometry
-  unsigned int leaf_resolution_{20}; // the resolution of the leaf geometry
+  unsigned int leaf_resolution_{20}; // the resolution of the leaf geometry (sections along midvein)
+  unsigned int leaf_radial_resolution_{20}; // the radial resolution (angular samples) for CreateRadialFromDefinition
   // optional alternative shape defining function that takes [0,1] and produces [0,1]
   
   std::optional<std::function<double(double)>> shape_function_ = std::nullopt;

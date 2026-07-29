@@ -2,6 +2,7 @@
 #include "external/pybind11/include/pybind11/functional.h"
 #include "external/pybind11/include/pybind11/pybind11.h"
 #include "external/pybind11/include/pybind11/stl.h"
+#include "visualisation/CatmullRomSpline.h"
 namespace py = pybind11;
 
 /**
@@ -1134,6 +1135,25 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("leafBladeSurface", &MappedPlant::leafBladeSurface)
         .def_readwrite("bladeLength", &MappedPlant::bladeLength)
         .def("getNodeIds", &MappedPlant::getNodeIds);
+    
+    py::class_<CatmullRomSplineManager, std::shared_ptr<CatmullRomSplineManager>>(m, "Spline")
+        .def(py::init([](const std::vector<std::vector<double>>& points) {
+            std::vector<Vector3d> vec3d;
+            vec3d.reserve(points.size());
+            for (const auto& p : points) {
+                if (p.size() >= 3) {
+                    vec3d.emplace_back(p[0], p[1], p[2]);
+                }
+            }
+            return CatmullRomSplineManager(vec3d);
+        }), py::arg("points"), "Create spline from list of [x,y,z] points or Vector3d objects")
+        .def("__call__", &CatmullRomSplineManager::operator(), py::arg("t"), "Get point on spline at parameter t (0-1)")
+        .def("derivative", &CatmullRomSplineManager::derivative, py::arg("t"), "Get tangent vector at parameter t (0-1)")
+        .def("getT0", &CatmullRomSplineManager::getT0, "Get start parameter value")
+        .def("getT1", &CatmullRomSplineManager::getT1, "Get end parameter value")
+        .def("size", &CatmullRomSplineManager::size, "Get number of control points")
+        .def("getControlPoint", &CatmullRomSplineManager::getControlPoint, py::arg("i"), "Get control point at index i")
+        ;
 
     /**
      * Perirhizal.h
@@ -1402,7 +1422,9 @@ PYBIND11_MODULE(plantbox, m) {
         .def("SetLeafResolution", &PlantVisualiser::SetLeafResolution, py::arg("resolution"))
         .def("SetComputeMidlineInLeaf", &PlantVisualiser::SetComputeMidlineInLeaf, py::arg("inCompute"))
         .def("HasGeometry", &PlantVisualiser::HasGeometry)
-        .def("ResetGeometry", &PlantVisualiser::ResetGeometry);
+        .def("ResetGeometry", &PlantVisualiser::ResetGeometry)
+        .def("SetVerbose", &PlantVisualiser::SetVerbose, py::arg("verbose"))
+      ;
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
         .value("plagio", Plant::TropismTypes::tt_plagio)

@@ -181,10 +181,10 @@ class Quaternion {
     {
       // initial copy of the previous up vector
       Vector3d up = vectorNormalized(prev_up);
-      // calculate the right vector
-      Vector3d right = up.cross(vectorNormalized(forward));
-      // calculate the new up vector
-      up = forward.cross(right);
+      // calculate the right vector (forward × up for right-handed system)
+      Vector3d right = vectorNormalized(forward).cross(up);
+      // recalculate up to ensure orthogonality
+      up = right.cross(vectorNormalized(forward));
       // normalize the vectors
       right.normalize();
       up.normalize();

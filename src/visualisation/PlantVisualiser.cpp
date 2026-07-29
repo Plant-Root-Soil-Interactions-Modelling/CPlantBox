@@ -168,7 +168,11 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
       cell_space = geometry_indices_.size();
     }
 		auto leaf = std::dynamic_pointer_cast<Leaf>(organ);
-		if(leaf->getLeafRandomParameter()->parametrisationType == 1)
+		auto lrp = leaf->getLeafRandomParameter();
+		
+		// New default: use CreateRadialFromDefinition for parametrisationType == 0
+		// parametrisationType == 1 falls back to GenerateRadialLeafGeometry (old method)
+		if(lrp->parametrisationType == 1)
 		{
 			GenerateRadialLeafGeometry(leaf, point_space, cell_space);
 			point_space += leaf->getNumberOfNodes() * 6 * 3;
@@ -176,29 +180,15 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
 		}
 		else
 		{
-			int petiole_zone = 0;
-			for(int i = 0; i < leaf->getNumberOfNodes(); i++)
-			{
-				if(leaf->nodeLeafVis(leaf->getLength(i)))
-				{
-					petiole_zone = i;
-					break;
-				}
-			}
-			if(petiole_zone + 1 < leaf->getNumberOfNodes())
-			{
-				//GenerateLeafGeometry(leaf, petiole_zone, point_space, cell_space);
-        auto lrp = leaf->getLeafRandomParameter();
-        lrp->createLeafGeometry(lrp->leafGeometryPhi,lrp->leafGeometryX,leaf_resolution_);
-
-				GenerateRadialLeafGeometry(leaf, point_space, cell_space);
-				//point_space += (organ->getNumberOfNodes() - petiole_zone) * 6 * 3;
-        //point_space = geometry_.size();
-				//cell_space += (organ->getNumberOfNodes() - petiole_zone) * 6;
-        //cell_space = geometry_indices_.size();
-			point_space += leaf->getNumberOfNodes() * 6 * 3;
-			cell_space += leaf->getNumberOfNodes() * 6;
-			}
+			// parametrisationType == 0: use the new CreateRadialFromDefinition
+			// No need to pre-compute leafGeometry; we use leafGeometryPhi/leafGeometryX directly
+			CreateRadialFromDefinition(leaf, leaf_resolution_, point_space, cell_space);
+			// Point count: leaf_resolution_ sections * (1 middle + leaf_resolution_ outer)
+			// Index count: leaf_resolution_ * (3 * leaf_resolution_ - 2) * 3
+			int num_sections = leaf_resolution_;
+			int radial_res = leaf_resolution_;
+			point_space += num_sections * (1 + radial_res) * 3;
+			cell_space += radial_res * (3 * num_sections - 2) * 3;
 		}
   }
   else
@@ -221,17 +211,19 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
     // Check against object, because organType can be -1
 		if(organ->organType() == organType || organType < 0)
 		{
-			if(organ->organType() == 4)
-			{
-				// 4 SHOULD mean leaf, so we do not check for successful cast
-				if(include_midline_in_leaf_)
-				{
-				  point_space += organ->getNumberOfNodes() * 3 * geometry_resolution_;
-				  cell_space += (organ->getNumberOfNodes() - 1) * 6 * geometry_resolution_;
-				}
-			  point_space += (organ->getNumberOfNodes()) * 4 * 3;
-				cell_space += ((organ->getNumberOfNodes()) - 1) * 4 * 3 + 40;
-			}
+    if(organ->organType() == 4)
+    {
+      // 4 SHOULD mean leaf, so we do not check for successful cast
+      if(include_midline_in_leaf_)
+      {
+        point_space += organ->getNumberOfNodes() * 3 * geometry_resolution_;
+        cell_space += (organ->getNumberOfNodes() - 1) * 6 * geometry_resolution_;
+      }
+      // For the new CreateRadialFromDefinition: points = M * (1 + N), indices = N * (3M - 2) * 3
+      // where M = leaf_resolution_, N = leaf_resolution_
+      point_space += (organ->getNumberOfNodes()) * leaf_resolution_ * 3;
+      cell_space += leaf_resolution_ * (3 * leaf_resolution_ - 2) * 3;
+    }
 			else
 			{
 				point_space += organ->getNumberOfNodes() * 3 * geometry_resolution_;
@@ -284,36 +276,23 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
       //cell_space += (organ->getNumberOfNodes() - 1) * 6 * geometry_resolution_;
       point_space = geometry_.size();
       cell_space = geometry_indices_.size();
-			
-			if(leaf->getLeafRandomParameter()->parametrisationType == 1)
-			{
+      
+      auto lrp = leaf->getLeafRandomParameter();
+      if(lrp->parametrisationType == 1)
+      {
         if(verbose_)
-				  std::cout << "Generating radial leaf geometry_" << std::endl;
-				GenerateRadialLeafGeometry(leaf, point_space, cell_space);
-				point_space = geometry_.size();
-				cell_space = geometry_indices_.size();
-			}
-			else
-			{
-				int petiole_zone = 0;
-				for(int i = 0; i < leaf->getNumberOfNodes(); i++)
-				{
-					if(!leaf->nodeLeafVis(leaf->getLength(i)))
-					{
-						petiole_zone = i;
-					}
-					else break;
-				}
-				if(petiole_zone + 1 < leaf->getNumberOfNodes())
-				{
-	        auto lrp = leaf->getLeafRandomParameter();
-          lrp->createLeafGeometry(lrp->leafGeometryPhi,lrp->leafGeometryX,leaf_resolution_);
-
-					GenerateRadialLeafGeometry(leaf, point_space, cell_space);
-					point_space = geometry_.size();
-					cell_space = geometry_indices_.size();
-				}
-			}
+          std::cout << "Generating radial leaf geometry_ (old method)" << std::endl;
+        GenerateRadialLeafGeometry(leaf, point_space, cell_space);
+        point_space = geometry_.size();
+        cell_space = geometry_indices_.size();
+      }
+      else
+      {
+        // New default: CreateRadialFromDefinition
+        CreateRadialFromDefinition(leaf, leaf_resolution_, point_space, cell_space);
+        point_space = geometry_.size();
+        cell_space = geometry_indices_.size();
+      }
     }
     else
     {
@@ -612,17 +591,49 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 	auto length = leaf->getLength(false);
 	// save c_o
 	unsigned int start_c_o = c_o;
-  // std::cout << "Accessing leaf random parameter for leaf " << leaf->getId() << std::endl;
+  if(verbose_) std::cout << "Generating radial leaf geometry for leaf " << leaf->getId() << " with " << leaf->getNumberOfNodes() << " nodes." << std::endl;
 	// get leaf random parameter
 	auto lrp = leaf->getLeafRandomParameter();
 	auto stem = leaf->getParent();
+  if(verbose_) std::cout << "Leaf has " << leaf->getNumberOfNodes() << " nodes and stem has " << (stem ? stem->getNumberOfNodes() : 0) << " nodes." << std::endl;
+  
+  // Check if parent exists and has valid nodes for direction calculation
   Vector3d origin = leaf->getOrigin();
   Vector3d origin_neighbor;
-  if(leaf->parentNI < stem->getNumberOfNodes() - 1)
-    origin_neighbor = stem->getNode(leaf->parentNI + 1);
-  else 
-    origin_neighbor = stem->getNode(leaf->parentNI - 1);
-  Vector3d direction = (origin_neighbor - origin).normalized();
+  Vector3d direction;
+  
+  bool valid_stem = false;
+  if(stem && stem->getNumberOfNodes() > 0) {
+    // Check if parentNI is valid for the stem
+    if(leaf->parentNI < stem->getNumberOfNodes()) {
+      // Parent exists and has the parentNI node
+      if(leaf->parentNI + 1 < stem->getNumberOfNodes()) {
+        origin_neighbor = stem->getNode(leaf->parentNI + 1);
+      } else if (leaf->parentNI > 0) {
+        origin_neighbor = stem->getNode(leaf->parentNI - 1);
+      } else {
+        // Stem has only 1 node (parentNI == 0), use leaf's second node
+        origin_neighbor = leaf->getNode(std::min(1, (int)leaf->getNumberOfNodes() - 1));
+      }
+      direction = (origin_neighbor - origin).normalized();
+      valid_stem = true;
+    }
+  }
+  
+  if(!valid_stem) {
+    // No valid parent, use the first two leaf nodes to determine direction
+    if(leaf->getNumberOfNodes() > 1) {
+      origin_neighbor = leaf->getNode(1);
+      direction = (origin_neighbor - origin).normalized();
+    } else {
+      // Fallback to default direction if only one node
+      direction = Vector3d(0, 0, 1);
+    }
+    if(verbose_) {
+      std::cout << "Leaf has no valid parent stem, using leaf nodes for direction" << std::endl;
+    }
+  }
+  
   if(verbose_)
   {
     bool has_petiole = false;
@@ -719,7 +730,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 	this->geometry_texture_coordinates_.resize(std::max(static_cast<std::size_t>((p_o/3*2) + point_buffer * 2), this->geometry_texture_coordinates_.size()),-1.0);
 	this->geometry_node_ids_.resize(std::max(static_cast<std::size_t>(p_o / 3 + point_buffer), this->geometry_node_ids_.size()),-1);
 	// get the number of points
-  // std::cout << "Iterating through the line intersections and generating the geometry_" << std::endl;
+  if(verbose_) std::cout << "Iterating through the line intersections and generating the geometry_" << std::endl;
   last_amount = -1;
   last_non_petiole = -1;
 	Quaternion last_orientation;
@@ -730,7 +741,8 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
   float random_factor_2 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
   // computing the first quaternion from: stem is forward, right is angular direction and up is the cross product
-
+#define STEP_DEBUG false
+#define STEPOUT(...) if(STEP_DEBUG) std::cout << __FILE__ << ":" << __LINE__ << " " << __FUNCTION__ << " " << __VA_ARGS__ << std::endl;
 
 	for(auto i = 0; i < outer_geometry_points.size(); ++i)
 	{
@@ -738,6 +750,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 
     // if we have a shape function, the current leaf geometry array should be
     // at maximum 1
+    STEPOUT("Current leaf geometry array size: " << current.size());
     if (this->shape_function_.has_value())
     {
       auto max = *std::max_element(current.begin(), current.end());
@@ -747,6 +760,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       }
     }
 
+    STEPOUT("Will create MirrorIterator for current leaf geometry array");
 		MirrorIterator helper(&current);
 		auto current_amount = helper.size();
     if(current_amount < 2)
@@ -762,6 +776,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		// compute the size of the current array, which is double its size unless one point is near zero which is only counted once
 		int current_size = current_amount;
 		// get the current point
+    STEPOUT("Will compute midpoint and orientation for current leaf geometry array");
     double t = static_cast<double>(i) / static_cast<double>(outer_geometry_points.size()-1);
 		double l = t * length;
     auto midpoint = (i == 0) ? leaf->getNode(0) : midVein(t);
@@ -780,6 +795,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
     // find out whether right or up is more similar to {0,0,1}
 
     // local axis
+    STEPOUT("Computing local axis for current leaf geometry array");
     direction = midVein.derivative(t);
     right = up.cross(direction).normalized();
 		right.z = right_penalty_ * right.z;
@@ -788,7 +804,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
     direction.normalize();
 
     // iterate through the points
-    //std::cout << "Iterating through the points of the current line intersection " << i << std::endl;
+    STEPOUT("Iterating through the points of the current line intersection " << i);
 
 		float petiole_distance = leaf->getLeafRandomParameter()->lb;
 
@@ -879,14 +895,14 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 			p_o += 3;
     }
     //std::cout << std::endl;
-    //std::cout << std::endl << "Generating the triangles for the current line intersection " << i << "(" << current.size() << ")" << std::endl;
+    STEPOUT("Generating the triangles for the current line intersection " << i << "(" << current.size() << ")" << std::endl);
     if(i > last_non_petiole && last_non_petiole >= 0)
     {
       // use the case distinction between number of intersections
       // for the triangulation between connected sections of the surface
       if(current_amount == last_amount)
       {
-        // std::cout << " which is equal to the last one" << std::endl;
+        STEPOUT("Current amount is equal to last amount, constructing triangles without midvein in mind");
         // we construct pairwise triangles for the two sections
         for(auto j = 0; j < current_amount - 1; j += 2)
         {
@@ -913,6 +929,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
         geometry_node_ids_[p_o/3] = 1.0;
         if(current_amount > last_amount)
         {
+          STEPOUT("Current amount is larger than last amount, constructing triangles with midvein in mind");
 					// since we have more points in one of the sections
 					// we have to construct triangles with the midvein in mind
 					// we construct pairwise triangles for the two sections
@@ -924,49 +941,83 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
           // outer triangles are the only ones connected to the last outline points
           // compute difference between the number of points
           auto diff = current_amount - last_amount;
+          STEPOUT("Entering current_amount > last_amount branch: p_o/3=" << (p_o/3) << ", current_amount=" << current_amount << ", last_amount=" << last_amount << ", diff=" << diff << ", c_o=" << c_o << ", geometry_indices_.size()=" << geometry_indices_.size());
+          STEPOUT("Point layout: last strip has " << last_amount << " points (indices " << (p_o/3) - last_amount << " to " << (p_o/3) - 1 << "), current strip has " << current_amount << " points (indices " << (p_o/3) - current_amount << " to " << (p_o/3) - 1 << ")");
+          STEPOUT("Midvein is at index " << (p_o/3) - current_amount/2 << " in current strip");
+          STEPOUT("Last midvein was at index " << (p_o/3) - last_amount/2 << " in last strip");
           // iterate through the top points until we reach the midvein plus the difference
           // std::cout << "iterate through the top points until we reach the midvein plus the difference" << std::endl;
-          for(auto j = 0; j < current_amount/2 -diff - 1; ++j)
+          STEPOUT("Top points loop: iterating through last_amount/2 = " << (last_amount/2) << " points on top side");
+          // Connect the top portion where both strips have points
+          // We iterate through the last strip's top half (excluding midvein)
+          for(auto j = 0; j < last_amount/2 - 1; ++j)
           {
 						// first triangle
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j;
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j + 1;
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j - last_amount;
+						auto idx1 = (p_o/3) - current_amount + j;
+						auto idx2 = (p_o/3) - current_amount + j + 1;
+						auto idx3 = (p_o/3) - current_amount + j - last_amount;
+						STEPOUT("First triangle j=" << j << ": indices " << idx1 << ", " << idx2 << ", " << idx3 << " at c_o=" << c_o);
+						geometry_indices_[c_o++] = idx1;
+						geometry_indices_[c_o++] = idx2;
+						geometry_indices_[c_o++] = idx3;
 						// second triangle
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j - last_amount;
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j - last_amount + 1;
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j + 1;
+						idx1 = (p_o/3) - current_amount + j - last_amount;
+						idx2 = (p_o/3) - current_amount + j - last_amount + 1;
+						idx3 = (p_o/3) - current_amount + j + 1;
+						STEPOUT("Second Triangle j=" << j << " (tri2): indices " << idx1 << ", " << idx2 << ", " << idx3 << " at c_o=" << c_o);
+						geometry_indices_[c_o++] = idx1;
+						geometry_indices_[c_o++] = idx2;
+						geometry_indices_[c_o++] = idx3;
           }
           // iterate through the bottom points starting from the midvein plus the difference
           // std::cout << "iterate through the bottom points starting from the midvein plus the difference" << std::endl;
-          for(auto j = current_amount/2+diff; j < current_amount - 1; ++j)
+          STEPOUT("Bottom points loop: starting from midvein+diff, iterating through last_amount/2 = " << (last_amount/2) << " points on bottom side");
+          // Connect the bottom portion where both strips have points
+          // Start from the corresponding position on the bottom half
+          for(auto j = last_amount/2; j < last_amount - 1; ++j)
           {
 						// first triangle
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j;
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j + 1;
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j - last_amount - diff;
+						auto idx1 = (p_o/3) - current_amount + j;
+						auto idx2 = (p_o/3) - current_amount + j + 1;
+						auto idx3 = (p_o/3) - current_amount + j - last_amount - diff;
+						STEPOUT("Bottom loop j=" << j << ": indices " << idx1 << ", " << idx2 << ", " << idx3 << " at c_o=" << c_o);
+						geometry_indices_[c_o++] = idx1;
+						geometry_indices_[c_o++] = idx2;
+						geometry_indices_[c_o++] = idx3;
 						// second triangle
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j - last_amount - diff;
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j - last_amount + 1 - diff;
-						geometry_indices_[c_o++] = (p_o/3) - current_amount + j + 1;
+						idx1 = (p_o/3) - current_amount + j - last_amount - diff;
+						idx2 = (p_o/3) - current_amount + j - last_amount + 1 - diff;
+						idx3 = (p_o/3) - current_amount + j + 1;
+						STEPOUT("Bottom loop j=" << j << " (tri2): indices " << idx1 << ", " << idx2 << ", " << idx3 << " at c_o=" << c_o);
+						geometry_indices_[c_o++] = idx1;
+						geometry_indices_[c_o++] = idx2;
+						geometry_indices_[c_o++] = idx3;
           }
-          // iterate through the midvein points
+          // iterate through the midvein points to connect the extra points
           // std::cout << "iterate through the midvein points" << std::endl;
           // note that this is a specific interpretation of what happens here and might not be correct
           // for a complete correct implementation of this, we would have to start with the phi array
+          STEPOUT("Midvein points loop: connecting " << diff << " extra points around midvein");
+          // Create triangles to connect the extra points in the midvein region
+          // We fan from the last strip's midvein area to the current strip's expanded midvein area
           for(auto j = 0; j < diff - 1; ++j)
           {
             // we triangulate from one point against pairs of points
             // so we only need one triangle, but with the most recent point included
-            geometry_indices_[c_o++] = (p_o/3) - current_amount/2 + j;
-            geometry_indices_[c_o++] = (p_o/3) - current_amount/2 + j + 1;
-            geometry_indices_[c_o++] = (p_o/3);
+            auto idx1 = (p_o/3) - current_amount/2 + j;
+            auto idx2 = (p_o/3) - current_amount/2 + j + 1;
+            auto idx3 = (p_o/3);
+            STEPOUT("Midvein loop j=" << j << ": indices " << idx1 << ", " << idx2 << ", " << idx3 << " at c_o=" << c_o);
+            geometry_indices_[c_o++] = idx1;
+            geometry_indices_[c_o++] = idx2;
+            geometry_indices_[c_o++] = idx3;
           }
           // increase buffer
           p_o += 3;
         }
         else
         {
+          STEPOUT("Current amount is smaller than last amount, constructing triangles with midvein in mind");
 					// since we have more points in one of the sections
 					// we have to construct triangles with the midvein in mind
 					// we construct pairwise triangles for the two sections
@@ -1012,6 +1063,238 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		last_position = midpoint;
 	}
 	//std::cout << "In the end I ended up adding " << c_o - start_c_o << " where I thought I'd add " << index_buffer << std::endl;
+}
+
+void PlantVisualiser::EstimatePointsFromRadial(const Vector3d& midpoint, const Vector3d& forward, const Vector3d& up,
+                                               const std::vector<double>& r, int radial_resolution,
+                                               std::vector<double>& out, unsigned int out_offset)
+{
+    Vector3d right = forward.cross(up).normalized();
+    double phi_step = 2.0 * M_PI / radial_resolution;
+    for (int j = 0; j < radial_resolution; ++j)
+    {
+        double phi = j * phi_step;
+        Vector3d point = midpoint + r[j] * (std::cos(phi) * right + std::sin(phi) * up);
+        unsigned int base = out_offset + j * 3;
+        out[base + 0] = point.x;
+        out[base + 1] = point.y;
+        out[base + 2] = point.z;
+    }
+}
+
+void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int radial_resolution,
+                                                  unsigned int p_o, unsigned int c_o)
+{
+    if (radial_resolution < 3) radial_resolution = 3;
+
+    if (verbose_)
+        std::cout << "CreateRadialFromDefinition for leaf " << leaf->getId()
+                  << " with radial_resolution=" << radial_resolution << std::endl;
+
+    auto lrp = leaf->getLeafRandomParameter();
+    auto length = leaf->getLength(false);
+
+    // Build the midvein spline
+    CatmullRomSplineManager midVein(leaf->getNodes(), leaf->getNodeIds());
+    midVein.setAlpha(0.0, midVein.splineSize() - 1);
+
+    // The angular definition: phi values and corresponding radii
+    const auto& phi_def = lrp->leafGeometryPhi;
+    const auto& r_def   = lrp->leafGeometryX;
+
+    if (phi_def.empty() || r_def.empty())
+    {
+        if (verbose_)
+            std::cout << "CreateRadialFromDefinition: no radial definition found, skipping." << std::endl;
+        return;
+    }
+
+    // Flat leaf: single section with mirrored radial definition
+    int total_points = 1 + radial_resolution;  // 1 middle + radial_resolution outer points
+    int half_res = radial_resolution / 2;
+    int total_triangles = 2 * (half_res - 1);  // Fan triangulation: (half_res-1) triangles per side × 2 sides
+
+    // Buffer reservations
+    geometry_.resize(std::max(static_cast<std::size_t>(p_o + total_points * 3), geometry_.size()), -1.0);
+    geometry_normals_.resize(std::max(static_cast<std::size_t>(p_o + total_points * 3), geometry_normals_.size()), -1.0);
+    geometry_indices_.resize(std::max(static_cast<std::size_t>(c_o + total_triangles * 3), geometry_indices_.size()), static_cast<unsigned int>(-1));
+    geometry_texture_coordinates_.resize(std::max(static_cast<std::size_t>((p_o / 3 * 2) + total_points * 2), geometry_texture_coordinates_.size()), -1.0);
+    geometry_node_ids_.resize(std::max(static_cast<std::size_t>(p_o / 3 + total_points), geometry_node_ids_.size()), -1);
+
+    // --- Compute global frame once for the entire leaf ---
+
+    // as the leaf is centered around the midvein, we really need to find the midvein's geometric center
+    Vector3d midvein_center = midVein(0.5);  // Midpoint of the spline
+    Vector3d midvein_direction = midVein.derivative(0.5).normalized();  // Tangent at midpoint
+    int midvein_center_idx = midVein.selectSpline(0.5).closestId(0.5);  // Closest node index to midpoint
+
+    auto leaf_attachment = midvein_center;  // attach in center because: we mesh from middle out.
+    
+    // Find the t parameter for this node on the spline
+    double t_attachment = 0.0;
+    for (double t = 0.0; t <= 1.0; t += 0.01) {
+        Vector3d pt = midVein(t);
+        if ((pt - leaf_attachment).length() < 0.01) {
+            t_attachment = t;
+            break;
+        }
+    }
+    
+    // Compute forward direction along midvein at attachment point
+    Vector3d global_forward = midvein_direction.normalized();
+    Vector3d global_right, global_up;
+    global_up = Vector3d(0, 0, 1);
+    global_right = global_forward.cross(global_up).normalized();
+    global_up = global_forward.cross(global_right).normalized();
+
+    // --- Compute scaling factor ---
+    // The radial definition is normalized to area=1, length=1
+    // Scale by (currentLeafArea / currentLeafLength) to get actual dimensions
+    // See Leaf.cpp:794 - this matches the vtk_plot.py visualization path
+    double leaf_length = leaf->getLength(false);  // Current blade length [cm]
+    double leaf_area = leaf->leafArea();           // Current leaf area [cm²]
+    double scaling_factor = leaf_area / leaf_length;  // [cm] - matches Leaf::getLeafVis_2D
+    
+    // Constraint: outer points should be at most leafLength/2 from midpoint
+    // This ensures the leaf fits within its expected bounding box
+    // Find the maximum radius in the radial definition
+    double max_r_def = 0;
+    for (size_t i = 0; i < r_def.size(); i++) {
+        if (r_def[i] > max_r_def) max_r_def = r_def[i];
+    }
+    // Scale down if needed to ensure max_radius <= leaf_length/2
+    double max_allowed_radius = leaf_length / 2.0;
+    double current_max_radius = max_r_def * scaling_factor;
+    if (current_max_radius > max_allowed_radius) {
+        scaling_factor *= (max_allowed_radius / current_max_radius);
+        if (verbose_) {
+            std::cout << "CreateRadialFromDefinition: scaled factor to fit in leafLength/2: " 
+                      << scaling_factor << std::endl;
+        }
+    }
+
+    // --- Interpolate r(phi) for the original side ---
+    auto interpolate_radius = [&](double phi_target) -> double {
+        double p = phi_target;
+        double phi_min = phi_def.front();
+        double phi_max = phi_def.back();
+        if (p <= phi_min) return r_def.front();
+        if (p >= phi_max) return r_def.back();
+        for (size_t k = 0; k < phi_def.size() - 1; ++k)
+        {
+            if (p >= phi_def[k] && p <= phi_def[k + 1])
+            {
+                double t = (p - phi_def[k]) / (phi_def[k + 1] - phi_def[k]);
+                return r_def[k] + t * (r_def[k + 1] - r_def[k]);
+            }
+        }
+        return r_def.back();
+    };
+
+    // --- Sample N/2 points and write both original and mirrored ---
+    unsigned int point_offset = p_o;
+    unsigned int index_offset = c_o;
+
+    // --- Write geometry (single section) ---
+    // Use the attachment point on the midvein as the leaf center
+    Vector3d midpoint = midVein(t_attachment);
+
+    // Get the leaf's actual nodes for closest-node ID assignment
+    const auto& leaf_nodes = leaf->getNodes();
+    const auto& leaf_node_ids = leaf->getNodeIds();
+    
+    // Helper lambda to find the closest leaf node ID for a given point
+    auto findClosestLeafNodeId = [&](const Vector3d& pt) -> int {
+        int closest_id = leaf_node_ids.front();
+        double min_dist_sq = std::numeric_limits<double>::max();
+        for (size_t i = 0; i < leaf_nodes.size(); ++i) {
+            double dist_sq = (leaf_nodes[i] - pt).times(leaf_nodes[i] - pt);
+            if (dist_sq < min_dist_sq) {
+                min_dist_sq = dist_sq;
+                closest_id = leaf_node_ids[i];
+            }
+        }
+        return closest_id;
+    };
+
+    // Write middle point (midvein)
+    unsigned int middle_idx = point_offset / 3;
+    STEPOUT("Writing middle point at index " << middle_idx << ": " << midpoint.toString());
+    geometry_[point_offset + 0] = midpoint.x;
+    geometry_[point_offset + 1] = midpoint.y;
+    geometry_[point_offset + 2] = midpoint.z;
+    geometry_normals_[point_offset + 0] = global_up.x;
+    geometry_normals_[point_offset + 1] = global_up.y;
+    geometry_normals_[point_offset + 2] = global_up.z;
+    geometry_texture_coordinates_[(point_offset / 3 * 2) + 0] = 0.0;
+    geometry_texture_coordinates_[(point_offset / 3 * 2) + 1] = 0.0;
+    geometry_node_ids_[point_offset / 3] = findClosestLeafNodeId(midpoint);
+    point_offset += 3;
+    STEPOUT("Point offset after writing middle point: " << point_offset);
+    
+    double phi_range = phi_def.back() - phi_def.front();
+    for (int j = 0; j < half_res; ++j)
+    {
+        double frac = static_cast<double>(j) / (half_res - 1);
+        double phi = phi_def.front() + frac * phi_range;
+        double r_val = interpolate_radius(phi) * scaling_factor * leaf_width_scale_factor_;
+        STEPOUT("Sampling point j=" << j << ": phi=" << phi << ", r_val=" << r_val);
+        
+        // Original side: +90° (front) points along global_forward
+        // phi=0 gives r along global_right, phi=90° gives r along global_up
+        // We want phi=+90° (front edge) to point in global_forward direction
+        Vector3d original = r_val * (std::cos(phi) * global_right + std::sin(phi) * global_forward) + midvein_center;
+        auto original_idx = point_offset / 3;
+        STEPOUT("Writing original point at index " << original_idx << ": " << original.toString());
+        geometry_[point_offset + 0] = original.x;
+        geometry_[point_offset + 1] = original.y;
+        geometry_[point_offset + 2] = original.z;
+        geometry_normals_[point_offset + 0] = global_up.x;
+        geometry_normals_[point_offset + 1] = global_up.y;
+        geometry_normals_[point_offset + 2] = global_up.z;
+        geometry_node_ids_[original_idx] = findClosestLeafNodeId(original);
+        
+        // Mirrored point: negate global_right component
+        Vector3d mirrored = r_val * (-std::cos(phi) * global_right + std::sin(phi) * global_forward) + midvein_center;
+        unsigned int mirror_offset = point_offset + half_res * 3;  // Offset for mirrored points
+        auto mirrored_idx = mirror_offset / 3;
+        STEPOUT("Writing mirrored point at index " << mirrored_idx << ": " << mirrored.toString());
+        geometry_[mirror_offset + 0] = mirrored.x;
+        geometry_[mirror_offset + 1] = mirrored.y;
+        geometry_[mirror_offset + 2] = mirrored.z;
+        geometry_normals_[mirror_offset + 0] = global_up.x;
+        geometry_normals_[mirror_offset + 1] = global_up.y;
+        geometry_normals_[mirror_offset + 2] = global_up.z;
+        geometry_node_ids_[mirrored_idx] = findClosestLeafNodeId(mirrored);
+        point_offset += 3;
+
+        if(j > 0)
+        {
+          STEPOUT("Creating triangles for j=" << j << ": middle_idx=" << middle_idx << ", original_idx=" << original_idx << ", " << mirror_offset << "/3=" << (mirror_offset / 3));
+          STEPOUT("geometry_indices_ size before: " << geometry_indices_.size() << ", index_offset=" << index_offset);
+          // triangulate between the last last point (original_idx-1), the current original point, and the middle
+          geometry_indices_[index_offset++] = middle_idx;
+          geometry_indices_[index_offset++] = original_idx;
+          geometry_indices_[index_offset++] = original_idx - 1;
+          // mirrored triangle will complete the fan: mirrored-1, mirrored, middle
+          geometry_indices_[index_offset++] = middle_idx;
+          geometry_indices_[index_offset++] = (mirror_offset / 3) - 1;
+          geometry_indices_[index_offset++] = (mirror_offset / 3);
+        }
+        else
+        {
+          // observed closure is necessary: N=30 missing triangle is 0, 29, 30 (middle, second-to-last mirror, last mirror)
+          geometry_indices_[index_offset++] = middle_idx;
+          geometry_indices_[index_offset++] = p_o / 3 + total_points - 2;  // second-to-last mirrored point
+          geometry_indices_[index_offset++] = p_o / 3 + total_points - 1;  // last mirrored point
+        }
+    }
+    point_offset += half_res * 3;  // Skip over the mirrored points we already wrote
+    
+
+    if (verbose_)
+        std::cout << "CreateRadialFromDefinition done: " << total_points << " points, "
+                  << total_triangles << " triangles." << std::endl;
 }
 
 std::vector<double> PlantVisualiser::GetGeometry() const
