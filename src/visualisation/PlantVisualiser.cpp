@@ -170,9 +170,32 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
 		auto leaf = std::dynamic_pointer_cast<Leaf>(organ);
 		auto lrp = leaf->getLeafRandomParameter();
 		
-		// New default: use CreateRadialFromDefinition for parametrisationType == 0
-		// parametrisationType == 1 falls back to GenerateRadialLeafGeometry (old method)
-		if(lrp->parametrisationType == 1)
+		// Determine if we need to use the true radial description (for star-shaped leaves)
+		// by checking the first non-zero getLeafVisX result
+		bool use_true_radial = false;
+		if(lrp->parametrisationType == 0)
+		{
+			// Check getLeafVisX for first non-zero value - if more than 1 element, it's star-shaped
+			for(int i = 0; i < leaf->getNumberOfNodes(); ++i)
+			{
+				auto vis_x = leaf->getLeafVisX(i);
+				if(!vis_x.empty())
+				{
+					if(vis_x.size() > 1)
+					{
+						use_true_radial = true;
+						if(verbose_)
+							std::cout << "Leaf " << leaf->getId() << " has non-convex cross-section (" 
+							          << vis_x.size() << " points), using true radial description" << std::endl;
+					}
+					break;
+				}
+			}
+		}
+		
+		// parametrisationType == 1: always use old method (GenerateRadialLeafGeometry)
+		// parametrisationType == 0: use true radial if star-shaped, otherwise old method for robustness
+		if(lrp->parametrisationType == 1 || !use_true_radial)
 		{
 			GenerateRadialLeafGeometry(leaf, point_space, cell_space);
 			point_space += leaf->getNumberOfNodes() * 6 * 3;
@@ -180,8 +203,7 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
 		}
 		else
 		{
-			// parametrisationType == 0: use the new CreateRadialFromDefinition
-			// No need to pre-compute leafGeometry; we use leafGeometryPhi/leafGeometryX directly
+			// parametrisationType == 0 with star-shaped leaf: use CreateRadialFromDefinition
 			CreateRadialFromDefinition(leaf, leaf_resolution_, point_space, cell_space);
 			// Point count: leaf_resolution_ sections * (1 middle + leaf_resolution_ outer)
 			// Index count: leaf_resolution_ * (3 * leaf_resolution_ - 2) * 3
