@@ -60,11 +60,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 		nodeCTs.insert(nodeCTs.begin() + index-1, t);
         infected.insert(infected.begin()+index-1, infected.at(index-1));
         emergedHyphae.insert(emergedHyphae.begin()+index-1, 0);
-<<<<<<< HEAD
-        infectionTime.insert(infectionTime.begin()+index-1, infectionTime.at(index-1));
-=======
         infectionTime.insert(infectionTime.begin()+index-1, std::max(infectionTime.at(index-1), t));
->>>>>>> AMF_Anastomosis_speedUp
 
         for(auto kid : children){//if carries children after the added node, update their "parent node index"
 			if((kid->parentNI >= index-1 )&&(kid->parentNI > 0)){
