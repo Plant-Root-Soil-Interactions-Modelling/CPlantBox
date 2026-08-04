@@ -40,7 +40,7 @@ def getParaDistperRing(parameter, times, plant, rings):
             ringana.filter("creationTime",0,flipped[len(times[1:])])
             ringana.pack()
             summed = summed - ringana.getSummed(parameter)
-            paradenmat[k, -1] = np.array(summed).sum() 
+            paradenmat[k, -1] = np.array(summed).sum() #/(np.pi*(4.7**2)/2)
         return paradenmat
 
 def getAverageOverTipsOverTime(parameter, times, plant, subType = -1):
@@ -114,7 +114,7 @@ def makesimulation(seed):
     name = "TwoHyphaePlusBAS"
 
     start = time.perf_counter()
-    animation = True
+    animation = False
     mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
     ### initial root parameters
@@ -297,7 +297,6 @@ for i in range(len(good_seeds)):
     plt.xlabel("Time [days]")
     plt.ylabel("Distance [cm] from centre")
     # plt.title("Radial movement of hyphal tip frequency")
-
     plt.show()
 
 t_common = np.linspace(
@@ -347,8 +346,8 @@ for color, i in zip(colors, indices):
         alpha=0.3
     )
 ax.set_xlabel(r"Distance from origin $r$ (mm)")
-# ax.set_ylabel(r"Tip density (mm$^{-2}$)")
-ax.set_ylabel(r"Anastomosis frequency (mm$^{-2}$)")
+ax.set_ylabel(r"Tip amount$)")
+# ax.set_ylabel(r"Anastomosis frequency (mm$^{-2}$)")
 ax.legend()
 
 plt.tight_layout()
