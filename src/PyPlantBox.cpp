@@ -1058,7 +1058,8 @@ PYBIND11_MODULE(plantbox, m) {
                         .def("getAnastomosisPoints", &MycorrhizalPlant::getAnastomosisPoints)
                         .def("getNodeTips", &MycorrhizalPlant::getNodeTips)
                         .def("getNodeInfectionTime", &MycorrhizalPlant::getNodeInfectionTime)
-                        .def("getNodeInfections",&MycorrhizalPlant::getNodeInfections);
+                        .def("getNodeInfections",&MycorrhizalPlant::getNodeInfections)
+                        .def("turnOffSidePetriDish",&MycorrhizalPlant::turnOffSidePetriDish);
 
 	/**
 	 * Perirhizal.h

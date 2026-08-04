@@ -18,10 +18,10 @@ mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
     rp.hyphalEmergenceDensity = 2
-    rp.highresolution = 0
-    rp.dx = 0.1
+    # rp.highresolution = 0
+    # rp.dx = 0.1
     # rp.a = 0.01
-    rp.tropismT = 2
+    # rp.tropismT = 2
     mycp.setOrganRandomParameter(rp)
 
 mycp.setGeometry(pot)

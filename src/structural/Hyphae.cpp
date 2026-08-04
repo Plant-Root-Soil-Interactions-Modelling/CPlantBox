@@ -55,7 +55,10 @@ Hyphae::Hyphae(std::shared_ptr<Organism> plant, int type,  double delay, std::sh
     double beta = 2*M_PI*plant->rand(); // initial rotation
     double theta = param()->theta;
     this->partialIHeading = Vector3d::rotAB(theta,beta);
-    double creationTime= parent->getNodeCT(pni)+delay;//default
+    double creationTime= parent->getNodeCT(pni)+delay;//default	
+    // assert(creationTime >= 0 && "Hyphae::Hyphae creationTime < 0");
+    assert(creationTime >= parent->getNodeCT(pni) && "Hyphae::Hyphae creationTime < parent->getNodeCT(pni)");
+    assert(creationTime <= plant->getSimTime() + plant->getDt() && "Hyphae::Hyphae creationTime > plant->simtime + plant->dt");
     addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
 }
 
@@ -149,7 +152,7 @@ void Hyphae::simulate(double dt, bool verbose)
                         } else setActive(false);
                         
                         // if (dl == 0.) active = false; // if no length increment, hyphae become inactive
-                        if (age * getParameter("b")>1. ){
+                        if (age * p.b>1. ){
                             setActive(false); // become inactive, if enough time has passed for branching
                             createLateral(dt_ ,verbose); // create a lateral hyphae
                             createLateral(dt_,verbose); // create a lateral hyphae
@@ -349,7 +352,7 @@ void Hyphae::createLateral(double dt_, bool verbose)
 
                     if((rp->successorOT.size()>i)&&(rp->successorOT.at(i).size()>p_id)){
                         ot = rp->successorOT.at(i).at(p_id);
-                    }else{ot = getParameter("organType");}//default
+                    }else{ot = organType() ;}//default
 
                     int st = rp->successorST.at(i).at(p_id);
 

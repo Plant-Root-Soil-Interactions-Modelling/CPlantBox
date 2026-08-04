@@ -37,6 +37,7 @@ class MycorrhizalPlant :public Plant {
     void changeGeometry(int ot,std::shared_ptr<SignedDistanceFunction> geom); // changes the geometry for a specific organ type, call before simulation
 
     int getNextHyphalTreeIndex() { hyphalTreeIndex++; return hyphalTreeIndex; }
+	void turnOffSidePetriDish(double minnodex, double maxnodez, double maxnodey, double minnodey) ;
 
     std::shared_ptr<SDF_RootSystem> sdf; // direction from tip towards root base
 

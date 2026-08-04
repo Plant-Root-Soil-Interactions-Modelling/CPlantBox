@@ -23,6 +23,7 @@ public:
     virtual ~Hyphae() { }; ///< no need to do anything, children are deleted in ~Organ()
 
     void setHyphalTreeIndex(int index);
+    int getHyphalTreeIndex(){return hyphalTreeIndex;}
 
     void setMergedHyphae(std::weak_ptr<Hyphae> merged) { mergedHyphae = merged; } ///< sets the merged hyphae after anastomosis;
     std::shared_ptr<Hyphae>  getMergedHyphae() { return mergedHyphae.lock(); }
