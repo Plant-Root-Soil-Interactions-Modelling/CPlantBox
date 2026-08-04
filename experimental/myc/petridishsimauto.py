@@ -14,8 +14,8 @@ good_seeds = [10, 20, 30, 60, 70, 80, 90, 100] # these are seeds where hyphae cr
 
 def getMycSegmentAnalyser(plant):
         ana = pb.SegmentAnalyser(plant)
-        ana.addData("infection", plant.getNodeInfections(2))
-        ana.addData("infectionTime", plant.getNodeInfectionTime(2))
+        ana.addData("colonization", plant.getNodeInfections(2))
+        ana.addData("colonizationTime", plant.getNodeInfectionTime(2))
         ana.addData("anastomosis", plant.getAnastomosisPoints(5))
         ana.addData("nodeTips", plant.getNodeTips(5))
         return ana
@@ -121,7 +121,7 @@ def makesimulation(seed):
     root = mycp.getOrganRandomParameter(pb.root)
     for rp in root:
         rp.dx = 0.1
-        rp.maxAge = 100 # maximal infection age
+        rp.maxAge = 100 # maximal colonization age
         # rp.a = 0.01
         mycp.setOrganRandomParameter(rp)
 
@@ -168,7 +168,7 @@ def makesimulation(seed):
         mycp.simulate(dt,True)
         if (animation):
             ana = getMycSegmentAnalyser(mycp)
-            ana.write("animation/" + filename + "_hoursBCB_" +str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+            ana.write("animation/" + filename + "_hoursBCB_" +str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
     # look at roots and container
     # vp.plot_roots_and_container(mycp,half_dish)
 
@@ -185,13 +185,13 @@ def makesimulation(seed):
     mycp.changeGeometry(5, petri_dish)
 
     # check for percentage of colonized roots
-    pCol = sum(mycp.getParameter("infectionLength")) / sum(mycp.getParameter("length"))
-    print("Initial infection percentage: " + str(pCol*100) + "%")
+    pCol = sum(mycp.getParameter("colonizationLength")) / sum(mycp.getParameter("length"))
+    print("Initial colonization percentage: " + str(pCol*100) + "%")
     crossed_barrier = 0
     while pCol < 0.50:
         mycp.simulateInfection(dt,False)
         N+=1
-        pCol = sum(mycp.getParameter("infectionLength")) / sum(mycp.getParameter("length"))
+        pCol = sum(mycp.getParameter("colonizationLength")) / sum(mycp.getParameter("length"))
         for organ in mycp.getOrgans(pb.hyphae):
             if organ.getParameter("subType") < 3:
                 for node in organ.getNodes():
@@ -244,7 +244,7 @@ def makesimulation(seed):
         ana = getMycSegmentAnalyser(mycp)
         if animation:
             ana.crop(small_hyphae_dish)
-            ana.write("animation/" + filename + "_hoursACB_" +str(i+1) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+            ana.write("animation/" + filename + "_hoursACB_" +str(i+1) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
             
         # print(crossed_time, mycp.getSimTime(), max(mycp.getParameter("creationTime")))
         # raise Exception
@@ -256,7 +256,7 @@ def makesimulation(seed):
     # vp.plot_roots(mycp,"subType")
 
     if not animation:
-        ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis","nodeTips"])
+        ana.write(filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis","nodeTips"])
 
     times = np.linspace(crossed_time, max(mycp.getParameter("creationTime"))+0.01, 100)
     print('mycp.getSimTime()',mycp.getSimTime(),'max(mycp.getParameter("creationTime"))',max(mycp.getParameter("creationTime")))

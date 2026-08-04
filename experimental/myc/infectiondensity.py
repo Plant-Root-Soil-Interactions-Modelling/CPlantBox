@@ -64,15 +64,15 @@ def make_RILD_plot(plant, depth, layers,radius,name):
     fig, axes = plt.subplots(figsize = (6, 8))
     # Make a root length distribution
     ana = pb.SegmentAnalyser(plant)
-    ana.addData("infection",plant.getNodeInfections(2))
-    ana.filter("infection",1,3)
+    ana.addData("colonization",plant.getNodeInfections(2))
+    ana.filter("colonization",1,3)
     # ana.write("results/" + name + "_108days_allroots.vtp",["radius", "subType", "creationTime","organType"])
     rad = ana.getParameter("radius")
     rad = sum(rad)/len(rad)
     rltot = ana.getSummed("length")
     print("Simulated average infected root radius and total infected root length after", simtime, "days:", "\n","  Average root radius (cm):", rad, "\n","  Total root length (cm):", rltot, "\n" )
     layerVolume = depth / layers * radius * radius * np.pi  # actually the only thing that changes
-    ana.write("results/" + name + "_infection_108days.vtp",["radius", "subType", "creationTime","organType"])
+    ana.write("results/" + name + "_colonization_108days.vtp",["radius", "subType", "creationTime","organType"])
     rl0_ = ana.distribution("length", 0., -depth, layers, True)
     ana.filter("creationTime", 0, 80)
     rl1_ = ana.distribution("length", 0., -depth, layers, True)

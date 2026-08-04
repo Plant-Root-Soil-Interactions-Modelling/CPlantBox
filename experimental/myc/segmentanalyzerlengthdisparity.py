@@ -34,7 +34,7 @@ for i in range(0, len(root)):
     if root[i].infradius != 0:
         dispersed = False
         root[i].f_inf = pb.SoilLookUpSDF(infbox, 1, 0.0, 0.1)
-        print("ATTENTION: The infection radius is not 0, the infection will be local")
+        print("ATTENTION: The colonization radius is not 0, the colonization will be local")
     root[i].dx = 0.05
     
 

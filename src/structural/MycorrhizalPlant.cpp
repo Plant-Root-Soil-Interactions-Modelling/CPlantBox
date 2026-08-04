@@ -163,7 +163,7 @@ void MycorrhizalPlant::simulateHyphae(double dt, bool verbose) {
     simulateAnastomosis(dt, verbose);
 }
 /*
- * Simulates primary infection for all mycorrhizal roots
+ * Simulates primary colonization for all mycorrhizal roots
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
 */
@@ -182,7 +182,7 @@ void MycorrhizalPlant::simulatePrimaryInfection(double dt, bool verbose) {
 }
 
 /*
- * Simulates secondary infection for all mycorrhizal roots
+ * Simulates secondary colonization for all mycorrhizal roots
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
  */

@@ -75,15 +75,15 @@
         <parameter name="lmax" value="100"/>
         <!--Maximal root length [cm]-->
         <parameter name="lmbd" value="0.15000001"/>
-        <!--Rate of primary infection for dispersed inoculum [1/(cm day)]-->
+        <!--Rate of primary colonization for dispersed inoculum [1/(cm day)]-->
         <parameter name="ln" value="0.64999998"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
         <parameter name="maxAge" value="32"/>
-        <!--Maximal infection age of a root segment [day]-->
+        <!--Maximal colonization age of a root segment [day]-->
         <parameter name="maxInfection" value="1"/>
-        <!--Percentage of maximal infection-->
+        <!--Percentage of maximal colonization-->
         <parameter name="minAge" value="0"/>
         <!--Minimal infectious age of a root segment [day]-->
         <parameter name="r" value="1.5"/>
@@ -97,7 +97,7 @@
         <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="vi" value="0.13"/>
-        <!--Rate of internal infection [cm / day]-->
+        <!--Rate of internal colonization [cm / day]-->
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
     </root>
@@ -133,15 +133,15 @@
         <parameter name="lmax" value="20"/>
         <!--Maximal root length [cm]-->
         <parameter name="lmbd" value="0.15000001"/>
-        <!--Rate of primary infection for dispersed inoculum [1/(cm day)]-->
+        <!--Rate of primary colonization for dispersed inoculum [1/(cm day)]-->
         <parameter name="ln" value="0.99000001"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
         <parameter name="maxAge" value="32"/>
-        <!--Maximal infection age of a root segment [day]-->
+        <!--Maximal colonization age of a root segment [day]-->
         <parameter name="maxInfection" value="1"/>
-        <!--Percentage of maximal infection-->
+        <!--Percentage of maximal colonization-->
         <parameter name="minAge" value="0"/>
         <!--Minimal infectious age of a root segment [day]-->
         <parameter name="r" value="0.6"/>
@@ -155,7 +155,7 @@
         <parameter name="tropismS" value="0.30000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="vi" value="0.13"/>
-        <!--Rate of internal infection [cm / day]-->
+        <!--Rate of internal colonization [cm / day]-->
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="3" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
     </root>
@@ -191,15 +191,15 @@
         <parameter name="lmax" value="5"/>
         <!--Maximal root length [cm]-->
         <parameter name="lmbd" value="0.15000001"/>
-        <!--Rate of primary infection for dispersed inoculum [1/(cm day)]-->
+        <!--Rate of primary colonization for dispersed inoculum [1/(cm day)]-->
         <parameter name="ln" value="0.2"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
         <parameter name="maxAge" value="32"/>
-        <!--Maximal infection age of a root segment [day]-->
+        <!--Maximal colonization age of a root segment [day]-->
         <parameter name="maxInfection" value="1"/>
-        <!--Percentage of maximal infection-->
+        <!--Percentage of maximal colonization-->
         <parameter name="minAge" value="0"/>
         <!--Minimal infectious age of a root segment [day]-->
         <parameter name="r" value="0.34999999"/>
@@ -213,7 +213,7 @@
         <parameter name="tropismS" value="0.40000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="vi" value="0.13"/>
-        <!--Rate of internal infection [cm / day]-->
+        <!--Rate of internal colonization [cm / day]-->
     </root>
     <root name="3rdorderlateral" subType="4">
         <parameter name="gf" value="1" dev="1000000"/>
@@ -247,15 +247,15 @@
         <parameter name="lmax" value="5"/>
         <!--Maximal root length [cm]-->
         <parameter name="lmbd" value="0.15000001"/>
-        <!--Rate of primary infection for dispersed inoculum [1/(cm day)]-->
+        <!--Rate of primary colonization for dispersed inoculum [1/(cm day)]-->
         <parameter name="ln" value="1.197466" dev="1.0863734"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
         <parameter name="maxAge" value="32"/>
-        <!--Maximal infection age of a root segment [day]-->
+        <!--Maximal colonization age of a root segment [day]-->
         <parameter name="maxInfection" value="1"/>
-        <!--Percentage of maximal infection-->
+        <!--Percentage of maximal colonization-->
         <parameter name="minAge" value="0"/>
         <!--Minimal infectious age of a root segment [day]-->
         <parameter name="r" value="0.34999999"/>
@@ -269,7 +269,7 @@
         <parameter name="tropismS" value="0.40000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="vi" value="0.13"/>
-        <!--Rate of internal infection [cm / day]-->
+        <!--Rate of internal colonization [cm / day]-->
     </root>
     <stem name="undefined" subType="1">
         <parameter name="gf" value="1"/>

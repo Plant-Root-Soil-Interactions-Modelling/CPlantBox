@@ -8,7 +8,7 @@ import numpy as np
 import math
 import time
 
-# input("Only run this script if secondary infection is disabled.\nPress Enter to continue...")
+# input("Only run this script if secondary colonization is disabled.\nPress Enter to continue...")
 mycp = pb.MycorrhizalPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Glycine_max"

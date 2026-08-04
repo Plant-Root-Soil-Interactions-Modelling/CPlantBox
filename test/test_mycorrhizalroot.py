@@ -25,7 +25,7 @@ def rootLateralLength(t, et, r, k):  # length of first order laterals (without s
 
 
 class TestMycorrhizalRoot(unittest.TestCase):
-# TODO add test for localized infection
+# TODO add test for localized colonization
 # TODO modify for new parameters
 # TODO remove all instances of infradius
     def mycroot_example_rrp(self):
@@ -147,8 +147,8 @@ class TestMycorrhizalRoot(unittest.TestCase):
             for i in range(0, len(times[1:])):
                 self.assertAlmostEqual(numeric_total[i], analytic_total[i], 10, "numeric and analytic total lengths do not agree in time step " + str(i + 1))
 
-    def test_primary_infection(self):
-        """ tests spontaneous infection on sequential organ list """
+    def test_primary_colonization(self):
+        """ tests spontaneous colonization on sequential organ list """
         self.mycroot_example_rrp()
         simtime = 10.
         self.mycroot.simulate(simtime, False)
@@ -157,7 +157,7 @@ class TestMycorrhizalRoot(unittest.TestCase):
         self.assertAlmostEqual(0.15,infRoots/(simtime*numRoots),None,"not the right amount of root segments infected",0.05)
         
 
-    def test_secondary_infection(self):
+    def test_secondary_colonization(self):
         """ test if secondary infecions are positioned correctly """
         self.mycroot_example_rrp()
         simtime = 20. 
@@ -175,15 +175,15 @@ class TestMycorrhizalRoot(unittest.TestCase):
         for i in range(0, len(toolateInfected)):
             l = self.mycroot.getNode(toolateInfected[i]).minus(self.mycroot.getNode(toolateInfected[i]+1)).length()
             r = self.mycroot.getNode(toolateInfected[i]).minus(self.mycroot.getNode(toolateInfected[i]-1)).length()
-            self.assertEqual((simtime - toolateTime[i])*speed > l,True,"secondary infection not created in time")
-            self.assertEqual((simtime - toolateTime[i])*speed > r,True,"secondary infection not created in time")
-        self.assertEqual(2 in infected, True, "secondary infection not created")
+            self.assertEqual((simtime - toolateTime[i])*speed > l,True,"secondary colonization not created in time")
+            self.assertEqual((simtime - toolateTime[i])*speed > r,True,"secondary colonization not created in time")
+        self.assertEqual(2 in infected, True, "secondary colonization not created")
 
         for i in range(0, len(infected)):
             if infected[i] == 2:
                 if i > 0 and i <len(infected)-1 and infected[i-1] == 0 and infected[i+1] == 0:
                     wrong_pos.append(i)
-        self.assertEqual(len(wrong_pos),0,"secondary infection not positioned correctly")
+        self.assertEqual(len(wrong_pos),0,"secondary colonization not positioned correctly")
 
 
     def test_parameter(self):

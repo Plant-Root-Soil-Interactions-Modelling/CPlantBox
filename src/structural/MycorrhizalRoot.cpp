@@ -24,14 +24,14 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
         {
             infected.push_back(0);
             emergedHyphae.push_back(0);
-            infectionTime.push_back(-1);
+            colonizationTime.push_back(-1);
 
         }else{
             if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
             }
             infected.push_back(0);
             emergedHyphae.push_back(0);
-            infectionTime.push_back(-1);
+            colonizationTime.push_back(-1);
         }
     }
 }
@@ -52,7 +52,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
         Organ::addNode(n, id,  t,  index, shift);
         infected.push_back(0);
         emergedHyphae.push_back(0);
-        infectionTime.push_back(-1);
+        colonizationTime.push_back(-1);
     }
     else {
 		nodes.insert(nodes.begin() + index-1, n);//add the node at index
@@ -60,7 +60,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 		nodeCTs.insert(nodeCTs.begin() + index-1, t);
         infected.insert(infected.begin()+index-1, infected.at(index-1));
         emergedHyphae.insert(emergedHyphae.begin()+index-1, 0);
-        infectionTime.insert(infectionTime.begin()+index-1, std::max(infectionTime.at(index-1), t));
+        colonizationTime.insert(colonizationTime.begin()+index-1, std::max(colonizationTime.at(index-1), t));
 
         for(auto kid : children){//if carries children after the added node, update their "parent node index"
 			if((kid->parentNI >= index-1 )&&(kid->parentNI > 0)){
@@ -98,7 +98,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {lmbd = 0;}//account for minimal age in rate
         lmbd = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * lmbd; // account for maximal age in rate
         // Determine the probability for colonization of the current node and infect if successful
-        // Also refine the root if the segment is too long and a new node is inserted, which inherits the infection status based on parent node
+        // Also refine the root if the segment is too long and a new node is inserted, which inherits the colonization status based on parent node
         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
         if (infected.at(i) == 0 && plant.lock()->rand() < lmbd*cursegLength*dt)
         {
@@ -126,7 +126,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
 
 // TODO: this functino is a bit hard to read, might be good to break it up in smaller parts.
 void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
-    double max_length_infection = age*getRootRandomParameter()->vi;
+    double max_length_colonization = age*getRootRandomParameter()->vi;
     double infTime;
     double highres = getRootRandomParameter()->highresolution;
     for (size_t i = 0; i < nodes.size(); ++i)
@@ -134,15 +134,15 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
         if (infected.at(i) == 1 || infected.at(i)== 3)
         {
             int oldNode = i;
-            double infectionLength = 0;
-            if (i>=1) {  // secondary infection in basal direction can only occur if there is another node in basal direction in this root
+            double colonizationLength = 0;
+            if (i>=1) {  // secondary colonization in basal direction can only occur if there is another node in basal direction in this root
                 int basalnode = i-1;
                 double cursegLength;
                 while(basalnode > 0) {
                     cursegLength = abs(nodes.at(oldNode).minus(nodes.at(basalnode)).length());
-                    infectionLength += cursegLength;
+                    colonizationLength += cursegLength;
 
-                    if (infectionLength > max_length_infection) {break;}
+                    if (colonizationLength > max_length_colonization) {break;}
 
                     if (infected.at(basalnode) != 0) {
                         // already infected (this call or earlier) — valid anchor, keep walking
@@ -151,7 +151,7 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                         continue;
                     }
 
-                    infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
+                    infTime = colonizationTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
                     if (infTime > age) {break;}  // front hasn't reached here yet; farther nodes are worse
 
                     setInfection(basalnode,2,infTime);
@@ -187,14 +187,14 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
 
             auto apicalnode = i+1;
             oldNode = i;
-            infectionLength = 0;
+            colonizationLength = 0;
             double cursegLength;
             while (apicalnode < nodes.size())
             {
                 cursegLength = abs(nodes.at(oldNode).minus(nodes.at(apicalnode)).length());
-                infectionLength += cursegLength;
+                colonizationLength += cursegLength;
 
-                if (infectionLength > max_length_infection) {break;}
+                if (colonizationLength > max_length_colonization) {break;}
 
                 if (infected.at(apicalnode) != 0) {
                     oldNode = apicalnode;
@@ -202,7 +202,7 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                     continue;
                 }
 
-                infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
+                infTime = colonizationTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
                 if (infTime > age) {break;}
 
                 setInfection(apicalnode,2,infTime);
@@ -256,8 +256,8 @@ void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
             numberOfHyphae += emergedHyphae.at(i);
         }
 
-        int new_noh = int(hed * getParameter("infectionLength") - numberOfHyphae); // account for rounding errors
-        if (hed * getParameter("infectionLength") - numberOfHyphae - new_noh > 0.5) {
+        int new_noh = int(hed * getParameter("colonizationLength") - numberOfHyphae); // account for rounding errors
+        if (hed * getParameter("colonizationLength") - numberOfHyphae - new_noh > 0.5) {
             new_noh += 1; // round up if the difference is larger than 0.5
         }
         double new_total_noh = numberOfHyphae + new_noh;
@@ -296,7 +296,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
                 if (infected.at(l->parentNI) != 0) { // the base of root l is infected
                     if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0) {
                         std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, 
-								std::max( l->getNodeCT(0), infectionTime.at(l->parentNI))); //root can only be infected after it is born (and need to account for growth delay)
+								std::max( l->getNodeCT(0), colonizationTime.at(l->parentNI))); //root can only be infected after it is born (and need to account for growth delay)
                     }
                 }
                 std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateInfection(dt, verbose);
@@ -342,7 +342,7 @@ double MycorrhizalRoot::getParameter(std::string name) const {
         }
         return secondaryInfectedLength;
     }
-    if (name == "infectionLength")
+    if (name == "colonizationLength")
     {
         double infectedLength = 0;
         for (size_t i = 1; i < nodes.size(); i++)
@@ -355,12 +355,12 @@ double MycorrhizalRoot::getParameter(std::string name) const {
     return Root::getParameter(name);
 }
 
-void MycorrhizalRoot::setInfection(int i, int infection, double t)
+void MycorrhizalRoot::setInfection(int i, int colonization, double t)
 {
-    infected.at(i) = infection;
-    infectionTime.at(i) = t;
-	assert(infectionTime.at(i) >= 0 && "MycorrhizalRoot::setInfection infectionTime.at(i) < 0");
-	assert(infectionTime.at(i) >= nodeCTs.at(i) && "MycorrhizalRoot::setInfection infectionTime.at(i) < nodeCTs.at(i)");
+    infected.at(i) = colonization;
+    colonizationTime.at(i) = t;
+	assert(colonizationTime.at(i) >= 0 && "MycorrhizalRoot::setInfection colonizationTime.at(i) < 0");
+	assert(colonizationTime.at(i) >= nodeCTs.at(i) && "MycorrhizalRoot::setInfection colonizationTime.at(i) < nodeCTs.at(i)");
 }
 
 void MycorrhizalRoot::createLateral(double dt, bool verbose)
@@ -423,8 +423,8 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
 void MycorrhizalRoot::createHyphae(int pni)
 {
     double delay = getRootRandomParameter()->hyphalDelay;
-    double dt_ = plant.lock()->getSimTime() - infectionTime.at(pni) - delay; // time the hyphae should have grown
-	double delay_for_creation = infectionTime.at(pni) + delay - shared_from_this()->getNodeCT(pni);//difference between creation of parent node and that of the hyphae
+    double dt_ = plant.lock()->getSimTime() - colonizationTime.at(pni) - delay; // time the hyphae should have grown
+	double delay_for_creation = colonizationTime.at(pni) + delay - shared_from_this()->getNodeCT(pni);//difference between creation of parent node and that of the hyphae
     assert(delay_for_creation >= 0 && "MycorrhizalRoot::createHyphae delay_for_creation < 0");
     int subType = 1;
     auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay_for_creation, shared_from_this(), pni); // delay - dt_
@@ -438,7 +438,7 @@ std::string MycorrhizalRoot::toString() const
 {
     // TODO add additional stuff
     std::stringstream newstring;
-    newstring << "; number of infected Nodes " << getNumberofInfectedNodes() << "; length of infected root segments "<< getParameter("infectionLength")<< ".";
+    newstring << "; number of infected Nodes " << getNumberofInfectedNodes() << "; length of infected root segments "<< getParameter("colonizationLength")<< ".";
     return  Root::toString()+newstring.str();
 }
 

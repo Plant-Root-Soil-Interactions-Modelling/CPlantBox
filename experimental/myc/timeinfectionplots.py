@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-input("Only run this script if secondary infection is disabled.\nPress Enter to continue...")
+input("Only run this script if secondary colonization is disabled.\nPress Enter to continue...")
 mycp = pb.MycorrhizalPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Glycine_max"
@@ -31,7 +31,7 @@ local = False
 for i in range(0, len(root)):
     if local:
         root[i].f_inf = pb.SoilLookUpSDF(infbox, 1, 0.0, 0.1)
-        print("ATTENTION: The infection radius is not 0, the infection will be local")
+        print("ATTENTION: The colonization radius is not 0, the colonization will be local")
     root[i].dx = 0.05
     
 

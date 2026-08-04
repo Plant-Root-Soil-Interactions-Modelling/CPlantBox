@@ -60,7 +60,7 @@ anim_time = simtime
 N = fps * anim_time
 dt = simtime / N
 
-filename = "infection_" + str(simtime)
+filename = "colonization_" + str(simtime)
 if animation:
     filename = "animation"
 if not local:
@@ -74,10 +74,10 @@ if animation:
         mycp.simulate(dt, True)
         print(mycp.getOrganRandomParameter(pb.hyphae)[0].ln)
         ana = pb.SegmentAnalyser(mycp)
-        ana.addData("infection", mycp.getNodeInfections(2))
-        ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+        ana.addData("colonization", mycp.getNodeInfections(2))
+        ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
         ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
-        ana.write("results/" +filename + "{:04d}".format(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+        ana.write("results/" +filename + "{:04d}".format(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
         print("Frame " + str(i) + " of " + str(N))
 
 else:
@@ -89,14 +89,14 @@ else:
     # vp.plot_plant(mycp, "organType")  
 #     print('done')  
 ana = pb.SegmentAnalyser(mycp)
-ana.addData("infection", mycp.getNodeInfections(2))
+ana.addData("colonization", mycp.getNodeInfections(2))
 
 vp.plot_plant(ana,"subType")
 ana.write(filename + "_hyphalTrees" + ".vtp", ["radius", "subType", "creationTime","organType","hyphalTreeIndex"])
-# ana.addData("infection", mycp.getNodeInfections(2))
-#     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
-# pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
-#     vp.plot_roots(ana, "infection")
-#     # vp.plot_roots(ana, "infectionTime")
+# ana.addData("colonization", mycp.getNodeInfections(2))
+#     ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
+# pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "colonization", "colonizationTime","organType"])
+#     vp.plot_roots(ana, "colonization")
+#     # vp.plot_roots(ana, "colonizationTime")
 #     # 
-# ana.write(filename + ".vtp", ["radius", "subType", "creationTime","organType"])# "infection", "infectionTime",
+# ana.write(filename + ".vtp", ["radius", "subType", "creationTime","organType"])# "colonization", "colonizationTime",

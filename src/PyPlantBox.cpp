@@ -868,7 +868,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getRootRandomParameter", &MycorrhizalRoot::getRootRandomParameter)
             .def("getNodeInfectionTime", &MycorrhizalRoot::getNodeInfectionTime)
         //     .def("insertInfectedNode", &MycorrhizalRoot::insertInfectedNode, py::arg("i"))
-            .def("setInfection", &MycorrhizalRoot::setInfection, py::arg("i"), py::arg("infection"), py::arg("t"));
+            .def("setInfection", &MycorrhizalRoot::setInfection, py::arg("i"), py::arg("colonization"), py::arg("t"));
     /**
      * Hyphae.h
      */

@@ -8,12 +8,12 @@ namespace CPlantBox {
 void MycorrhizalRootRandomParameter::bindParameters(){
     // TODO check nothing is missing
     RootRandomParameter::bindParameters();
-    bindParameter("lmbd", &lmbd, "Rate of primary infection for dispersed inoculum [1/(cm day)]", &lmbds);
+    bindParameter("lmbd", &lmbd, "Rate of primary colonization for dispersed inoculum [1/(cm day)]", &lmbds);
     bindParameter("minAge", &minAge, "Minimal infectious age of a root segment [day]");
-    bindParameter("maxAge", &maxAge, "Maximal infection age of a root segment [day]");
-    bindParameter("vi", &vi, "Rate of internal infection [cm / day]", &vis);
-    bindParameter("maxInfection", &maxInfection, "Percentage of maximal infection");
-    bindParameter("hyphalDelay", &hyphalDelay, "Delay time before hyphal emergence after infection [day]"); // added this as comment if needed but probably not
+    bindParameter("maxAge", &maxAge, "Maximal colonization age of a root segment [day]");
+    bindParameter("vi", &vi, "Rate of internal colonization [cm / day]", &vis);
+    bindParameter("maxInfection", &maxInfection, "Percentage of maximal colonization");
+    bindParameter("hyphalDelay", &hyphalDelay, "Delay time before hyphal emergence after colonization [day]"); // added this as comment if needed but probably not
     bindParameter("hyphalEmergenceDensity", &hyphalEmergenceDensity, "Density of hyphal emergence along root [1/cm]");
     bindParameter("highresolution", &highresolution, "If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity");
     bindParameter("dx_inf", &dx_inf, "Segment length for infected root segments only in high resolution case [cm]");
@@ -24,8 +24,8 @@ std::shared_ptr<OrganSpecificParameter> MycorrhizalRootRandomParameter::realize(
     assert(dx > dxMin && "MycorrhizalRootRandomParameter::realize(): dxMin must be smaller than dx");
     auto p = plant.lock();
 
-    double lmbd_ = std::max(lmbd + p->randn()*lmbds, 0.); // rate of primary infection for dispersed inoculum
-    double vi_ = std::max(vi + p->randn()*vis, 0.);  // speed of node to node infection
+    double lmbd_ = std::max(lmbd + p->randn()*lmbds, 0.); // rate of primary colonization for dispersed inoculum
+    double vi_ = std::max(vi + p->randn()*vis, 0.);  // speed of node to node colonization
 
     double lb_; //define the parameters outside of the if functions:
     double la_;

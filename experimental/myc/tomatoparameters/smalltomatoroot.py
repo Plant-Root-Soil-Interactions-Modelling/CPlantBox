@@ -19,7 +19,7 @@ for rp in root:
     rp.hyphalEmergenceDensity = 0
     rp.highresolution = 0.
     rp.dx = 0.1
-    rp.maxAge = 100 # maximal infection age
+    rp.maxAge = 100 # maximal colonization age
     rp.hyphalDelay = 5.0
     # rp.a = 0.01
     rp.tropismT = 1
@@ -88,10 +88,10 @@ for i in range(0, N):
     mycp.simulate(dt,True)
     if (animation):
         ana = pb.SegmentAnalyser(mycp)
-        ana.addData("infection", mycp.getNodeInfections(2))
-        ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+        ana.addData("colonization", mycp.getNodeInfections(2))
+        ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
         ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
-        ana.write("animation/step" + str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+        ana.write("animation/step" + str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
 # look at roots and container
 vp.plot_roots_and_container(mycp,half_dish)
 
@@ -118,14 +118,14 @@ for hp in hyphae_parameter:
 mycp.changeGeometry(5, petri_dish)
 
 # check for percentage of colonized roots
-pCol = sum(mycp.getParameter("infectionLength")) / sum(mycp.getParameter("length"))
-print("Initial infection percentage: " + str(pCol*100) + "%")
+pCol = sum(mycp.getParameter("colonizationLength")) / sum(mycp.getParameter("length"))
+print("Initial colonization percentage: " + str(pCol*100) + "%")
 days = 0
 while pCol < 0.60:
     mycp.simulateInfection(1,False)
     days += 1
     N+=24
-    pCol = sum(mycp.getParameter("infectionLength")) / sum(mycp.getParameter("length"))
+    pCol = sum(mycp.getParameter("colonizationLength")) / sum(mycp.getParameter("length"))
     print("Infection percentage: " + str(pCol*100) + "% after " + str(days) + " days.")
 print("Infection reached 60% after " + str(days) + " days.")
 
@@ -154,10 +154,10 @@ for i in range(1, 10):
 #     if (N % 20 == 0):
 #         vp.plot_roots_and_container(mycp,petri_dish)
 #     ana = pb.SegmentAnalyser(mycp)
-#     ana.addData("infection", mycp.getNodeInfections(2))
-#     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+#     ana.addData("colonization", mycp.getNodeInfections(2))
+#     ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
 #     ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
-#     ana.write("animation/step" + str(N+1) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+#     ana.write("animation/step" + str(N+1) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
 
 
 # inactivating those organs that are in the root part of the compartment
@@ -179,17 +179,17 @@ for i in range(1, 60):
     mycp.simulateHyphae(dt,False)
     if animation:
         ana = pb.SegmentAnalyser(mycp)
-        ana.addData("infection", mycp.getNodeInfections(2))
-        ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+        ana.addData("colonization", mycp.getNodeInfections(2))
+        ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
         ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
-        ana.write("animation/step" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+        ana.write("animation/step" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
 
 if not animation:
     ana = pb.SegmentAnalyser(mycp)
-    ana.addData("infection", mycp.getNodeInfections(2))
-    ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+    ana.addData("colonization", mycp.getNodeInfections(2))
+    ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
     ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
-    ana.write("animation/step" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "infection", "infectionTime", "anastomosis"])
+    ana.write("animation/step" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
 end = time.perf_counter()
 filename = "splitpetri_dish" + str(simtime)
 

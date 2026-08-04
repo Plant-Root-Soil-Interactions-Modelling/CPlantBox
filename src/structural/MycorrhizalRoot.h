@@ -20,7 +20,7 @@ public:
 
     std::vector<int> infected;
     std::vector<int> emergedHyphae;
-    std::vector<double> infectionTime;
+    std::vector<double> colonizationTime;
 
     virtual ~MycorrhizalRoot() { };
 
@@ -44,9 +44,8 @@ public:
 
     int getNodeInfection(int i) const {return infected.at(i);}
     int getNumberofInfectedNodes() const;
-    double getNodeInfectionTime(int i) const {return infectionTime.at(i);}
+    double getNodeInfectionTime(int i) const {return colonizationTime.at(i);}
     void setInfection(int i, int inf, double t);
-
 protected:
     void createHyphae(int pni);
     int hyphalTreeIndex = -1;
