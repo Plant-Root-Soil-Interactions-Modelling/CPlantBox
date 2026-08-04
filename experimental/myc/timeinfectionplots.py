@@ -60,7 +60,7 @@ def runsimulation(seed):
 
     # --- Initialer Schritt ---
     mycp.simulate(dt, False)
-    infs = mycp.getNodeInfections(2)
+    infs = mycp.getNodeColonizations(2)
     temp_ana = pb.SegmentAnalyser(mycp)
     # Segmentbasierte Infektionslängen
     seg_len_ = []
@@ -87,7 +87,7 @@ def runsimulation(seed):
     # --- Hauptzeitschleife ---
     for t in range(1, len(time)):
         mycp.simulate(dt, False)
-        infs = mycp.getNodeInfections(2)
+        infs = mycp.getNodeColonizations(2)
         temp_ana = pb.SegmentAnalyser(mycp)
 
         primary_seg = secondary_seg = noninf_seg = 0
@@ -160,7 +160,7 @@ plt.fill_between(time, mean_exp - std_exp, mean_exp + std_exp, color='orange', a
 
 plt.xlabel("Time [days]")
 plt.ylabel("Newly Infected Length [cm]")
-plt.title("Observed vs. Expected Infection Lengths")
+plt.title("Observed vs. Expected Colonization Lengths")
 plt.legend()
 plt.grid(True)
 plt.show()
@@ -199,7 +199,7 @@ plt.show()
 
 # plt.xlabel("Time [days]")
 # plt.ylabel("Segment length [cm]")
-# plt.title("Infection Dynamics across Simulations")
+# plt.title("Colonization Dynamics across Simulations")
 # plt.legend()
 # plt.grid(True)
 # plt.show()

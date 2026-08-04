@@ -621,7 +621,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
             .def_readwrite("vis", &MycorrhizalRootRandomParameter::vis)
             .def_readwrite("hyphalDelay", &MycorrhizalRootRandomParameter::hyphalDelay)
-            .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection)
+            .def_readwrite("maxColonization", &MycorrhizalRootRandomParameter::maxColonization)
             .def_readwrite("highresolution", &MycorrhizalRootRandomParameter::highresolution)
             .def_readwrite("dx_inf", &MycorrhizalRootRandomParameter::dx_inf)
             .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf)
@@ -864,11 +864,11 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<MycorrhizalRoot, Root, Organ, std::shared_ptr<MycorrhizalRoot>>(m,"MycorrhizalRoot")
             .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, int>())
-            .def("getNodeInfection", &MycorrhizalRoot::getNodeInfection)
+            .def("getNodeColonization", &MycorrhizalRoot::getNodeColonization)
             .def("getRootRandomParameter", &MycorrhizalRoot::getRootRandomParameter)
-            .def("getNodeInfectionTime", &MycorrhizalRoot::getNodeInfectionTime)
+            .def("getNodeColonizationTime", &MycorrhizalRoot::getNodeColonizationTime)
         //     .def("insertInfectedNode", &MycorrhizalRoot::insertInfectedNode, py::arg("i"))
-            .def("setInfection", &MycorrhizalRoot::setInfection, py::arg("i"), py::arg("colonization"), py::arg("t"));
+            .def("setColonization", &MycorrhizalRoot::setColonization, py::arg("i"), py::arg("colonization"), py::arg("t"));
     /**
      * Hyphae.h
      */
@@ -1052,13 +1052,13 @@ PYBIND11_MODULE(plantbox, m) {
                         .def("changeGeometry", &MycorrhizalPlant::changeGeometry)
                         .def("simulateHyphalGrowth", &MycorrhizalPlant::simulateHyphalGrowth)
                         .def("simulateHyphae", &MycorrhizalPlant::simulateHyphae)
-                        .def("simulatePrimaryInfection", &MycorrhizalPlant::simulatePrimaryInfection)
-                        .def("simulateSecondaryInfection", &MycorrhizalPlant::simulateSecondaryInfection)
-                        .def("simulateInfection", &MycorrhizalPlant::simulateInfection)
+                        .def("simulatePrimaryColonization", &MycorrhizalPlant::simulatePrimaryColonization)
+                        .def("simulateSecondaryColonization", &MycorrhizalPlant::simulateSecondaryColonization)
+                        .def("simulateColonization", &MycorrhizalPlant::simulateColonization)
                         .def("getAnastomosisPoints", &MycorrhizalPlant::getAnastomosisPoints)
                         .def("getNodeTips", &MycorrhizalPlant::getNodeTips)
-                        .def("getNodeInfectionTime", &MycorrhizalPlant::getNodeInfectionTime)
-                        .def("getNodeInfections",&MycorrhizalPlant::getNodeInfections)
+                        .def("getNodeColonizationTime", &MycorrhizalPlant::getNodeColonizationTime)
+                        .def("getNodeColonizations",&MycorrhizalPlant::getNodeColonizations)
                         .def("turnOffSidePetriDish",&MycorrhizalPlant::turnOffSidePetriDish);
 
 	/**

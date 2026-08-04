@@ -83,7 +83,7 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
     return r;
 }
 
-void MycorrhizalRoot::primaryInfection(double dt, bool silence){
+void MycorrhizalRoot::primaryColonization(double dt, bool silence){
     double lmbd;
     double highres = getRootRandomParameter()->highresolution;
     // Determine the appropriate colonization rate for each node based on soil properties and age  
@@ -103,7 +103,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         if (infected.at(i) == 0 && plant.lock()->rand() < lmbd*cursegLength*dt)
         {
             // insert node here if segment too long and set all nodes to be infected
-            setInfection(i,1,age);
+            setColonization(i,1,age);
             if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
                 int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
                 Vector3d fromNode = nodes.at(i-1);   // freeze endpoints before any insertion
@@ -124,117 +124,118 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
     }
 }
 
-// TODO: this functino is a bit hard to read, might be good to break it up in smaller parts.
-void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
-    double max_length_colonization = age*getRootRandomParameter()->vi;
-    double infTime;
-    double highres = getRootRandomParameter()->highresolution;
-    for (size_t i = 0; i < nodes.size(); ++i)
+bool MycorrhizalRoot::isSecondaryColonizationAnchor(size_t node) const
+{
+    return infected.at(node) == 1 || infected.at(node) == 3;
+}
+
+double MycorrhizalRoot::segmentLength(size_t a, size_t b) const
+{
+    return abs(nodes.at(a).minus(nodes.at(b)).length());
+}
+
+double MycorrhizalRoot::colonizationArrivalTime(size_t fromNode, double cursegLength) const
+{
+    return colonizationTime.at(fromNode) + cursegLength / getRootRandomParameter()->vi;
+}
+
+void MycorrhizalRoot::refineSegment(size_t fromNode, size_t toNode, double toCT, int &oldNode, int &currentNode, int step)
+{
+    int newNodesNumber = std::max(int(segmentLength(fromNode, toNode) / getRootRandomParameter()->dx_inf) - 1, 0);
+    if (newNodesNumber == 0) {
+        return;
+    }
+
+    Vector3d fromNodePos = nodes.at(fromNode);
+    Vector3d toNodePos = nodes.at(toNode);
+
+    for (int j = 0; j < newNodesNumber; j++)
     {
-        if (infected.at(i) == 1 || infected.at(i)== 3)
-        {
-            int oldNode = i;
-            double colonizationLength = 0;
-            if (i>=1) {  // secondary colonization in basal direction can only occur if there is another node in basal direction in this root
-                int basalnode = i-1;
-                double cursegLength;
-                while(basalnode > 0) {
-                    cursegLength = abs(nodes.at(oldNode).minus(nodes.at(basalnode)).length());
-                    colonizationLength += cursegLength;
+        double alpha = double(j + 1) / (newNodesNumber + 1);
+        Vector3d newNode(
+            fromNodePos.x + (toNodePos.x - fromNodePos.x) * alpha,
+            fromNodePos.y + (toNodePos.y - fromNodePos.y) * alpha,
+            fromNodePos.z + (toNodePos.z - fromNodePos.z) * alpha
+        );
+        addNode(newNode, plant.lock()->getNodeIndex(), toCT, currentNode, true);
 
-                    if (colonizationLength > max_length_colonization) {break;}
-
-                    if (infected.at(basalnode) != 0) {
-                        // already infected (this call or earlier) — valid anchor, keep walking
-                        oldNode = basalnode;
-                        basalnode--;
-                        continue;
-                    }
-
-                    infTime = colonizationTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
-                    if (infTime > age) {break;}  // front hasn't reached here yet; farther nodes are worse
-
-                    setInfection(basalnode,2,infTime);
-
-                    if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
-                        int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
-                        Vector3d fromNode = nodes.at(oldNode);
-                        Vector3d toNode   = nodes.at(basalnode);
-                        double toCT = nodeCTs.at(basalnode);
-                        for (size_t j = 0; j < newNodesNumber; j++)
-                        {
-                            double newx = fromNode.x + (toNode.x - fromNode.x) *(j+1)/(newNodesNumber +1);
-                            double newy = fromNode.y + (toNode.y - fromNode.y) *(j+1)/(newNodesNumber +1);
-                            double newz = fromNode.z + (toNode.z - fromNode.z) *(j+1)/(newNodesNumber +1);
-                            Vector3d newNode = Vector3d(newx,newy,newz);
-                            addNode(newNode,plant.lock()->getNodeIndex(), toCT, basalnode, true);
-                            basalnode++;
-                            oldNode++;
-                        }
-                    }
-
-                    // TODO: Y is this hier? we will never get basalnode==0  in that loop
-                    if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()))
-                    {
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->setInfection(parentNI,3,infTime);
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->simulateInfection(dt,silence);
-                    }
-
-                    oldNode = basalnode;
-                    basalnode--;
-                }
-            }
-
-            auto apicalnode = i+1;
-            oldNode = i;
-            colonizationLength = 0;
-            double cursegLength;
-            while (apicalnode < nodes.size())
-            {
-                cursegLength = abs(nodes.at(oldNode).minus(nodes.at(apicalnode)).length());
-                colonizationLength += cursegLength;
-
-                if (colonizationLength > max_length_colonization) {break;}
-
-                if (infected.at(apicalnode) != 0) {
-                    oldNode = apicalnode;
-                    apicalnode++;
-                    continue;
-                }
-
-                infTime = colonizationTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
-                if (infTime > age) {break;}
-
-                setInfection(apicalnode,2,infTime);
-                if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
-                    int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
-                    Vector3d fromNode = nodes.at(oldNode);
-                    Vector3d toNode   = nodes.at(apicalnode);
-                    double toCT = nodeCTs.at(apicalnode);
-                    for (size_t j = 0; j < newNodesNumber; j++)
-                    {
-                        double newx = fromNode.x + (toNode.x - fromNode.x) *(j+1)/(newNodesNumber +1);
-                        double newy = fromNode.y + (toNode.y - fromNode.y) *(j+1)/(newNodesNumber +1);
-                        double newz = fromNode.z + (toNode.z - fromNode.z) *(j+1)/(newNodesNumber +1);
-                        Vector3d newNode = Vector3d(newx,newy,newz);
-                        addNode(newNode,plant.lock()->getNodeIndex(), toCT, apicalnode, true);
-                        oldNode++;
-                        apicalnode++;
-                    }
-                }
-                oldNode = apicalnode;
-                apicalnode++;
-            }
+        if (step < 0) {
+            currentNode++;
+            oldNode++;
+        } else {
+            oldNode++;
+            currentNode++;
         }
     }
 }
 
-void MycorrhizalRoot::simulateSecondaryInfection(double dt) {
-    secondaryInfection(false,dt);
+/*
+*/
+void MycorrhizalRoot::propagateSecondaryColonization(size_t anchorNode, int step, double maxLength, bool silence, double dt)
+{
+    int currentNode = static_cast<int>(anchorNode) + step;
+    int oldNode = static_cast<int>(anchorNode);
+    double colonizationLength = 0;
+    double highres = getRootRandomParameter()->highresolution;
+    double dxInf = getRootRandomParameter()->dx_inf;
+
+    while (currentNode >= 0 && currentNode < static_cast<int>(nodes.size()))
+    {
+        double cursegLength = segmentLength(oldNode, currentNode);
+        colonizationLength += cursegLength;
+        if (colonizationLength > maxLength) {
+            break;
+        }
+
+        if (infected.at(currentNode) != 0)
+        {
+            oldNode = currentNode;
+            currentNode += step;
+            continue;
+        }
+
+        double infTime = colonizationArrivalTime(oldNode, cursegLength);
+        if (infTime > age) {
+            break;
+        }
+
+        setColonization(currentNode, 2, infTime);
+        if (highres >= 1. && cursegLength > dxInf)
+        {
+            refineSegment(oldNode, currentNode, nodeCTs.at(currentNode), oldNode, currentNode, step);
+        }
+
+        if (step == -1 && currentNode == 0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()))
+        {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->setColonization(parentNI, 3, infTime);
+            std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->simulateColonization(dt, silence);
+        }
+
+        oldNode = currentNode;
+        currentNode += step;
+    }
 }
 
-void MycorrhizalRoot::simulatePrimaryInfection(double dt) {
-    primaryInfection(dt,false);
+void MycorrhizalRoot::secondaryColonization(bool silence, double dt)
+{
+    double max_length_colonization = age * getRootRandomParameter()->vi;
+
+    for (size_t i = 0; i < nodes.size(); ++i)
+    {
+        if (isSecondaryColonizationAnchor(i)) {
+            propagateSecondaryColonization(i, -1, max_length_colonization, silence, dt);
+            propagateSecondaryColonization(i, 1, max_length_colonization, silence, dt);
+        }
+        
+    }
+}
+
+void MycorrhizalRoot::simulateSecondaryColonization(double dt) {
+    secondaryColonization(false,dt);
+}
+
+void MycorrhizalRoot::simulatePrimaryColonization(double dt) {
+    primaryColonization(dt,false);
 }
 
 void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
@@ -280,26 +281,26 @@ void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
 
 
 
-void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
+void MycorrhizalRoot::simulateColonization(double dt, bool verbose) {
 
     if (this->nodes.size()>1) {
 
-        //Primary Infection
-        primaryInfection(dt,verbose);
+        //Primary Colonization
+        primaryColonization(dt,verbose);
 
-        // Secondary Infection
-        secondaryInfection(verbose,dt);
+        // Secondary Colonization
+        secondaryColonization(verbose,dt);
 
         for (auto l : children)
         {
             if (l->organType()==Organism::ot_root) {
                 if (infected.at(l->parentNI) != 0) { // the base of root l is infected
-                    if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0) {
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, 
+                    if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeColonization(1) == 0) {
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setColonization(0, 3, 
 								std::max( l->getNodeCT(0), colonizationTime.at(l->parentNI))); //root can only be infected after it is born (and need to account for growth delay)
                     }
                 }
-                std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateInfection(dt, verbose);
+                std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateColonization(dt, verbose);
             }
         }
     }
@@ -309,7 +310,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
     Root::simulate(dt,verbose);
-    simulateInfection(dt,verbose);
+    simulateColonization(dt,verbose);
     simulateHyphalGrowth(dt,verbose);
 }
 
@@ -324,7 +325,7 @@ std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomPa
 }
 
 double MycorrhizalRoot::getParameter(std::string name) const {
-    if (name == "primaryInfection")
+    if (name == "primaryColonization")
     {
         double primaryInfectedLength = 0;
         for (size_t i = 1; i < nodes.size(); i++)
@@ -333,7 +334,7 @@ double MycorrhizalRoot::getParameter(std::string name) const {
         }
         return primaryInfectedLength;
     }
-    if (name == "secondaryInfection")
+    if (name == "secondaryColonization")
     {
         double secondaryInfectedLength = 0;
         for (size_t i = 1; i < nodes.size(); i++)
@@ -355,12 +356,12 @@ double MycorrhizalRoot::getParameter(std::string name) const {
     return Root::getParameter(name);
 }
 
-void MycorrhizalRoot::setInfection(int i, int colonization, double t)
+void MycorrhizalRoot::setColonization(int i, int colonization, double t)
 {
     infected.at(i) = colonization;
     colonizationTime.at(i) = t;
-	assert(colonizationTime.at(i) >= 0 && "MycorrhizalRoot::setInfection colonizationTime.at(i) < 0");
-	assert(colonizationTime.at(i) >= nodeCTs.at(i) && "MycorrhizalRoot::setInfection colonizationTime.at(i) < nodeCTs.at(i)");
+	assert(colonizationTime.at(i) >= 0 && "MycorrhizalRoot::setColonization colonizationTime.at(i) < 0");
+	assert(colonizationTime.at(i) >= nodeCTs.at(i) && "MycorrhizalRoot::setColonization colonizationTime.at(i) < nodeCTs.at(i)");
 }
 
 void MycorrhizalRoot::createLateral(double dt, bool verbose)

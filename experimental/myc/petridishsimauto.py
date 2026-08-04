@@ -14,8 +14,8 @@ good_seeds = [10, 20, 30, 60, 70, 80, 90, 100] # these are seeds where hyphae cr
 
 def getMycSegmentAnalyser(plant):
         ana = pb.SegmentAnalyser(plant)
-        ana.addData("colonization", plant.getNodeInfections(2))
-        ana.addData("colonizationTime", plant.getNodeInfectionTime(2))
+        ana.addData("colonization", plant.getNodeColonizations(2))
+        ana.addData("colonizationTime", plant.getNodeColonizationTime(2))
         ana.addData("anastomosis", plant.getAnastomosisPoints(5))
         ana.addData("nodeTips", plant.getNodeTips(5))
         return ana
@@ -24,7 +24,7 @@ def getParaDistperRing(parameter, times, plant, rings):
         paradenmat = np.zeros((len(rings),len(times[1:])))
         flipped = np.flip(np.asarray(times))
         for k, ring in enumerate(rings):
-            ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cripping to one ring removes all information outside
+            ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cropping to one ring removes all information outside
             ringana.crop(ring)
             for j in range(len(times[1:])-1):
                 ringana.filter("creationTime", 0, flipped[j])
@@ -189,7 +189,7 @@ def makesimulation(seed):
     print("Initial colonization percentage: " + str(pCol*100) + "%")
     crossed_barrier = 0
     while pCol < 0.50:
-        mycp.simulateInfection(dt,False)
+        mycp.simulateColonization(dt,False)
         N+=1
         pCol = sum(mycp.getParameter("colonizationLength")) / sum(mycp.getParameter("length"))
         for organ in mycp.getOrgans(pb.hyphae):

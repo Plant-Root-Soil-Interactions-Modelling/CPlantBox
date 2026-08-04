@@ -47,7 +47,7 @@ for i in range(1, N+1):
     if animation:
         ana = pb.SegmentAnalyser(mycp)
         ana.addData("AnastomosisPoints", mycp.getAnastomosisPoints(5))
-        ana.addData("colonization", mycp.getNodeInfections(2))
+        ana.addData("colonization", mycp.getNodeColonizations(2))
         ana.write("results/" + filename + "_"+ str(i).zfill(4) + ".vtp", ["radius", "subType", "creationTime","organType","colonization","AnastomosisPoints","hyphalTreeIndex"])
 
 # ana = pb.SegmentAnalyser(mycp)

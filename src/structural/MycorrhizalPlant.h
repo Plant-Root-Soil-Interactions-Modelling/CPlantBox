@@ -20,15 +20,15 @@ class MycorrhizalPlant :public Plant {
     void initializeLB(bool verbose = true);
 
     void simulate(double dt, bool verbose) override;
-    void simulateInfection(double dt, bool verbose);
-    void simulatePrimaryInfection(double dt, bool verbose);
-    void simulateSecondaryInfection(double dt, bool verbose);
+    void simulateColonization(double dt, bool verbose);
+    void simulatePrimaryColonization(double dt, bool verbose);
+    void simulateSecondaryColonization(double dt, bool verbose);
     void simulateHyphalGrowth(double dt, bool verbose);
     void simulateAnastomosis(double dt, bool verbose);
     void simulateHyphae(double dt, bool verbose);
 
-    virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
-    virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
+    virtual std::vector<int> getNodeColonizations(int ot) const; // returns Colonizations
+    virtual std::vector<double> getNodeColonizationTime(int ot) const; // returns Colonization Time
     virtual std::vector<int> getAnastomosisPoints(int ot) const; // returns Anastomosis Points
     std::vector<int> getNodeTips(int ot) const;
 

@@ -91,8 +91,8 @@ for i in range(0, N):
     mycp.simulate(dt,True)
     if (animation):
         ana = pb.SegmentAnalyser(mycp)
-        ana.addData("colonization", mycp.getNodeInfections(2))
-        ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
+        ana.addData("colonization", mycp.getNodeColonizations(2))
+        ana.addData("colonizationTime", mycp.getNodeColonizationTime(2))
         ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
         ana.write("animation/" + filename + str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
 # look at roots and container
@@ -115,12 +115,12 @@ pCol = sum(mycp.getParameter("colonizationLength")) / sum(mycp.getParameter("len
 print("Initial colonization percentage: " + str(pCol*100) + "%")
 days = 0
 while pCol < 0.50:
-    mycp.simulateInfection(0.5,False)
+    mycp.simulateColonization(0.5,False)
     days +=0.5
     N+=12
     pCol = sum(mycp.getParameter("colonizationLength")) / sum(mycp.getParameter("length"))
-    print("Infection percentage: " + str(pCol*100) + "% after " + str(days) + " days.")
-print("Infection reached 50% after " + str(days) + " days.")
+    print("Colonization percentage: " + str(pCol*100) + "% after " + str(days) + " days.")
+print("Colonization reached 50% after " + str(days) + " days.")
 
 # simulating hyphal growth
 # mycp.simulateHyphalGrowth(0.5,True)
@@ -140,8 +140,8 @@ while crossed_barrier < 3:
                     crossed_barrier += 1
 
         # ana = pb.SegmentAnalyser(mycp)
-        # ana.addData("colonization", mycp.getNodeInfections(2))
-        # ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
+        # ana.addData("colonization", mycp.getNodeColonizations(2))
+        # ana.addData("colonizationTime", mycp.getNodeColonizationTime(2))
         # ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
         # ana.write("animation/step" + str(N+1) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
 
@@ -177,15 +177,15 @@ for i in range(0, hours_hyphae):
         organ.setActive(stayactive)
     if animation:
         ana = pb.SegmentAnalyser(mycp)
-        ana.addData("colonization", mycp.getNodeInfections(2))
-        ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
+        ana.addData("colonization", mycp.getNodeColonizations(2))
+        ana.addData("colonizationTime", mycp.getNodeColonizationTime(2))
         ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
         ana.crop(small_hyphae_dish)
         ana.write("animation/" + filename + "_" + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
 end = time.perf_counter()
 ana = pb.SegmentAnalyser(mycp)
-ana.addData("colonization", mycp.getNodeInfections(2))
-ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
+ana.addData("colonization", mycp.getNodeColonizations(2))
+ana.addData("colonizationTime", mycp.getNodeColonizationTime(2))
 ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
 
 

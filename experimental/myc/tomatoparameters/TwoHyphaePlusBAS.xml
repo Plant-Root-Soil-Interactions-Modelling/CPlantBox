@@ -84,7 +84,7 @@
         <!--Slope of inter-lateral distances [1]-->
         <parameter name="maxAge" value="32"/>
         <!--Maximal colonization age of a root segment [day]-->
-        <parameter name="maxInfection" value="1"/>
+        <parameter name="maxColonization" value="1"/>
         <!--Percentage of maximal colonization-->
         <parameter name="minAge" value="0"/>
         <!--Minimal infectious age of a root segment [day]-->
@@ -144,7 +144,7 @@
         <!--Slope of inter-lateral distances [1]-->
         <parameter name="maxAge" value="32"/>
         <!--Maximal colonization age of a root segment [day]-->
-        <parameter name="maxInfection" value="1"/>
+        <parameter name="maxColonization" value="1"/>
         <!--Percentage of maximal colonization-->
         <parameter name="minAge" value="0"/>
         <!--Minimal infectious age of a root segment [day]-->
@@ -204,7 +204,7 @@
         <!--Slope of inter-lateral distances [1]-->
         <parameter name="maxAge" value="32"/>
         <!--Maximal colonization age of a root segment [day]-->
-        <parameter name="maxInfection" value="1"/>
+        <parameter name="maxColonization" value="1"/>
         <!--Percentage of maximal colonization-->
         <parameter name="minAge" value="0"/>
         <!--Minimal infectious age of a root segment [day]-->

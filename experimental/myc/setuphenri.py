@@ -47,8 +47,8 @@ for i in range(0, N):
     mycp.simulate(dt,False)
     if (animation):
         ana = pb.SegmentAnalyser(mycp)
-        ana.addData("colonization", mycp.getNodeInfections(2))
-        ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
+        ana.addData("colonization", mycp.getNodeColonizations(2))
+        ana.addData("colonizationTime", mycp.getNodeColonizationTime(2))
         ana.addData("anastomosis", mycp.getAnastomosisPoints(5))
         ana.write("animation/" + filename + "_" + str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
 # set parameters for roots and hyphae

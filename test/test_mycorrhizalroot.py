@@ -27,19 +27,21 @@ def rootLateralLength(t, et, r, k):  # length of first order laterals (without s
 class TestMycorrhizalRoot(unittest.TestCase):
 # TODO add test for localized colonization
 # TODO modify for new parameters
-# TODO remove all instances of infradius
     def mycroot_example_rrp(self):
         """ an example used in the tests below, a main root with laterals """
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
+        h0 = pb.HyphaeRandomParameter(self.plant)
+        h0.name, h0.subType, h0.lmax, h0.dx = "runnerhyphae", 1, 5.,0.01
         p0 = pb.MycorrhizalRootRandomParameter(self.plant)
-        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.infradius = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5, 0.0
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.hyphalEmergenceDensity = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5, 0.0
         p0.successor = [[2]]
         p0.successorP = [[1.]]
         p1 = pb.MycorrhizalRootRandomParameter(self.plant)
-        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.infradius = "lateral", 2, 25., 2., 0.1, 0.0
-        self.p0, self.p1 = p0, p1  # needed at later point
+        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.hyphalEmergenceDensity = "lateral", 2, 25., 2., 0.1, 0.0
+        self.p0, self.p1, self.h0 = p0, p1, h0  # needed at later point
         self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
         self.plant.setOrganRandomParameter(p1)
+        self.plant.setOrganRandomParameter(h0)
         srp = pb.SeedRandomParameter(self.plant)
         self.plant.setOrganRandomParameter(srp)
 
@@ -152,7 +154,7 @@ class TestMycorrhizalRoot(unittest.TestCase):
         self.mycroot_example_rrp()
         simtime = 10.
         self.mycroot.simulate(simtime, False)
-        infRoots = self.mycroot.getParameter("primaryInfection")
+        infRoots = self.mycroot.getParameter("primaryColonization")
         numRoots = self.mycroot.getParameter("length")
         self.assertAlmostEqual(0.15,infRoots/(simtime*numRoots),None,"not the right amount of root segments infected",0.05)
         
@@ -167,10 +169,10 @@ class TestMycorrhizalRoot(unittest.TestCase):
         toolateInfected =[]
         toolateTime= []
         for i in range(0, self.mycroot.getNumberOfNodes()-1):
-            infected.append(self.mycroot.getNodeInfection(i))
-            if self.mycroot.getNodeInfection(i) == 1 and self.mycroot.getNodeInfection(i+1) == 0 and self.mycroot.getNodeInfection(i-1) == 0 :
+            infected.append(self.mycroot.getNodeColonization(i))
+            if self.mycroot.getNodeColonization(i) == 1 and self.mycroot.getNodeColonization(i+1) == 0 and self.mycroot.getNodeColonization(i-1) == 0 :
                 toolateInfected.append(i)
-                toolateTime.append(self.mycroot.getNodeInfectionTime(i))
+                toolateTime.append(self.mycroot.getNodeColonizationTime(i))
         speed = self.mycroot.getParameter("vi")
         for i in range(0, len(toolateInfected)):
             l = self.mycroot.getNode(toolateInfected[i]).minus(self.mycroot.getNode(toolateInfected[i]+1)).length()
@@ -185,6 +187,11 @@ class TestMycorrhizalRoot(unittest.TestCase):
                     wrong_pos.append(i)
         self.assertEqual(len(wrong_pos),0,"secondary colonization not positioned correctly")
 
+    # TODO insert test for age of colonization
+    # TODO insert test for colonization jumping
+    # TODO insert test for hyphal emergence density
+    # TODO test for segment refinement that total length and length of segment still makes sense
+    # TODO test colonization location shift
 
     def test_parameter(self):
         """ tests some parameters on sequential organ list """
@@ -225,13 +232,13 @@ class TestMycorrhizalRoot(unittest.TestCase):
 
     def mycroot_example_rrp2(self):
         """ an example used in the tests below, a main root with laterals """
-        self.plant = pb.RootSystem()  # store organism (not owned by Organ, or OrganRandomParameter)
+        self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.MycorrhizalRootRandomParameter(self.plant)
-        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.lnk, p0.r, p0.dx, p0.dxMin, p0.infradius = "taproot", 1, 0.95, 0.8, 10., 1.05, 0.01, 0.8, 0.25, 0.2, 0.0
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.lnk, p0.r, p0.dx, p0.dxMin, p0.hyphalEmergenceDensity = "taproot", 1, 0.95, 0.8, 10., 1.05, 0.01, 0.8, 0.25, 0.2, 0.0
         p0.successor = [[2]]
         p0.successorP = [[1.]]
         p1 = pb.MycorrhizalRootRandomParameter(self.plant)
-        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.infradius = "lateral", 2, 2., 2., 2., 0.0
+        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.hyphalEmergenceDensity = "lateral", 2, 2., 2., 2., 0.0
 
         self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
         self.plant.setOrganRandomParameter(p1)
@@ -305,16 +312,16 @@ class TestMycorrhizalRoot(unittest.TestCase):
     def mycroot_example_rtp2(self,delay_definition = 1):
         """ an example used in the tests below, a main root with laterals """
         self.partialiheading = pb.Vector3d.rotAB(0, 0)
-        self.plant = pb.RootSystem()  # store organism (not owned by Organ, or OrganRandomParameter)
+        self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.MycorrhizalRootRandomParameter(self.plant)
         self.lmax_th = 100
-        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.dxMin, p0.infradius = "main", 1, 10., 10., self.lmax_th, 1., 1.5, 1, 0.5, 0.
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.dxMin, p0.hyphalEmergenceDensity = "main", 1, 10., 10., self.lmax_th, 1., 1.5, 1, 0.5, 0.0
         p0.ldelay = 1.
         p0.successor = [[5]]
         p0.successorP = [[1.]]
 
         p1 = pb.MycorrhizalRootRandomParameter(self.plant)
-        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.dxMin, p1.infradius = "lateral", 5, 5., 2., 1, 0.5, 0.
+        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.dxMin, p1.hyphalEmergenceDensity = "lateral", 5, 5., 2., 1, 0.5, 0.0
         p1.ldelay = 2.
         self.p0, self.p1 = p0, p1  # needed at later point
         self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership

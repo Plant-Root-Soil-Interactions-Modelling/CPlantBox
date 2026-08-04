@@ -55,35 +55,35 @@ void MycorrhizalPlant::initializeLB(bool verbose)
 }
 
 
-std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
+std::vector<int> MycorrhizalPlant::getNodeColonizations(int ot) const {
     auto organs = this -> getOrgans(ot);
     std::vector<int> infs = std::vector<int>(getNumberOfNodes());
     for (const auto& o : baseOrgans) {
         if(o->organType() == Organism::ot_root) {
-            infs.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfection(0);
+            infs.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeColonization(0);
         }
     }
 
     for (const auto & o : organs) {
         for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++) { // TOOO check if here we need to check for organ type!!!
-            infs.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfection(i);
+            infs.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeColonization(i);
         }
     }
     return infs;
 }
 
-std::vector<double> MycorrhizalPlant::getNodeInfectionTime(int ot) const {
+std::vector<double> MycorrhizalPlant::getNodeColonizationTime(int ot) const {
     auto organs = this -> getOrgans(ot);
     std::vector<double> infTime = std::vector<double>(getNumberOfNodes());
     for (const auto& o : baseOrgans) {
         if(o->organType() == Organism::ot_root){
-            infTime.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfectionTime(0);
+            infTime.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeColonizationTime(0);
         }
     }
 
     for (const auto & o : organs){
         for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++){ // TOOO check if here we need to check for organ type!!!
-            infTime.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfectionTime(i);
+            infTime.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeColonizationTime(i);
         }
     }
     return infTime;
@@ -167,16 +167,16 @@ void MycorrhizalPlant::simulateHyphae(double dt, bool verbose) {
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
 */
-void MycorrhizalPlant::simulatePrimaryInfection(double dt, bool verbose) {
+void MycorrhizalPlant::simulatePrimaryColonization(double dt, bool verbose) {
     for (const auto& r : baseOrgans) {
         if (r->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryInfection(dt);
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryColonization(dt);
         }
     }
     auto organs = getOrgans();
     for (const auto& r : organs) {
         if (r->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryInfection(dt);
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryColonization(dt);
         }
     }
 }
@@ -186,32 +186,32 @@ void MycorrhizalPlant::simulatePrimaryInfection(double dt, bool verbose) {
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
  */
-void MycorrhizalPlant::simulateSecondaryInfection(double dt, bool verbose) {
+void MycorrhizalPlant::simulateSecondaryColonization(double dt, bool verbose) {
     for (const auto& r : baseOrgans) {
         if (r->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryInfection(dt);
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryColonization(dt);
         }
     }
 
     auto organs = getOrgans();
     for (const auto& r : organs) {
         if (r->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryInfection(dt);
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryColonization(dt);
         }
     }
 }
 
-void MycorrhizalPlant::simulateInfection(double dt, bool verbose) {
+void MycorrhizalPlant::simulateColonization(double dt, bool verbose) {
     for (const auto& r : baseOrgans) {
         if (r->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateInfection(dt, verbose);
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateColonization(dt, verbose);
         }
     }
     
     auto organs = getOrgans();
     for (const auto& r : organs) {
         if (r->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateInfection(dt, verbose);
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateColonization(dt, verbose);
         }
     }
 }

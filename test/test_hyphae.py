@@ -8,6 +8,10 @@ from scipy.linalg import norm
 
 class TestHyphae(unittest.TestCase):
 
+    # TODO add test for anastomosis
+    # TODO add test for different branching types
+    # TODO test hyphal tree index
+    # TODO merged hyphae index etc
     def hyphae_example(self): # TODO check which parameters are needed and how structure should be
         self.plant = pb.Organism()
         self.hrp = pb.HyphaeRandomParameter(self.plant)

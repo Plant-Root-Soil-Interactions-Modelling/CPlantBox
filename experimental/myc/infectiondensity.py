@@ -64,7 +64,7 @@ def make_RILD_plot(plant, depth, layers,radius,name):
     fig, axes = plt.subplots(figsize = (6, 8))
     # Make a root length distribution
     ana = pb.SegmentAnalyser(plant)
-    ana.addData("colonization",plant.getNodeInfections(2))
+    ana.addData("colonization",plant.getNodeColonizations(2))
     ana.filter("colonization",1,3)
     # ana.write("results/" + name + "_108days_allroots.vtp",["radius", "subType", "creationTime","organType"])
     rad = ana.getParameter("radius")

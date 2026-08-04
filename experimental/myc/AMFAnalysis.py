@@ -31,8 +31,8 @@ def getLengthperSubtypeperRing(times, plant, rings, subtype):
 
 def getMycSegmentAnalyser(plant):
     ana = pb.SegmentAnalyser(plant)
-    ana.addData("colonization", plant.getNodeInfections(2))
-    ana.addData("colonizationTime", plant.getNodeInfectionTime(2))
+    ana.addData("colonization", plant.getNodeColonizations(2))
+    ana.addData("colonizationTime", plant.getNodeColonizationTime(2))
     ana.addData("anastomosis", plant.getAnastomosisPoints(5))
     ana.addData("nodeTips", plant.getNodeTips(5))
     return ana

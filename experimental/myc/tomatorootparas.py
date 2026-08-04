@@ -77,8 +77,8 @@ for i in range(1,N):
         mycp.simulate(dt, False)
         if animation:
             ana = pb.SegmentAnalyser(mycp)
-            ana.addData("colonization", mycp.getNodeInfections(2))
-            ana.addData("colonizationTime", mycp.getNodeInfectionTime(2))
+            ana.addData("colonization", mycp.getNodeColonizations(2))
+            ana.addData("colonizationTime", mycp.getNodeColonizationTime(2))
             ana.write(names[treatment] + "_animation_" + "{:04d}".format(i) + ".vtp", ["radius", "subType", "creationTime", "length", "colonization", "colonizationTime"])
     
 print('done')

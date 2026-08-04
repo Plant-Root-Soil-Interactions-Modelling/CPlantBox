@@ -34,15 +34,15 @@ namespace CPlantBox {
 
         void bindParameters() override;
         /*
-            Internal AMF Infection Parameters
+            Internal AMF Colonization Parameters
         */
         double lmbd = 0.15;        ///< Rate of primary colonization for dispersed inoculum [1/(cm day)]
         double lmbds = 0.;         ///< Standard deviation of primary colonization [1/(cm day)]
         double minAge = 0;         ///< Minimal Infectious age of a root segment [day]
-        double maxAge = 32;        ///< Maximal Infection age of a root segment [day]
+        double maxAge = 32;        ///< Maximal Colonization age of a root segment [day]
         double vi = 0.13;          ///< speed of internal colonization [cm / day]
         double vis = 0.;           ///< Standard deviation of speed of internal colonization [cm / day]
-        double maxInfection = 1;   ///< Percentage of maximal colonization
+        double maxColonization = 1;   ///< Percentage of maximal colonization
         double hyphalDelay = 0.;      ///< Dummy delay time before hyphal emergence after colonization [day] there is none.
         double highresolution = 1; ///< If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity
         double dx_inf = 0.1;       ///< Segment length for infected root segments only in high resolution case [cm]

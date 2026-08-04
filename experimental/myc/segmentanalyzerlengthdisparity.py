@@ -65,7 +65,7 @@ observed_segment_total = []
 
 # --- Initialer Schritt ---
 mycp.simulate(dt, False)
-infs = mycp.getNodeInfections(2)
+infs = mycp.getNodeColonizations(2)
 temp_ana = pb.SegmentAnalyser(mycp)
 # Segmentbasierte Infektionslängen
 primary_seg = secondary_seg = noninf_seg = 0
@@ -84,8 +84,8 @@ observed_segment_noninf.append(noninf_seg)
 observed_segment_total.append(primary_seg + secondary_seg + noninf_seg)
 
 # Globaldaten
-observed_primary.append(sum(mycp.getParameter("primaryInfection")))
-observed_secondary.append(sum(mycp.getParameter("secondaryInfection")))
+observed_primary.append(sum(mycp.getParameter("primaryColonization")))
+observed_secondary.append(sum(mycp.getParameter("secondaryColonization")))
 observed_total.append(sum(mycp.getParameter("length")))
 observed_not_infected.append(observed_total[0] - observed_primary[0] - observed_secondary[0])
 
@@ -97,7 +97,7 @@ expected_segment_primary.append(0)
 # --- Hauptzeitschleife ---
 for t in range(1, len(time)):
     mycp.simulate(dt, False)
-    infs = mycp.getNodeInfections(2)
+    infs = mycp.getNodeColonizations(2)
     temp_ana = pb.SegmentAnalyser(mycp)
 
     primary_seg = secondary_seg = noninf_seg = 0
@@ -115,8 +115,8 @@ for t in range(1, len(time)):
     observed_segment_noninf.append(noninf_seg)
     observed_segment_total.append(primary_seg + secondary_seg + noninf_seg)
 
-    observed_primary.append(sum(mycp.getParameter("primaryInfection")))
-    observed_secondary.append(sum(mycp.getParameter("secondaryInfection")))
+    observed_primary.append(sum(mycp.getParameter("primaryColonization")))
+    observed_secondary.append(sum(mycp.getParameter("secondaryColonization")))
     observed_total.append(sum(mycp.getParameter("length")))
 
     # --- Differenzen und Erwartungswerte ---
