@@ -115,6 +115,9 @@ public :
 
   void SetNotUseStemInfluence() { this->use_stem_influence_ = false; }
 
+  void SetFrameMomentum(double momentum) { this->frame_momentum_ = std::clamp(momentum, 0.0, 1.0); }
+  double GetFrameMomentum() const { return frame_momentum_; }
+
   int GetNumOrgans() const;
 
   std::string SelfCheck() const;
@@ -126,6 +129,7 @@ protected:
   bool verbose_{false};
   bool add_vertical_leaf_offset_{false};
   double right_penalty_{0.1};
+  double frame_momentum_{0.9};  // Weight for last frame's right vector (0 = no momentum, 1 = fully stable)
 
   double leaf_width_scale_factor_{1.0};
   double leaf_minimum_width_{0.0};

@@ -196,18 +196,6 @@ class Quaternion {
     // Computes a continuous frame along a curve by transporting the reference up vector
     static Quaternion ParallelTransportFrame(const Vector3d& forward, const Vector3d& prev_up)
     {
-      // Handle degenerate case: forward parallel to prev_up
-      double dot_product = std::abs(forward.times(prev_up));
-      if (dot_product > 0.99) {
-        // Nearly parallel - use alternative reference
-        Vector3d alt_ref = std::abs(forward.x) > std::abs(forward.y) 
-                          ? Vector3d(0, 1, 0) : Vector3d(1, 0, 0);
-        Vector3d right = forward.cross(alt_ref).normalized();
-        Vector3d up = right.cross(forward).normalized();
-        return Quaternion::FromMatrix3d(Matrix3d(forward, right, up));
-      }
-      
-      // Standard parallel transport: use prev_up as reference
       return FromForwardAndUp(forward, prev_up);
     }
 

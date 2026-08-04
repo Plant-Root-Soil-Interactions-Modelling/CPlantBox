@@ -1134,7 +1134,7 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
     // Flat leaf: single section with mirrored radial definition
     int total_points = 1 + radial_resolution;  // 1 middle + radial_resolution outer points
     int half_res = radial_resolution / 2;
-    int total_triangles = 2 * (half_res - 1);  // Fan triangulation: (half_res-1) triangles per side × 2 sides
+    int total_triangles = 2 * (half_res) - 1;  // Fan triangulation: (half_res-1) triangles per side × 2 sides
 
     // Buffer reservations
     geometry_.resize(std::max(static_cast<std::size_t>(p_o + total_points * 3), geometry_.size()), -1.0);
@@ -1142,18 +1142,21 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
     geometry_indices_.resize(std::max(static_cast<std::size_t>(c_o + total_triangles * 3), geometry_indices_.size()), static_cast<unsigned int>(-1));
     geometry_texture_coordinates_.resize(std::max(static_cast<std::size_t>((p_o / 3 * 2) + total_points * 2), geometry_texture_coordinates_.size()), -1.0);
     geometry_node_ids_.resize(std::max(static_cast<std::size_t>(p_o / 3 + total_points), geometry_node_ids_.size()), -1);
+    STEPOUT("Resized geometry buffers: geometry_=" << geometry_.size() << ", normals=" << geometry_normals_.size()
+             << ", indices=" << geometry_indices_.size() << ", texcoords=" << geometry_texture_coordinates_.size()
+             << ", node_ids=" << geometry_node_ids_.size());
 
     // ----------------------------------------------------
     // --- Compute local frame once for the entire leaf ---
     // --- THIS IS STAGE 2 --------------------------------
     // Compute forward direction along midvein at attachment point
-    Vector3d global_forward{1.0, 0.0, 0.0};  // Default forward
+    Vector3d global_forward{0, 1, 0};  // Default forward
     Vector3d global_right, global_up;
     global_up = Vector3d(0, 0, 1);
-    global_right = Vector3d(0, 1, 0);
+    global_right = Vector3d(1, 0, 0);
     // scaling: Make sure that the leaf is within [0,1] in local space
     double max_radius = *std::max_element(r_def.begin(), r_def.end());
-    double scaling_factor_local = 1.0 / max_radius;
+    double scaling_factor_local = 0.5 / max_radius;
     // scale the r_def values to fit within [0,1]
     
     // --- Interpolate r(phi) for the original side ---
@@ -1267,39 +1270,58 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
         }
     }
     point_offset += half_res * 3;  // Skip over the mirrored points we already wrote
+    STEPOUT("Finished with max triangle index of " << geometry_indices_[point_offset / 3 - 1] << " and total triangles created: " << (index_offset - c_o) / 3);
 
     // --- Spline-based leaf bending ---
     // Transform points from flat local [0,1]² space to 3D bent space using midvein spline
     
-    // Sample spline to get frame sequence for bending
-    int num_frame_samples = 20;
-    std::vector<Matrix3d> spline_frames;
-    std::vector<Vector3d> spline_positions;
+    STEPOUT("Starting spline-based leaf bending for " << total_points << " points.");
+
+    STEPOUT("Initializing continuous sampling variables for spline bending.");
+    // Initialize frame state for parallel transport with momentum
+    Vector3d last_reference_pos = midVein(0.0); // will be updated
+    Vector3d last_ref_forward = midVein.derivative(0.0).normalized(); // will be updated
+    Vector3d last_ref_right{1, 0, 0};  // Initial right vector (will be computed properly below)
+    Vector3d last_ref_up{0, 0, 1};      // Initial up vector
     
-    Vector3d prev_up = Vector3d(0, 0, 1);
-    for (int i = 0; i < num_frame_samples; ++i) {
-        double t = static_cast<double>(i) / std::max(1, num_frame_samples - 1);
-        Vector3d pos = midVein(t);
-        Vector3d forward = midVein.derivative(t).normalized();
-        
-        Quaternion frame_q = Quaternion::ParallelTransportFrame(forward, prev_up);
-        Matrix3d frame = frame_q.ToMatrix3d();
-        
-        spline_frames.push_back(frame);
-        spline_positions.push_back(pos);
-        prev_up = frame.column(2);
+    // Compute initial orthonormal frame at t=0
+    Vector3d init_forward = midVein.derivative(0.0).normalized();
+    Vector3d init_up{0, 0, 1};
+    // Handle degenerate case where forward is nearly vertical
+    if (std::abs(init_forward.times(init_up)) > 0.99) {
+        init_up = Vector3d{0, 1, 0};
     }
+    last_ref_right = init_up.cross(init_forward).normalized();
+    last_ref_up = init_forward.cross(last_ref_right).normalized();
+    last_ref_forward = init_forward;
+    double last_t_val = 0.0;  // Track last processed t-value for frame update detection
     
     // Biological scaling factor for actual leaf dimensions
     double leaf_length = leaf->getLength(false);
     double leaf_area = leaf->leafArea();
     double scaling_factor_biological = leaf_area / leaf_length;
+    STEPOUT("Computed biological scaling factor: " << scaling_factor_biological << " (leaf_area=" << leaf_area << ", leaf_length=" << leaf_length << ")");
     
     // Transform each point using its Y coordinate as spline parameter
     unsigned int start_point_idx = p_o / 3;
     unsigned int end_point_idx = point_offset / 3;
+    STEPOUT("Transforming points from index " << start_point_idx << " to " << end_point_idx - 1 << " using spline bending.");
+
+    STEPOUT("Sorting point indices based on Y coordinate for smooth spline parameterization.");
+    std::vector<int> y_sorted_point_indices;
+    // Populate the vector with point indices from start_point_idx to end_point_idx
+    for (unsigned int idx = start_point_idx; idx < end_point_idx; ++idx) {
+        y_sorted_point_indices.push_back(idx);
+    }
+    std::sort(y_sorted_point_indices.begin(), y_sorted_point_indices.end(), [&](int a, int b) {
+        return geometry_[a * 3 + 1] < geometry_[b * 3 + 1];
+    });
     
-    for (unsigned int i = start_point_idx; i < end_point_idx; ++i) {
+    // Use y_sorted_point_indices for smooth t progression based on Y coordinate
+    STEPOUT("Total points to transform: " << (end_point_idx - start_point_idx));
+    for (unsigned int sorted_idx = start_point_idx; sorted_idx < end_point_idx; ++sorted_idx) {
+        unsigned int i = y_sorted_point_indices[sorted_idx];
+        STEPOUT("Original point coordinates(" << i << "): (" << geometry_[i * 3 + 0] << ", " << geometry_[i * 3 + 1] << ", " << geometry_[i * 3 + 2] << ")");
         double x = geometry_[i * 3 + 0];
         double y = geometry_[i * 3 + 1];
         double z = geometry_[i * 3 + 2];
@@ -1308,26 +1330,57 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
         double t_val = y;
         t_val = std::clamp(t_val, 0.0, 1.0);
         
-        // Find corresponding spline frame
-        int frame_idx = static_cast<int>(t_val * (num_frame_samples - 1));
-        frame_idx = std::clamp(frame_idx, 0, num_frame_samples - 1);
-        
-        const Matrix3d& frame = spline_frames[frame_idx];
-        const Vector3d& spline_pos = spline_positions[frame_idx];
+        // Only recompute the spline frame when t_val changes meaningfully
+        // This prevents redundant frame updates for points at the same cross-section
+        if (std::abs(t_val - last_t_val) > 1e-3)
+        {
+            // Generate the new position and forward direction along the spline
+            last_reference_pos = midVein(t_val);
+            auto deriv = midVein.derivative(t_val);
+            Vector3d new_forward;
+            if (deriv.x * deriv.x + deriv.y * deriv.y + deriv.z * deriv.z > 1e-12) {
+                new_forward = deriv.normalized();
+            } else {
+                // Keep previous forward to avoid NaN from zero derivative
+                new_forward = last_ref_forward;
+            }
+            
+            // Compute new right vector with momentum from previous frame
+            // Blend: new_right = (1-momentum) * (up × forward) + momentum * last_right
+            // This gives the right vector inertia, preventing oscillation on straight paths
+            Vector3d temp_right = last_ref_up.cross(new_forward).normalized();
+            Vector3d blended_right = (1.0 - frame_momentum_) * temp_right + frame_momentum_ * last_ref_right;
+            blended_right = blended_right.normalized();
+            
+            // Reconstruct orthonormal frame: up = forward × right, then re-orthonormalize right
+            Vector3d new_up = new_forward.cross(blended_right).normalized();
+            last_ref_right = new_up.cross(new_forward).normalized();  // Re-orthonormalized right
+            last_ref_up = new_up;
+            last_ref_forward = new_forward;
+            
+            last_t_val = t_val;
+            
+            // Debug output for the local frame vectors
+            STEPOUT("Spline frame at t=" << t_val << ": position=" << last_reference_pos.toString() 
+                     << ", forward=" << last_ref_forward.toString()
+                     << ", right=" << last_ref_right.toString()
+                     << ", up=" << last_ref_up.toString());
+        }
         
         // X offset from midvein (0.5 is center in local space)
         double x_offset = (x - 0.5) * scaling_factor_biological;
         
-        // Transform: spline_pos + x_offset * local_right
-        Vector3d bent_pos = spline_pos + x_offset * frame.column(1);
+        // Transform: last_reference_pos + x_offset * local_right
+        Vector3d bent_pos = last_reference_pos + x_offset * last_ref_right;
         
         // Update geometry
         geometry_[i * 3 + 0] = bent_pos.x;
         geometry_[i * 3 + 1] = bent_pos.y;
         geometry_[i * 3 + 2] = bent_pos.z;
+        STEPOUT("Transformed point " << i << ": (" << bent_pos.x << ", " << bent_pos.y << ", " << bent_pos.z << ") with t=" << t_val << ", x_offset=" << x_offset << ", spline pos=" << last_reference_pos.toString() << ", forward=" << last_ref_forward.toString() << ", right=" << last_ref_right.toString() << ", up=" << last_ref_up.toString());
         
-        // Update normal to follow the bent surface
-        Vector3d normal = frame.column(2);
+        // Update normal to follow the bent surface (normal = up vector)
+        Vector3d normal = last_ref_up;
         geometry_normals_[i * 3 + 0] = normal.x;
         geometry_normals_[i * 3 + 1] = normal.y;
         geometry_normals_[i * 3 + 2] = normal.z;

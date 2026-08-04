@@ -141,11 +141,19 @@ class CatmullRomSplineManager
   }
 
   Vector3d operator() (double t) const {
-    return std::find_if(splines.begin(), splines.end(), [t](const CatmullRomSpline &s) { return t >= s.getT0() && t <= s.getT1(); })->operator()(t);
+    auto it = std::find_if(splines.begin(), splines.end(), [t](const CatmullRomSpline &s) { return t >= s.getT0() - 1e-9 && t <= s.getT1() + 1e-9; });
+    if (it == splines.end()) {
+      return splines.back()(t);
+    }
+    return it->operator()(t);
   }
 
   Vector3d derivative(double t) const {
-    return std::find_if(splines.begin(), splines.end(), [t](const CatmullRomSpline &s) { return t >= s.getT0() && t <= s.getT1(); })->derivative(t);
+    auto it = std::find_if(splines.begin(), splines.end(), [t](const CatmullRomSpline &s) { return t >= s.getT0() - 1e-9 && t <= s.getT1() + 1e-9; });
+    if (it == splines.end()) {
+      return splines.back().derivative(t);
+    }
+    return it->derivative(t);
   }
 
   void setY(std::vector<Vector3d> y) {
