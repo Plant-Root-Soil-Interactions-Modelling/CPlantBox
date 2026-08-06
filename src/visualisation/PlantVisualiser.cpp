@@ -9,7 +9,7 @@
 
 namespace CPlantBox {
 
-  	// an iterator that can give me the vector mirrored around 0
+  	// Iterator that mirrors values around 0
 	class MirrorIterator {
 	public:
 		using iterator_category = std::input_iterator_tag;
@@ -19,9 +19,6 @@ namespace CPlantBox {
 		using reference         = value_type&;
 	public:
 		MirrorIterator(const std::vector<double>* v) : v(v) {
-			//std::cout << "MirrorIterator was created " << v->size() << std::endl;
-			// output all vector elements
-      // std::copy(v->begin(), v->end(), std::ostream_iterator<double>(std::cout, " ")); std::cout << std::endl;
 		}
 		std::pair<int,double> operator*() { return std::make_pair(idx(), v->at(i)); }
 		MirrorIterator& operator++() { inc(); return *this; }
@@ -36,12 +33,9 @@ namespace CPlantBox {
 				return -v->at(v->size() - (i - v->size() + 1) - ((v->back() < std::numeric_limits<float>::epsilon()) ? 1 : 0));
 			}
 		 }
-		// begin
 		MirrorIterator begin() { return MirrorIterator(v); }
-		// end
 		MirrorIterator end() { return MirrorIterator(v, true, 0); }
 
-    // computes the texture coordinate within the unit interval based on the index
     double texcoord(int i)
 		{
 		  double d = static_cast<double>(i) / static_cast<double>(size() - 1);
@@ -63,7 +57,7 @@ namespace CPlantBox {
 				}
 			}
 		}
-		// checks whether we are in the mirrored part for a given index
+		// Check if index is in mirrored section
 		bool isMirrored(int i)
 		{
 		  return i >= v->size();
@@ -156,7 +150,7 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
   
   if(organ->organType() == 4)
   {
-    // 4 SHOULD mean leaf, so we do not check for successful cast
+    // Organ type 4 = leaf
 		unsigned int point_space = 0, cell_space = 0;
 		
     if(this->include_midline_in_leaf_)
@@ -170,8 +164,7 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
 		auto leaf = std::dynamic_pointer_cast<Leaf>(organ);
 		auto lrp = leaf->getLeafRandomParameter();
 		
-		// Determine if we need to use the true radial description (for star-shaped leaves)
-		// by checking the first non-zero getLeafVisX result
+		// Check if star-shaped leaf (true radial) from vis_x size
 		bool use_true_radial = false;
 		if(lrp->parametrisationType == 0)
 		{
@@ -184,9 +177,7 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
 					if(vis_x.size() > 1)
 					{
 						use_true_radial = true;
-						if(verbose_)
-							std::cout << "Leaf " << leaf->getId() << " has non-convex cross-section (" 
-							          << vis_x.size() << " points), using true radial description" << std::endl;
+
 					}
 					break;
 				}
@@ -223,19 +214,19 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
 {
   auto organ_list = plant_->getOrgans(-1, false);
 		
-  // First we check if we have enough memory to support the geometry_
+  // Precompute memory needed for geometry
   unsigned int point_space = 0;
   unsigned int cell_space = 0;
 	unsigned int num_organs = 0;
 
   for(auto organ : organ_list)
   {
-    // Check against object, because organType can be -1
+    // Match organ type (-1 means all)
 		if(organ->organType() == organType || organType < 0)
 		{
     if(organ->organType() == 4)
     {
-      // 4 SHOULD mean leaf, so we do not check for successful cast
+      // Leaf - no cast check
       if(include_midline_in_leaf_)
       {
         point_space += organ->getNumberOfNodes() * 3 * geometry_resolution_;
@@ -476,20 +467,11 @@ void PlantVisualiser::GenerateLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned 
     //rot *= Quaternion::geodesicRotation(rot.Forward(), dist);
     rot = Quaternion::FromForwardAndUp(rot.Forward(), rot.Up());
 		if(verbose_) std::cout << "[Leaf] Rotating " << rot.toString() << " to get " << dist.toString() << std::endl;
-    // TODO: Check with mona on what the Vector3d coordinates of
-    // this function are, and if we need to change them
     auto vis = leaf->getLeafVis(i);
-    // We don't normally split normals, but in this case we have a flat surface
-    // and we want to have a smooth shading
-    //std::cout << "Inserting some geometry_" << std::endl;
-    if(verbose_) std::cout << "Vis has length " << vis.size() << std::endl;
+    // Split normals for flat leaf surface with smooth shading
     geometry_texture_coordinates_.insert(geometry_texture_coordinates_.begin() + (points_index/3*2),
                                             {currentLength, 0.0, currentLength, 1.0});
-    //std::cout << "geometry_node_ids_[" << points_index << "] = " << id << std::endl;
-    //std::cout << "Vector Data: Size=" << geometry_node_ids_.size() << ", capacity=" << geometry_node_ids_.capacity() << std::endl;
-    //geometry_node_ids_[points_index] = id;
-    //geometry_node_ids_[points_index + 1] = id;
-    // TODO: it not obvious that points_index can be changed by the insert here
+    
     geometry_node_ids_[points_index/3] = id;
     geometry_node_ids_[(points_index/3) + 1] = id;
     vec2Buf(geometry_, points_index, vis[0], vis[1]);
@@ -604,14 +586,9 @@ void PlantVisualiser::GenerateStemGeometry(std::shared_ptr<Organ> stem, unsigned
 
 void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& start_co, unsigned int& start_p_o)
 {
-  // must be called on the newest organ!
-  // Method is intended to set a new point in all star or star-like leaf branches
-  // So for each outer distance max we add a point near the minimal distance and
-  // introduce two new triangles, and re-assigning the node_ids where center_idx
-  // is for the boundary points.
-  // We do this until the left and right points grow closer to the center, when
-  // they go further again, we stop because we'd cut a triangle through an outline.
-
+  // For each distance maximum from center_idx, insert a new point at min_dist
+  // along that ray and retriangulate the arc between the neighboring minima.
+  
   // doublecheck that the last triangle index is below numPoints
   if(geometry_indices_.back() >= geometry_.size() / 3)
   {
@@ -621,12 +598,9 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
   }
 
 
-  // start_co is the index in geometry_indices_ where the triangles start
-  // start_p_o is the index in geometry_ where the points start (updated by reference)
   Vector3d center_point = Vector3d(geometry_[center_idx * 3 + 0], geometry_[center_idx * 3 + 1], geometry_[center_idx * 3 + 2]);
   const auto start_idx = 1;
   const auto end_idx = geometry_.size() / 3;
-  // retain [point index, phi, distance to center] for the outline before this algorithm
   std::vector<std::tuple<unsigned int, double, double>> outline_points;
   for(unsigned int i = start_idx; i < end_idx; ++i)
   {
@@ -636,12 +610,11 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
     const double dist = (p - center_point).length();
     outline_points.push_back(std::make_tuple(i, phi, dist));
   }
-  // sort outline points by phi to ensure they are in order around the center
   std::sort(outline_points.begin(), outline_points.end(), [](const auto& a, const auto& b) {
     return std::get<1>(a) < std::get<1>(b);
   });
   
-  // Step 1: Find local maxima (where both neighbors have smaller distance)
+  // Find local maxima
   std::vector<size_t> maxima_indices;
   const size_t n = outline_points.size();
   for(size_t i = 0; i < n; ++i)
@@ -659,17 +632,15 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
     }
   }
   
-  // Step 2: Find global minimum distance across all outline points
   double min_dist = std::numeric_limits<double>::max();
   for(const auto& op : outline_points)
   {
     min_dist = std::min(min_dist, std::get<2>(op));
   }
   
-  // Step 3: For each maxima, find neighboring minima and process
   for(size_t max_idx : maxima_indices)
   {
-    // Find left neighboring minimum (search CCW: decreasing index with wraparound)
+    // Find left neighboring minimum
     size_t left_min_idx = max_idx;
     {
       double prev_dist = std::get<2>(outline_points[max_idx]);
@@ -686,7 +657,7 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
       }
     }
     
-    // Find right neighboring minimum (search CW: increasing index with wraparound)
+    // Find right neighboring minimum
     size_t right_min_idx = max_idx;
     {
       double prev_dist = std::get<2>(outline_points[max_idx]);
@@ -703,17 +674,15 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
       }
     }
     
-    // Step 3a: Create new point at global min distance in the phi direction of the maxima
+    // Create new point at min_dist along this maxima's ray
     const double max_phi = std::get<1>(outline_points[max_idx]);
     const Vector3d new_point = center_point + Vector3d(std::cos(max_phi) * min_dist, std::sin(max_phi) * min_dist, 0);
     
-    // Add new point to geometry_
     const unsigned int new_point_idx = geometry_.size() / 3;
     geometry_.push_back(new_point.x);
     geometry_.push_back(new_point.y);
     geometry_.push_back(new_point.z);
     
-    // Interpolate normal between center point and outline maxima point
     const unsigned int max_point_idx = std::get<0>(outline_points[max_idx]);
     const double normal_t = min_dist / std::get<2>(outline_points[max_idx]);
     geometry_normals_.push_back(
@@ -723,16 +692,8 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
     geometry_normals_.push_back(
         geometry_normals_[center_idx * 3 + 2] * (1.0 - normal_t) + geometry_normals_[max_point_idx * 3 + 2] * normal_t);
     
-    if(debug_triangulization)
-    {
-      std::cout << "New point at (" << new_point.x << ", " << new_point.y << ", " << new_point.z << ") with normal ("
-                << geometry_normals_[new_point_idx * 3 + 0] << ", "
-                << geometry_normals_[new_point_idx * 3 + 1] << ", "
-                << geometry_normals_[new_point_idx * 3 + 2] << ")" << std::endl;
-    }
     
-    // Set texture coordinates: phi from maxima (scaled to [0,1] by dividing by 2π), distance as new distance (normalized)
-    // Use the maxima point's existing texture coordinate and scale by distance ratio
+    // Texture coordinates
     const double max_point_dist = std::get<2>(outline_points[max_idx]);
     const double existing_texcoord_v = geometry_texture_coordinates_[max_point_idx * 2 + 1];
     const double dist_normalized = existing_texcoord_v * (min_dist / max_point_dist);
@@ -740,11 +701,9 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
     geometry_texture_coordinates_.push_back(phi_normalized);
     geometry_texture_coordinates_.push_back(dist_normalized);
     
-    // Copy node id from center point
     geometry_node_ids_.push_back(geometry_node_ids_[center_idx]);
     
-    // Step 3b: Find affected triangles (containing center_idx, with other vertices between the neighboring minima)
-    // Get the point indices and phi values for the minima
+    // Get minima point indices and phi values
     const unsigned int left_min_point_idx = std::get<0>(outline_points[left_min_idx]);
     const unsigned int right_min_point_idx = std::get<0>(outline_points[right_min_idx]);
     const double left_min_phi = std::get<1>(outline_points[left_min_idx]);
@@ -756,8 +715,7 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
 
     const auto full_arc_segment_dist = cw_dist(left_min_phi, right_min_phi);
     
-    // Step 3c: Replace center_idx with new_point_idx in affected triangles
-    // Search only through this organ's triangles (starting from start_co)
+    // Replace center_idx with new_point_idx in triangles whose other vertices lie in the arc
     const size_t num_triangles = geometry_indices_.size() / 3;
     for(size_t tri = start_co / 3; tri < num_triangles; ++tri)
     {
@@ -772,59 +730,40 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
       // Check if triangle contains center_idx
       if(v0 == center_idx || v1 == center_idx || v2 == center_idx)
       {
-        if(debug_triangulization)
-        {
-          std::cout << "Triangle " << tri << " contains center_idx=" << center_idx << ": (" << v0 << ", " << v1 << ", " << v2 << ")" << std::endl;
-        }
         // Check if the OTHER two vertices are within the arc between minima
         unsigned int other1 = 0, other2 = 0;
         if(v0 == center_idx) { other1 = v1; other2 = v2; }
         else if(v1 == center_idx) { other1 = v0; other2 = v2; }
         else { other1 = v0; other2 = v1; }
 
-        // calculate phi for other1 and other2 as we know their index (not in outline_points) but in the geometry_ array
         const double otherphi1 = std::atan2(geometry_[other1 * 3 + 1] - center_point.y, geometry_[other1 * 3 + 0] - center_point.x);
         const double otherphi2 = std::atan2(geometry_[other2 * 3 + 1] - center_point.y, geometry_[other2 * 3 + 0] - center_point.x);
-        // normalize to [0, 2π)
         const double otherphi1_norm = (otherphi1 < 0) ? (otherphi1 + 2.0 * M_PI) : otherphi1;
         const double otherphi2_norm = (otherphi2 < 0) ? (otherphi2 + 2.0 * M_PI) : otherphi2;
         
-        // Both other vertices must be in the arc for this triangle to be affected
         if(cw_dist(left_min_phi, otherphi1_norm) <= full_arc_segment_dist &&
            cw_dist(left_min_phi, otherphi2_norm) <= full_arc_segment_dist)
         {
-          if(debug_triangulization)
-          {
-            std::cout << "Triangle " << tri << " is affected by the new point" << std::endl;
-          }
           // Replace center_idx with new_point_idx
           if(v0 == center_idx) geometry_indices_[idx0] = new_point_idx;
           if(v1 == center_idx) geometry_indices_[idx1] = new_point_idx;
           if(v2 == center_idx) geometry_indices_[idx2] = new_point_idx;
         }
-        else if(debug_triangulization)
-        {
-          std::cout << "Triangle " << tri << " is NOT affected by the new point because: \n"
-                    << "  other1 phi=" << otherphi1_norm << ", other2 phi=" << otherphi2_norm
-                    << ", left_min_phi=" << left_min_phi << ", right_min_phi=" << right_min_phi
-                    << ", full_arc_segment_dist=" << full_arc_segment_dist << std::endl;
-        }
+
       }
     }
     
-    // Step 3d: Add two new triangles (center, new point, local minima 1 and 2)
-    // Triangle 1: center_idx, new_point_idx, left_min_point_idx
+    // Add two new triangles connecting center, new point, and the two minima
     geometry_indices_.push_back(center_idx);
     geometry_indices_.push_back(new_point_idx);
     geometry_indices_.push_back(left_min_point_idx);
     
-    // Triangle 2: center_idx, right_min_point_idx, new_point_idx
     geometry_indices_.push_back(center_idx);
     geometry_indices_.push_back(right_min_point_idx);
     geometry_indices_.push_back(new_point_idx);
   }
   
-  // Update the reference parameters to reflect the new geometry
+  // Update geometry indices
   start_co = geometry_indices_.size();
   start_p_o = geometry_.size();
   
@@ -925,17 +864,13 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 
   // std::cout << "Invoking create leaf radial geometry_ for leaf " << leaf->getId() << std::endl;
 
-	// create leaf radial geometry_
-	// greate points for the leaf outer
-	// double check that this was not done in python
+	// Create leaf radial geometry if not already done
 	if(lrp->leafGeometry.size() == 0)
 	{
     if(verbose_) std::cout << "Needing to build leaf geometry nodes" << std::endl;
 		lrp->createLeafRadialGeometry(lrp->leafGeometryPhi,lrp->leafGeometryX,resolution);
 	}
-	// retrieve the leaf geometry_
 	auto& outer_geometry_points = lrp->leafGeometry;
-  // set buffer sizes
   int point_buffer = 0;
   int index_buffer = 0;
   int last_amount = -1;
