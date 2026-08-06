@@ -631,7 +631,8 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
   for(unsigned int i = start_idx; i < end_idx; ++i)
   {
     const Vector3d p = Vector3d(geometry_[i * 3 + 0], geometry_[i * 3 + 1], geometry_[i * 3 + 2]);
-    const double phi = std::atan2(p.y - center_point.y, p.x - center_point.x);
+    double phi = std::atan2(p.y - center_point.y, p.x - center_point.x);
+    if (phi < 0) phi += 2.0 * M_PI; // normalize to [0, 2π) to avoid branch cut at ±π
     const double dist = (p - center_point).length();
     outline_points.push_back(std::make_tuple(i, phi, dist));
   }
@@ -668,63 +669,37 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
   // Step 3: For each maxima, find neighboring minima and process
   for(size_t max_idx : maxima_indices)
   {
-    // Find left neighboring minimum (search left until distance starts increasing)
+    // Find left neighboring minimum (search CCW: decreasing index with wraparound)
     size_t left_min_idx = max_idx;
-    double prev_dist = std::get<2>(outline_points[max_idx]);
-    for(int i = static_cast<int>(max_idx) - 1; i >= 0; --i)
     {
-      const double curr_dist = std::get<2>(outline_points[i]);
-      if(curr_dist > prev_dist)
+      double prev_dist = std::get<2>(outline_points[max_idx]);
+      for(size_t step = 1; step < n; ++step)
       {
-        // Distance started increasing, so previous point was a minimum
-        left_min_idx = i + 1;
-        break;
-      }
-      prev_dist = curr_dist;
-      if(i == 0)
-      {
-        // Wrap around check
-        for(int j = static_cast<int>(n) - 1; j >= 0; --j)
+        const size_t idx = (max_idx + n - step) % n;
+        const double curr_dist = std::get<2>(outline_points[idx]);
+        if(curr_dist > prev_dist)
         {
-          const double wrap_dist = std::get<2>(outline_points[j]);
-          if(wrap_dist > prev_dist)
-          {
-            left_min_idx = j + 1;
-            break;
-          }
-          prev_dist = wrap_dist;
+          left_min_idx = (idx + 1) % n;
+          break;
         }
-        break;
+        prev_dist = curr_dist;
       }
     }
     
-    // Find right neighboring minimum (search right until distance starts increasing)
+    // Find right neighboring minimum (search CW: increasing index with wraparound)
     size_t right_min_idx = max_idx;
-    prev_dist = std::get<2>(outline_points[max_idx]);
-    for(size_t i = max_idx + 1; i < n; ++i)
     {
-      const double curr_dist = std::get<2>(outline_points[i]);
-      if(curr_dist > prev_dist)
+      double prev_dist = std::get<2>(outline_points[max_idx]);
+      for(size_t step = 1; step < n; ++step)
       {
-        // Distance started increasing, so previous point was a minimum
-        right_min_idx = i - 1;
-        break;
-      }
-      prev_dist = curr_dist;
-      if(i == n - 1)
-      {
-        // Wrap around check
-        for(size_t j = 0; j < n; ++j)
+        const size_t idx = (max_idx + step) % n;
+        const double curr_dist = std::get<2>(outline_points[idx]);
+        if(curr_dist > prev_dist)
         {
-          const double wrap_dist = std::get<2>(outline_points[j]);
-          if(wrap_dist > prev_dist)
-          {
-            right_min_idx = j - 1;
-            break;
-          }
-          prev_dist = wrap_dist;
+          right_min_idx = (idx + n - 1) % n;
+          break;
         }
-        break;
+        prev_dist = curr_dist;
       }
     }
     
@@ -740,13 +715,21 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
     
     // Interpolate normal between center point and outline maxima point
     const unsigned int max_point_idx = std::get<0>(outline_points[max_idx]);
-    const double normal_t = min_dist / std::get<2>(outline_points[max_idx]); // Interpolation factor based on distance ratio
+    const double normal_t = min_dist / std::get<2>(outline_points[max_idx]);
     geometry_normals_.push_back(
         geometry_normals_[center_idx * 3 + 0] * (1.0 - normal_t) + geometry_normals_[max_point_idx * 3 + 0] * normal_t);
     geometry_normals_.push_back(
         geometry_normals_[center_idx * 3 + 1] * (1.0 - normal_t) + geometry_normals_[max_point_idx * 3 + 1] * normal_t);
     geometry_normals_.push_back(
         geometry_normals_[center_idx * 3 + 2] * (1.0 - normal_t) + geometry_normals_[max_point_idx * 3 + 2] * normal_t);
+    
+    if(debug_triangulization)
+    {
+      std::cout << "New point at (" << new_point.x << ", " << new_point.y << ", " << new_point.z << ") with normal ("
+                << geometry_normals_[new_point_idx * 3 + 0] << ", "
+                << geometry_normals_[new_point_idx * 3 + 1] << ", "
+                << geometry_normals_[new_point_idx * 3 + 2] << ")" << std::endl;
+    }
     
     // Set texture coordinates: phi from maxima (scaled to [0,1] by dividing by 2π), distance as new distance (normalized)
     // Use the maxima point's existing texture coordinate and scale by distance ratio
@@ -766,49 +749,12 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
     const unsigned int right_min_point_idx = std::get<0>(outline_points[right_min_idx]);
     const double left_min_phi = std::get<1>(outline_points[left_min_idx]);
     const double right_min_phi = std::get<1>(outline_points[right_min_idx]);
-    
-    // Helper lambda to check if a point index is within the arc from left_min to right_min (through maxima)
-    auto isPointInArc = [&](unsigned int point_idx) -> bool
-    {
-      // Find this point's position in outline_points
-      for(size_t i = 0; i < n; ++i)
-      {
-        if(std::get<0>(outline_points[i]) == point_idx)
-        {
-          // Check if i is between left_min_idx and right_min_idx going through max_idx
-          // Handle wraparound cases
-          if(left_min_idx <= right_min_idx)
-          {
-            // No wraparound: simple range check
-            if(max_idx >= left_min_idx && max_idx <= right_min_idx)
-            {
-              // Max is between left and right, check if i is also in this range
-              return (i >= left_min_idx && i <= right_min_idx);
-            }
-            else
-            {
-              // Max is outside, so the arc wraps around
-              return (i >= left_min_idx || i <= right_min_idx);
-            }
-          }
-          else
-          {
-            // Wraparound case: left_min_idx > right_min_idx
-            if(max_idx >= left_min_idx || max_idx <= right_min_idx)
-            {
-              // Max is in the wrapped range
-              return (i >= left_min_idx || i <= right_min_idx);
-            }
-            else
-            {
-              // Max is in the non-wrapped range (shouldn't happen by construction)
-              return (i >= left_min_idx && i <= right_min_idx);
-            }
-          }
-        }
-      }
-      return false; // Point not in outline (likely the center point itself)
+
+    const auto cw_dist = [](double a, double b) {
+            return std::fmod(b - a + 2.0 * M_PI, 2.0 * M_PI);
     };
+
+    const auto full_arc_segment_dist = cw_dist(left_min_phi, right_min_phi);
     
     // Step 3c: Replace center_idx with new_point_idx in affected triangles
     // Search only through this organ's triangles (starting from start_co)
@@ -826,19 +772,42 @@ void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& s
       // Check if triangle contains center_idx
       if(v0 == center_idx || v1 == center_idx || v2 == center_idx)
       {
+        if(debug_triangulization)
+        {
+          std::cout << "Triangle " << tri << " contains center_idx=" << center_idx << ": (" << v0 << ", " << v1 << ", " << v2 << ")" << std::endl;
+        }
         // Check if the OTHER two vertices are within the arc between minima
         unsigned int other1 = 0, other2 = 0;
         if(v0 == center_idx) { other1 = v1; other2 = v2; }
         else if(v1 == center_idx) { other1 = v0; other2 = v2; }
         else { other1 = v0; other2 = v1; }
+
+        // calculate phi for other1 and other2 as we know their index (not in outline_points) but in the geometry_ array
+        const double otherphi1 = std::atan2(geometry_[other1 * 3 + 1] - center_point.y, geometry_[other1 * 3 + 0] - center_point.x);
+        const double otherphi2 = std::atan2(geometry_[other2 * 3 + 1] - center_point.y, geometry_[other2 * 3 + 0] - center_point.x);
+        // normalize to [0, 2π)
+        const double otherphi1_norm = (otherphi1 < 0) ? (otherphi1 + 2.0 * M_PI) : otherphi1;
+        const double otherphi2_norm = (otherphi2 < 0) ? (otherphi2 + 2.0 * M_PI) : otherphi2;
         
         // Both other vertices must be in the arc for this triangle to be affected
-        if(isPointInArc(other1) && isPointInArc(other2))
+        if(cw_dist(left_min_phi, otherphi1_norm) <= full_arc_segment_dist &&
+           cw_dist(left_min_phi, otherphi2_norm) <= full_arc_segment_dist)
         {
+          if(debug_triangulization)
+          {
+            std::cout << "Triangle " << tri << " is affected by the new point" << std::endl;
+          }
           // Replace center_idx with new_point_idx
           if(v0 == center_idx) geometry_indices_[idx0] = new_point_idx;
           if(v1 == center_idx) geometry_indices_[idx1] = new_point_idx;
           if(v2 == center_idx) geometry_indices_[idx2] = new_point_idx;
+        }
+        else if(debug_triangulization)
+        {
+          std::cout << "Triangle " << tri << " is NOT affected by the new point because: \n"
+                    << "  other1 phi=" << otherphi1_norm << ", other2 phi=" << otherphi2_norm
+                    << ", left_min_phi=" << left_min_phi << ", right_min_phi=" << right_min_phi
+                    << ", full_arc_segment_dist=" << full_arc_segment_dist << std::endl;
         }
       }
     }
