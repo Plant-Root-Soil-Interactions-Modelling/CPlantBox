@@ -598,6 +598,272 @@ void PlantVisualiser::GenerateStemGeometry(std::shared_ptr<Organ> stem, unsigned
   }
 }
 
+
+#define STEP_DEBUG false
+#define STEPOUT(...) if(STEP_DEBUG) std::cout << __FILE__ << ":" << __LINE__ << " " << __FUNCTION__ << " " << __VA_ARGS__ << std::endl;
+
+void PlantVisualiser::ConfineEdgeLength(unsigned int center_idx, unsigned int& start_co, unsigned int& start_p_o)
+{
+  // must be called on the newest organ!
+  // Method is intended to set a new point in all star or star-like leaf branches
+  // So for each outer distance max we add a point near the minimal distance and
+  // introduce two new triangles, and re-assigning the node_ids where center_idx
+  // is for the boundary points.
+  // We do this until the left and right points grow closer to the center, when
+  // they go further again, we stop because we'd cut a triangle through an outline.
+
+  // doublecheck that the last triangle index is below numPoints
+  if(geometry_indices_.back() >= geometry_.size() / 3)
+  {
+    std::stringstream errMsg;
+    errMsg << "MappedPlant::ConfineEdgeLength: last triangle index " << geometry_indices_.back() << " is out of bounds for geometry_ size " << geometry_.size() / 3;
+    throw std::runtime_error(errMsg.str().c_str());
+  }
+
+
+  // start_co is the index in geometry_indices_ where the triangles start
+  // start_p_o is the index in geometry_ where the points start (updated by reference)
+  Vector3d center_point = Vector3d(geometry_[center_idx * 3 + 0], geometry_[center_idx * 3 + 1], geometry_[center_idx * 3 + 2]);
+  const auto start_idx = 1;
+  const auto end_idx = geometry_.size() / 3;
+  // retain [point index, phi, distance to center] for the outline before this algorithm
+  std::vector<std::tuple<unsigned int, double, double>> outline_points;
+  for(unsigned int i = start_idx; i < end_idx; ++i)
+  {
+    const Vector3d p = Vector3d(geometry_[i * 3 + 0], geometry_[i * 3 + 1], geometry_[i * 3 + 2]);
+    const double phi = std::atan2(p.y - center_point.y, p.x - center_point.x);
+    const double dist = (p - center_point).length();
+    outline_points.push_back(std::make_tuple(i, phi, dist));
+  }
+  // sort outline points by phi to ensure they are in order around the center
+  std::sort(outline_points.begin(), outline_points.end(), [](const auto& a, const auto& b) {
+    return std::get<1>(a) < std::get<1>(b);
+  });
+  
+  // Step 1: Find local maxima (where both neighbors have smaller distance)
+  std::vector<size_t> maxima_indices;
+  const size_t n = outline_points.size();
+  for(size_t i = 0; i < n; ++i)
+  {
+    const size_t left_idx = (i == 0) ? (n - 1) : (i - 1);
+    const size_t right_idx = (i == n - 1) ? 0 : (i + 1);
+    
+    const double dist_left = std::get<2>(outline_points[left_idx]);
+    const double dist_current = std::get<2>(outline_points[i]);
+    const double dist_right = std::get<2>(outline_points[right_idx]);
+    
+    if(dist_current > dist_left && dist_current > dist_right)
+    {
+      maxima_indices.push_back(i);
+    }
+  }
+  
+  // Step 2: Find global minimum distance across all outline points
+  double min_dist = std::numeric_limits<double>::max();
+  for(const auto& op : outline_points)
+  {
+    min_dist = std::min(min_dist, std::get<2>(op));
+  }
+  
+  // Step 3: For each maxima, find neighboring minima and process
+  for(size_t max_idx : maxima_indices)
+  {
+    // Find left neighboring minimum (search left until distance starts increasing)
+    size_t left_min_idx = max_idx;
+    double prev_dist = std::get<2>(outline_points[max_idx]);
+    for(int i = static_cast<int>(max_idx) - 1; i >= 0; --i)
+    {
+      const double curr_dist = std::get<2>(outline_points[i]);
+      if(curr_dist > prev_dist)
+      {
+        // Distance started increasing, so previous point was a minimum
+        left_min_idx = i + 1;
+        break;
+      }
+      prev_dist = curr_dist;
+      if(i == 0)
+      {
+        // Wrap around check
+        for(int j = static_cast<int>(n) - 1; j >= 0; --j)
+        {
+          const double wrap_dist = std::get<2>(outline_points[j]);
+          if(wrap_dist > prev_dist)
+          {
+            left_min_idx = j + 1;
+            break;
+          }
+          prev_dist = wrap_dist;
+        }
+        break;
+      }
+    }
+    
+    // Find right neighboring minimum (search right until distance starts increasing)
+    size_t right_min_idx = max_idx;
+    prev_dist = std::get<2>(outline_points[max_idx]);
+    for(size_t i = max_idx + 1; i < n; ++i)
+    {
+      const double curr_dist = std::get<2>(outline_points[i]);
+      if(curr_dist > prev_dist)
+      {
+        // Distance started increasing, so previous point was a minimum
+        right_min_idx = i - 1;
+        break;
+      }
+      prev_dist = curr_dist;
+      if(i == n - 1)
+      {
+        // Wrap around check
+        for(size_t j = 0; j < n; ++j)
+        {
+          const double wrap_dist = std::get<2>(outline_points[j]);
+          if(wrap_dist > prev_dist)
+          {
+            right_min_idx = j - 1;
+            break;
+          }
+          prev_dist = wrap_dist;
+        }
+        break;
+      }
+    }
+    
+    // Step 3a: Create new point at global min distance in the phi direction of the maxima
+    const double max_phi = std::get<1>(outline_points[max_idx]);
+    const Vector3d new_point = center_point + Vector3d(std::cos(max_phi) * min_dist, std::sin(max_phi) * min_dist, 0);
+    
+    // Add new point to geometry_
+    const unsigned int new_point_idx = geometry_.size() / 3;
+    geometry_.push_back(new_point.x);
+    geometry_.push_back(new_point.y);
+    geometry_.push_back(new_point.z);
+    
+    // Interpolate normal between center point and outline maxima point
+    const unsigned int max_point_idx = std::get<0>(outline_points[max_idx]);
+    const double normal_t = min_dist / std::get<2>(outline_points[max_idx]); // Interpolation factor based on distance ratio
+    geometry_normals_.push_back(
+        geometry_normals_[center_idx * 3 + 0] * (1.0 - normal_t) + geometry_normals_[max_point_idx * 3 + 0] * normal_t);
+    geometry_normals_.push_back(
+        geometry_normals_[center_idx * 3 + 1] * (1.0 - normal_t) + geometry_normals_[max_point_idx * 3 + 1] * normal_t);
+    geometry_normals_.push_back(
+        geometry_normals_[center_idx * 3 + 2] * (1.0 - normal_t) + geometry_normals_[max_point_idx * 3 + 2] * normal_t);
+    
+    // Set texture coordinates: phi from maxima (scaled to [0,1] by dividing by 2π), distance as new distance (normalized)
+    // Use the maxima point's existing texture coordinate and scale by distance ratio
+    const double max_point_dist = std::get<2>(outline_points[max_idx]);
+    const double existing_texcoord_v = geometry_texture_coordinates_[max_point_idx * 2 + 1];
+    const double dist_normalized = existing_texcoord_v * (min_dist / max_point_dist);
+    const double phi_normalized = (max_phi + M_PI) / (2.0 * M_PI); // Map [-π,π] to [0,1]
+    geometry_texture_coordinates_.push_back(phi_normalized);
+    geometry_texture_coordinates_.push_back(dist_normalized);
+    
+    // Copy node id from center point
+    geometry_node_ids_.push_back(geometry_node_ids_[center_idx]);
+    
+    // Step 3b: Find affected triangles (containing center_idx, with other vertices between the neighboring minima)
+    // Get the point indices and phi values for the minima
+    const unsigned int left_min_point_idx = std::get<0>(outline_points[left_min_idx]);
+    const unsigned int right_min_point_idx = std::get<0>(outline_points[right_min_idx]);
+    const double left_min_phi = std::get<1>(outline_points[left_min_idx]);
+    const double right_min_phi = std::get<1>(outline_points[right_min_idx]);
+    
+    // Helper lambda to check if a point index is within the arc from left_min to right_min (through maxima)
+    auto isPointInArc = [&](unsigned int point_idx) -> bool
+    {
+      // Find this point's position in outline_points
+      for(size_t i = 0; i < n; ++i)
+      {
+        if(std::get<0>(outline_points[i]) == point_idx)
+        {
+          // Check if i is between left_min_idx and right_min_idx going through max_idx
+          // Handle wraparound cases
+          if(left_min_idx <= right_min_idx)
+          {
+            // No wraparound: simple range check
+            if(max_idx >= left_min_idx && max_idx <= right_min_idx)
+            {
+              // Max is between left and right, check if i is also in this range
+              return (i >= left_min_idx && i <= right_min_idx);
+            }
+            else
+            {
+              // Max is outside, so the arc wraps around
+              return (i >= left_min_idx || i <= right_min_idx);
+            }
+          }
+          else
+          {
+            // Wraparound case: left_min_idx > right_min_idx
+            if(max_idx >= left_min_idx || max_idx <= right_min_idx)
+            {
+              // Max is in the wrapped range
+              return (i >= left_min_idx || i <= right_min_idx);
+            }
+            else
+            {
+              // Max is in the non-wrapped range (shouldn't happen by construction)
+              return (i >= left_min_idx && i <= right_min_idx);
+            }
+          }
+        }
+      }
+      return false; // Point not in outline (likely the center point itself)
+    };
+    
+    // Step 3c: Replace center_idx with new_point_idx in affected triangles
+    // Search only through this organ's triangles (starting from start_co)
+    const size_t num_triangles = geometry_indices_.size() / 3;
+    for(size_t tri = start_co / 3; tri < num_triangles; ++tri)
+    {
+      const size_t idx0 = tri * 3 + 0;
+      const size_t idx1 = tri * 3 + 1;
+      const size_t idx2 = tri * 3 + 2;
+      
+      const unsigned int v0 = geometry_indices_[idx0];
+      const unsigned int v1 = geometry_indices_[idx1];
+      const unsigned int v2 = geometry_indices_[idx2];
+      
+      // Check if triangle contains center_idx
+      if(v0 == center_idx || v1 == center_idx || v2 == center_idx)
+      {
+        // Check if the OTHER two vertices are within the arc between minima
+        unsigned int other1 = 0, other2 = 0;
+        if(v0 == center_idx) { other1 = v1; other2 = v2; }
+        else if(v1 == center_idx) { other1 = v0; other2 = v2; }
+        else { other1 = v0; other2 = v1; }
+        
+        // Both other vertices must be in the arc for this triangle to be affected
+        if(isPointInArc(other1) && isPointInArc(other2))
+        {
+          // Replace center_idx with new_point_idx
+          if(v0 == center_idx) geometry_indices_[idx0] = new_point_idx;
+          if(v1 == center_idx) geometry_indices_[idx1] = new_point_idx;
+          if(v2 == center_idx) geometry_indices_[idx2] = new_point_idx;
+        }
+      }
+    }
+    
+    // Step 3d: Add two new triangles (center, new point, local minima 1 and 2)
+    // Triangle 1: center_idx, new_point_idx, left_min_point_idx
+    geometry_indices_.push_back(center_idx);
+    geometry_indices_.push_back(new_point_idx);
+    geometry_indices_.push_back(left_min_point_idx);
+    
+    // Triangle 2: center_idx, right_min_point_idx, new_point_idx
+    geometry_indices_.push_back(center_idx);
+    geometry_indices_.push_back(right_min_point_idx);
+    geometry_indices_.push_back(new_point_idx);
+  }
+  
+  // Update the reference parameters to reflect the new geometry
+  start_co = geometry_indices_.size();
+  start_p_o = geometry_.size();
+  
+  if(verbose_)
+    std::cout << "ConfineEdgeLength: Added " << (geometry_.size() / 3 - center_idx - 1) << " points and " 
+              << (geometry_indices_.size() - start_co + 6 * maxima_indices.size()) / 3 << " triangles" << std::endl;
+}
+
 void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned int p_o, unsigned int c_o)
 {
 	// Fetch the phi array
@@ -763,8 +1029,6 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
   float random_factor_2 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
   // computing the first quaternion from: stem is forward, right is angular direction and up is the cross product
-#define STEP_DEBUG false
-#define STEPOUT(...) if(STEP_DEBUG) std::cout << __FILE__ << ":" << __LINE__ << " " << __FUNCTION__ << " " << __VA_ARGS__ << std::endl;
 
 	for(auto i = 0; i < outer_geometry_points.size(); ++i)
 	{
@@ -1132,9 +1396,10 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
     }
 
     // Flat leaf: single section with mirrored radial definition
-    int total_points = 1 + radial_resolution;  // 1 middle + radial_resolution outer points
+    // Remove doubled points at phi=0 and phi=pi: skip first mirrored and last original point
+    int total_points = 1 + radial_resolution - 2;  // 1 middle + radial_resolution - 2 outer points (removed 2 duplicates)
     int half_res = radial_resolution / 2;
-    int total_triangles = 2 * (half_res) - 1;  // Fan triangulation: (half_res-1) triangles per side × 2 sides
+    int total_triangles = 2 * (half_res - 1);
 
     // Buffer reservations
     geometry_.resize(std::max(static_cast<std::size_t>(p_o + total_points * 3), geometry_.size()), -1.0);
@@ -1213,6 +1478,10 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
     point_offset += 3;
     STEPOUT("Point offset after writing middle point: " << point_offset);
     double phi_range = phi_def.back() - phi_def.front();
+    // Track point indices explicitly since we're skipping some points
+    unsigned int first_original_idx = point_offset / 3;  // First original point (j=0)
+    unsigned int first_mirrored_idx = 0;  // Will be set when we write first mirrored point (j=1)
+    
     for (int j = 0; j < half_res; ++j)
     {
         double frac = static_cast<double>(j) / (half_res - 1);
@@ -1220,12 +1489,14 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
         double r_val = interpolate_radius(phi) * scaling_factor_local * leaf_width_scale_factor_;
         STEPOUT("Sampling point j=" << j << ": phi=" << phi << ", r_val=" << r_val);
         
-        // Original side: +90° (front) points along global_forward
-        // phi=0 gives r along global_right, phi=90° gives r along global_up
-        // We want phi=+90° (front edge) to point in global_forward direction
+        unsigned int original_idx = 0;
+
+        unsigned int mirror_offset = point_offset + (half_res - 1) * 3;  // Offset for mirrored points
+        auto mirrored_idx = mirror_offset / 3;
+        
         Vector3d original = r_val * (std::cos(phi) * global_right + std::sin(phi) * global_forward) + midpoint;
-        auto original_idx = point_offset / 3;
-        STEPOUT("Writing original point at index " << original_idx << ": " << original.toString());
+        original_idx = point_offset / 3;
+        STEPOUT("Writing original point at index " << original_idx << ": " << original.toString() << " and the mirrored point at index " << mirrored_idx);
         geometry_[point_offset + 0] = original.x;
         geometry_[point_offset + 1] = original.y;
         geometry_[point_offset + 2] = original.z;
@@ -1233,44 +1504,83 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
         geometry_normals_[point_offset + 1] = global_up.y;
         geometry_normals_[point_offset + 2] = global_up.z;
         geometry_node_ids_[original_idx] = findClosestLeafNodeId(original);
-        
-        // Mirrored point: negate global_right component
-        Vector3d mirrored = r_val * (-std::cos(phi) * global_right + std::sin(phi) * global_forward) + midpoint;
-        unsigned int mirror_offset = point_offset + half_res * 3;  // Offset for mirrored points
-        auto mirrored_idx = mirror_offset / 3;
-        STEPOUT("Writing mirrored point at index " << mirrored_idx << ": " << mirrored.toString());
-        geometry_[mirror_offset + 0] = mirrored.x;
-        geometry_[mirror_offset + 1] = mirrored.y;
-        geometry_[mirror_offset + 2] = mirrored.z;
-        geometry_normals_[mirror_offset + 0] = global_up.x;
-        geometry_normals_[mirror_offset + 1] = global_up.y;
-        geometry_normals_[mirror_offset + 2] = global_up.z;
-        geometry_node_ids_[mirrored_idx] = findClosestLeafNodeId(mirrored);
+        // texcoords are set to phi/2pi, x-center / 0.5
+        geometry_texture_coordinates_[(point_offset / 3 * 2) + 0] = phi / (2.0 * M_PI);
+        geometry_texture_coordinates_[(point_offset / 3 * 2) + 1] = interpolate_radius(phi) / 0.5;
         point_offset += 3;
-
-        if(j > 0)
+        
+        // Write mirrored point (not at phi=0 or phi=pi)
+        if (j != 0 && j != half_res - 1)
         {
-          STEPOUT("Creating triangles for j=" << j << ": middle_idx=" << middle_idx << ", original_idx=" << original_idx << ", " << mirror_offset << "/3=" << (mirror_offset / 3));
-          STEPOUT("geometry_indices_ size before: " << geometry_indices_.size() << ", index_offset=" << index_offset);
-          // triangulate between the last last point (original_idx-1), the current original point, and the middle
+            Vector3d mirrored = r_val * (-std::cos(phi) * global_right + std::sin(phi) * global_forward) + midpoint;
+            STEPOUT("Writing mirrored point at index " << mirrored_idx << ": " << mirrored.toString());
+            geometry_[mirror_offset + 0] = mirrored.x;
+            geometry_[mirror_offset + 1] = mirrored.y;
+            geometry_[mirror_offset + 2] = mirrored.z;
+            geometry_normals_[mirror_offset + 0] = global_up.x;
+            geometry_normals_[mirror_offset + 1] = global_up.y;
+            geometry_normals_[mirror_offset + 2] = global_up.z;
+            geometry_texture_coordinates_[(mirror_offset / 3 * 2) + 0] = phi / (2.0 * M_PI);
+            geometry_texture_coordinates_[(mirror_offset / 3 * 2) + 1] = interpolate_radius(phi) / 0.5;
+            geometry_node_ids_[mirrored_idx] = findClosestLeafNodeId(mirrored);
+        }
+        
+        // Triangle creation - adjusted for skipped points
+        if (j == 0)
+        {
+          // First iteration: only original point written (mirrored skipped)
+          // No triangles yet - need at least 2 outer points
+          STEPOUT("j=0: No triangles (only first original point written)");
+        }
+        else if (j == 1)
+        {
+          // Original side: (middle, prev_original, curr_original)
+          geometry_indices_[index_offset++] = middle_idx;
+          geometry_indices_[index_offset++] = original_idx - 1;
+          geometry_indices_[index_offset++] = original_idx;
+          
+          // Phi=0 closure: (middle, first_original, first_mirrored)
+          geometry_indices_[index_offset++] = middle_idx;
+          geometry_indices_[index_offset++] = original_idx - 1;
+          geometry_indices_[index_offset++] = mirrored_idx;
+          // stepout by index_offset so that I can switch used variables
+          STEPOUT("j=1: Created first triangles with indices: ["<< geometry_indices_[index_offset-3] << ", " << geometry_indices_[index_offset-2] << ", " << geometry_indices_[index_offset-1] << "]");
+        }
+        else if (j == half_res - 1)
+        {
+          // obviously also the normal triangle
+          geometry_indices_[index_offset++] = middle_idx;
+          geometry_indices_[index_offset++] = original_idx - 1;
+          geometry_indices_[index_offset++] = original_idx;
+          // Last iteration: only original written
+          // Phi=pi closure: (middle, prev_mirrored, curr_mirrored)
           geometry_indices_[index_offset++] = middle_idx;
           geometry_indices_[index_offset++] = original_idx;
-          geometry_indices_[index_offset++] = original_idx - 1;
-          // mirrored triangle will complete the fan: mirrored-1, mirrored, middle
-          geometry_indices_[index_offset++] = middle_idx;
-          geometry_indices_[index_offset++] = (mirror_offset / 3) - 1;
-          geometry_indices_[index_offset++] = (mirror_offset / 3);
+          geometry_indices_[index_offset++] = mirrored_idx - 1;
+          STEPOUT("j=1: Created last triangles with indices: ["<< geometry_indices_[index_offset-3] << ", " << geometry_indices_[index_offset-2] << ", " << geometry_indices_[index_offset-1] << "]");
         }
         else
         {
-          // observed closure is necessary: N=30 missing triangle is 0, 29, 30 (middle, second-to-last mirror, last mirror)
+          // Middle iterations: both original and mirrored written
+          // Original side triangle
           geometry_indices_[index_offset++] = middle_idx;
-          geometry_indices_[index_offset++] = p_o / 3 + total_points - 2;  // second-to-last mirrored point
-          geometry_indices_[index_offset++] = p_o / 3 + total_points - 1;  // last mirrored point
+          geometry_indices_[index_offset++] = original_idx - 1;
+          geometry_indices_[index_offset++] = original_idx;
+          
+          // Mirrored side triangle
+          geometry_indices_[index_offset++] = middle_idx;
+          geometry_indices_[index_offset++] = mirrored_idx - 1;
+          geometry_indices_[index_offset++] = mirrored_idx;
         }
     }
-    point_offset += half_res * 3;  // Skip over the mirrored points we already wrote
+    point_offset += (half_res - 2) * 3;  // Skip over mirrored points we didn't write (minus 2: j=0 and j=half_res-1)
     STEPOUT("Finished with max triangle index of " << geometry_indices_[point_offset / 3 - 1] << " and total triangles created: " << (index_offset - c_o) / 3);
+
+    // --- Confine edge lengths for star-shaped leaves ---
+    // Refine triangulation by adding points at local maxima to constrain edge lengths
+    if(verbose_)
+      std::cout << "Applying edge length confinement for star-shaped leaf geometry" << std::endl;
+    ConfineEdgeLength(middle_idx, c_o, point_offset);
 
     // --- Spline-based leaf bending ---
     // Transform points from flat local [0,1]² space to 3D bent space using midvein spline

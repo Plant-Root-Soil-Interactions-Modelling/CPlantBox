@@ -187,6 +187,19 @@ protected:
     void CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int radial_resolution, unsigned int p_o, unsigned int c_o);
 
     /**
+     * @brief Confines edge lengths in star-shaped leaf geometry by adding points at local maxima.
+     *
+     * Identifies local maxima in the radial distance profile and adds new points at the global
+     * minimum distance to refine the triangulation. Replaces center vertex references in affected
+     * triangles and adds two new triangles per maxima to maintain mesh continuity.
+     *
+     * @param center_idx index of the center point in geometry buffers
+     * @param start_co starting index in geometry_indices_ for this organ's triangles (updated by reference)
+     * @param start_p_o starting index in geometry_ for this organ's points (updated by reference)
+     */
+    void ConfineEdgeLength(unsigned int center_idx, unsigned int& start_co, unsigned int& start_p_o);
+
+    /**
      * @brief Estimates outer ring points for a radial cross-section.
      *
      * Given the midpoint on the midvein, the forward (tangent) direction,
