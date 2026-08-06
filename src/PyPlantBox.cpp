@@ -1424,6 +1424,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("HasGeometry", &PlantVisualiser::HasGeometry)
         .def("ResetGeometry", &PlantVisualiser::ResetGeometry)
         .def("SetVerbose", &PlantVisualiser::SetVerbose, py::arg("verbose"))
+        .def("SetFrameMomentum", &PlantVisualiser::SetFrameMomentum, py::arg("momentum"))
+        .def("GetFrameMomentum", &PlantVisualiser::GetFrameMomentum)
       ;
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
