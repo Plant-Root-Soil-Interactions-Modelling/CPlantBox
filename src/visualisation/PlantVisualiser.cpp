@@ -96,7 +96,7 @@ namespace CPlantBox {
 
   void ClampVectorBetweenLengths(Vector3d& v, double min, double max) {
     double l = v.length();
-    if(l < 1e5)
+    if(l < 1e-5)
     {
         return;
     }
