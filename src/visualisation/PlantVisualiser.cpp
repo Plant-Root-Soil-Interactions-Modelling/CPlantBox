@@ -1337,11 +1337,9 @@ void PlantVisualiser::CreateRadialFromDefinition(std::shared_ptr<Leaf> leaf, int
     std::sort(y_sorted_point_indices.begin(), y_sorted_point_indices.end(), [&](int a, int b) {
         return geometry_[a * 3 + 1] < geometry_[b * 3 + 1];
     });
-    
-    STEPOUT("Total points to transform: " << (end_point_idx - start_point_idx));
+
     for (unsigned int sorted_idx = start_point_idx; sorted_idx < end_point_idx; ++sorted_idx) {
         unsigned int i = y_sorted_point_indices[sorted_idx];
-        STEPOUT("Original point coordinates(" << i << "): (" << geometry_[i * 3 + 0] << ", " << geometry_[i * 3 + 1] << ", " << geometry_[i * 3 + 2] << ")");
         double x = geometry_[i * 3 + 0];
         double y = geometry_[i * 3 + 1];
         double z = geometry_[i * 3 + 2];
