@@ -22,14 +22,14 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
     {
         if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
         {
-            infected.push_back(0);
+            colonized.push_back(0);
             emergedHyphae.push_back(0);
             colonizationTime.push_back(-1);
 
         }else{
             if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
             }
-            infected.push_back(0);
+            colonized.push_back(0);
             emergedHyphae.push_back(0);
             colonizationTime.push_back(-1);
         }
@@ -50,7 +50,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
     if (!shift)
     {
         Organ::addNode(n, id,  t,  index, shift);
-        infected.push_back(0);
+        colonized.push_back(0);
         emergedHyphae.push_back(0);
         colonizationTime.push_back(-1);
     }
@@ -58,7 +58,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 		nodes.insert(nodes.begin() + index-1, n);//add the node at index
 		nodeIds.push_back(id);
 		nodeCTs.insert(nodeCTs.begin() + index-1, t);
-        infected.insert(infected.begin()+index-1, infected.at(index-1));
+        colonized.insert(colonized.begin()+index-1, colonized.at(index-1));
         emergedHyphae.insert(emergedHyphae.begin()+index-1, 0);
         colonizationTime.insert(colonizationTime.begin()+index-1, std::max(colonizationTime.at(index-1), t));
 
@@ -97,12 +97,12 @@ void MycorrhizalRoot::primaryColonization(double dt, bool silence){
         }
         if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {lmbd = 0;}//account for minimal age in rate
         lmbd = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * lmbd; // account for maximal age in rate
-        // Determine the probability for colonization of the current node and infect if successful
+        // Determine the probability for colonization of the current node and colonize if successful
         // Also refine the root if the segment is too long and a new node is inserted, which inherits the colonization status based on parent node
         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
-        if (infected.at(i) == 0 && plant.lock()->rand() < lmbd*cursegLength*dt)
+        if (colonized.at(i) == 0 && plant.lock()->rand() < lmbd*cursegLength*dt)
         {
-            // insert node here if segment too long and set all nodes to be infected
+            // insert node here if segment too long and set all nodes to be colonized
             setColonization(i,1,age);
             if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
                 int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
@@ -116,7 +116,7 @@ void MycorrhizalRoot::primaryColonization(double dt, bool silence){
                     double newz = fromNode.z + (toNode.z - fromNode.z) *(j+1)/(newNodesNumber +1);
                     Vector3d newNode = Vector3d(newx,newy,newz);
                     addNode(newNode,plant.lock()->getNodeIndex(), toCT, i, true);
-                    // insertion happens at i-1, shifting i (the infected endpoint) up by 1
+                    // insertion happens at i-1, shifting i (the colonized endpoint) up by 1
                     i++;
                 }
             }
@@ -126,7 +126,7 @@ void MycorrhizalRoot::primaryColonization(double dt, bool silence){
 
 bool MycorrhizalRoot::isSecondaryColonizationAnchor(size_t node) const
 {
-    return infected.at(node) == 1 || infected.at(node) == 3;
+    return colonized.at(node) == 1 || colonized.at(node) == 3;
 }
 
 double MycorrhizalRoot::segmentLength(size_t a, size_t b) const
@@ -187,7 +187,7 @@ void MycorrhizalRoot::propagateSecondaryColonization(size_t anchorNode, int step
             break;
         }
 
-        if (infected.at(currentNode) != 0)
+        if (colonized.at(currentNode) != 0)
         {
             oldNode = currentNode;
             currentNode += step;
@@ -241,7 +241,7 @@ void MycorrhizalRoot::simulatePrimaryColonization(double dt) {
 void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
     if (getRootRandomParameter()->highresolution >= 1) { // Version where at every node there is one hypha created
         for (size_t i = 1; i < nodes.size(); i++) {
-            if (infected.at(i) > 0 && emergedHyphae.at(i) == 0){ // if the current node is infected and the number of hyphae to be created is reached
+            if (colonized.at(i) > 0 && emergedHyphae.at(i) == 0){ // if the current node is colonized and the number of hyphae to be created is reached
                 createHyphae(i);
                 emergedHyphae.at(i) += 1; // increase the number of hyphae at this node
             }
@@ -250,7 +250,7 @@ void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
         auto rrp = getRootRandomParameter(); // param()
         double hed = rrp->hyphalEmergenceDensity;
 
-        // double cumLength = 0.; // cumulative infected length
+        // double cumLength = 0.; // cumulative colonized length
         double numberOfHyphae= 0;
 
         for (size_t i = 0; i < nodes.size(); i++) {
@@ -266,7 +266,7 @@ void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
         int currentNode = 1;
         while (new_noh > 0 && numberOfHyphae < new_total_noh)
         {
-            if (infected.at(currentNode) > 0){ // if the current node is infected and the number of hyphae to be created is reached
+            if (colonized.at(currentNode) > 0){ // if the current node is colonized and the number of hyphae to be created is reached
                 createHyphae(currentNode);
                 numberOfHyphae += 1;
                 new_noh -= 1;
@@ -294,10 +294,10 @@ void MycorrhizalRoot::simulateColonization(double dt, bool verbose) {
         for (auto l : children)
         {
             if (l->organType()==Organism::ot_root) {
-                if (infected.at(l->parentNI) != 0) { // the base of root l is infected
+                if (colonized.at(l->parentNI) != 0) { // the base of root l is colonized
                     if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeColonization(1) == 0) {
                         std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setColonization(0, 3, 
-								std::max( l->getNodeCT(0), colonizationTime.at(l->parentNI))); //root can only be infected after it is born (and need to account for growth delay)
+								std::max( l->getNodeCT(0), colonizationTime.at(l->parentNI))); //root can only be colonized after it is born (and need to account for growth delay)
                     }
                 }
                 std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateColonization(dt, verbose);
@@ -327,30 +327,30 @@ std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomPa
 double MycorrhizalRoot::getParameter(std::string name) const {
     if (name == "primaryColonization")
     {
-        double primaryInfectedLength = 0;
+        double primaryColonizedLength = 0;
         for (size_t i = 1; i < nodes.size(); i++)
         {
-            if (infected.at(i)==1){primaryInfectedLength += nodes.at(i).minus(nodes.at(i-1)).length();}
+            if (colonized.at(i)==1){primaryColonizedLength += nodes.at(i).minus(nodes.at(i-1)).length();}
         }
-        return primaryInfectedLength;
+        return primaryColonizedLength;
     }
     if (name == "secondaryColonization")
     {
-        double secondaryInfectedLength = 0;
+        double secondaryColonizedLength = 0;
         for (size_t i = 1; i < nodes.size(); i++)
         {
-            if (infected.at(i)>1) {secondaryInfectedLength += nodes.at(i).minus(nodes.at(i-1)).length();}
+            if (colonized.at(i)>1) {secondaryColonizedLength += nodes.at(i).minus(nodes.at(i-1)).length();}
         }
-        return secondaryInfectedLength;
+        return secondaryColonizedLength;
     }
     if (name == "colonizationLength")
     {
-        double infectedLength = 0;
+        double colonizedLength = 0;
         for (size_t i = 1; i < nodes.size(); i++)
         {
-            if (infected.at(i)>0) {infectedLength += nodes.at(i).minus(nodes.at(i-1)).length();}
+            if (colonized.at(i)>0) {colonizedLength += nodes.at(i).minus(nodes.at(i-1)).length();}
         }
-        return infectedLength;
+        return colonizedLength;
     }
     if (name == "hyphalTreeIndex") {return hyphalTreeIndex;}
     return Root::getParameter(name);
@@ -358,7 +358,7 @@ double MycorrhizalRoot::getParameter(std::string name) const {
 
 void MycorrhizalRoot::setColonization(int i, int colonization, double t)
 {
-    infected.at(i) = colonization;
+    colonized.at(i) = colonization;
     colonizationTime.at(i) = t;
 	assert(colonizationTime.at(i) >= 0 && "MycorrhizalRoot::setColonization colonizationTime.at(i) < 0");
 	assert(colonizationTime.at(i) >= nodeCTs.at(i) && "MycorrhizalRoot::setColonization colonizationTime.at(i) < nodeCTs.at(i)");
@@ -439,21 +439,21 @@ std::string MycorrhizalRoot::toString() const
 {
     // TODO add additional stuff
     std::stringstream newstring;
-    newstring << "; number of infected Nodes " << getNumberofInfectedNodes() << "; length of infected root segments "<< getParameter("colonizationLength")<< ".";
+    newstring << "; number of colonized Nodes " << getNumberofColonizedNodes() << "; length of colonized root segments "<< getParameter("colonizationLength")<< ".";
     return  Root::toString()+newstring.str();
 }
 
-int MycorrhizalRoot::getNumberofInfectedNodes() const
+int MycorrhizalRoot::getNumberofColonizedNodes() const
 {
-    int numberInfectedNodes =0;
+    int numberColonizedNodes =0;
     for (size_t i = 0; i < getNumberOfNodes()-1; i++)
     {
-        if (infected.at(i)!=0)
+        if (colonized.at(i)!=0)
         {
-            numberInfectedNodes++;
+            numberColonizedNodes++;
         }
     }
-    return numberInfectedNodes;
+    return numberColonizedNodes;
 }
 
 }

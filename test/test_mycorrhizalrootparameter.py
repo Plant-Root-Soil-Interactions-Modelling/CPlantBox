@@ -40,7 +40,7 @@ class TestMycParameter(unittest.TestCase):
         self.assertEqual(otp2.minAge, mrrp.minAge,"copy: value unexpected")
         self.assertEqual(otp2.maxAge, mrrp.maxAge,"copy: value unexpected")
         self.assertEqual(otp2.vi, mrrp.vi,"copy: value unexpected")
-        self.assertEqual(otp2.infected, mrrp.infected,"copy: value unexpected")
+        self.assertEqual(otp2.colonized, mrrp.colonized,"copy: value unexpected")
         self.assertEqual(otp2.posX, mrrp.posX,"copy: value unexpected")
         self.assertEqual(otp2.posY, mrrp.posY,"copy: value unexpected")
         self.assertEqual(otp2.posZ, mrrp.posZ,"copy: value unexpected")

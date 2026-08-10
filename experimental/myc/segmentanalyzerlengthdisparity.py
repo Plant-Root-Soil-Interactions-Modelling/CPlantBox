@@ -54,7 +54,7 @@ expected_primary = []
 
 observed_secondary = []
 observed_total = []
-observed_not_infected = []
+observed_not_colonized = []
 
 observed_segment_primary = []
 expected_segment_primary = []
@@ -87,7 +87,7 @@ observed_segment_total.append(primary_seg + secondary_seg + noninf_seg)
 observed_primary.append(sum(mycp.getParameter("primaryColonization")))
 observed_secondary.append(sum(mycp.getParameter("secondaryColonization")))
 observed_total.append(sum(mycp.getParameter("length")))
-observed_not_infected.append(observed_total[0] - observed_primary[0] - observed_secondary[0])
+observed_not_colonized.append(observed_total[0] - observed_primary[0] - observed_secondary[0])
 
 # Erwartungswertberechnung
 P = mycp.getOrganRandomParameter(pb.root)[1].p * dt
@@ -123,8 +123,8 @@ for t in range(1, len(time)):
     delta_obs = observed_primary[t] - observed_primary[t - 1]
     delta_obs_segment = observed_segment_primary[t] - observed_segment_primary[t - 1]
 
-    observed_not_infected.append(observed_total[t] - observed_primary[t] - observed_secondary[t])
-    delta_expected = observed_not_infected[t] * P
+    observed_not_colonized.append(observed_total[t] - observed_primary[t] - observed_secondary[t])
+    delta_expected = observed_not_colonized[t] * P
     delta_expected_segment = observed_segment_noninf[t] * P
 
     expected_primary.append(expected_primary[-1] + delta_expected)
@@ -135,7 +135,7 @@ for t in range(1, len(time)):
     if t % obtf == 0 and t > 0:
         # Beobachtet: Gesamtlänge
         total_observed = observed_primary[t] - observed_primary[t-obtf]
-        total_nonmyc = sum(observed_not_infected[t-obtf:t])
+        total_nonmyc = sum(observed_not_colonized[t-obtf:t])
 
         # Beobachtet: Segmentbasiert
         total_observed_seg = observed_segment_primary[t] - observed_segment_primary[t-obtf]

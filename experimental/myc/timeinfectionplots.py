@@ -159,14 +159,14 @@ plt.plot(time, mean_exp, label="Mean Expected", color='orange')
 plt.fill_between(time, mean_exp - std_exp, mean_exp + std_exp, color='orange', alpha=0.2)
 
 plt.xlabel("Time [days]")
-plt.ylabel("Newly Infected Length [cm]")
+plt.ylabel("Newly Colonized Length [cm]")
 plt.title("Observed vs. Expected Colonization Lengths")
 plt.legend()
 plt.grid(True)
 plt.show()
 
 #Ergebnis-Speicher vorbereiten
-# all_infected = []
+# all_colonized = []
 # all_noninf = []
 
 # # Mehrere Seeds durchlaufen
@@ -176,26 +176,26 @@ plt.show()
 #      _, _, observed_segment_secondary, 
 #      observed_segment_noninf, _) = runsimulation(seed)
 
-#     infected = np.array(observed_segment_primary) + np.array(observed_segment_secondary)
-#     all_infected.append(infected)
+#     colonized = np.array(observed_segment_primary) + np.array(observed_segment_secondary)
+#     all_colonized.append(colonized)
 #     all_noninf.append(observed_segment_noninf)
 
 # # Arrays erstellen
-# infected_array = np.array(all_infected)
+# colonized_array = np.array(all_colonized)
 # noninf_array = np.array(all_noninf)
 
 # # Mittelwert & Standardabweichung
-# mean_infected = np.mean(infected_array, axis=0)
-# std_infected = np.std(infected_array, axis=0)
+# mean_colonized = np.mean(colonized_array, axis=0)
+# std_colonized = np.std(colonized_array, axis=0)
 # mean_noninf = np.mean(noninf_array, axis=0)
 # std_noninf = np.std(noninf_array, axis=0)
 
 # # Plot
-# plt.fill_between(time, mean_infected - std_infected, mean_infected + std_infected, color='red', alpha=0.2, label="Infected ± SD")
-# plt.plot(time, mean_infected, label="Mean Infected", color='red')
+# plt.fill_between(time, mean_colonized - std_colonized, mean_colonized + std_colonized, color='red', alpha=0.2, label="Colonized ± SD")
+# plt.plot(time, mean_colonized, label="Mean Colonized", color='red')
 
-# plt.fill_between(time, mean_noninf - std_noninf, mean_noninf + std_noninf, color='green', alpha=0.2, label="Non-infected ± SD")
-# plt.plot(time, mean_noninf, label="Mean Non-infected", color='green')
+# plt.fill_between(time, mean_noninf - std_noninf, mean_noninf + std_noninf, color='green', alpha=0.2, label="Non-colonized ± SD")
+# plt.plot(time, mean_noninf, label="Mean Non-colonized", color='green')
 
 # plt.xlabel("Time [days]")
 # plt.ylabel("Segment length [cm]")

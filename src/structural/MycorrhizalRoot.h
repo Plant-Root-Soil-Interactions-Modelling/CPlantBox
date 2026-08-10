@@ -18,7 +18,7 @@ public:
 
     MycorrhizalRoot(std::shared_ptr<Organism> rs, int type, double delay, std::shared_ptr<Organ> parent, int pni);
 
-    std::vector<int> infected;
+    std::vector<int> colonized;
     std::vector<int> emergedHyphae;
     std::vector<double> colonizationTime;
 
@@ -42,8 +42,8 @@ public:
     std::shared_ptr<MycorrhizalRootRandomParameter> getRootRandomParameter() const;
     std::shared_ptr<const MycorrhizalRootSpecificParameter> param() const;
 
-    int getNodeColonization(int i) const {return infected.at(i);}
-    int getNumberofInfectedNodes() const;
+    int getNodeColonization(int i) const {return colonized.at(i);}
+    int getNumberofColonizedNodes() const;
     double getNodeColonizationTime(int i) const {return colonizationTime.at(i);}
     void setColonization(int i, int inf, double t);
 

@@ -55,7 +55,7 @@
         <parameter name="dxMin" value="1e-06"/>
         <!--Axial resolution [cm] (minimal segment size)-->
         <parameter name="dx_inf" value="0.1"/>
-        <!--Segment length for infected root segments only in high resolution case [cm]-->
+        <!--Segment length for colonized root segments only in high resolution case [cm]-->
         <parameter name="hairsElongation" value="0"/>
         <!--Zone behind the tip without root hairs  [cm]-->
         <parameter name="hairsLength" value="0"/>
@@ -63,7 +63,7 @@
         <parameter name="hairsZone" value="0"/>
         <!--Length of the root hair zone [cm]-->
         <parameter name="highresolution" value="0"/>
-        <!--If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity-->
+        <!--If true, a hypha is created at every colonized node, otherwise hyphae are created based on hyphalEmergenceDensity-->
         <parameter name="hyphalDelay" value="0"/>
         <!--Delay time before hyphal emergence after colonization [day]-->
         <parameter name="hyphalEmergenceDensity" value="0"/>
@@ -87,7 +87,7 @@
         <parameter name="maxColonization" value="1"/>
         <!--Percentage of maximal colonization-->
         <parameter name="minAge" value="0"/>
-        <!--Minimal infectious age of a root segment [day]-->
+        <!--Minimal susceptible age of a root segment [day]-->
         <parameter name="r" value="1.5"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="9.9999998e+10" dev="1000000"/>
@@ -115,7 +115,7 @@
         <parameter name="dxMin" value="1e-06"/>
         <!--Axial resolution [cm] (minimal segment size)-->
         <parameter name="dx_inf" value="0.1"/>
-        <!--Segment length for infected root segments only in high resolution case [cm]-->
+        <!--Segment length for colonized root segments only in high resolution case [cm]-->
         <parameter name="hairsElongation" value="0"/>
         <!--Zone behind the tip without root hairs  [cm]-->
         <parameter name="hairsLength" value="0"/>
@@ -123,7 +123,7 @@
         <parameter name="hairsZone" value="0"/>
         <!--Length of the root hair zone [cm]-->
         <parameter name="highresolution" value="0"/>
-        <!--If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity-->
+        <!--If true, a hypha is created at every colonized node, otherwise hyphae are created based on hyphalEmergenceDensity-->
         <parameter name="hyphalDelay" value="0"/>
         <!--Delay time before hyphal emergence after colonization [day]-->
         <parameter name="hyphalEmergenceDensity" value="0"/>
@@ -147,7 +147,7 @@
         <parameter name="maxColonization" value="1"/>
         <!--Percentage of maximal colonization-->
         <parameter name="minAge" value="0"/>
-        <!--Minimal infectious age of a root segment [day]-->
+        <!--Minimal susceptible age of a root segment [day]-->
         <parameter name="r" value="0.60000002"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="9.9999998e+10" dev="1000000"/>
@@ -175,7 +175,7 @@
         <parameter name="dxMin" value="1e-06"/>
         <!--Axial resolution [cm] (minimal segment size)-->
         <parameter name="dx_inf" value="0.1"/>
-        <!--Segment length for infected root segments only in high resolution case [cm]-->
+        <!--Segment length for colonized root segments only in high resolution case [cm]-->
         <parameter name="hairsElongation" value="0"/>
         <!--Zone behind the tip without root hairs  [cm]-->
         <parameter name="hairsLength" value="0"/>
@@ -183,7 +183,7 @@
         <parameter name="hairsZone" value="0"/>
         <!--Length of the root hair zone [cm]-->
         <parameter name="highresolution" value="0"/>
-        <!--If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity-->
+        <!--If true, a hypha is created at every colonized node, otherwise hyphae are created based on hyphalEmergenceDensity-->
         <parameter name="hyphalDelay" value="0"/>
         <!--Delay time before hyphal emergence after colonization [day]-->
         <parameter name="hyphalEmergenceDensity" value="0"/>
@@ -207,7 +207,7 @@
         <parameter name="maxColonization" value="1"/>
         <!--Percentage of maximal colonization-->
         <parameter name="minAge" value="0"/>
-        <!--Minimal infectious age of a root segment [day]-->
+        <!--Minimal susceptible age of a root segment [day]-->
         <parameter name="r" value="0.34999999"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="9.9999998e+10" dev="1000000"/>

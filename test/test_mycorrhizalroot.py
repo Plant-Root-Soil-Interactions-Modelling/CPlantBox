@@ -156,7 +156,7 @@ class TestMycorrhizalRoot(unittest.TestCase):
         self.mycroot.simulate(simtime, False)
         infRoots = self.mycroot.getParameter("primaryColonization")
         numRoots = self.mycroot.getParameter("length")
-        self.assertAlmostEqual(0.15,infRoots/(simtime*numRoots),None,"not the right amount of root segments infected",0.05)
+        self.assertAlmostEqual(0.15,infRoots/(simtime*numRoots),None,"not the right amount of root segments colonized",0.05)
         
 
     def test_secondary_colonization(self):
@@ -165,25 +165,25 @@ class TestMycorrhizalRoot(unittest.TestCase):
         simtime = 20. 
         self.mycroot.simulate(simtime, False)
         wrong_pos=[]
-        infected =[]
-        toolateInfected =[]
+        colonized =[]
+        toolateColonized =[]
         toolateTime= []
         for i in range(0, self.mycroot.getNumberOfNodes()-1):
-            infected.append(self.mycroot.getNodeColonization(i))
+            colonized.append(self.mycroot.getNodeColonization(i))
             if self.mycroot.getNodeColonization(i) == 1 and self.mycroot.getNodeColonization(i+1) == 0 and self.mycroot.getNodeColonization(i-1) == 0 :
-                toolateInfected.append(i)
+                toolateColonized.append(i)
                 toolateTime.append(self.mycroot.getNodeColonizationTime(i))
         speed = self.mycroot.getParameter("vi")
-        for i in range(0, len(toolateInfected)):
-            l = self.mycroot.getNode(toolateInfected[i]).minus(self.mycroot.getNode(toolateInfected[i]+1)).length()
-            r = self.mycroot.getNode(toolateInfected[i]).minus(self.mycroot.getNode(toolateInfected[i]-1)).length()
+        for i in range(0, len(toolateColonized)):
+            l = self.mycroot.getNode(toolateColonized[i]).minus(self.mycroot.getNode(toolateColonized[i]+1)).length()
+            r = self.mycroot.getNode(toolateColonized[i]).minus(self.mycroot.getNode(toolateColonized[i]-1)).length()
             self.assertEqual((simtime - toolateTime[i])*speed > l,True,"secondary colonization not created in time")
             self.assertEqual((simtime - toolateTime[i])*speed > r,True,"secondary colonization not created in time")
-        self.assertEqual(2 in infected, True, "secondary colonization not created")
+        self.assertEqual(2 in colonized, True, "secondary colonization not created")
 
-        for i in range(0, len(infected)):
-            if infected[i] == 2:
-                if i > 0 and i <len(infected)-1 and infected[i-1] == 0 and infected[i+1] == 0:
+        for i in range(0, len(colonized)):
+            if colonized[i] == 2:
+                if i > 0 and i <len(colonized)-1 and colonized[i-1] == 0 and colonized[i+1] == 0:
                     wrong_pos.append(i)
         self.assertEqual(len(wrong_pos),0,"secondary colonization not positioned correctly")
 

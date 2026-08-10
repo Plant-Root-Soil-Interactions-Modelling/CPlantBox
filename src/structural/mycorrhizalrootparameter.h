@@ -13,7 +13,7 @@ namespace CPlantBox {
         MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0.,0.15, 0.13, false, 0., 0.) { }
 
         MycorrhizalRootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt,
-				bool laterals, double lmbd, double vi, int infected = false):
+				bool laterals, double lmbd, double vi, int colonized = false):
             RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), lmbd(lmbd), vi(vi) {};
 
         double lmbd = 0.15;        ///< Rate of primary colonization for dispersed inoculum [1/(cm day)]
@@ -38,14 +38,14 @@ namespace CPlantBox {
         */
         double lmbd = 0.15;        ///< Rate of primary colonization for dispersed inoculum [1/(cm day)]
         double lmbds = 0.;         ///< Standard deviation of primary colonization [1/(cm day)]
-        double minAge = 0;         ///< Minimal Infectious age of a root segment [day]
+        double minAge = 0;         ///< Minimal susceptible age of a root segment [day]
         double maxAge = 32;        ///< Maximal Colonization age of a root segment [day]
         double vi = 0.13;          ///< speed of internal colonization [cm / day]
         double vis = 0.;           ///< Standard deviation of speed of internal colonization [cm / day]
         double maxColonization = 1;   ///< Percentage of maximal colonization
         double hyphalDelay = 0.;      ///< Dummy delay time before hyphal emergence after colonization [day] there is none.
-        double highresolution = 1; ///< If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity
-        double dx_inf = 0.1;       ///< Segment length for infected root segments only in high resolution case [cm]
+        double highresolution = 1; ///< If true, a hypha is created at every colonized node, otherwise hyphae are created based on hyphalEmergenceDensity
+        double dx_inf = 0.1;       ///< Segment length for colonized root segments only in high resolution case [cm]
 
         double hyphalEmergenceDensity = 1; //< [1 / cm]
 

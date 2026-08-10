@@ -70,7 +70,7 @@ def make_RILD_plot(plant, depth, layers,radius,name):
     rad = ana.getParameter("radius")
     rad = sum(rad)/len(rad)
     rltot = ana.getSummed("length")
-    print("Simulated average infected root radius and total infected root length after", simtime, "days:", "\n","  Average root radius (cm):", rad, "\n","  Total root length (cm):", rltot, "\n" )
+    print("Simulated average colonized root radius and total colonized root length after", simtime, "days:", "\n","  Average root radius (cm):", rad, "\n","  Total root length (cm):", rltot, "\n" )
     layerVolume = depth / layers * radius * radius * np.pi  # actually the only thing that changes
     ana.write("results/" + name + "_colonization_108days.vtp",["radius", "subType", "creationTime","organType"])
     rl0_ = ana.distribution("length", 0., -depth, layers, True)
