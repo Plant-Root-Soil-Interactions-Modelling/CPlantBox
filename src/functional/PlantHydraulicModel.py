@@ -1,11 +1,12 @@
 import numpy as np
+import scipy.sparse.linalg as LA
+from scipy import sparse
+
 import plantbox as pb
 import plantbox.rsml.rsml_reader as rsml
-import scipy.sparse.linalg as LA
 from plantbox import PlantHydraulicModel as PlantHydraulicModelCPP
 from plantbox.functional.Perirhizal import PerirhizalPython as Perirhizal
 from plantbox.structural.MappedOrganism import MappedPlantPython
-from scipy import sparse
 
 
 class PlantHydraulicModel(PlantHydraulicModelCPP):
@@ -39,6 +40,8 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         @param params hydraulic conductivities described by PlantHydraulicParameters
         @param if cached == "True" sparse factorization is cached for faster solving using solve_again()
         """
+        if params is None:
+            params = pb.PlantHydraulicParameters()
         if isinstance(ms, str):
             ms = self.read_rsml(ms)
             super().__init__(ms, params)
@@ -139,7 +142,8 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             print("                           cts [{:g}, {:g}] days".format(np.min(cts), np.max(cts)))
             print("                           raddii [{:g}, {:g}] cm".format(np.min(radii), np.max(radii)))
             print("                           subTypes Doussan[{:g}, {:g}] ".format(np.min(types), np.max(types)))
-        return pb.MappedSegments(nodes2, cts, segs2, segRadii, segTypes)  # root system grid
+
+        return pb.MappedSegments(nodes2, [float(c) for c in cts], segs2, segRadii.flatten().tolist(), segTypes.flatten().astype(int).tolist())  # root system grid
 
     def collar_index(self):
         """returns the segment index of the collar segment, node index of the collar node is always 0"""
@@ -788,7 +792,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def get_krs(self, sim_time):
         """Overload get_krs so that get_krs and get_krs_ return the same data
-            return None so that we always get two objects from get_krs
+        return None so that we always get two objects from get_krs
         """
         try:
             return self.krs, None
