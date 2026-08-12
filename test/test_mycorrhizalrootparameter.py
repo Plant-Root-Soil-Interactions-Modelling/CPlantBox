@@ -19,6 +19,15 @@ class TestMycParameter(unittest.TestCase):
         self.mrrp.successorP = [[0.4, 0.1, 0.5]]
         self.mrrp.ldelay = 5
         self.mrrp.ldelays = 2
+        self.mrrp.vi = 0.5
+        self.mrrp.minAge = 0.1
+        self.mrrp.maxAge = 10
+        self.mrrp.lmbd = 0.5
+        self.mrrp.maxColonization = 0.5
+        self.mrrp.hyphalDelay = 0.5
+        self.mrrp.highresolution = 0
+        self.mrrp.dx_inf = 0.2
+        self.mrrp.hyphalEmergenceDensity = 5
 
     def test_constructors(self):
         """ tests constructor and copy """
@@ -36,15 +45,15 @@ class TestMycParameter(unittest.TestCase):
         self.assertEqual(otp2.theta, mrrp.theta, "copy: value unexpected")
         self.assertEqual(otp2.thetas, mrrp.thetas, "copy: value unexpected")
         self.assertEqual(otp2.gf, mrrp.gf, "copy: value unexpected")
-        self.assertEqual(otp2.p, mrrp.p,"copy: value unexpected")
         self.assertEqual(otp2.minAge, mrrp.minAge,"copy: value unexpected")
         self.assertEqual(otp2.maxAge, mrrp.maxAge,"copy: value unexpected")
         self.assertEqual(otp2.vi, mrrp.vi,"copy: value unexpected")
-        self.assertEqual(otp2.colonized, mrrp.colonized,"copy: value unexpected")
-        self.assertEqual(otp2.posX, mrrp.posX,"copy: value unexpected")
-        self.assertEqual(otp2.posY, mrrp.posY,"copy: value unexpected")
-        self.assertEqual(otp2.posZ, mrrp.posZ,"copy: value unexpected")
-        self.assertEqual(otp2.radius, mrrp.radius,"copy: value unexpected")
+        self.assertEqual(otp2.lmbd, mrrp.lmbd,"copy: value unexpected")
+        self.assertEqual(otp2.maxColonization, mrrp.maxColonization,"copy: value unexpected")
+        self.assertEqual(otp2.hyphalDelay, mrrp.hyphalDelay,"copy: value unexpected")
+        self.assertEqual(otp2.highresolution, mrrp.highresolution,"copy: value unexpected")
+        self.assertEqual(otp2.dx_inf, mrrp.dx_inf,"copy: value unexpected")
+        self.assertEqual(otp2.hyphalEmergenceDensity, mrrp.hyphalEmergenceDensity,"copy: value unexpected")
 
     def test_parameter(self):
         """ tests getParameter() """
@@ -97,7 +106,6 @@ class TestMycParameter(unittest.TestCase):
         self.assertEqual(otp2.subType, mrrp.subType, "xml: value unexpected")
         self.assertEqual(otp2.nob(), mrrp.nob(), "xml: value unexpected")  # value
         self.assertEqual(otp2.lns, mrrp.lns, "xml: value unexpected")  # dev
-        self.assertEqual(otp2.p, mrrp.p,"xml: value unexpected")
         self.assertEqual(otp2.vi, mrrp.vi,"xml: value unexpected")
         self.assertEqual(otp2.maxAge, mrrp.maxAge,"xml: value unexpected")
         for i in range(0, 3):
@@ -109,7 +117,7 @@ class TestMycParameter(unittest.TestCase):
         """ calls realize """
         self.mycroot_example()
         p = self.mrrp.realize()
-        self.assertEqual(p.__class__.__name__, "RootSpecificParameter", "realize: unexpected class type")
+        self.assertEqual(p.__class__.__name__, "MycorrhizalRootSpecificParameter", "realize: unexpected class type")
         self.assertEqual(p.subType, 1, "realize: unexpected sub type")
         self.assertEqual(p.a, 0.1, "realize: unexpected value")
         self.assertEqual(len(p.ln) + 1, self.mrrp.nob(), "realize: internodal distances +1 should be  number of laterals")
