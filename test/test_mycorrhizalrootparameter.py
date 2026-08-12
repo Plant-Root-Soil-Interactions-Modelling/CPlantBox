@@ -96,9 +96,9 @@ class TestMycParameter(unittest.TestCase):
         mrrp = self.mrrp  # rename
         mrrp.name = "lateral"
         mrrp.subType = 2
-        mrrp.writeXML("root.xml")
+        mrrp.writeXML("mycroot.xml")
         otp2 = pb.MycorrhizalRootRandomParameter(self.plant)
-        otp2.readXML("root.xml")
+        otp2.readXML("mycroot.xml")
         self.assertEqual(otp2.ldelay, mrrp.ldelay, "xml: value unexpected")
         self.assertEqual(otp2.ldelays, mrrp.ldelays, "xml: value unexpected")
         self.assertEqual(otp2.name, mrrp.name, "xml: value unexpected")

@@ -2,23 +2,29 @@ import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
 
 import plantbox as pb
-from rsml.rsml_reader import *
+
+# from rsml.rsml_reader import *
 
 class TestHyphaeParameter(unittest.TestCase):
 
-    def hyphae_lowres_example(self): # TODO check which parameters are needed
+    def hyphae_example(self): # TODO check which parameters are needed
         self.plant = pb.Organism()
         self.hrp = pb.HyphaeRandomParameter(self.plant)
         self.hrp.dx = 0.1
-        self.hrp.distTH = 0.2
         self.hrp.subType = 1
-    
-    def hyphae_highres_example(self): # TODO check which parameters are needed
-        self.plant = pb.Organism()
-        self.hrp = pb.HyphaeRandomParameter(self.plant)
-        self.hrp.dx = 0.1
-        self.hrp.distTH = 0.15
-        self.hrp.subType = 2
+        self.hrp.v = 0.12
+        self.hrp.hlt = 5
+        self.theta = 15
+        self.hrp.distTH = 0.2
+        self.hrp.ana = 0.5
+        self.hrp.lb = 0.5
+        self.hrp.la = 0.5
+        self.hrp.ln = 0.5
+        self.hrp.b = 1
+        self.hrp.b_prob = 1.0
+
+
+
 
     def test_constructors(self): # TODO check again all parameters needed
         """ tests constructor and copy """
@@ -34,8 +40,15 @@ class TestHyphaeParameter(unittest.TestCase):
         self.assertEqual(hrp2.subType, hrp.subType, "copy: value unexpected")
         self.assertEqual(hrp2.dx, hrp.dx, "copy: value unexpected")
         self.assertEqual(hrp2.distTH, hrp.distTH, "copy: value unexpected")
-        self.assertEqual(hrp2.hyphalEmergenceDensity, hrp.hyphalEmergenceDensity, "copy: value unexpected")
-        self.assertEqual(hrp2.highresolution, hrp.highresolution, "copy: value unexpected")
+        self.assertEqual(hrp2.v, hrp.v, "copy: value unexpected")
+        self.assertEqual(hrp2.hlt, hrp.hlt, "copy: value unexpected")
+        self.assertEqual(hrp2.theta, hrp.theta, "copy: value unexpected")
+        self.assertEqual(hrp2.ana, hrp.ana, "copy: value unexpected")
+        self.assertEqual(hrp2.lb, hrp.lb, "copy: value unexpected")
+        self.assertEqual(hrp2.la, hrp.la, "copy: value unexpected")
+        self.assertEqual(hrp2.ln, hrp.ln, "copy: value unexpected")
+        self.assertEqual(hrp2.b, hrp.b, "copy: value unexpected")
+        self.assertEqual(hrp2.b_prob, hrp.b_prob, "copy: value unexpected")
 
     def test_parameter(self):
         """ tests getParameter() """
@@ -54,7 +67,7 @@ class TestHyphaeParameter(unittest.TestCase):
     
     def test_xml(self): # TODO check again all parameters needed
         """ tests reading and writing xml parameter file """
-        self.hyphae_lowres_example()
+        self.hyphae_example()
         # write parameters to xml
         self.plant.writeParameters("hyphae_test_parameters.xml", 'plant', True)
         # read parameters from xml
@@ -67,7 +80,7 @@ class TestHyphaeParameter(unittest.TestCase):
 
     def test_realize(self):
         """ tests if hyphae parameter can be set and realized in a plant """
-        self.hyphae_lowres_example()
+        self.hyphae_example()
         self.plant.initialize(True)
         # set the hyphae parameter to the plant
         self.plant.setOrganRandomParameter(self.hrp)
