@@ -154,44 +154,84 @@ class TestMycorrhizalRoot(unittest.TestCase):
         self.mycroot_example_rrp()
         simtime = 10.
         self.mycroot.simulate(simtime, False)
-        infRoots = self.mycroot.getParameter("primaryColonization")
+        colRoots = self.mycroot.getParameter("primaryColonization")
         numRoots = self.mycroot.getParameter("length")
-        self.assertAlmostEqual(0.15,infRoots/(simtime*numRoots),None,"not the right amount of root segments colonized",0.05)
+        self.assertAlmostEqual(0.15,colRoots/(simtime*numRoots),None,"not the right amount of root segments colonized",0.05)
         
 
     def test_secondary_colonization(self):
-        """ test if secondary infecions are positioned correctly """
+        # TODO this only tests if secondary colonization is created next to primary but not if secondarz colonization next to secondary colonization is created correctly and in time
+        """ test if secondary colonization is created next to primary colonization and if it is created in time """
         self.mycroot_example_rrp()
         simtime = 20. 
         self.mycroot.simulate(simtime, False)
         wrong_pos=[]
         colonized =[]
-        toolateColonized =[]
-        toolateTime= []
-        for i in range(0, self.mycroot.getNumberOfNodes()-1):
+        colNode =[]
+        apicalNode = []
+        basalNode = []
+        colTime= []
+        apicalTime = []
+        basalTime = []
+        colonized.append(self.mycroot.getNodeColonization(0))
+        for i in range(1, self.mycroot.getNumberOfNodes()-2):
             colonized.append(self.mycroot.getNodeColonization(i))
-            if self.mycroot.getNodeColonization(i) == 1 and self.mycroot.getNodeColonization(i+1) == 0 and self.mycroot.getNodeColonization(i-1) == 0 :
-                toolateColonized.append(i)
-                toolateTime.append(self.mycroot.getNodeColonizationTime(i))
+            if self.mycroot.getNodeColonization(i) == 1 and self.mycroot.getNodeColonization(i+1) > 1 and self.mycroot.getNodeColonization(i-1) > 1:
+                colNode.append(i)
+                apicalNode.append(i-1)
+                basalNode.append(i+1)
+                colTime.append(self.mycroot.getNodeColonizationTime(i))
+                apicalTime.append(self.mycroot.getNodeColonizationTime(i-1))
+                basalTime.append(self.mycroot.getNodeColonizationTime(i+1))
         speed = self.mycroot.getParameter("vi")
-        for i in range(0, len(toolateColonized)):
-            l = self.mycroot.getNode(toolateColonized[i]).minus(self.mycroot.getNode(toolateColonized[i]+1)).length()
-            r = self.mycroot.getNode(toolateColonized[i]).minus(self.mycroot.getNode(toolateColonized[i]-1)).length()
-            self.assertEqual((simtime - toolateTime[i])*speed > l,True,"secondary colonization not created in time")
-            self.assertEqual((simtime - toolateTime[i])*speed > r,True,"secondary colonization not created in time")
+        for i in range(0, len(colNode)):
+            l = self.mycroot.getNode(apicalNode[i]).minus(self.mycroot.getNode(colNode[i]+1)).length()
+            r = self.mycroot.getNode(colNode[i]).minus(self.mycroot.getNode(basalNode[i])).length()
+            self.assertEqual((apicalTime[i] - colTime[i])*speed > l,True,"secondary colonization not created in time")
+            self.assertEqual((basalTime[i] - colTime[i])*speed > r,True,"secondary colonization not created in time")
+        colonized.append(self.mycroot.getNodeColonization(self.mycroot.getNumberOfNodes()-1))
         self.assertEqual(2 in colonized, True, "secondary colonization not created")
 
-        for i in range(0, len(colonized)):
+        "tests if secondary colonization is created isolated"
+        for i in range(1, len(colonized)):
             if colonized[i] == 2:
-                if i > 0 and i <len(colonized)-1 and colonized[i-1] == 0 and colonized[i+1] == 0:
+                if i <len(colonized)-1 and colonized[i-1] == 0 and colonized[i+1] == 0:
                     wrong_pos.append(i)
         self.assertEqual(len(wrong_pos),0,"secondary colonization not positioned correctly")
 
-    # TODO insert test for age of colonization
-    # TODO insert test for colonization jumping
-    # TODO insert test for hyphal emergence density
+# TODO fix this test, needs to be verified that this occured properly
+    def test_colonization_transfer(self):
+        """ tests if colonization can be transferred from one root to another"""
+        self.mycroot_example_rrp()
+        simtime = 20.
+        self.mycroot.simulate(simtime, False)
+        colonized = self.mycroot.getNodeColonization()
+        transfer = []
+        for i in range(0, len(colonized)):
+            if colonized[i] == 3:
+                # get times and compare?
+                transfer.append(i)
+        self.assertEqual(len(transfer) > 0, True, "colonization transfer occured")
+
+    ## TODO test if the hyphal emergence density is correct, i.e. if the number of hyphae emerging from the root is correct
+    def test_hyphal_emergence(self):
+        """ tests if hyphae emerge from root """
+        self.mycroot_example_rrp()
+        simtime = 20.
+        self.mycroot.simulate(simtime, False)
+
+
     # TODO test for segment refinement that total length and length of segment still makes sense
+    def test_segment_refinement(self):
+        """ tests if segment refinement works """
+       # TODO define one root copy it and set high resolution to be different but the same seed. simulate both and check if the length of colonized root is still the same
+    
     # TODO test colonization location shift
+    def test_colonization_location_shift(self):
+        """ tests if colonization location shift works """
+        # TODO simulate a root until time point x 
+        # TODO extract colonization state and location and extract this along with global node index (this should be preserved after another simulation step right?)
+        # TODO simulate another time step and check if the colonization state and location is still the same for the same global node index (except for nodes that were active tips before hand)
 
     def test_parameter(self):
         """ tests some parameters on sequential organ list """

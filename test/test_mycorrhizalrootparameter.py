@@ -2,7 +2,7 @@ import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
 
 import plantbox as pb
-from rsml.rsml_reader import *
+# from rsml.rsml_reader import * QUESTION? do we need this it causes a missing import flag
 
 class TestMycParameter(unittest.TestCase):
 
