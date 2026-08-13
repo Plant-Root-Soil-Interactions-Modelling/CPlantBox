@@ -48,6 +48,13 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
     @author Daniel Leitner, 2025
     """
 
+    def __init__(self, ms=None):
+        if ms is not None:
+            super().__init__(ms)
+        else:
+            super().__init__()
+        self.setMode(self.krMode, self.kxMode)  # wire up callbacks to match default mode strings
+
     def set_flexible_(self, f, params, subType, organType):
         """calls cpp functions @param f with parameters @param params,
         enabling multiple subTypes and multiple organTypes"""
@@ -96,10 +103,8 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
 
     def write_parameters(self, filename):
         """writes the parameters into a json file"""
-        if self.krMode == "perSegment" or self.kxMode == "perSegment":
-            print(
-                "PlantHydraulicParameters.write_parameters(): Warning! perSegment works only if you reload the exact same root geometry (with the exact same segments)"
-            )
+        if self.krMode == "per segment" or self.kxMode == "per segment":
+            print("PlantHydraulicParameters.write_parameters(): Warning! perSegment works only if you reload the exact same root geometry (with the exact same segments)")
         mode = {"krMode": self.krMode, "kxMode": self.kxMode}
         json_dict = {
             "mode": mode,
@@ -114,7 +119,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
             json.dump(json_dict, f)
 
     def read_parameters(self, filename):
-        """writes the parameters into a json file"""
+        """reads the parameters from a json file"""
         with open(filename + ".json", "r") as f:
             json_dict = json.load(f)
         self.setKrValues(json_dict["krPerSegment"])  # can be empty
@@ -141,7 +146,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
                             for dicots a list of three root types for "1st order laterals", "2nd order laterals", "3rd order laterals" [2, 3, 4]
         """
         ot_root = pb.OrganTypes.root
-        axes_age = naxes_age = np.linspace(0, 50, 500)
+        axes_age = np.linspace(0, 50, 500)
         lateral_age = np.linspace(0, 25, 125)
         lateral_cols = ["r", "g:", "m--", "b--"]
         axes_cols = ["r", "g:", "m--", "b--"]
@@ -216,18 +221,14 @@ if __name__ == "__main__":
 
     # Maize, from Couvreur et al. (2012), originally from Doussan et al. (1998)
     kr00 = np.array([[0.0, 0.0]])  # artificial shoot
-    kr0 = np.array(
-        [[-1e4, 0.0], [-0.1, 0.0], [0.0, 0.000181], [8.0, 0.000181], [10, 0.0000648], [18, 0.0000648], [25, 0.0000173], [300, 0.0000173]]
-    )  # time, value; [day], [1 day-1]
+    kr0 = np.array([[-1e4, 0.0], [-0.1, 0.0], [0.0, 0.000181], [8.0, 0.000181], [10, 0.0000648], [18, 0.0000648], [25, 0.0000173], [300, 0.0000173]])  # time, value; [day], [1 day-1]
     kr1 = np.array([[-1e4, 0.0], [-0.1, 0.0], [0.0, 0.000181], [10.0, 0.000181], [16, 0.0000173], [300, 0.0000173]])  #   time, value; [1 day-1]
     values = [kr00[:, 1], kr0[:, 1], kr1[:, 1], kr1[:, 1], kr0[:, 1], kr0[:, 1]]
     ages = [kr00[:, 0], kr0[:, 0], kr1[:, 0], kr1[:, 0], kr0[:, 0], kr0[:, 0]]
     [params.setKrAgeDependent(ages[i], values[i], i) for i in range(0, 6)]
     kx00 = np.array([[0.0, 1.0e3]])  # artificial shoot
     kx0 = np.array([[0.0, 0.000864], [5.0, 0.00173], [12.0, 0.0295], [15.0, 0.0295], [20.0, 0.432], [300.0, 0.432]])  #  time, value; [cm3 day-1]
-    kx1 = np.array(
-        [[0.0, 0.0000864], [5.0, 0.0000864], [10.0, 0.0000864], [12.0, 0.0006048], [20.0, 0.0006048], [23.0, 0.00173], [300.0, 0.00173]]
-    )  #  time, value; [cm3 day-1]
+    kx1 = np.array([[0.0, 0.0000864], [5.0, 0.0000864], [10.0, 0.0000864], [12.0, 0.0006048], [20.0, 0.0006048], [23.0, 0.00173], [300.0, 0.00173]])  #  time, value; [cm3 day-1]
     ages = [kx00[:, 0], kx0[:, 0], kx1[:, 0], kx1[:, 0], kx0[:, 0], kx0[:, 0]]
     values = [kx00[:, 1], kx0[:, 1], kx1[:, 1], kx1[:, 1], kx0[:, 1], kx0[:, 1]]
     [params.setKxAgeDependent(ages[i], values[i], i) for i in range(0, 6)]
