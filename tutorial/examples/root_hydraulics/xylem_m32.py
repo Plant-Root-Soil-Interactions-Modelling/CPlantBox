@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 from plantbox.functional.PlantHydraulicModel import (
@@ -26,7 +27,7 @@ param = PlantHydraulicParameters()
 param.set_kr_const(kr)
 param.set_kx_const(kz)
 
-r = HydraulicModel_Doussan("../../grids/RootSystem.rsml", param, cached=False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
+r = HydraulicModel_Doussan("RootSystem.rsml", param, cached=False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
 r.test()
 
 nodes = r.get_nodes()

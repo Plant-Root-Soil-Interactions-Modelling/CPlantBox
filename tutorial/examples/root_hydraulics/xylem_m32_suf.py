@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 from plantbox.functional.Perirhizal import PerirhizalPython as Perirhizal
@@ -135,9 +136,9 @@ def suf_krs(r, param):
 " Solve for both models"
 param = PlantHydraulicParameters()
 
-r = HydraulicModel_Doussan("../../grids/RootSystem.rsml", param, cached=False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
+r = HydraulicModel_Doussan("RootSystem.rsml", param, cached=False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
 krs_ad, suf_ad, krs_bd, suf_bd = suf_krs(r, param)
-r = HydraulicModel_Meunier("../../grids/RootSystem.rsml", param, cached=False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
+r = HydraulicModel_Meunier("RootSystem.rsml", param, cached=False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
 krs_am, suf_am, krs_bm, suf_bm = suf_krs(r, param)
 
 print("\nDoussan")
