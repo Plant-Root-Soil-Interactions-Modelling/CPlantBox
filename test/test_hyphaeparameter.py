@@ -2,6 +2,7 @@ import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
 
 import plantbox as pb
+import numpy as np
 
 # from rsml.rsml_reader import *
 
@@ -20,11 +21,9 @@ class TestHyphaeParameter(unittest.TestCase):
         self.hrp.lb = 0.5
         self.hrp.la = 0.5
         self.hrp.ln = 0.5
+        self.hrp.lmax = 5.0
         self.hrp.b = 1
         self.hrp.b_prob = 1.0
-
-
-
 
     def test_constructors(self): # TODO check again all parameters needed
         """ tests constructor and copy """
@@ -60,10 +59,30 @@ class TestHyphaeParameter(unittest.TestCase):
         st = hrp.getParameter("subType")
         dx = hrp.getParameter("dx")
         dth = hrp.getParameter("distTH")
+        v = hrp.getParameter("v")
+        hlt = hrp.getParameter("hlt")
+        theta = hrp.getParameter("theta")
+        ana = hrp.getParameter("ana")
+        lb = hrp.getParameter("lb")
+        la = hrp.getParameter("la")
+        ln = hrp.getParameter("ln")
+        lmax = hrp.getParameter("lmax")
+        b = hrp.getParameter("b")
+        b_prob = hrp.getParameter("b_prob")
         self.assertEqual(ot, pb.hyphae, "getParameter: value unexpected")
         self.assertEqual(st, 0, "getParameter: value unexpected")
         self.assertEqual(dx, 0.2, "getParameter: value unexpected")
         self.assertEqual(dth, 0.3, "getParameter: value unexpected")
+        self.assertEqual(v, 0.13, "getParameter: value unexpected")
+        self.assertEqual(hlt, 10, "getParameter: value unexpected")
+        self.assertEqual(theta, 30/180*np.pi, "getParameter: value unexpected")
+        self.assertEqual(ana, 1.0, "getParameter: value unexpected")
+        self.assertEqual(lb, 0.001, "getParameter: value unexpected")
+        self.assertEqual(la, 0.003, "getParameter: value unexpected")
+        self.assertEqual(ln, 0.005, "getParameter: value unexpected")
+        self.assertEqual(lmax, 10.0, "getParameter: value unexpected")
+        self.assertEqual(b, 2, "getParameter: value unexpected")
+        self.assertEqual(b_prob, 0, "getParameter: value unexpected")
     
     def test_xml(self): # TODO check again all parameters needed
         """ tests reading and writing xml parameter file """
