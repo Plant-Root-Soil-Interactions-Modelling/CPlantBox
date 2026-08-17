@@ -132,8 +132,7 @@ class TestPlant(unittest.TestCase):  # |\label{test_example:TestClass}|
 
         srp = p.getOrganRandomParameter(1)[0]
         time = 76
-        srp.delayDefinitionRoot = pb.DelayDefinition.dd_time_self
-        srp.delayDefinitionShoot = pb.DelayDefinition.dd_time_self
+        srp.delayDefinitionRoot = pb.DelayDefinition.dd_time_lat
 
         rrp = p.getOrganRandomParameter(pb.root)[1]
         rrp.ldelay = 3
