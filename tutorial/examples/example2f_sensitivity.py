@@ -37,7 +37,7 @@ def simulate(i):
     # 1. vary parameter
     p1.theta = theta0_[i]
     # 2. simulate
-    rs.initializeLB(False)
+    rs.initialize(False)
     rs.simulate(simtime, False)
     # 3. calculate target
     depth = 0.  # mean depth

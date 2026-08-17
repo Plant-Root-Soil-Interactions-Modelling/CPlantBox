@@ -30,7 +30,7 @@ for i, n in enumerate(N_):
         p0.tropismN = n
         p0.tropismS = sigma
 
-        plant.initializeLB(True)
+plant.initialize(True)
         plant.simulate(65, True)
 
         nodes = plant.getNodes()

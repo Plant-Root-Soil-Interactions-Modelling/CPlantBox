@@ -31,7 +31,7 @@ for i, n in enumerate(N_):  # |\label{l3_2_tropism:loopstart}|
         p0.tropismN = n
         p0.tropismS = sigma
 
-        plant.initializeLB()
+        plant.initialize()
         plant.simulate(50, False)  # |\label{l3_2_tropism:loopend}|
 
         nodes = plant.getNodes()  # |\label{l3_2_tropism:readstart}|

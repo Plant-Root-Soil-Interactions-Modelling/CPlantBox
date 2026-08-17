@@ -37,7 +37,7 @@ for i, ln in enumerate(ln_):
 
         p0.ln = ln
         p0.lnk = ln * lnk  # set up linearly altered spaces
-        rs.initializeLB()
+        rs.initialize()
         rs.simulate(100, False)
 
         a = axes[i][j]
