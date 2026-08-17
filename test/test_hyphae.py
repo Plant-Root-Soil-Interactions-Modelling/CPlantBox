@@ -9,7 +9,6 @@ from scipy.linalg import norm
 class TestHyphae(unittest.TestCase):
 
     # TODO add test for anastomosis
-    # TODO add test for different branching types
     # TODO test hyphal tree index
     # TODO merged hyphae index etc
     def hyphae_example(self): # TODO check which parameters are needed and how structure should be
@@ -18,8 +17,6 @@ class TestHyphae(unittest.TestCase):
         self.hrp.dx = 0.1
         self.hrp.distTH = 0.2
         self.hrp.subType = 1
-        self.hrp.hyphalEmergenceDensity = 2.0
-        self.hrp.highresolution = 1
 
     def test_constructors(self): # TODO check again all parameters needed
         """ tests constructor and copy """
@@ -91,20 +88,85 @@ class TestHyphae(unittest.TestCase):
         for _ in range(steps):
             self.plant.simulate(dt, False)
         hyphae = self.plant.getOrgansOfType(pb.hyphae)
-        branch_points = 0
+        lateral_branch_points = 0
+        tip_split_branch_points = 0
         for h in hyphae:
-            if len(h.getChildren()) > 1:
-                branch_points += 1
-        self.assertGreater(branch_points, 0, "No branching occurred in hyphae")
+            if len(h.getChildren()) > 2: # if a hypha has more than 2 children it can only be a hypha with lateral branches, not a tip split
+                lateral_branch_points += len(h.getChildren())  # count lateral branches beyond the main two
+            elif len(h.getChildren()) == 2: # if a hypha has exactly 2 children, it can be either a tip split or a lateral branch
+                if h.getChildren()[0].getOrigin() == h.getChildren()[1].getOrigin(): # if both children originate from the same point, it's a tip split
+                    tip_split_branch_points += 1  # count tips that split into two
+                else:
+                    lateral_branch_points += 1  # count lateral branches
+            elif len(h.getChildren()) == 1: # if a hypha has exactly 1 child, it can only be a lateral branch
+                lateral_branch_points += 1  # count single lateral branches
+        self.assertGreater(tip_split_branch_points, 0, "No tip splitting occurred in hyphae")
+        self.assertGreater(lateral_branch_points, 0, "No lateral branching occurred in hyphae")
 
+    def test_tip_splitting_frequency(self):
+        """ tests hyphae tip splitting frequency """
+        self.hyphae_example()
+        self.hrp.subType = 2  # assuming subType 2 enables tip splitting
+        self.hrp.b = 2  # set branching parameter to promote tip splitting
+        self.hrp.b_prob = 1.0  # set branching probability to 1 to ensure tip splitting occurs
+        self.plant.setOrganRandomParameter(self.hrp)
+        self.plant.initialize(True)
+        sim_time = 2.0
+        dt = 0.1
+        steps = int(sim_time / dt)
+        for _ in range(steps):
+            self.plant.simulate(dt, False)
+        hyphae = self.plant.getOrgansOfType(pb.hyphae)
+        tip_split_count = sum(1 for h in hyphae if len(h.getChildren()) == 2 and h.getChildren()[0].getOrigin() == h.getChildren()[1].getOrigin())
+        self.assertEqual(tip_split_count, sim_time*self.hrp.b, "No tip splitting occurred in hyphae") # tip splitting only dependent on time and branching parameter b, so total number of tip splits should be equal to sim_time*b
+
+    def test_lateral_branching_distance(self):
+        self.hyphae_example()
+        self.hrp.subType = 1  # assuming subType 1 enables lateral branching
+        self.hrp.b_prob = 0
+        self.plant.setOrganRandomParameter(self.hrp)
+        self.plant.initialize(True)
+        sim_time = 2.0
+        dt = 0.1
+        steps = int(sim_time / dt)
+        for _ in range(steps):
+            self.plant.simulate(dt, False)
+        hyphae = self.plant.getOrgansOfType(pb.hyphae)
+        lateral_branch_distances = []
+        for h in hyphae:
+            if len(h.getChildren()) > 1:  # if a hypha has more than one child, it can have lateral branches
+                for i in range(1, len(h.getChildren())):  # start from 1 to skip the main child
+                    lateral_branch_distances.append(norm(h.getChildren()[i].getOrigin() - h.getChildren()[i-1].getOrigin()))
+        for d in lateral_branch_distances:
+            self.assertGreaterEqual(d, self.hrp.ln - self.hrp.lns, "Lateral branch distance is greater than minimum distance threshold")
+            self.assertLessEqual(d, self.hrp.ln + self.hrp.lns, "Lateral branch distance is less than maximum distance threshold")
+    
+
+    def test_hyphal_tree_index(self):
+        """ tests hyphal tree index """
+        self.hyphae_example()
+        self.plant.setOrganRandomParameter(self.hrp)
+        self.plant.initialize(True)
+        sim_time = 2.0
+        dt = 0.1
+        steps = int(sim_time / dt)
+        for _ in range(steps):
+            self.plant.simulate(dt, False)
+        hyphae = self.plant.getOrgansOfType(pb.hyphae)
+        for h in hyphae:
+            if len(h.getChildren()) > 0:  # only check hyphae that have children
+                tree_index = [h.getHyphalTreeIndex()]*len(h.getChildren())
+                self.assertEqual(tree_index, h.getChildren().getHyphalTreeIndex(), "Hyphal tree index of parent does not match that of child")
+            self.assertIsInstance(tree_index, int, "Hyphal tree index is not an integer")
+            self.assertGreaterEqual(tree_index, 0, "Hyphal tree index is negative")
+            
     def test_anastomosis(self):
         """ tests hyphae anastomosis behavior """
         self.hyphae_example()
         self.hrp.distTH = 0.1  # set distance threshold for anastomosis
         self.plant.setOrganRandomParameter(self.hrp)
-        root_rp = pb.RootRandomParameter(self.plant)
-        root_rp.hyphalEmergenceDensity = 20.0  # high density to promote anastomosis
-        self.plant.setOrganRandomParameter(root_rp)
+        self.hrp.hyphalEmergenceDensity = 20.0  # high density to promote anastomosis
+        self.plant.setOrganRandomParameter(self.hrp)
         self.plant.initialize(True)
         sim_time = 3.0
         dt = 0.1
