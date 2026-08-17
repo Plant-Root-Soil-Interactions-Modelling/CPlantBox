@@ -92,23 +92,12 @@ void Plant::initialize_(bool verbose) {
  * Sets up the plant according to the plant parameters,
  * a confining geometry, the tropism functions, and the growth functions.
  *
- * LB, Length based: Delay for lateral root is calculated from the apical length (classical RootBox approach)
  *
  * Call this method before simulation and after setting geometry,
  * plant and root parameters
  * @param verbose       print information
  */
-void Plant::initialize(bool verbose, std::string mode) {
-    if (mode == "" || mode == "lengthBased" || mode == "length_based") {
-        initializeLB(verbose);
-    } else if (mode == "delayBased" || mode == "delay_based") {
-        initializeDB(verbose);
-    } else {
-        throw std::invalid_argument("Plant::initialize: unknown mode '" + mode + "', expected \"lengthBased\", \"length_based\", \"delayBased\", or \"delay_based\"");
-    }
-}
-
-void Plant::initializeLB(bool verbose) {
+void Plant::initialize(bool verbose) {
     reset(); // just in case
     auto seed = createSeed();
     this->addOrgan(seed);
@@ -117,36 +106,6 @@ void Plant::initializeLB(bool verbose) {
         throw std::runtime_error("Plant::initializeLB: createSeed() must return a Seed-compatible organ for plant initialization");
     }
     typedSeed->initialize(verbose);
-    initialize_(verbose);
-}
-
-/**
- * Sets up the plant according to the plant parameters,
- * a confining geometry, the tropism functions, and the growth functions.
- *
- * DB, Delay based: Delay for lateral root is predefined, apical length therefore not constant
- *
- * Call this method before simulation and after setting geometry,
- * plant and root parameters
- * @param verbose       print information
- */
-void Plant::initializeDB(bool verbose) {
-    reset(); // just in case
-
-    class SeedDB : public Seed { // make the seed use the RootDelay class
-        using Seed::Seed;
-        std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay) override {
-            return std::make_shared<RootDelay>(plant, type, delay, shared_from_this(), 0);
-        };
-    };
-
-    auto seed = std::make_shared<SeedDB>(shared_from_this());
-    this->addOrgan(seed);
-    auto srp = this->getSeedRandomParameter();
-    srp->delayDefinitionRoot = Organism::dd_time_self;
-    srp->delayDefinitionShoot = Organism::dd_time_self;
-    this->setOrganRandomParameter(srp);
-    seed->initialize(verbose);
     initialize_(verbose);
 }
 

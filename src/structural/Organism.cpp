@@ -150,7 +150,7 @@ int Organism::getParameterSubType(int organtype, std::string str) const {
 /**
  * @brief Optional initialization hook for derived classes.
  */
-void Organism::initialize(bool verbose, std::string mode) {}
+void Organism::initialize(bool verbose) {}
 
 /**
  * Simulates the development of the organism in a time span of @param dt days.

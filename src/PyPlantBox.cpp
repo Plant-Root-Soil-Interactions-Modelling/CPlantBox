@@ -440,7 +440,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getSeed", &Organism::getSeed)
         .def("setStochastic", &Organism::setStochastic)
         .def("addOrgan", &Organism::addOrgan)
-        .def("initialize", &Organism::initialize, py::arg("verbose") = true, py::arg("mode") = "")
+        .def("initialize", &Organism::initialize, py::arg("verbose") = true)
         .def("simulate", &Organism::simulate, py::arg("dt"), py::arg("verbose") = false) // default
         .def("getSimTime", &Organism::getSimTime)
 
@@ -1004,7 +1004,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setGeometry", &RootSystem::setGeometry)
         .def("setSoil", &RootSystem::setSoil)
         .def("reset", &RootSystem::reset)
-        .def("initialize", (void (RootSystem::*)(bool, std::string))&RootSystem::initialize, py::arg("verbose") = true, py::arg("mode") = "")
+        .def("initialize", (void (RootSystem::*)(bool))&RootSystem::initialize, py::arg("verbose") = true)
         .def("initializeLB", (void (RootSystem::*)(int, int, bool))&RootSystem::initializeLB, py::arg("basal"), py::arg("shootborne"),
              py::arg("verbose") = true)
         .def("initializeDB", (void (RootSystem::*)(int, int, bool))&RootSystem::initializeDB, py::arg("basal"), py::arg("shootborne"),
@@ -1103,9 +1103,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("createRoot", &Plant::createRoot)
         .def("createStem", &Plant::createStem)
         .def("createLeaf", &Plant::createLeaf)
-        .def("initialize", &Plant::initialize, py::arg("verbose") = true, py::arg("mode") = "")
-        .def("initializeLB", &Plant::initializeLB, py::arg("verbose") = true)
-        .def("initializeDB", &Plant::initializeDB, py::arg("verbose") = true)
+        .def("initialize", &Plant::initialize, py::arg("verbose") = true)
         .def("setGeometry", &Plant::setGeometry)
         .def("setSoil", &Plant::setSoil)
         .def("reset", &Plant::reset)
@@ -1126,8 +1124,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("mappedSegments", &MappedPlant::mappedSegments)
         .def("printNodes", &MappedPlant::printNodes)
         .def("plant", &MappedPlant::plant)
-        .def("initializeLB", &MappedPlant::initializeLB, py::arg("verbose") = true)
-        .def("initializeDB", &MappedPlant::initializeDB, py::arg("verbose") = true)
+        .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true)
         .def("getSegmentIds", &MappedPlant::getSegmentIds)
         .def("disableExtraNode", &MappedPlant::disableExtraNode)
         .def("enableExtraNode", &MappedPlant::enableExtraNode)
