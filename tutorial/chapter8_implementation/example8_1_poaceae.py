@@ -19,14 +19,14 @@ class Poaceae(pb.Plant):  # |\label{l81:plant}|
         self.setOrganRandomParameter(glp)  # |\label{l81:initializeReader_end}|
 
 
-# Simulate a Poaceae plant with GrassLeaf organs |\label{l81:sim_start}|
-plant = Poaceae()
+# Simulate a Poaceae plant with GrassLeaf organs
+plant = Poaceae()  # |\label{l81:constructor}|
 
-xml_path = os.path.join(os.path.dirname(__file__), "grassleaf_parameters.xml")
-plant.readParameters(xml_path)
-plant.initialize(verbose=False)
+xml_path = os.path.join(os.path.dirname(__file__), "grassleaf_parameters.xml")  # |\label{l81:xml}|
+plant.readParameters(xml_path)  # |\label{l81:xml_end}|
+plant.initialize()
 
-sim_time = 15.0
+sim_time = 15.0  # |\label{l81:sim_start}|
 dt = 0.5
 n_steps = int(sim_time / dt)
 
