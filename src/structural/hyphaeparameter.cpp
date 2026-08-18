@@ -78,7 +78,7 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
     std::vector<double> ln_; // stores the inter-distances
     double nob_sd = p->randn()*nobs();
     int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
-    bool hasLaterals = (successorST.size()>0) && (nob_real>0);
+    bool hasLaterals = (successorST.size()>0) && (nob_real>0); // if there are successors, and the number of branching points is >0, and the probability of tip splitting is <1, then we have laterals
 
     if (!hasLaterals) { // no laterals
         lb_ = 0;
@@ -104,10 +104,10 @@ std::shared_ptr<OrganSpecificParameter> HyphaeRandomParameter::realize()
             ln_.push_back(0);
             latExtra--;
         }
-        double sum_ln = nob_*ln_mean; // mean length of lateral zone
+        // double sum_ln = nob_*ln_mean; // mean length of lateral zone
 
         for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-            double z = ((double)i+0.5)*ln_mean; // regular position along root lateral zone
+            // double z = ((double)i+0.5)*ln_mean; // regular position along root lateral zone
             double f = 0; // evaluate slope lnk f(mid) = 0
             double pf = (ln_mean + f) / ln_mean; // we scale lns by the change in percentage
             double d = std::max(ln_mean + f + pf*p->randn()*lns, 1.e-5); // miminum is 1.e-5
