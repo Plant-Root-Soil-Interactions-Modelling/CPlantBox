@@ -276,9 +276,7 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
         std::cout << "create lat, delay def " << delayDefinition << " " << getId() << " " << (nodes.size() - 1) << " " << age << " "
                   << getNodeId(nodes.size() - 1) << " " << getNodeId(0) << std::endl;
     }
-    if (verbose) {
-        std::cout << "create lat, delay def " << delayDefinition << std::endl;
-    }
+
     // count the number of laterals of subtype st already created on this organ std::function<double(int, int, std::shared_ptr<Organ>)>
     auto correctST = [ot_lat, st_lat](std::shared_ptr<Organ> org) -> double {
         return double((org->getParameter("organType") == ot_lat) && (org->getParameter("subType") == st_lat));

@@ -247,13 +247,20 @@ void GrassLeaf::growLeaf(double dl, double dt) {
 void GrassLeaf::fixPitch() {
     if (turtle.size() == 0)
         return;
+    double ibaps = 0.3; // initial_blade_angle_percentual_start
+    double ibape = 0.7; // initial_blade_angle_percentual_end  
+    double p = length/(param()->sheathLength + param()->bladeLength);      
     int bladeStart = turtle.getNodeIndexAtLength(sheathLength);
     auto &nodes = const_cast<std::deque<TurtlePolyline::TurtleNode> &>(turtle.getTurtleNodes());
     for (int i = 0; i < nodes.size(); i++) {
-        nodes[i].pitch = (i < bladeStart) ? 0. : param()->bladeBending * nodes[i].dist;    
+        double p_ = (p - ibaps) / (ibape- ibaps);
+        p_ = std::min(std::max(p_, 0.), 1.);
+        nodes[i].pitch = (i < bladeStart) ? 0. : param()->bladeBending * nodes[i].dist*p_;    
     }
-    double p = length/(param()->sheathLength + param()->bladeLength);
-    nodes[bladeStart].pitch = param()->bladeAngle * p; 
+   
+    double p_ = (p - ibaps) / (ibape- ibaps);
+    p_ = std::min(std::max(p_, 0.), 1.);
+    nodes[bladeStart].pitch = param()->bladeAngle * p_;
 }
 
 
