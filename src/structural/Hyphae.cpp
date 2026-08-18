@@ -152,7 +152,7 @@ void Hyphae::simulate(double dt, bool verbose)
                         } else setActive(false);
                         
                         // if (dl == 0.) active = false; // if no length increment, hyphae become inactive
-                        if (age * p.b>1. ){
+                        if (age * p.b>0.5 ){
                             setActive(false); // become inactive, if enough time has passed for branching
                             createLateral(dt_ ,verbose); // create a lateral hyphae
                             createLateral(dt_,verbose); // create a lateral hyphae
@@ -245,14 +245,14 @@ void Hyphae::simulate(double dt, bool verbose)
                         length+=dl; //- this->epsilonDx;
                     }
                 } // if lateralgetLengths
-            } // if active
-            bool anastomosis = mergePointID > -1; // if anastomosis happened mergePointID is set to the node ID where it happened, and also the hypha should not be active
-            bool length_requirement = getLength(false)<=(p.getK()*(1 - 1e-11)); // check if final length is nearly reached, use getLength(false) to avoid issues with epsilon
-            active = !anastomosis && length_requirement && !isActiveOverridden(); // become inactive, if final length is nearly reached
-            if (active && isActiveOverridden()) {
-                std::cout << "Hyphae " << getId() << " is active even though it was overridden." << std::endl;
-            }    
+            } // if active  
         }
+        bool anastomosis = mergePointID > -1; // if anastomosis happened mergePointID is set to the node ID where it happened, and also the hypha should not be active
+        bool length_requirement = getLength(false)<=(p.getK()*(1 - 1e-11)); // check if final length is nearly reached, use getLength(false) to avoid issues with epsilon
+        active = !anastomosis && length_requirement && !isActiveOverridden(); // become inactive, if final length is nearly reached
+        if (active && isActiveOverridden()) {
+            std::cout << "Hyphae " << getId() << " is active even though it was overridden." << std::endl;
+        }  
         }
     } // if alive
     // std::cout << "end" << getId() << "\n" << std::flush;
