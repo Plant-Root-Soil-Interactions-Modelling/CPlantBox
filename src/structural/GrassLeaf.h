@@ -52,7 +52,7 @@ public:
   int getNumberOfNodes() const override { return turtle.size() + 1; } ///< +1 because the anchor point is not stored in the meristem
   Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
 
-  double getParameter(std::string name) const override;
+  double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
 
   std::string toString() const override;
 
@@ -66,8 +66,12 @@ public:
   std::shared_ptr<const GrassLeafSpecificParameter> param() const;
 
   std::vector<Vector3d> getLeafVis(int i); ///< 3D edge points at node i; returns the two leaf edge points for both blade and sheath nodes.
+  double getBladeWidth(int i) const; ///< half-width [cm] at node i, accounting for the sheath base and blade taper
 
 private:
+
+  double initialSheathAngle = 1. / 180*M_PI; ///< initial angle of the sheath (should be close to 0) [rad]
+
   void growLeaf(double dl, double dt); ///< Prepends new base segments totalling dl [cm] to the TurtlePolyline.
   void fixPitch();                     ///< Assigns pitch angles to every turtle node based on its position along the leaf (sheath vs blade).
 

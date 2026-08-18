@@ -60,10 +60,19 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     auto organType = std::vector<double>(segments.size());
     for (size_t i=0; i<segments.size(); i++) {
         segO[i] = sego[i]; // convert shared_ptr to weak_ptr
-        radii[i] = segO[i].lock()->getParameter("radius");
         subType[i] = segO[i].lock()->getParameter("subType");
         id[i] = segO[i].lock()->getParameter("id");
         organType[i] = segO[i].lock()->getParameter("organType"); 
+    }
+    int c = 0;
+    auto organs = plant.getOrgans();
+    for (size_t i = 0; i < organs.size(); i++) {
+        auto organ = organs.at(i);   
+        for (int localIdx = 0; localIdx < organ->getNumberOfSegments(); localIdx++) {
+            radii.at(c) = organ->getParameter("radius", {{"index", (double)(localIdx + 1)}});
+            // std::cout << "SegmentAnalyser "<< c << " " << localIdx << " " << radii.at(c) << " " << i << std::endl;
+            c++;    
+        }
     }
     data["radius"] = radii;
     data["subType"] = subType;

@@ -418,7 +418,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getOrgans", (std::vector<std::shared_ptr<Organ>> (Organ::*)(int otype, bool all))&Organ::getOrgans, py::arg("ot") = -1,
              py::arg("all") = false) // overloads, default
         .def("getOrgans", (void (Organ::*)(int otype, std::vector<std::shared_ptr<Organ>> &v, bool all))&Organ::getOrgans)
-        .def("getParameter", &Organ::getParameter)
+        .def("getParameter", &Organ::getParameter, py::arg("name"), py::arg("addParams") = std::map<std::string, double>())
         .def("__str__", &Organ::toString)
         .def("orgVolume", &Organ::orgVolume, py::arg("length_") = -1, py::arg("realized") = false)
         .def("orgVolume2Length", &Organ::orgVolume2Length)

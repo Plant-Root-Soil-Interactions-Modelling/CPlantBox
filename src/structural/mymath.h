@@ -533,7 +533,7 @@ class TurtlePolyline {
         n = std::max(0, std::min(n, static_cast<int>(nodes.size())));
         double len = 0.;
         for (int i = 0; i < n; ++i)
-            len += nodes[i].dist;
+            len += nodes.at(i).dist;
         return len;
     }
 

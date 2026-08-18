@@ -333,7 +333,7 @@ std::vector<Vector2i> Organism::getSegments(int ot) const {
     segs.reserve(this->getNumberOfSegments(ot)); // for speed up
     for (const auto &o : organs) {
         auto s = o->getSegments();
-        segs.insert(segs.end(), s.begin(), s.end()); // append s; todo check if it works..
+        segs.insert(segs.end(), s.begin(), s.end()); 
     }
     return segs;
 }

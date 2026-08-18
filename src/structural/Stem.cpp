@@ -400,7 +400,7 @@ void Stem::internodalGrowth(double dl, double dt, bool verbose) {
  * @param name 		parameter name (returns nan if not available)
  *
  */
-double Stem::getParameter(std::string name) const {
+double Stem::getParameter(std::string name, std::map<std::string, double> addParams) const {
     if (name == "lb") {
         return param()->lb;
     } // basal zone [cm]
@@ -463,7 +463,7 @@ double Stem::getParameter(std::string name) const {
     if (name == "parentNI") {
         return parentNI;
     } // local parent node index where the lateral emerges
-    return Organ::getParameter(name);
+    return Organ::getParameter(name, addParams);
 }
 
 /**

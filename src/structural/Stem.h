@@ -36,7 +36,7 @@ class Stem : public Organ {
     double getLatInitialGrowth(double dt) override;
     double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const override;
 
-    double getParameter(std::string name) const override; ///< returns an organ parameter
+    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ parameter
     std::string toString() const override;
 
     /* exact from analytical equations */

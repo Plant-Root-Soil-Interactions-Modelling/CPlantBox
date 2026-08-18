@@ -113,7 +113,7 @@ class Organ : public std::enable_shared_from_this<Organ> {
     /* for post processing */
     std::vector<std::shared_ptr<Organ>> getOrgans(int ot = -1, bool all = false);        ///< Returns this organ and all descendants with >1 node; ot=-1 means all types
     void getOrgans(int otype, std::vector<std::shared_ptr<Organ>> &v, bool all = false); ///< Appends this organ and descendants to @p v (in-place variant)
-    virtual double getParameter(std::string name) const;                                 ///< Returns a named scalar parameter; delegates to OrganRandomParameter if not found locally
+    virtual double getParameter(std::string name, std::map<std::string, double> addParams = {}) const; ///< Returns a named scalar parameter; addParams entries take priority; delegates to OrganRandomParameter if not found locally
     int getNumberOfLaterals() const; ///< Returns the number of children whose age > 0
 
     /* IO */

@@ -257,7 +257,7 @@ std::shared_ptr<const RootSpecificParameter> Root::param() const { return std::s
  * lnMean, and lnDev denotes the mean and standard deviation of the inter-lateral distance of this organ
  * ln_mean, and ln_dev is the mean and standard deviation from the RootRandomParmaeters
  */
-double Root::getParameter(std::string name) const {
+double Root::getParameter(std::string name, std::map<std::string, double> addParams) const {
     // specific parameters
     if (name == "type") {
         return this->param_->subType;
@@ -318,7 +318,7 @@ double Root::getParameter(std::string name) const {
     if (name == "surface") {
         return 2 * param()->a * M_PI * getLength(true);
     }                                 // root surface [cm^2]
-    return Organ::getParameter(name); // pass to base class
+    return Organ::getParameter(name, addParams); // pass to base class
 }
 
 /**

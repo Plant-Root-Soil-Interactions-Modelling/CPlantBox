@@ -34,7 +34,7 @@ public:
 
   Vector3d getNode(int i) const override { return nodes.at(i); } ///< i-th node of the organ
 
-  double getParameter(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
+  double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ parameter of Plant::ScalarType
 
   /* leaf vizualisation */
   double leafLength(bool realized = false) const {
