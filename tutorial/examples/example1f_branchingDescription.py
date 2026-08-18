@@ -1,6 +1,4 @@
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 path = "../../modelparameter/structural/plant/"
-sys.path.append(path)
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 from example1f import template_text

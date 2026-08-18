@@ -1,6 +1,4 @@
 """ Shehan's soil core example """
-import sys
-sys.path.append("../../..")
 import plantbox as pb
 
 import math

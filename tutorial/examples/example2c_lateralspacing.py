@@ -1,5 +1,4 @@
 """ shows inter lateral spacing (ln) and how a linear slope (lnk) can modify them """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import matplotlib.pyplot as plt

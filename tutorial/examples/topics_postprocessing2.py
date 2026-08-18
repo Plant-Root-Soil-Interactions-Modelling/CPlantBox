@@ -1,5 +1,4 @@
 """analysis of results using signed distance functions to crop the segments to a certain geometry"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp

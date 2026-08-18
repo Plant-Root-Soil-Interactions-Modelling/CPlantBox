@@ -1,6 +1,3 @@
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/")
-sys.path.append("../../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux python binding
-sys.path.append("../../../../dumux-rosi/python/modules/")  # python wrappers
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -10,7 +7,6 @@ Created on Tue Sep  3 11:05:04 2024
 @author: srao
 """
 
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
 ##############################################################################

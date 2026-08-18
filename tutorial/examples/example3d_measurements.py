@@ -1,5 +1,4 @@
 """ nodes and segments from measurements """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 

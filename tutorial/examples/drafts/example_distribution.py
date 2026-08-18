@@ -1,7 +1,5 @@
 """small example"""
-import sys
 base = "../../../.."
-sys.path.append(base); sys.path.append(base+"/src/python_modules")
 import plantbox as pb
 import vtk_plot as vp
 

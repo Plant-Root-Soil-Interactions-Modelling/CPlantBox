@@ -1,6 +1,3 @@
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/")
-sys.path.append("../../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux python binding
-sys.path.append("../../../../dumux-rosi/python/modules/")  # python wrappers
 
 """ 
 SRA example draft  

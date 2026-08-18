@@ -1,5 +1,4 @@
 """shows the influence of tropism paramters"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import matplotlib.pyplot as plt

@@ -1,5 +1,4 @@
 """small example in a container"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import numpy as np
 import plantbox as pb

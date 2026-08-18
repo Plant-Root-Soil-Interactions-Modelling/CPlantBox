@@ -5,10 +5,6 @@
 """"
 
 
-import sys
-sys.path.append("../../")
-sys.path.append("../../src/");
-sys.path.append("../../gui/viewer/");
 import plantbox as pb
 from plantbox.functional.xylem_flux import XylemFluxPython 
 import plantbox.visualisation.vtk_plot as vp

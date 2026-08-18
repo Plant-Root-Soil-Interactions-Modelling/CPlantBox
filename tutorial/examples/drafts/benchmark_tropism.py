@@ -3,8 +3,6 @@ Shows the influence of tropism paramter on basal roots
 with 4x4 subfigures, different axial resolutions, should lead
 to similar results
 """
-import sys
-sys.path.append("..")
 import plantbox as pb
 import matplotlib.pyplot as plt
 from rb_tools import *

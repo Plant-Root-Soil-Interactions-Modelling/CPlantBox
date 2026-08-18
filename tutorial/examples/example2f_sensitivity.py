@@ -1,5 +1,4 @@
 """sensitivity analysis: impact of insertion angle on root tip distribution"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 

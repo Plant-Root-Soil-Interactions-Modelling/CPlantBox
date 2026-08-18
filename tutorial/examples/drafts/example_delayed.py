@@ -1,6 +1,4 @@
 """small example"""
-import sys
-sys.path.append("../../..")
 import plantbox as pb
 import vtk_plot as vp
 

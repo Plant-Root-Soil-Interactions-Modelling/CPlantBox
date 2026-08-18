@@ -1,5 +1,4 @@
 """how to find root tips and bases"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import numpy as np

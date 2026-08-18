@@ -13,8 +13,6 @@ TODO this is not working...
 #
 # computes in parallel to enable a lot of runs
 #
-import sys
-sys.path.append("../../..")
 import plantbox as pb
 
 from multiprocessing import Pool

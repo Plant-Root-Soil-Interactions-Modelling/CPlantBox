@@ -1,6 +1,5 @@
 import py_rootbox as rb
 from rb_tools import *
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
