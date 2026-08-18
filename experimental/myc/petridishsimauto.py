@@ -20,6 +20,21 @@ def getMycSegmentAnalyser(plant):
         ana.addData("nodeTips", plant.getNodeTips(5))
         return ana
 
+
+def getLengthPerSubtype(plant):
+    hyphae = pb.SegmentAnalyser(plant)
+    hyphae.filter("organType",5.0)
+    hyphae.pack()
+    lenSubtype = []
+    for i in range(1,4):
+        hyphae.filter("subType",i)
+        hyphae.pack()
+        lenSubtype.append(hyphae.getSummed("length"))
+        hyphae = pb.SegmentAnalyser(plant)
+        hyphae.filter("organType",5.0)
+        hyphae.pack()
+    return lenSubtype
+
 def getParaDistperRing(parameter, times, plant, rings):
         paradenmat = np.zeros((len(rings),len(times[1:])))
         flipped = np.flip(np.asarray(times))
@@ -211,8 +226,8 @@ def makesimulation(seed):
         # mycp.simulateHyphae(dt,False)
         mycp.simulate(dt,False)
         # print(mycp.getSimTime(), max(mycp.getParameter("creationTime")))
-        ctrs = np.array([hh.getParameter("creationTime") for hh in mycp.getOrgans(pb.root)])
-        cthhs = np.array([hh.getParameter("creationTime") for hh in  mycp.getOrgans(pb.hyphae)])
+        # ctrs = np.array([hh.getParameter("creationTime") for hh in mycp.getOrgans(pb.root)])
+        # cthhs = np.array([hh.getParameter("creationTime") for hh in  mycp.getOrgans(pb.hyphae)])
         # print(min(ctrs), max(ctrs), min(cthhs), max(cthhs))
         # print(mycp.getParameter("creationTime"))
         # raise Exception
@@ -265,7 +280,8 @@ def makesimulation(seed):
 
     tip_densities = getParaDistperRing("nodeTips", times, ana, rings)
     times = times - crossed_time
-    return tip_densities, times
+    lengthsSubtype = getLengthPerSubtype(mycp)
+    return tip_densities, times, lengthsSubtype
 
 diameter = 9.4
 radius = diameter / 2
@@ -276,82 +292,91 @@ simulations = []
 
 allsims = time.perf_counter()
 for i in good_seeds:
-    tip_densities, times = makesimulation(i)
+    tip_densities, times, lengths = makesimulation(i)
     simulations.append({
     "tip_dens": tip_densities,
-    "times": times[1:]
+    "times": times[1:],
+    "lengths": lengths
 })
 allsims_end = time.perf_counter()
 print("Time for all simulations: ", allsims_end-allsims)
 
 for i in range(len(good_seeds)):
-    plt.pcolormesh(
-        simulations[i]["times"], 
-        location, 
-        simulations[i]["tip_dens"], 
-        shading='auto', 
-        cmap='plasma'
-    )
-    plt.colorbar(label="Tip Frequency")
+    runner_hyphae = simulations[i]["lengths"][1] + simulations[i]["lengths"][0]
+    BAS_hyphae = simulations[i]["lengths"][2]
+    ratio = BAS_hyphae / (BAS_hyphae + runner_hyphae) if (BAS_hyphae + runner_hyphae) != 0 else 0
+    print("Ratio BAS/Runner: ", ratio)
+    print(simulations[i]["lengths"])
 
-    plt.xlabel("Time [days]")
-    plt.ylabel("Distance [cm] from centre")
-    # plt.title("Radial movement of hyphal tip frequency")
-    plt.show()
+# for i in range(len(good_seeds)):
+#     plt.pcolormesh(
+#         simulations[i]["times"], 
+#         location, 
+#         simulations[i]["tip_dens"], 
+#         shading='auto', 
+#         cmap='plasma'
+#     )
+#     plt.colorbar(label="Tip Frequency")
 
-t_common = np.linspace(
-    max(sim["times"][0] for sim in simulations),
-    min(sim["times"][-1] for sim in simulations),
-    99
-)
-from scipy.interpolate import interp1d
+#     plt.xlabel("Time [days]")
+#     plt.ylabel("Distance [cm] from centre")
+#     # plt.title("Radial movement of hyphal tip frequency")
+#     plt.show()
 
-tip_dens_interp = []
+# t_common = np.linspace(
+#     max(sim["times"][0] for sim in simulations),
+#     min(sim["times"][-1] for sim in simulations),
+#     99
+# )
+# from scipy.interpolate import interp1d
 
-for sim in simulations:
-    f = interp1d(sim["times"], sim["tip_dens"], axis=1)
-    tip_dens_interp.append(f(t_common))
+# tip_dens_interp = []
 
-tip_dens_interp = np.stack(tip_dens_interp)   # (n_sim, n_r, n_t)
+# for sim in simulations:
+#     f = interp1d(sim["times"], sim["tip_dens"], axis=1)
+#     tip_dens_interp.append(f(t_common))
 
-mean = tip_dens_interp.mean(axis=0)
-std  = tip_dens_interp.std(axis=0)
+# tip_dens_interp = np.stack(tip_dens_interp)   # (n_sim, n_r, n_t)
 
-# mean = np.mean([sim["tip_dens"] for sim in simulations], axis=0)
-# std  = np.std([sim["tip_dens"] for sim in simulations], axis=0)
-# t_common = simulations[0]["times"]
+# mean = tip_dens_interp.mean(axis=0)
+# std  = tip_dens_interp.std(axis=0)
 
-indices = [i*5 for i in range(20)]
+# # mean = np.mean([sim["tip_dens"] for sim in simulations], axis=0)
+# # std  = np.std([sim["tip_dens"] for sim in simulations], axis=0)
+# # t_common = simulations[0]["times"]
 
-fig, ax = plt.subplots(figsize=(6,5))
+# indices = [i*5 for i in range(20)]
 
-cmap = plt.get_cmap("plasma")
-colors = cmap(np.linspace(0.2, 0.9, len(indices)))
+# fig, ax = plt.subplots(figsize=(6,5))
 
-for color, i in zip(colors, indices):
+# cmap = plt.get_cmap("plasma")
+# colors = cmap(np.linspace(0.2, 0.9, len(indices)))
 
-    ax.plot(
-        location,
-        mean[:, i],
-        color=color,
-        lw=2,
-        label=f"t = {t_common[i]:.2f}"
-    )
+# for color, i in zip(colors, indices):
 
-    ax.fill_between(
-        location,
-        mean[:, i] - std[:, i],
-        mean[:, i] + std[:, i],
-        color=color,
-        alpha=0.3
-    )
-ax.set_xlabel(r"Distance from origin $r$ (mm)")
-ax.set_ylabel(r"Tip amount$)")
-# ax.set_ylabel(r"Anastomosis frequency (mm$^{-2}$)")
-ax.legend()
+#     ax.plot(
+#         location,
+#         mean[:, i],
+#         color=color,
+#         lw=2,
+#         label=f"t = {t_common[i]:.2f}"
+#     )
 
-plt.tight_layout()
-plt.show()
+#     ax.fill_between(
+#         location,
+#         mean[:, i] - std[:, i],
+#         mean[:, i] + std[:, i],
+#         color=color,
+#         alpha=0.3
+#     )
+# ax.set_xlabel(r"Distance from origin $r$ (mm)")
+# ax.set_ylabel(r"Tip amount$)")
+# # ax.set_ylabel(r"Anastomosis frequency (mm$^{-2}$)")
+# ax.legend()
+
+# plt.tight_layout()
+# plt.show()
+##############################
 # print(np.array(tip_densities).reshape((-1, len(tip_densities[0]))))
 ## The problem is that the tips should be more evenly distributed i.e. more rings should have tips in them. but right now just a handful do
 # tip_densities = np.array(tip_densities).reshape((-1, len(tip_densities[0])))
