@@ -42,11 +42,15 @@ plant = Poaceae()  #  pb.Plant()
 
 # -- Seed (required boilerplate) --
 seed_rp = pb.SeedRandomParameter(plant)
+seed_rp.name = "poaceae"
 seed_rp.subType = 0
+seed_rp.delayDefinitionRoot = pb.DelayDefinition.dd_distance
+seed_rp.delayDefinitionShoot = pb.DelayDefinition.dd_time_self  #
 plant.setOrganRandomParameter(seed_rp)
 
 # -- Tap root (minimal, very short) --
 root_rp = pb.RootRandomParameter(plant)
+root_rp.name = "taproot"
 root_rp.subType = 1
 root_rp.lmax = 0.1
 root_rp.r = 1.0
@@ -55,14 +59,14 @@ plant.setOrganRandomParameter(root_rp)
 
 # -- Stem: carries the GrassLeaf laterals --
 stem_rp = pb.StemRandomParameter(plant)
+stem_rp.name = "culm"
 stem_rp.subType = 1
 stem_rp.a = 0.1
-stem_rp.lmax = 15.0
-stem_rp.r = 2.0  # 2 cm/day elongation rate
-stem_rp.la = 1.0
+stem_rp.lmax = 18.0
+stem_rp.r = 0.5  # 2 cm/day elongation rate
+stem_rp.la = 6.0
 stem_rp.lb = 2.0  # first leaf at 2 cm
 stem_rp.ln = 5.0  # internode 5 cm
-stem_rp.lnf = 0  # homogeneous distances
 stem_rp.theta = 0.0
 stem_rp.successor = [[1]]  # GrassLeaf subType 1
 stem_rp.successorP = [[1.0]]
@@ -70,26 +74,24 @@ stem_rp.successorOT = [[pb.leaf]]
 stem_rp.successorNo = [1]  # one leaf per stem
 plant.setOrganRandomParameter(stem_rp)
 
-# print(stem_rp.successorNo, flush=True)
-# print("Stem", int(pb.stem), "Leaf", int(pb.leaf), flush=True)
-
-
 # -- GrassLeaf random parameters --
 gl_rp = pb.GrassLeafRandomParameter(plant)
+gl_rp.name = "grass_leaf"
+gl_rp.ldelay = 12  # day
 gl_rp.subType = 1
 gl_rp.a = 0.02
-gl_rp.bladeAngle = 0.5 * np.pi / 2
+gl_rp.bladeAngle = 0.8 * np.pi / 2
 gl_rp.bladeAngles = 0.0
-gl_rp.bladeLength = 12.0  # cm
+gl_rp.bladeLength = 8.0  # cm
 gl_rp.bladeLengths = 1.0
 gl_rp.bladeWidth = 0.8  # cm
 gl_rp.bladeWidths = 0.0
-gl_rp.sheathLength = 6.0  # cm
-gl_rp.sheathLengths = 2
-gl_rp.leafGrowthDuration = 20.0  # days to full leaf (sheath + blade)
-gl_rp.leafGrowthDurations = 1.0
-gl_rp.bladeBending = 0.2
-gl_rp.f_gf = pb.LinearGrowth()  # for other organs this is set in initCallbacks() from parameters
+gl_rp.sheathLength = 4.0  # cm
+gl_rp.sheathLengths = 0
+gl_rp.leafGrowthDuration = 12.0  # days to full leaf (sheath + blade)
+gl_rp.leafGrowthDurations = 0.0
+gl_rp.bladeBending = 0.2  # rad / cm
+gl_rp.dx = 0.1
 
 # print(gl_rp.successorNo, flush=True)
 # gl_rp = pb.LeafRandomParameter(plant)
@@ -109,7 +111,7 @@ plant.setOrganRandomParameter(gl_rp)
 
 plant.initialize(verbose=False)
 
-total_days = 25.0
+total_days = 32.0
 dt = 0.5  # days per step
 steps = int(total_days / dt)
 
@@ -119,7 +121,6 @@ for i in range(steps):
     plant.simulate(dt, verbose=False)
 
 
-plant.initializeReader()  # re-initialize reader to enable organ inspection (otherwise some data is not stored)
 plant.writeParameters("grassleaf_parameters.xml")
 
 # --------------------------------------------------------------------------- #
@@ -195,7 +196,7 @@ vp.plot_plant(ana, "age")
 #     plant2.simulate(record_dt, verbose=False)
 #     leaves = plant2.getOrgans(pb.OrganTypes.leaf)
 #     if leaves:
-#         gl = leaves[0]
+#         gl = leaves[0]getLatGrowthDelay
 #         times.append((step + 1) * record_dt)
 #         sheath_vals.append(gl.getSheathLength())
 #         blade_vals.append(gl.getBladeLengthGrown())

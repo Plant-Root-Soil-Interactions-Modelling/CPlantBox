@@ -20,16 +20,20 @@ import numpy as np
 import plantbox as pb
 from plantbox.visualisation.vtk_animate import AnimateRoots
 
-# --------------------------------------------------------------------------- #
-#  Subclass: use GrassLeaf instead of the default Leaf organ
-# --------------------------------------------------------------------------- #
-
 
 class Poaceae(pb.Plant):
-    """Plant subclass that creates :class:`pb.GrassLeaf` organs."""
+    """Plant subclass that creates GrassLeaf organs instead of the default Leaf."""
 
     def createLeaf(self, subType, delay, parent, pni):
+        print("my own createLeaf is called", flush=True)
         return pb.GrassLeaf(self, subType, delay, parent, pni)
+
+    def initializeReader(self):
+        print("my own initializeReader is called", flush=True)
+        super().initializeReader()
+        glp = pb.GrassLeafRandomParameter(self)
+        glp.subType = 0
+        self.setOrganRandomParameter(glp)
 
 
 # --------------------------------------------------------------------------- #
@@ -38,58 +42,60 @@ class Poaceae(pb.Plant):
 
 plant = Poaceae()
 
-# -- Seed --
-seed_rp = pb.SeedRandomParameter(plant)
-seed_rp.subType = 0
-plant.setOrganRandomParameter(seed_rp)
+# # -- Seed --
+# seed_rp = pb.SeedRandomParameter(plant)
+# seed_rp.subType = 0
+# plant.setOrganRandomParameter(seed_rp)
 
-# -- Tap root (short anchor only) --
-root_rp = pb.RootRandomParameter(plant)
-root_rp.subType = 1
-root_rp.lmax = 0.1
-root_rp.r = 1.0
-root_rp.theta = 0.0
-plant.setOrganRandomParameter(root_rp)
+# # -- Tap root (short anchor only) --
+# root_rp = pb.RootRandomParameter(plant)
+# root_rp.subType = 1
+# root_rp.lmax = 0.1
+# root_rp.r = 1.0
+# root_rp.theta = 0.0
+# plant.setOrganRandomParameter(root_rp)
 
-# -- Stem that bears the GrassLeaf laterals --
-stem_rp = pb.StemRandomParameter(plant)
-stem_rp.subType = 1
-stem_rp.lmax = 15.0
-stem_rp.r = 2.0  # cm day⁻¹ elongation rate
-stem_rp.la = 1.0
-stem_rp.lb = 2.0  # first leaf at 2 cm
-stem_rp.ln = 5.0  # internode spacing 5 cm
-stem_rp.lnf = 0  # homogeneous distances
-stem_rp.theta = 0.0
-stem_rp.successor = [[1]]
-stem_rp.successorP = [[1.0]]
-stem_rp.successorOT = [[pb.leaf]]
-stem_rp.successorNo = [1]
-plant.setOrganRandomParameter(stem_rp)
+# # -- Stem that bears the GrassLeaf laterals --
+# stem_rp = pb.StemRandomParameter(plant)
+# stem_rp.subType = 1
+# stem_rp.lmax = 15.0
+# stem_rp.r = 2.0  # cm day⁻¹ elongation rate
+# stem_rp.la = 1.0
+# stem_rp.lb = 2.0  # first leaf at 2 cm
+# stem_rp.ln = 5.0  # internode spacing 5 cm
+# stem_rp.lnf = 0  # homogeneous distances
+# stem_rp.theta = 0.0
+# stem_rp.successor = [[1]]
+# stem_rp.successorP = [[1.0]]
+# stem_rp.successorOT = [[pb.leaf]]
+# stem_rp.successorNo = [1]
+# plant.setOrganRandomParameter(stem_rp)
 
-# -- GrassLeaf random parameters (deterministic: std = 0) --
-gl_rp = pb.GrassLeafRandomParameter(plant)
-gl_rp.subType = 1
-gl_rp.a = 0.02
-gl_rp.bladeAngle = 0.5 * np.pi / 2
-gl_rp.bladeAngles = 0.0
-gl_rp.bladeLength = 12.0  # cm
-gl_rp.bladeLengths = 0.0
-gl_rp.bladeWidth = 0.8  # cm
-gl_rp.bladeWidths = 0.0
-gl_rp.sheathLength = 6.0  # cm
-gl_rp.sheathLengths = 0.0
-gl_rp.leafGrowthDuration = 20.0  # days to full leaf (sheath + blade)
-gl_rp.leafGrowthDurations = 0.0
-gl_rp.bladeBending = 0.2
-gl_rp.f_gf = pb.LinearGrowth()
-plant.setOrganRandomParameter(gl_rp)
+# # -- GrassLeaf random parameters (deterministic: std = 0) --
+# gl_rp = pb.GrassLeafRandomParameter(plant)
+# gl_rp.subType = 1
+# gl_rp.a = 0.02
+# gl_rp.bladeAngle = 0.5 * np.pi / 2
+# gl_rp.bladeAngles = 0.0
+# gl_rp.bladeLength = 12.0  # cm
+# gl_rp.bladeLengths = 0.0
+# gl_rp.bladeWidth = 0.8  # cm
+# gl_rp.bladeWidths = 0.0
+# gl_rp.sheathLength = 6.0  # cm
+# gl_rp.sheathLengths = 0.0
+# gl_rp.leafGrowthDuration = 20.0  # days to full leaf (sheath + blade)
+# gl_rp.leafGrowthDurations = 0.0
+# gl_rp.bladeBending = 0.2
+# gl_rp.f_gf = pb.LinearGrowth()
+# plant.setOrganRandomParameter(gl_rp)
+
+plant.readParameters("grassleaf_parameters.xml")
 
 # --------------------------------------------------------------------------- #
 #  2.  Simulation settings
 # --------------------------------------------------------------------------- #
 
-total_days = 25.0
+total_days = 50.0
 dt = 0.5  # days per step
 steps = int(total_days / dt)
 
