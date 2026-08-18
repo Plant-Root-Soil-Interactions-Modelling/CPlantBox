@@ -50,7 +50,7 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
     
     // rotate the anchor frame: pitch the heading up by 90° so the leaf grows upward along the parent axis
     Turtle3D t(Vector3d(0., 0., 0.), anchorFrame);
-    t.pitchUp(0.03 * M_PI / 2.0); // sheath is almost straight
+    t.pitchUp(initialSheathAngle); // sheath is almost straight
     anchorFrame = t.getFrame();
     turtle.setAnchorFrame(anchorFrame);
 
@@ -118,53 +118,77 @@ double GrassLeaf::calcAge(double length) const {
  *  5. Deactivates the organ once full length is reached.
  */
 void GrassLeaf::simulate(double dt, bool verbose) {
-    firstCall = true; // |\label{l81:incremental}|
-    moved = false;
-    oldNumberOfNodes = getNumberOfNodes(); // |\label{l81:incremental_end}|
+    firstCall = true; // |\label{l81:init}|
+    moved = false; 
+    oldNumberOfNodes = getNumberOfNodes(); // # |\label{l81:init_end}|
 
-    if (!alive) { // |\label{l81:alive}| 
-        return; 
-    }
+    if (!alive) {  // |\label{l81:alive}|
+        return; // leafs don't die (yet)
+    }  // |\label{l81:alive_end}|
 
-    age += dt;
-    double dt_ = (age < dt) ? age : dt; //age < dt emerged in this time step
-    if (age <= 0.) {
-        return; 
-    } // |\label{l81:alive_end}| 
-    
     const GrassLeafSpecificParameter &p = *param();
-    
-    if (active) {
-        double age_ = calcAge(length);  // |\label{l81:age}|
+
+    age += dt;  // |\label{l81:age}|
+    double dt_ = (age < dt) ? age : dt; // time step; age < dt means the organ emerged in this time step
+    if (age <= 0.) {
+        return;  
+    } // |\label{l81:_end}|
+
+    if (active) { // |\label{l81:active}|
+
+        double age_ = calcAge(length);   // |\label{l81:from_age}|
         double targetLength = calcLength(age_ + dt_) + this->epsilonDx;
         double scale = getGrassLeafRandomParameter()->f_se->getValue(getNode(0), shared_from_this());
-        double dl = std::max(scale * (targetLength - length), 0.); // |\label{l81:age_end}|
-        if (dl > 0.) {
+        double dl = std::max(scale * (targetLength - length), 0.);  // |\label{l81:to_dl}|
+
+        if (dl > 0.) { 
             growLeaf(dl, dt_); // |\label{l81:growLeaf}|
         }
-        sheathLength = length * p.sheathLength / (p.sheathLength + p.bladeLength); // |\label{l81:fixPitch}|
-        bladeLength = length * p.bladeLength / (p.sheathLength + p.bladeLength);
-        fixPitch(); // apply blade angle to the new segments // |\label{l81:fixPitch_end}|
-    }
-    
+        sheathLength = length * p.sheathLength / (p.sheathLength + p.bladeLength); //  |\label{l81:sheathLength}
+        bladeLength = length * p.bladeLength / (p.sheathLength + p.bladeLength); //  |\label{l81:bladeLength}
+        fixPitch(); // apply blade angle to the new segments |\label{l81:fixPitch}
+    } // |\label{l81:active_end}|
+
+    // Sync the length field used by the base class infrastructure
     active = (length < p.sheathLength + p.bladeLength - 1.e-6) && alive;
 }
 
 /**
  * @brief Returns the named scalar parameter; handles leaf-specific names before delegating to Organ::getParameter().
+ * Special behaviour for @p name == "radius" with addParams["index"] set: provides radius of sheath, or leaf vein depending on node index i
  */
-double GrassLeaf::getParameter(std::string name) const {
+double GrassLeaf::getParameter(std::string name, std::map<std::string, double> addParams) const {
+    if (name == "radius") { // radius of sheath, or leaf vein
+        auto it = addParams.find("index");
+        if (it != addParams.end()) {   
+            int turtleIdx = std::max(0, static_cast<int>(it->second) - 1); // -1 because the anchor point is not stored in the meristem
+            double cumLen = turtle.getLength(turtleIdx);    
+            // std::cout << turtleIdx << " " << cumLen << " " << getSheathLength() << " " << param()->sheathLength << " " << param()->bladeLength << "\n";
+            if (cumLen < getSheathLength()) {
+                double p = cumLen/param()->sheathLength;
+                double a0 = parent.lock()->param()->a; // parent radius
+                double a1 = 1.01*(a0 + tan(initialSheathAngle) * param()->sheathLength); // parent radius + sheath vertical displacement add 1%
+                return a0 * (1. - p) + a1*p; // linaerly interpolate
+            } else {
+                return param()->a; // represents leaf vein
+            }
+        } // if "index" is not provided to getParameter("radius")
+    }
     if (name == "sheathLength")
         return param()->sheathLength;
     if (name == "leafGrowthDuration")
         return param()->leafGrowthDuration;
     if (name == "bladeAngle")
         return param()->bladeAngle;
-    if (name == "bladeWidth")
+    if (name == "bladeWidth") {
+        auto it = addParams.find("index");
+        if (it != addParams.end())
+            return getBladeWidth(static_cast<int>(it->second));
         return param()->bladeWidth;
+    }
     if (name == "bladeLength")
         return param()->bladeLength;
-    return Organ::getParameter(name);
+    return Organ::getParameter(name, addParams);
 }
 
 /**
@@ -198,6 +222,7 @@ std::shared_ptr<const GrassLeafSpecificParameter> GrassLeaf::param() const { ret
  * zero here and corrected afterwards by fixPitch().
  */
 void GrassLeaf::growLeaf(double dl, double dt) {
+
     const GrassLeafSpecificParameter &p = *param(); 
 
     double baseCT = nodeCTs[turtle.getInitialNodeIndex()]; // organ creation time 
@@ -239,47 +264,56 @@ void GrassLeaf::growLeaf(double dl, double dt) {
 void GrassLeaf::fixPitch() {
     if (turtle.size() == 0)
         return;
+    double ibaps = 0.3; // initial_blade_angle_percentual_start
+    double ibape = 0.7; // initial_blade_angle_percentual_end  
+    double p = length/(param()->sheathLength + param()->bladeLength);      
     int bladeStart = turtle.getNodeIndexAtLength(sheathLength);
     auto &nodes = const_cast<std::deque<TurtlePolyline::TurtleNode> &>(turtle.getTurtleNodes());
     for (int i = 0; i < nodes.size(); i++) {
-        nodes[i].pitch = (i < bladeStart) ? 0. : param()->bladeBending * nodes[i].dist;    
+        double p_ = (p - ibaps) / (ibape- ibaps);
+        p_ = std::min(std::max(p_, 0.), 1.);
+        nodes[i].pitch = (i < bladeStart) ? 0. : param()->bladeBending * nodes[i].dist*p_;    
     }
-    double p = length/(param()->sheathLength + param()->bladeLength);
-    nodes[bladeStart].pitch = param()->bladeAngle * p; 
+   
+    double p_ = (p - ibaps) / (ibape- ibaps);
+    p_ = std::min(std::max(p_, 0.), 1.);
+    nodes[bladeStart].pitch = param()->bladeAngle * p_;
 }
 
+
+/**
+ * @brief Returns the half-width [cm] of the leaf at node @p i.
+ */
+double GrassLeaf::getBladeWidth(int i) const {
+    int turtleIdx = std::max(0, i - 1);
+    double cumLen = turtle.getLength(turtleIdx);
+    double p = (cumLen - getSheathLength()) / getBladeLength();
+    double a = getParent()->param()->a; // parent radius
+    if (p <= 0) {
+        return a;
+    }
+    double halfWidth = param()->bladeWidth / 2.;
+    double halfWidth_ = std::min(length / 2., halfWidth); // avoid unrealistic width at the very base of the blade
+    if (p < 0.25) {
+        return (halfWidth_ - a) * (p / 0.25) + a;
+    } else if (p < 0.6) {
+        return halfWidth_;
+    } else {
+        return halfWidth_ * (1. - (p - 0.6) / 0.4);
+    }
+}
 
 /**
  * @brief Returns two 3D coordinates at node @p i for VTK polygon rendering.
  *
  * @param i  node index (0-based)
- * @return   empty for sheath nodes, or {leftEdge, rightEdge} for blade nodes
+ * @return   {leftEdge, rightEdge} for both sheath and blade nodes
  */
 std::vector<Vector3d> GrassLeaf::getLeafVis(int i) {
-
-    int turtleIdx = std::max(0, i - 1); // Cumulative arc length to node i (turtle nodes are offset by 1 vs organ nodes)
-    double cumLen = turtle.getLength(turtleIdx); 
-    double p = (cumLen - getSheathLength()) / getBladeLength(); 
-    double a = getParent()->param()->a; // parent radius
+    int turtleIdx = std::max(0, i - 1); // turtle nodes are offset by 1 vs organ nodes
     Vector3d node = getNode(i);
     Vector3d y1 = turtle.getNodeFrame(turtleIdx).column(1);
-
-    if (p<=0)  {
-        return { node.plus(y1.times(a)), node.minus(y1.times(a)) };
-    }
-
-    double bw; 
-    double halfWidth = param()->bladeWidth / 2.;
-    double halfWidth_ = std::min(length/2., halfWidth); // avoid unrealistic width at the very base of the blade  
-
-    if (p<0.25) {
-        bw = (halfWidth_-a) * (p/0.25)+a;
-    } else if (p<0.6) {
-        bw = halfWidth_;
-    } else {
-        bw = halfWidth_*(1. - (p-0.6)/0.4);
-    }
-        
+    double bw = getBladeWidth(i);
     return { node.plus(y1.times(bw)), node.minus(y1.times(bw)) };
 }
 
