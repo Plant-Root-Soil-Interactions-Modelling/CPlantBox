@@ -26,7 +26,7 @@ xml_path = os.path.join(os.path.dirname(__file__), "grassleaf_parameters.xml")  
 plant.readParameters(xml_path)  # |\label{l81:xml_end}|
 plant.initialize()
 
-sim_time = 15.0  # |\label{l81:sim_start}|
+sim_time = 25.0  # |\label{l81:sim_start}|
 dt = 0.5
 n_steps = int(sim_time / dt)
 

@@ -1,8 +1,9 @@
 <plant>
-    <seed name="undefined" subType="0">
-        <parameter name="delayDefinition" value="0"/>
-        <parameter name="delayDefinitionShoot" value="0"/>
+    <seed name="poaceae" subType="0">
+        <parameter name="delayDefinitionRoot" value="0"/>
+        <parameter name="delayDefinitionShoot" value="2"/>
         <parameter name="maxTil" value="0"/>
+        <parameter name="multDelay" value="1"/>
         <parameter name="a" value="0.1"/>
         <parameter name="delayB" value="1e+09"/>
         <parameter name="delayRC" value="1e+09"/>
@@ -22,8 +23,9 @@
         <parameter name="seedPos.z" value="-3"/>
         <parameter name="simulationTime" value="300"/>
     </seed>
-    <root name="undefined" subType="1">
+    <root name="taproot" subType="1">
         <parameter name="gf" value="1"/>
+        <parameter name="multDelay" value="1"/>
         <parameter name="tropismT" value="1"/>
         <parameter name="a" value="0.1"/>
         <parameter name="dx" value="0.25"/>
@@ -43,9 +45,10 @@
         <parameter name="tropismN" value="1"/>
         <parameter name="tropismS" value="0.2"/>
     </root>
-    <stem name="undefined" subType="1">
+    <stem name="culm" subType="1">
         <parameter name="gf" value="1"/>
         <parameter name="lnf" value="0"/>
+        <parameter name="multDelay" value="1"/>
         <parameter name="nodalGrowth" value="1"/>
         <parameter name="tropismT" value="1"/>
         <parameter name="BetaDev" value="0.2"/>
@@ -56,12 +59,12 @@
         <parameter name="delayNGStart" value="0"/>
         <parameter name="dx" value="0.25"/>
         <parameter name="dxMin" value="1e-06"/>
-        <parameter name="la" value="1"/>
+        <parameter name="la" value="6"/>
         <parameter name="lb" value="2"/>
         <parameter name="ldelay" value="-1"/>
-        <parameter name="lmax" value="15"/>
+        <parameter name="lmax" value="18"/>
         <parameter name="ln" value="5"/>
-        <parameter name="r" value="2"/>
+        <parameter name="r" value="0.5"/>
         <parameter name="rlt" value="1e+09"/>
         <parameter name="theta" value="0"/>
         <parameter name="tropismAge" value="0"/>
@@ -69,16 +72,17 @@
         <parameter name="tropismS" value="0"/>
         <parameter name="successor" ruleId="0" numLat="1" subType="1" organType="4" percentage="1"/>
     </stem>
-    <leaf name="undefined" subType="1">
+    <leaf name="grass_leaf" subType="1">
+        <parameter name="multDelay" value="1"/>
         <parameter name="a" value="0.02"/>
-        <parameter name="bladeAngle" value="0.78539819"/>
+        <parameter name="bladeAngle" value="1.2566371"/>
         <parameter name="bladeBending" value="0.2"/>
-        <parameter name="bladeLength" value="12" dev="1"/>
+        <parameter name="bladeLength" value="8" dev="1"/>
         <parameter name="bladeWidth" value="0.80000001"/>
-        <parameter name="dx" value="0.25"/>
+        <parameter name="dx" value="0.1"/>
         <parameter name="dxMin" value="1e-06"/>
-        <parameter name="ldelay" value="-1"/>
-        <parameter name="leafGrowthDuration" value="20" dev="1"/>
-        <parameter name="sheathLength" value="6" dev="2"/>
+        <parameter name="ldelay" value="12"/>
+        <parameter name="leafGrowthDuration" value="12"/>
+        <parameter name="sheathLength" value="4"/>
     </leaf>
 </plant>
