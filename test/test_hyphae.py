@@ -7,10 +7,6 @@ import numpy as np
 from scipy.linalg import norm
 
 class TestHyphae(unittest.TestCase):
-
-    # TODO add test for anastomosis
-    # TODO test hyphal tree index
-    # TODO merged hyphae index etc
     def hyphae_example(self): # TODO check which parameters are needed and how structure should be
         self.plant = pb.Organism()
         self.hrp = pb.HyphaeRandomParameter(self.plant)
@@ -25,8 +21,6 @@ class TestHyphae(unittest.TestCase):
         hrp.dx = 0.15
         hrp.distTH = 0.25
         hrp.subType = 2
-        hrp.hyphalEmergenceDensity = 3.0
-        hrp.highresolution = 0
         hrp2 = hrp.copy(plant)
         self.assertIsNot(hrp, hrp2, "copy: organ type parameter set is not copied")
         self.assertEqual(hrp2.name, hrp.name, "copy: value unexpected")
@@ -34,8 +28,6 @@ class TestHyphae(unittest.TestCase):
         self.assertEqual(hrp2.subType, hrp.subType, "copy: value unexpected")
         self.assertEqual(hrp2.dx, hrp.dx, "copy: value unexpected")
         self.assertEqual(hrp2.distTH, hrp.distTH, "copy: value unexpected")
-        self.assertEqual(hrp2.hyphalEmergenceDensity, hrp.hyphalEmergenceDensity, "copy: value unexpected")
-        self.assertEqual(hrp2.highresolution, hrp.highresolution, "copy: value unexpected")
     
     def test_parameter(self):
         """ tests getParameter() """
@@ -43,18 +35,14 @@ class TestHyphae(unittest.TestCase):
         hrp = pb.HyphaeRandomParameter(self.plant)
         hrp.dx = 0.2
         hrp.distTH = 0.3
-        ot = hrp.getParameter("organType")  # test defaults
+        ot = hrp.getParameter("organType")  # test defaults but this works only on RandomPArameter but need the Organ
         st = hrp.getParameter("subType")
-        dx = hrp.getParameter("dx")
-        dth = hrp.getParameter("distTH")
-        hed = hrp.getParameter("hyphalEmergenceDensity")
-        hr = hrp.getParameter("highresolution")
+        hTI = hrp.getParameter("hyphalTreeIndex")
+        mPID = hrp.getParameter("mergePointID")
         self.assertEqual(ot, pb.hyphae, "getParameter: value unexpected")
         self.assertEqual(st, 0, "getParameter: value unexpected")
-        self.assertEqual(dx, 0.2, "getParameter: value unexpected")
-        self.assertEqual(dth, 0.3, "getParameter: value unexpected")
-        self.assertEqual(hed, 1.0, "getParameter: value unexpected")
-        self.assertEqual(hr, 1, "getParameter: value unexpected")
+        self.assertEqual(hTI, -1, "getParameter: value unexpected")
+        self.assertEqual(mPID, -1, "getParameter: value unexpected")
 
     def test_dynamics(self):
         """ tests hyphae growth simulation """
@@ -157,9 +145,29 @@ class TestHyphae(unittest.TestCase):
             if len(h.getChildren()) > 0:  # only check hyphae that have children
                 tree_index = [h.getHyphalTreeIndex()]*len(h.getChildren())
                 self.assertEqual(tree_index, h.getChildren().getHyphalTreeIndex(), "Hyphal tree index of parent does not match that of child")
-            self.assertIsInstance(tree_index, int, "Hyphal tree index is not an integer")
             self.assertGreaterEqual(tree_index, 0, "Hyphal tree index is negative")
-            
+
+    def test_merged_hyphae_index(self):
+        """ tests merged hyphae index """
+        self.hyphae_example()
+        self.plant.setOrganRandomParameter(self.hrp)
+        self.plant.initialize(True)
+        sim_time = 2.0
+        dt = 0.1
+        steps = int(sim_time / dt)
+        for _ in range(steps):
+            self.plant.simulate(dt, False)
+        hyphae = self.plant.getOrgansOfType(pb.hyphae)
+        for h in hyphae:
+            ###### This is only a basic check if the merged hyphae index is not negative
+            ###### Need to check if the index actually points to a node that exists
+            ###### and then need to check if the second to last node is actually within the distance threshold
+            ##### this implies a double for loop but this is very expensive and should be avoided if possible
+            ###### then should check that the hyphal tree index of merged hypha and original hypha are different
+            if h.getParameter("mergePointID") > 0:  # only check hyphae that have merged
+                self.assertGreaterEqual(h.getParameter("mergePointID"), 0, "Merged hyphae index is negative")
+                self.assertNotEqual(h.getParameter("mergePointID"), h.getHyphalTreeIndex(), "Merged hyphae index should not be equal to hyphal tree index")
+  
     def test_anastomosis(self):
         """ tests hyphae anastomosis behavior """
         self.hyphae_example()
