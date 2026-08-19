@@ -316,6 +316,7 @@ double Hyphae::getParameter(std::string name) const
         if (name=="ln") { return param()->ln.size()>0 ? param()->ln.at(0) : 0.; } // Inter-lateral distance [cm], return first value of vector for simplicity, TODO update this
         if (name=="hlt") { return param()->hlt; } // Hyphal life time [day]
         if (name=="theta") { return param()->theta; } // Branching angle [rad]
+        if (name=="mergePointID") { return mergePointID; } // Node ID where the anastomosis happened
         if (name=="hyphalTreeIndex") { return hyphalTreeIndex; } // Hyphal tree index [-]
     return Organ::getParameter(name); // pass to base class
 }
