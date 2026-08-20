@@ -8,6 +8,7 @@
 #include "PlantHydraulicModel.h"
 
 #include <algorithm>
+#include <cassert>
 #include <iomanip>
 #include <istream>
 #include <iostream>
@@ -74,6 +75,7 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
             c++;    
         }
     }
+    assert(c == (int)segments.size() && "SegmentAnalyser: segment count mismatch between getOrgans() and getSegmentOrigins()");
     data["radius"] = radii;
     data["subType"] = subType;
     data["id"] = id;

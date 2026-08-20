@@ -289,6 +289,9 @@ void GrassLeaf::fixPitch() {
  * @brief Returns the half-width [cm] of the leaf at node @p i.
  */
 double GrassLeaf::getBladeWidth(int i) const {
+    if (getBladeLength() <= 0.) {
+        return 0.;
+    }
     int turtleIdx = std::max(0, i - 1);
     double cumLen = turtle.getLength(turtleIdx);
     double p = (cumLen - getSheathLength()) / getBladeLength();
