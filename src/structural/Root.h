@@ -30,7 +30,7 @@ class Root : public Organ {
 
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
 
-    double getParameter(std::string name) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)’
+    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)'
     std::string toString() const override;
 
     /* from analytical equations */

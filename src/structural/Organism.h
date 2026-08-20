@@ -30,6 +30,7 @@ class Seed;
  */
 class Organism : public std::enable_shared_from_this<Organism> {
   public:
+  
     enum DelayDefinition {
         dd_distance = 0,
         dd_time_lat = 1,

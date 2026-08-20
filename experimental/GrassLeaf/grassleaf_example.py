@@ -91,7 +91,7 @@ gl_rp.sheathLengths = 0
 gl_rp.leafGrowthDuration = 12.0  # days to full leaf (sheath + blade)
 gl_rp.leafGrowthDurations = 0.0
 gl_rp.bladeBending = 0.2  # rad / cm
-gl_rp.dx = 0.1
+gl_rp.dx = 0.05
 
 # print(gl_rp.successorNo, flush=True)
 # gl_rp = pb.LeafRandomParameter(plant)
@@ -111,7 +111,7 @@ plant.setOrganRandomParameter(gl_rp)
 
 plant.initialize(verbose=False)
 
-total_days = 32.0
+total_days = 33.5
 dt = 0.5  # days per step
 steps = int(total_days / dt)
 

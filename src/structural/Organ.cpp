@@ -302,7 +302,8 @@ int Organ::getNumberOfLaterals() const {
  * Intended for post-processing; flexible but slower than direct member access.
  * Override in derived classes to expose additional parameters.
  */
-double Organ::getParameter(std::string name) const {
+double Organ::getParameter(std::string name, std::map<std::string, double> addParams) const {
+
     // specific parameters
     if (name == "subType") {
         return this->param_->subType;

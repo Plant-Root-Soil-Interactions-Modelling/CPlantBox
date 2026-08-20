@@ -221,7 +221,7 @@ void Leaf::simulate(double dt, bool verbose) {
 /**
  *
  */
-double Leaf::getParameter(std::string name) const {
+double Leaf::getParameter(std::string name, std::map<std::string, double> addParams) const {
     if (name == "shapeType") {
         return getLeafRandomParameter()->shapeType;
     } // definition type of the leaf shape
@@ -297,7 +297,7 @@ double Leaf::getParameter(std::string name) const {
     if (name == "parentNI") {
         return parentNI;
     } // local parent node index where the lateral emerges
-    return Organ::getParameter(name);
+    return Organ::getParameter(name, addParams);
 }
 
 /**
