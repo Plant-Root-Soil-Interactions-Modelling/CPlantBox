@@ -312,6 +312,7 @@ void StemRandomParameter::bindParameters()
     bindParameter("delayNGStart", &delayNGStart, "delay between stem creation and start of nodal growth", &delayNGStarts);
     bindParameter("delayNGEnd", &delayNGEnd, "delay between stem creation and start of nodal growth", &delayNGEnds);
     bindParameter("ldelay", &ldelay, "delay between latteral creation and start of nodal growth", &ldelays);
+    bindParameter("multDelay", &multDelay, "Delay multiplier between each consecutive lateral");
 }
 
 } // end namespace CPlantBox

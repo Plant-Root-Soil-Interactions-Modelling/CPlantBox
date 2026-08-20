@@ -94,7 +94,6 @@ class OrganRandomParameter {
     double ldelay = -1.;        ///< Mean lateral emergence delay [day]; used by RootDelay and Organism::delayDefinition != Organism::dd_distance
                                 ///< @see RootDelay, RootSystem::initializeDB
     double ldelays = 0.;        ///< Standard deviation of the lateral emergence delay [day]
-	int multDelay = 1; ///< by how much multiply the delay between each consecutive lateral, see @Stem::getLatGrowthDelay
 
     /// @brief Position-based activation flag for each successor rule.
     ///

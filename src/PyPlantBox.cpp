@@ -369,8 +369,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("ldelays", &OrganRandomParameter::ldelays)
         .def_readwrite("plant", &OrganRandomParameter::plant)
         .def_readwrite("f_gf", &OrganRandomParameter::f_gf)
-        .def_readwrite("f_tf", &OrganRandomParameter::f_tf)
-        .def_readwrite("multDelay", &OrganRandomParameter::multDelay);
+        .def_readwrite("f_tf", &OrganRandomParameter::f_tf);
     /**
      * Organ.h
      */
@@ -865,7 +864,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("delayNGEnd", &StemRandomParameter::delayNGEnd)
         .def_readwrite("delayNGEnds", &StemRandomParameter::delayNGEnds)
         .def_readwrite("tropismAge", &StemRandomParameter::tropismAge)
-        .def_readwrite("tropismAges", &StemRandomParameter::tropismAges);
+        .def_readwrite("tropismAges", &StemRandomParameter::tropismAges)
+        .def_readwrite("multDelay", &StemRandomParameter::multDelay);
     py::class_<StemSpecificParameter, OrganSpecificParameter, std::shared_ptr<StemSpecificParameter>>(m, "StemSpecificParameter")
         .def(py::init<>())
         .def(py::init<int, double, double, const std::vector<double> &, double, double, double, double, double>())
