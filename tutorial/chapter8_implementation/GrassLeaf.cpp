@@ -145,8 +145,9 @@ void GrassLeaf::simulate(double dt, bool verbose) {
         if (dl > 0.) { 
             growLeaf(dl, dt_); // |\label{l81:growLeaf}|
         }
-        sheathLength = length * p.sheathLength / (p.sheathLength + p.bladeLength); //  |\label{l81:sheathLength}
-        bladeLength = length * p.bladeLength / (p.sheathLength + p.bladeLength); //  |\label{l81:bladeLength}
+        sheathLength = length * p.sheathLength / (p.sheathLength + p.bladeLength); //  |\label{l81:sheathLength} 
+        
+        bladeLength = length * p.bladeLength / (p.sheathLength + p.bladeLength); // |\label{l81:bladeLength} 
         fixPitch(); // apply blade angle to the new segments |\label{l81:fixPitch}
     } // |\label{l81:active_end}|
 
