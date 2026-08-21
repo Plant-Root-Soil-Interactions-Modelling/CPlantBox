@@ -130,10 +130,10 @@ void GrassLeaf::simulate(double dt, bool verbose) {
     const GrassLeafSpecificParameter &p = *param();
 
     age += dt;  // |\label{l81:age}|
-    double dt_ = (age < dt) ? age : dt; // time step; age < dt means the organ emerged in this time step
+    double dt_ = (age < dt) ? age : dt;     
     if (age <= 0.) {
         return;  
-    } // |\label{l81:_end}|
+    } // |\label{l81:age_end}|
 
     if (active) { // |\label{l81:active}|
 
