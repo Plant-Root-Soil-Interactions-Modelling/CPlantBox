@@ -178,6 +178,7 @@ std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const s
 std::map<int,double> PlantHydraulicModel::sumSegFluxes(const std::vector<double> segFluxes)
 {
     std::map<int,double> fluxes;
+	std::cout << "number of segments" << ms->segments.size() << "\n";
     for (int si = 0; si<ms->segments.size(); si++) {
         int j = ms->segments[si].y;
         int segIdx = j-1;
