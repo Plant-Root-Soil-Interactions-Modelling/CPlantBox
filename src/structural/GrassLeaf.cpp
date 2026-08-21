@@ -25,7 +25,9 @@ GrassLeaf::GrassLeaf(int id, std::shared_ptr<const OrganSpecificParameter> param
  */
 GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay, std::shared_ptr<Organ> parent, int pni)
     : Organ(plant, parent, Organism::ot_leaf, subtype, delay, pni) {
+    
     assert(parent != nullptr && "GrassLeaf: parent must not be null");
+    getPlant()->leafphytomerID.at(subtype)++;  // we keep track of the number of leaves per leaf type
 
     // Anchor the meristem at the attachment point with the parent's heading as
     // the initial turtle frame (+x = heading, +z = up).
@@ -42,10 +44,10 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
         } else {
             h = parent->heading(pni);
         }
-        anchorFrame = Matrix3d::ons(h); // heading → col 0; col 1, 2 perpendicular
+        anchorFrame = Matrix3d::ons(h); // heading: col 0; col 1, 2 perpendicular
     }
-    auto rotX = anchorFrame.rotX(2 * M_PI * this->plant.lock()->rand());    
-    anchorFrame.times(rotX); // random rotation around the heading to make the leaf orientation truly random
+    double beta = getPlant()->leafphytomerID.at(subtype)* M_PI; // distichous (two-ranked) phyllotaxy (180 degree rotation)
+    anchorFrame.times(Matrix3d::rotX(beta)); // random rotation around the heading to make the leaf orientation truly random
     turtle.setAnchor(anchorPos);
     
     // rotate the anchor frame: pitch the heading up by 90° so the leaf grows upward along the parent axis

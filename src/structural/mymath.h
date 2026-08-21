@@ -148,8 +148,7 @@ class Matrix3d {
     /**
      * Creates an orthonormal system (ONS) around the vector v
      *
-     * Remark: This is not unique, in Rootbox the ONS is rotated around a random angle to make it truly random.
-     * This is likely to be not optimal, but I guess it is fast enough anyway.
+     * Remark: This is not unique, to make it truly random the ONS must be rotated around a random angle .
      *
      * @param v           vector, that will be normalized and then be the first column of the resulting ONS
      *

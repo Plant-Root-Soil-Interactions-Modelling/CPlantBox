@@ -24,10 +24,12 @@ GrassLeaf::GrassLeaf(int id, std::shared_ptr<const OrganSpecificParameter> param
  * heading, then pitched slightly upward so the leaf initially grows along the parent axis.
  */
 GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay, std::shared_ptr<Organ> parent, int pni)
-    : Organ(plant, parent, Organism::ot_leaf, subtype, delay, pni) {
+    : Organ(plant, parent, Organism::ot_leaf, subtype, delay, pni) { // |\label{l81:super}|
+    
     assert(parent != nullptr && "GrassLeaf: parent must not be null");
+    getPlant()->leafphytomerID.at(subtype)++;  // we keep track of the number of leaves per leaf type
 
-    // Anchor the meristem at the attachment point with the parent's heading as
+    // Anchor the meristem at the attachment point with the parent's heading as // |\label{l81:anchor_start}|
     // the initial turtle frame (+x = heading, +z = up).
     Vector3d anchorPos(0., 0., 0.); // relative coordinate; abs is resolved via rel2abs
     Matrix3d anchorFrame;           // identity = upward along x, will be overridden below
@@ -42,22 +44,22 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
         } else {
             h = parent->heading(pni);
         }
-        anchorFrame = Matrix3d::ons(h); // heading → col 0; col 1, 2 perpendicular
+        anchorFrame = Matrix3d::ons(h); // heading: col 0; col 1, 2 perpendicular
     }
-    auto rotX = anchorFrame.rotX(2 * M_PI * this->plant.lock()->rand());    
-    anchorFrame.times(rotX); // random rotation around the heading to make the leaf orientation truly random
-    turtle.setAnchor(anchorPos);
+    double beta = getPlant()->leafphytomerID.at(subtype)* M_PI; // distichous (two-ranked) phyllotaxy // |\label{l81:phyllotaxy}|
     
-    // rotate the anchor frame: pitch the heading up by 90° so the leaf grows upward along the parent axis
-    Turtle3D t(Vector3d(0., 0., 0.), anchorFrame);
+    anchorFrame.times(Matrix3d::rotX(beta)); // random rotation around the heading to make the leaf orientation truly random
+    turtle.setAnchor(anchorPos); // |\label{l81:anchor_end}|
+    
+    Turtle3D t(Vector3d(0., 0., 0.), anchorFrame); // |\label{l81:turtle_start}| 
     t.pitchUp(initialSheathAngle); // sheath is almost straight
     anchorFrame = t.getFrame();
-    turtle.setAnchorFrame(anchorFrame);
+    turtle.setAnchorFrame(anchorFrame); // |\label{l81:turtle_end}|
 
-    // Seed nodeIds/nodeCTs for the initial meristem node.
-    double creationTime = parent->getNodeCT(pni) + std::max(delay, 0.0);
+    // Seed nodeIds/nodeCTs for the initial meristem node. // |\label{l81:node}|
+    double creationTime = parent->getNodeCT(pni) + std::max(delay, 0.0); 
     nodeIds.push_back(parent->getNodeId(pni)); // anchorframe id and ct is located at index 0
-    nodeCTs.push_back(creationTime);
+    nodeCTs.push_back(creationTime); // |\label{l81:node_end}|
 }
 
 /**
