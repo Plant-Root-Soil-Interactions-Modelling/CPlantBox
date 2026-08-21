@@ -160,7 +160,7 @@ void GrassLeaf::simulate(double dt, bool verbose) {
  * Special behaviour for @p name == "radius" with addParams["index"] set: provides radius of sheath, or leaf vein depending on node index i
  */
 double GrassLeaf::getParameter(std::string name, std::map<std::string, double> addParams) const {
-    if (name == "radius") { // radius of sheath, or leaf vein
+    if (name == "radius") { // radius of sheath, or leaf vein // |\label{l81:radius}|
         auto it = addParams.find("index");
         if (it != addParams.end()) {   
             int turtleIdx = std::max(0, static_cast<int>(it->second) - 1); // -1 because the anchor point is not stored in the meristem
@@ -175,23 +175,23 @@ double GrassLeaf::getParameter(std::string name, std::map<std::string, double> a
                 return param()->a; // represents leaf vein
             }
         } // if "index" is not provided to getParameter("radius")
-    }
-    if (name == "sheathLength")
+    } // |\label{l81:radius_end}|
+    if (name == "sheathLength") // |\label{l81:other}|
         return param()->sheathLength;
     if (name == "leafGrowthDuration")
         return param()->leafGrowthDuration;
     if (name == "bladeAngle")
-        return param()->bladeAngle;
+        return param()->bladeAngle; // |\label{l81:other_end}|
     if (name == "bladeWidth") {
-        auto it = addParams.find("index");
+        auto it = addParams.find("index"); // |\label{l81:bladewidth}|
         if (it != addParams.end())
-            return getBladeWidth(static_cast<int>(it->second));
-        return param()->bladeWidth;
-    }
+            return getBladeWidth(static_cast<int>(it->second));  
+        return param()->bladeWidth; // |\label{l81:bladewidth_end}|
+    } 
     if (name == "bladeLength")
         return param()->bladeLength;
-    return Organ::getParameter(name, addParams);
-}
+    return Organ::getParameter(name, addParams); // |\label{l81:getParameter_call}|
+} 
 
 /**
  * @brief Returns a compact human-readable summary of the leaf state.
