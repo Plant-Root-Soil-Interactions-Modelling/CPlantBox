@@ -26,8 +26,8 @@ GrassLeaf::GrassLeaf(int id, std::shared_ptr<const OrganSpecificParameter> param
 GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay, std::shared_ptr<Organ> parent, int pni)
     : Organ(plant, parent, Organism::ot_leaf, subtype, delay, pni) { // |\label{l81:super}|
     
-    assert(parent != nullptr && "GrassLeaf: parent must not be null");
-    getPlant()->leafphytomerID.at(subtype)++;  // we keep track of the number of leaves per leaf type
+    assert(parent != nullptr && "GrassLeaf: parent must not be null");  // |\label{l81:init}|
+    getPlant()->leafphytomerID.at(subtype)++;  // we keep track of the number of leaves per leaf type |\label{l81:init_end}|
 
     // Anchor the meristem at the attachment point with the parent's heading as // |\label{l81:anchor_start}|
     // the initial turtle frame (+x = heading, +z = up).
@@ -36,18 +36,17 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
 
     // Anchor frame: align heading column with parent heading at pni.
     if (parent->getNumberOfNodes() > 0) {
-        Vector3d h;
+        Vector3d h; //  |\label{l81:heading}|
         if (parent->hasRelCoord()) {
             parent->rel2abs(); 
             h = parent->heading(pni); // otherwise that does not work
             parent->abs2rel();
         } else {
             h = parent->heading(pni);
-        }
-        anchorFrame = Matrix3d::ons(h); // heading: col 0; col 1, 2 perpendicular
+        } //  |\label{l81:heading_end}|
+        anchorFrame = Matrix3d::ons(h); // heading: col 0; col 1, 2 perpendicular  |\label{l81:frame}|
     }
     double beta = getPlant()->leafphytomerID.at(subtype)* M_PI; // distichous (two-ranked) phyllotaxy // |\label{l81:phyllotaxy}|
-    
     anchorFrame.times(Matrix3d::rotX(beta)); // random rotation around the heading to make the leaf orientation truly random
     turtle.setAnchor(anchorPos); // |\label{l81:anchor_end}|
     
