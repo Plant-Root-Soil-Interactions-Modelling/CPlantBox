@@ -29,25 +29,24 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
     assert(parent != nullptr && "GrassLeaf: parent must not be null");  // |\label{l81:init}|
     getPlant()->leafphytomerID.at(subtype)++;  // we keep track of the number of leaves per leaf type |\label{l81:init_end}|
 
-    // Anchor the meristem at the attachment point with the parent's heading as // |\label{l81:anchor_start}|
-    // the initial turtle frame (+x = heading, +z = up).
-    Vector3d anchorPos(0., 0., 0.); // relative coordinate; abs is resolved via rel2abs
-    Matrix3d anchorFrame;           // identity = upward along x, will be overridden below
+    // Anchor the meristem at the attachment point  // |\label{l81:anchor_start}|
+    Vector3d anchorPos(0., 0., 0.); 
+    Matrix3d anchorFrame;           
 
     // Anchor frame: align heading column with parent heading at pni.
     if (parent->getNumberOfNodes() > 0) {
         Vector3d h; //  |\label{l81:heading}|
         if (parent->hasRelCoord()) {
             parent->rel2abs(); 
-            h = parent->heading(pni); // otherwise that does not work
+            h = parent->heading(pni); 
             parent->abs2rel();
         } else {
             h = parent->heading(pni);
         } //  |\label{l81:heading_end}|
-        anchorFrame = Matrix3d::ons(h); // heading: col 0; col 1, 2 perpendicular  |\label{l81:frame}|
+        anchorFrame = Matrix3d::ons(h); //  |\label{l81:frame}|
     }
-    double beta = getPlant()->leafphytomerID.at(subtype)* M_PI; // distichous (two-ranked) phyllotaxy // |\label{l81:phyllotaxy}|
-    anchorFrame.times(Matrix3d::rotX(beta)); // random rotation around the heading to make the leaf orientation truly random
+    double beta = getPlant()->leafphytomerID.at(subtype)* M_PI; // distichous (two-ranked) phyllotaxy |\label{l81:phyllotaxy}|
+    anchorFrame.times(Matrix3d::rotX(beta)); 
     turtle.setAnchor(anchorPos); // |\label{l81:anchor_end}|
     
     Turtle3D t(Vector3d(0., 0., 0.), anchorFrame); // |\label{l81:turtle_start}| 
@@ -57,7 +56,7 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
 
     // Seed nodeIds/nodeCTs for the initial meristem node. // |\label{l81:node}|
     double creationTime = parent->getNodeCT(pni) + std::max(delay, 0.0); 
-    nodeIds.push_back(parent->getNodeId(pni)); // anchorframe id and ct is located at index 0
+    nodeIds.push_back(parent->getNodeId(pni)); 
     nodeCTs.push_back(creationTime); // |\label{l81:node_end}|
 }
 
@@ -106,6 +105,7 @@ double GrassLeaf::calcAge(double length) const {
     double r = k / param()->leafGrowthDuration;
     return getGrassLeafRandomParameter()->f_gf->getAge(length, r, k, shared_from_this());
 }
+
 
 
 /**
@@ -164,7 +164,6 @@ double GrassLeaf::getParameter(std::string name, std::map<std::string, double> a
         if (it != addParams.end()) {   
             int turtleIdx = std::max(0, static_cast<int>(it->second) - 1); // -1 because the anchor point is not stored in the meristem
             double cumLen = turtle.getLength(turtleIdx);    
-            // std::cout << turtleIdx << " " << cumLen << " " << getSheathLength() << " " << param()->sheathLength << " " << param()->bladeLength << "\n";
             if (cumLen < getSheathLength()) {
                 double p = cumLen/param()->sheathLength;
                 double a0 = parent.lock()->param()->a; // parent radius
@@ -173,7 +172,7 @@ double GrassLeaf::getParameter(std::string name, std::map<std::string, double> a
             } else {
                 return param()->a; // represents leaf vein
             }
-        } // if "index" is not provided to getParameter("radius")
+        } // if "index" is not provided, proceed without
     } // |\label{l81:radius_end}|
     if (name == "sheathLength") // |\label{l81:other}|
         return param()->sheathLength;
