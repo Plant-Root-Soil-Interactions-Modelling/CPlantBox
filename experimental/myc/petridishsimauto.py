@@ -8,120 +8,11 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, Normalize
 import time
 import matplotlib as mpl
+import AMFAnalysis as amf
 
 # I changed the c++ code, so set might not be valid anymore
 good_seeds = [10, 20, 30, 60, 70, 80, 90, 100] # these are seeds where hyphae cross the barrier, but have not been assessed in any other way for any required behaviour
 
-def getMycSegmentAnalyser(plant):
-        ana = pb.SegmentAnalyser(plant)
-        ana.addData("colonization", plant.getNodeColonizations(2))
-        ana.addData("colonizationTime", plant.getNodeColonizationTime(2))
-        ana.addData("anastomosis", plant.getAnastomosisPoints(5))
-        ana.addData("nodeTips", plant.getNodeTips(5))
-        return ana
-
-
-def getLengthPerSubtype(plant):
-    hyphae = pb.SegmentAnalyser(plant)
-    hyphae.filter("organType",5.0)
-    hyphae.pack()
-    lenSubtype = []
-    for i in range(1,4):
-        hyphae.filter("subType",i)
-        hyphae.pack()
-        lenSubtype.append(hyphae.getSummed("length"))
-        hyphae = pb.SegmentAnalyser(plant)
-        hyphae.filter("organType",5.0)
-        hyphae.pack()
-    return lenSubtype
-
-def getParaDistperRing(parameter, times, plant, rings):
-        paradenmat = np.zeros((len(rings),len(times[1:])))
-        flipped = np.flip(np.asarray(times))
-        for k, ring in enumerate(rings):
-            ringana = pb.SegmentAnalyser(plant) # need to copy the whole plant for segment analyzer since cropping to one ring removes all information outside
-            ringana.crop(ring)
-            for j in range(len(times[1:])-1):
-                ringana.filter("creationTime", 0, flipped[j])
-                ringana.pack()
-                distrib = ringana.getSummed(parameter)
-                ringana.filter("creationTime",0,flipped[j+1])
-                ringana.pack()
-                summed = ringana.getSummed(parameter)
-                paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum() 
-            ringana.filter("creationTime",0,flipped[len(times[1:])-1])
-            ringana.pack()
-            summed = ringana.getSummed(parameter)
-            ringana.filter("creationTime",0,flipped[len(times[1:])])
-            ringana.pack()
-            summed = summed - ringana.getSummed(parameter)
-            paradenmat[k, -1] = np.array(summed).sum() #/(np.pi*(4.7**2)/2)
-        return paradenmat
-
-def getAverageOverTipsOverTime(parameter, times, plant, subType = -1):
-    paradenmat = np.zeros((len(times[1:])))
-    ana = pb.SegmentAnalyser(plant)
-    ana.filter("organType", 5, 5)
-    if subType != -1:
-        ana.filter("subType", subType, subType)
-    for j in range(len(times[1:])-1):
-        ana.filter("creationTime", 0, np.flip(np.asarray(times))[j])
-        ana.pack()
-        distrib = ana.getSummed(parameter)
-        ana.filter("creationTime",0,np.flip(np.asarray(times))[j+1])
-        ana.pack()
-        summed = ana.getSummed(parameter)
-        paradenmat[len(times[1:])-1 -j] = np.array(distrib-summed).sum() #/np.array(allTips-overTips).sum() if np.array(allTips-overTips).sum() != 0 else 0
-    ana.filter("creationTime",0,np.flip(np.asarray(times))[len(times[1:])-1])
-    ana.pack()
-    summed = ana.getSummed(parameter)
-    paradenmat[-1] = np.array(summed).sum() 
-    return paradenmat
-
-def makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, rootradius,nRings):
-    radius = diameter / 2
-    # petri dish has a radius of 9.4 cm and a height of 1.6 cm
-    petri_dish = pb.SDF_PlantContainer(radius,radius,height,False)
-    # the helper dish is used to cut the petri dish in half, it has the same radius and height as the petri dish but is rotated and translated to cut the petri dish in half
-    helper_dish = pb.SDF_PlantContainer(radius,radius,height,True)
-    # moving the helper dish such that it halves the petri dish and removes a bit more to restrict roots to the correct side of barrier
-    moved_helper_dish = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(-(radius+barrier_thickness+rootradius), 0, 0))
-    half_dish = pb.SDF_Intersection(petri_dish, moved_helper_dish)
-    # helper container for barrier
-    helper_staff = pb.SDF_PlantBox(barrier_thickness,barrier_height,diameter)
-    # helper container for opening in barrier
-    helper_staff2 = pb.SDF_PlantBox(barrier_thickness,opening_height,opening_length)
-    # have to  move the helper staff for the right position of the opening and barrier, the midpoint is the distance from the center of the helper staff to the center of the petri dish, the bottompoint is the distance from the center of the helper staff to the center of the petri dish in the y direction, and the helper staff is moved to the position of the opening and barrier
-    midpoint = opening_length / 2 - diameter / 2
-    bottompoint = opening_height / 2 - barrier_height / 2
-    # container for opening moved to the right position
-    helper_staff2 = pb.SDF_RotateTranslate(helper_staff2, 0,0,pb.Vector3d(0, bottompoint, midpoint))
-    # opening made in the barrier
-    helper_dish2 = pb.SDF_Difference(helper_staff, helper_staff2)
-    # barrier moved to the right position
-    moved_helper_dish2 = pb.SDF_RotateTranslate(helper_dish2, 90, pb.SDF_Axis.xaxis , pb.Vector3d(0, -radius, -height/2))
-    petri_dish = pb.SDF_Difference(petri_dish, moved_helper_dish2)
-
-    moved_helper_dish_hyphae = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(-(radius+barrier_thickness/2), 0, 0))
-    small_dish = pb.SDF_PlantContainer(radius,radius,height,False)
-    small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
-
-    # nRings = 25
-    centrepoint = [0, 1.5, 0] ## Set a different centre for the rings for analysis, so that growth is more centred
-    small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
-    ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
-    moved_ringone = pb.SDF_RotateTranslate(ringone, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], centrepoint[2]))
-    rings = []
-    rings.append(moved_ringone)
-    for i in range(2, nRings+1):
-        small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
-        small_hyphae_dish2 = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
-        old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
-        small_hyphae_dish2 = pb.SDF_Difference(small_hyphae_dish2,old_dish)
-        moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish2, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
-        rings.append(moved_small_hyphae_dish)
-    
-    return petri_dish, small_hyphae_dish, half_dish, rings
 
 def makesimulation(seed):
     mycp = pb.MycorrhizalPlant(seed)
@@ -142,7 +33,6 @@ def makesimulation(seed):
 
     ## Setting up petri dish
     diameter = 9.4
-    radius = diameter / 2
     height = 1.6
     # introduce parameters for barrier and opening
     barrier_thickness = 0.16
@@ -151,7 +41,7 @@ def makesimulation(seed):
     opening_height = 0.2
 
     nRings = 25
-    petri_dish, small_hyphae_dish, half_dish, rings = makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, root[0].a,nRings)
+    petri_dish, small_hyphae_dish, half_dish, rings = amf.makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, root[0].a,nRings)
 
 
     # make sure to set the seed position to 0 because of the petri dish
@@ -182,7 +72,7 @@ def makesimulation(seed):
             print("Step " + str(i) + " of " + str(N))
         mycp.simulate(dt,True)
         if (animation):
-            ana = getMycSegmentAnalyser(mycp)
+            ana = amf.getMycSegmentAnalyser(mycp)
             ana.write("animation/" + filename + "_hoursBCB_" +str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
     # look at roots and container
     # vp.plot_roots_and_container(mycp,half_dish)
@@ -256,7 +146,7 @@ def makesimulation(seed):
         # mycp.simulateHyphae(dt,False)
         mycp.simulate(dt,False)
         mycp.turnOffSidePetriDish(-barrier_thickness/2,opening_height-barrier_height,  opening_length/2, -opening_length/2)
-        ana = getMycSegmentAnalyser(mycp)
+        ana = amf.getMycSegmentAnalyser(mycp)
         if animation:
             ana.crop(small_hyphae_dish)
             ana.write("animation/" + filename + "_hoursACB_" +str(i+1) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
@@ -267,7 +157,7 @@ def makesimulation(seed):
     print("Time for simulation: ", endsim-start)
 
     # raise Exception
-    # ana = getMycSegmentAnalyser(mycp)
+    # ana = amf.getMycSegmentAnalyser(mycp)
     # vp.plot_roots(mycp,"subType")
 
     if not animation:
@@ -278,9 +168,9 @@ def makesimulation(seed):
     
     # times = np.linspace(0, 28, 100)
 
-    tip_densities = getParaDistperRing("nodeTips", times, ana, rings)
+    tip_densities = amf.getParaDistperRing("nodeTips", times, ana, rings)
     times = times - crossed_time
-    lengthsSubtype = getLengthPerSubtype(mycp)
+    lengthsSubtype = amf.getParameterOverTime("length", times, ana, np.array([1,2,3]))
     return tip_densities, times, lengthsSubtype
 
 diameter = 9.4
@@ -292,90 +182,90 @@ simulations = []
 
 allsims = time.perf_counter()
 for i in good_seeds:
-    tip_densities, times, lengths = makesimulation(i)
+    tip_densities, times, lengthsSubType = makesimulation(i)
     simulations.append({
     "tip_dens": tip_densities,
     "times": times[1:],
-    "lengths": lengths
+    "lengths": lengthsSubType
 })
 allsims_end = time.perf_counter()
 print("Time for all simulations: ", allsims_end-allsims)
 
-for i in range(len(good_seeds)):
-    runner_hyphae = simulations[i]["lengths"][1] + simulations[i]["lengths"][0]
-    BAS_hyphae = simulations[i]["lengths"][2]
-    ratio = BAS_hyphae / (BAS_hyphae + runner_hyphae) if (BAS_hyphae + runner_hyphae) != 0 else 0
-    print("Ratio BAS/Runner: ", ratio)
-    print(simulations[i]["lengths"])
-
 # for i in range(len(good_seeds)):
-#     plt.pcolormesh(
-#         simulations[i]["times"], 
-#         location, 
-#         simulations[i]["tip_dens"], 
-#         shading='auto', 
-#         cmap='plasma'
-#     )
-#     plt.colorbar(label="Tip Frequency")
+#     runner_hyphae = simulations[i]["lengths"][1] + simulations[i]["lengths"][0]
+#     BAS_hyphae = simulations[i]["lengths"][2]
+#     ratio = BAS_hyphae / (BAS_hyphae + runner_hyphae) if (BAS_hyphae + runner_hyphae) != 0 else 0
+#     print("Ratio BAS/Runner: ", ratio)
+#     print(simulations[i]["lengths"])
 
-#     plt.xlabel("Time [days]")
-#     plt.ylabel("Distance [cm] from centre")
-#     # plt.title("Radial movement of hyphal tip frequency")
-#     plt.show()
+for i in range(len(good_seeds)):
+    plt.pcolormesh(
+        simulations[i]["times"], 
+        location, 
+        simulations[i]["lengths"], 
+        shading='auto', 
+        cmap='plasma'
+    )
+    plt.colorbar(label="Tip Frequency")
 
-# t_common = np.linspace(
-#     max(sim["times"][0] for sim in simulations),
-#     min(sim["times"][-1] for sim in simulations),
-#     99
-# )
-# from scipy.interpolate import interp1d
+    plt.xlabel("Time [days]")
+    plt.ylabel("Distance [cm] from centre")
+    # plt.title("Radial movement of hyphal tip frequency")
+    plt.show()
 
-# tip_dens_interp = []
+t_common = np.linspace(
+    max(sim["times"][0] for sim in simulations),
+    min(sim["times"][-1] for sim in simulations),
+    99
+)
+from scipy.interpolate import interp1d
 
-# for sim in simulations:
-#     f = interp1d(sim["times"], sim["tip_dens"], axis=1)
-#     tip_dens_interp.append(f(t_common))
+tip_dens_interp = []
 
-# tip_dens_interp = np.stack(tip_dens_interp)   # (n_sim, n_r, n_t)
+for sim in simulations:
+    f = interp1d(sim["times"], sim["tip_dens"], axis=1)
+    tip_dens_interp.append(f(t_common))
 
-# mean = tip_dens_interp.mean(axis=0)
-# std  = tip_dens_interp.std(axis=0)
+tip_dens_interp = np.stack(tip_dens_interp)   # (n_sim, n_r, n_t)
 
-# # mean = np.mean([sim["tip_dens"] for sim in simulations], axis=0)
-# # std  = np.std([sim["tip_dens"] for sim in simulations], axis=0)
-# # t_common = simulations[0]["times"]
+mean = tip_dens_interp.mean(axis=0)
+std  = tip_dens_interp.std(axis=0)
 
-# indices = [i*5 for i in range(20)]
+# mean = np.mean([sim["tip_dens"] for sim in simulations], axis=0)
+# std  = np.std([sim["tip_dens"] for sim in simulations], axis=0)
+# t_common = simulations[0]["times"]
 
-# fig, ax = plt.subplots(figsize=(6,5))
+indices = [i*5 for i in range(20)]
 
-# cmap = plt.get_cmap("plasma")
-# colors = cmap(np.linspace(0.2, 0.9, len(indices)))
+fig, ax = plt.subplots(figsize=(6,5))
 
-# for color, i in zip(colors, indices):
+cmap = plt.get_cmap("plasma")
+colors = cmap(np.linspace(0.2, 0.9, len(indices)))
 
-#     ax.plot(
-#         location,
-#         mean[:, i],
-#         color=color,
-#         lw=2,
-#         label=f"t = {t_common[i]:.2f}"
-#     )
+for color, i in zip(colors, indices):
 
-#     ax.fill_between(
-#         location,
-#         mean[:, i] - std[:, i],
-#         mean[:, i] + std[:, i],
-#         color=color,
-#         alpha=0.3
-#     )
-# ax.set_xlabel(r"Distance from origin $r$ (mm)")
-# ax.set_ylabel(r"Tip amount$)")
-# # ax.set_ylabel(r"Anastomosis frequency (mm$^{-2}$)")
-# ax.legend()
+    ax.plot(
+        location,
+        mean[:, i],
+        color=color,
+        lw=2,
+        label=f"t = {t_common[i]:.2f}"
+    )
 
-# plt.tight_layout()
-# plt.show()
+    ax.fill_between(
+        location,
+        mean[:, i] - std[:, i],
+        mean[:, i] + std[:, i],
+        color=color,
+        alpha=0.3
+    )
+ax.set_xlabel(r"Distance from origin $r$ (mm)")
+ax.set_ylabel(r"Tip amount$)")
+# ax.set_ylabel(r"Anastomosis frequency (mm$^{-2}$)")
+ax.legend()
+
+plt.tight_layout()
+plt.show()
 ##############################
 # print(np.array(tip_densities).reshape((-1, len(tip_densities[0]))))
 ## The problem is that the tips should be more evenly distributed i.e. more rings should have tips in them. but right now just a handful do
