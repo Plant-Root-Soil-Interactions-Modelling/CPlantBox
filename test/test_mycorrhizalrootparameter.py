@@ -58,22 +58,33 @@ class TestMycParameter(unittest.TestCase):
     def test_parameter(self):
         """ tests getParameter() """
         # TODO add more tests for mycorrhizalparameters
+        ### Question I do not 100% get the logic of which parameters are tested. This should test whether changing them manually actually changes tehm right?
+        ### So how do I choose which parameters to test?
         self.plant = pb.Organism()
         mrrp = pb.MycorrhizalRootRandomParameter(self.plant)
         mrrp.lns = 0.123
         mrrp.la = 12
+        mrrp.vi = 0.5
         ot = mrrp.getParameter("organType")  # test defaults
         st = mrrp.getParameter("subType")
         gf = mrrp.getParameter("gf")
         ln = mrrp.getParameter("ln")
         lns = mrrp.getParameter("ln_dev")
         la = mrrp.getParameter("la_mean")  # we can always add "_mean" to avoid naming conflicts
+        lmbd = mrrp.getParameter("lmbd_mean")
+        lmbds = mrrp.getParameter("lmbd_dev")
+        vi = mrrp.getParameter("vi")
+        vis = mrrp.getParameter("vi_dev")
         self.assertEqual(ot, 2., "getParameter: value unexpected")
         self.assertEqual(st, -1., "getParameter: value unexpected")
         self.assertEqual(gf, 1., "getParameter: value unexpected")
         self.assertEqual(ln, 1., "getParameter: value unexpected")
         self.assertEqual(lns, 0.123, "getParameter: value unexpected")
         self.assertEqual(la, 12, "getParameter: value unexpected")
+        self.assertEqual(lmbd, 0.15, "getParameter: value unexpected")
+        self.assertEqual(lmbds, 0., "getParameter: value unexpected")
+        self.assertEqual(vi, 0.5, "getParameter: value unexpected")
+        self.assertEqual(vis, 0., "getParameter: value unexpected")
         mrrp.theta = 123  # change values
         mrrp.thetas = 456
         theta = mrrp.getParameter("theta")
@@ -92,6 +103,7 @@ class TestMycParameter(unittest.TestCase):
     def test_xml(self):
         """ write the organ as xml, and rereads it """
         # TODO add more tests for mycorrhizalparameters
+        ## same question for this test as for the parameter test. Which parameters should be tested?
         self.mycroot_example()
         mrrp = self.mrrp  # rename
         mrrp.name = "lateral"
