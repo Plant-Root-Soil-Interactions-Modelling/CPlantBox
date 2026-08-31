@@ -27,17 +27,20 @@ def rootLateralLength(t, et, r, k):  # length of first order laterals (without s
 class TestMycorrhizalRoot(unittest.TestCase):
 # TODO add test for localized colonization
 # TODO modify for new parameters
+### Question if i include parameters for hyphae  it fails to run, an assertion about creation Time fails.
+### If i do not include it, the tests throw errors that hyphae parameters are not set.
+### how do i fix this i cannot really  test without this being resolved
     def mycroot_example_rrp(self):
         """ an example used in the tests below, a main root with laterals """
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         h0 = pb.HyphaeRandomParameter(self.plant)
-        h0.name, h0.subType, h0.lmax, h0.dx = "runnerhyphae", 1, 5.,0.01
+        h0.name, h0.subType, h0.lmax, h0.dx, h0.v, h0.hlt, h0.theta, h0.ana, h0.lb, h0.la, h0.ln, h0.lmax, h0.b, h0.b_prob = "runnerhyphae", 1, 5.,0.01, 0.13, 10, 30/180*np.pi, 1.0, 0.001, 0.003, 0.005, 10.0, 2, 0.5
         p0 = pb.MycorrhizalRootRandomParameter(self.plant)
-        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.hyphalEmergenceDensity = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5, 0.0
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.hyphalEmergenceDensity = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5, 1.0
         p0.successor = [[2]]
         p0.successorP = [[1.]]
         p1 = pb.MycorrhizalRootRandomParameter(self.plant)
-        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.hyphalEmergenceDensity = "lateral", 2, 25., 2., 0.1, 0.0
+        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.hyphalEmergenceDensity = "lateral", 2, 25., 2., 0.1, 1.0
         self.p0, self.p1, self.h0 = p0, p1, h0  # needed at later point
         self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
         self.plant.setOrganRandomParameter(p1)
@@ -54,6 +57,34 @@ class TestMycorrhizalRoot(unittest.TestCase):
         self.parentroot = parentroot  # store parent (not owned by child Organ)
         self.mycroot = pb.MycorrhizalRoot(self.plant, p0.subType,  0, self.parentroot, 0)
         self.mycroot.setOrganism(self.plant)
+
+    def mycroot_loc_example_rrp(self):
+            """ an example used in the tests below, a main root with laterals """
+            self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
+            h0 = pb.HyphaeRandomParameter(self.plant)
+            h0.name, h0.subType, h0.lmax, h0.dx, h0.v, h0.hlt, h0.theta, h0.ana, h0.lb, h0.la, h0.ln, h0.lmax, h0.b, h0.b_prob = "runnerhyphae", 1, 5.,0.01, 0.13, 10, 30/180*np.pi, 1.0, 0.001, 0.003, 0.005, 10.0, 2, 0.5
+            p0 = pb.MycorrhizalRootRandomParameter(self.plant)
+            p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.hyphalEmergenceDensity = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5, 1.0
+            p0.successor = [[2]]
+            p0.successorP = [[1.]]
+            p1 = pb.MycorrhizalRootRandomParameter(self.plant)
+            p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.hyphalEmergenceDensity = "lateral", 2, 25., 2., 0.1, 1.0
+            self.p0, self.p1, self.h0 = p0, p1, h0  # needed at later point
+            self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
+            self.plant.setOrganRandomParameter(p1)
+            self.plant.setOrganRandomParameter(h0)
+            srp = pb.SeedRandomParameter(self.plant)
+            self.plant.setOrganRandomParameter(srp)
+    
+            param0 = p0.realize()  # set up root by hand (without a root system)
+            param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
+            parentroot = pb.MycorrhizalRoot(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0,False, 0)  # takes ownership of param0
+            parentroot.setOrganism(self.plant)
+            parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
+    
+            self.parentroot = parentroot  # store parent (not owned by child Organ)
+            self.mycroot = pb.MycorrhizalRoot(self.plant, p0.subType,  0, self.parentroot, 0)
+            self.mycroot.setOrganism(self.plant)
 
     def mycroot_length_test(self, dt, l, subDt):
         """ simulates a single root and checks length against analytic length """
@@ -229,9 +260,16 @@ class TestMycorrhizalRoot(unittest.TestCase):
     # TODO test colonization location shift
     def test_colonization_location_shift(self):
         """ tests if colonization location shift works """
-        # TODO simulate a root until time point x 
+        self.mycroot_example_rrp()
+        simtime = 20.
+        self.mycroot.simulate(simtime, False)
+        colonized = self.mycroot.getNodeColonization()
         # TODO extract colonization state and location and extract this along with global node index (this should be preserved after another simulation step right?)
+
         # TODO simulate another time step and check if the colonization state and location is still the same for the same global node index (except for nodes that were active tips before hand)
+        self.mycroot.simulate(1., False)
+        colonized2 = self.mycroot.getNodeColonization()
+        # TODO do some comparing here
 
     def test_parameter(self):
         """ tests some parameters on sequential organ list """
