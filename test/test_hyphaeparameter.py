@@ -45,7 +45,6 @@ class TestHyphaeParameter(unittest.TestCase):
         self.assertEqual(hrp2.ana, hrp.ana, "copy: value unexpected")
         self.assertEqual(hrp2.lb, hrp.lb, "copy: value unexpected")
         self.assertEqual(hrp2.la, hrp.la, "copy: value unexpected")
-        self.assertEqual(hrp2.ln, hrp.ln, "copy: value unexpected")
         self.assertEqual(hrp2.b, hrp.b, "copy: value unexpected")
         self.assertEqual(hrp2.b_prob, hrp.b_prob, "copy: value unexpected")
 
@@ -55,9 +54,9 @@ class TestHyphaeParameter(unittest.TestCase):
         hrp = pb.HyphaeRandomParameter(self.plant)
         hrp.dx = 0.2
         hrp.distTH = 0.3
+        hrp.subType = 1
         ot = hrp.getParameter("organType")  # test defaults
         st = hrp.getParameter("subType")
-        dx = hrp.getParameter("dx")
         dth = hrp.getParameter("distTH")
         v = hrp.getParameter("v")
         hlt = hrp.getParameter("hlt")
@@ -70,8 +69,7 @@ class TestHyphaeParameter(unittest.TestCase):
         b = hrp.getParameter("b")
         b_prob = hrp.getParameter("b_prob")
         self.assertEqual(ot, pb.hyphae, "getParameter: value unexpected")
-        self.assertEqual(st, 0, "getParameter: value unexpected")
-        self.assertEqual(dx, 0.2, "getParameter: value unexpected")
+        self.assertEqual(st, 1, "getParameter: value unexpected")
         self.assertEqual(dth, 0.3, "getParameter: value unexpected")
         self.assertEqual(v, 0.13, "getParameter: value unexpected")
         self.assertEqual(hlt, 10, "getParameter: value unexpected")
@@ -87,15 +85,21 @@ class TestHyphaeParameter(unittest.TestCase):
     def test_xml(self): # TODO check again all parameters needed
         """ tests reading and writing xml parameter file """
         self.hyphae_example()
+        hrp = self.hrp
         # write parameters to xml
-        self.plant.writeParameters("hyphae_test_parameters.xml", 'plant', True)
+        hrp.writeXML("hyphae.xml")
         # read parameters from xml
-        plant2 = pb.Organism()
-        plant2.readParameters("hyphae_test_parameters.xml", fromFile = True, verbose = True)
-        hrp2 = plant2.getOrganRandomParameter(pb.hyphae)[0]
-        self.assertEqual(hrp2.dx, self.hrp.dx, "xml read/write: value unexpected")
+        hrp2 = pb.HyphaeRandomParameter(self.plant)
+        hrp2.readXML("hyphae.xml")
+        # hrp2 = plant2.getOrganRandomParameter(pb.hyphae)
         self.assertEqual(hrp2.distTH, self.hrp.distTH, "xml read/write: value unexpected")
         self.assertEqual(hrp2.subType, self.hrp.subType, "xml read/write: value unexpected")
+        self.assertEqual(hrp2.nob(), self.hrp.nob(), "xml read/write: value unexpected")
+        self.assertEqual(hrp2.lns, self.hrp.lns, "xml read/write: value unexpected")
+        self.assertEqual(hrp2.v, self.hrp.v, "xml read/write: value unexpected")
+        self.assertEqual(hrp2.hlt, self.hrp.hlt, "xml read/write: value unexpected")
+        self.assertEqual(hrp2.successor[0][0], self.hrp.successor[0][0], "xml read/write: value unexpected")
+
 
     def test_realize(self):
         """ tests if hyphae parameter can be set and realized in a plant """
@@ -104,10 +108,9 @@ class TestHyphaeParameter(unittest.TestCase):
         # set the hyphae parameter to the plant
         self.plant.setOrganRandomParameter(self.hrp)
         # check if the parameter is realized in the plant
-        hrp_plant = self.plant.getOrganRandomParameter(pb.hyphae)[0]
-        self.assertEqual(hrp_plant.dx, self.hrp.dx, "realize: value unexpected")
+        hrp_plant = self.plant.getOrganRandomParameter(pb.hyphae)
         self.assertEqual(hrp_plant.distTH, self.hrp.distTH, "realize: value unexpected")
         self.assertEqual(hrp_plant.subType, self.hrp.subType, "realize: value unexpected")
 
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

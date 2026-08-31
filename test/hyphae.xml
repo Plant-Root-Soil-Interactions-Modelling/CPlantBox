@@ -1,0 +1,38 @@
+<hyphae name="undefined" subType="1">
+    <parameter name="tropismT" value="2"/>
+    <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
+    <parameter name="a" value="0.1"/>
+    <!--radius [cm]-->
+    <parameter name="ana" value="0.5"/>
+    <!--Probability of anastomosis occuring if distance is long enough-->
+    <parameter name="b" value="1" dev="0.5"/>
+    <!--Branching rate [1/day]-->
+    <parameter name="b_prob" value="1"/>
+    <!--Probability of branching to occur by tip splitting rather than lateral branching [1]-->
+    <parameter name="distTH" value="0.2"/>
+    <!--Distance for tip-hyphae anastomosis [cm]-->
+    <parameter name="dx" value="0.1"/>
+    <!--Axial resolution [cm] (maximal segment size)-->
+    <parameter name="dxMin" value="1e-06"/>
+    <!--Axial resolution [cm] (minimal segment size)-->
+    <parameter name="hlt" value="5" dev="0.1"/>
+    <!--Hyphal lifetime  [day]-->
+    <parameter name="la" value="0.5"/>
+    <!--Apical zone [cm]-->
+    <parameter name="lb" value="0.5"/>
+    <!--Basal zone [cm]-->
+    <parameter name="ldelay" value="-1"/>
+    <!--Lateral emergence delay [day]-->
+    <parameter name="lmax" value="5"/>
+    <!--Maximal length of the hyphae [cm]-->
+    <parameter name="ln" value="0.5"/>
+    <!--Inter-lateral distance [cm]-->
+    <parameter name="theta" value="0.52359879"/>
+    <!--Branching angle [rad]-->
+    <parameter name="tropismN" value="1"/>
+    <!--Number of trials of root tropism-->
+    <parameter name="tropismS" value="0.30000001"/>
+    <!--Mean value of expected change of root tropism [1/cm]-->
+    <parameter name="v" value="0.12" dev="0.0099999998"/>
+    <!--Tip elongation rate [cm/day]-->
+</hyphae>
