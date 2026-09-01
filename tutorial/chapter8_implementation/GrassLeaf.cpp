@@ -26,14 +26,13 @@ GrassLeaf::GrassLeaf(int id, std::shared_ptr<const OrganSpecificParameter> param
 GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay, std::shared_ptr<Organ> parent, int pni)
     : Organ(plant, parent, Organism::ot_leaf, subtype, delay, pni) { // |\label{l81:super}|
     
-    assert(parent != nullptr && "GrassLeaf: parent must not be null");  // |\label{l81:init}|
-    getPlant()->leafphytomerID.at(subtype)++;  // we keep track of the number of leaves per leaf type |\label{l81:init_end}|
+    assert(parent != nullptr && "GrassLeaf: parent must not be null");  // |\label{l81:init2}|
+    getPlant()->leafphytomerID.at(subtype)++;  // we keep track of the number of leaves per leaf type |\label{l81:init2_end}|
 
-    // Anchor the meristem at the attachment point  // |\label{l81:anchor_start}|
-    Vector3d anchorPos(0., 0., 0.); 
+    Vector3d anchorPos(0., 0., 0.); // |\label{l81:anchor_start}|
     Matrix3d anchorFrame;           
 
-    // Anchor frame: align heading column with parent heading at pni.
+    // Anchor frame: align heading column with parent heading at pni
     if (parent->getNumberOfNodes() > 0) {
         Vector3d h; //  |\label{l81:heading}|
         if (parent->hasRelCoord()) {
@@ -54,7 +53,7 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
     anchorFrame = t.getFrame();
     turtle.setAnchorFrame(anchorFrame); // |\label{l81:turtle_end}|
 
-    // Seed nodeIds/nodeCTs for the initial meristem node. // |\label{l81:node}|
+    // Seed nodeIds and nodeCTs for the initial meristem node |\label{l81:node}|
     double creationTime = parent->getNodeCT(pni) + std::max(delay, 0.0); 
     nodeIds.push_back(parent->getNodeId(pni)); 
     nodeCTs.push_back(creationTime); // |\label{l81:node_end}|
