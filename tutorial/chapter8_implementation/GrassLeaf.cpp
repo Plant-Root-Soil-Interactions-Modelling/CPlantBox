@@ -158,6 +158,14 @@ void GrassLeaf::simulate(double dt, bool verbose) {
  * Special behaviour for @p name == "radius" with addParams["index"] set: provides radius of sheath, or leaf vein depending on node index i
  */
 double GrassLeaf::getParameter(std::string name, std::map<std::string, double> addParams) const {
+    if (name == "sheathLength") // |\label{l81:other}|
+        return param()->sheathLength;
+    if (name == "leafGrowthDuration")
+        return param()->leafGrowthDuration;
+    if (name == "bladeAngle")
+        return param()->bladeAngle; 
+    if (name == "bladeLength")
+        return param()->bladeLength; // |\label{l81:other_end}|
     if (name == "radius") { // radius of sheath, or leaf vein // |\label{l81:radius}|
         auto it = addParams.find("index");
         if (it != addParams.end()) {   
@@ -173,20 +181,12 @@ double GrassLeaf::getParameter(std::string name, std::map<std::string, double> a
             }
         } // if "index" is not provided, proceed without
     } // |\label{l81:radius_end}|
-    if (name == "sheathLength") // |\label{l81:other}|
-        return param()->sheathLength;
-    if (name == "leafGrowthDuration")
-        return param()->leafGrowthDuration;
-    if (name == "bladeAngle")
-        return param()->bladeAngle; // |\label{l81:other_end}|
-    if (name == "bladeWidth") {
-        auto it = addParams.find("index"); // |\label{l81:bladewidth}|
+    if (name == "bladeWidth") { // |\label{l81:bladewidth}|
+        auto it = addParams.find("index"); 
         if (it != addParams.end())
             return getBladeWidth(static_cast<int>(it->second));  
         return param()->bladeWidth; // |\label{l81:bladewidth_end}|
-    } 
-    if (name == "bladeLength")
-        return param()->bladeLength;
+    }     
     return Organ::getParameter(name, addParams); // |\label{l81:getParameter_call}|
 } 
 
