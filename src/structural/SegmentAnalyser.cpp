@@ -43,9 +43,11 @@ SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::
  * Constructs from an Organism, copying all segments and extracting per-segment
  * parameters (radius, subType, id, organType) from the organ objects.
  *
- * @param plant  organism to analyse
+ * @param plant      organism to analyse
+ * @param addParams  extra arguments forwarded to the organs' getParameter() calls; for "radius"
+ *                   the segment's local (1-based) node index within its organ is added under key "index"
  */
-SegmentAnalyser::SegmentAnalyser(const Organism& plant) 
+SegmentAnalyser::SegmentAnalyser(const Organism& plant, std::map<std::string, double> addParams) 
 {
     //std::cout << "construct from Organism\n";
     nodes = plant.getNodes();
@@ -61,16 +63,18 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     auto organType = std::vector<double>(segments.size());
     for (size_t i=0; i<segments.size(); i++) {
         segO[i] = sego[i]; // convert shared_ptr to weak_ptr
-        subType[i] = segO[i].lock()->getParameter("subType");
-        id[i] = segO[i].lock()->getParameter("id");
-        organType[i] = segO[i].lock()->getParameter("organType"); 
+        subType[i] = segO[i].lock()->getParameter("subType", addParams);
+        id[i] = segO[i].lock()->getParameter("id", addParams);
+        organType[i] = segO[i].lock()->getParameter("organType", addParams); 
     }
     int c = 0;
     auto organs = plant.getOrgans();
     for (size_t i = 0; i < organs.size(); i++) {
         auto organ = organs.at(i);   
         for (int localIdx = 0; localIdx < organ->getNumberOfSegments(); localIdx++) {
-            radii.at(c) = organ->getParameter("radius", {{"index", (double)(localIdx + 1)}});
+            auto params = addParams;
+            params["index"] = (double)(localIdx + 1);
+            radii.at(c) = organ->getParameter("radius", params);
             // std::cout << "SegmentAnalyser "<< c << " " << localIdx << " " << radii.at(c) << " " << i << std::endl;
             c++;    
         }
@@ -290,13 +294,15 @@ void SegmentAnalyser::addCellIds(const MappedSegments& plant)
  * All other names are forwarded to the owning organ; if the organ pointer is expired,
  * @p def is returned, or an exception is thrown if @p def is NaN.
  *
- * @param name  parameter name
- * @param def   fallback value for segments without a valid organ pointer; throws if NaN
- * @return      per-segment values, one entry per segment
+ * @param name       parameter name
+ * @param def        fallback value for segments without a valid organ pointer; throws if NaN
+ * @param addParams  extra arguments forwarded to the owning organ's getParameter(); for name=="radius"
+ *                   the segment's local (1-based) node index within its organ is added under key "index"
+ * @return           per-segment values, one entry per segment
  */
-std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) const
+std::vector<double> SegmentAnalyser::getParameter(std::string name, double def, std::map<std::string, double> addParams) const
 {
-    if (data.count(name)) { // first, check data
+    if (data.count(name)) { // first, check user data
         return data.at(name);
     }
     std::vector<double> d(segments.size()); // make return vector
@@ -319,10 +325,20 @@ std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) 
         }
         return d;
     }
+    std::shared_ptr<Organ> prevOrgan = nullptr;
+    size_t localIdx = 0;
     for (size_t i=0; i<segO.size(); i++) { // else pass to Organs
         if (!segO.at(i).expired()) {
-            d.at(i) = segO.at(i).lock()->getParameter(name);
+            auto organ = segO.at(i).lock();
+            localIdx = (organ == prevOrgan) ? localIdx + 1 : 0;
+            prevOrgan = organ;
+            auto params = addParams;
+            if (name == "radius") {
+                params["index"] = double(localIdx + 1);
+            }
+            d.at(i) = organ->getParameter(name, params);
         } else { // in case the segment has no origin
+            prevOrgan = nullptr;
             if (std::isnan(def)) {
                 throw std::invalid_argument("SegmentAnalyser::getParameter: segment origin expired (segment has no owner), "
                     "for segment index " + std::to_string(i) + ", parameter name "+name);

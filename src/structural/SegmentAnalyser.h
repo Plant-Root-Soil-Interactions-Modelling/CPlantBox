@@ -32,7 +32,7 @@ public:
     SegmentAnalyser() { }; ///< Creates an empty object; populate with addSegments().
     SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::vector<Vector2i>& segments,
     		const std::vector<double>& segCTs, const std::vector<double>& radii); ///< Constructs from raw node, segment, creation-time, and radius vectors.
-    SegmentAnalyser(const Organism& plant); ///< Constructs from an Organism, copying its segments and per-segment parameters.
+    SegmentAnalyser(const Organism& plant, std::map<std::string, double> addParams = {}); ///< Constructs from an Organism, copying its segments and per-segment parameters. @p addParams is forwarded to the organs' getParameter() calls.
     SegmentAnalyser(const MappedSegments& plant); ///< Constructs from a MappedSegments object.
     virtual ~SegmentAnalyser() { };
 
@@ -64,7 +64,8 @@ public:
 
     /** @name Query */
     ///@{
-    std::vector<double> getParameter(std::string name, double def = std::numeric_limits<double>::quiet_NaN()) const; ///< Returns a named parameter per segment; falls back to @p def (or throws) for expired organ pointers.
+    std::vector<double> getParameter(std::string name, double def = std::numeric_limits<double>::quiet_NaN(),
+        std::map<std::string, double> addParams = {}) const; ///< Returns a named parameter per segment; falls back to @p def (or throws) for expired organ pointers. @p addParams is forwarded to the organ's getParameter(); for name=="radius" the segment's local node index is added under key "index".
     double getSegmentLength(int i) const; ///< Returns the Euclidean length of segment @p i.
     double getSummed(std::string name) const; ///< Returns the sum of parameter @p name over all segments.
     double getSummed(std::string name, std::shared_ptr<SignedDistanceFunction> geometry) const; ///< Returns the approximate sum of @p name for segments whose midpoint lies inside @p geometry.

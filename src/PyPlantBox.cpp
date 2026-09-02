@@ -617,7 +617,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<SegmentAnalyser, std::shared_ptr<SegmentAnalyser>>(m, "SegmentAnalyser")
         .def(py::init<>())
         .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, std::vector<double>>())
-        .def(py::init<Organism &>())
+        .def(py::init<Organism &, std::map<std::string, double>>(), py::arg("plant"), py::arg("addParams") = std::map<std::string, double>())
         .def(py::init<SegmentAnalyser &>())
         .def(py::init<MappedSegments &>())
         .def("addSegments", (void (SegmentAnalyser::*)(const Organism &))&SegmentAnalyser::addSegments)        // overloads
@@ -635,7 +635,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("pack", &SegmentAnalyser::pack)
         .def("getMinBounds", &SegmentAnalyser::getMinBounds)
         .def("getMaxBounds", &SegmentAnalyser::getMaxBounds)
-        .def("getParameter", &SegmentAnalyser::getParameter, py::arg("name"), py::arg("def") = std::numeric_limits<double>::quiet_NaN())
+        .def("getParameter", &SegmentAnalyser::getParameter, py::arg("name"), py::arg("def") = std::numeric_limits<double>::quiet_NaN(),
+             py::arg("addParams") = std::map<std::string, double>())
         .def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
         .def("getSummed", (double (SegmentAnalyser::*)(std::string) const) & SegmentAnalyser::getSummed)                                          // overloads
         .def("getSummed", (double (SegmentAnalyser::*)(std::string, std::shared_ptr<SignedDistanceFunction>) const) & SegmentAnalyser::getSummed) // overloads
@@ -881,9 +882,15 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("delayNGStart", &StemSpecificParameter::delayNGStart)
         .def_readwrite("delayNGEnd", &StemSpecificParameter::delayNGEnd);
     /**
-     * Root.h
+     * Root.h – trampoline to allow Python subclasses to override getParameter().
      */
-    py::class_<Root, Organ, std::shared_ptr<Root>>(m, "Root")
+    struct PyRoot : Root {
+        using Root::Root;
+        double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override {
+            PYBIND11_OVERRIDE(double, Root, getParameter, name, addParams);
+        }
+    };
+    py::class_<Root, Organ, PyRoot, std::shared_ptr<Root>>(m, "Root")
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
         .def("calcLength", &Root::calcLength)
