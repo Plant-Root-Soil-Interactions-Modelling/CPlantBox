@@ -61,30 +61,32 @@ path = "../../modelparameter/structural/rootsystem/"
 name = "Daucus_carota"
 plant.readParameters(path + name + ".xml")
 
+addParams = {"r0": 0.05, "rmax": 3, "a_s": 30.0, "k": 6.4e-4, "p": 1.5, "Ls": 20, "q": 5}
+
 plant.initialize()
 
 sim_time = 120
 dt = 1  # simulation step [day], animation shows one frame per step
 
-plant.simulate(sim_time)
+# plant.simulate(sim_time)
 
-# # Animate growth in an interactive vtk window (close window, or press 'e', to continue)
-# anim = AnimateRoots(plant)
-# anim.root_name = "age"
-# anim.start(axis="v")
-# for i in range(int(sim_time / dt)):
-#     plant.simulate(dt)
-#     anim.simtime = (i + 1) * dt
-#     anim.update()
-# anim.run()
+# Animate growth in an interactive vtk window (close window, or press 'e', to continue)
+anim = AnimateRoots(plant, add_params=addParams)
+anim.root_name = "age"
+anim.start(axis="v")
+for i in range(int(sim_time / dt)):
+    plant.simulate(dt)
+    anim.simtime = (i + 1) * dt
+    anim.update()
+anim.run()
 
 # Export final result (as vtp)
 # plant.write("results/example_plant.vtp")
 
-addParams = {"r0": 0.05, "rmax": 3, "a_s": 30.0, "k": 6.4e-4, "p": 1.5, "Ls": 20, "q": 5}
-ana = pb.SegmentAnalyser(plant, addParams)
-ana.write("results/example_plant_segs.vtp")
-vp.plot_plant(ana, "subType")
+
+# ana = pb.SegmentAnalyser(plant, addParams)
+# ana.write("results/example_plant_segs.vtp")
+# vp.plot_plant(ana, "subType")
 
 # organs = plant.getOrgans()
 # taproot = organs[0]
