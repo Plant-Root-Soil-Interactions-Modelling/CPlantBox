@@ -32,8 +32,8 @@ def plot_profile(cc, h, c):  # |\label{l63:plot_profile_start}|
 def plot_history(area, w, c, n_steps):  # |\label{l63:plot_history_start}|
     """plots concentration per liquid phase and concentration per soil volume"""
     _, ax1 = figure_style.subplots11()
-    c_ = np.array([np.sum(np.multiply(area, np.multiply(c[i], w[i]))) for i in range(0, n_steps)])  # nitrate concentration per soil volume
-    ax1.plot(np.linspace(0, sim_time, n_steps), np.sum(np.multiply(area, c), axis=1), color="tab:red")
+    c_ = np.array([np.sum(np.multiply(c[i], w[i])) for i in range(0, n_steps)])  # nitrate concentration per soil volume
+    ax1.plot(np.linspace(0, sim_time, n_steps), np.sum(c, axis=1), color="tab:red")
     ax1.set_ylabel("Liquid phase (g L$^{-1}$)", color="tab:red")
     ax1.set_xlabel("Time (day)")
     ax1.tick_params(axis="y", labelcolor="tab:red")
