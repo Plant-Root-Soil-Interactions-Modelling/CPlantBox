@@ -45,7 +45,7 @@ def model_evaluation(measured_data: dict, simulated_data: dict, number_of_observ
         log_p = log_p1 + log_p2
 
     # root mean suare error (RSME)
-    rmse = np.sqrt((np.mean(e1**2.0)))
+    rmse = np.sqrt(np.mean(e1**2.0))
 
     # normalized RSME
     nrmse = (rmse / np.mean(measured_mean)) * 100

@@ -43,7 +43,7 @@ def run_soil_core_simulation(
     scale_elongation = create_scale_elongation_grid(temp_scales)
 
     # 4. define soil geometry (soil cores and simulation space)
-    soil_core_1, soil_core_2, layer_volume, n_layers, depth = define_soil_core_geometry(
+    soil_core_1, soil_core_2, layer_volume, n_layers, _ = define_soil_core_geometry(
         dataset
     )
 

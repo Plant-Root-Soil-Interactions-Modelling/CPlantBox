@@ -46,7 +46,7 @@ def run_minirhizotron_simulation(
 
     # 4. define soil domain and minirhizotron tube geometry
     (
-        inner_tube_geom,
+        _,
         outer_tube_geom,
         opening_left,
         opening_right,

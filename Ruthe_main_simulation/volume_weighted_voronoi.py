@@ -44,8 +44,8 @@ SEED = 56789
 # - False: generic change-of-variables via Jacobian
 USE_ANALYTIC_RLD_TO_RADIUS_PDF = True
 
-CV_RLD_A: float = -42.96712137374045
-CV_RLD_B: float = 33.359417519684904
+CV_RLD_A: float = -35.49029721531007
+CV_RLD_B: float = 39.075961056298176
 
 def cv_from_rld(rld: float) -> float:
     return CV_RLD_A * np.log10(rld) + CV_RLD_B
@@ -73,7 +73,7 @@ class PeriodicDomainAnalyser:
         self,
         root_system: pb.RootSystem,
         domain_size: tuple[float, float],
-        depth_layers: list[tuple[float, float]] = None,
+        depth_layers: list[tuple[float, float]] | None = None,
     ):
         """
         Args:
@@ -411,7 +411,7 @@ class PeriodicDomainAnalyser:
                 lognorm_fit = (x_fit, pdf_fit, float(mode))
 
                 simulation_data[idx] = {"s": float(s_fit), "scale": float(scale_fit)}
-            except Exception as e:
+            except (ValueError, RuntimeError) as e:
                 print(f"Fit failed in layer {idx}: {e}")
 
             # RLD-derived PDF (density)
@@ -483,7 +483,7 @@ class PeriodicDomainAnalyser:
                 ax_top.xaxis.set_ticks_position("none")
 
                 d = 0.015
-                kwargs = dict(color="k", clip_on=False, linewidth=1)
+                kwargs = { "color": "k", "clip_on": False, "linewidth": 1 }
                 ax_top.plot((-d, +d), (-d, +d), transform=ax_top.transAxes, **kwargs)
                 ax_top.plot((1 - d, 1 + d), (-d, +d), transform=ax_top.transAxes, **kwargs)
                 ax_bot.plot((-d, +d), (1 - d, 1 + d), transform=ax_bot.transAxes, **kwargs)
@@ -619,7 +619,7 @@ def run_daily_growth_simulation(
     df: pd.DataFrame,
     scale_elongation: pb.EquidistantGrid1D,
     dataset: RutheConfig,
-    analysis_days: list[int] = None,
+    analysis_days: list[int] | None = None,
     callback=None,
 ) -> None:
     """
@@ -736,7 +736,7 @@ def run_single_plant_simulation():
 
     analysis_days = [SOIL_CORE_DAY]  # days to analyze (here: day of soil core sampling)
     analysis_days = sorted(
-        list(set([d for d in analysis_days if d <= dataset.SIMULATION_TIME]))
+        {d for d in analysis_days if d <= dataset.SIMULATION_TIME}
     )
 
     print("Running growth simulation...")

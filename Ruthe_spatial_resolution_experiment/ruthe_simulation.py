@@ -3,9 +3,9 @@ import os
 import numpy as np
 import pandas as pd
 from analysis_and_plotting_utils import (
-    plot_soil_core,
     _resample_profile,
     _soil_core_layer_centers,
+    plot_soil_core,
 )
 from ruthe_global_variables import (
     RUTHE_1994_95,
@@ -457,7 +457,7 @@ def save_results_as_csv(
     # write csv
     os.makedirs(output_directory, exist_ok=True)
 
-    layer_thickness = int(round(dataset.SOIL_CORE_DEPTH / layers))
+    layer_thickness = round(dataset.SOIL_CORE_DEPTH / layers)
     out_path = os.path.join(
         output_directory,
         f"spatial_resolution_tests/full_data_csv_{year}_cores_{dataset.NUMBER_OF_SOIL_CORE_SAMPLES}_layer_{layer_thickness}.csv",

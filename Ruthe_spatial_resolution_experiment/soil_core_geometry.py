@@ -1,6 +1,6 @@
 from pathlib import Path
-import numpy as np
 
+import numpy as np
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 import vtk
@@ -190,7 +190,7 @@ def main():
         # Check if creationTime works on the analyser
         ct = all_analyzed_segments.getParameter("creationTime")
         print(f"Extracted creationTime with {len(ct)} entries.")
-    except Exception as e:
+    except Exception as e: # noqa: BLE001
         print(f"Error extracting creationTime: {e}")
 
     root_pd = segs_to_polydata(all_analyzed_segments, 1.0, ["creationTime", "radius"])

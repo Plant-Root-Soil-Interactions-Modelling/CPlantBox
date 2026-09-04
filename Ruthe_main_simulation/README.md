@@ -2,7 +2,7 @@
 
 This repository contains the analysis and visualization code accompanying:
 
-Hack J., Ullah S., Leitner D., Vanderborght J., Kage H., Schnepf A. XXXX. Soil temperature controls seasonal root system development in virtual field simulations with CPlantBox. XXX
+Hack J., Ullah S., Leitner D., Vanderborght J., Kage H., Schnepf A. XXXX. Simulating soil-temperature-driven seasonal and interannual variation in winter wheat root development under field conditions and comparing perirhizal radius estimates with CPlantBox. XXX
 
 Please cite the above publication when using this code.
 

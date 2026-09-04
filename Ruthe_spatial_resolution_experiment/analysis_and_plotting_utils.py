@@ -80,7 +80,7 @@ def model_evaluation(
         log_p = log_p1 + log_p2
 
     # root mean square error (RSME)
-    rmse = np.sqrt((np.mean(e1**2.0)))
+    rmse = np.sqrt(np.mean(e1**2.0))
 
     # normalized RSME
     nrmse = (rmse / np.mean(measured_mean)) * 100

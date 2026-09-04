@@ -26,9 +26,7 @@ def make_seed(
     Returns a non-negative 31-bit integer, compatible with common RNG seed APIs.
     """
 
-    payload = f"{int(base_seed)}|{namespace}|{int(run)}|{int(row_index)}|{int(plant_index)}".encode(
-        "utf-8"
-    )
+    payload = f"{int(base_seed)}|{namespace}|{int(run)}|{int(row_index)}|{int(plant_index)}".encode()
     digest = hashlib.blake2b(payload, digest_size=8).digest()
     return int.from_bytes(digest, byteorder="little", signed=False) & 0x7FFFFFFF
 

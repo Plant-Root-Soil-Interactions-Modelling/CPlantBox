@@ -1,8 +1,8 @@
 """Run simulation and take virtual soil core samples to compare to real life data later"""
 
 import random
-from pprint import pprint
 from pathlib import Path
+from pprint import pprint
 
 import numpy as np
 import pandas as pd
@@ -46,7 +46,7 @@ def run_soil_core_simulation(
     scale_elongation = create_scale_elongation_grid(temp_scales)
 
     # 4. define soil geometry (soil cores and simulation space)
-    soil_cores, layer_volume, n_layers, depth = define_soil_core_geometry(
+    soil_cores, layer_volume, n_layers, _ = define_soil_core_geometry(
         dataset, n_soil_cores
     )
 

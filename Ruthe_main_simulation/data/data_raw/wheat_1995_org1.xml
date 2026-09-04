@@ -48,7 +48,7 @@
         <!--Basal zone [cm]-->
         <parameter name="lmax" value="130" dev="30"/>
         <!--Maximal root length [cm]-->
-        <parameter name="ln" value="1.6" dev="0"/>
+        <parameter name="ln" value="0.8" dev="0.6"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="r" value="2" dev="0.6"/>
         <!--Initial growth rate [cm day-1]-->

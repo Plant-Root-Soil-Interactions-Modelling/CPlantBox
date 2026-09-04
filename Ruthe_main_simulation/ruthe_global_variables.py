@@ -113,11 +113,11 @@ RUTHE_1994_95 = RutheConfig(
     PATH_TO_MINIRHIZOTRON_DATA_3=DATA_RUTHE_RAW / "MiniRhizoDV130695.csv",
     DAYS_TO_ANALYZE_MINIRHIZOTRON=[172, 191, 220],
     MEASUREMENT_DAYS_MINIRHIZOTRON=[
-        "26$^{\mathrm{th}}$ April, 1995",
-        "15$^{\mathrm{th}}$ May, 1995",
-        "13$^{\mathrm{th}}$ June, 1995",
+        r"26$^{\mathrm{th}}$ April, 1995",
+        r"15$^{\mathrm{th}}$ May, 1995",
+        r"13$^{\mathrm{th}}$ June, 1995",
     ],
-    MEASUREMENT_DAY_SOIL_CORE="20$^{\mathrm{th}}$ June, 1995",
+    MEASUREMENT_DAY_SOIL_CORE=r"20$^{\mathrm{th}}$ June, 1995",
 )
 
 
@@ -131,12 +131,12 @@ RUTHE_1995_96 = RutheConfig(
     PATH_TO_MINIRHIZOTRON_DATA_1=DATA_RUTHE_RAW / "MiniRhizo1996.csv",
     DAYS_TO_ANALYZE_MINIRHIZOTRON=[181, 195, 209, 230],
     MEASUREMENT_DAYS_MINIRHIZOTRON=[
-        "30$^{\mathrm{th}}$ April, 1996",
-        "14$^{\mathrm{th}}$ May, 1996",
-        "28$^{\mathrm{th}}$ May, 1996",
-        "18$^{\mathrm{th}}$ June, 1996",
+        r"30$^{\mathrm{th}}$ April, 1996",
+        r"14$^{\mathrm{th}}$ May, 1996",
+        r"28$^{\mathrm{th}}$ May, 1996",
+        r"18$^{\mathrm{th}}$ June, 1996",
     ],
-    MEASUREMENT_DAY_SOIL_CORE="26$^{\mathrm{th}}$ June, 1996",
+    MEASUREMENT_DAY_SOIL_CORE=r"26$^{\mathrm{th}}$ June, 1996",
 )
 
 
@@ -150,11 +150,11 @@ RUTHE_1996_97 = RutheConfig(
     PATH_TO_MINIRHIZOTRON_DATA_1=DATA_RUTHE_RAW / "MiniRhizo1997.csv",
     DAYS_TO_ANALYZE_MINIRHIZOTRON=[162, 193, 207, 227, 240],
     MEASUREMENT_DAYS_MINIRHIZOTRON=[
-        "15$^{\mathrm{th}}$ April, 1997",
-        "16$^{\mathrm{th}}$ May, 1997",
-        "30$^{\mathrm{th}}$ May, 1997",
-        "19$^{\mathrm{th}}$ June, 1997",
-        "02$^{\mathrm{th}}$ June, 1997",
+        r"15$^{\mathrm{th}}$ April, 1997",
+        r"16$^{\mathrm{th}}$ May, 1997",
+        r"30$^{\mathrm{th}}$ May, 1997",
+        r"19$^{\mathrm{th}}$ June, 1997",
+        r"02$^{\mathrm{th}}$ July, 1997",
     ],
-    MEASUREMENT_DAY_SOIL_CORE="16$^{\mathrm{th}}$ June, 1997",
+    MEASUREMENT_DAY_SOIL_CORE=r"16$^{\mathrm{th}}$ June, 1997",
 )
