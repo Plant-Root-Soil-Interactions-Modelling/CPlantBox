@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CropProperties>
+  <crop>
+	<parameter id="CROPNAME" unit="-">winter wheat</parameter>
+	<parameter id="AirTemperatureSumAnthesis" unit="K">675</parameter>
+	<parameter id="AirTemperatureSumMilkripeness" unit="K">800</parameter>
+	<parameter id="AirTemperatureSumMaturity" unit="K">1350</parameter>
+	<parameter id="RelativeDayOfEmergence" unit="-" datatype="INT">11</parameter>
+	<parameter id="DroughtTolerance" unit="-">0.5</parameter>
+	<parameter id="BaseTempBeforeAnt" unit="°C">3</parameter>
+	<parameter id="BaseTempAfterAnt" unit="°C">3</parameter>
+	<parameter id="LUE" unit="-">3</parameter>
+	<parameter id="SLA" unit="m**2 m**-2">0.02</parameter>
+	<parameter id="RGRL" unit="-">0.009</parameter>
+	<parameter id="LaiNStressReduction" unit="-">1.0</parameter>
+	<parameter id="LueNStressReduction" unit="-">1.1</parameter>
+	<parameter id="SlaNStressReduction" unit="-">0.5</parameter>
+	<parameter id="PartitioningNStressReduction" unit="-">1.0</parameter>
+	<parameter id="LaiCritical" unit="-">4</parameter>
+	<parameter id="TRANCO" unit="mm">8</parameter>
+	<parameter id="RDRSHM" unit="-">0.05</parameter>
+	<parameter id="RDRL" unit="-">0.0</parameter>
+	<parameter id="RDRNS" unit="-">0.05</parameter>
+	<parameter id="K" unit="-">0.6</parameter>
+	<parameter id="VernalDaysMax" unit="-">30</parameter>
+	<parameter id="VernalisationTLow" unit="°C">3</parameter>
+	<parameter id="VernalisationTHigh" unit="°C">10</parameter>
+	<parameter id="Latitude" unit="http://www.wurvoc.org/vocabularies/om-1.8/degree">60.8</parameter>
+	
+	<parameter id="ROOTDI" unit="m">0.1</parameter>
+	<parameter id="ROOTDM" unit="m">1.2</parameter>
+	<parameter id="RRDMAX" unit="m">0.012</parameter>
+
+	<parameter id="RDRT" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">
+	  <value>-10</value><value>0</value>
+	  <value>10</value><value>0.03</value>
+	  <value>15</value><value>0.04</value>
+	  <value>30</value><value>0.09</value>
+	  <value>50</value><value>0.09</value>
+	</parameter>
+	<parameter id="FRTTB">
+	   <value>0</value> <value>0.5</value>
+	   <value>0.1</value> <value>0.5</value>
+	   <value>0.2</value> <value>0.4</value>
+	   <value>0.28</value> <value>0.3</value>
+	   <value>0.35</value> <value>0.22</value>
+	   <value>0.4</value> <value>0.17</value>
+	   <value>0.5</value> <value>0.13</value>
+	   <value>0.7</value> <value>0.07</value>
+	   <value>0.9</value> <value>0.03</value>
+	   <value>0.99</value> <value>0.02</value>
+	   <value>1.2</value> <value>0</value>
+	   <value>2</value> <value>0</value>
+	</parameter>
+
+	<parameter id="FLVTB" unit = "http://www.wurvoc.org/vocabularies/om-1.8/one">
+	   <value>0</value> <value>0.33</value>
+	   <value>0.1</value> <value>0.33</value>
+	   <value>0.2</value> <value>0.38</value>
+	   <value>0.28</value> <value>0.49</value>
+	   <value>0.35</value> <value>0.45</value>
+	   <value>0.4</value> <value>0.44</value>
+	   <value>0.5</value> <value>0.435</value>
+	   <value>0.7</value> <value>0.2</value>
+	   <value>0.9</value> <value>0.05</value>
+	   <value>0.99</value> <value>0</value>
+	   <value>1.05</value> <value>0</value>
+	   <value>2</value> <value>0</value>
+	</parameter>
+
+	<parameter id="FSTTB" unit = " http://www.wurvoc.org/vocabularies/om-1.8/one">
+	   <value>0</value> <value>0.17</value>
+	   <value>0.1</value> <value>0.17</value>
+	   <value>0.2</value> <value>0.22</value>
+	   <value>0.28</value> <value>0.21</value>
+	   <value>0.35</value> <value>0.33</value>
+	   <value>0.4</value> <value>0.39</value>
+	   <value>0.5</value> <value>0.435</value>
+	   <value>0.7</value> <value>0.73</value>
+	   <value>0.9</value> <value>0.92</value>
+	   <value>0.99</value> <value>0.98</value>
+	   <value>1</value> <value>0</value>
+	   <value>1.2</value> <value>0</value>
+	   <value>2</value> <value>0</value>
+	</parameter>
+
+	<parameter id="FSOTB" unit = "http://www.wurvoc.org/vocabularies/om-1.8/one">
+	   <value>0</value> <value>0</value>
+	   <value>0.99</value> <value>0</value>
+	   <value>1</value> <value>1</value>
+	   <value>1.05</value> <value>1</value>
+	   <value>2</value> <value>1</value>
+	</parameter>
+  </crop>	
+
+  <crop>
+	<parameter id="CROPNAME" unit="-">spring wheat</parameter>
+	<parameter id="AirTemperatureSumAnthesis" unit="K">650</parameter>
+	<parameter id="AirTemperatureSumMilkripeness" unit="K">900</parameter>
+	<parameter id="AirTemperatureSumMaturity" unit="K">1300</parameter>
+	<parameter id="RelativeDayOfEmergence" unit="-" datatype="INT">0</parameter>
+	<parameter id="DroughtTolerance" unit="-">1</parameter>
+	<parameter id="BaseTempBeforeAnt" unit="°C">0</parameter>
+	<parameter id="BaseTempAfterAnt" unit="°C">0</parameter>
+	<parameter id="LUE" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">3.5</parameter>
+	<parameter id="SLA" unit="m**2 m**-2">0.035</parameter>
+	<parameter id="RGRL" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">0.018</parameter>
+	<parameter id="LaiNStressReduction" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">1.0</parameter>
+	<parameter id="LueNStressReduction" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">1.1</parameter>
+	<parameter id="SlaNStressReduction" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">0.5</parameter>
+	<parameter id="PartitioningNStressReduction" unit="-">1.0</parameter>
+	<parameter id="LaiCritical" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">4</parameter>
+	<parameter id="TRANCO" unit="mm">8</parameter>
+	<parameter id="RDRSHM" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">0.05</parameter>
+	<parameter id="RDRL" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">0.0</parameter>
+	<parameter id="RDRNS" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">0.05</parameter>
+	<parameter id="K" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">0.6</parameter>
+	<parameter id="VernalDaysMax" unit="-">30</parameter>
+	<parameter id="VernalisationTLow" unit="°C">3</parameter>
+	<parameter id="VernalisationTHigh" unit="°C">10</parameter>
+	<parameter id="Latitude" unit="°">60.8</parameter>
+	
+	<parameter id="ROOTDI" unit="m">0.1</parameter>
+	<parameter id="ROOTDM" unit="m">1.2</parameter>
+	<parameter id="RRDMAX" unit="m">0.012</parameter>
+
+	<parameter id="RDRT" unit="http://www.wurvoc.org/vocabularies/om-1.8/one">
+	  <value>-10</value><value>0</value>
+	  <value>10</value><value>0.03</value>
+	  <value>15</value><value>0.04</value>
+	  <value>30</value><value>0.09</value>
+	  <value>50</value><value>0.09</value>
+	</parameter>
+
+<parameter id="FRTTB" unit = "http://www.wurvoc.org/vocabularies/om-1.8/one">
+  <value>0</value> <value>0.5</value>
+  <value>0.1</value> <value>0.5</value>
+  <value>0.2</value> <value>0.4</value>
+  <value>0.28</value> <value>0.3</value>
+  <value>0.35</value> <value>0.22</value>
+  <value>0.4</value> <value>0.17</value>
+  <value>0.5</value> <value>0.13</value>
+  <value>0.6</value> <value>0.13</value>
+  <value>0.7</value> <value>0.07</value>
+  <value>0.9</value> <value>0.03</value>
+  <value>0.99</value> <value>0.02</value>
+  <value>1</value> <value>0</value>
+  <value>1.2</value> <value>0</value>
+  <value>2</value> <value>0</value>
+</parameter>
+
+<parameter id="FLVTB" unit = "http://www.wurvoc.org/vocabularies/om-1.8/one">
+  <value>0</value> <value>0.33</value>
+  <value>0.1</value> <value>0.33</value>
+  <value>0.2</value> <value>0.38</value>
+  <value>0.28</value> <value>0.49</value>
+  <value>0.35</value> <value>0.45</value>
+  <value>0.4</value> <value>0.44</value>
+  <value>0.5</value> <value>0.435</value>
+  <value>0.6</value> <value>0.435</value>
+  <value>0.7</value> <value>0.2</value>
+  <value>0.9</value> <value>0.05</value>
+  <value>0.99</value> <value>0</value>
+  <value>1</value> <value>0</value>
+  <value>1.2</value> <value>0</value>
+  <value>2</value> <value>0</value>
+</parameter>
+
+<parameter id="FSTTB" unit = "http://www.wurvoc.org/vocabularies/om-1.8/one">
+  <value>0</value> <value>0.17</value>
+  <value>0.1</value> <value>0.17</value>
+  <value>0.2</value> <value>0.22</value>
+  <value>0.28</value> <value>0.21</value>
+  <value>0.35</value> <value>0.33</value>
+  <value>0.4</value> <value>0.39</value>
+  <value>0.5</value> <value>0.435</value>
+  <value>0.6</value> <value>0.435</value>
+  <value>0.7</value> <value>0.73</value>
+  <value>0.9</value> <value>0.92</value>
+  <value>0.99</value> <value>0.98</value>
+  <value>1</value> <value>0</value>
+  <value>1.2</value> <value>0</value>
+  <value>2</value> <value>0</value>
+</parameter>
+
+<parameter id="FSOTB" unit = "http://www.wurvoc.org/vocabularies/om-1.8/one">
+  <value>0</value> <value>0</value>
+  <value>0.99</value> <value>0</value>
+  <value>1</value> <value>1</value>
+  <value>1.05</value> <value>1</value>
+  <value>2</value> <value>1</value>
+</parameter>	
+
+  </crop>	
+</CropProperties>
