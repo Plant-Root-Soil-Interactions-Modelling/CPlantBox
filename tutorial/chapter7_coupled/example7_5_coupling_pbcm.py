@@ -1,30 +1,26 @@
 """coupling pbcm"""
 
-import datetime
-import os
-import sys
-
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
+from pathlib import Path
 
 import plantbox as pb
-import plantbox.visualisation.vtk_plot as vp
+import plantbox.visualisation.vtk_plot as vp 
 
-# get home dir from ~
-home_dir = os.path.expanduser("~")
-sys.path.append(home_dir + "/workspace/simplace_run/simulation/milena/PyPlantBox/misc")
+# load simplace wrapper package
+import simplace # https://simplace.net/doc/python_wrapper.htm
 
-# load CPlantBox modules and SIMPLACE
-import simplace  # https://simplace.net/doc/python_wrapper.htm
-from SimplacePlantbox.simplace import lintulslim_interact as sp_int
-from SimplacePlantbox.util import checkRuns, getRootOutputs
+# load custom modules to exchange outputs between simplace-pb states
+from simplace_cpb.PyPlantBox.misc.SimplaceRootbox.simplace import lintulslim_interact as sp_int
 
 # Simulation configuration
 gram_per_cm = 0.000035  # specific root length density used to calculate the maximum root increment in a timestep (g cm-1)
-area = 6 * 12.5  # plant area (cm2)
+area = 6 * 12.5  # estimated area of a wheat plant for RLD scaling (cm2)
 sim_time = 600  # maximum simulation time-n_steps (days)
-dt = 1  # simulation timestep (days)
-plot = False  # plot root system at the end
+dt = 1  # simulation dt (days)
+plot = True  # plot outputs at the end
 
 # Feddes parameters for root elongation restriction due to soil water potential
 # Eq. 10 of https://doi.org/10.3389/fpls.2022.865188
@@ -34,46 +30,28 @@ h3 = -5
 h4 = -150
 
 # SIMPLACE initialization |\label{l7_5_simplace:InitStart}|
+home_dir = str(Path("~").expanduser())
+jd = home_dir + '/workspace/'
+wd = jd + 'CPlantBox/tutorial/chapter7_coupled/simplace_cpb/'
+od = jd + 'simplace_run/output/'
+sol = wd + 'PyPlantBox/solution/LintulSlimRB.sol.xml' # simplace model solution file: https://simplace.net/doc/index.html?solution.htm
 
-# ModelSolution
-solutiondir = "milena/PyPlantBox/solution/Lintul5SlimPB.sol.xml"
-rainscale = 1.0  # scale rain from 0 to 1
-elongationrestriction = int(1)  # elongation restriction by soil/water - 0:no, 1:yes
-
-# Paths
-jd = home_dir + "/workspace/"
-wd = jd + "simplace_run/simulation/"
-od = jd + "simplace_run/output/"
-sol = wd + solutiondir
-
-# read soil information from the ModelSolution
-sol_lines = sp_int.ReadFile(sol)
-vSoilFile = sp_int.get_SolutionVariable(sol_lines, "variables", "vSoilFile")
-vSoilName = sp_int.get_SolutionVariable(sol_lines, "variables", "vSoilName")
-vSoilFile_path = sp_int.get_SolutionVariable(sol_lines, "interface", "vSoilFile")
-layerthickness = float(sp_int.get_SolutionVariable(sol_lines, "transform", "layerthickness")) * 100  # cm
-
-# read soil depth and layers for vertical grid from the soil file used in the simplace solution
-vSoilFile_path = str(vSoilFile_path).replace("${_WORKDIR_}/", wd).replace("${vSoilFile}", vSoilFile)
-SoilFile = pd.read_csv(vSoilFile_path, sep=";")
-soildepth = max(SoilFile.loc[SoilFile["soilname"] == vSoilName, "depth"]) * 100  # cm
-layers = soildepth / layerthickness  # number of soil layers
-
-soildepth = int(soildepth)
-layers = int(layers)
-
-# Instantiate simplace for the ModelSolution
+# instantiate simplace simulation
 sim = simplace.SimplaceInstance(jd, wd, od, wd, wd)
-sim.setLogLevel("ERROR")
+sim.setLogLevel('ERROR')
 sim.openProject(sol)
-par = {"startdate": "01.01.2022", "vRainScale": rainscale, "projected": str(rainscale)}
+
+par = {'startdate':"20.03.1991"} # overwrite startdate in the model solution
 sim.createSimulation(par)
 ids = sim.getSimulationIDs()
 
 # CPlantBox initialization
+# read root parameters
+root_parfile = wd + '/PyPlantBox/data/modelparameter/wheat.xml'
 
-# read root Parameters
-rootparname = wd + "milena/PyPlantBox/data/modelparameter/sbarley_cPlantBox_Sabine_modified.xml"
+# Soil discretization matching the 1D-profile used by simplace input file
+soildepth = 120
+layers = 40
 
 # Set scale elongaton according to tutorial:
 # tutorial/chapter3_responses/example3_1_carbon.py
@@ -82,9 +60,10 @@ scale_elongation.data = np.ones((layers))
 se = pb.ProportionalElongation()
 se.setBaseLookUp(scale_elongation)
 
+# Initialize root system
 plant = pb.Plant()
-plant.setRandomSeed(0)
-plant.readParameters(rootparname)
+plant.setSeed(0)
+plant.readParameters(root_parfile) 
 for p in plant.getOrganRandomParameter(pb.root):
     p.f_se = se  # set scale elongation function
 
@@ -93,72 +72,54 @@ plant.initialize()
 
 # initialize length and rld states
 ol = 0
-vRLD = np.zeros(layers)
-
-# switcher to initialize PB [only True when first root growth happens]
-init_pb_switch = False  # |\label{l7_5_simplace:InitEnd}|
-
-# logs
-warns = [str(datetime.datetime.now())]
+vRLD=np.zeros(layers) # |\label{l7_5_simplace:InitEnd}|
 
 # Simulation loop
-for s in range(0, sim_time):  # |\label{l7_5_simplace:LoopStart}|
+for s in range(0,sim_time): # |\label{l7_5_simplace:LoopStart}|
+    
     # simulate simplace step to get maxinc and re_reduction dinamically
-    (date, maxinc, doharvest, tranrf, yld, rld_s, re_reduction, re_q, re_w, h, init_pb, frr_s, md95_s) = sp_int.getSimplaceValuesExtended(sim, gram_per_cm, h1, h2, h3, h4, area=area)  # |\label{l7_5_simplace:MaxInc_simplace}|
+    (date, maxinc, doharvest, tranrf, yld, rld_s, re_reduction) = sp_int.getSimplaceValuesExtended(sim,gram_per_cm, h1, h2, h3, h4, area=area) # |\label{l7_5_simplace:MaxInc_simplace}|
 
-    # if not using re_reduction from simplace set args.elongationrestriction == 0
-    if elongationrestriction == 0:
-        re_reduction = [1.0] * (layers + 1)
+    # update scale elongation
     scale_elongation.data = np.array(re_reduction)
 
     maxinc = round(maxinc, 2)
     inc = 0.0
     print("Simulating: ", date, " MaxIncr:", round(maxinc, 2), " Tranrf:", round(tranrf, 2), " Yield:", round(yld, 2), " Step:", s)
-    # run CPlantBox if there's any root increment
-    if maxinc > 0:  # |\label{l7_5_simplace:RunCPB}|
-        # simulate root system
-        plant.simulateLimited(dt, maxinc, "lengthTh", [1., 1., 1., 1., 1.], se, True)
-
+    
+    # run CPlantBox if there's any root biomass allocated from simplace
+    if(maxinc > 0): # |\label{l7_5_simplace:RunCPB}|
+        
+        plant.simulate(dt,maxinc*dt, se, True) # not working: it runs but the code breaks when pb.SegmentAnalyser(rs)        
+        
         # get simulated root length increment
-        l = np.sum(plant.getParameter("length"))
-        inc = l - ol
+        l = np.sum(plant.getParameter('length'))
+        inc =  l - ol
         ol = l
-        print("increase was " + str(round(inc, 2)))
-        if inc > maxinc + 0.1:
-            msg = "Warning: Root increment exceeds max increment by " + str(round(inc - maxinc, 1)) + "cm"
-            print(msg)
-            warns.append(msg)
-
-        # calculate RLD for each soil layer using pb.SegmentAnalyser(plant)
-        vRLD = sp_int.calculateRLD(plant, soildepth, layers, area)  # |\label{l7_5_simplace:RLD_CPB}|
-
+        
+        # calculate RLD for each soil layer using pb.SegmentAnalyser(rs)
+        vRLD = sp_int.calculateRLD(plant, soildepth, layers, area) # |\label{l7_5_simplace:RLD_CPB}|
+    
     # update vRLD in simplace
-    sp_int.setSimplaceRoots(sim, vRLD, maxinc - inc, gram_per_cm, init_pb_switch, frr_s, md95_s, re_reduction, re_q, re_w, h)  # |\label{l7_5_simplace:RLD_update_simplace}|
+    sp_int.setSimplaceRoots(sim, vRLD, maxinc-inc, gram_per_cm) # |\label{l7_5_simplace:RLD_SIMPLACE}|
 
-    # get pb-related variables
-    if s == 0:
-        out_pb = getRootOutputs.asDataFrame(plant, date)
-    else:
-        out_pb = out_pb.append(getRootOutputs.asDataFrame(plant, date), ignore_index=True)
+    if doharvest == True:
+        # exit loop if harvest happens 
+        break # |\label{l7_5_simplace:LoopEnd}|
 
-    # Initialize PB in next timestep
-    if init_pb:
-        init_pb_switch = True
-
-    # check if harvest occurs before end of sims
-    if doharvest:
-        print("Harvested")
-        break  # |\label{l7_5_simplace:LoopEnd}|
-
-# write pb outputs |\label{l7_5_simplace:OutStart}|
-plant.write(od + "/milena/PyPlantBox/lintul5/Lintul5Slim_PlantBox.vtp")
-out_pb.to_csv(od + "/milena/PyPlantBox/lintul5/PlantBox_outputs.csv", index=False)
-
-# plot on screen?
+plant.write(od + "PyPlantBox/lintul/LintulSlim_PlantBox.vtp")
 if plot:
-    vp.plot_roots(plant, "type")
 
-# check RootAges and shutdown simplace instance
-warns = checkRuns.checkRootAge(plant, warns)
+    # read and plot some simplace outputs
+    simplace_out = pd.read_csv(od + "PyPlantBox/lintul/slim_rootbox.csv", sep=";") # |\label{l7_5_simplace:ReadOuts}|
+    simplace_out["CURRENT.DATE"] = pd.to_datetime(simplace_out["CURRENT.DATE"], format="%d.%m.%Y")
+    
+    simplace_out.plot(x="CURRENT.DATE", y=["Yield", "AGBm"], ylabel = "Dry Biomass [g/m2]")
+    simplace_out.plot(x="CURRENT.DATE", y=["EVAP", "TRAN", "LAI"], ylabel = "Transpiration/Evaporation [mm/day], LAI [m2/m2]")
+
+    # plot final root architecture
+    vp.plot_roots(plant, "type")
+    plt.show()
+
 sim.closeProject()
-sim.shutDown()  # |\label{l7_5_simplace:OutEnd}|
+sim.shutDown()
