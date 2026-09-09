@@ -100,7 +100,7 @@ def makedishes(diameter, height, barrier_thickness, barrier_height, opening_leng
     small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
 
     # nRings = 25
-    centrepoint = [0, 1.5, 0] ## Set a different centre for the rings for analysis, so that growth is more centred
+    centrepoint = [0, 0, 0] ## Set a different centre for the rings for analysis, so that growth is more centred
     small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
     ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
     moved_ringone = pb.SDF_RotateTranslate(ringone, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], centrepoint[2]))
