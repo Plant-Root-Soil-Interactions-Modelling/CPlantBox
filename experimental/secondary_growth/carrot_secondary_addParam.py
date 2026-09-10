@@ -36,7 +36,10 @@ class CarrotRoot(pb.Root):
             if self.param().subType == 1:  # only for taproots
                 index = addParams.get("index", 0)
                 idx = min(int(index), self.getNumberOfNodes() - 1)
-                return carrot_radius(self.getAge(), self.getLength(idx), self.param().a, addParams["rmax"], addParams["a_s"], addParams["k"], addParams["p"], addParams.get("Ls"), addParams["q"])
+                l = self.getLength(idx)
+                age = self.getPlant().getSimTime() - self.getNodeCT(idx)
+                if "rmax" in addParams:
+                    return carrot_radius(age, l, self.param().a, addParams["rmax"], addParams["a_s"], addParams["k"], addParams["p"], addParams.get("Ls"), addParams["q"])
 
         return super().getParameter(name, addParams)
 
@@ -61,32 +64,33 @@ path = "../../modelparameter/structural/rootsystem/"
 name = "Daucus_carota"
 plant.readParameters(path + name + ".xml")
 
-addParams = {"r0": 0.05, "rmax": 3, "a_s": 30.0, "k": 6.4e-4, "p": 1.5, "Ls": 20, "q": 5}
+addParams = {"r0": 0.05, "rmax": 3, "a_s": 30.0, "k": 6.4e-4, "p": 3, "Ls": 20, "q": 5}
 
 plant.initialize()
 
-sim_time = 120
+sim_time = 150
 dt = 1  # simulation step [day], animation shows one frame per step
 
-# plant.simulate(sim_time)
+plant.simulate(sim_time)
 
-# Animate growth in an interactive vtk window (close window, or press 'e', to continue)
-anim = AnimateRoots(plant, add_params=addParams)
-anim.root_name = "age"
-anim.start(axis="v")
-for i in range(int(sim_time / dt)):
-    plant.simulate(dt)
-    anim.simtime = (i + 1) * dt
-    anim.update()
-anim.run()
+# # Animate growth in an interactive vtk window (close window, or press 'e', to continue)
+# anim = AnimatePlant(plant, add_params=addParams)
+# anim.root_name = "subType"
+# anim.avi_name = "carrot"
+# anim.start(axis="v")
+# for i in range(int(sim_time / dt)):
+#     plant.simulate(dt)
+#     anim.simtime = (i + 1) * dt
+#     anim.update()
+# anim.run()
+# anim.make_video()
 
 # Export final result (as vtp)
 # plant.write("results/example_plant.vtp")
 
-
-# ana = pb.SegmentAnalyser(plant, addParams)
-# ana.write("results/example_plant_segs.vtp")
-# vp.plot_plant(ana, "subType")
+ana = pb.SegmentAnalyser(plant, addParams)
+vp.plot_plant(ana, "subType")
+ana.write("results/example_plant_segs.vtp")
 
 # organs = plant.getOrgans()
 # taproot = organs[0]
