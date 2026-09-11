@@ -2,7 +2,7 @@
     <seed name="seed" subType="0">
         <parameter name="maxTil" value="0"/>
         <!--Maximal number of tillers [1]-->
-        <parameter name="delayB" value="5"/>
+        <parameter name="delayB" value="3"/>
         <!--Time delay between the basal roots [day]-->
         <parameter name="delayRC" value="5"/>
         <!--Delay between the root crowns [day]-->
@@ -34,7 +34,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.04156896260232555"/>
+        <parameter name="a" value="0.0436"/>
         <!--radius [cm]-->
         <parameter name="colorB" value="0.2"/>
         <!--Root color, blue component [0.-1.]-->
@@ -52,7 +52,7 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="6.1541929"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="75"/>
+        <parameter name="lmax" value="150"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.56920499"/>
         <!--Inter-lateral distance [cm]-->
@@ -76,7 +76,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="2"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.01043790796705206"/>
+        <parameter name="a" value="0.02"/>
         <!--radius [cm]-->
         <parameter name="colorB" value="0.2"/>
         <!--Root color, blue component [0.-1.]-->
@@ -96,11 +96,11 @@
         <!--Lateral root emergence delay [day]-->
         <parameter name="lmax" value="2.29054"/>
         <!--Maximal root length [cm]-->
-        <parameter name="ln" value="0.7259468076978804"/>
+        <parameter name="ln" value="0.65249199"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="2.360487931292126"/>
+        <parameter name="r" value="1.8791695"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
@@ -118,7 +118,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="2"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.009977680140360372"/>
+        <parameter name="a" value="0.0099999998"/>
         <!--radius [cm]-->
         <parameter name="colorB" value="0"/>
         <!--Root color, blue component [0.-1.]-->
@@ -158,7 +158,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.041980342538713834"/>
+        <parameter name="a" value="0.0436"/>
         <!--radius [cm]-->
         <parameter name="colorB" value="0.2"/>
         <!--Root color, blue component [0.-1.]-->
@@ -176,21 +176,21 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="6.1541929"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="75"/>
+        <parameter name="lmax" value="150"/>
         <!--Maximal root length [cm]-->
-        <parameter name="ln" value="0.44232311095214444"/>
+        <parameter name="ln" value="0.56920499"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="3.019496538487923"/>
+        <parameter name="r" value="1.6"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
         <parameter name="theta" value="1.4835298"/>
         <!--Angle between root and parent root [rad]-->
-        <parameter name="tropismN" value="0.62385649175926"/>
+        <parameter name="tropismN" value="0.5"/>
         <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="0.18429415333394011"/>
+        <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="successor" type="2" percentage="1"/>
         <!--Sub type of lateral roots-->
@@ -200,7 +200,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.030010015406929047"/>
+        <parameter name="a" value="0.0436"/>
         <!--radius [cm]-->
         <parameter name="colorB" value="0.2"/>
         <!--Root color, blue component [0.-1.]-->
@@ -218,21 +218,21 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="6.1541929"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="75"/>
+        <parameter name="lmax" value="150"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.56920499"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="3.4627564525417296"/>
+        <parameter name="r" value="1.6"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
         <parameter name="theta" value="1.12"/>
         <!--Angle between root and parent root [rad]-->
-        <parameter name="tropismN" value="0.8984691745047573"/>
+        <parameter name="tropismN" value="0.1"/>
         <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="0.09948455490385266"/>
+        <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="successor" type="2" percentage="1"/>
         <!--Sub type of lateral roots-->

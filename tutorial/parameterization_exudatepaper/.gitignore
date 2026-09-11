@@ -1,0 +1,17 @@
+**:Zone.Identifier
+**/not_used
+**/old
+
+#plotting
+*.png
+*.pkl
+
+
+#results 
+*.npz
+*.npy
+*.vtu
+*.vtk
+*.vtp
+*.pvd
+

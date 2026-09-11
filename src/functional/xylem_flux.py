@@ -74,7 +74,7 @@ class XylemFluxPython(XylemFlux):
 
     def exudate_fluxes(self, kex, stopgr = False):
         """ returns [mol/day]
-        self.Exu [kg/(m2 day)]
+        self.Exu [mol/(cm2 day)]
         """
         g_per_molC = 12
 
@@ -124,7 +124,7 @@ class XylemFluxPython(XylemFlux):
                     kexu = 0
                     c = 0
 
-                sf.append(2 * np.pi * a * l * 1.e-4 * kexu * 1.e3 / g_per_molC) # mol/segment/day
+                sf.append(2 * np.pi * a * l * kexu) # mol/segment/day
             
         return sf #  mol / segment /day
 
