@@ -196,10 +196,12 @@ class AnimateRoots:
         for a in self.actors:
             ren.RemoveActor(a)
         # Remove 2-D overlays (scalar bar) so they can be re-added below
-        for a in ren.GetActors2D():
-            ren.RemoveActor2D(a)
+        # GetActors2D is deprecated since VTK 9.7; GetViewProps also holds the 3-D
+        # actors, so keep only the vtkActor2D ones (what GetActors2D used to return)
+        for a in [p for p in ren.GetViewProps() if isinstance(p, vtk.vtkActor2D)]:
+            ren.RemoveViewProp(a)
         if self.color_bar:
-            ren.AddActor2D(self.color_bar)
+            ren.AddViewProp(self.color_bar)
 
         self.actors = []
         self.create_root_actors()
