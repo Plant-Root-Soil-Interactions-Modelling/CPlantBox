@@ -31,6 +31,7 @@ class Parameters:
         self.theta_R = p[0]
         self.theta_S = p[1]
         self.alpha = p[2]  # [1/cm]
+        self.alpha_0 = 0.3 # upper bound for alpha, same value as in Perirhizal.py
         self.n = p[3]
         self.m = 1. - 1. / self.n
         self.Ksat = p[4]
@@ -179,6 +180,167 @@ def create_mfp_lookup(sp, wilting_point = -16000, n = 16001, verbose = True):
 
     if verbose:
         print("done")
+
+# location where lookup tables for the matrix flux potential and its inverse can be saved for all van genuchten parameter
+global_mfp_red = None
+global_imfp = None
+
+def open_mfp_global_lookup(filename: str):
+    """ loads lookup tables for all van Genuchten parameters to use global_mfp, global_imfp """
+    npzfile = np.load(filename + ".npz")
+    mfp, imfp = npzfile["mfp"], npzfile["imfp"] #mfp values and the inverse
+    h_, vg_m_, mfp_simp_ = npzfile["h_"], npzfile["vg_m_"], npzfile["mfp_simp_"] # pressure head, van-Genuchten parameter m, mfp_simp = alpha/(alpha_0 K_sat) mfp
+    global_mfp_red = RegularGridInterpolator((h_, vg_m_), mfp)  # method = "nearest" fill_value = None , bounds_error=False
+    global_imfp = RegularGridInterpolator((mfp_simp_, vg_m_), imfp)  # method = "nearest" fill_value = None , bounds_error=False
+
+def create_mfp_global_lookup(filename: str, verbose = True):
+    """ initializes lookup tables for all van Genuchten parameters to use global_mfp, global_imfp """
+    
+    h_int = [-15000.0, -0.1]
+    vg_m_int = [0.1,1.5]
+    mfp_simp_int = [1.0e-9, 499]
+    
+    h_n = 200
+    vg_m_ = 100
+    mfp_simp_n = 200
+    
+    h_ = -np.logspace(np.log10(abs(h_int[1])), np.log10(abs(h_int[0])), vg_m_n)
+    vg_m_ = np.logspace(np.log10(vg_m_int[0]), np.log10(vg_m_int[1]), vg_m_n)
+    mfp_simp_ = np.logspace(np.log10(mfp_sim_int[0]), np.log10(mfp_simp_int[1]), vg_m_n)
+    
+    mfp_values = np.zeros((h_n, vg_m_n))
+    imfp_values = np.zeros((mfp_simp_n, vg_m_n))
+    
+    for i, vg_m in enumerate(vg_m_):
+        # create a dummy van Genuchten parameter set
+        sp_dummy = Parameters([0,0.4,alpha_0,1./(1.-vg_m),1])
+        for j, h in enumerate(h_):
+            mfp_values[j, i] = matric_flux_potential(h, sp_dummy)
+        for k, mfp_simp in enumerate(mfp_simp_):
+            imfp_values[k, i] = matric_potential_mfp(mfp_simp, sp_dummy)
+    global_mfp_red = RegularGridInterpolator((h_, vg_m_), mfp)  # method = "nearest" fill_value = None , bounds_error=False
+    global_imfp = RegularGridInterpolator((mfp_simp_, vg_m_), imfp)
+    
+    np.savez(filename, mfp=mfp, imfp=imfp, vg_m_=vg_m_, h_=h_, vg_m_=vg_m_, mfp_simp_=mfp_simp_)
+        
+
+def global_mfp(h_, vg_parameters_):
+    """ 
+    This method returns the mfp for arbitrary van genuchten parameters
+    h_             : array of size n_inputs containing the water potential in cm
+    vg_parameters_ : array of size (n_inputs,5) containing the 5 van Genuchten parameters in each line. 
+    A single van Genuchten parameter set (array size 5) is also allowed.
+    """
+    
+    if not global_mfp:
+        print("Error in file van_genuchten.py, the lookup table global_mfp needs to be constructed before using the method global_mfp.")
+    
+    different_vg = False # are there different van Genuchten parameters?
+    if size(vg_parameters_)==[5]:
+        different_vg = False
+        mfp_func = lambda i: vg_parameters_[4]*alpha_0/vg_parameters_[2]*global_mfp_red(h_[i],1-1/vg_parameters_[3]) #Ksat * alpha_0/alpha *mfp_red
+    else:
+        assert len(h_) == size(vg_parameters_,0), "h_ and vg_parameters_ must have the same length"
+        mfp_func = lambda i: vg_parameters_[i,4]*alpha_0/vg_parameters_[i,2]*global_mfp_red(h_[i],1-1/vg_parameters_[i,3])
+    
+    n_inputs = len(h_)
+    #mfp = np.zeros(n_inputs)
+    mfp = np.array([mfp_func(i) for i in range(n_inputs)])
+    return mfp
+
+def global_imfp(mfp_, vg_parameters_):
+    """ 
+    This method returns the mfp for arbitrary van genuchten parameters
+    mfp_           : array of size n_inputs containing the matrix flux potential in cm2/d
+    vg_parameters_ : array of size (n_inputs,5) containing the 5 van Genuchten parameters in each line. 
+    A single van Genuchten parameter set (array size 5) is also allowed.
+    """
+    
+    if not global_imfp:
+        print("Error in file van_genuchten.py, the lookup table global_imfp needs to be constructed before using the method global_imfp.")
+    
+    different_vg = False # are there different van Genuchten parameters?
+    if size(vg_parameters_)==[5]:
+        different_vg = False
+        imfp_func = lambda i: global_imfp(vg_parameters_[2]/(alpha_0*vg_parameters_[4])*,1-1/vg_parameters_[3]) #mfp_red_inv(alpha/(alpha_0 * Ksat) * mfp)
+    else:
+        assert len(h_) == size(vg_parameters_,0), "h_ and vg_parameters_ must have the same length"
+        imfp_func = lambda i: global_imfp(vg_parameters_[i,2]/(alpha_0*vg_parameters_[i,4])*,1-1/vg_parameters_[i,3])
+    
+    n_inputs = len(h_)
+    #imfp = np.zeros(n_inputs)
+    imfp = np.array([imfp_func(i) for i in range(n_inputs)])
+    return imfp
+    
+def water_content_(h_, vg_parameters_):
+    """ 
+    This method returns the watercontent for differing van Genuchten parametersets
+    h_             : array of size n_inputs containing the water potential in cm
+    vg_parameters_ : array of size (n_inputs,5) containing the 5 van Genuchten parameters in each line. 
+    A single van Genuchten parameter set (array size 5) is also allowed.
+    """
+    
+    h_ = np.clip(h,-15000,-0.1)
+    
+    different_vg = False # are there different van Genuchten parameters?
+    if size(vg_parameters_)==[5]:
+        different_vg = False
+        watercontent_func = lambda i: vg_parameters_[0] + (vg_parameters_[1] - vg_parameters_[0]) / pow(1. + pow(vg_parameters_[2] * abs(h_[i]), vg_parameters_[3]), 1-1/vg_parameters_[3]) # theta_R + (theta_S - theta_R) / (pow(1+pow(alpha*h,n),m)
+    else:
+        assert len(h_) == size(vg_parameters_,0), "h_ and vg_parameters_ must have the same length"
+        watercontent_func = lambda i: vg_parameters_[i,0] + (vg_parameters_[i,1] - vg_parameters_[i,0]) / pow(1. + pow(vg_parameters_[i,2] * abs(h_[i]), vg_parameters_[i,3]), 1-1/vg_parameters_[i,3]) # theta_R + (theta_S - theta_R) / (pow(1+pow(alpha*h,n),m)
+   
+    n_inputs = len(h_)
+    #water_content_ = np.zeros(n_inputs)
+    water_content_ = np.array([imfp_func(i) for i in range(n_inputs)])
+    return water_content_ 
+
+def water_content_(h_, vg_parameters_):
+    """ 
+    This method returns the watercontent for differing van Genuchten parametersets
+    h_             : array of size n_inputs containing the water potential in cm
+    vg_parameters_ : array of size (n_inputs,5) containing the 5 van Genuchten parameters in each line. 
+    A single van Genuchten parameter set (array size 5) is also allowed.
+    """
+    
+    sp.theta_R + (sp.theta_S - sp.theta_R) / pow(1. + pow(sp.alpha * abs(h), sp.n), sp.m)
+    
+    different_vg = False # are there different van Genuchten parameters?
+    if size(vg_parameters_)==[5]:
+        different_vg = False
+        watercontent_func = lambda i: vg_parameters_[0] + (vg_parameters_[1] - vg_parameters_[0]) / pow(1. + pow(vg_parameters_[2] * abs(h_[i]), vg_parameters_[3]), 1-1/vg_parameters_[3]) # theta_R + (theta_S - theta_R) / (pow(1+pow(alpha*h,n),m)
+    else:
+        assert len(h_) == size(vg_parameters_,0), "h_ and vg_parameters_ must have the same length"
+        watercontent_func = lambda i: vg_parameters_[i,0] + (vg_parameters_[i,1] - vg_parameters_[i,0]) / pow(1. + pow(vg_parameters_[i,2] * abs(h_[i]), vg_parameters_[i,3]), 1-1/vg_parameters_[i,3]) # theta_R + (theta_S - theta_R) / (pow(1+pow(alpha*h,n),m)
+   
+    n_inputs = len(h_)
+    #water_content_ = np.zeros(n_inputs)
+    water_content_ = np.array([watercontent_func(i) for i in range(n_inputs)])
+    return water_content_
+
+def pressure_head_(wc_, vg_parameters_):
+    """ 
+    This method returns the watercontent for differing van Genuchten parametersets
+    wc_             : array of size n_inputs containing the water content in cm3/cm3
+    vg_parameters_ : array of size (n_inputs,5) containing the 5 van Genuchten parameters in each line. 
+    A single van Genuchten parameter set (array size 5) is also allowed.
+    """
+    
+    different_vg = False # are there different van Genuchten parameters?
+    if size(vg_parameters_)==[5]:
+        different_vg = False
+        wc_ = np.clip(wc_, vg_parameters[0], vg_parameters[1])
+        pressure_head_func = lambda i: -pow(pow((vg_parameters_[1] - vg_parameters_[0]) / (wc_[i] - vg_parameters_[0]), 1 - vg_parameters_[3]) - 1., 1. / vg_parameters_[3]) / vg_parameters_[2] # -pow(pow((theta_S - theta_R) / (theta - theta_R), (1. / m)) - 1., 1. / n) / alpha; 1-n = (1. / m)
+    else:
+        assert len(h_) == size(vg_parameters_,0), "wc_ and vg_parameters_ must have the same length"
+        wc_ = np.clip(wc_, vg_parameters[:,0], vg_parameters[:,1])
+        pressure_head_func = lambda i: -pow(pow((vg_parameters_[i,1] - vg_parameters_[i,0]) / (wc_[i] - vg_parameters_[i,0]), 1 - vg_parameters_[i,3]) - 1., 1. / vg_parameters_[i,3]) / vg_parameters_[i,2] # -pow(pow((theta_S - theta_R) / (theta - theta_R), (1. / m)) - 1., 1. / n) / alpha; 1-n = (1. / m)
+   
+    n_inputs = len(h_)
+    #water_content_ = np.zeros(n_inputs)
+    pressure_head_ = np.array([pressure_head_func(i) for i in range(n_inputs)])
+    return pressure_head_
+
 
 # fast_specific_moisture_storage = {}
 # fast_water_content = {}
