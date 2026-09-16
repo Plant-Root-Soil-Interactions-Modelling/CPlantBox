@@ -87,7 +87,7 @@ class AnimateRoots:
         ``<avi_name>/<avi_name><frame_index>.jpg``.
     """
 
-    def __init__(self, rootsystem=None, container_sdf=None, add_params=None):
+    def __init__(self, rootsystem=None, container_sdf=None, add_params={}):
         # Root system data source
         self.rootsystem = rootsystem
         self.root_name = "subType"
@@ -234,6 +234,7 @@ class AnimateRoots:
         # Build an analyser so we can call addAge before creating polydata.
         # addAge is required for the "age" parameter (age = simtime - creationTime).
         ana = pb.SegmentAnalyser(self.rootsystem, self.add_params)
+
         ana.addAge(self.simtime)
         if self.plant:
             new_actors, root_cbar = plot_plant(ana, self.root_name, render=False)
