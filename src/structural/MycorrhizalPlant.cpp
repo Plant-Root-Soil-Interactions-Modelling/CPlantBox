@@ -308,15 +308,11 @@ std::vector<int> MycorrhizalPlant::getNodeTips( int ot) const {
     auto organs = this -> getOrgans(ot);
     std::vector<int> tips(getNumberOfNodes(), 0);
     for (const auto& o : baseOrgans) {
-        if (o->isActive()) {
-            tips.at(o->getNodeId(o->getNumberOfNodes()-1)) = 1;
-        }    
+        tips.at(o->getNodeId(o->getNumberOfNodes()-1)) = 1;
     }
 
     for (const auto & o : organs) {
-        if (o->isActive()) {
-            tips.at(o->getNodeId(o->getNumberOfNodes()-1)) = 1;
-        }
+        tips.at(o->getNodeId(o->getNumberOfNodes()-1)) = 1;
     }
     return tips;
 };
