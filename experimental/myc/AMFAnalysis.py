@@ -2,12 +2,16 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import numpy as np
 import plantbox as pb
 
-def getMycSegmentAnalyser(plant):
+def getMycSegmentAnalyser(plant,write=[],filename = "write",step = 0, stdwrite = False):
         ana = pb.SegmentAnalyser(plant)
         ana.addData("colonization", plant.getNodeColonizations(2))
         ana.addData("colonizationTime", plant.getNodeColonizationTime(2))
         ana.addData("anastomosis", plant.getAnastomosisPoints(5))
         ana.addData("nodeTips", plant.getNodeTips(5))
+        if write:
+            ana.write(filename + "_" + str(step) + ".vtp",write)
+        if stdwrite:
+            ana.write(filename + "_" + str(step) + ".vtp",["radius","creationTime","subType","organType","colonization","colonizationTime","anastomosis","nodeTips"])
         return ana
 
 
@@ -37,15 +41,18 @@ def getParaDistperRing(parameter, times, plant, rings):
                 distrib = ringana.getSummed(parameter)
                 ringana.filter("creationTime",0,flipped[j+1])
                 ringana.pack()
-                summed = ringana.getSummed(parameter)
-                paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum() 
+                if parameter == "nodeTips":
+                    summed = ringana.getSummed(parameter)
+                else:
+                    summed = 0
+                paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum() /(np.pi*(4.7**2)/2) 
             ringana.filter("creationTime",0,flipped[len(times[1:])-1])
             ringana.pack()
             summed = ringana.getSummed(parameter)
             ringana.filter("creationTime",0,flipped[len(times[1:])])
             ringana.pack()
             summed = summed - ringana.getSummed(parameter)
-            paradenmat[k, -1] = np.array(summed).sum() #/(np.pi*(4.7**2)/2)
+            paradenmat[k, -1] = np.array(summed).sum() /(np.pi*(4.7**2)/2)
         return paradenmat
 
 def getParameterOverTime(parameter, times, plant, subType):
@@ -115,3 +122,12 @@ def makedishes(diameter, height, barrier_thickness, barrier_height, opening_leng
         rings.append(moved_small_hyphae_dish)
     
     return petri_dish, small_hyphae_dish, half_dish, rings
+
+def setUpSimulationTime(simTime, fps):
+    # set up simulation time
+    simTime = simTime
+    fps = fps
+    dt = 1 / fps
+    nSteps = int(simTime / dt)
+    times = np.linspace(0, simTime, nSteps)
+    return times, dt, nSteps
