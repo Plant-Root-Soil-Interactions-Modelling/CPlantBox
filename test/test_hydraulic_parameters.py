@@ -254,6 +254,32 @@ class TestPlantHydraulicParameters(unittest.TestCase):
         self.assertAlmostEqual(params2.kr_f(0, 10.0, 0, self.ot_root), 0.002)
         self.assertAlmostEqual(params2.kr_f(0, 10.0, 1, self.ot_root), 0.006)
 
+    def test_write_read_preserves_complete_parameter_set(self):
+        for organ_type, subtype, ages, kr_values, kx_values in [
+            (self.ot_root, 0, [0.0, 4.0], [0.001, 0.002], [0.01, 0.02]),
+            (self.ot_root, 9, [0.0, 8.0], [0.003, 0.004], [0.03, 0.04]),
+            (self.ot_stem, 0, [0.0, 2.0], [0.005, 0.006], [0.05, 0.06]),
+            (self.ot_leaf, 9, [0.0, 6.0], [0.007, 0.008], [0.07, 0.08]),
+        ]:
+            self.params.setKrAgeDependent(ages, kr_values, subtype, organ_type)
+            self.params.setKxAgeDependent(ages, kx_values, subtype, organ_type)
+        self.params.setKrValues([0.11, 0.12])
+        self.params.setKxValues([0.21, 0.22])
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            first_path = os.path.join(tmpdir, "first")
+            second_path = os.path.join(tmpdir, "second")
+            self.params.write_parameters(first_path)
+            params2 = PlantHydraulicParameters()
+            params2.read_parameters(first_path)
+            params2.write_parameters(second_path)
+            with open(first_path + ".json") as first_file:
+                first_parameters = json.load(first_file)
+            with open(second_path + ".json") as second_file:
+                second_parameters = json.load(second_file)
+
+        self.assertEqual(second_parameters, first_parameters)
+
 
 if __name__ == "__main__":
     unittest.main()
