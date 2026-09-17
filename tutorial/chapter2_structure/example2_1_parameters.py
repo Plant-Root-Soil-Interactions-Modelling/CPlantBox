@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt  # |\label{l2_1:matplotlib}|
 import numpy as np  # |\label{l2_1:numpy}|
 
 import plantbox as pb
-from plantbox.visualisation import figure_style
 import plantbox.visualisation.vtk_plot as vp
+from plantbox.visualisation import figure_style
 
 plant = pb.Plant()
 p0 = pb.RootRandomParameter(plant)  # |\label{l2_1:p0}|
@@ -51,7 +51,7 @@ s1.la = 10  # apical zone (cm)
 s1.lmax = 30  # maximal root length (cm)
 s1.ln = 1.0  # inter-lateral distance (cm)
 s1.r = 2  # growth rate (cm)
-s1.successorOT = [[4]]
+s1.successorOT = [[pb.leaf]]
 s1.successorST = [[1]]
 s1.successorP = [[1]]  # |\label{l2_1:stem_end}|
 
