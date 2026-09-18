@@ -1,0 +1,26 @@
+hyphal_network.py was built step by step with the following prompts:
+
+1. create a new script in the anastomosis/ folder. Create a function based on
+   a hyphal length density (rho_h) and root tip density (rho_t) where the
+   geometry is realized in a unit cube in 3D, hyphal lengths are a straight
+   lines, root tips are the apical tips of these straight lines. I.e. start
+   with inserting the tips into the cube (uniformly distributed) to achieve
+   root tip density; in the next step add straight lines with a random angle
+   (maximal length is towards the cube boundary) if more length is needed,
+   add random hyphaes crossing the unit cube (i.e. having no root tip within
+   the cube)
+
+2. For an existing network (from create_hyphal_network) create a function
+   that finds the number of hyphal tips that are next to other hyphae within
+   a radius R. Store the hyphal network in a way, that it can be evaluated
+   quickly for multiple radii R (i.e. to quickly find the minimal distance
+   between hyphal tip and other hyphae)
+
+3. add a plot with R that ranges from 0 to 0.2 for three different hyphal
+   length densities (3 curves, different color, add legend)
+
+4. can you do the same plot with 50 repitions (per curve) and plot mean and
+   std, R from 0 to 0.3
+
+5. can you do an additional plot, with 3 different tip densities for 160
+   hyphal length (otherwise same as before)
