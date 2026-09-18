@@ -23,14 +23,25 @@ endif()
 option(CPB_NATIVE_CPU_TUNING "Enable native CPU tuning flags such as -march=native" ${CPB_NATIVE_CPU_TUNING_DEFAULT})
 
 # set compiler options
-set(RELEASE_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare  ")
-set(DEBUG_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare ")
-set(RELEASE_OPTS "-std=c++17 -fno-strict-aliasing -fstrict-overflow -fno-finite-math-only -O3 -funroll-loops -g0 ")
-if(CPB_NATIVE_CPU_TUNING)
-    set(RELEASE_OPTS "${RELEASE_OPTS} -march=native")
+if(MSVC)
+    # The GCC-style flags below are not understood by MSVC; CMake's default
+    # per-configuration flags (/O2 for Release etc.) are appropriate, and the
+    # language level is set through CMAKE_CXX_STANDARD.
+    # /bigobj: the pybind11 module exceeds the default COFF section limit.
+    add_compile_options(/bigobj)
+    # _USE_MATH_DEFINES: expose M_PI and friends from <cmath>.
+    # NOMINMAX: keep windows.h from defining min/max macros.
+    add_compile_definitions(_USE_MATH_DEFINES NOMINMAX)
+else()
+    set(RELEASE_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare  ")
+    set(DEBUG_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare ")
+    set(RELEASE_OPTS "-std=c++17 -fno-strict-aliasing -fstrict-overflow -fno-finite-math-only -O3 -funroll-loops -g0 ")
+    if(CPB_NATIVE_CPU_TUNING)
+        set(RELEASE_OPTS "${RELEASE_OPTS} -march=native")
+    endif()
+    set(CMAKE_CXX_FLAGS_RELEASE "${RELEASE_WARNING_OPTS} ${RELEASE_OPTS}")
+    set(CMAKE_CXX_FLAGS_DEBUG "-std=c++17 -O0 -ggdb -Wall")
 endif()
-set(CMAKE_CXX_FLAGS_RELEASE "${RELEASE_WARNING_OPTS} ${RELEASE_OPTS}")
-set(CMAKE_CXX_FLAGS_DEBUG "-std=c++17 -O0 -ggdb -Wall")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
