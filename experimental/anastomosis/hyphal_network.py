@@ -201,4 +201,21 @@ if __name__ == "__main__":
     ax2.set_ylabel("fraction of tips within R of another hypha")
     ax2.legend()
 
+    # same, now varying the tip density rho_t at a fixed hyphal length density
+    rho_h_fixed = 160.0
+    rho_t_values = [10.0, 20.0, 40.0]
+    fig3, ax3 = plt.subplots()
+    for rho_t_i, color in zip(rho_t_values, ["C0", "C1", "C2"]):
+        fractions = np.empty((n_reps, len(R_range)))
+        for rep in range(n_reps):
+            net_i = create_hyphal_network(rho_t_i, rho_h_fixed, seed=rep)
+            compute_tip_neighbor_distances(net_i)
+            fractions[rep] = count_tips_near_hyphae(net_i, R_range) / len(net_i["tips"])
+        mean, std = fractions.mean(axis=0), fractions.std(axis=0)
+        ax3.plot(R_range, mean, color=color, label=r"$\rho_t$ = {:g}".format(rho_t_i))
+        ax3.fill_between(R_range, mean - std, mean + std, color=color, alpha=0.2)
+    ax3.set_xlabel("R")
+    ax3.set_ylabel("fraction of tips within R of another hypha")
+    ax3.legend()
+
     plt.show()
