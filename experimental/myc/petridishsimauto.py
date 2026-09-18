@@ -63,9 +63,7 @@ def makesimulation(seed):
             print("Step " + str(i) + " of " + str(N))
         mycp.simulate(dt,False)
         if (animation):
-            ana = amf.getMycSegmentAnalyser(mycp)
-            ana.write("animation/" + filename + "_hoursBCB_" +str(i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
-    # look at roots and container
+            amf.getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
     # vp.plot_roots_and_container(mycp,half_dish)
     # input("lengths: "+ str(sum(mycp.getParameter("length"))))
 
@@ -110,13 +108,6 @@ def makesimulation(seed):
                     if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
                         crossed_barrier += 1
         # input("Colonization percentage: " + str(pCol*100) + "%, crossed barrier: " + str(crossed_barrier))
-
-    
-
-    # inactivating those organs that are in the root part of the compartment
-    # print("Inactivating those hyphae that are in the root part of the petri dish")
-    # mycp.turnOffSidePetriDish(-barrier_thickness/2,opening_height-barrier_height,  opening_length/2, -opening_length/2)
-
     # look at system to see how active
     # vp.plot_roots(mycp,"active")   
     crossed_time = mycp.getSimTime()
@@ -126,15 +117,13 @@ def makesimulation(seed):
     print(crossed_time,mycp.getSimTime(), max(mycp.getParameter("creationTime")))
     
     for i in range(0, hours_hyphae):
-        if i % 5 == 0:
-            print("Simulating hyphal growth step " + str(i) + " of " + str(hours_hyphae))
+        if i % 10 == 0:
+            print("Simulating hyphal growth step " + str(i+1) + " of " + str(hours_hyphae))
         # mycp.simulateHyphae(dt,False)
         mycp.simulate(dt,False)
         # mycp.turnOffSidePetriDish(-barrier_thickness/2,opening_height-barrier_height,  opening_length/2, -opening_length/2)
-        ana = amf.getMycSegmentAnalyser(mycp)
         if animation:
-            ana.write("animation/" + filename + "_hoursACB_" +str(i+1) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis"])
-            
+            ana = amf.getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)            
         # print(crossed_time, mycp.getSimTime(), max(mycp.getParameter("creationTime")))
         # raise Exception
     endsim = time.perf_counter()
@@ -142,10 +131,10 @@ def makesimulation(seed):
     print("Time for simulation: ", endsim-start)
 
     # raise Exception
-    # ana = amf.getMycSegmentAnalyser(mycp)
+    # ana = ana = amf.getMycSegmentAnalyser(mycp)
 
     if not animation:
-        ana.write("plots/" + filename + str(N+i) + ".vtp", ["radius", "subType", "creationTime", "organType", "colonization", "colonizationTime", "anastomosis","nodeTips"])
+        ana = amf.getMycSegmentAnalyser(mycp, write = [],stdwrite= True,filename = "animation/" + filename, step = N)
 
     times = np.linspace(crossed_time, max(mycp.getParameter("creationTime"))+0.01, 100)
     print('mycp.getSimTime()',mycp.getSimTime(),'max(mycp.getParameter("creationTime"))',max(mycp.getParameter("creationTime")))

@@ -1,6 +1,7 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import numpy as np
 import plantbox as pb
+from scipy.optimize import curve_fit
 
 def getMycSegmentAnalyser(plant,write=[],filename = "write",step = 0, stdwrite = False):
         ana = pb.SegmentAnalyser(plant)
@@ -131,3 +132,62 @@ def setUpSimulationTime(simTime, fps):
     nSteps = int(simTime / dt)
     times = np.linspace(0, simTime, nSteps)
     return times, dt, nSteps
+
+def makeSimulation(seed, path, name, nRings, height, petri_dish, small_hyphae_dish, half_dish, rings, times, dt, nSteps, filename, animation = False):
+    # set up simulation
+    #### WORK IN PROGRESS
+    mycp = pb.MycorrhizalPlant(seed)
+    mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
+    seed_para = pb.SeedRandomParameter(mycp)
+    seed_para.seedPos.z = -height / 2
+    mycp.setOrganRandomParameter(seed_para)
+    mycp.setGeometry(half_dish)
+    mycp.initialize()
+
+    print("Starting simulation with seed: " + str(seed))
+    for i in range(nSteps):
+        if (i % 100 == 0):
+            print("Step " + str(i) + " of " + str(nSteps))
+        mycp.simulate(dt,False)
+        if (animation):
+            getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
+
+    root = pb.RootRandomParameters(mycp)
+    for rp in root:
+        rp.hyphalEmergenceDensity = 4.0
+        rp.lmbd = 0.15
+        mycp.setOrganRandomParameter(rp)
+
+
+    mycp.changeGeometry(5,petri_dish)
+
+
+    return mycp
+
+def sigmoidLengthDens(t, K1,lamda_dens,t_arrival):
+    rho = K1/(1+np.exp(lamda_dens*(t_arrival-t)))
+    return rho
+
+def sigmoidTipDens(t, K2,lamda_tips,t_arrival):
+    n = (K2 * np.exp(lamda_tips*(t_arrival-t)))/(1+np.exp(lamda_tips*(t_arrival-t)))
+    return n
+
+def arrivalTimeDensFit(t,rho):
+    p0 = [max(rho), np.median(t),1, min(rho)]
+    param, param_cov = curve_fit(sigmoidLengthDens, t, rho, p0)
+    return param, param_cov
+
+def TimeStar(t, ana, cond):
+    lengthsSubtype = getParameterOverTime("length", t, ana, [1,2,3])
+    lengths = lengthsSubtype[1,:] + lengthsSubtype[2,:]
+    valid = lengths > cond
+    return np.min(t[valid])
+
+def findAnaDensDep(t, ana, rings, power = 1):
+    ana_densities = getParaDistperRing("anastomosis", t, ana, rings)
+    tip_densities = getParaDistperRing("nodeTips", t, ana, rings)
+    length_densities = getParaDistperRing("length", t, ana, rings)
+    ana_rates = np.zeros(len(rings),len(t[1:]))
+    for i in range(len(rings)):
+        ana_rates[i,:] = ana_densities[i,:]/tip_densities[i,:]
+        coefs = np.polyfit(length_densities[i,:], ana_rates[i,:], deg = power)
