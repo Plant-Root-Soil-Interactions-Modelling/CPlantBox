@@ -1,13 +1,13 @@
 hyphal_network.py was built step by step with the following prompts:
 
 1. create a new script in the anastomosis/ folder. Create a function based on
-   a hyphal length density (rho_h) and root tip density (rho_t) where the
+   a hyphal length density (rho_h) and hyphal tip density (rho_t) where the
    geometry is realized in a unit cube in 3D, hyphal lengths are a straight
-   lines, root tips are the apical tips of these straight lines. I.e. start
+   lines, hyphal tips are the apical tips of these straight lines. I.e. start
    with inserting the tips into the cube (uniformly distributed) to achieve
-   root tip density; in the next step add straight lines with a random angle
+   hyphal tip density; in the next step add straight lines with a random angle
    (maximal length is towards the cube boundary) if more length is needed,
-   add random hyphaes crossing the unit cube (i.e. having no root tip within
+   add random hyphaes crossing the unit cube (i.e. having no hyphal tip within
    the cube)
 
 2. For an existing network (from create_hyphal_network) create a function
