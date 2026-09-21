@@ -11,7 +11,9 @@ Typical usage::
     rs.openFile("params.xml")
 
     anim = AnimateRoots(rs)
-    anim.root_name = "age"
+    anim.root_name = "age" # type of scalar field used to colour the root segments
+    anim.avi_name = "output_video.avi" # optional, if set jpgs are creaeted in subfolder
+
     anim.start()           # open VTK window and configure camera
 
     for t in simulation_times:
@@ -19,6 +21,8 @@ Typical usage::
         anim.update()      # refresh the scene after each time step
 
     anim.run()             # enter the VTK event loop (blocking)
+
+    make_video()  # creaets an mp4 fromm hte jpgs (if anim.avi_name was set)
 
 Author: Daniel Leitner
 """
@@ -83,11 +87,12 @@ class AnimateRoots:
         ``<avi_name>/<avi_name><frame_index>.jpg``.
     """
 
-    def __init__(self, rootsystem=None, container_sdf=None):
+    def __init__(self, rootsystem=None, container_sdf=None, add_params={}):
         # Root system data source
         self.rootsystem = rootsystem
         self.root_name = "subType"
         self.plant = False  # True → include leaf polygons via plot_plant
+        self.add_params = add_params
 
         # Container (computed once in start, then reused)
         self.container_sdf = container_sdf
@@ -191,10 +196,12 @@ class AnimateRoots:
         for a in self.actors:
             ren.RemoveActor(a)
         # Remove 2-D overlays (scalar bar) so they can be re-added below
-        for a in ren.GetActors2D():
-            ren.RemoveActor2D(a)
+        # GetActors2D is deprecated since VTK 9.7; GetViewProps also holds the 3-D
+        # actors, so keep only the vtkActor2D ones (what GetActors2D used to return)
+        for a in [p for p in ren.GetViewProps() if isinstance(p, vtk.vtkActor2D)]:
+            ren.RemoveViewProp(a)
         if self.color_bar:
-            ren.AddActor2D(self.color_bar)
+            ren.AddViewProp(self.color_bar)
 
         self.actors = []
         self.create_root_actors()
@@ -227,6 +234,7 @@ class AnimateRoots:
         # Build an analyser so we can call addAge before creating polydata.
         # addAge is required for the "age" parameter (age = simtime - creationTime).
         ana = pb.SegmentAnalyser(self.rootsystem)
+
         ana.addAge(self.simtime)
         if self.plant:
             new_actors, root_cbar = plot_plant(ana, self.root_name, render=False)
@@ -354,3 +362,11 @@ class AnimateRoots:
         print(f"Running: {' '.join(cmd)}")
         subprocess.run(cmd, check=True)
         print(f"Video saved to {output_file}")
+
+
+class AnimatePlant(AnimateRoots):
+    """just rename the class to AnimatePlant for clarity
+    (and keep the old name for backward compatibility)"""
+
+    def __init__(self, plant, add_params=None):
+        super().__init__(plant, add_params=add_params)
