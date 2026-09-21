@@ -113,7 +113,6 @@ def makesimulation(seed):
     crossed_time = mycp.getSimTime()
     # print(crossed_time)
     hours_hyphae = 60 ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
-    tip_densities = list()
     print(crossed_time,mycp.getSimTime(), max(mycp.getParameter("creationTime")))
     
     for i in range(0, hours_hyphae):
