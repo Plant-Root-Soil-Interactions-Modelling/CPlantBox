@@ -46,7 +46,7 @@ class PerirhizalPython(Perirhizal):
         self.lookup_table_global = None  # optional 3d look up table to find soil root interface potentials for all van genuchten parameters
         self.lookup_table_sr_solutes = None # optional 4d look up table for steady state solute flow
         self.lookup_table_sr_solutes_simp = None # optional 1d lookup tables for the simplified steady rate solute flow
-        self.lookup_table_sr_solutes_simpglobal = None # optional 3d lookup tables for the simplified steady rate solute flow
+        self.lookup_table_sr_solutes_simp_global = None # optional 3d lookup tables for the simplified steady rate solute flow
         self.sp = None  # corresponding van genuchten soil parameter
         
         self.alpha_0 = 0.3 # upper bound for van Genuchten parameter alpha, same value as in van_genuchten.py
@@ -62,7 +62,7 @@ class PerirhizalPython(Perirhizal):
         self.lookup_table_global = None
         self.lookup_table_sr_solutes = None
         self.lookup_table_sr_solutes_simp = None
-        self.lookup_table_sr_solutes_simpglobal = None
+        self.lookup_table_sr_solutes_simp_global = None
  
         
     def open_lookup(self, filename):
@@ -75,16 +75,15 @@ class PerirhizalPython(Perirhizal):
         self.sp = vg.Parameters(soil)
         vg.create_mfp_lookup(self.sp) # I do not know why this has to be repeated here
             
-    def open_global_lookup(self, filename):
+    def open_lookup_global(self, filename):
         """opens a global look-up table from a file to quickly find soil root interface potentials, this lookup table works for all van Genuchten parameter sets"""
         npzfile = np.load(filename + ".npz")
-        interface, interface_vg = npzfile["interface"], npzfile["interface_vg"]
-        vg_m_, inner_kr_b_, base_mfp_, sx_ = npzfile["vg_m_"], npzfile["inner_kr_b_"], npzfile["base_mfp_"], npzfile["sx_"]
+        vg.open_mfp_global_lookup(filename + "vg")
+        interface = npzfile["interface"]
+        vg_m_, inner_kr_b_, base_mfp_, sx_ = npzfile["vg_m_"], npzfile["inner_kr_b_"], npzfile["base_mfp_"]
         self.lookup_table_global = RegularGridInterpolator((vg_m_, inner_kr_b_, base_mfp_), interface)  # method = "nearest" fill_value = None , bounds_error=False
-        self.lookup_global_mfp = RegularGridInterpolator((vg_m_, sx_), interface_vg) 
-        #.sp = vg.Parameters(soil) #this lookup table works for arbitrary van Genuchten parameter sets
-    
-    def open_lookup_solutes_simplified(self, filename):
+        
+    def open_lookup_solutes_simp(self, filename):
         """opens a look-up table from a file to quickly find soil root solute concentrations in the steady state case"""
         npzfile = np.load(filename + ".npz")
         integral_AdvDiff_ = npzfile["integral_AdvDiff_"]
@@ -93,6 +92,18 @@ class PerirhizalPython(Perirhizal):
         self.lookup_table_sr_solutes_simp = RegularGridInterpolator((base_mfp_,[0,1]) , integral_AdvDiff_)  # method = "nearest" fill_value = None , bounds_error=False
         self.sp = vg.Parameters(soil)
         vg.create_mfp_lookup(self.sp) # does this have to be repeated here?
+    
+    def open_lookup_solutes_simp_global(self, filename):
+        """opens a look-up table from a file to quickly find soil root solute concentrations in the steady state case"""
+        npzfile = np.load(filename + ".npz")
+        vg.open_mfp_global_lookup(filename + "vg")
+        integral_AdvDiff_ = npzfile["integral_AdvDiff_"]
+        base_mfp_ = npzfile["base_mfp_"]
+        soil = npzfile["soil"]
+        self.lookup_table_sr_solutes_simp = RegularGridInterpolator((base_mfp_,[0,1]) , integral_AdvDiff_)  # method = "nearest" fill_value = None , bounds_error=False
+        self.sp = vg.Parameters(soil)
+        vg.create_mfp_lookup(self.sp) # does this have to be repeated here?
+    
     
     def open_lookup_solutes(self, filename):
         """opens an additional look-up table from a file to quickly find soil root solute concentrations in the steady rate case.
@@ -1037,6 +1048,8 @@ class PerirhizalPython(Perirhizal):
         dummy_sp       van genuchten soil parameters set for the perirhizal zone, not needed in the actual lookup table
                        has been set to hydrus loam as a default
         """
+        
+        vg.create_mfp_global_lookup(filename+"_vg")
 
         
         # intervals for all inputs
