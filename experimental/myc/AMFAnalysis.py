@@ -30,29 +30,23 @@ def getLengthPerSubtype(plant):
         hyphae.pack()
     return lenSubtype
 
-def getParaDistperRing(parameter, times, plant, rings):
+def getParaSumperRing(parameter, times, ana, rings):
         paradenmat = np.zeros((len(rings),len(times[1:])))
         flipped = np.flip(np.asarray(times))
-        ana = pb.SegmentAnalyser(plant)
+        # ana = pb.SegmentAnalyser(plant)
         for k, ring in enumerate(rings):
             for j in range(len(times[1:])-1):
                 ana.filter("creationTime", 0, flipped[j])
                 ana.pack()
                 distrib = ana.getSummed(parameter, ring)
-                ana.filter("creationTime",0,flipped[j+1])
-                ana.pack()
-                if parameter == "nodeTips":
-                    summed = ana.getSummed(parameter, ring)
-                else:
-                    summed = 0
-                paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum() /(np.pi*(4.7**2)/2) 
+                paradenmat[k, len(times[1:])-1 -j] = np.array(distrib).sum()
             ana.filter("creationTime",0,flipped[len(times[1:])-1])
             ana.pack()
             summed = ana.getSummed(parameter, ring)
             ana.filter("creationTime",0,flipped[len(times[1:])])
             ana.pack()
             summed = summed - ana.getSummed(parameter, ring)
-            paradenmat[k, -1] = np.array(summed).sum() /(np.pi*(4.7**2)/2)
+            paradenmat[k, -1] = np.array(summed).sum()
         return paradenmat
 
 def getParameterOverTime(parameter, times, plant, subType):
@@ -129,10 +123,9 @@ def setUpSimulationTime(simTime, fps):
     fps = fps
     dt = 1 / fps
     nSteps = int(simTime / dt)
-    times = np.linspace(0, simTime, nSteps)
-    return times, dt, nSteps
+    return dt, nSteps
 
-def makeSimulation(seed, path, name, nRings, height, petri_dish, small_hyphae_dish, half_dish, rings, times, dt, nSteps, filename, animation = False):
+def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False):
     # set up simulation
     #### WORK IN PROGRESS
     mycp = pb.MycorrhizalPlant(seed)
@@ -151,7 +144,7 @@ def makeSimulation(seed, path, name, nRings, height, petri_dish, small_hyphae_di
         if (animation):
             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
 
-    root = pb.RootRandomParameters(mycp)
+    root = mycp.getOrganRandomParameter(pb.root)
     for rp in root:
         rp.hyphalEmergenceDensity = 4.0
         rp.lmbd = 0.15
@@ -163,7 +156,7 @@ def makeSimulation(seed, path, name, nRings, height, petri_dish, small_hyphae_di
     crossed_barrier = 0
 
     while crossed_barrier < 3:
-        N+=1
+        # N+=1
         mycp.simulate(dt,False)
         ana = getMycSegmentAnalyser(mycp)
         ana.filter("organType",5)
@@ -172,19 +165,14 @@ def makeSimulation(seed, path, name, nRings, height, petri_dish, small_hyphae_di
         crossed_barrier = ana.getSummed("nodeTips",small_hyphae_dish)
 
     crossed_time = mycp.getSimTime()
-    hours_hyphae = 60 ### TODO include this in function arguments
-
     for i in range(0, hours_hyphae):
         if (i % 10 == 0):
             print("Step " + str(i) + " of " + str(hours_hyphae))
         mycp.simulate(dt,False)
         if (animation):
             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
-
-    if not animation:
-        getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container  
-
-    return mycp, crossed_time
+    times = np.linspace(crossed_time, max(mycp.getParameter("creationTime"))+0.01, 100)
+    return mycp, crossed_time, times
 
 def sigmoidLengthDens(t, K1,lamda_dens,t_arrival):
     rho = K1/(1+np.exp(lamda_dens*(t_arrival-t)))
