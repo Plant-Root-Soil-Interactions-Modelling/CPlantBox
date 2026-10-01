@@ -166,44 +166,7 @@ void MycorrhizalPlant::simulateHyphae(double dt, bool verbose) {
     sdf->selectedOrganType = Organism::ot_hyphae;
     simulateAnastomosis(dt, verbose);
 }
-/*
- * Simulates primary colonization for all mycorrhizal roots
- * @param dt		duration of the simulation
- * @param verbose	whether to print information
-*/
-void MycorrhizalPlant::simulatePrimaryColonization(double dt, bool verbose) {
-    for (const auto& r : baseOrgans) {
-        if (r->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryColonization(dt);
-        }
-    }
-    auto organs = getOrgans();
-    for (const auto& r : organs) {
-        if (r->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryColonization(dt);
-        }
-    }
-}
 
-/*
- * Simulates secondary colonization for all mycorrhizal roots
- * @param dt		duration of the simulation
- * @param verbose	whether to print information
- */
-void MycorrhizalPlant::simulateSecondaryColonization(double dt, bool verbose) {
-    for (const auto& r : baseOrgans) {
-        if (r->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryColonization(dt);
-        }
-    }
-
-    auto organs = getOrgans();
-    for (const auto& r : organs) {
-        if (r->organType() == Organism::ot_root) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryColonization(dt);
-        }
-    }
-}
 
 void MycorrhizalPlant::simulateColonization(double dt, bool verbose) {
     for (const auto& r : baseOrgans) {

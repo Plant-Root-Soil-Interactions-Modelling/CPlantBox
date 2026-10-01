@@ -1052,8 +1052,6 @@ PYBIND11_MODULE(plantbox, m) {
                         .def("changeGeometry", &MycorrhizalPlant::changeGeometry)
                         .def("simulateHyphalGrowth", &MycorrhizalPlant::simulateHyphalGrowth)
                         .def("simulateHyphae", &MycorrhizalPlant::simulateHyphae)
-                        .def("simulatePrimaryColonization", &MycorrhizalPlant::simulatePrimaryColonization)
-                        .def("simulateSecondaryColonization", &MycorrhizalPlant::simulateSecondaryColonization)
                         .def("simulateColonization", &MycorrhizalPlant::simulateColonization)
                         .def("getAnastomosisPoints", &MycorrhizalPlant::getAnastomosisPoints)
                         .def("getNodeTips", &MycorrhizalPlant::getNodeTips)

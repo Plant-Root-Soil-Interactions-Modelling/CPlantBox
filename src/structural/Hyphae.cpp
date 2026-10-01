@@ -154,6 +154,16 @@ void Hyphae::simulate(double dt, bool verbose)
                         // if (dl == 0.) active = false; // if no length increment, hyphae become inactive
                         if (age * p.b>0.5 ){
                             setActive(false); // become inactive, if enough time has passed for branching
+                            std::cout
+                                << "CREATE LATERAL: "
+                                << "hypha=" << getId()
+                                << " simTime=" << plant.lock()->getSimTime()
+                                << " age=" << age
+                                << " b=" << p.b
+                                << " age*b=" << age * p.b
+                                << " lastNodeCT=" << getNodeCT(nodes.size() - 1)
+                                << " lastNodeID=" << getNodeId(nodes.size() - 1)
+                                << '\n';
                             createLateral(dt_ ,verbose); // create a lateral hyphae
                             createLateral(dt_,verbose); // create a lateral hyphae
                         }
@@ -230,6 +240,16 @@ void Hyphae::simulate(double dt, bool verbose)
                         }
 
                         if ((p.ln.size()==created_linking_node)&& (getLength(true)-s>-1e-9)){
+                            std::cout
+                                << "CREATE LATERAL: "
+                                << "hypha=" << getId()
+                                << " simTime=" << plant.lock()->getSimTime()
+                                << " age=" << age
+                                << " b=" << p.b
+                                << " age*b=" << age * p.b
+                                << " lastNodeCT=" << getNodeCT(nodes.size() - 1)
+                                << " lastNodeID=" << getNodeId(nodes.size() - 1)
+                                << '\n';
                             createLateral(dt_, verbose);
                         }
                     }

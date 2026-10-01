@@ -27,8 +27,6 @@ public:
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;
 
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
-    void simulatePrimaryColonization(double dt);
-    void simulateSecondaryColonization(double dt);
     void simulateHyphalGrowth(double dt, bool verbose);
     void simulateColonization(double dt, bool silence = false);
 

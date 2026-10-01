@@ -152,7 +152,7 @@ void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
                     }
 
                     infTime = colonizationTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
-                    if (infTime > age) {break;}  // front hasn't reached here yet; farther nodes are worse
+                    if (infTime > age || infTime > plant.lock()->getSimTime()) {break;}  // front hasn't reached here yet; farther nodes are worse
 
                     setColonization(basalnode,2,infTime);
 
@@ -203,7 +203,7 @@ void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
                 }
 
                 infTime = colonizationTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
-                if (infTime > age) {break;}
+                if (infTime > age || infTime > plant.lock()->getSimTime()) {break;}
 
                 setColonization(apicalnode,2,infTime);
                 if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
@@ -229,15 +229,9 @@ void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
     }
 }
 
-void MycorrhizalRoot::simulateSecondaryColonization(double dt) {
-    secondaryColonization(false,dt);
-}
-
-void MycorrhizalRoot::simulatePrimaryColonization(double dt) {
-    primaryColonization(dt,false);
-}
 
 void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
+    std::cout << "simulating hyphal growth at time " << plant.lock()->getSimTime() << std::endl;
     if (getRootRandomParameter()->highresolution >= 1) { // Version where at every node there is one hypha created
         for (size_t i = 1; i < nodes.size(); i++) {
             if (colonized.at(i) > 0 && emergedHyphae.at(i) == 0){ // if the current node is colonized and the number of hyphae to be created is reached
@@ -281,7 +275,7 @@ void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
 
 
 void MycorrhizalRoot::simulateColonization(double dt, bool verbose) {
-
+    std::cout << "simulating colonzation at time " << plant.lock()->getSimTime() << std::endl;
     if (this->nodes.size()>1) {
 
         //Primary Colonization
@@ -308,9 +302,12 @@ void MycorrhizalRoot::simulateColonization(double dt, bool verbose) {
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
+
+    std::cout << "SimTime " << plant.lock()->getSimTime() <<  std::endl;
     Root::simulate(dt,verbose);
     simulateColonization(dt,verbose);
     simulateHyphalGrowth(dt,verbose);
+    std::cout << "SimTime " << plant.lock()->getSimTime() <<  std::endl;
 }
 
 std::shared_ptr<const MycorrhizalRootSpecificParameter> MycorrhizalRoot::param() const
@@ -359,7 +356,6 @@ void MycorrhizalRoot::setColonization(int i, int colonization, double t)
 {
     colonized.at(i) = colonization;
     colonizationTime.at(i) = t;
-	assert(colonizationTime.at(i) >= 0 && "MycorrhizalRoot::setColonization colonizationTime.at(i) < 0");
 	assert(colonizationTime.at(i) >= nodeCTs.at(i) && "MycorrhizalRoot::setColonization colonizationTime.at(i) < nodeCTs.at(i)");
 }
 
@@ -428,6 +424,7 @@ void MycorrhizalRoot::createHyphae(int pni)
     assert(delay_for_creation >= 0 && "MycorrhizalRoot::createHyphae delay_for_creation < 0");
     int subType = 1;
     std::cout << "node colonized at " << colonizationTime.at(pni) << " and hyphae created at " << shared_from_this()->getNodeCT(pni) + delay_for_creation << std::endl;
+    std::cout << "hyphae should have age " << dt_ + shared_from_this()->getNodeCT(pni) + delay_for_creation << std::endl;
     std::cout << "with Sim Time " <<plant.lock()->getSimTime() << std::endl;
     auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay_for_creation, shared_from_this(), pni); // delay - dt_
     children.push_back(hyphae);
@@ -448,12 +445,7 @@ int MycorrhizalRoot::getNumberofColonizedNodes() const
 {
     int numberColonizedNodes =0;
     for (size_t i = 0; i < getNumberOfNodes()-1; i++)
-    {
-        if (colonized.at(i)!=0)
-        {
-            numberColonizedNodes++;
-        }
-    }
+    {if (colonized.at(i)!=0){numberColonizedNodes++;}}
     return numberColonizedNodes;
 }
 

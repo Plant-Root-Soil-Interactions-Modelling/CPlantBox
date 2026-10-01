@@ -484,14 +484,17 @@ std::vector<Vector3d> Organism::getNewNodes() const
     std::vector<Vector3d> nv(this->getNumberOfNewNodes());
     for (const auto& o : organs) {
         int onon = o->getOldNumberOfNodes();
+        std::cout
+            << "Organ " << o->getId()
+            << " old=" << o->getOldNumberOfNodes()
+            << " current=" << o->getNumberOfNodes()
+            << '\n';
         for (size_t i=onon; i<o->getNumberOfNodes(); i++) { // loop over all new nodes
-            if (o->getNodeId(i)-this->oldNumberOfNodes < 0) {
-                std::cout <<"Index tried: " << o->getNodeId(i)-this->oldNumberOfNodes << std::endl;
-                std::cout << "get CreationTime of new node: " << o->getNodeCT(i) << std::endl;
-                std::cout << "node id of previous node: " << o->getNodeId(i-1) << std::endl;
-                std::cout << "organ Type: " << o->organType() << std::endl;
-                std::cout << "parent organ " << o->getParent() << std::endl;
-            }
+            std::cout
+            << "  local i=" << i
+            << " nodeId=" << o->getNodeId(i)
+            << " globalOld=" << this->oldNumberOfNodes
+            << '\n';
             nv.at(o->getNodeId(i)-this->oldNumberOfNodes) = o->getNode(i);
         }
     }

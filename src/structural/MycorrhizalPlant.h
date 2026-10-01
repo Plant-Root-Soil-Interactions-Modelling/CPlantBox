@@ -21,8 +21,6 @@ class MycorrhizalPlant :public Plant {
 
     void simulate(double dt, bool verbose) override;
     void simulateColonization(double dt, bool verbose);
-    void simulatePrimaryColonization(double dt, bool verbose);
-    void simulateSecondaryColonization(double dt, bool verbose);
     void simulateHyphalGrowth(double dt, bool verbose);
     void simulateAnastomosis(double dt, bool verbose);
     void simulateHyphae(double dt, bool verbose);

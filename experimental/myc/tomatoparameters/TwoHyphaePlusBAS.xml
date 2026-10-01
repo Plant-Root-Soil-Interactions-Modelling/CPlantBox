@@ -276,7 +276,7 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral emergence delay [day]-->
-        <parameter name="lmax" value="7" dev="3"/>
+        <parameter name="lmax" value="3" dev="0.3"/>
         <!--Maximal length of the hyphae [cm]-->
         <parameter name="ln" value="0.1" dev="0.01"/>
         <!--Inter-lateral distance [cm]-->
