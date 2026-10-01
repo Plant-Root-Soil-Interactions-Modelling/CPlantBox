@@ -112,6 +112,7 @@ public:
     /* id management */
     int getOrganIndex() { organId++; return organId; } ///< returns next unique organ id, only organ constructors should call this
     int getNodeIndex() { nodeId++; return nodeId; } ///< returns next unique node id, only organ constructors should call this
+    int getLastNodeIndex() { return nodeId; } ///< returns last unique node id, only organ constructors should call this
 
     /* discretisation*/
     void setMinDx(double dx) { minDx = dx; } ///< Minimum segment size, smaller segments will be skipped

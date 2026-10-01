@@ -485,6 +485,13 @@ std::vector<Vector3d> Organism::getNewNodes() const
     for (const auto& o : organs) {
         int onon = o->getOldNumberOfNodes();
         for (size_t i=onon; i<o->getNumberOfNodes(); i++) { // loop over all new nodes
+            if (o->getNodeId(i)-this->oldNumberOfNodes < 0) {
+                std::cout <<"Index tried: " << o->getNodeId(i)-this->oldNumberOfNodes << std::endl;
+                std::cout << "get CreationTime of new node: " << o->getNodeCT(i) << std::endl;
+                std::cout << "node id of previous node: " << o->getNodeId(i-1) << std::endl;
+                std::cout << "organ Type: " << o->organType() << std::endl;
+                std::cout << "parent organ " << o->getParent() << std::endl;
+            }
             nv.at(o->getNodeId(i)-this->oldNumberOfNodes) = o->getNode(i);
         }
     }
