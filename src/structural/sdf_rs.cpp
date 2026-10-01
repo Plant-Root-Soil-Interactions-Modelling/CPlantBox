@@ -97,13 +97,13 @@ void SDF_RootSystem::updateTree(const Organism& plant) {
     assert(segments_.size() == treeIds_.size());
     assert(segments_.size() == segO.size());
     assert(c + newSegments.size() == segments_.size());
-
     for (const auto& s:newSegments) {
         Vector3d mid = nodes_[s.x].plus(nodes_[s.y]).times(0.5);
         std::vector<double> d = { mid.x, mid.y, mid.z };
         tree.insertParticle(c, d, radii_[c]);
         c++;
     }
+    std::cout << "SDF_RootSystem::updateTree: tree has " << tree.nParticles() << " segments, " << nodes_.size() << " nodes" << std::endl;
 }
 
 double SDF_RootSystem::getDist(const Vector3d& p) const {
