@@ -103,7 +103,7 @@ void MycorrhizalRoot::primaryColonization(double dt, bool silence){
         if (colonized.at(i) == 0 && plant.lock()->rand() < lmbd*cursegLength*dt)
         {
             // insert node here if segment too long and set all nodes to be colonized
-            setColonization(i,1,age);
+            setColonization(i,1,plant.lock()->getSimTime()+ dt);
             if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
                 int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
                 Vector3d fromNode = nodes.at(i-1);   // freeze endpoints before any insertion
@@ -427,6 +427,8 @@ void MycorrhizalRoot::createHyphae(int pni)
 	double delay_for_creation = colonizationTime.at(pni) + delay - shared_from_this()->getNodeCT(pni);//difference between creation of parent node and that of the hyphae
     assert(delay_for_creation >= 0 && "MycorrhizalRoot::createHyphae delay_for_creation < 0");
     int subType = 1;
+    std::cout << "node colonized at " << colonizationTime.at(pni) << " and hyphae created at " << shared_from_this()->getNodeCT(pni) + delay_for_creation << std::endl;
+    std::cout << "with Sim Time " <<plant.lock()->getSimTime() << std::endl;
     auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay_for_creation, shared_from_this(), pni); // delay - dt_
     children.push_back(hyphae);
     emergedHyphae.at(pni) += 1;
