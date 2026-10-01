@@ -35,7 +35,7 @@ finished_dishes = time.perf_counter()
 dt, nSteps = amf.setUpSimulationTime(5,24)
 seed = good_seeds[0]
 start_sim = time.perf_counter()
-mycp, crossed_time, times = amf.makeSimulation(seed, path, name, height,petri_dish, small_hyphae_dish, half_dish,dt,nSteps, 60, "f_enc_vs_rho_h",animation=False)
+mycp, crossed_time, times = amf.makeSimulation(seed, path, name, height,petri_dish, small_hyphae_dish, half_dish,dt,nSteps, 60, "f_enc_vs_rho_h",animation=False,verbose=False)
 finished_sim = time.perf_counter()
 vp.plot_roots_and_container(mycp,petri_dish)
 ana = pb.SegmentAnalyser()
