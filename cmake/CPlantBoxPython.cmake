@@ -12,6 +12,10 @@ function(cplantbox_configure_python_bindings target)
         message(FATAL_ERROR "cplantbox_configure_python_bindings called with unknown target: ${target}")
     endif()
 
+	if(DEFINED ENV{VIRTUAL_ENV})
+		set(Python3_EXECUTABLE "$ENV{VIRTUAL_ENV}/bin/python3")
+	endif()
+    
     if(CMAKE_VERSION VERSION_LESS 3.18)
         find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
     else()
