@@ -126,7 +126,7 @@ def setUpSimulationTime(simTime, fps):
     nSteps = int(simTime / dt)
     return dt, nSteps
 
-def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False):
+def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False, verbose = False):
     # set up simulation
     #### WORK IN PROGRESS
     mycp = pb.MycorrhizalPlant(seed)
@@ -141,7 +141,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     for i in range(nSteps):
         if (i % 10 == 0):
             print("Step " + str(i) + " of " + str(nSteps))
-        mycp.simulate(dt,False)
+        mycp.simulate(dt,verbose)
         if (animation):
             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
 
@@ -158,7 +158,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
 
     while crossed_barrier < 3:
         # N+=1
-        mycp.simulate(dt,False)
+        mycp.simulate(dt,verbose)
         ana = getMycSegmentAnalyser(mycp)
         ana.filter("organType",5)
         ana.filter("subType",1,2)
@@ -169,7 +169,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     for i in range(0, hours_hyphae):
         if (i % 10 == 0):
             print("Step " + str(i) + " of " + str(hours_hyphae))
-        mycp.simulate(dt,False)
+        mycp.simulate(dt,verbose)
         if (animation):
             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
     times = np.linspace(crossed_time, max(mycp.getParameter("creationTime"))+0.01, 100)
