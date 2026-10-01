@@ -39,6 +39,8 @@ public:
 
     virtual std::string toString() const override { return "SDF_RootSystem"; }
 
+    void updateTree(const Organism& plant);
+
     std::vector<Vector3d> nodes_;
     std::vector<Vector2i> segments_;
     std::vector<double> radii_;

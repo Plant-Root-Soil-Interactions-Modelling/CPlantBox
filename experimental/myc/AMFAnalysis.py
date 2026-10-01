@@ -31,6 +31,7 @@ def getLengthPerSubtype(plant):
     return lenSubtype
 
 def getParaSumperRing(parameter, times, ana, rings):
+        print("Parameter sum for "+ parameter)
         paradenmat = np.zeros((len(rings),len(times[1:])))
         flipped = np.flip(np.asarray(times))
         # ana = pb.SegmentAnalyser(plant)
@@ -100,22 +101,22 @@ def makedishes(diameter, height, barrier_thickness, barrier_height, opening_leng
     small_dish = pb.SDF_PlantContainer(radius,radius,height,False)
     small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
 
-    # nRings = 25
-    centrepoint = [0, 0, 0] ## Set a different centre for the rings for analysis, so that growth is more centred
     small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
     ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
-    moved_ringone = pb.SDF_RotateTranslate(ringone, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], centrepoint[2]))
     rings = []
-    rings.append(moved_ringone)
+    rings.append(ringone)
     for i in range(2, nRings+1):
         small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
         small_hyphae_dish2 = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
         old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
         small_hyphae_dish2 = pb.SDF_Difference(small_hyphae_dish2,old_dish)
-        moved_small_hyphae_dish = pb.SDF_RotateTranslate(small_hyphae_dish2, 0, 0, pb.Vector3d(centrepoint[0], centrepoint[1], 0))
-        rings.append(moved_small_hyphae_dish)
+        rings.append(small_hyphae_dish2)
     
     return petri_dish, small_hyphae_dish, half_dish, rings
+
+def makeBoxes(radius,nRings,height, other = 0.):
+    length = radius*np.sqrt(1/nRings)
+    box = pb.SDF_PlantContainer(length,length,height,True)
 
 def setUpSimulationTime(simTime, fps):
     # set up simulation time
@@ -138,7 +139,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
 
     print("Starting simulation with seed: " + str(seed))
     for i in range(nSteps):
-        if (i % 100 == 0):
+        if (i % 10 == 0):
             print("Step " + str(i) + " of " + str(nSteps))
         mycp.simulate(dt,False)
         if (animation):
@@ -194,9 +195,9 @@ def TimeStar(t, ana, cond):
     return np.min(t[valid])
 
 def findAnaDensDep(t, ana, rings, power = 1):
-    ana_densities = getParaDistperRing("anastomosis", t, ana, rings)
-    tip_densities = getParaDistperRing("nodeTips", t, ana, rings)
-    length_densities = getParaDistperRing("length", t, ana, rings)
+    ana_densities = getParaSumperRing("anastomosis", t, ana, rings)
+    tip_densities = getParaSumperRing("nodeTips", t, ana, rings)
+    length_densities = getParaSumperRing("length", t, ana, rings)
     ana_rates = np.zeros(len(rings),len(t[1:]))
     for i in range(len(rings)):
         ana_rates[i,:] = ana_densities[i,:]/tip_densities[i,:]

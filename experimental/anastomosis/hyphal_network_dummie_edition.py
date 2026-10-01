@@ -19,6 +19,7 @@ Geometry model
 
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
 
 def _random_directions(n, rng):
     """n random directions, uniformly distributed on the unit sphere."""
@@ -349,16 +350,16 @@ def fit_linear_proxy_for_R(results,R, n=None):
     rho_h = np.array([row["rho_h"] for row in data])
     f_enc = np.array([row["f_enc"] for row in data])
     valid = np.isfinite(rho_h) & np.isfinite(f_enc)
-    rho_h = rho_h[valid]
+    rho_h = rho_h[valid].reshape(-1, 1)
     f_enc = f_enc[valid]
     if len(rho_h) == 0:
         return np.nan, np.nan
     # Fit through origin.
-    C = np.sum(rho_h * f_enc) / np.sum(rho_h**2)
-    prediction = C * rho_h
-    ss_res = np.sum((f_enc - prediction)**2)
-    ss_tot = np.sum((f_enc - np.mean(f_enc))**2)
-    R2 = (1.0 - ss_res / ss_tot if ss_tot > 0 else np.nan)
+    model = LinearRegression().fit(rho_h,f_enc)
+    slope = model.coef_[0]
+    C = slope
+    prediction = rho_h*C
+    R2 = model.score(rho_h,f_enc)
     return C, R2
 
 def estimate_C_by_tip_density(results,R,n_values):
@@ -624,12 +625,12 @@ if __name__ == "__main__":
 
     # Uncomment only if visual inspection is useful.
 
-    # for R in R_values:
-    #     plot_f_enc_vs_rho_h(
-    #         results,
-    #         R,
-    #         n_values,
-    #     )
+    for R in R_values:
+        plot_f_enc_vs_rho_h(
+            results,
+            R,
+            n_values,
+        )
     
     #     plot_normalized_encounter(
     #         results,

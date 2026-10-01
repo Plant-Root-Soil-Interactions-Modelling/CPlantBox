@@ -78,6 +78,33 @@ void SDF_RootSystem::buildTree() {
     }
 }
 
+void SDF_RootSystem::updateTree(const Organism& plant) {
+    size_t c = tree.nParticles();
+    auto newNodes = plant.getNewNodes();
+    nodes_.insert(nodes_.end(), newNodes.begin(),newNodes.end());
+    auto newSegments = plant.getNewSegments();
+    segments_.insert(segments_.end(),newSegments.begin(),newSegments.end());
+    auto newsegO = plant.getNewSegmentOrigins();
+    segO.insert(segO.end(),newsegO.begin(),newsegO.end());
+    for (const auto& o : newsegO) {
+        radii_.push_back(o->getParameter("radius"));
+        organTypes_.push_back( o->organType());
+        treeIds_.push_back(o->getParameter("hyphalTreeIndex"));
+    }
+    // For checking implementation
+    assert(segments_.size() == radii_.size());
+    assert(segments_.size() == organTypes_.size());
+    assert(segments_.size() == treeIds_.size());
+    assert(segments_.size() == segO.size());
+    assert(c + newSegments.size() == segments_.size());
+
+    for (const auto& s:newSegments) {
+        Vector3d mid = nodes_[s.x].plus(nodes_[s.y]).times(0.5);
+        std::vector<double> d = { mid.x, mid.y, mid.z };
+        tree.insertParticle(c, d, radii_[c]);
+        c++;
+    }
+}
 
 double SDF_RootSystem::getDist(const Vector3d& p) const {
 
@@ -89,7 +116,7 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
     // std::cout << indices.size() << " segments in range\n";
     distIndex = -1;
     for (int i : indices) {
-
+        
         Vector3d x1 = nodes_[segments_[i].x];
         Vector3d x2 = nodes_[segments_[i].y];
 
@@ -108,6 +135,10 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
             l = p.minus(x1.plus(v.times(c1/c2))).length();
         }
         l -= radii_[i];
+        if (i < 0 || static_cast<size_t>(i) >= treeIds_.size()) {
+            std::cout << "BAD TREE INDEX: " << i << std::endl;
+            throw std::runtime_error("bad tree index");
+        }
 
         if (selectedOrganType == -1) {
 			if (l < mdist) {
