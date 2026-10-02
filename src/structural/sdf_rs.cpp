@@ -103,7 +103,6 @@ void SDF_RootSystem::updateTree(const Organism& plant) {
         tree.insertParticle(c, d, radii_[c]);
         c++;
     }
-    std::cout << "SDF_RootSystem::updateTree: tree has " << tree.nParticles() << " segments, " << nodes_.size() << " nodes" << std::endl;
 }
 
 double SDF_RootSystem::getDist(const Vector3d& p) const {

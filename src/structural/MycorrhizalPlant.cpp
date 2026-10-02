@@ -126,11 +126,12 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
 {
     abs2rel();
     Organism::simulate(dt, verbose);
-    if (getSimTime() <= dt*1.1) {
-        sdf = std::make_shared<SDF_RootSystem>(*this);
-    } else {
-        sdf->updateTree(*this);
-    }
+    // if (getSimTime() <= dt*1.1) {
+    //     sdf = std::make_shared<SDF_RootSystem>(*this);
+    // } else {
+    //     sdf->updateTree(*this);
+    // }
+    sdf = std::make_shared<SDF_RootSystem>(*this);
     sdf->selectedOrganType = Organism::ot_hyphae;
     simulateAnastomosis(dt, verbose);
     rel2abs();
@@ -236,7 +237,7 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
                     std::cout << "Anastomosis occurred at distance: " << dist << " cm.\n";
                     std::cout << "Hyphal tree index " << h->getParameter("hyphalTreeIndex") << "\n";
                 }
-                
+                std::cout << "creation Time of tip: " << h->getNodeCT(h->getNumberOfNodes()-1) << "creation Time of node merged"<< connected_to_hyphae->getNodeCT(locallastIndex) << "simulation time: " << getSimTime() << std::endl;
                 h->setActive(false); // deactivate hyphae after anastomosis
                 h->setMergePointID(lastIndex); // set node ID where anastomosis happened
                 h->setMergedHyphae(connected_to_hyphae); // set merged hyphae
@@ -255,7 +256,6 @@ void MycorrhizalPlant::initCallbacks() {
     for (auto& p_otp :organParam[Organism::ot_hyphae]) {
         auto rp = std::static_pointer_cast<HyphaeRandomParameter>(p_otp.second);
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
-        // std::cout << "Created tropism function for hyphae with type " << rp->tropismT << " and parameters n=" << rp->tropismN << " and sigma=" << rp->tropismS << std::endl;
         tropism->setGeometry(geometry);
         rp->f_tf = tropism; // set new one
     }

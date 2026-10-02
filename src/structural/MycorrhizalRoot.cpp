@@ -231,7 +231,6 @@ void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
 
 
 void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
-    std::cout << "simulating hyphal growth at time " << plant.lock()->getSimTime() << std::endl;
     if (getRootRandomParameter()->highresolution >= 1) { // Version where at every node there is one hypha created
         for (size_t i = 1; i < nodes.size(); i++) {
             if (colonized.at(i) > 0 && emergedHyphae.at(i) == 0){ // if the current node is colonized and the number of hyphae to be created is reached
@@ -275,7 +274,6 @@ void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
 
 
 void MycorrhizalRoot::simulateColonization(double dt, bool verbose) {
-    std::cout << "simulating colonzation at time " << plant.lock()->getSimTime() << std::endl;
     if (this->nodes.size()>1) {
 
         //Primary Colonization
@@ -302,12 +300,9 @@ void MycorrhizalRoot::simulateColonization(double dt, bool verbose) {
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
-
-    std::cout << "SimTime " << plant.lock()->getSimTime() <<  std::endl;
     Root::simulate(dt,verbose);
     simulateColonization(dt,verbose);
     simulateHyphalGrowth(dt,verbose);
-    std::cout << "SimTime " << plant.lock()->getSimTime() <<  std::endl;
 }
 
 std::shared_ptr<const MycorrhizalRootSpecificParameter> MycorrhizalRoot::param() const
@@ -391,9 +386,7 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
 
                     switch(ot){
                     case Organism::ot_root:{
-                        // std::cout << "Marco!" << std::endl;
                         auto lateral = std::make_shared<MycorrhizalRoot>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
-                        // std::cout<< "Polo!"<< std::endl;
                         children.push_back(lateral);
                         lateral->simulate(growth_dt,verbose);
                         break;}

@@ -2,6 +2,9 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import numpy as np
 import plantbox as pb
 from scipy.optimize import curve_fit
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+import plantbox.visualisation.vtk_plot as vp
 
 def getMycSegmentAnalyser(plant,write=[],filename = "write",step = 0, stdwrite = False):
         ana = pb.SegmentAnalyser(plant)
@@ -133,6 +136,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
     seed_para = pb.SeedRandomParameter(mycp)
     seed_para.seedPos.z = -height / 2
+    seed_para.seedPos.x = -9.4 / 2 + 0.5
+    seed_para.seedPos.y = 0
     mycp.setOrganRandomParameter(seed_para)
     mycp.setGeometry(half_dish)
     mycp.initialize()
@@ -150,7 +155,6 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
         rp.hyphalEmergenceDensity = 4.0
         rp.lmbd = 0.15
         mycp.setOrganRandomParameter(rp)
-
 
     mycp.changeGeometry(5,petri_dish)
 
@@ -202,3 +206,113 @@ def findAnaDensDep(t, ana, rings, power = 1):
     for i in range(len(rings)):
         ana_rates[i,:] = ana_densities[i,:]/tip_densities[i,:]
         coefs = np.polyfit(length_densities[i,:], ana_rates[i,:], deg = power)
+
+def prepare_data(lenMat, vol, anaMat, tipMat):
+    rho = lenMat / vol
+    f_enc = np.divide(
+        anaMat, tipMat,
+        out=np.zeros_like(anaMat, dtype=float),
+        where=(anaMat != 0) & (tipMat != 0)
+    )
+    n_locations, n_times = rho.shape
+    rho = rho.ravel()
+    f_enc = f_enc.ravel()
+    # Zeile = Ort, Spalte = Zeit
+    location = np.repeat(np.arange(n_locations), n_times)
+    time = np.tile(np.arange(n_times), n_locations)
+    valid = np.isfinite(rho) & np.isfinite(f_enc) & (rho != 0) & (f_enc != 0)
+    return rho[valid], f_enc[valid], location[valid], time[valid]
+
+
+def find_linear_range(rho, f_enc, window, step, min_points=10):
+    results = []
+    starts = np.arange(rho.min(), rho.max() - window, step)
+    for start in starts:
+        end = start + window
+        mask = (rho >= start) & (rho <= end)
+        if mask.sum() < min_points:
+            continue
+        r = rho[mask]
+        f = f_enc[mask]
+        model = LinearRegression(fit_intercept=False).fit(r.reshape(-1, 1), f)
+        results.append({
+            "rho_min": start,
+            "rho_max": end,
+            "rho_center": (start + end) / 2,
+            "C": model.coef_[0],
+            "R2": model.score(r.reshape(-1, 1), f),
+            "n": mask.sum()
+        })
+    return results
+
+def analyze_simulations(simulations, window, step, min_points=10):
+    all_results = {}
+    for sim in simulations:
+        rho, f_enc, location, time = prepare_data(
+            sim["lenMat"], sim["vol"], sim["anaMat"], sim["tipMat"]
+        )
+        all_results[sim["label"]] = {
+            "rho": rho,
+            "f_enc": f_enc,
+            "location": location,
+            "time": time,
+            "linear": find_linear_range(
+                rho, f_enc, window, step, min_points
+            )
+        }
+    return all_results
+
+def plot_data(all_results):
+    fig, ax = plt.subplots(figsize=(8, 5.5))
+    n_locations = max(
+        r["location"].max() + 1
+        for r in all_results.values()
+    )
+    cmap = plt.cm.viridis
+    norm = plt.Normalize(0, n_locations - 1)
+    markers = ["o", "s", "^", "D", "v", "P", "X"]
+    for i, (label, data) in enumerate(all_results.items()):
+        ax.scatter(
+            data["rho"], data["f_enc"],
+            c=data["location"], cmap=cmap, norm=norm,
+            marker=markers[i % len(markers)],
+            alpha=0.3, s=20, edgecolors="none",
+            label=label
+        )
+
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = fig.colorbar(sm, ax=ax)
+    cbar.set_label("location")
+
+    ax.set_xlabel(r"realized hyphal length density $\rho_h$")
+    ax.set_ylabel(r"$f_{\mathrm{enc}}$")
+    ax.set_title(r"Encounter fraction vs. $\rho_h$")
+    ax.grid(alpha=0.2)
+    ax.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+def plot_linear_analysis(all_results):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
+    for label, data in all_results.items():
+        linear = data["linear"]
+        if not linear:
+            continue
+        rho = np.array([r["rho_center"] for r in linear])
+        C = np.array([r["C"] for r in linear])
+        R2 = np.array([r["R2"] for r in linear])
+        ax1.plot(rho, C, "o-", ms=4, label=label)
+        ax2.plot(rho, R2, "o-", ms=4, label=label)
+    ax1.set_xlabel(r"density $\rho_h$")
+    ax1.set_ylabel(r"$C$")
+    ax1.set_title(r"Linear coefficient $C$")
+    ax2.set_xlabel(r"density $\rho_h$")
+    ax2.set_ylabel(r"$R^2$")
+    ax2.set_title(r"Linearity")
+    for ax in (ax1, ax2):
+        ax.grid(alpha=0.2)
+        ax.legend()
+    plt.tight_layout()
+    plt.show()
