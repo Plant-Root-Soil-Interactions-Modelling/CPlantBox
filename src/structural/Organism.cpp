@@ -480,22 +480,19 @@ std::vector<double> Organism::getUpdatedNodeCTs() const
  */
 std::vector<Vector3d> Organism::getNewNodes() const
 {
+     std::cout
+        << "getNewNodes: old=" << oldNumberOfNodes
+        << ", total=" << getNumberOfNodes()
+        << ", new=" << getNumberOfNewNodes()
+        << std::endl;
     auto organs = this->getOrgans();
     std::vector<Vector3d> nv(this->getNumberOfNewNodes());
     for (const auto& o : organs) {
         int onon = o->getOldNumberOfNodes();
-        std::cout
-            << "Organ " << o->getId()
-            << " old=" << o->getOldNumberOfNodes()
-            << " current=" << o->getNumberOfNodes()
-            << '\n';
         for (size_t i=onon; i<o->getNumberOfNodes(); i++) { // loop over all new nodes
-            std::cout
-            << "  local i=" << i
-            << " nodeId=" << o->getNodeId(i)
-            << " globalOld=" << this->oldNumberOfNodes
-            << '\n';
-            nv.at(o->getNodeId(i)-this->oldNumberOfNodes) = o->getNode(i);
+            if (o->getNodeId(i) - this->oldNumberOfNodes> 0){
+                nv.at(o->getNodeId(i)-this->oldNumberOfNodes) = o->getNode(i);
+            }
         }
     }
     return nv;

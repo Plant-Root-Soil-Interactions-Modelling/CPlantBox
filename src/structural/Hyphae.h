@@ -54,7 +54,7 @@ public:
     
     void setActive(bool active) override {Organ::setActive(active); if (!active) activeOverriden = true;}; ///< sets the active state of the root, if active is manually overridden, it will not be changed by the simulation, use for testing
     bool isActiveOverridden () const { return activeOverriden; } ///< returns whether the active state was manually overridden, use for testing
-
+    void updateOldNumberOfNodes() {oldNumberOfNodes = nodes.size();}
 
     private:
     bool activeOverriden = false; ///< whether the active state was manually overridden, use for testing

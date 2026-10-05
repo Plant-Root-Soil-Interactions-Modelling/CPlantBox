@@ -134,6 +134,8 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     sdf = std::make_shared<SDF_RootSystem>(*this);
     sdf->selectedOrganType = Organism::ot_hyphae;
     simulateAnastomosis(dt, verbose);
+    // std::cout<< "calling update tree for the second time"<< std::endl;
+    // sdf->updateTree(*this);
     rel2abs();
 }
 
@@ -167,7 +169,44 @@ void MycorrhizalPlant::simulateHyphae(double dt, bool verbose) {
     sdf->selectedOrganType = Organism::ot_hyphae;
     simulateAnastomosis(dt, verbose);
 }
+/*
+ * Simulates primary colonization for all mycorrhizal roots
+ * @param dt		duration of the simulation
+ * @param verbose	whether to print information
+*/
+void MycorrhizalPlant::simulatePrimaryColonization(double dt, bool verbose) {
+    for (const auto& r : baseOrgans) {
+        if (r->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryColonization(dt);
+        }
+    }
+    auto organs = getOrgans();
+    for (const auto& r : organs) {
+        if (r->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryColonization(dt);
+        }
+    }
+}
 
+/*
+ * Simulates secondary colonization for all mycorrhizal roots
+ * @param dt		duration of the simulation
+ * @param verbose	whether to print information
+ */
+void MycorrhizalPlant::simulateSecondaryColonization(double dt, bool verbose) {
+    for (const auto& r : baseOrgans) {
+        if (r->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryColonization(dt);
+        }
+    }
+
+    auto organs = getOrgans();
+    for (const auto& r : organs) {
+        if (r->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryColonization(dt);
+        }
+    }
+}
 
 void MycorrhizalPlant::simulateColonization(double dt, bool verbose) {
     for (const auto& r : baseOrgans) {
@@ -237,8 +276,9 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
                     std::cout << "Anastomosis occurred at distance: " << dist << " cm.\n";
                     std::cout << "Hyphal tree index " << h->getParameter("hyphalTreeIndex") << "\n";
                 }
-                std::cout << "creation Time of tip: " << h->getNodeCT(h->getNumberOfNodes()-1) << "creation Time of node merged"<< connected_to_hyphae->getNodeCT(locallastIndex) << "simulation time: " << getSimTime() << std::endl;
+                
                 h->setActive(false); // deactivate hyphae after anastomosis
+                h->updateOldNumberOfNodes();
                 h->setMergePointID(lastIndex); // set node ID where anastomosis happened
                 h->setMergedHyphae(connected_to_hyphae); // set merged hyphae
                 h->addNode(connected_to_hyphae->getNode(locallastIndex), getNodeIndex(), h->getNodeCT(h->getNumberOfNodes()-1), h->getNumberOfNodes(),false); // add anastomosis point as new node to the hyphae
@@ -256,6 +296,7 @@ void MycorrhizalPlant::initCallbacks() {
     for (auto& p_otp :organParam[Organism::ot_hyphae]) {
         auto rp = std::static_pointer_cast<HyphaeRandomParameter>(p_otp.second);
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
+        // std::cout << "Created tropism function for hyphae with type " << rp->tropismT << " and parameters n=" << rp->tropismN << " and sigma=" << rp->tropismS << std::endl;
         tropism->setGeometry(geometry);
         rp->f_tf = tropism; // set new one
     }
