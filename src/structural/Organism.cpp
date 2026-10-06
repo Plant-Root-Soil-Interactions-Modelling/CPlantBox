@@ -170,6 +170,8 @@ void Organism::simulate(double dt, bool verbose)
         std::cout << "Organism::simulate: from "<< simtime << " to " << simtime+dt << " days" << std::endl;
     }
     this->dt = dt;
+	
+	// std::cout <<"Organism::simulate "<< oldNumberOfNodes <<" "<< getNumberOfNodes()<<std::endl;
     oldNumberOfNodes = getNumberOfNodes();
     oldNumberOfOrgans = getNumberOfOrgans();
     for (const auto& r : baseOrgans) {

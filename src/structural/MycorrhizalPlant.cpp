@@ -129,11 +129,12 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     if (getSimTime() <= dt*1.1) {
         sdf = std::make_shared<SDF_RootSystem>(*this);
     } else {
+		sdf->selectedOrganType = Organism::ot_hyphae;
+		simulateAnastomosis(dt, verbose);
         sdf->updateTree(*this);
     }
     // sdf = std::make_shared<SDF_RootSystem>(*this);
-    sdf->selectedOrganType = Organism::ot_hyphae;
-    simulateAnastomosis(dt, verbose);
+    
     rel2abs();
 }
 
@@ -157,6 +158,7 @@ void MycorrhizalPlant::turnOffSidePetriDish(double minnodex, double maxnodez, do
 void MycorrhizalPlant::simulateHyphae(double dt, bool verbose) {
     auto hyphae = getOrgans(5);
     this->dt = dt;
+	std::cout <<"MycorrhizalPlant::simulateHyphae "<< oldNumberOfNodes <<" "<< getNumberOfNodes()<<std::endl;
     oldNumberOfNodes = getNumberOfNodes();
     oldNumberOfOrgans = getNumberOfOrgans();
     for (const auto & h : hyphae) {

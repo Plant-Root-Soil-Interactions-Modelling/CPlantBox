@@ -79,17 +79,23 @@ void SDF_RootSystem::buildTree() {
 }
 
 void SDF_RootSystem::updateTree(const Organism& plant) {
-    // std::cout
-    //     << "BEFORE updateTree: "
-    //     << "plant nodes=" << plant.getNumberOfNodes()
-    //     << ", plant new=" << plant.getNumberOfNewNodes()
-    //     << ", sdf nodes=" << nodes_.size()
-    //     << std::endl;
     size_t c = tree.nParticles();
     auto newNodes = plant.getNewNodes();
+    // std::cout
+        // << "BEFORE updateTree: "
+        // << "plant nodes=" << plant.getNumberOfNodes()  <<" "<< plant.getNodes().size()
+		// <<" "<<plant.getNumberOfOldNodes()
+        // << ", plant new=" << plant.getNumberOfNewNodes() <<" "<<newNodes.size()
+        // << ", sdf nodes=" << nodes_.size()
+        // << std::endl;
     nodes_.insert(nodes_.end(), newNodes.begin(),newNodes.end());
-    // std::cout << nodes_.size() << "number of nodes in SDF" << plant.getNumberOfNodes() << "number of nodes in plant" <<std::endl;
-    assert(nodes_.size()== plant.getNumberOfNodes());
+    // 
+	if(nodes_.size()!= plant.getNumberOfNodes())
+	{
+		std::cout << nodes_.size() << " number of nodes in SDF " << plant.getNumberOfNodes() 
+		<< " number of nodes in plant" <<std::endl;
+		assert(nodes_.size()== plant.getNumberOfNodes());
+	}
     auto newSegments = plant.getNewSegments();
     segments_.insert(segments_.end(),newSegments.begin(),newSegments.end());
     auto newsegO = plant.getNewSegmentOrigins();
@@ -111,6 +117,8 @@ void SDF_RootSystem::updateTree(const Organism& plant) {
         tree.insertParticle(c, d, radii_[c]);
         c++;
     }
+	// std::cout <<"SDF_RootSystem::updateTree_end "<< plant.getNumberOfNodes()<<std::endl;
+    
 }
 
 double SDF_RootSystem::getDist(const Vector3d& p) const {

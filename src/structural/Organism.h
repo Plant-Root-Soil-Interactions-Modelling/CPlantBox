@@ -86,6 +86,7 @@ public:
     virtual std::vector<std::shared_ptr<Organ>> getSegmentOrigins(int ot=-1) const; ///< points to the organ which contains the segment, corresponding to Organism::getSegments
 
     /* last time step */
+	int getNumberOfOldNodes() const { return oldNumberOfNodes; }
     int getNumberOfNewNodes() const { return getNumberOfNodes()- oldNumberOfNodes; } ///< The number of new nodes created in the previous time step (same number as new segments)
     int getNumberOfNewOrgans() const { return getNumberOfOrgans() - oldNumberOfOrgans; }  ///< The number of new roots created in the previous time step
     std::vector<int> getUpdatedNodeIndices() const; ///< Indices of nodes that were updated in the previous time step

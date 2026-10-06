@@ -1,9 +1,14 @@
+set(Python3_FIND_VIRTUALENV ONLY)
+
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+
+message(STATUS "Python executable: ${Python3_EXECUTABLE}")
+message(STATUS "Python version: ${Python3_VERSION}")
+message(STATUS "Python site-packages: ${Python3_SITEARCH}")
 
 message(STATUS "Project dir: ${PROJECT_SOURCE_DIR}")
 message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "Project binary dir: ${PROJECT_BINARY_DIR}")
-message(STATUS "Python library path (site-packages): ${Python3_SITEARCH}")
 
 # -----------------------------
 # 1. Dependencies & Includes
