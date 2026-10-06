@@ -316,3 +316,48 @@ def plot_linear_analysis(all_results):
         ax.legend()
     plt.tight_layout()
     plt.show()
+
+def sensitivity_analysis(seed,path,name,runnerhyphae = {},BAS = {}, geometry = {},run = {}):
+    mycp = pb.MycorrhizalPlant(seed)
+    mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
+    seed_para = pb.SeedRandomParameter(mycp)
+    seed_para.seedPos.z = -geometry["height"] / 2
+    seed_para.seedPos.x = -9.4 / 2 + 0.5
+    seed_para.seedPos.y = 0
+    mycp.setOrganRandomParameter(seed_para)
+    mycp.setGeometry(geometry["half_dish"])
+    mycp.initialize()
+
+    print("Starting simulation with seed: " + str(seed))
+    for i in range(run["nSteps"]):
+        if (i % 10 == 0):
+            print("Step " + str(i) + " of " + str(run["nSteps"]))
+        mycp.simulate(run["dt"],run["verbose"])
+    root = mycp.getOrganRandomParameter(pb.root)
+    for rp in root:
+        rp.hyphalEmergenceDensity = 4.0
+        rp.lmbd = 0.15
+        mycp.setOrganRandomParameter(rp)
+
+    mycp.changeGeometry(5,petri_dish)
+
+    crossed_barrier = 0
+
+    while crossed_barrier < 3:
+        # N+=1
+        mycp.simulate(dt,verbose)
+        ana = getMycSegmentAnalyser(mycp)
+        ana.filter("organType",5)
+        ana.filter("subType",1,2)
+        ana.pack()
+        crossed_barrier = ana.getSummed("nodeTips",small_hyphae_dish)
+
+    crossed_time = mycp.getSimTime()
+    for i in range(0, hours_hyphae):
+        if (i % 10 == 0):
+            print("Step " + str(i) + " of " + str(hours_hyphae))
+        mycp.simulate(dt,verbose)
+        if (animation):
+            getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
+    times = np.linspace(crossed_time, max(mycp.getParameter("creationTime"))+0.01, 100)
+    return mycp, crossed_time, times
