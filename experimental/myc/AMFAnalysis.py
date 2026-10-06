@@ -325,6 +325,13 @@ def sensitivity_analysis(seed,path,name,runnerhyphae = {},BAS = {}, geometry = {
     seed_para.seedPos.x = -9.4 / 2 + 0.5
     seed_para.seedPos.y = 0
     mycp.setOrganRandomParameter(seed_para)
+    hyphae = mycp.getOrganRandomParameter(pb.hyphae)
+    for h in hyphae:
+        if h.subType == 1:
+            h.a = runnerhyphae["a"]
+        if h.subType == 2:
+            h.a = BAS["a"]
+
     mycp.setGeometry(geometry["half_dish"])
     mycp.initialize()
 
@@ -339,7 +346,7 @@ def sensitivity_analysis(seed,path,name,runnerhyphae = {},BAS = {}, geometry = {
         rp.lmbd = 0.15
         mycp.setOrganRandomParameter(rp)
 
-    mycp.changeGeometry(5,petri_dish)
+    mycp.changeGeometry(5,geometry["petri_dish"])
 
     crossed_barrier = 0
 

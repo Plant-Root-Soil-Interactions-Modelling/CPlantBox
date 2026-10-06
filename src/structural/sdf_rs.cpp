@@ -88,7 +88,7 @@ void SDF_RootSystem::updateTree(const Organism& plant) {
     size_t c = tree.nParticles();
     auto newNodes = plant.getNewNodes();
     nodes_.insert(nodes_.end(), newNodes.begin(),newNodes.end());
-    std::cout << nodes_.size() << "number of nodes in SDF" << plant.getNumberOfNodes() << "number of nodes in plant" <<std::endl;
+    // std::cout << nodes_.size() << "number of nodes in SDF" << plant.getNumberOfNodes() << "number of nodes in plant" <<std::endl;
     assert(nodes_.size()== plant.getNumberOfNodes());
     auto newSegments = plant.getNewSegments();
     segments_.insert(segments_.end(),newSegments.begin(),newSegments.end());

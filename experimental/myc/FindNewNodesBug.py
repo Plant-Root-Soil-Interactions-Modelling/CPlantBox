@@ -16,6 +16,7 @@ from sklearn.linear_model import LinearRegression
 good_seeds = [10]
 path = "tomatoparameters/"
 name = "OneHyphae"
+name = "TwoHyphae"
 
 ## Setting up petri dish
 diameter = 9.4

@@ -126,16 +126,14 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
 {
     abs2rel();
     Organism::simulate(dt, verbose);
-    // if (getSimTime() <= dt*1.1) {
-    //     sdf = std::make_shared<SDF_RootSystem>(*this);
-    // } else {
-    //     sdf->updateTree(*this);
-    // }
-    sdf = std::make_shared<SDF_RootSystem>(*this);
+    if (getSimTime() <= dt*1.1) {
+        sdf = std::make_shared<SDF_RootSystem>(*this);
+    } else {
+        sdf->updateTree(*this);
+    }
+    // sdf = std::make_shared<SDF_RootSystem>(*this);
     sdf->selectedOrganType = Organism::ot_hyphae;
     simulateAnastomosis(dt, verbose);
-    // std::cout<< "calling update tree for the second time"<< std::endl;
-    // sdf->updateTree(*this);
     rel2abs();
 }
 
@@ -278,7 +276,6 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
                 }
                 
                 h->setActive(false); // deactivate hyphae after anastomosis
-                h->updateOldNumberOfNodes();
                 h->setMergePointID(lastIndex); // set node ID where anastomosis happened
                 h->setMergedHyphae(connected_to_hyphae); // set merged hyphae
                 h->addNode(connected_to_hyphae->getNode(locallastIndex), getNodeIndex(), h->getNodeCT(h->getNumberOfNodes()-1), h->getNumberOfNodes(),false); // add anastomosis point as new node to the hyphae

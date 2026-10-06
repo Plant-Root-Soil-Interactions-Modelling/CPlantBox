@@ -480,11 +480,6 @@ std::vector<double> Organism::getUpdatedNodeCTs() const
  */
 std::vector<Vector3d> Organism::getNewNodes() const
 {
-     std::cout
-        << "getNewNodes: old=" << oldNumberOfNodes
-        << ", total=" << getNumberOfNodes()
-        << ", new=" << getNumberOfNewNodes()
-        << std::endl;
     auto organs = this->getOrgans();
     std::vector<Vector3d> nv(this->getNumberOfNewNodes());
     for (const auto& o : organs) {
