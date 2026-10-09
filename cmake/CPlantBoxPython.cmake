@@ -13,7 +13,11 @@ function(cplantbox_configure_python_bindings target)
     endif()
 
 	if(DEFINED ENV{VIRTUAL_ENV})
-		set(Python3_EXECUTABLE "$ENV{VIRTUAL_ENV}/bin/python3")
+		if(WIN32)
+			set(Python3_EXECUTABLE "$ENV{VIRTUAL_ENV}/Scripts/python.exe")
+		else()
+			set(Python3_EXECUTABLE "$ENV{VIRTUAL_ENV}/bin/python3")
+		endif()
 	endif()
     
     if(CMAKE_VERSION VERSION_LESS 3.18)
