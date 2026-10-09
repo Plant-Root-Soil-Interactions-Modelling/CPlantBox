@@ -217,7 +217,7 @@ void Perirhizal::handle_excess() {
     if (max_val_new < maxVal) {
         if (maxVal - max_val_new < 1e-20) {
             std::transform(val_new.begin(), val_new.end(), val_new.begin(),
-                  [*this](double v) { return std::min(v,this->maxVal); });
+                  [maxVal = maxVal](double v) { return std::min(v, maxVal); });
         } else {
             redistribute_excess();
         }
@@ -229,7 +229,7 @@ void Perirhizal::handle_deficit() {
     if (min_val_new < minVal) {
         if (minVal - min_val_new < 1e-20) {
             std::transform(val_new.begin(), val_new.end(), val_new.begin(),
-                   [*this](double v) { return std::max(v, this->minVal); });
+                   [minVal = minVal](double v) { return std::max(v, minVal); });
             if(verbose)
             {
                 std::cout<<"Perirhizal::handle_deficit_smalldiff "<<std::endl;
