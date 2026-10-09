@@ -4,11 +4,12 @@
 One click install script for dumux-rosi
 adapted from installdumux.py of the Dumux developers
 """
+
+import fileinput
 import os
-import sys
 import shutil
 import subprocess
-import fileinput
+import sys
 
 
 def show_message(message):
@@ -19,13 +20,13 @@ def show_message(message):
 
 def run_command(command):
     with open("../installDumuxRosi.log", "a") as log:
-        popen = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE, universal_newlines = True)
+        popen = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         for line in popen.stdout:
             log.write(line)
-            print(line, end = '')
+            print(line, end="")
         for line in popen.stderr:
             log.write(line)
-            print(line, end = '')
+            print(line, end="")
         popen.stdout.close()
         popen.stderr.close()
         return_code = popen.wait()
@@ -38,15 +39,15 @@ def run_command(command):
             sys.exit(1)
 
 
-def git_clone(url, branch = None):
+def git_clone(url, branch=None):
     clone = ["git", "clone"]
     if branch:
         clone += ["-b", branch]
-    result = run_command(command = [*clone, url])
+    result = run_command(command=[*clone, url])
 
 
 # clear the log file
-open('installDumuxRosi.log', 'w').close()
+open("installDumuxRosi.log", "w").close()
 
 show_message("do not forget to run \nsudo apt update \nsudo apt upgrade")
 show_message("We recommend you to setup CPlantBox in a virtual environment by running\n\npython3 -m venv cpbenv\nsource cpbenv/bin/activate")
@@ -56,7 +57,7 @@ show_message("We recommend you to setup CPlantBox in a virtual environment by ru
 # # (1/3) Check some prerequistes
 #################################################################
 #################################################################
-programs = ['wget', 'git', 'gcc', 'g++', 'cmake', 'pkg-config', 'clang', 'gfortran']  # ,'python3']
+programs = ["wget", "git", "gcc", "g++", "cmake", "pkg-config", "clang", "gfortran"]  # ,'python3']
 show_message("(1/3) (a) Checking ubuntu prerequistes: " + " ".join(programs) + "...")
 
 # check some prerequistes
@@ -67,35 +68,35 @@ if (sys.version_info.major < 3) or (sys.version_info.minor < 7):
 error = []
 for program in programs:
     try:
-        output2 = subprocess.run([program, "--version"], capture_output = True)
+        output2 = subprocess.run([program, "--version"], capture_output=True)
     except FileNotFoundError:
         error.append(program)
 
 # is the script running on (agro)cluster?
 # tried to make evaluation automatic but not sure it holds on all machines
-isCluster = ('MODULESHOME' in os.environ.keys())
+isCluster = "MODULESHOME" in os.environ.keys()
 
-programs = ['default-jre', 'libeigen3-dev' , 'python3-pip', 'openmpi-bin', 'libopenmpi-dev', 'python3-tk', 'libqt5x11extras5', 'libx11-dev']  #
+programs = ["default-jre", "libeigen3-dev", "python3-pip", "openmpi-bin", "libopenmpi-dev", "python3-tk", "libqt5x11extras5", "libx11-dev"]  #
 # sudo apt install openmpi-bin libopenmpi-dev
 if not isCluster:
-    programs.append('libboost-all-dev')
+    programs.append("libboost-all-dev")
 
     for program in programs:
-        output = subprocess.run(["dpkg", "-l", program], capture_output = True)
-        if ('no packages found' in str(output)):
+        output = subprocess.run(["dpkg", "-l", program], capture_output=True)
+        if "no packages found" in str(output):
             error.append(program)
 
     if len(error) > 0:
         print("Program(s) {0} has/have not been found. try running sudo apt-get install {0}".format(" ".join(error)))
-        raise Exception('import modules')
+        raise Exception("import modules")
 
 # check some prerequistes
-modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'cmake', 'pandas', 'pybind11[global]', 'ipython']  # 'mpi4py',
+modules = ["numpy", "scipy", "matplotlib", "vtk", "cmake", "pandas", "pybind11[global]", "ipython"]  # 'mpi4py',
 show_message("(1/3) (b) Checking python prerequistes: " + " ".join(modules) + "...")
 
 for mymodule in modules:
     try:
-        subprocess.run(["python3", "-m", "pip", "install", mymodule], check = True, text = True, capture_output = True)  # ,"-y"
+        subprocess.run(["python3", "-m", "pip", "install", mymodule], check=True, text=True, capture_output=True)  # ,"-y"
     except subprocess.CalledProcessError as e:
         # Check for the "externally-managed-environment" error
         if "externally-managed-environment" in e.stderr:
@@ -118,24 +119,29 @@ show_message("(1/3) Step completed. All prerequistes found.")
 #################################################################
 #################################################################
 
-url = 'https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi/master/installdumux.py'
-subprocess.run(["wget", url, "-P", "."], check = True)
+url = "https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi/master/installdumux.py"
+subprocess.run(["wget", url, "-P", "."], check=True)
 
-subprocess.run(["python3", "installdumux.py"], check = True)
+# use the official GitHub mirror while git.iws.uni-stuttgart.de is unavailable
+with fileinput.FileInput("installdumux.py", inplace=True) as f:
+    for line in f:
+        print(line.replace("https://git.iws.uni-stuttgart.de/dumux-repositories/dumux.git", "https://github.com/dumux/dumux.git"), end="")
+
+subprocess.run(["python3", "installdumux.py"], check=True)
 
 os.chdir("./dumux")
 
-subprocess.run(["python3", "dumux/bin/installexternal.py", "ug", "spgrid", "foamgrid"], check = True)
+subprocess.run(["python3", "dumux/bin/installexternal.py", "ug", "spgrid", "foamgrid"], check=True)
 
 # dumux-rosi
 if not os.path.exists("dumux-rosi"):
-    subprocess.run(['git', 'clone', '--depth', '1', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git'])
+    subprocess.run(["git", "clone", "--depth", "1", "-b", "master", "https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git"])
 else:
     print("-- Skip cloning dumux-rosi because the folder already exists.")
 
 # CPlantBox
 if not os.path.exists("CPlantBox"):
-    subprocess.run(['git', 'clone', '--depth', '1', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+    subprocess.run(["git", "clone", "--depth", "1", "-b", "master", "https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git"])
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
 
@@ -148,9 +154,9 @@ show_message("(3/3) Configure and build dune modules and dumux using dunecontrol
 
 os.chdir("CPlantBox")
 
-subprocess.run(['git', 'submodule', 'update', '--recursive', '--init'])
-subprocess.run(['cmake', '.'])
-subprocess.run(['make', 'install'])
+subprocess.run(["git", "submodule", "update", "--recursive", "--init"])
+subprocess.run(["cmake", "."])
+subprocess.run(["make", "install"])
 os.chdir("..")
 
 # run dunecontrol
@@ -165,4 +171,3 @@ os.chdir("..")
 print("(3/3) installed dumux-rosi into your local or active Python environment")
 
 print("to test installation, run \n cd dumux/dumux-rosi/python/coupled \n python3 example7_2_coupling.py")
-
