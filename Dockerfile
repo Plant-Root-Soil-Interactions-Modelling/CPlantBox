@@ -74,7 +74,8 @@ RUN python3 /dumux/installDumuxRosi_Ubuntu.py || { \
 USER root
 RUN /dumux/cpbenv/bin/pip install ipykernel \
     && /dumux/cpbenv/bin/python -m ipykernel install --prefix=/usr/local \
-        --name cplantbox --display-name "Python (CPlantBox)"
+        --name cplantbox --display-name "Python (CPlantBox)" \
+    && chown -R dumux:dumux /dumux/cpbenv
 USER dumux
 
 # Jupyter-JSC launches the notebook server itself (via jupyterhub-singleuser),
