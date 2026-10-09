@@ -185,3 +185,61 @@ jobs:
           name: cplantbox-macos-native-${{ runner.arch }}-python-3.14
           path: wheelhouse/*-cp314-cp314-macosx_*.whl
           if-no-files-found: error
+
+  windows_amd64:
+    name: Build Windows AMD64 wheels
+    if: >
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.force_run == 'true') ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, 'run-wheels')) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'run-wheels'))
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.16"
+
+      - name: Install cibuildwheel
+        shell: bash
+        run: |
+          set -euxo pipefail
+          unset UV_NATIVE_TLS
+          rm -rf /c/cplantbox-cibuildwheel-windows-venv
+          uv python install 3.11
+          uv venv C:/cplantbox-cibuildwheel-windows-venv --python 3.11
+          source /c/cplantbox-cibuildwheel-windows-venv/Scripts/activate
+          uv pip install cibuildwheel==3.4.1 delvewheel
+
+      - name: Build Windows wheels
+        shell: bash
+        env:
+          # delvewheel writes RECORD with the locale encoding; force UTF-8 so
+          # non-ASCII data filenames survive (see modelparameter/*Pag*s*.xml)
+          PYTHONUTF8: "1"
+        run: |
+          set -euxo pipefail
+          source /c/cplantbox-cibuildwheel-windows-venv/Scripts/activate
+          GITHUB_STEP_SUMMARY= python -m cibuildwheel --platform windows --output-dir wheelhouse
+
+      - name: Audit Windows wheels
+        shell: bash
+        run: |
+          set -euxo pipefail
+          count=$(ls wheelhouse/*-win_amd64.whl | wc -l)
+          expected=${CPB_EXPECTED_WHEEL_COUNT:-4}
+          if [ "$count" -ne "$expected" ]; then
+            echo "Expected $expected Windows wheels, found $count" >&2
+            exit 1
+          fi
+
+      - name: Upload Windows wheel artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: cplantbox-windows-amd64-wheels
+          path: wheelhouse/*-win_amd64.whl
+          if-no-files-found: error
