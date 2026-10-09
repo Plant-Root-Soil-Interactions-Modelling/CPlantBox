@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'v*'
   pull_request:
     branches:
       - master
@@ -19,6 +21,7 @@ jobs:
     name: Build Linux x86_64 wheels
     if: >
       (github.event_name == 'workflow_dispatch' && github.event.inputs.force_run == 'true') ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
       (github.event_name == 'push' && contains(github.event.head_commit.message, 'run-wheels')) ||
       (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'run-wheels'))
     runs-on: ubuntu-latest
@@ -107,6 +110,7 @@ jobs:
     name: Build macOS native wheels
     if: >
       (github.event_name == 'workflow_dispatch' && github.event.inputs.force_run == 'true') ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
       (github.event_name == 'push' && contains(github.event.head_commit.message, 'run-wheels')) ||
       (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'run-wheels'))
     runs-on: macos-latest
@@ -190,6 +194,7 @@ jobs:
     name: Build Windows AMD64 wheels
     if: >
       (github.event_name == 'workflow_dispatch' && github.event.inputs.force_run == 'true') ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
       (github.event_name == 'push' && contains(github.event.head_commit.message, 'run-wheels')) ||
       (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'run-wheels'))
     runs-on: windows-latest
@@ -243,3 +248,24 @@ jobs:
           name: cplantbox-windows-amd64-wheels
           path: wheelhouse/*-win_amd64.whl
           if-no-files-found: error
+
+  publish:
+    name: Publish wheels to PyPI
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [linux_x86_64, macos_native, windows_amd64]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all wheel artifacts
+        uses: actions/download-artifact@v6
+        with:
+          pattern: cplantbox-*
+          path: wheelhouse
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: wheelhouse
