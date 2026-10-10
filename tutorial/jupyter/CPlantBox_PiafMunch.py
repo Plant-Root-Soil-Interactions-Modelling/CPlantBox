@@ -59,14 +59,14 @@ def visual_plant_sub(plant1,name='plant'):
 	return fig
 	
 def change_parameter(input_name, output_name, organ_name, subtype , parameter_name, value_type, value):   
-	all_parameter = ET.parse("../../modelparameter/plant/{}.xml".format(input_name)) # read the parameter file from xml file
+	all_parameter = ET.parse(pb.data_path() + "/structural/plant/{}.xml".format(input_name)) # read the parameter file from xml file
 	plant_parameter = all_parameter.getroot() # get the first level of parameters
 	original_lmax = plant_parameter.find("./organ[@type='{}'][@subType='{}']/parameter[@name='{}']".format(organ_name, subtype, parameter_name)).get('{}'.format(value_type)) # get function to read the value
 	# The '10' in the following line is the value that need to be changed change the value
 	plant_parameter.find("./organ[@type='{}'][@subType='{}']/parameter[@name='{}']".format(organ_name, subtype, parameter_name)).set('{}'.format(value_type),'{}'.format(value)) # set function to read the value
 	current_lmax = plant_parameter.find("./organ[@type='{}'][@subType='{}']/parameter[@name='{}']".format(organ_name, subtype, parameter_name)).get('{}'.format(value_type)) # get function to read the value
 	print('original {} of {} organ with subtype {} is {}, changed to {}'.format(parameter_name, organ_name, subtype ,original_lmax, current_lmax))
-	all_parameter.write('../../modelparameter/plant/{}.xml'.format(output_name))   
+	all_parameter.write('{}.xml'.format(output_name))   
 
 def visual_plant(plant1):
 	subfig = visual_plant_sub(plant1)
@@ -79,7 +79,7 @@ def visual_plant(plant1):
 
 def CPlantBox_PiafMunch(name, time, output = "test_output"):
 	plant = pb.Plant()
-	plant.openXML("../../modelparameter/plant/" + name)
+	plant.openXML(pb.data_path() + "/structural/plant/" + name)
 	seeds = plant.getOrganRandomParameter(pb.OrganTypes.seed)
 	roots = plant.getOrganRandomParameter(pb.OrganTypes.root)
 	stems = plant.getOrganRandomParameter(pb.OrganTypes.stem)
@@ -93,7 +93,7 @@ def CPlantBox_PiafMunch(name, time, output = "test_output"):
 
 def CPlantBox(name, time, output = "output"): #define a function, in line 20, we can run it in one line of code
 	plant = pb.Plant()
-	plant.openXML('../../modelparameter/plant/'+name)
+	plant.openXML(pb.data_path() + '/structural/plant/' + name)
 	seeds = plant.getOrganRandomParameter(pb.OrganTypes.seed)
 	roots = plant.getOrganRandomParameter(pb.OrganTypes.root)
 	stems = plant.getOrganRandomParameter(pb.OrganTypes.stem)
@@ -105,7 +105,7 @@ def CPlantBox(name, time, output = "output"): #define a function, in line 20, we
 
 def CPlantBox_analysis(name, time, output = "output"): #define a function, in line 20, we can run it in one line of code
 	plant = pb.Plant()
-	plant.openXML("../../modelparameter/plant/" + name)
+	plant.openXML(pb.data_path() + "/structural/plant/" + name)
 	plant.initialize(True)
 	plant.simulate(time)
 	#plant.write("../../results/{}.vtp".format(output),15)

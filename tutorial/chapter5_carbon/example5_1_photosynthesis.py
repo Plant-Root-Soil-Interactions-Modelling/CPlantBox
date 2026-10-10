@@ -30,7 +30,7 @@ depth = 60  # soil depth (cm)
 Hs = -1000  # top soil matric potential (cm)
 
 # Weather data
-path = "../../modelparameter/functional/climate/"
+path = pb.data_path() + "/functional/climate/"
 weather_data = pd.read_csv(path + "Selhausen_weather_data.txt", delimiter="\t")  # |\label{l51:Tereno}|
 
 
@@ -45,7 +45,7 @@ p_s = np.linspace(Hs, Hs - depth, depth)  # water potential per soil layer |\lab
 
 # Plant
 plant = pb.MappedPlant()  # |\label{l51:plant}|
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 filename = "Triticum_aestivum_test_2021_shapeType2"
 plant.readParameters(path + filename + ".xml")
 
@@ -57,10 +57,10 @@ plant.simulate(plant_age, False)  # |\label{l51:plantEnd}|
 
 # Plant hydraulic properties
 params = PlantHydraulicParameters()  # |\label{l51:hydraulicparams}|
-params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l51:hydraulic_end}|
+params.read_parameters(pb.data_path() + "/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l51:hydraulic_end}|
 hm = PhotosynthesisPython(plant, params)  # |\label{l51:PhotosynthesisPython}|
 
-path = "../../modelparameter/functional/plant_photosynthesis/"
+path = pb.data_path() + "/functional/plant_photosynthesis/"
 hm.read_photosynthesis_parameters(filename=path + "photosynthesis_parameters")  # |\label{l51:read}|
 # hm.write_photosynthesis_parameters(filename=path+"photosynthesis_parametersNew")   # |\label{l51:write}|
 

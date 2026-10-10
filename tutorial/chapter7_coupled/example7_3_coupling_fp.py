@@ -25,7 +25,7 @@ box_min = [-35.0, -10.0, -50.0]  # cm
 box_max = [35.0, 10.0, 0.0]  # cm
 cell_number = [17, 5, 50]  # ~4*4*1 cm3
 
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 filename = "Zeamays_synMRI_modified"
 t_pot = 250  # cm3 /day = mL day-1
 wilting_point = -15000  # cm
@@ -57,7 +57,7 @@ plant.setGeometry(sdf)  # |\label{l73c:soil_plant_end}|
 
 # root hydraulic properties
 params = PlantHydraulicParameters()  # |\label{l73c:hydraulic}|
-params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreur2012")
+params.read_parameters(pb.data_path() + "/functional/plant_hydraulics/couvreur2012")
 # params.plot_conductivities(True)
 hm = HydraulicModel_Doussan(plant, params)
 hm.wilting_point = wilting_point  # |\label{l73c:hydraulic_end}|

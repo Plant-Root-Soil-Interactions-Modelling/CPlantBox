@@ -6,7 +6,7 @@ import plantbox.visualisation.vtk_plot as vp  # |\label{l14:vtk_plot}|
 plant = pb.Plant()  # Create a new plant |\label{l14:plant}|
 
 # Open plant and root parameter from a file
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "fspm2023"
 plant.readParameters(path + name + ".xml")  # |\label{l14:readparameters}|
 

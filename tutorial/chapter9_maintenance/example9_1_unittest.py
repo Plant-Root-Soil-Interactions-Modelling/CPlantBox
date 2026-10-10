@@ -48,7 +48,7 @@ class TestPlant(unittest.TestCase):  # |\label{l9_1:TestPlant}|
     def test_copy(self):
         """checks if the root system can be copied, and if randomness works"""
         seed = 110  # random seed
-        path = "../../modelparameter/structural/plant/"
+        path = pb.data_path() + "/structural/plant/"
         filename = "Brassica_oleracea_Vansteenkiste_2014"
         rs = pb.Plant()  # the original
         rs.readParameters(path + filename + ".xml", verbose=False)

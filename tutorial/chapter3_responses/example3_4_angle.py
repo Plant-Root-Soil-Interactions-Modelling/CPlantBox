@@ -6,7 +6,7 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 plant = pb.Plant()
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 filename = "Glycine_max_Moraes2020"
 plant.readParameters(path + filename + ".xml")
 

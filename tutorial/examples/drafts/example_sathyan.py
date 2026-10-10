@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import plantbox as pb
 
 # Path to your maize XML parameter file
-path = "../../../../CPlantBox/modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Zea_mays_4_Leitner_2014"  # Assuming the XML file is named maize.xml
 
 # Initialize the root system

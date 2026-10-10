@@ -46,7 +46,7 @@ def getWeatherData(t):
 
 
 # Main parameters #
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 filename = "Triticum_aestivum_test_2021"
 plant_age = 14.3  # root system h_s_initial age [day]
 sim_time = 14.8
@@ -54,7 +54,7 @@ dt = 20 / 60 / 24  # d
 n_steps = int((sim_time - plant_age) / dt)
 
 # Weather data #
-path_weather = "../../modelparameter/functional/climate/"
+path_weather = pb.data_path() + "/functional/climate/"
 weather_data = pd.read_csv(path_weather + "Selhausen_weather_data.txt", delimiter="\t")
 
 # Bulk soil #
@@ -103,10 +103,10 @@ plant.setGeometry(sdf)
 
 # plant hydraulic properties
 params = PlantHydraulicParameters()
-params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")
+params.read_parameters(pb.data_path() + "/functional/plant_hydraulics/wheat_Giraud2023adapted")
 hm = PhotosynthesisPython(plant, params)
 hm.wilting_point = s.wilting_point
-path = "../../modelparameter/functional/plant_photosynthesis/"
+path = pb.data_path() + "/functional/plant_photosynthesis/"
 hm.read_photosynthesis_parameters(filename=path + "photosynthesis_parameters2025")
 
 

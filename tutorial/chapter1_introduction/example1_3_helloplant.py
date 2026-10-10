@@ -1,19 +1,14 @@
 """Small example"""
 
-import os
-
 import plantbox as pb  # |\label{l13:cplantbox}|
 import plantbox.visualisation.vtk_plot as vp  # |\label{l13:vtk_plot}|
 
 plant = pb.Plant()  # Create a new plant |\label{l13:plant}|
 
 # Open plant and root parameter from a file
-# path = "../../modelparameter/structural/plant/"
-# name = "fspm2023"
-# plant.readParameters(path + name + ".xml")  # |\label{l13:readparameters}|
-path = os.path.join(pb.data_path(), "structural/plant/")
-plant = pb.Plant()
-plant.readParameters(path + "fspm2023.xml")
+path = pb.data_path() + "/structural/plant/"
+name = "fspm2023"
+plant.readParameters(path + name + ".xml")  # |\label{l13:readparameters}|
 
 plant.initialize()  # Initialize |\label{l13:initialize}|
 

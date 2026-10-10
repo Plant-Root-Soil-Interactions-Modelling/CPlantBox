@@ -9,7 +9,7 @@ def convert(x):
 
 # Simulate a root system
 rs = pb.RootSystem()
-path = "../../../../modelparameter/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Zea_mays_4_Leitner_2014"  # "Zea_mays_4_Leitner_2014"  # "Anagallis_femina_Leitner_2010" #"Sorghum_bicolor_NA_NA" "Zea_mays_4_Leitner_2014" #
 rs.readParameters(path + name + ".xml")
 rs.initialize()

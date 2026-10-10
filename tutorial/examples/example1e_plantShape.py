@@ -25,7 +25,7 @@ getImage = False
 # #create plant:
 plant = pb.Plant()
 # Open plant and root parameter from a file
-path = path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "example1e"
 plant.readParameters(path + name + ".xml")
 

@@ -6,7 +6,7 @@ import numpy as np
 import plantbox as pb  # |\label{l2_2d:importEnd}|
 from plantbox.visualisation import figure_style
 
-path = "../../modelparameter/structural/rootsystem/"  # |\label{l2_2d:defineStart}|
+path = pb.data_path() + "/structural/rootsystem/"  # |\label{l2_2d:defineStart}|
 filename = "Brassica_napus_a_Leitner_2010"
 
 plant = pb.Plant()

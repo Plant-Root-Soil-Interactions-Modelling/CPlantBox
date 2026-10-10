@@ -4,7 +4,7 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 plant = pb.Plant()
-path = "../../modelparameter/structural/rootsystem/"  # |\label{l3_2_hydrotropism:libsstart}|
+path = pb.data_path() + "/structural/rootsystem/"  # |\label{l3_2_hydrotropism:libsstart}|
 filename = "Anagallis_femina_Leitner_2010"
 plant.readParameters(path + filename + ".xml")  # |\label{l3_2_hydrotropism:libsend}|
 

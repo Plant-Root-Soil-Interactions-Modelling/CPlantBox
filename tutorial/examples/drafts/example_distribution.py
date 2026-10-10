@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 rs = pb.RootSystem()
 
 # Open plant and root parameter from a file
-path = base+"/modelparameter/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 

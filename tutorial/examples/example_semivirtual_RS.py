@@ -1,8 +1,8 @@
-""""
+"""
     does not work
     
     not sure what it should do
-""""
+"""
 
 
 import plantbox as pb
@@ -205,7 +205,7 @@ print('Total virtually added root length: ' + str(leng_tot_new))
 print('Missing root length: ' + str(misslen))
             
 #get RS params
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "virtual"
 
 # Initialize root systems

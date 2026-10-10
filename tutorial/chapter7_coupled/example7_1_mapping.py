@@ -9,7 +9,7 @@ from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding)
 
 # Root system |\label{l71m:root_system_start}|
 plant = pb.MappedPlant()
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 filename = "Anagallis_femina_Leitner_2010"
 plant.readParameters(path + filename + ".xml")
 plant.setRandomSeed(4)  # |\label{l71m:random}|

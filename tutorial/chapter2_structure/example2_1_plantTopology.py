@@ -3,7 +3,7 @@
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 
 # Define a simple plant topology, part A
 plant = pb.MappedPlant(2) # |\label{l2_1:mappedplant}|
