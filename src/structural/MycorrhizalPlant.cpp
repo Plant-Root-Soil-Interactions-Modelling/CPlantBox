@@ -128,13 +128,13 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     Organism::simulate(dt, verbose);
     if (getSimTime() <= dt*1.1) {
         sdf = std::make_shared<SDF_RootSystem>(*this);
+        sdf->selectedOrganType = Organism::ot_hyphae;
     } else {
 		sdf->selectedOrganType = Organism::ot_hyphae;
 		simulateAnastomosis(dt, verbose);
         sdf->updateTree(*this);
     }
     // sdf = std::make_shared<SDF_RootSystem>(*this);
-    
     rel2abs();
 }
 

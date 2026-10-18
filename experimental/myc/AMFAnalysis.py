@@ -1,21 +1,23 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import numpy as np
 import plantbox as pb
+import time
 from scipy.optimize import curve_fit
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import plantbox.visualisation.vtk_plot as vp
 
-def getMycSegmentAnalyser(plant,write=[],filename = "write",step = 0, stdwrite = False):
+def getMycSegmentAnalyser(plant, write=[],filename = "write",step = 0, stdwrite = False,):
         ana = pb.SegmentAnalyser(plant)
         ana.addData("colonization", plant.getNodeColonizations(2))
         ana.addData("colonizationTime", plant.getNodeColonizationTime(2))
         ana.addData("anastomosis", plant.getAnastomosisPoints(5))
         ana.addData("nodeTips", plant.getNodeTips(5))
+        # ana.crop(crop)
         if write:
-            ana.write(filename + "_" + str(step) + ".vtp",write)
+            ana.write(filename + "_" + str(step) + "_" +time.strftime("%Y%m%d-%H%M%S") + ".vtp",write)
         if stdwrite:
-            ana.write(filename + "_" + str(step) + ".vtp",["radius","creationTime","subType","organType","colonization","colonizationTime","anastomosis","nodeTips"])
+            ana.write(filename + "_" + str(step) + "_" +time.strftime("%Y%m%d-%H%M%S") + ".vtp",["radius","creationTime","subType","organType","colonization","colonizationTime","anastomosis","nodeTips"])
         return ana
 
 
@@ -33,25 +35,30 @@ def getLengthPerSubtype(plant):
         hyphae.pack()
     return lenSubtype
 
-def getParaSumperRing(parameter, times, ana, rings):
-        print("Parameter sum for "+ parameter)
-        paradenmat = np.zeros((len(rings),len(times[1:])))
-        flipped = np.flip(np.asarray(times))
-        # ana = pb.SegmentAnalyser(plant)
-        for k, ring in enumerate(rings):
-            for j in range(len(times[1:])-1):
-                ana.filter("creationTime", 0, flipped[j])
-                ana.pack()
-                distrib = ana.getSummed(parameter, ring)
-                paradenmat[k, len(times[1:])-1 -j] = np.array(distrib).sum()
-            ana.filter("creationTime",0,flipped[len(times[1:])-1])
+def getParaSumperRing(parameter, times, plant, rings):
+    print("Parameter sum for "+ parameter)
+    paradenmat = np.zeros((len(rings),len(times[1:])))
+    flipped = np.flip(np.asarray(times))
+    for k, ring in enumerate(rings):
+        ana = getMycSegmentAnalyser(plant)
+        for j in range(len(times[1:])-1):
+            ana.filter("creationTime", 0, flipped[j])
             ana.pack()
-            summed = ana.getSummed(parameter, ring)
-            ana.filter("creationTime",0,flipped[len(times[1:])])
+            distrib = ana.getSummed(parameter, ring)
+            ana.filter("creationTime",0,flipped[j+1])
             ana.pack()
-            summed = summed - ana.getSummed(parameter, ring)
-            paradenmat[k, -1] = np.array(summed).sum()
-        return paradenmat
+            summed = 0
+            if parameter == "nodeTips": # we want to look only at actively growing tips. (Oyarte Galvez 2025 page 3 when discussing Fig 2b)
+                summed = ana.getSummed(parameter, ring)
+            paradenmat[k, len(times[1:])-1 -j] = np.array(distrib-summed).sum()
+        ana.filter("creationTime",0,flipped[len(times[1:])-1])
+        ana.pack()
+        summed = ana.getSummed(parameter, ring)
+        ana.filter("creationTime",0,flipped[len(times[1:])])
+        ana.pack()
+        summed = summed - ana.getSummed(parameter, ring)
+        paradenmat[k, 0] = np.array(summed).sum()
+    return paradenmat
 
 def getParameterOverTime(parameter, times, plant, subType):
     paradenmat = np.zeros((len(subType), len(times[1:])))
@@ -148,7 +155,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
             print("Step " + str(i) + " of " + str(nSteps))
         mycp.simulate(dt,verbose)
         if (animation):
-            getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
+            getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim",step = i, stdwrite= True)    # look at roots and container
 
     root = mycp.getOrganRandomParameter(pb.root)
     for rp in root:
@@ -160,24 +167,49 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
 
     crossed_barrier = 0
 
-    while crossed_barrier < 3:
+    while crossed_barrier < 10:
         # N+=1
         mycp.simulate(dt,verbose)
         ana = getMycSegmentAnalyser(mycp)
         ana.filter("organType",5)
-        ana.filter("subType",1,2)
         ana.pack()
-        crossed_barrier = ana.getSummed("nodeTips",small_hyphae_dish)
+        crossed_barrier = ana.getSummed("length",small_hyphae_dish)
 
-    crossed_time = mycp.getSimTime()
+    time_star = mycp.getSimTime()
     for i in range(0, hours_hyphae):
         if (i % 10 == 0):
             print("Step " + str(i) + " of " + str(hours_hyphae))
         mycp.simulate(dt,verbose)
         if (animation):
+            getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim",step = i+nSteps, stdwrite= True)    # look at roots and container
+    times = np.linspace(time_star, max(mycp.getParameter("creationTime"))+0.01, 100)
+    # times = times - time_star
+    return mycp, time_star, times
+
+def makeFreeSimulation(seed, path, name, dt, nSteps, filename, animation = False, verbose = False):
+    # set up simulation
+    #### WORK IN PROGRESS
+    mycp = pb.MycorrhizalPlant(seed)
+    mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
+    seed_para = pb.SeedRandomParameter(mycp)
+    seed_para.seedPos.z = - 3
+    mycp.setOrganRandomParameter(seed_para)
+    root = mycp.getOrganRandomParameter(pb.root)
+    for rp in root:
+        rp.hyphalEmergenceDensity = 4.0
+        rp.lmbd = 0.15
+        mycp.setOrganRandomParameter(rp)
+    mycp.initialize()
+
+    print("Starting simulation with seed: " + str(seed))
+    for i in range(nSteps):
+        if (i % 10 == 0):
+            print("Step " + str(i) + " of " + str(nSteps))
+        mycp.simulate(dt,verbose)
+        if (animation):
             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
-    times = np.linspace(crossed_time, max(mycp.getParameter("creationTime"))+0.01, 100)
-    return mycp, crossed_time, times
+    times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
+    return mycp, times
 
 def sigmoidLengthDens(t, K1,lamda_dens,t_arrival):
     rho = K1/(1+np.exp(lamda_dens*(t_arrival-t)))
@@ -192,12 +224,6 @@ def arrivalTimeDensFit(t,rho):
     param, param_cov = curve_fit(sigmoidLengthDens, t, rho, p0)
     return param, param_cov
 
-def TimeStar(t, ana, cond):
-    lengthsSubtype = getParameterOverTime("length", t, ana, [1,2,3])
-    lengths = lengthsSubtype[1,:] + lengthsSubtype[2,:]
-    valid = lengths > cond
-    return np.min(t[valid])
-
 def findAnaDensDep(t, ana, rings, power = 1):
     ana_densities = getParaSumperRing("anastomosis", t, ana, rings)
     tip_densities = getParaSumperRing("nodeTips", t, ana, rings)
@@ -209,10 +235,11 @@ def findAnaDensDep(t, ana, rings, power = 1):
 
 def prepare_data(lenMat, vol, anaMat, tipMat):
     rho = lenMat / vol
+    # print(rho)
     f_enc = np.divide(
         anaMat, tipMat,
         out=np.zeros_like(anaMat, dtype=float),
-        where=(anaMat != 0) & (tipMat != 0)
+        where= (tipMat != 0)
     )
     n_locations, n_times = rho.shape
     rho = rho.ravel()
@@ -220,7 +247,7 @@ def prepare_data(lenMat, vol, anaMat, tipMat):
     # Zeile = Ort, Spalte = Zeit
     location = np.repeat(np.arange(n_locations), n_times)
     time = np.tile(np.arange(n_times), n_locations)
-    valid = np.isfinite(rho) & np.isfinite(f_enc) & (rho != 0) & (f_enc != 0)
+    valid = np.isfinite(rho) & np.isfinite(f_enc)
     return rho[valid], f_enc[valid], location[valid], time[valid]
 
 
@@ -317,54 +344,56 @@ def plot_linear_analysis(all_results):
     plt.tight_layout()
     plt.show()
 
-def sensitivity_analysis(seed,path,name,runnerhyphae = {},BAS = {}, geometry = {},run = {}):
-    mycp = pb.MycorrhizalPlant(seed)
-    mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
-    seed_para = pb.SeedRandomParameter(mycp)
-    seed_para.seedPos.z = -geometry["height"] / 2
-    seed_para.seedPos.x = -9.4 / 2 + 0.5
-    seed_para.seedPos.y = 0
-    mycp.setOrganRandomParameter(seed_para)
-    hyphae = mycp.getOrganRandomParameter(pb.hyphae)
-    for h in hyphae:
-        if h.subType == 1:
-            h.a = runnerhyphae["a"]
-        if h.subType == 2:
-            h.a = BAS["a"]
+# def sensitivity_analysis(seed,path,name,runnerhyphae = {},BAS = {}, geometry = {},run = {}):
+#     mycp = pb.MycorrhizalPlant(seed)
+#     mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
+#     seed_para = pb.SeedRandomParameter(mycp)
+#     seed_para.seedPos.z = -geometry["height"] / 2
+#     seed_para.seedPos.x = -9.4 / 2 + 0.5
+#     seed_para.seedPos.y = 0
+#     mycp.setOrganRandomParameter(seed_para)
+#     hyphae = mycp.getOrganRandomParameter(pb.hyphae)
+#     for h in hyphae:
+#         if h.subType == 1:
+#             h.a = runnerhyphae["a"]
+#         if h.subType == 2:
+#             h.a = BAS["a"]
 
-    mycp.setGeometry(geometry["half_dish"])
-    mycp.initialize()
+#     mycp.setGeometry(geometry["half_dish"])
+#     mycp.initialize()
 
-    print("Starting simulation with seed: " + str(seed))
-    for i in range(run["nSteps"]):
-        if (i % 10 == 0):
-            print("Step " + str(i) + " of " + str(run["nSteps"]))
-        mycp.simulate(run["dt"],run["verbose"])
-    root = mycp.getOrganRandomParameter(pb.root)
-    for rp in root:
-        rp.hyphalEmergenceDensity = 4.0
-        rp.lmbd = 0.15
-        mycp.setOrganRandomParameter(rp)
+#     print("Starting simulation with seed: " + str(seed))
+#     for i in range(run["nSteps"]):
+#         if (i % 10 == 0):
+#             print("Step " + str(i) + " of " + str(run["nSteps"]))
+#         mycp.simulate(run["dt"],run["verbose"])
+#     root = mycp.getOrganRandomParameter(pb.root)
+#     for rp in root:
+#         rp.hyphalEmergenceDensity = 4.0
+#         rp.lmbd = 0.15
+#         mycp.setOrganRandomParameter(rp)
 
-    mycp.changeGeometry(5,geometry["petri_dish"])
+#     mycp.changeGeometry(5,geometry["petri_dish"])
 
-    crossed_barrier = 0
+#     crossed_barrier = 0
 
-    while crossed_barrier < 3:
-        # N+=1
-        mycp.simulate(dt,verbose)
-        ana = getMycSegmentAnalyser(mycp)
-        ana.filter("organType",5)
-        ana.filter("subType",1,2)
-        ana.pack()
-        crossed_barrier = ana.getSummed("nodeTips",small_hyphae_dish)
+#     while crossed_barrier < 3:
+#         # N+=1
+#         mycp.simulate(dt,verbose)
+#         ana = getMycSegmentAnalyser(mycp)
+#         ana.filter("organType",5)
+#         ana.filter("subType",1,2)
+#         ana.pack()
+#         crossed_barrier = ana.getSummed("nodeTips",small_hyphae_dish)
 
-    crossed_time = mycp.getSimTime()
-    for i in range(0, hours_hyphae):
-        if (i % 10 == 0):
-            print("Step " + str(i) + " of " + str(hours_hyphae))
-        mycp.simulate(dt,verbose)
-        if (animation):
-            getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
-    times = np.linspace(crossed_time, max(mycp.getParameter("creationTime"))+0.01, 100)
-    return mycp, crossed_time, times
+#     crossed_time = mycp.getSimTime()
+#     for i in range(0, hours_hyphae):
+#         if (i % 10 == 0):
+#             print("Step " + str(i) + " of " + str(hours_hyphae))
+#         mycp.simulate(dt,verbose)
+#         if (animation):
+#             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
+#     times = np.linspace(crossed_time, max(mycp.getParameter("creationTime"))+0.01, 100)
+#     return mycp, crossed_time, times
+
+# def estimate_carbon_cost(length,radius,pdry,pcarbon,dcell,CUE,)

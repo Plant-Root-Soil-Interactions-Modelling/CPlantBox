@@ -11,8 +11,8 @@ import matplotlib as mpl
 import AMFAnalysis as amf
 
 # I changed the c++ code, so set might not be valid anymore
-# good_seeds = [10, 15, 25, 30, 45, 50, 70, 105, 115, 125] # these are seeds where hyphae cross the barrier, but have not been assessed in any other way for any required behaviour
-good_seeds = [10]
+# good_seeds = [10, 25, 45, 50, 70, 105, 115, 125] # these are seeds where hyphae cross the barrier, but have not been assessed in any other way for any required behaviour
+good_seeds = [25]
 def makesimulation(seed):
     mycp = pb.MycorrhizalPlant(seed)
     path = "tomatoparameters/"
@@ -40,6 +40,7 @@ def makesimulation(seed):
     # make sure to set the seed position to 0 because of the petri dish
     seed_parameter = pb.SeedRandomParameter(mycp)
     seed_parameter.seedPos.z = -height / 2 # seed is positioned in the middle of the petri dish in the z direction
+    seed_parameter.seedPos.x = -diameter /2 + 0.5
     mycp.setOrganRandomParameter(seed_parameter)
 
     mycp.setGeometry(half_dish)
@@ -84,40 +85,20 @@ def makesimulation(seed):
     pCol = sum(mycp.getParameter("colonizationLength")) / sum(mycp.getParameter("length"))
     # input("Initial colonization percentage: " + str(pCol*100) + "%")
     crossed_barrier = 0
-    # while pCol < 0.50:
-    #     mycp.simulateColonization(dt,False)
-    #     N+=1
-    #     pCol = sum(mycp.getParameter("colonizationLength")) / sum(mycp.getParameter("length"))
-    #     for organ in mycp.getOrgans(pb.hyphae):
-    #         if organ.getParameter("subType") < 3:
-    #             for node in organ.getNodes():
-    #                 if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
-    #                     break
-
-
-    # vp.plot_roots_and_container(mycp,petri_dish)
-
-    # print("Simulating hyphal growth until hyphae cross the barrier")
-    # print(mycp.getSimTime(), max(mycp.getParameter("creationTime")))
-    while crossed_barrier <= 3:
-        N+=1    
-        mycp.simulate(dt,False)
-        for organ in mycp.getOrgans(pb.hyphae):
-            if organ.getParameter("subType") < 3:
-                for node in organ.getNodes():
-                    if node.x > -barrier_thickness/2 and node.z < opening_height-barrier_height and node.y < opening_length/2 and node.y > -opening_length/2:
-                        crossed_barrier += 1
-        # input("Colonization percentage: " + str(pCol*100) + "%, crossed barrier: " + str(crossed_barrier))
-    # look at system to see how active
-    # vp.plot_roots(mycp,"active")   
+    while crossed_barrier < 10:
+        # N+=1
+        mycp.simulate(dt)
+        ana = amf.getMycSegmentAnalyser(mycp)
+        ana.filter("organType",5)
+        ana.pack()
+        crossed_barrier = ana.getSummed("length",small_hyphae_dish)   
     crossed_time = mycp.getSimTime()
     # print(crossed_time)
     hours_hyphae = 60 ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
-    print(crossed_time,mycp.getSimTime(), max(mycp.getParameter("creationTime")))
     
     for i in range(0, hours_hyphae):
         if i % 10 == 0:
-            print("Simulating hyphal growth step " + str(i+1) + " of " + str(hours_hyphae))
+            print("Simulating hyphal growth step " + str(i) + " of " + str(hours_hyphae))
         # mycp.simulateHyphae(dt,False)
         mycp.simulate(dt,False)
         # mycp.turnOffSidePetriDish(-barrier_thickness/2,opening_height-barrier_height,  opening_length/2, -opening_length/2)
@@ -140,35 +121,37 @@ def makesimulation(seed):
     
     # times = np.linspace(0, 28, 100)
 
-    tip_densities = amf.getParaSumperRing("nodeTips", times, ana, rings)
-    # ana_densities = amf.getParaSumperRing("anastomosis", times, ana, rings)
-    # length_densities = amf.getParaSumperRing("length", times, ana, rings)
+    tip_densities = amf.getParaSumperRing("nodeTips", times, mycp, rings)
+    ana_densities = amf.getParaSumperRing("anastomosis", times, mycp, rings)
+    length_densities = amf.getParaSumperRing("length", times, mycp, rings)
     # lengthsSubtype = amf.getParameterOverTime("length", times, ana, np.array([1,2,3]))
-    # times = times - crossed_time
-    return tip_densities
+    times = times - crossed_time
+    return tip_densities, times, ana_densities, length_densities
 
 diameter = 9.4
 radius = diameter / 2
 
 nRings = 15
+height = 1.6
+area =np.pi /2 * radius*radius/nRings
+vol =  area * height
 location = np.array([radius*np.sqrt(i/nRings) for i in range(1, nRings+1)])
 simulations = []
 
 allsims = time.perf_counter()
 for i in good_seeds:
     # tip_densities, ana_densities, length_densities, times, lengthsSubType = makesimulation(i)
-    tip_densities = makesimulation(i)
+    tip_densities,times,ana_densities, length_densities = makesimulation(i)
     simulations.append({
-    "tip_dens": tip_densities,
-    # "times": times[1:],
-    # "lengths": lengthsSubType,
-    # "ana_densities": ana_densities,
-    # "length_densities": length_densities
+    "tip_dens": tip_densities/vol,
+    "times": times[1:],
+    "ana_densities": ana_densities,
+    "length_densities": length_densities/vol
 })
 allsims_end = time.perf_counter()
 print("Time for all simulations: ", allsims_end-allsims)
 
-print(simulations[0]["tip_dens"])
+# print(simulations[0]["tip_dens"])
 
 # for i in range(len(good_seeds)):
 #     runner_hyphae = simulations[i]["lengths"][1] + simulations[i]["lengths"][0]
@@ -177,95 +160,95 @@ print(simulations[0]["tip_dens"])
 #     print("Ratio BAS/Runner: ", ratio)
 #     print(simulations[i]["lengths"])
 
-# for i,seed in enumerate(good_seeds):
-#     plt.pcolormesh(
-#         simulations[i]["times"], 
-#         location, 
-#         simulations[i]["tip_dens"], 
-#         shading='auto', 
-#         cmap='plasma'
-#     )
-#     plt.colorbar(label="Tip Density [mm$^{-2}$]")
+for i,seed in enumerate(good_seeds):
+    plt.pcolormesh(
+        simulations[i]["times"], 
+        location, 
+        simulations[i]["tip_dens"], 
+        shading='auto', 
+        cmap='plasma'
+    )
+    plt.colorbar(label="Tip Density [mm$^{-2}$]")
 
-#     plt.xlabel("Time [days]")
-#     plt.ylabel("Distance [cm] from centre")
-#     # plt.title("Radial movement of hyphal tip frequency")
-#     plt.savefig(f"plots/tip_densities_seed_{seed:03d}.png", dpi=300, bbox_inches="tight")
-#     plt.close()
+    plt.xlabel("Time [days]")
+    plt.ylabel("Distance [cm] from centre")
+    # plt.title("Radial movement of hyphal tip frequency")
+    plt.savefig(f"plots/tip_densities_seed_{seed:03d}.png", dpi=300, bbox_inches="tight")
+    plt.close()
 
-#     plt.pcolormesh(
-#             simulations[i]["times"], 
-#             location, 
-#             simulations[i]["ana_densities"], 
-#             shading='auto', 
-#             cmap='plasma'
-#         )
-#     plt.colorbar(label="Tip Density [mm$^{-2}$]")
+    plt.pcolormesh(
+            simulations[i]["times"], 
+            location, 
+            simulations[i]["ana_densities"], 
+            shading='auto', 
+            cmap='plasma'
+        )
+    plt.colorbar(label="Tip Density [mm$^{-2}$]")
     
-#     plt.xlabel("Time [days]")
-#     plt.ylabel("Distance [cm] from centre")
-#         # plt.title("Radial movement of hyphal tip frequency")
-#     plt.savefig(f"plots/ana_densities_seed_{seed:03d}.png", dpi=300, bbox_inches="tight")
-#     plt.close()
+    plt.xlabel("Time [days]")
+    plt.ylabel("Distance [cm] from centre")
+        # plt.title("Radial movement of hyphal tip frequency")
+    plt.savefig(f"plots/ana_densities_seed_{seed:03d}.png", dpi=300, bbox_inches="tight")
+    plt.close()
 
 
 
-# t_common = np.linspace(
-#     max(sim["times"][0] for sim in simulations),
-#     min(sim["times"][-1] for sim in simulations),
-#     99
-# )
-# from scipy.interpolate import interp1d
+t_common = np.linspace(
+    max(sim["times"][0] for sim in simulations),
+    min(sim["times"][-1] for sim in simulations),
+    99
+)
+from scipy.interpolate import interp1d
 
-# tip_dens_interp = []
+tip_dens_interp = []
 
-# for sim in simulations:
-#     f = interp1d(sim["times"], sim["tip_dens"], axis=1)
-#     tip_dens_interp.append(f(t_common))
+for sim in simulations:
+    f = interp1d(sim["times"], sim["tip_dens"], axis=1)
+    tip_dens_interp.append(f(t_common))
 
-# tip_dens_interp = np.stack(tip_dens_interp)   # (n_sim, n_r, n_t)
+tip_dens_interp = np.stack(tip_dens_interp)   # (n_sim, n_r, n_t)
 
-# mean = tip_dens_interp.mean(axis=0)
-# std  = tip_dens_interp.std(axis=0)
+mean = tip_dens_interp.mean(axis=0)
+std  = tip_dens_interp.std(axis=0)
 
-# # mean = np.mean([sim["tip_dens"] for sim in simulations], axis=0)
-# # std  = np.std([sim["tip_dens"] for sim in simulations], axis=0)
-# # t_common = simulations[0]["times"]
+# mean = np.mean([sim["tip_dens"] for sim in simulations], axis=0)
+# std  = np.std([sim["tip_dens"] for sim in simulations], axis=0)
+# t_common = simulations[0]["times"]
 
-# indices = [i*7 for i in range(15)]
+indices = [i*33 for i in range(3)]
 
-# fig, ax = plt.subplots(figsize=(6,5))
+fig, ax = plt.subplots(figsize=(6,5))
 
-# cmap = plt.get_cmap("plasma")
-# colors = cmap(np.linspace(0.2, 0.9, len(indices)))
+cmap = plt.get_cmap("plasma")
+colors = cmap(np.linspace(0.2, 0.9, len(indices)))
 
-# for color, i in zip(colors, indices):
+for color, i in zip(colors, indices):
 
-#     ax.plot(
-#         location,
-#         mean[:, i],
-#         color=color,
-#         lw=2,
-#         label=f"t = {t_common[i]:.2f}"
-#     )
+    ax.plot(
+        location,
+        mean[:, i],
+        color=color,
+        lw=2,
+        label=f"t = {t_common[i]:.2f}"
+    )
 
-#     ax.fill_between(
-#         location,
-#         mean[:, i] - std[:, i],
-#         mean[:, i] + std[:, i],
-#         color=color,
-#         alpha=0.3
-#     )
-# ax.set_xlabel(r"Distance from origin $r$ (mm)")
-# ax.set_ylabel(r"Tip amount)")
-# # ax.set_ylabel(r"Anastomosis frequency (mm$^{-2}$)")
-# ax.legend()
+    ax.fill_between(
+        location,
+        mean[:, i] - std[:, i],
+        mean[:, i] + std[:, i],
+        color=color,
+        alpha=0.3
+    )
+ax.set_xlabel(r"Distance from origin $r$ (mm)")
+ax.set_ylabel(r"Tip amount)")
+# ax.set_ylabel(r"Anastomosis frequency (mm$^{-2}$)")
+ax.legend()
 
-# plt.tight_layout()
-# plt.show()
-##############################
+plt.tight_layout()
+plt.show()
+#############################
 # print(np.array(tip_densities).reshape((-1, len(tip_densities[0]))))
-## The problem is that the tips should be more evenly distributed i.e. more rings should have tips in them. but right now just a handful do
+# # The problem is that the tips should be more evenly distributed i.e. more rings should have tips in them. but right now just a handful do
 # tip_densities = np.array(tip_densities).reshape((-1, len(tip_densities[0])))
 # tip_densities = np.transpose(tip_densities)
 
@@ -325,30 +308,27 @@ print(simulations[0]["tip_dens"])
 # endplot = time.perf_counter()
 # plt.show()
 
-# # print("Time for simulation: ", endsim-start)
-# # print("Time for plotting: ", endplot-endsim)
-# # print("Total time: ", endplot-start)
-# # loc_grid, time_grid = np.meshgrid(location, times[1:],indexing='ij')
-# # loc_flat = loc_grid.ravel()
-# # time_flat = time_grid.ravel()
-# # tips_flat = tip_densities.ravel()
+# loc_grid, time_grid = np.meshgrid(location, times[1:],indexing='ij')
+# loc_flat = loc_grid.ravel()
+# time_flat = time_grid.ravel()
+# tips_flat = tip_densities.ravel()
 
-# # print("Lengths: ", len(loc_flat), len(time_flat), len(tips_flat))
+# print("Lengths: ", len(loc_flat), len(time_flat), len(tips_flat))
 
-# # cmap = plt.get_cmap('viridis')
+# cmap = plt.get_cmap('viridis')
 
-# # plt.figure(figsize=(9, 5))
+# plt.figure(figsize=(9, 5))
 
-# # extent = [
-# #     times[1], times[-1],   # x: Zeit
-# #     1, len(rings)          # y: Ringe
-# # ]
+# extent = [
+#     times[1], times[-1],   # x: Zeit
+#     1, len(rings)          # y: Ringe
+# ]
 
-# # plt.contour(location, timesuse, tip_densities, levels=50, cmap='viridis')
-# # plt.xlabel("Number of Ring")
-# # plt.title("Radial movement of hyphal tip density")
+# plt.contour(location, timesuse, tip_densities, levels=50, cmap='viridis')
+# plt.xlabel("Number of Ring")
+# plt.title("Radial movement of hyphal tip density")
 
-# # plt.show()
+# plt.show()
 
 # # sc = plt.scatter(
 # #     loc_flat,                 # x = Distanz

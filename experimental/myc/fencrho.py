@@ -13,7 +13,7 @@ from sklearn.linear_model import LinearRegression
 
 # I changed the c++ code, so set might not be valid anymore
 # good_seeds = [10, 15, 25, 30, 45, 50, 70, 105, 115, 125]
-good_seeds = [10]
+good_seeds = [25]
 path = "tomatoparameters/"
 name = "TwoHyphaePlusBAS"
 
@@ -37,24 +37,24 @@ dt, nSteps = amf.setUpSimulationTime(5,24)
 simulation = []
 for seed in good_seeds:
     start_sim = time.perf_counter()
-    mycp, crossed_time, times = amf.makeSimulation(seed, path, name, height,petri_dish, small_hyphae_dish, half_dish,dt,nSteps, 60, "f_enc_vs_rho_h",animation=False,verbose=False)
+    mycp, time_star, times = amf.makeSimulation(seed, path, name, height,petri_dish, small_hyphae_dish, half_dish,dt,nSteps, 80, "compare_COCO",animation=False,verbose=False)
+    # mycp, times = amf.makeFreeSimulation(seed, path, name, dt, nSteps,"colonizationvisforfspm",True,False)
     finished_sim = time.perf_counter()
-    vp.plot_roots_and_container(mycp,petri_dish)
-    ana = pb.SegmentAnalyser()
-    ana = amf.getMycSegmentAnalyser(mycp)
-    ana.crop(small_hyphae_dish)
+    # vp.plot_roots_and_container(mycp,petri_dish)
+    # ana = amf.getMycSegmentAnalyser(mycp,filename="colonizationvisforfspm",stdwrite=True)
+    # ana.crop(small_hyphae_dish)
     received_ana_data = time.perf_counter()
     # fewer_rings = rings[0:int(nRings/2)]
-    ## Ringe -> Zeile // Zeitabschnitt -> Spalte
-    tipMat = amf.getParaSumperRing("nodeTips",times,ana,rings[0:1])
+    # Ringe -> Zeile // Zeitabschnitt -> Spalte
+    tipMat = amf.getParaSumperRing("nodeTips",times,mycp,rings)
     tipMat_time = time.perf_counter()
-    anaMat = amf.getParaSumperRing("anastomosis",times,ana,rings[0:1])
+    anaMat = amf.getParaSumperRing("anastomosis",times,mycp,rings)
     anaMat_time = time.perf_counter()
-    lenMat = amf.getParaSumperRing("length",times,ana, rings[0:1])
+    lenMat = amf.getParaSumperRing("length",times,mycp, rings)
     lenMat_time = time.perf_counter()
-    area =np.pi /2 * radius*radius/nRings
+    area = np.pi /2 * radius*radius/nRings
     vol =  area * height
-    simulation.append({"label": "seed " + str(seed), "mycp": mycp, "crossed_time": crossed_time, "times": times, "tipMat": tipMat, "anaMat": anaMat, "lenMat": lenMat, "vol": vol})
+    simulation.append({"label": "seed " + str(seed), "mycp": mycp, "time_star": time_star, "times": times, "tipMat": tipMat, "anaMat": anaMat, "lenMat": lenMat, "vol": vol})
 
 print("Time to make the dishes ", finished_dishes - start_dishes)
 print("Time to run the simulation ", finished_sim - start_sim)

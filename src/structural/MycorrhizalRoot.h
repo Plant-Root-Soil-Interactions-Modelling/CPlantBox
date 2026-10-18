@@ -47,16 +47,6 @@ public:
     double getNodeColonizationTime(int i) const {return colonizationTime.at(i);}
     void setColonization(int i, int inf, double t);
 
-private:
-    bool isSecondaryColonizationAnchor(size_t node) const;
-    double segmentLength(size_t a, size_t b) const;
-    double colonizationArrivalTime(size_t fromNode, double cursegLength) const;
-    void refineSegment(size_t fromNode, size_t toNode, double toCT, int &oldNode, int &currentNode, int step);
-    void propagateSecondaryColonization(size_t anchorNode, int step, double maxLength, bool silence, double dt);
-
-    double primaryColonizationRate(size_t node) const;
-    int refinePrimarySegment(size_t fromNode, size_t toNode, double toCT, size_t insertIndex);
-
 protected:
     void createHyphae(int pni);
     int hyphalTreeIndex = -1;
