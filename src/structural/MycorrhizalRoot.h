@@ -35,7 +35,6 @@ public:
     double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
 
     void addNode(Vector3d n, int id, double t, size_t index, bool shift) override;
-    void createLateral(double ageLN, bool silence) override;
 
     std::string toString() const override;
 

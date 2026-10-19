@@ -16,8 +16,7 @@ class MycorrhizalPlant :public Plant {
     void initializeReader() override; ///< initializes XML reader
     void readParameters(std::string name, std::string basetag = "plant", bool fromFile = true, bool verbose = true) override {this -> initializeReader(); Organism::readParameters(name, basetag, fromFile, verbose);};
 
-    void initialize(bool verbose = true) override {initializeLB(verbose);};
-    void initializeLB(bool verbose = true);
+    std::shared_ptr<Organ> createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni) override; ///< creates MycorrhizalRoot instead of Root
 
     void simulate(double dt, bool verbose) override;
     void simulateColonization(double dt, bool verbose);

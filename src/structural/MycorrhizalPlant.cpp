@@ -39,19 +39,12 @@ void MycorrhizalPlant::initializeReader()
     setOrganRandomParameter(lrp);
 }
 
-void MycorrhizalPlant::initializeLB(bool verbose)
+/**
+ * Factory method used by Seed::initialize() and Organ::createLateral(), all roots of the plant are mycorrhizal roots
+ */
+std::shared_ptr<Organ> MycorrhizalPlant::createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni)
 {
-    reset(); // just in case
-    class MycorrhizalSeed :public Seed{
-        using Seed::Seed;
-        std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay) override {
-            return std::make_shared<MycorrhizalRoot>(plant, type, delay, shared_from_this(), 0);
-        };
-    };
-    auto seed = std::make_shared<MycorrhizalSeed>(shared_from_this());
-    baseOrgans.push_back(seed);
-    seed->initialize(verbose);
-    initialize_(verbose);
+    return std::make_shared<MycorrhizalRoot>(shared_from_this(), subType, delay, parent, pni);
 }
 
 

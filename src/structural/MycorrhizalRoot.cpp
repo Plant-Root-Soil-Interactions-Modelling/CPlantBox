@@ -363,63 +363,6 @@ void MycorrhizalRoot::setColonization(int i, int colonization, double t)
 	assert(colonizationTime.at(i) >= nodeCTs.at(i) && "MycorrhizalRoot::setColonization colonizationTime.at(i) < nodeCTs.at(i)");
 }
 
-void MycorrhizalRoot::createLateral(double dt, bool verbose)
-{
-    auto rp = getOrganRandomParameter(); // rename
-
-    for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule
-        //found id
-        bool applyHere = getApplyHere(i);
-
-        if(applyHere)
-        {
-            int numlats = 1;//how many laterals? default = 1
-            if(rp->successorNo.size()>i){numlats =  rp->successorNo.at(i);}
-            for(int nn = 0; nn < numlats; nn++)
-            {
-                const Vector3d& pos = Vector3d();
-                int p_id = rp->getLateralType(pos, i);//if probabilistic branching
-
-                if(p_id >=0)
-                {
-                    int ot;
-
-                    if((rp->successorOT.size()>i)&&(rp->successorOT.at(i).size()>p_id)){
-                        ot = rp->successorOT.at(i).at(p_id);
-                    }else{ot = getParameter("organType");}//default
-
-                    int st = rp->successorST.at(i).at(p_id);
-
-                    double delay = getLatGrowthDelay(ot, st, dt);// forDelay*multiplyDelay
-                    double growth_dt = getLatInitialGrowth(dt);
-
-                    switch(ot){
-                    case Organism::ot_root:{
-                        // std::cout << "Marco!" << std::endl;
-                        auto lateral = std::make_shared<MycorrhizalRoot>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
-                        // std::cout<< "Polo!"<< std::endl;
-                        children.push_back(lateral);
-                        lateral->simulate(growth_dt,verbose);
-                        break;}
-                    case Organism::ot_stem:{
-                        auto lateral = std::make_shared<Stem>(plant.lock(), st, delay, shared_from_this(),  nodes.size() - 1);
-                        children.push_back(lateral);
-                        lateral->simulate(growth_dt,verbose);
-                        break;}
-                    case Organism::ot_leaf:{
-                        auto lateral = std::make_shared<Leaf>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
-                        children.push_back(lateral);
-                        lateral->simulate(growth_dt,verbose);//age-ageLN,verbose);
-                        break;}
-                    }
-                }
-            }
-        }
-    }
-    created_linking_node ++;
-    storeLinkingNodeLocalId(created_linking_node,verbose);//needed (currently) only for stems when doing nodal growth
-}
-
 void MycorrhizalRoot::createHyphae(int pni)
 {
     double delay = getRootRandomParameter()->hyphalDelay;

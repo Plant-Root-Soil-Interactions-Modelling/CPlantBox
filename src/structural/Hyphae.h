@@ -38,6 +38,11 @@ public:
     void createLateral(double dt_, bool verbose); ///< creates a lateral hyphae
     std::string toString() const override;
 
+    /* Hyphae are belowground and always kept in absolute coordinates (needed by the anastomosis SDF).
+     * Organ::abs2rel() would treat hyphae carried by hyphae as shoot-borne (organType > 2) */
+    void abs2rel() override { for (auto& c : children) { c->abs2rel(); } } ///< no conversion, only passes to children
+    void rel2abs() override { for (auto& c : children) { c->rel2abs(); } } ///< no conversion, only passes to children
+
     // void makeanastomosis(std::shared_ptr<Hyphae> a, std::shared_ptr<Hyphae> b); ///< creates an anastomosis with another hyphae
 
     //    /* From analytical equations */
