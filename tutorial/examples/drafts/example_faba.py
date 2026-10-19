@@ -1,6 +1,4 @@
 """ Faba example based on measured parameters """  
-import sys
-sys.path.append("../../../..")
 import plantbox as pb
 import vtk_plot as vp
 import matplotlib.pyplot as plt

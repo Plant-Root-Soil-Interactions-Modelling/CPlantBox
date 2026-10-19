@@ -87,7 +87,7 @@
         <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
-    <stem name="Main stem" subType="1">
+    <stem name="Main Stem" subType="1">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
         <parameter name="lnf" value="0"/>
@@ -137,7 +137,7 @@
         <parameter name="successor" ruleId="0" subType="2" organType="3" percentage="1"/>
         <!--Sub type of lateral -->
     </stem>
-    <stem name="Lateral stem" subType="2">
+    <stem name="Lateral Stem" subType="2">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
         <parameter name="lnf" value="0"/>

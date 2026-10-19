@@ -1,4 +1,5 @@
 import sys; sys.path.append(".."); sys.path.append("../src/")
+import os
 import unittest
 
 import plantbox as pb
@@ -76,26 +77,31 @@ class TestStemParameter(unittest.TestCase):
 
     def test_xml(self):
         """ write the organ as xml, and rereads it """
-        self.stem_example()
+        fname = "stem.xml"
+        try:
+            self.stem_example()
 
-        otp = self.srp  # rename
-        otp.name = "lateral"
-        otp.subType = 1
+            otp = self.srp  # rename
+            otp.name = "lateral"
+            otp.subType = 1
 
-        otp.writeXML("stem.xml")
-        otp2 = pb.StemRandomParameter(self.plant)
-        otp2.readXML("stem.xml")
-        self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
-        self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
+            otp.writeXML(fname)
+            otp2 = pb.StemRandomParameter(self.plant)
+            otp2.readXML(fname)
+            self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
+            self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
 
-        self.assertEqual(otp2.subType, otp.subType, "xml: value unexpected")
-        self.assertEqual(otp2.lmax, otp.lmax, "xml: value unexpected")  # value
-        self.assertEqual(otp2.nob(), otp.nob(), "xml: value unexpected")  # value
-        self.assertEqual(otp2.lns, otp.lns, "xml: value unexpected")  # dev
-        for i in range(0, 3):
-            self.assertEqual(otp2.successor[0][i], otp.successor[0][i], "xml: value unexpected")
-        for i in range(0, 3):
-            self.assertAlmostEqual(otp2.successorP[0][i], otp.successorP[0][i], 7, "xml: value unexpected")
+            self.assertEqual(otp2.subType, otp.subType, "xml: value unexpected")
+            self.assertEqual(otp2.lmax, otp.lmax, "xml: value unexpected")  # value
+            self.assertEqual(otp2.nob(), otp.nob(), "xml: value unexpected")  # value
+            self.assertEqual(otp2.lns, otp.lns, "xml: value unexpected")  # dev
+            for i in range(0, 3):
+                self.assertEqual(otp2.successor[0][i], otp.successor[0][i], "xml: value unexpected")
+            for i in range(0, 3):
+                self.assertAlmostEqual(otp2.successorP[0][i], otp.successorP[0][i], 7, "xml: value unexpected")
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_realize(self):
         """ calls realize """

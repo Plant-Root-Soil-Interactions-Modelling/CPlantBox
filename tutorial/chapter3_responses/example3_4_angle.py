@@ -6,16 +6,16 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 plant = pb.Plant()
-path = "../../modelparameter/structural/rootsystem/"
-name = "Glycine_max_Moraes2020"
-plant.readParameters(path + name + ".xml")
+path = pb.data_path() + "/structural/rootsystem/"
+filename = "Glycine_max_Moraes2020"
+plant.readParameters(path + filename + ".xml")
 
 box = pb.SDF_PlantBox(10, 10, 30)  # nutrient rich patch  # |\label{l34:patch2}|
 patch = pb.SDF_RotateTranslate(box, pb.Vector3d(-5, 0.0, -10))
 
 max_ = 1.0  # maximal
 min_ = 0.1  # minimal
-slope = 1.0  # linear gradient between min and max (cm) 
+slope = 1.0  # linear gradient between min and max (cm)
 soilprop = pb.SoilLookUpSDF(patch, max_, min_, slope)  # |\label{l34:rate2}|
 
 for organ_type in [pb.root, pb.stem, pb.leaf]:  # |\label{l34:for_start}|
@@ -26,9 +26,9 @@ for organ_type in [pb.root, pb.stem, pb.leaf]:  # |\label{l34:for_start}|
             p.lmax = 2 * p.lmax  # increase higher order length
 
 plant.initialize()
-simtime = 15.0
+sim_time = 15.0
 dt = 1.0
-for i in range(0, round(simtime / dt)):
+for i in range(0, round(sim_time / dt)):
     plant.simulate(dt)
 
 ana = pb.SegmentAnalyser(plant)  # |\label{l34:analysis2}|

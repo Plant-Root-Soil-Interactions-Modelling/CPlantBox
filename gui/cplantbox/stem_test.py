@@ -1,16 +1,14 @@
-import sys;sys.path.append("../..");sys.path.append("../../src/")  
-
 import numpy as np
 
-import plantbox as pb  
-import plantbox.visualisation.vtk_plot as vp  
+import plantbox as pb
+import plantbox.visualisation.vtk_plot as vp
 
-plant = pb.Plant()  
+plant = pb.Plant()
 
 # Open plant and root parameter from a file
 path = "../../modelparameter/structural/plant/"
 name = "fspm2023"
-plant.readParameters(path + name + ".xml")  
+plant.readParameters(path + name + ".xml")
 
 rrp = plant.getOrganRandomParameter(pb.root)
 srp = plant.getOrganRandomParameter(pb.seed)
@@ -23,9 +21,9 @@ rrp[1].successor = [[]]
 rrp[1].successorP = [[]]
 
 print(srp[0])
-srp[0].firstSB = 1.e6
-srp[0].firstB = 1.e6
-srp[0].firstTil = 1.e6
+srp[0].firstSB = 1.0e6
+srp[0].firstB = 1.0e6
+srp[0].firstTil = 1.0e6
 
 for i, s in enumerate(strp[1:]):
     print("***", i)

@@ -1,8 +1,8 @@
 <plant>
     <seed name="Pisum_sativum_a_Pagès_2014" subType="0">
-        <parameter name="delayDefinition" value="0"/>
+        <parameter name="delayDefinitionRoot" value="0"/>
         <!--method implemented to evaluate root lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
-        <parameter name="delayDefinitionShoot" value="0"/>
+        <parameter name="delayDefinitionShoot" value="2"/>
         <!--method implemented to evaluate shoot lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
         <parameter name="maxTil" value="0"/>
         <!--Maximal number of tillers [1]-->
@@ -167,4 +167,17 @@
         <parameter name="tropismS" value="0.26179901"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
+    <reference>
+        <entry id="pisum_sativum_a_pages_2014">
+            <article>
+                <author>Pagès, L.</author>
+                <author>Picon-Cochard, C.</author>
+                <title>Modelling the root system architecture of Poaceae. Can we simulate integrated traits from morphological parameters of growth and branching?</title>
+                <journal>New Phytologist</journal>
+                <year>2014</year>
+                <volume>204</volume>
+                <pages>149-158</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

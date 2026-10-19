@@ -8,11 +8,11 @@ import numpy as np
 import plantbox as pb
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Meunier
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters  # |\label{l42:imports_end}|
-from plantbox.visualisation import figure_style 
+from plantbox.visualisation import figure_style
 
-# Simulation parameters   # |\label{l42:parameters}|
-simtime = 70  # simulate from day 1 to 70
-dt = 1 
+# Simulation parameters |\label{l42:parameters}|
+sim_time = 70  # simulate from day 1 to 70
+dt = 1
 
 architectures = [  # |\label{l42:architecture}|
     "Heliantus_Pages_2013",
@@ -21,9 +21,9 @@ architectures = [  # |\label{l42:architecture}|
     "Zea_mays_1_Leitner_2010",
 ]
 
-path = "../../modelparameter/structural/rootsystem/"  # |\label{l42:architecture_end}|
+path = pb.data_path() + "/structural/rootsystem/"  # |\label{l42:architecture_end}|
 
-# Root hydraulic properties  # |\label{l42:roothydraulics}|
+# Root hydraulic properties |\label{l42:roothydraulics}|
 param = PlantHydraulicParameters()
 
 kr0 = np.array([[0.0, 2.2e-4], [12.5, 2.2e-4], [20.9, 8.0e-5], [44.6, 8.0e-5], [62.7, 1.9e-5], [100, 1.9e-5]])
@@ -36,7 +36,7 @@ kx1 = np.array([[0, 1.0e-4], [9, 2.0e-4], [13, 6.0e-4], [20, 1.73e-3], [25, 1.73
 param.set_kx_age_dependent(kx0[:, 0], kx0[:, 1], subType=[1, 4])
 param.set_kx_age_dependent(kx1[:, 0], kx1[:, 1], subType=[2, 3])  # |\label{l42:roothydraulics_end}|
 
-# Simulation loop # |\label{l42:sim_start}|
+# Simulation loop |\label{l42:sim_start}|
 krs_all = []
 lengths = []
 surfaces = []
@@ -56,7 +56,7 @@ for name in architectures:
     arch_lengths = []
     arch_surfaces = []
 
-    for t in range(0, simtime):
+    for t in range(0, sim_time):
         plant.simulate(dt)
         ns = plant.getNumberOfMappedSegments()  # segments extracted
         krs, _ = hm.get_krs(t)  # krs calculated
@@ -73,7 +73,7 @@ for name in architectures:
     lengths.append(arch_lengths[-1])  # final length
     surfaces.append(arch_surfaces[-1])  # final surface |\label{l42:sim_end}|
 
-    suf = hm.get_suf(simtime)  # |\label{l42:suf}|
+    suf = hm.get_suf(sim_time)  # |\label{l42:suf}|
     ana = pb.SegmentAnalyser(plant)
     ana.addData("SUF", suf)  # suf at each segment in the 3d space
 
@@ -102,12 +102,12 @@ if n_arch == 1:
     axes_krs = [axes_krs]
 
 for i, ax in enumerate(axes_krs):
-    ax.plot(range(0, simtime), krs_all[i])
+    ax.plot(range(0, sim_time), krs_all[i])
     ax.set_title(architectures[i])
     ax.set_xlabel("Root system age (day)")
     ax.set_yscale("log")
     if i == 0:
-        ax.set_ylabel("Krs (cm$^2$ day$^{-1}$")
+        ax.set_ylabel("Krs (cm$^2$ day$^{-1}$)")
     ax.grid(True)
 
 plt.tight_layout()
@@ -121,9 +121,9 @@ if n_arch == 1:
 for i, ax in enumerate(axes_suf):
     suf, depth = suf_profiles[i]
     ax.plot(suf, depth, "k")
-    ax.set_xlabel("SUF [-]")
+    ax.set_xlabel("SUF (-)")
     if i == 0:
-        ax.set_ylabel("Depth [cm]")
+        ax.set_ylabel("Depth (cm)")
     ax.grid(True)
     ax.set_title(architectures[i])
     if len(depth) > 0:

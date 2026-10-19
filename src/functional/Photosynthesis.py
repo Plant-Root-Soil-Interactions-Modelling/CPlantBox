@@ -249,3 +249,31 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
     def radial_fluxes(self):
         """ plant-exterior exchanges [cm3/day] """
         return np.array(self.outputFlux)
+        
+    
+    def get_nodes_index(self, ot):
+        """ return node indices of segments with organ type @param ot """
+        segments = self.get_segments()
+        nodes = self.get_nodes()
+        organTypes = self.get_organ_types()
+        rootsegments = segments[organTypes == ot]
+        rootsegments.flatten()
+        np.sort(rootsegments, axis = None)
+        nodesidx = np.unique(rootsegments)
+        return nodesidx
+
+    def get_nodes_organ_type(self, ot):
+        """ return node coordinates of segments with organ type @param ot """
+        nodes = self.get_nodes()
+        return nodes[self.get_nodes_index(ot)]
+            
+    def toNumpy(self,cpbArray):
+        """ converts the cpbArray to a numpy array """
+        return np.array(list(map(lambda x: np.array(x), cpbArray)))
+        
+    def get_segments_index(self, ot):
+        """ return segment indices of organ type @param ot """
+        organTypes = self.get_organ_types()
+        segIdx = np.array(list(range(0, len(organTypes))))
+        otsegs = segIdx[organTypes == ot]
+        return otsegs

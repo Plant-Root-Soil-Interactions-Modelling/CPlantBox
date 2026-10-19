@@ -1,141 +1,180 @@
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
+"""conversions between dash store data types  and gui, D. Leitner 2026"""
 
-from vtk.util import numpy_support
+import os
+
 import numpy as np
+from dash import html
+from vtk_conversions import *
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
-from vtk_conversions import *
+tropism_names = {"Plagiotropism": 0, "Gravitropism": 1, "Exotropism": 2, "Negative gravitropism": 4, "Variable gravitropism": 6}  # "Twist": 5,
 
-tropism_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2, "Negative gravitropism": 4, "Variable gravitropism": 6}  # "Twist": 5,
-tropism_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Negative gravitropism", 6: "Variable gravitropism"}  # 5: "Twist",
+tropism_names_ = {0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Negative gravitropism", 6: "Variable gravitropism"}  # 5: "Twist",
+
+
+def _warn_if_out_of_range(context: str, param_name: str, value, min_value: float, max_value: float):
+    """Print warning if a numeric value is outside slider bounds."""
+    if not isinstance(value, (int, float, np.floating)):
+        return
+    if value < min_value or value > max_value:
+        print(f"WARNING [{context}] '{param_name}' value {value} is outside slider range [{min_value}, {max_value}]")
+
+
+def _warn_vector_against_sliders(context: str, values: list, slider_items: list):
+    """Compare ordered numeric values to ordered slider definitions and print warnings."""
+    for i, (name, bounds) in enumerate(slider_items):
+        if i >= len(values):
+            break
+        min_value, max_value = bounds[0], bounds[1]
+        _warn_if_out_of_range(context, name, values[i], min_value, max_value)
 
 
 def get_parameter_names():  # parameter xml file names
-    """ returns a list of plant parameter names with two values each, first a short name, second exact filename """
+    """returns a list of plant parameter names with two values each, first a short name, second exact filename"""
     parameter_names = [
-        ("Maize", "P0.xml"),
-        ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
-        ("FSPM", "fspm2023.xml"),
+        ("Demo Plant", "fspm2023.xml"),
         ("Demo Leaf", "leaf_only.xml"),
         ("Demo Root", "root_only.xml"),
         ("Demo Stem", "stem_only.xml"),
-        ]
+        ("Zea mays", "P0.xml"),  # Felix File
+        ("Triticum aestivum", "Triticum_aestivum_test_2021.xml"),  # Monas File
+        ("Anagallis femina", "Anagallis_femina_Leitner_2010.xml"),
+        ("Brassica napus", "Brassica_napus_a_Leitner_2010.xml"),
+        ("Brassica oleracea", "Brassica_oleracea_Vansteenkiste_2014.xml"),
+        ("Crypsis aculeata", "Crypsis_aculeata_Clausnitzer_1994.xml"),
+        ("Helianthus annuus", "Heliantus_Pages_2013.xml"),
+        ("Juncus squarrosus", "Juncus_squarrosus_Clausnitzer_1994.xml"),
+        ("Lupinus albus", "Lupinus_albus_Leitner_2014.xml"),
+        ("Lupinus angustifolius", "Lupinus_angustifolius_Chen_2011.xml"),
+        ("Medicago truncatula", "Medicago_truncatula_Postma_2011.xml"),
+        ("Noccaea caerulescens", "Noccaea_Pagès_2013.xml"),
+        ("Pisum sativum (a)", "Pisum_sativum_a_Pagès_2014.xml"),
+        ("Pisum sativum (b)", "Pisum_sativum_b_TSEGAYE_1995.xml"),
+        ("Pisum sativum (c)", "Pisum_sativum_c_TSEGAYE_1995.xml"),
+        ("Pisum sativum (d)", "Pisum_sativum_d_TSEGAYE_1995.xml"),
+        ("Triticum aestivum", "Triticum_aestivum_a_Bingham_2011.xml"),
+        ("Zea mays (1)", "Zea_mays_1_Leitner_2010.xml"),
+        ("Zea mays (2)", "Zea_mays_2_Pagès_2014.xml"),
+        ("Zea mays (3)", "Zea_mays_3_Postma_2011.xml"),
+        ("Zea mays (4)", "Zea_mays_4_Leitner_2014.xml"),
+        ("Zea mays (5)", "Zea_mays_5_Leitner_2014.xml"),
+        ("Zea mays (6)", "Zea_mays_6_Leitner_2014.xml"),
+        ("User Data", "xml-store"),
+    ]
     return parameter_names
-
-# Felix Maximilian Bauer, Dirk Norbert Baker, Mona Giraud, Juan Carlos Baca Cabrera, Jan Vanderborght, Guillaume Lobet, Andrea Schnepf, Root system architecture reorganization under decreasing soil phosphorus lowers root system conductance of Zea mays, Annals of Botany, 2024;, mcae198, https://doi.org/10.1093/aob/mcae198
 
 
 def get_seed_slider_names():  # see set_data, apply_sliders
-    """ return slider names as keys of dict and bounds as values"""
+    """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "First shoot borne root [day]": (1, 30),
-        "Shoot borne delay [day]": (1, 21),
-        "First basal root [day]": (1, 21),
-        "Basal root delay [day]": (1, 21),
-        "Maximal number of basal roots [1]": (0, 30),
-        "First tiller [day]": (1, 21),
-        "Tiller delay [day]": (1, 21),
-        "Maximal number of tillers [1]": (0, 7),
+        "First shoot borne root [day]": (1, 21, 0.1, "firstSB"),
+        "Shoot borne delay [day]": (2, 21, 0.1, "delaySB"),
+        "First basal root [day]": (1, 21, 0.1, "firstB"),
+        "Basal root delay [day]": (1, 21, 0.1, "delayB"),
+        "Maximal number of basal roots [1]": (0, 30, 1, "maxB"),
+        "First tiller [day]": (1, 21, 0.1, "firstTil"),
+        "Tiller delay [day]": (1, 21, 0.1, "delayTil"),
+        "Maximal number of tillers [1]": (0, 7, 1, "maxTil"),
     }
     return parameter_sliders
 
 
 def get_root_slider_names():  # see set_data, apply_sliders
-    """ return slider names as keys of dict and bounds as values"""
+    """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 200),
-        "Growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0., 90),
-        "Basal zone [cm]": (0.1, 20),
-        "Interlateral distance [cm]": (0.1, 20),
-        "Apical zone [cm]": (0.1, 20),
-        "Radius [cm]": (1.e-3, 0.25),
-        "Tropism strength [1]": (0, 6),
-        "Tropism tortuosity [1]": (0, 1),
+        "Maximal length [cm]": (1, 100, 0.1, "lmax"),
+        "Growth rate [cm/day]": (0.5, 10, 0.01, "r"),
+        "Initial angle [°]": (0.0, 90, 0.1, "theta"),
+        "Basal zone [cm]": (0.0, 20, 0.1, "lb"),
+        "Interlateral distance [cm]": (0.1, 20, 0.1, "ln"),
+        "Apical zone [cm]": (0.0, 20, 0.1, "la"),
+        "Radius [cm]": (1.0e-3, 0.25, 1e-3, "a"),
+        "Tropism strength [1]": (0.0, 6.0, 0.1, "tropismN"),
+        "Tropism tortuosity [1]": (0.0, 1.0, 0.01, "tropismS"),
     }
     return parameter_sliders
 
 
 def get_stem_slider_names():  # see set_data, apply_sliders
-    """ return slider names as keys of dict and bounds as values"""
+    """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 200),
-        "Growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0, 90),
-        "Phytomer distance [cm]": (0.1, 20),
-        "Radius [cm]": (1.e-3, 0.25),
-        "Nodal growth start [day]": (0, 21),
-        "Nodal growth time span [day]": (0, 21),
-        "Fixed Rotation [°]": (0, 180),
-        "Tropism strength [1]": (0, 6),
-        "Tropism tortuosity [1]": (0, 1),
+        "Maximal length [cm]": (1, 200, 0.1, "lmax"),
+        "Growth rate [cm/day]": (0.5, 10, 0.01, "r"),
+        "Initial angle [°]": (0.0, 90, 0.1, "theta"),
+        "Phytomer distance [cm]": (0.1, 20, 0.1, "ln"),
+        "Radius [cm]": (1.0e-3, 0.25, 1e-3, "a"),
+        "Nodal growth start [day]": (0, 21, 0.1, "delayNGStart"),
+        "Nodal growth time span [day]": (0, 21, 0.1, "delayNGEnd"),
+        "Fixed Rotation [°]": (0, 180, 0.1, "rotBeta"),
+        "Tropism strength [1]": (0, 6, 0.1, "tropismN"),
+        "Tropism tortuosity [1]": (0, 1, 0.01, "tropismS"),
     }
     return parameter_sliders
 
 
 def get_leaf_slider_names():  # see set_data, apply_sliders
-    """ return slider names as keys of dict and bounds as values"""
+    """return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "Maximal length [cm]": (1, 50),
-        "Growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0, 180),
-        "Petiole length [cm]": (0.1, 10),  # lb
-        "Fixed Rotation [°]": (0, 180),
-        "Tropism strength [1]": (0, 6),
-        "Tropism tortuosity [1]": (0, 1),
+        "Maximal length [cm]": (1, 50, 0.1, "lmax"),
+        "Growth rate [cm/day]": (0.5, 10, 0.01, "r"),
+        "Initial angle [°]": (0.0, 180, 0.1, "theta"),
+        "Petiole length [cm]": (0.1, 10, 0.1, "lb"),  # lb
+        "Fixed Rotation [°]": (0, 180, 0.1, "rotBeta"),
+        "Tropism strength [1]": (0, 6, 0.1, "tropismN"),
+        "Tropism tortuosity [1]": (0, 1, 0.01, "tropismS"),
     }
     return parameter_sliders
 
 
 def set_leaf_geometry(shapename, p):
-    """ shape name "Defined", "Long", "Round", "Maple", "Flower" """
+    """shape name "Defined", "Long", "Round", "Maple", "Flower" """
     if shapename == "Defined":
         return
     elif shapename == "Long":
         p.lb = 1  # length of leaf stem
         p.la, p.lmax = 3.5, 8.5
         p.areaMax = 10  # cm2, area reached when length = lmax
-        phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
+        phi = np.array([-90, -45, 0.0, 45, 90]) / 180.0 * np.pi
         l = np.array([3, 2.2, 1.7, 2, 3.5])  # distance from leaf center
     elif shapename == "Round":
         p.lb = 1  # length of leaf stem
         p.la, p.lmax = 5, 11
-        p.areaMax = 3.145 * (p.la ** 2)
-        phi = np.array([-90, -45, 0., 45, 67.5, 70, 90]) / 180. * np.pi
+        p.areaMax = 3.145 * (p.la**2)
+        phi = np.array([-90, -45, 0.0, 45, 67.5, 70, 90]) / 180.0 * np.pi
         l_ = (p.lmax - p.lb) / 2  # == p.la
         l = np.array([l_ for x_i in range(len(phi))])  # ([2, 2, 2, 4,1,1, 4]) #distance from leaf center
     elif shapename == "Maple":
         p.lb = 1  # length of leaf stem
         p.areaMax = 50
         p.la, p.lmax = 5, 11
-        phi = np.array([-90, -45, 0., 45, 67.5, 70, 90]) / 180. * np.pi
+        phi = np.array([-90, -45, 0.0, 45, 67.5, 70, 90]) / 180.0 * np.pi
         l = np.array([5, 2, 2, 4, 1, 1, 5])  # distance from leaf center
     elif shapename == "Flower":
         p.lb = 1  # length of leaf stem
         p.areaMax = 50
         p.la, p.lb, p.lmax = 5, 1, 11
-        phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
-        l = np.array([5., 1, 4.5, 1, 4, 1, 4.5, 1, 5])
+        phi = np.array([-90.0, -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180.0 * np.pi
+        l = np.array([5.0, 1, 4.5, 1, 4, 1, 4.5, 1, 5])
     p.createLeafRadialGeometry(phi, l, 100)
 
 
 def set_leaf_sliders(slider_values):
-    """ TODO cannot get the callbacks running in dash"""
+    """TODO cannot get the callbacks running in dash"""
     return slider_values
 
 
 def fix_dx(rrp, strp, lrp):
-    """ overrides the xml resolution settings to ensure smooth visualization """
+    """overrides the xml resolution settings to ensure smooth visualization"""
     for r in rrp:
         # print(r.subType, ":", r.dx, r.dxMin)
         r.dx = 0.5
-        r.dxMin = 1.e-6
+        r.dxMin = 1.0e-6
     for r in strp:
         # print(r.subType, ":", r.dx, r.dxMin)
         r.dx = 0.5
-        r.dxMin = 1.e-6
+        r.dxMin = 1.0e-6
         r.nodalGrowth = 1  # <------- !
         # r.initBeta = 0.
         # r.betaDev = 0.
@@ -149,114 +188,14 @@ def fix_dx(rrp, strp, lrp):
     for r in lrp:
         # print(r.subType, ":", r.dx, r.dxMin)
         r.dx = 0.25
-        r.dxMin = 1.e-6
-        r.initBeta = 0.
-        r.betaDev = 0.
+        r.dxMin = 1.0e-6
+        r.initBeta = 0.0
+        r.betaDev = 0.0
         r.rotBeta = 0.5
 
 
-def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_data):
-    """ simulates the plant xml parameter set with slider values """
-    print("simulate_plant()")
-    # 1. open base xml
-    fname = get_parameter_names()[int(plant_)][1]
-    plant = pb.Plant()
-    plant.readParameters("params/" + fname)
-    srp = plant.getOrganRandomParameter(pb.seed)
-    rrp = plant.getOrganRandomParameter(pb.root)
-    strp = plant.getOrganRandomParameter(pb.stem)
-    lrp = plant.getOrganRandomParameter(pb.leaf)
-    fix_dx(rrp, strp, lrp)
-    number_r = len(rrp[1:])  # number of root types
-    number_s = len(strp[1:])  # number of stem types
-    # 2. apply sliders to params
-    apply_sliders(srp[0], seed_data, rrp, root_data, strp, stem_data, lrp, leaf_data)
-    srp[0].seedPos.x = 0.  # override position (always)
-    srp[0].seedPos.y = 0.
-    srp[0].seedPos.z = -3.
-    srp[0].delayRC = 30.
-    srp[0].delayDefinitionShoot = 2
-    print("delaySB", srp[0].delaySB)
-    print("firstSB", srp[0].firstSB)
-    print("delayRC", srp[0].delayRC)
-    print("nC", srp[0].nC)
-    # 3. simulate
-    N = 25
-    t_ = np.linspace(0., time_slider, N + 1)
-    root_length = np.zeros((number_r, N))
-    stem_length = np.zeros((number_s, N))
-    leaf_length = np.zeros((N,))
-    plant.initialize()
-    rld_, z_ = [], []
-    for i, dt in enumerate(np.diff(t_)):
-        plant.simulate(dt)
-        ot = np.array(plant.getParameter("organType"))
-        st = np.array(plant.getParameter("subType"))
-        l = np.array(plant.getParameter("length"))
-        for j in range(number_r):
-            root_length[j, i] = np.sum(l[np.logical_and(st == j + 1, ot == pb.root)])
-        for j in range(number_s):
-            stem_length[j, i] = np.sum(l[np.logical_and(st == j + 1, ot == pb.stem)])
-        leaf_length[i] = np.sum(l[ot == pb.leaf])
-        if i in [4, 9, 14, 19, 24]:  # 4. make depth profiles
-            ana = pb.SegmentAnalyser(plant)
-            length = ana.getSummed("length")
-            max_ = ana.getMaxBounds().z
-            min_ = ana.getMinBounds().z
-            rld_.append(np.array(ana.distribution("length", max_, min_, int(np.round(max_ - min_)), True)))
-            z_.append(np.linspace(max_, min_, int(np.round(max_ - min_))))
-
-    # 5. make results store compatible (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
-    pd = vp.segs_to_polydata(plant, 1., ["subType", "organType", "radius", "creationTime"])  # poly-data, "radius",
-    tube = apply_tube_filter(pd)  # polydata + tube filter
-    vtk_data = vtk_polydata_to_dashvtk_dict(tube) # addd "points" and "polys"
-
-    from pympler import asizeof
-    print("***********************************************************************************************************************************")
-    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
-
-    cellData = pd.GetCellData()
-    cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
-    vtk_data["creationTime"] = encode_array(cT)  ################################################################### TODO somehow creationTime and Age are mixed up
-    for i in range(0, len(rld_)):
-        vtk_data[f"rld{i}"] = encode_array(rld_[i] / length)
-        vtk_data[f"z{i}"] = encode_array(z_[i])
-
-    print("***********************************************************************************************************************************")
-    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
-
-    # vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
-    organType = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))  #
-    vtk_data["subType"] = encode_array(numpy_support.vtk_to_numpy(cellData.GetArray("subType")) + 5 * (organType - np.ones(organType.shape) * 2))
-    vtk_data["radius"] = encode_array(numpy_support.vtk_to_numpy(cellData.GetArray("radius")))
-    vtk_data["time"] = encode_array(t_[1:])
-    for j in range(number_r):
-        vtk_data[f"root_length-{j+1}"] = encode_array(root_length[j,:])
-    for j in range(number_s):
-        vtk_data[f"stem_length-{j+1}"] = encode_array(stem_length[j,:])
-    vtk_data["leaf_length"] = encode_array(leaf_length[:])
-    # leaf geometry
-    leaf_points = vtk.vtkPoints()
-    leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
-    leafes = plant.getOrgans(pb.leaf)
-    for l in leafes:
-        vp.create_leaf_(l, leaf_points, leaf_polys)
-    pts_array = vtk.util.numpy_support.vtk_to_numpy(leaf_points.GetData()).astype(np.float32)
-    polys_data = vtk.util.numpy_support.vtk_to_numpy(leaf_polys.GetData())
-    vtk_data["leaf_points"] = encode_array(pts_array)
-    vtk_data["leaf_polys"] = encode_array(polys_data)
-    # general
-    vtk_data["number_r"] = number_r
-    vtk_data["number_s"] = number_s
-
-    print("***********************************************************************************************************************************")
-    print(asizeof.asizeof(vtk_data) / 1e6, "MB")
-
-    return vtk_data
-
-
 def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_data):
-    """ slider values to cplantbox random parameters """
+    """slider values to cplantbox random parameters"""
     # seed
     s = seed_data["seed"]
     srp.firstSB = s[0]
@@ -269,19 +208,19 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
     srp.maxTil = int(s[7] + 0.5)
     if not seed_data["shoot-checkbox"]:
         # print("no shootborne")
-        srp.firstSB = 1.e6  # disable
-        srp.delaySB = 1.e6
+        srp.firstSB = 1.0e6  # disable
+        srp.delaySB = 1.0e6
     if not seed_data["basal-checkbox"]:
-        srp.firstB = 1.e6  # disable
+        srp.firstB = 1.0e6  # disable
     if not seed_data["tillers-checkbox"]:
-        srp.firstTil = 1.e6  # disable
+        srp.firstTil = 1.0e6  # disable
     # root
     for i, p in enumerate(rrp[1:]):
         # print(p.name, p.subType)
         d = root_data[f"tab-{i+1}"]
         p.lmax = d[0]
         p.r = d[1]
-        p.theta = d[2] / 180.*np.pi
+        p.theta = d[2] / 180.0 * np.pi
         p.lb = d[3]
         p.ln = d[4]
         p.la = d[5]
@@ -295,12 +234,12 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         d = stem_data[f"tab-{i+1}"]
         p.lmax = d[0]
         p.r = d[1]
-        p.theta = d[2] / 180.*np.pi
+        p.theta = d[2] / 180.0 * np.pi
         p.ln = d[3]
         p.a = d[4]
         p.delayNGStart = d[5]
         p.delayNGEnd = d[5] + d[6]
-        p.rotBeta = d[7] / 180.
+        p.rotBeta = d[7] / 180.0
         p.tropismN = d[8]
         p.tropismS = d[9]
         p.tropismT = tropism_names[d[10]]
@@ -313,31 +252,39 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         p.r = d[2]
         p.theta = d[3] / 180 * np.pi
         p.lb = d[4]
-        p.rotBeta = d[5] / 180.
+        p.rotBeta = d[5] / 180.0
         p.tropismN = d[6]
         p.tropismS = d[7]
         p.tropismT = tropism_names[d[8]]
 
 
-def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
-    """ sets all store data from the xml file """
+def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data, xml_data):
+    """sets all store data from the xml file"""
     # print("set_data()")
     typename_data.clear()
     """ open xml """
-    fname = get_parameter_names()[int(plant_)][1]  # xml filename
+    fname = get_parameter_names()[int(plant_)][1]
     plant = pb.Plant()
-    plant.readParameters("params/" + fname)
+    if fname == "xml-store":
+        if "xml" not in xml_data:
+            print("Upload xml first")
+            return
+        print("xml data", type(xml_data["xml"]), len(xml_data["xml"]))
+        plant.readParameters(xml_data["xml"], "plant", False, True)  # read from string, with verbose output (for debugging)
+    else:
+        my_dir = os.path.dirname(os.path.abspath(__file__))  # still works, if started from other folder
+        plant.readParameters(my_dir + "/params/" + fname)
     """ seed """
     srp = plant.getOrganRandomParameter(pb.seed)
-    p = srp[0]
-    seed_data["seed"] = [
-        p.firstSB, p.delaySB,
-        p.firstB, p.delayB, p.maxB,
-        p.firstTil, p.delayTil, p.maxTil
-    ]
-    seed_data["shoot-checkbox"] = p.firstSB < 1.e3 and p.delaySB < 1.e3
-    seed_data["basal-checkbox"] = p.firstB < 1.e3 and p.delayB < 1.e3 and p.maxB > 0
-    seed_data["tillers-checkbox"] = p.firstTil < 1.e3 and p.delayTil < 1.e3 and p.maxTil > 0
+    p = srp[0]  # seed random parameter
+    # print("set_data", [p.firstSB, p.delaySB, p.firstB, p.delayB, p.maxB, p.firstTil, p.delayTil, p.maxTil])
+    seed_data["seed"] = [p.firstSB, p.delaySB, p.firstB, p.delayB, p.maxB, p.firstTil, p.delayTil, p.maxTil]
+    seed_data["shoot-checkbox"] = p.firstSB < 1.0e2 and p.delaySB < 1.0e3
+    seed_data["basal-checkbox"] = p.firstB < 1.0e2 and p.delayB < 1.0e2 and p.maxB > 0
+    seed_data["tillers-checkbox"] = p.firstTil < 1.0e2 and p.delayTil < 1.0e2 and p.maxTil > 0
+    if not seed_data["shoot-checkbox"]:  # defaults in case someone turns it on
+        seed_data["seed"][0] = 14
+        seed_data["seed"][1] = 7
     if not seed_data["basal-checkbox"]:  # defaults in case someone turns it on
         seed_data["seed"][2] = 7
         seed_data["seed"][3] = 7
@@ -346,69 +293,55 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
         seed_data["seed"][5] = 7
         seed_data["seed"][6] = 11
         seed_data["seed"][7] = 4
-    seed_data["simulationTime"] = p.simtime  # where to put it
+    seed_data["simulationTime"] = p.simtime
+    _warn_vector_against_sliders("Seed", seed_data["seed"], list(get_seed_slider_names().items()))
+    _warn_if_out_of_range("Seed", "Simulation time [day]", seed_data["simulationTime"], 1, 45)
     """ root """
     rrp = plant.getOrganRandomParameter(pb.root)
     typename_data["number_roottypes"] = len(rrp[1:])
     for i, p in enumerate(rrp[1:]):
         tropism_name = tropism_names_[int(p.tropismT)]
-        root_data[f"tab-{i+1}"] = [
-            p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.ln, p.la, p.a,
-            p.tropismN, p.tropismS, tropism_name , len(p.successorST) > 0
-        ]
+        root_data[f"tab-{i+1}"] = [p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.ln, p.la, p.a, p.tropismN, p.tropismS, tropism_name, len(p.successorST) > 0]
         typename_data[f"root tab-{i+1}"] = p.name
+        _warn_vector_against_sliders(f"Root tab-{i+1}", root_data[f"tab-{i+1}"], list(get_root_slider_names().items()))
     """ stem """
     strp = plant.getOrganRandomParameter(pb.stem)
     typename_data["number_stemtypes"] = len(strp[1:])
     for i, p in enumerate(strp[1:]):
         tropism_name = tropism_names_[int(p.tropismT)]
         stem_data[f"tab-{i+1}"] = [
-            p.lmax, p.r, p.theta / np.pi * 180, p.ln, p.a,
-            p.delayNGStart, p.delayNGEnd - p.delayNGStart, p.rotBeta * 180,
-            p.tropismN, p.tropismS, tropism_name, len(p.successorST) > 0  # for p.rotBeta = 1 == 180 ° (???)
+            p.lmax,
+            p.r,
+            p.theta / np.pi * 180,
+            p.ln,
+            p.a,
+            p.delayNGStart,
+            p.delayNGEnd - p.delayNGStart,
+            p.rotBeta * 180,
+            p.tropismN,
+            p.tropismS,
+            tropism_name,
+            len(p.successorST) > 0,  # for p.rotBeta = 1 == 180 ° (???)
         ]
         typename_data[f"stem tab-{i+1}"] = p.name
+        _warn_vector_against_sliders(f"Stem tab-{i+1}", stem_data[f"tab-{i+1}"], list(get_stem_slider_names().items()))
     """ leaf """
     lrp = plant.getOrganRandomParameter(pb.leaf)
     if len(lrp) > 1:
         p = lrp[1]
         tropism_name = tropism_names_[int(p.tropismT)]
-        leaf_data["leaf"] = [
-            "Defined",
-            p.lmax, p.r,
-            p.theta / np.pi * 180, p.lb, p.rotBeta * 180,
-            p.tropismN, p.tropismS, tropism_name
-        ]
+        leaf_data["leaf"] = ["Defined", p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.rotBeta * 180, p.tropismN, p.tropismS, tropism_name]
+        _warn_vector_against_sliders("Leaf", leaf_data["leaf"][1:], list(get_leaf_slider_names().items()))
     else:
         leaf_data["leaf"] = None
 
 
-def param_to_dict(orp):
-    """ todo """
-
-    print(orp.ogranType)
-    if organType == pb.root:
-        pass
-
-    elif organType == pb.root:
-        pass
-
-
-def debug_params(plant_):
-    """ todo """
-    fname = get_parameter_names()[int(plant_)][1]  # xml filename
-    plant = pb.Plant()
-    plant.readParameters("params/" + fname)
-    seedrp = plant.getOrganRandomParameter(pb.seed)
-    rrp = plant.getOrganRandomParameter(pb.root)
-    stemrp = plant.getOrganRandomParameter(pb.stem)
-    lrp = plant.getOrganRandomParameter(pb.leaf)
-    print()
-    print(fname)
-    print("Seed", len(seedrp), seedrp[0].name)
-    print("Root", len(rrp), rrp[1].name)
-    print("Stem", len(stemrp), stemrp[1].name)
-    print("Leaf", len(lrp), lrp[1].name)
-    print()
-    # print(rrp[1])
-
+def into_panel(content, range_=None):
+    """puts html content into a panel"""
+    if range_ is None:
+        range_ = range(len(content))
+    c_ = []
+    for i in range_:
+        c_.append(content[i])
+    panel = html.Div(c_, className="panel")
+    return panel

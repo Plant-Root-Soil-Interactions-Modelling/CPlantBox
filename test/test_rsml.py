@@ -1,4 +1,5 @@
 import sys; sys.path.append(".."); sys.path.append("../src/")
+import os
 import unittest
 
 import plantbox as pb
@@ -43,24 +44,34 @@ class TestOrganism(unittest.TestCase):
 
     def test_rsml_cplantbox(self):
         """ checks cplantbox rmsl writer functionality with Python rsml reader """
-        self.hand_example()
-        self.add_nodes()
-        self.human1.writeRSML("organism.rsml")
-        pl, props, funcs, _ = rsml_reader.read_rsml("organism.rsml")
-        pl2 = [[[0.0, 0.0, 0.0], [0.0, 0.0, 1.5], [0.0, -1.0, 1.6], [0.0, 1.0, 1.6]], [[0.0, -2.0, 2.5]], [[0.0, 1.7, 2.5]]]
-        self.assertEqual(pl, pl2, "rsml: polylines are not equal")
-        self.assertEqual(props["age"], [0, -4, -3] , "rsml: polylines are not equal")
+        fname = "organism.rsml"
+        try:
+            self.hand_example()
+            self.add_nodes()
+            self.human1.writeRSML(fname)
+            pl, props, funcs, _ = rsml_reader.read_rsml(fname)
+            pl2 = [[[0.0, 0.0, 0.0], [0.0, 0.0, 1.5], [0.0, -1.0, 1.6], [0.0, 1.0, 1.6]], [[0.0, -2.0, 2.5]], [[0.0, 1.7, 2.5]]]
+            self.assertEqual(pl, pl2, "rsml: polylines are not equal")
+            self.assertEqual(props["age"], [0, -4, -3] , "rsml: polylines are not equal")
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_rsml_vt(self):
         """ checks vtk_tools rmsl writer functionality, first reading with the Python rsml reader 
         TODO this is not a test, yet
         """
-        pd = vt.read_vtp("Dumux-VTP.vtp")
-        meta = rsml_writer.Metadata()
-        meta.unit = "m"
-        meta.add_property(rsml_writer.Property("radius [m]", "float", "m", None))
-        order_id = 5
-        vt.write_rsml("organism2.rsml", pd, order_id, meta)  # meta is optional now
+        fname = "organism2.rsml"
+        try:
+            pd = vt.read_vtp("Dumux-VTP.vtp")
+            meta = rsml_writer.Metadata()
+            meta.unit = "m"
+            meta.add_property(rsml_writer.Property("radius [m]", "float", "m", None))
+            order_id = 5
+            vt.write_rsml(fname, pd, order_id, meta)  # meta is optional now
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
 
 if __name__ == '__main__':

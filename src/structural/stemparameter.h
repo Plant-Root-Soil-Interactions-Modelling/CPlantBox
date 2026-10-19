@@ -78,7 +78,7 @@ public:
      */
     double lb = 0.; 	    ///< Basal zone [cm]
     double lbs = 0.;        ///< Standard deviation basal zone [cm]
-    double la = 0.;	    ///< Apical zone [cm];
+    double la = 0.;	        ///< Apical zone [cm];
     double las = 0.;    	///< Standard deviation apical zone [cm];
     double ln = 1; 		    ///< Inter-lateral distance [cm]
     double lns = 0.;    	///< Standard deviation inter-lateral distance [cm]
@@ -106,7 +106,7 @@ public:
 	double delayNGStarts = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
 	double delayNGEnd = 0.;		///< delay between stem creation and start of nodal growth [day]
 	double delayNGEnds = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
-
+	
     /*
      * Callback functions for the Stem (set up by the class StemSystem)
      */

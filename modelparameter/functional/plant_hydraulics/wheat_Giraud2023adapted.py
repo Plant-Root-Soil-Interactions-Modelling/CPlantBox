@@ -42,7 +42,7 @@ def setKrKx_xylem(TairC, RH, r): #inC
     kr_r2 = 7.9e-5  * hPa2cm  
     kr_r3 = 6.8e-5  * hPa2cm 
     l_kr = 0.8 #cm
-    r.setKr([[kr_r0,kr_r1,kr_r2,kr_r0],[kr_s,kr_s ],[kr_l]]) 
+    r.setKr([[kr_r0,kr_r1,kr_r2,kr_r0],[kr_s,kr_s ],[kr_l]], kr_length_=l_kr) 
     r.setKx([[kz_r0,kz_r1,kz_r2,kz_r0],[kz_s,kz_s ],[kz_l]])
     
     

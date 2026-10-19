@@ -1,5 +1,4 @@
 """plant example"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -9,7 +8,7 @@ import numpy as np
 plant = pb.Plant()
 
 # Open plant and root parameter from a file
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "0"  # 0 , CPlantBox_test_leaf_tree00
 
 # LEAFS smallPlant_mgiraud "manyleaves"

@@ -1,5 +1,4 @@
 import py_rootbox as rb
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
 

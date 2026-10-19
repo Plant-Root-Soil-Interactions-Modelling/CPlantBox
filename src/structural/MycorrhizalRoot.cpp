@@ -323,7 +323,7 @@ std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomPa
     return std::static_pointer_cast<MycorrhizalRootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
 }
 
-double MycorrhizalRoot::getParameter(std::string name) const {
+double MycorrhizalRoot::getParameter(std::string name, std::map<std::string, double> addParams) const {
     if (name == "primaryColonization")
     {
         double primaryColonizedLength = 0;
@@ -352,7 +352,7 @@ double MycorrhizalRoot::getParameter(std::string name) const {
         return colonizedLength;
     }
     if (name == "hyphalTreeIndex") {return hyphalTreeIndex;}
-    return Root::getParameter(name);
+    return Root::getParameter(name, addParams);
 }
 
 void MycorrhizalRoot::setColonization(int i, int colonization, double t)

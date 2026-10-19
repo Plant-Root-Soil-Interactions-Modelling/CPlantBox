@@ -6,12 +6,12 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 # This example loops through a number of SDFs (cylinder etc.) and saves/plots them together with the root system
-rs = pb.Plant()
+plant = pb.Plant()
 
 # Open plant and root parameter from a file
-path = path = "../../modelparameter/structural/rootsystem/"
-name = "Zea_mays_4_Leitner_2014"
-rs.readParameters(path + name + ".xml")
+path = pb.data_path() + "/structural/rootsystem/"
+filename = "Zea_mays_4_Leitner_2014"
+plant.readParameters(path + filename + ".xml")
 
 # 0. creates a cylindrical soil core with top radius 5 cm, bot radius 5 cm, height 50 cm, not square but circular
 soilcore = pb.SDF_PlantContainer(5, 5, 40, False)  # |\label{l2_2_1:cylinder}|
@@ -27,6 +27,7 @@ rotatedRhizotron = pb.SDF_RotateTranslate(rhizotron, alpha, 0, posA.times(-1))  
 # 2. A split pot experiment
 topBox = pb.SDF_PlantBox(22, 20, 5)  # |\label{l2_2_1:splitboxbegin}|
 sideBox = pb.SDF_PlantBox(10, 20, 35)
+
 left = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(-6, 0, -5))
 right = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(6, 0, -5))
 box_ = []
@@ -50,20 +51,17 @@ for i, y in enumerate(y_):
     rhizotubes_.append(tube[i])
 
 rhizotubes = pb.SDF_Union(rhizotubes_)  # |\label{l2_2_1:tubesmultend}|
-rhizoTube = pb.SDF_Difference(box, rhizotubes)  # |\label{l2_2_1:boxminustubes}|
+rhizoTube = pb.SDF_Difference(box, rhizotubes)  # |\label{l2_2_1:box_minustubes}|
 
-#
-number = 0
 containers = [soilcore, rotatedRhizotron, splitBox, rhizoTube]
-for container in containers: # |\label{l2_2_1:simulateallsetups}|
-    rs.setGeometry(container)
-    rs.initialize()
-    rs.simulate(45)  # days
+for i, container in enumerate(containers):  # |\label{l2_2_1:simulateallsetups}|
+    plant.setGeometry(container)
+    plant.initialize()
+    plant.simulate(45)  # days
 
     # Plot, using vtk
-    vp.plot_roots_and_container(rs, container)
+    vp.plot_roots_and_container(plant, container)
 
     # Export results (as vtp)
-    rs.write("results/root_system" + str(number) + ".vtp")
-    vp.write_container(container, "results/container_" + str(number) + ".vtp")  # you can pass , resolution=200 to increase resulting mesh quality, default is 100
-    number += 1 # |\label{l2_2_1:simulateallsetupsend}|
+    plant.write(f"results/root_system{i}.vtp")
+    vp.write_container(container, f"results/container_{i}.vtp")  # you can pass , resolution=200 to increase resulting mesh quality, default is 100 |\label{l2_2_1:simulateallsetupsend}|

@@ -1,0 +1,4 @@
+to create a high quality mpg, use in folder grassleaf_/ after running the example animation script
+
+ffmpeg -framerate 24 -i grassleaf_%d.jpg -c:v libx264 -pix_fmt yuv420p output.mp4
+

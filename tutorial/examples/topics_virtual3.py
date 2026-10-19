@@ -1,12 +1,11 @@
 """"more complex plant containers with obstacles"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 import numpy as np
 
 plant = pb.Plant()
-path = path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Moraesetal_2020"
 plant.readParameters(path + name + ".xml")
 

@@ -1,11 +1,11 @@
-"""postprocessing... plots results from 7.2 & 7.3
-a) Transpiration over time
-TODO
-"""
+"""plots results from 7.2_coupling & 7.3_coupling_fp into one plot"""
 
-import figure_style as st
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.integrate import cumulative_trapezoid
+
+from plantbox.visualisation import figure_style
+import plantbox.visualisation.vtk_plot as vp
 
 
 def sinusoidal(t):
@@ -13,52 +13,43 @@ def sinusoidal(t):
     return np.sin(2.0 * np.pi * np.array(t) - 0.5 * np.pi) + 1.0
 
 
-name = "Zeamays_synMRI_modified"
-trans = 250  # cm3 /day (sinusoidal) = mL/day
-sim_time = 7.5  # [day]
-dt = 360.0 / (24 * 3600)
+filename = "Zeamays_synMRI_modified"
+t_pot = 250  # cm3 day-1 (sinusoidal) = mL day-1
 
-N = round(sim_time / dt)
-ind = int((2.5 / sim_time * N) // 10)
+data72 = np.load("results/" + filename + ".npy")
+sim_times72_ = data72[0, :]
+t_act72_ = data72[1, :]
 
-# vp.plot_roots_and_soil_files("example72_{:06d}".format(ind), "pressure head", "subType")  # "water content", "pressure head"
+data73 = np.load("results/" + filename + "_fp.npy")
+sim_times73_ = data73[0, :]
+t_act73_ = data73[1, :]
+# q_soil73_ = data73[2, :]
 
-data72 = np.load("results/" + name + ".npy")
-data73 = np.load("results/" + name + "_fp.npy")
-
-# Transpiration over time #
-x1_ = data72[0, :]
-y1_ = data72[1, :]
-fig, ax = st.subplots21()
-ax1 = ax[0]
-ax1.plot(x1_, trans * sinusoidal(x1_), "k", label="Potential")
-ax1.plot(x1_, np.array(y1_), "g", label="Actual")
-ax1.set_xlabel("Time [d]")
-ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
-ax1.legend(loc="upper left")
-ax2 = ax1.twinx()
-ax2.plot(x1_, np.cumsum(np.array(y1_) * dt), "c--", label="Cumulative")
-ax2.set_ylabel("Cumulative transpirtation $[mL]$")
-ax2.legend(loc="upper right")
-plt.tight_layout()
-plt.savefig("results/figure7_2_trans.png")
-
-# Transpiration over time #
-x2_ = data73[0, :]
-y2_ = data73[1, :]
-z2_ = data73[2, :]
-ax1 = ax[1]
-ax1.plot(x2_, trans * sinusoidal(x2_), "k", label="Potential")
-ax1.plot(x2_, np.array(y2_), "g", label="Actual nonlinear")
-ax1.plot(x1_, np.array(y1_), "g:", label="Actual")
-ax1.set_xlabel("Time $[d]$")
-ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
-ax1.legend(loc="upper left")
-ax2 = ax1.twinx()
-ax2.plot(x2_, np.cumsum(np.array(y2_) * dt), "c", label="Cumulative nonlinear")
-ax2.plot(x1_, np.cumsum(np.array(y1_) * dt), "c:", label="Cumulative")
-ax2.set_ylabel("Cumulative transpirtation $[mL]$")
+# Transpiration over time
+fig, ax = figure_style.subplots12(1, 1)
+ax.plot(sim_times73_, t_pot * sinusoidal(sim_times73_), "k", label="Potential")
+ax.plot(sim_times73_, np.array(t_act73_), "g", label="Actual nonlinear")
+# ax.plot(sim_times73_, np.array(-q_soil73_), "b:", label="Actual nonlinear")
+ax.plot(sim_times72_, np.array(t_act72_), "g:", label="Actual")
+ax.set_xlabel("Time (day)")
+ax.set_ylabel("Transpiration (mL day$^{-1}$) per plant")
+ax.legend(loc="upper left")
+ax2 = ax.twinx()
+t_cum73 = cumulative_trapezoid(t_act73_, sim_times73_, initial=0)
+t_cum72 = cumulative_trapezoid(t_act72_, sim_times72_, initial=0)
+ax2.plot(sim_times73_, t_cum73, "c", label="Cumulative nonlinear")
+ax2.plot(sim_times72_, t_cum72, "c:", label="Cumulative")
+ax2.set_ylabel("Cumulative transpiration (mL)")
 ax2.legend(loc="upper right")
 plt.tight_layout()
 plt.savefig("results/figure7_3_trans.png")
 plt.show()
+
+print("Percentual change", t_cum73[-1]/t_cum72[-1])
+
+# sim_time = 7.5  # day
+# dt = 360.0 / (24 * 3600)
+# n_steps = round(sim_time / dt)
+# ind = int((2.5 / sim_time * n_steps) // 10) # only every 10th time step is written
+# vp.plot_roots_and_soil_files("example72_{:06d}".format(ind), "pressure head", "subType")  # "water content", "pressure head"
+# vp.plot_roots_and_soil_files("example73_{:06d}".format(ind), "pressure head", "subType")  # "water content", "pressure head"

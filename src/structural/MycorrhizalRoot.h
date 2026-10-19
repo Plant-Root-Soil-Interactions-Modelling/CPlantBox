@@ -32,7 +32,7 @@ public:
     void simulateHyphalGrowth(double dt, bool verbose);
     void simulateColonization(double dt, bool silence = false);
 
-    double getParameter(std::string name) const override;
+    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
 
     void addNode(Vector3d n, int id, double t, size_t index, bool shift) override;
     void createLateral(double ageLN, bool silence) override;

@@ -1,20 +1,20 @@
-import sys; sys.path.append("../../..");  sys.path.append("../../../src")
-
-import plantbox as pb
-from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver
-import plantbox.visualisation.vtk_plot as vp
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-""" 
-Benchmark M3.1 Single root: steady state vertical root solved with the Python/cpp Hybrid solver
-(does not work in parallel)
+"""
+Benchmark M3.1 Single root: steady state vertical root solved with the NEW PlantHydraulicModel and PlantHydraulicParameters classes
 """
 
+import matplotlib.pyplot as plt
+import numpy as np
+import plantbox as pb
+import plantbox.visualisation.vtk_plot as vp
+from plantbox.functional.PlantHydraulicModel import (
+    HydraulicModel_Doussan,
+    HydraulicModel_Meunier,
+)
+from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
+
 """ Parameters """
-g = 9.8065 * 100.*24.*3600.*24.*3600.  # gravitational acceleration [cm day-2]
-rho = 1.  # density of water, [g/cm^3]
+g = 9.8065 * 100.0 * 24.0 * 3600.0 * 24.0 * 3600.0  # gravitational acceleration [cm day-2]
+rho = 1.0  # density of water, [g/cm^3]
 L = 50  # length of single straight root [cm]
 a = 0.2  # radius [cm] <--------------------------------------------------------- ???
 kz0 = 4.32e-2  # [cm^3/day]
@@ -28,7 +28,7 @@ p0 = -1000  # dircichlet bc at top
 c = 2 * a * np.pi * kr / kz
 p_r = lambda z: p_s + d[0] * np.exp(np.sqrt(c) * z) + d[1] * np.exp(-np.sqrt(c) * z)  #
 
-AA = np.array([[1, 1], [np.sqrt(c) * np.exp(-np.sqrt(c) * L), -np.sqrt(c) * np.exp(np.sqrt(c) * L)] ])  # # Boundary conditions dirichlet top, neumann bot
+AA = np.array([[1, 1], [np.sqrt(c) * np.exp(-np.sqrt(c) * L), -np.sqrt(c) * np.exp(np.sqrt(c) * L)]])  # # Boundary conditions dirichlet top, neumann bot
 bb = np.array([p0 - p_s, -1])  # -rho * g
 d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
 
@@ -38,8 +38,8 @@ pr = list(map(p_r, za_))
 plt.plot(pr, za_)
 
 """ Numeric solution """
-N = 100  # resolution
-z_ = np.linspace(0., -L, N)
+N = 100  # resolutionlinearSystem
+z_ = np.linspace(0.0, -L, N)
 
 nodes, segs, radii = [], [], []
 for z in z_:
@@ -48,38 +48,53 @@ for s in range(0, N - 1):
     segs.append(pb.Vector2i(s, s + 1))
     radii.append(a)
 
+# print("dx", np.diff(z_))
+
 rs = pb.MappedSegments(nodes, segs, radii)
 soil_index = lambda x, y, z: 0
 rs.setSoilGrid(soil_index)
 
-r = XylemFluxPython(rs)
-r.setKr([kr0])
-r.setKx([kz0])
+params = PlantHydraulicParameters(rs)
+params.set_kr_const(kr0)
+params.set_kx_const(kz0)
 
-rx = r.solve_dirichlet(0., p0, p_s, [p_s], True)
-flux = r.collar_flux(0., rx, [p_s])
-print("Transpiration", flux, "cm3/day")
+# r = HydraulicModel_Doussan(rs, params, cached = False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
+r = HydraulicModel_Meunier(rs, params, cached=False)
+kx = params.getKx(0.0)
+# print(kx)
+rx = r.solve_dirichlet(0.0, p0, [p_s], cells=True)
+print("rx[0]", rx[0], "rx[1]", rx[1])
+print("rx", rx.shape)
+
+trans = r.get_transpiration(0.0, rx, [p_s], cells=True)
+print("Transpiration", trans, "cm3/day")
 plt.plot(rx, z_, "r*")
 
-#
-# check net fluxes
-#
+# get_collar_potential(t_act, rsx)
+
+# #
+# # check net fluxes
+# #
 # simtime = 0.
 # radial_fluxes = r.radial_fluxes(simtime, rx, [p_s])
 # axial_fluxes = r.axial_fluxes(simtime, rx, [p_s])
-# axial_i = np.array([r.axial_flux(i, simtime, rx, [p_s], [], True, True) for i in range(0, len(axial_fluxes))]) # same as axial_fluxes, but in node j
-# axial_j = np.array([r.axial_flux(i, simtime, rx, [p_s], [], True, False) for i in range(0, len(axial_fluxes))]) # same as axial_fluxes, but in node j
-# ana = pb.SegmentAnalyser(r.rs)
+# # axial_i = np.array([r.axial_flux(i, simtime, rx, [p_s], True, True) for i in range(0, len(axial_fluxes))])  # same as axial_fluxes, but in node j
+# # axial_j = np.array([r.axial_flux(i, simtime, rx, [p_s], True, False) for i in range(0, len(axial_fluxes))])  # same as axial_fluxes, but in node j
+# ana = pb.SegmentAnalyser(r.ms)
 # ana.addData("rx", rx)  # node data are converted to segment data
 # ana.addData("radial", radial_fluxes)
 # ana.addData("axial", axial_fluxes)
-# ana.addData("net", axial_i-axial_j-radial_fluxes)
+# # ana.addData("net", axial_i - axial_j - radial_fluxes)
 # pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "rx", "axial", "radial", "net"])
-# vp.plot_roots(pd, "net") # axial, radial, rx
+# vp.plot_roots(pd, "radial")  # axial, radial, rx
 
-rx = r.solve_neumann(0., -2., [p_s], True)
-flux = r.collar_flux(0., rx, [p_s])
-print("Transpiration", flux, "cm3/day")
+rx = r.solve_neumann(0.0, -2.0, [p_s], cells=True)  # or solve ...
+# rx = r.solve_dirichlet(0., -869.6363009384586, [p_s], cells = True)  # or solve .
+
+trans = r.get_transpiration(0.0, rx, [p_s], cells=True)
+trans2 = r.axial_fluxes(0.0, rx, [p_s], cells=True)
+
+print("Transpiration", trans, trans2[0], trans - trans2[0], "cm3/day")
 plt.plot(rx, z_, "g*")
 
 plt.xlabel("Xylem pressure (cm)")

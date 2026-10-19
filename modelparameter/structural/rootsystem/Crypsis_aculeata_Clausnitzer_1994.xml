@@ -1,8 +1,8 @@
 <plant>
     <seed name="Crypsis_aculeata_Clausnitzer_1994" subType="0">
-        <parameter name="delayDefinition" value="0"/>
+        <parameter name="delayDefinitionRoot" value="0"/>
         <!--method implemented to evaluate root lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
-        <parameter name="delayDefinitionShoot" value="0"/>
+        <parameter name="delayDefinitionShoot" value="2"/>
         <!--method implemented to evaluate shoot lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
         <parameter name="maxTil" value="0"/>
         <!--Maximal number of tillers [1]-->
@@ -251,4 +251,17 @@
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
     </root>
+    <reference>
+        <entry id="crypsis_aculeata_clausnitzer_1994">
+            <article>
+                <author>Clausnitzer, V.</author>
+                <author>Hopmans, J. W.</author>
+                <title>Simultaneous modeling of transient three-dimensional root growth and soil water flow</title>
+                <journal>Plant and Soil</journal>
+                <year>1994</year>
+                <volume>164</volume>
+                <pages>299-314</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

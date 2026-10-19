@@ -1,11 +1,10 @@
 """plant organ lengths over time"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "hello_world"
 
 plant = pb.Plant()

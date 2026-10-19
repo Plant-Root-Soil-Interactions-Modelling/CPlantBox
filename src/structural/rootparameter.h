@@ -70,10 +70,6 @@ public:
 
     void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
 
-    // DEPRICATED
-    void read(std::istream & cin); ///< reads a single root parameter set
-    void write(std::ostream & cout) const; ///< writes a single root parameter set
-
     void bindParameters() override; ///<sets up class introspection
 
     /*

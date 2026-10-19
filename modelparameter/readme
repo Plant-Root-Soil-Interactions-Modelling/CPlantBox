@@ -5,6 +5,8 @@ modelparameter/functional
 modelparameter/structural is divided into 
 plant/ for whole plant parameter sets, and
 rootsystem/ for rootsystem only parameters.
+Literature sources for the rootsystem parameter sets can be found in 
+https://figshare.com/collections/CRootBox_parameter_files/3745478
 
 modelparameter/functional contain additional parameter sets 
 (e.g. hydraulic parameters for soil and plants, climate data, ...)

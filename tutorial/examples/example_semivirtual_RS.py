@@ -1,14 +1,10 @@
-""""
+"""
     does not work
     
     not sure what it should do
-""""
+"""
 
 
-import sys
-sys.path.append("../../")
-sys.path.append("../../src/");
-sys.path.append("../../gui/viewer/");
 import plantbox as pb
 from plantbox.functional.xylem_flux import XylemFluxPython 
 import plantbox.visualisation.vtk_plot as vp
@@ -209,7 +205,7 @@ print('Total virtually added root length: ' + str(leng_tot_new))
 print('Missing root length: ' + str(misslen))
             
 #get RS params
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "virtual"
 
 # Initialize root systems

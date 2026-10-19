@@ -1,11 +1,10 @@
 """increase axial resolution (e.g. for animation)"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
 plant = pb.Plant()
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "fspm2023"  # "hello_world"
 plant.readParameters(path + name + ".xml")
 

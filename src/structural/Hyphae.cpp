@@ -303,7 +303,7 @@ std::shared_ptr<const HyphaeSpecificParameter> Hyphae::param() const
  * @copydoc Organ::getParameter
  * @param name  name of the parameter
  */
-double Hyphae::getParameter(std::string name) const
+double Hyphae::getParameter(std::string name, std::map<std::string, double> addParams) const
 {
     // specific parameters
         if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
@@ -318,7 +318,7 @@ double Hyphae::getParameter(std::string name) const
         if (name=="theta") { return param()->theta; } // Branching angle [rad]
         if (name=="mergePointID") { return mergePointID; } // Node ID where the anastomosis happened
         if (name=="hyphalTreeIndex") { return hyphalTreeIndex; } // Hyphal tree index [-]
-    return Organ::getParameter(name); // pass to base class
+    return Organ::getParameter(name, addParams); // pass to base class
 }
 
 /**

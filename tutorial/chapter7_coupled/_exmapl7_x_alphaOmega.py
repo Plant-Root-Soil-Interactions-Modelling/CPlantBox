@@ -32,32 +32,32 @@ def make_source(q, area):
 # Parameters    # |\label{l7xa:param}|
 depth = -100
 N = 100
-min_b = [-10.0, -10.0, depth]  # [cm]
-max_b = [10.0, 10.0, 0.0]  # [cm]
+box_min = [-10.0, -10.0, depth]  # cm
+box_max = [10.0, 10.0, 0.0]  # cm
 cell_number = [1, 1, N]  # ~[4*4*1] cm3
 
-kx = 10 * 4.32e-2  # axial conductivity [cm3/day]
-kr = 1.728e-4  # radial conductivity [1/day]
+kx = 10 * 4.32e-2  # axial conductivity (cm3 day-1)
+kr = 1.728e-4  # radial conductivity (1 day-1)
 
-path = "../../modelparameter/structural/rootsystem/"
-name = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
-trans = 1.5 * 400  # cm3 /day (sinusoidal) = mL/day
+path = pb.data_path() + "/structural/rootsystem/"
+name = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml
+trans = 1.5 * 400  # cm3 day-1 (sinusoidal) = mL day-1
 wilting_point = -15000  # cm
-rs_age = 60  # root system initial age [day]
+rs_age = 60  # root system initial age (day)
 
-loam = [0.01, 0.43, 0.0083, 1.2539, 2.272]  # jan paper
+loam = [0.01, 0.43, 0.0083, 1.2539, 2.272]
 sp = vg.Parameters(loam)  # needed for Perirhizal class
 vg.create_mfp_lookup(sp, wilting_point=-16000, n=1501)  # needed for Perirhizal class
-initial = -500  # cm (-330 )
+initial = -500  # cm
 
-sim_time = 7  # [day]
-dt = 3600.0 / (24 * 3600)  # [days]  # |\label{l7xa:param_end}|
+sim_time = 7  # days
+dt = 3600.0 / (24 * 3600)  # days  # |\label{l7xa:param_end}|
 
 # Initialize macroscopic soil model
 s = RichardsWrapper(RichardsSP())  # |\label{l7xa:soil}|
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, periodic=True)  # [cm]
-s.setHomogeneousIC(initial, False)  # [cm] False = matrix, True, = total potential
+s.createGrid(box_min, box_max, cell_number, periodic=True)  # cm
+s.setHomogeneousIC(initial, False)  # cm False = matrix, True, = total potential
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
 s.setVGParameters([loam])
@@ -69,13 +69,13 @@ s.setCriticalPressure(wilting_point)  # |\label{l7xa:soil_end}|
 plant = pb.MappedPlant()  # |\label{l7xa:soil_plant}|
 plant.enableExtraNode()
 plant.readParameters(path + name + ".xml")
-sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 0.5)  # |\label{l7xa:domain}|
+sdf = pb.SDF_PlantBox(np.inf, np.inf, box_max[2] - box_min[2] - 0.5)  # |\label{l7xa:domain}|
 plant.setGeometry(sdf)  # |\label{l7xa:soil_plant_end}|
-plant.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), False, False)  # needed for Perirhizal class
+plant.setRectangularGrid(pb.Vector3d(box_min), pb.Vector3d(box_max), pb.Vector3d(cell_number), False, False)  # needed for Perirhizal class
 
 # root hydraulic properties
 params = PlantHydraulicParameters()  # |\label{l7xa:hydraulic}|
-params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreur2012")
+params.read_parameters(pb.data_path() + "/functional/plant_hydraulics/couvreur2012")
 # params.set_kr_const(kr)
 # params.set_kx_const(kx)
 # params.plot_conductivities(True) # |\label{l7xa:plot_conductivities}|
@@ -194,21 +194,21 @@ for i in range(0, N):  # |\label{l7xa:loop}|
     y_.append(-np.nansum(q) * area)  # |\label{l7xa:results}|
 
     n = round(float(i) / float(N) * 100.0)  # |\label{l7xa:progress}|
-    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], potential {:g}, actual {:g}; [{:g}, {:g}] cm soil at {:g} days".format(tp * area, np.nansum(q) * area, np.min(h_bs), np.max(h_bs), s.simTime))
+    print("[" + "".join(["*"]) * n + "".join([" "]) * (100 - n) + "], potential {:g}, actual {:g}; [{:g}, {:g}] cm soil at {:g} days".format(tp * area, np.nansum(q) * area, np.min(h_bs), np.max(h_bs), s.sim_time))
 
     print("wall times:", (start_time_ao - start_time_soil) / (start_time_ao - final_time), (start_time_soil - final_time) / (start_time_ao - final_time))
 
     if i % 10 == 0:  # |\label{l7xa:write}|
-        vp.write_soil("results/example72_{:06d}".format(i // 10), s, min_b, max_b, cell_number)
+        vp.write_soil("results/example72_{:06d}".format(i // 10), s, box_min, box_max, cell_number)
         vp.write_plant("results/example72_{:06d}".format(i // 10), hm.ms.plant())  # |\label{l7xa:write_end}|
-        # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number) # BETTER output
+        # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(box_min), np.array(box_max), cell_number) # BETTER output
 
     t += dt  # [day]
 
 print("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l7xa:timing}|
 
 # VTK visualisation    # |\label{l7xa:plots}|
-# vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number)
+# vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(box_min), np.array(box_max), cell_number)
 
 # Transpiration over time
 fig, ax1 = plt.subplots()

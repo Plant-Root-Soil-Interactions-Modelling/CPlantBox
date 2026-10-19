@@ -1,2 +1,4 @@
 *.vtk
 *.vtu
+*.npy
+*.npz

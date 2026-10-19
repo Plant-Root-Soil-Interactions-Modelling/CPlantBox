@@ -1,5 +1,4 @@
 """small example in a container"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import numpy as np
 import plantbox as pb
@@ -10,7 +9,7 @@ rs = pb.Plant()
 
 
 # Open plant and root parameter from a file
-path = path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Zea_mays_4_Leitner_2014"
 rs.readParameters(path + name + ".xml")
 

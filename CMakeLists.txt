@@ -1,19 +1,54 @@
-cmake_minimum_required (VERSION 3.5)
-project (CPlantBox LANGUAGES CXX)
+cmake_minimum_required (VERSION 3.12)
+project (CPlantBox VERSION 2.1.0 LANGUAGES CXX)
+
+# Initialize git submodules if not already done
+find_package(Git QUIET)
+if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        RESULT_VARIABLE GIT_SUBMODULE_RESULT
+    )
+    if(NOT GIT_SUBMODULE_RESULT EQUAL 0)
+        message(WARNING "git submodule update --init --recursive failed (exit code ${GIT_SUBMODULE_RESULT})")
+    endif()
+endif()
+
+option(PIAFMUNCH "Enable optional PIAFMUNCH code" ON)
+if(SKBUILD)
+    set(CPB_NATIVE_CPU_TUNING_DEFAULT OFF)
+else()
+    set(CPB_NATIVE_CPU_TUNING_DEFAULT ON)
+endif()
+option(CPB_NATIVE_CPU_TUNING "Enable native CPU tuning flags such as -march=native" ${CPB_NATIVE_CPU_TUNING_DEFAULT})
 
 # set compiler options
-set(RELEASE_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare ")
-set(DEBUG_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare ")
-set(RELEASE_OPTS "-std=c++17 -fno-strict-aliasing -fstrict-overflow -fno-finite-math-only -O3 -march=native -funroll-loops -g0") # -flto
-set(CMAKE_CXX_FLAGS_RELEASE "${RELEASE_WARNING_OPTS} ${RELEASE_OPTS}")
-set(CMAKE_CXX_FLAGS_DEBUG "-std=c++17 -O0 -ggdb -Wall")
-# set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto")
-# set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -flto")
+if(MSVC)
+    # The GCC-style flags below are not understood by MSVC; CMake's default
+    # per-configuration flags (/O2 for Release etc.) are appropriate, and the
+    # language level is set through CMAKE_CXX_STANDARD.
+    # /bigobj: the pybind11 module exceeds the default COFF section limit.
+    add_compile_options(/bigobj)
+    # _USE_MATH_DEFINES: expose M_PI and friends from <cmath>.
+    # NOMINMAX: keep windows.h from defining min/max macros.
+    add_compile_definitions(_USE_MATH_DEFINES NOMINMAX)
+else()
+    set(RELEASE_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare  ")
+    set(DEBUG_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare ")
+    set(RELEASE_OPTS "-std=c++17 -fno-strict-aliasing -fstrict-overflow -fno-finite-math-only -O3 -funroll-loops -g0 ")
+    if(CPB_NATIVE_CPU_TUNING)
+        set(RELEASE_OPTS "${RELEASE_OPTS} -march=native")
+    endif()
+    set(CMAKE_CXX_FLAGS_RELEASE "${RELEASE_WARNING_OPTS} ${RELEASE_OPTS}")
+    set(CMAKE_CXX_FLAGS_DEBUG "-std=c++17 -O0 -ggdb -Wall")
+endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# set default build type to release Release, Debug, RelWithDebInfo 
-set(CMAKE_BUILD_TYPE Release)
+# set default build type to release Release, Debug, RelWithDebInfo
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
+endif()
 
 # add subdirectories
 add_subdirectory(src)

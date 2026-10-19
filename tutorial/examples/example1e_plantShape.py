@@ -5,7 +5,6 @@ adapted from "example_plant_anim", "example10_nodalGrowth"
 We present here parameters specific for leaves and stems
 
 """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -18,15 +17,15 @@ adaptSeed = False
 adaptLeaf = False
 adaptStem = False
 leafRadial = False  # radial or not
-anim = False
-zoomLeafShape = True
+anim = True
+zoomLeafShape = False
 export = False
-getImage = True
+getImage = False
 
 # #create plant:
 plant = pb.Plant()
 # Open plant and root parameter from a file
-path = path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "example1e"
 plant.readParameters(path + name + ".xml")
 
@@ -122,13 +121,13 @@ if anim:
     anim.min = min_
     anim.max = max_
     anim.res = [1, 1, 1]
-    anim.file = "results/example_plant"
-    anim.avi_name = "results/example_"
+    #anim.file = "results/example_plant"
+    #anim.avi_name = "results/example_"
     anim.plant = True
     anim.start()
     for i in range(0, N_):
         plant.simulate(dt, False)
-        anim.root_name = "subType"
+        #anim.root_name = "subType"
         anim.update()
 
 if getImage:
@@ -169,5 +168,6 @@ if getImage:
     plt.xlim([-a - 1, a + 1])
     plt.axis('scaled')
     plt.show()
+
 
 

@@ -34,7 +34,7 @@ public:
 
     int organType() const override { return Organism::ot_hyphae; }; ///< returns the organs type
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
-    double getParameter(std::string name) const override;
+    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
     void createLateral(double dt_, bool verbose); ///< creates a lateral hyphae
     std::string toString() const override;
 

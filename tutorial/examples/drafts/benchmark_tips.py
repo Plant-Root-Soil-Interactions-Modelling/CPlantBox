@@ -13,8 +13,6 @@ TODO this is not working...
 #
 # computes in parallel to enable a lot of runs
 #
-import sys
-sys.path.append("../../..")
 import plantbox as pb
 
 from multiprocessing import Pool
@@ -35,7 +33,7 @@ def simOnce(name, simtime, lbins, lrange, zbins, zrange, dx, dt):
     
     # Simulation
     rs = pb.RootSystem() 
-    path = "../../../modelparameter/rootsystem/"
+    path = pb.data_path() + "/structural/rootsystem/"
     rs.readParameters(path + name + ".xml")
     for p in rs.getRootRandomParameter():
         p.dx = dx

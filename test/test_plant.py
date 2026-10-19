@@ -1,4 +1,8 @@
-import sys; sys.path.append(".."); sys.path.append("../src/")
+import sys
+
+sys.path.append("..")
+sys.path.append("../src/")
+import os
 import unittest
 
 import plantbox as pb
@@ -7,18 +11,35 @@ from plantbox.rsml.rsml_reader import *
 path = "../modelparameter/structural/plant/"
 
 
-def rootLength(t, r, k):  # root length at a certain age
-    return k * (1 - np.exp(-r * t / k))
+class TestPlant(unittest.TestCase):  # |\label{test_example:TestClass}|
 
+    def test_CPlantBox(self):  # |\label{test_example:TestClass_method1}|
+        """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
+        p = pb.Plant()
+        p.readParameters(path + "Heliantus_Pages_2013.xml", fromFile=True, verbose=False)
 
-class TestPlant(unittest.TestCase):
+        seeds = p.getOrganRandomParameter(pb.OrganTypes.seed)
+        roots = p.getOrganRandomParameter(pb.OrganTypes.root)
+        stems = p.getOrganRandomParameter(pb.OrganTypes.stem)
+        leafs = p.getOrganRandomParameter(pb.OrganTypes.leaf)
+
+        self.assertEqual([len(seeds), len(roots[1:]), len(stems[1:]), len(leafs[1:])], [1, 3, 3, 1], "test_CPlantBox: read wrong number of random parameter from xml")  # |\label{test_example:TestClass_method1_assert}|
+
+        p.initialize(False)
+        p.simulate(76, False)
+        fname = "Heliantus_Pages_2013.vtp"
+        try:
+            p.write(fname)
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_copy(self):
-        """ checks if the root system can be copied, and if randomness works """
+        """checks if the root system can be copied, and if randomness works"""
         seed = 110  # random seed
         name = "Brassica_oleracea_Vansteenkiste_2014"
         rs = pb.Plant()  # the original
-        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml", verbose = False)
+        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml", verbose=False)
         rs.setSeed(seed)
         rs.initialize(False)
         rs2 = rs.copy()  # copy root system
@@ -31,51 +52,32 @@ class TestPlant(unittest.TestCase):
         n2 = rs.rand()
         self.assertEqual(rs2.rand(), n2, "copy: simulation is not deterministic")
         rs3 = pb.Plant()  # rebuild same
-        rs3.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml", verbose = False)
+        rs3.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml", verbose=False)
         rs3.setSeed(seed)
         rs3.initialize(False)
         self.assertEqual(rs3.rand(), n1, "copy: random generator seed was not copied")
         rs3.simulate(10)
         self.assertEqual(rs3.rand(), n2, "copy: simulation is not deterministic")
 
-    def test_CPlantBox(self):
-        """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
-        p = pb.Plant()
-        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
-
-        seeds = p.getOrganRandomParameter(pb.OrganTypes.seed)
-        roots = p.getOrganRandomParameter(pb.OrganTypes.root)
-        stems = p.getOrganRandomParameter(pb.OrganTypes.stem)
-        leafs = p.getOrganRandomParameter(pb.OrganTypes.leaf)
-#         for p_ in seeds:
-#             print(p_)
-#         for p_ in roots[1:]:
-#             print(p_)
-#         for p_ in stems[1:]:
-#             print(p_)
-#         for p_ in leafs[1:]:
-#             print(p_)
-
-        self.assertEqual([len(seeds), len(roots[1:]), len(stems[1:]), len(leafs[1:])], [1, 3, 3, 1],
-                         "test_CPlantBox: read wrong number of random parameter from xml")
-
-        p.initialize(False)
-        p.simulate(76, False)
-        p.write("morningglory.vtp")
-
     def test_CPlantBox_analysis(self):
         """tests the functions needed by CPlantBox_analysis defined in CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
+        p.readParameters(path + "Heliantus_Pages_2013.xml", fromFile=True, verbose=False)
+
         p.initialize(False)
         p.simulate(76)
         ana = pb.SegmentAnalyser(p)
-        ana.write("morningglory_ama.vtp")
+        fname = "Heliantus_Pages_2013_ana.vtp"
+        try:
+            ana.write(fname)
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_convert(self):
         """tests the functions needed by the convert function of CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
+        p.readParameters(path + "Heliantus_Pages_2013.xml", fromFile=True, verbose=False)
         p.initialize(False)
         p.simulate(76)
         nodes = np.array([np.array(a) / 100 for a in p.getNodes()])  # convert to numpy array, and from cm to m
@@ -84,61 +86,74 @@ class TestPlant(unittest.TestCase):
         # print(rseg.shape)
         sseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.stem)])  # stem system segments
         # print(sseg.shape)
-#         lseg = v2ai(plant.getNodesOrganType())
-        l = np.array([ o.getParameter("organType") for o in p.getSegmentOrigins()])
+        #         lseg = v2ai(plant.getNodesOrganType())
+        l = np.array([o.getParameter("organType") for o in p.getSegmentOrigins()])
         # print(l.shape)
-#         plant_ana = pb.SegmentAnalyser(p)
-#         node_connection_o = seg2a(p.getSegments(15)) # plant segments
+        #         plant_ana = pb.SegmentAnalyser(p)
+        #         node_connection_o = seg2a(p.getSegments(15)) # plant segments
         pass
 
     def test_CPlantBox_step(self):
         """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
+        time = 76
         p1 = pb.MappedPlant(2)
-        p1.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
-        p1.initialize(verbose = False, stochastic = False)
-        p1.simulate(76, False)
-        p1.write("test_CPlantBox_1step.vtp")
+        p1.readParameters(path + "fspm2023.xml", fromFile=True, verbose=False)  # use file with only growth probability of 1
 
-        p2 = pb.MappedPlant(2)
-        p2.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
-        p2.initialize(verbose = False, stochastic = False)
-        for i in range(100):
-            p2.simulate(76 / 100, False)
-        p2.write("test_CPlantBox_100step.vtp")
-        root1 = p1.getOrgans(2)
-        root2 = p2.getOrgans(2)
-        self.assertAlmostEqual(len(root1), len(root2), 10, "number of root organs do not agree")
-        root1 = p1.getOrgans(3)
-        root2 = p2.getOrgans(3)
-        self.assertAlmostEqual(len(root1), len(root2), 10, "number of stem organs do not agree")
-        root1 = p1.getOrgans(4)
-        root2 = p2.getOrgans(4)
-        self.assertAlmostEqual(len(root1), len(root2), 10, "number of leaf organs do not agree")
+        p1.initialize(verbose=False)  # , stochastic = False)
+        p1.simulate(time, False)
+        fname1 = "test_CPlantBox_1step.vtp"
+        fname2 = "test_CPlantBox_100step.vtp"
+        try:
+            p1.write(fname1)
+
+            p2 = pb.MappedPlant(2)
+            p2.readParameters(path + "fspm2023.xml", fromFile=True, verbose=False)
+            p2.initialize(verbose=False)  # , stochastic = False)
+            for i in range(100):
+                p2.simulate(time / 100, False)
+            p2.write(fname2)
+            root1 = p1.getOrgans(2)
+            root2 = p2.getOrgans(2)
+            self.assertAlmostEqual(len(root1), len(root2), 10, "number of root organs do not agree")
+            root1 = p1.getOrgans(3)
+            root2 = p2.getOrgans(3)
+            self.assertAlmostEqual(len(root1), len(root2), 10, "number of stem organs do not agree")
+            root1 = p1.getOrgans(4)
+            root2 = p2.getOrgans(4)
+            self.assertAlmostEqual(len(root1), len(root2), 10, "number of leaf organs do not agree")
+        finally:
+            for fname in [fname1, fname2]:
+                if os.path.exists(fname):
+                    os.remove(fname)
 
     def test_DB_delay(self):
         p = pb.MappedPlant(2)
-        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True, verbose = False)
+        p.readParameters(path + "Heliantus_Pages_2013.xml", fromFile=True, verbose=False)
 
-        p.initializeDB()
+        srp = p.getOrganRandomParameter(1)[0]
         time = 76
+        srp.delayDefinitionRoot = pb.DelayDefinition.dd_time_lat
 
         rrp = p.getOrganRandomParameter(pb.root)[1]
         rrp.ldelay = 3
-        rrp.ldelays = 0.
+        rrp.ldelays = 0.0
         # print(rrp)
         p.setOrganRandomParameter(rrp)
 
         rrp = p.getOrganRandomParameter(pb.root)[2]
         rrp.ldelay = 5
-        rrp.ldelays = 0.
+        rrp.ldelays = 0.0
         # print(rrp)
         p.setOrganRandomParameter(rrp)
 
         rrp = p.getOrganRandomParameter(pb.root)[3]
         rrp.ldelay = 5
-        rrp.ldelays = 0.
+        rrp.ldelays = 0.0
         # print(rrp)
         p.setOrganRandomParameter(rrp)
+
+        p.initialize()
+
         tl, rl = [], []
         p.simulate(time, False)
         for i, r in enumerate(p.getOrgans(pb.root)):
@@ -152,18 +167,23 @@ class TestPlant(unittest.TestCase):
 
     def test_missing_laterals(self):
         """can CPB handle it when no lateral appear at a branching point
-            because of probabilistic branching?
-            currently, just tests that cpb does not crash
+        because of probabilistic branching?
+        currently, just tests that cpb does not crash
         """
         p = pb.MappedPlant(2)
-        p.readParameters(path + "test_missing_laterals.xml", fromFile = True, verbose = False)
+        p.readParameters(path + "test_missing_laterals.xml", fromFile=True, verbose=False)
         p.initialize(False)
         time = 76
         p.simulate(time, False)
-        p.write("test_missing_laterals.vtp")
+        fname = "test_missing_laterals.vtp"
+        try:
+            p.write(fname)
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # MANY tests missing !!!
 
     unittest.main()

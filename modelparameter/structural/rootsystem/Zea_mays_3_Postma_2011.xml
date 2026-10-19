@@ -1,8 +1,8 @@
 <plant>
     <seed name="Zea_mays_3_Postma_2011" subType="0">
-        <parameter name="delayDefinition" value="0"/>
+        <parameter name="delayDefinitionRoot" value="0"/>
         <!--method implemented to evaluate root lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
-        <parameter name="delayDefinitionShoot" value="0"/>
+        <parameter name="delayDefinitionShoot" value="2"/>
         <!--method implemented to evaluate shoot lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
         <parameter name="maxTil" value="0"/>
         <!--Maximal number of tillers [1]-->
@@ -249,4 +249,17 @@
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2, 3" organType="2, 2" percentage="0.5, 0.5"/>
         <!--Sub type of lateral -->
     </root>
+    <reference>
+        <entry id="zea_mays_3_postma_2011">
+            <article>
+                <author>Postma, J. A.</author>
+                <author>Lynch, J. P.</author>
+                <title>Root cortical aerenchyma enhances the growth of maize on soils with suboptimal availability of nitrogen, phosphorus, and potassium</title>
+                <journal>Plant Physiology</journal>
+                <year>2011</year>
+                <volume>156</volume>
+                <pages>1190-1201</pages>
+            </article>
+        </entry>
+    </reference>
 </plant>

@@ -1,5 +1,4 @@
 """ something on PlantVisualiser, cpbvis """
-import sys; sys.path.append("../.."); sys.path.append("../../src/"); sys.path.append("./"); sys.path.append("./src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -7,7 +6,7 @@ import plantbox.visualisation.vis_tools as cpbvis
 
 import numpy as np
 
-filename = "../../modelparameter/structural/plant/fspm2023.xml"
+filename = pb.data_path() + "/structural/plant/fspm2023.xml"
 output = "./results/vis_plant"
 
 time = 28

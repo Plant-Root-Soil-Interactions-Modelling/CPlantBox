@@ -607,34 +607,24 @@ std::vector<double> MappedSegments::getEffectiveRadii() {
 
 
 /**
- * initialization of mappedplant
+ * Initialization of mappedplant
  * @param verbose 		indicates if status is written to the console (cout) (default = false)
  * @param LB		 	implement length-based waiting time before growth (true) of laterals or delay-based (false)? (default = true)
  *
  *
  * use setStochastic(stochastic); to turn on or off stochasticity
  */
-void MappedPlant::initialize_(bool verbose, bool lengthBased) {
+void MappedPlant::initialize(bool verbose) {
 
     reset(); // just in case (Plant::reset()) (careful, MappedPlant cannot reset, yet)
 	auto stemP = getOrganRandomParameter(Organism::ot_stem);
 	bool plantBox = stemP.size()>1; // prototype + a real parameter definition
 	if ((extraNode == -1) && (plantBox)) {
-		disableExtraNode(); // no meed for additional node to create the artificial stem
+		disableExtraNode(); // no need for additional node to create the artificial stem
 	} else {
 	    enableExtraNode();
 	}
-	if (lengthBased){
-	    if(verbose) {
-	        std::cout << "MappedPlant::initializeLB \n" << std::flush;
-	    }
-	    Plant::initializeLB(verbose); // initializes plant
-	} else {
-        if(verbose) {
-            std::cout << "MappedPlant::initializeDB \n" << std::flush;
-        }
-	    Plant::initializeDB(verbose); // initializes plant
-	}
+	Plant::initialize(verbose);
 	if (extraNode==1) { // inserts a special seed segment (for root system only hydraulic simualtions)
         auto initial_nodes = this->getNodes();
         auto initial_ncts = this->getNodeCTs();

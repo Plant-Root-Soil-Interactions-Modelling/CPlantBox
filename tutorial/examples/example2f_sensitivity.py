@@ -1,5 +1,4 @@
 """sensitivity analysis: impact of insertion angle on root tip distribution"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 
@@ -20,7 +19,7 @@ def set_all_sd(rs, s):
 
 
 # Parameters
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Zea_mays_1_Leitner_2010"
 simtime = 25
 N = 25  # resolution of paramter
@@ -37,7 +36,7 @@ def simulate(i):
     # 1. vary parameter
     p1.theta = theta0_[i]
     # 2. simulate
-    rs.initializeLB(False)
+    rs.initialize(False)
     rs.simulate(simtime, False)
     # 3. calculate target
     depth = 0.  # mean depth

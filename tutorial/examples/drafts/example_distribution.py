@@ -1,7 +1,5 @@
 """small example"""
-import sys
 base = "../../../.."
-sys.path.append(base); sys.path.append(base+"/src/python_modules")
 import plantbox as pb
 import vtk_plot as vp
 
@@ -11,7 +9,7 @@ import matplotlib.pyplot as plt
 rs = pb.RootSystem()
 
 # Open plant and root parameter from a file
-path = base+"/modelparameter/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 
