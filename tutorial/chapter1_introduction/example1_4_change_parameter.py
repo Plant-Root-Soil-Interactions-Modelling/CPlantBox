@@ -26,6 +26,7 @@ root[2].dx = 0.5  # Change axial resolution dx (cm) |\label{l14:change_params_dx
 root[2].dxMin = 0.1  # Change minimal axial resolution dxMin (cm)
 
 print(root[1])  # Print new root parameters |\label{l14:print_new}|
+plant.writeParameters(path + name + "_mod.xml")  # Save modified Parameters |\label{l14:save}|
 
 plant.initialize()  # Initialize |\label{l14:initialize}|
 sim_time = 40  # days
