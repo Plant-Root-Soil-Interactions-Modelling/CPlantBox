@@ -17,6 +17,7 @@ import plantbox.functional.van_genuchten as vg
 from plantbox import MappedSegments, Perirhizal
 
 
+
 class PerirhizalPython(Perirhizal):
     """
     Helper class for modelling the perirhizal zone
@@ -93,7 +94,7 @@ class PerirhizalPython(Perirhizal):
         self.sp = vg.Parameters(soil)
         vg.create_mfp_lookup(self.sp) # does this have to be repeated here?
     
-    def open_lookup_solutes_simp_global(self, filename):
+    def open_lookup_sr_solutes_simp_global(self, filename):
         """opens a look-up table from a file to quickly find soil root solute concentrations in the steady state case"""
         npzfile = np.load(filename + ".npz")
         vg.open_mfp_global_lookup(filename + "vg")
@@ -105,7 +106,7 @@ class PerirhizalPython(Perirhizal):
         vg.create_mfp_lookup(self.sp) # does this have to be repeated here?
     
     
-    def open_lookup_solutes(self, filename):
+    def open_lookup_sr_solutes(self, filename):
         """opens an additional look-up table from a file to quickly find soil root solute concentrations in the steady rate case.
         This lookup table is quite large (4 dimensions), consider using the simplified version open_lookup_solutes_simplified instead"""
         npzfile_sr = np.load(filename + ".npz")
@@ -131,7 +132,7 @@ class PerirhizalPython(Perirhizal):
         self.sp = vg.Parameters(soil)
         vg.create_mfp_lookup(self.sp) # does this have to be repeated here?
         
-    def soil_root_interface_potentials(self, rx, sx, inner_kr, rho):
+    def soil_root_interface_potentials(self, rx, sx, inner_kr, rho, vg_params = None):
         """
         finds matric potentials at the soil root interface for as all segments
         uses a look up tables if present (see create_lookup, and open_lookup)
@@ -140,25 +141,48 @@ class PerirhizalPython(Perirhizal):
         sx             bulk soil matric potential [cm]
         inner_kr       root radius times hydraulic conductivity [cm/day]
         rho            geometry factor [1] (outer_radius / inner_radius)
+        vg_params      (i,5) or (1,5) size np.array, optionally give arbitrary vg params. Note: Only a global lookup table can be used for them.
         """
-        assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length"
+        assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length. File Perirhizal.py"
         
-        #for i in range(len(rx)):
-        #    if rx[i] < -15989:
-        #        rx[i] = -15989
-        #    if sx[i] > -1:
-        #        sx[i] = -1
-        np.clip(rx,-15989,-1)
-        np.clip(sx,-15989,-1)
+        different_vg = False #should the vg parameterisation of Perirhizal.py be substituted?
+        multiple_vg = False #are multiple van Genuchten parameterisations used?
         
-        if self.lookup_table:
-            rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
-        else:
-            if self.lookup_table_global:
-                rsx = self.soil_root_interface_potentials_table_global(rx, sx, inner_kr, rho)
+        if vg_params: #input of different vg params 
+            len_vg = np.size(vg.params,0)
+            if len_vg==1:
+                different_vg = True
             else:
-                rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], self.sp) for i in range(0, len(rx))])
-                
+                if len_vg==len(rx):
+                    different_vg = True    
+                    multiple_vg = True
+                else:
+                     print("The size of the van Genuchten parameters does not match either 1 or the number of rx. File Perirhizal.py")
+        
+        np.clip(rx,-14999,-1)
+        np.clip(sx,-14999,-1)
+        
+        
+        if different_vg:
+            if multiple_vg:
+                if self.lookup_table_global:
+                    rsx = self.soil_root_interface_potentials_table_global(rx, sx, inner_kr, rho, vg_params)
+                else:
+                    rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], vg.Parameters(vg_params[i,:])) for i in range(0, len(rx))]) 
+            else:
+                if self.lookup_table_global:
+                    rsx = self.soil_root_interface_potentials_table_global(rx, sx, inner_kr, rho, vg_params)
+                else:
+                    different_sp = vg.Parameters(vg_params[0,:])
+                    rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], different_sp) for i in range(0, len(rx))]) 
+        else:
+            if self.lookup_table:
+                rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
+            else:
+                if self.lookup_table_global:
+                    rsx = self.soil_root_interface_potentials_table_global(rx, sx, inner_kr, rho, [[self.sp.theta_R,self.sp.theta_S,self.sp.alpha,self.sp.n,self.sp.Ksat]])
+                else:
+                    rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], self.sp) for i in range(0, len(rx))]) 
         
         return rsx
 
@@ -245,6 +269,8 @@ class PerirhizalPython(Perirhizal):
         
         It assumes a constant watercontent with a constant wateruptake by the root
         
+        The results fo not seem to properly match, this method needs to be improved
+        
         watercontent   watercontent of the perirhizal zone [cm3/cm3]
         c_bulk         starting solute concentration at the bulk soil [mol/cm3]
         Vmax           maximum solute uptake rate, Michaelis Menten Kinetics [mol/(cm2d)]
@@ -272,8 +298,6 @@ class PerirhizalPython(Perirhizal):
         for i in range(n_segments):
             #compute diffusion coefficient according to Millington and Quirk
             D = Ds * math.pow(watercontent[i], 10/3) / (sp.theta_S**2)
-            
-            
             
             #unit conversions at the end
             unitconversion_F = Km[i] * D * r_root[i] # to [mol/cm2d] #TODO: look at this again, it doesn't seem right
@@ -351,11 +375,12 @@ class PerirhizalPython(Perirhizal):
         quadratic_flow = np.zeros(n_segments) #quadratic flow into the parirhizal zone
         noflux = np.zeros(n_segments) #concentration where diffusion and advection cancel out
         
-        r_prhiz = r_prhiz.copy() # make sure that the original does not get scaled
-        r_root = r_root.copy() # make sure that the original does not get scaled
+        #the radii will get scaled to match the Diffusion coefficient, make sure the original input does not get scaled
+        r_prhiz = r_prhiz.copy() 
+        r_root = r_root.copy() 
         
-        rootwateruptake = np.clip(rootwateruptake,1.0e-7, np.inf) #only allow root water uptake
-        #waterinflow = np.clip(waterinflow,0, np.inf) #only allow inflow into the rhizosphere
+        rootwateruptake = np.clip(rootwateruptake, 1.0e-7, np.inf) #only allow root water uptake
+        waterinflow = np.clip(waterinflow,0, np.inf) #only allow inflow into the rhizosphere
         
         Phi_0, Phi_1, Phi_2 = np.zeros(n_segments), np.zeros(n_segments), np.zeros(n_segments)
         
@@ -373,8 +398,6 @@ class PerirhizalPython(Perirhizal):
             #scaling = math.sqrt(Ds[i] / Ds0) # Ds_i > Ds0 means scaling >1, the region is modeled to be smaller than it actually is
             scaling2 = Ds[i] / Ds0 # Ds_i > Ds0 means scaling >1, the region is modeled to be smaller than it actually is
             scaling = math.sqrt(scaling2)**2
-            
-            #print("Phis", Phi_2[i], Phi_1[i], Phi_0[i])
             
             Phi_2[i] = np.clip(Phi_2[i] * (scaling/r_prhiz[i])**2,-1.0e-1,-1.0e-7)
             Phi_1[i] = np.clip(Phi_1[i],1.0e-7,1.0e-1)
@@ -418,7 +441,7 @@ class PerirhizalPython(Perirhizal):
                 conc_rel_c, conc_mean_c, Uptake_rel_c, Uptake_mean_c, quadratic_rel_c, quadratic_mean_c = conc_rel_c_l[i,:], conc_mean_c_l[i,:], Uptake_rel_c_l[i,:], Uptake_mean_c_l[i,:], quadratic_rel_c_l[i,:], quadratic_mean_c_l[i,:]
             else:
                 r_eval[i,:] = np.logspace(np.log10(r_root[i]), np.log10(r_prhiz[i]), num = n_disc_eval)
-            
+                print("r_eval[i,:]",r_eval[i,:])
                 #in this case the discretisaiton of r_eval is necessary to compute accurate means
                 conc_rel_c, conc_mean_c, Uptake_rel_c, Uptake_mean_c, quadratic_rel_c, quadratic_mean_c = self.solute_linearequation_sr_(Phi_2[i], Phi_1[i], Phi_0[i], r_eval[i,:], sp)
             #print("concentrations",conc_rel_c[0], conc_mean_c[0], Uptake_rel_c[0], Uptake_mean_c[0], quadratic_rel_c[0], quadratic_mean_c[0])
@@ -709,7 +732,7 @@ class PerirhizalPython(Perirhizal):
         return conc_rel_c, conc_mean_c, inflow_rel_c, inflow_mean_c, Uptake_rel_c, Uptake_mean_c #need to change the naming, it makes no sense curretnly
     
     
-    def soil_root_solutes_steadyrate_simplified_(self, Phi_root, Phi_soil, r_root, r_prhiz, c_bulk, Vmax, Km, Ds, waterflow, sp, n_approx = 1):
+    def soil_root_solutes_steadyrate_simplified_(self, Phi_root, Phi_soil, r_root, r_prhiz, c_bulk, Vmax, Km, Ds, waterflow, sp, n_approx = 1, vg_params = None):
         """
         finds solute concentration at the soil root interface for all segments assuming that the waterflow and soluteflow are proportional throughout the perirhizal zone
         in this simplification the mode of soluteuptake (steady state, steady rate with no influx, other steady rate) is prescribed by the water uptake
@@ -726,11 +749,52 @@ class PerirhizalPython(Perirhizal):
         waterflow      steady state waterflow [cm/d]
         sp             van Genuchten parameter set
         n_approx       how many points are used to approximate the perirhizal solute concentration? 
-                       n_approx = 1 means only approximation at the perirhizal radius        
+                       n_approx = 1 means only approximation at the perirhizal radius   
+        vg_params      alternative vg parameters of size (1,5) (single different set) or (len(Phi_root),5) (multiple different ones)
         """
         assert len(Phi_root) == len(Phi_soil) == len(r_root) == len(r_prhiz) == len(c_bulk) == len(Vmax) == len(Km) == len(waterflow), "Phi_root, Phi_soil, r_root, r_prhiz, c_bulk, Vmax, Km and waterflow must have the same length"
         
         n_segments = len(c_bulk)
+        
+        different_vg = False #should the vg parameterisation of Perirhizal.py be substituted?
+        multiple_vg = False #are multiple van Genuchten parameterisations used? 
+        
+        if vg_params: #input of different vg params 
+            len_vg = np.size(vg.params,0)
+            if len_vg==1:
+                different_vg = True
+            else:
+                if len_vg==len(Phi_root):
+                    different_vg = True    
+                    multiple_vg = True
+                else:
+                     print("The size of the van Genuchten parameters does not match either 1 or the number of rx. File Perirhizal.py")
+        
+        # np.clip(rx,-14999,-1)
+        # np.clip(sx,-14999,-1)
+        
+        
+        # if different_vg:
+        #     if multiple_vg:
+        #         if self.lookup_table_global:
+        #             rsx = self.soil_root_interface_potentials_table_global(rx, sx, inner_kr, rho, vg_params)
+        #         else:
+        #             rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], vg.Parameters(vg_params[i,:])) for i in range(0, len(rx))]) 
+        #     else:
+        #         if self.lookup_table_global:
+        #             rsx = self.soil_root_interface_potentials_table_global(rx, sx, inner_kr, rho, vg_params)
+        #         else:
+        #             different_sp = vg.Parameters(vg_params[0,:])
+        #             rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], different_sp) for i in range(0, len(rx))]) 
+        # else:
+        #     if self.lookup_table_sr_solutes_simp:
+        #         F_func = lambda Phi_: np.array([self.lookup_table_sr_solutes_simp((Phi,0)) for Phi in Phi_])
+        #     else:
+        #         if self.lookup_table_sr_solutes_simp_global:
+        #             F_func = lambda Phi_: np.array([self.lookup_table_sr_solutes_simp((Phi,0)) for Phi in Phi_])
+        #         else:
+        #             F_func = lambda Phi_: np.array([self.integral_AdvectionDiffusion_(Phi,self.sp) for Phi in Phi_])
+        
         
         #the radii at which the solute concentration will be tested. They are given as relative values between r_root and r_prhiz. r=1 means r_prhiz.
         # approx(int[fun,0,1]) = sum(weights[i] * fun(x[i]))
@@ -741,7 +805,7 @@ class PerirhizalPython(Perirhizal):
             [x,weights] = ts_roots(n_approx) # returns the nodes and weights for the chebyshev numerical integration
             
         
-        rho = [r_prhiz[i]/r_root[i] for i in range(n_segments)]
+        rho = np.array(r_prhiz)/np.array(r_root)
         c_sol_mean2root = np.zeros(n_segments) # ratio of the mean solute concentration to solute concentration next to the root
         mean_watercontent = np.zeros(n_segments) #watercontent next to the root
         rsc = np.zeros(n_segments) #solute concentration next to the root (output)
@@ -749,54 +813,91 @@ class PerirhizalPython(Perirhizal):
         F0 = 0 #helper value for the ratio of solute next to the root
         
         #compute a prefactor
-        D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
+        D_tilde = np.zeros(n_segments)
+        if different_vg:
+            if multiple_vg:
+                D_tilde = 1/Ds/math.pow(vg_params[:,1]-vg_params[:,0],13/3)*(vg_params[:,1]*vg_params[:,1])
+            else:
+                D_tilde = np.full(n_segments,1/Ds/math.pow(vg_params[0,1]-vg_params[0,0],13/3)*(vg_params[0,1]*vg_params[0,1]))                
+        else:    
+            D_tilde = np.full(n_segments,1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S))
         
         #determine mfp depending on r
         Phi_A = np.zeros(n_segments)
         Phi_C = np.zeros(n_segments)
         Phi_outer = np.zeros(n_segments)
+        
+        #determine the mfp functions
         for i in range(n_segments):
             Phi_A[i], Phi_C[i] = self.determine_mfp_function(Phi_root[i], Phi_soil[i], rho[i]) #Phi(r/r_prhiz)= A(s^2-ln(s^2))+C
             Phi_outer[i] = Phi_A[i] + Phi_C[i]
-            #Phi_outer[i]=Phi_soil[i]
-            #Phi_0, Phi_1, Phi_2, Phi = self.determine_mfp_function_influx(self, Phi_soil, rootwateruptake, waterinflow, rho)
-
         
-            #determine F0
-            if self.lookup_table_sr_solutes_simp:
-                F0=self.lookup_table_sr_solutes_simp((Phi_root[i],0))
-            else:
-                F0=self.integral_AdvectionDiffusion_(Phi_root[i],self.sp)
+        #F_func = lambda :
         
-            #compute the ratio of (c_mean-C_SW) to (c_root-C_SW) (weighted by water content and cylinder volume)
-            for j in range(n_approx):
-                test_radius = math.sqrt(x[j] * (r_prhiz[i]**2-r_root[i]**2)+r_root[i]**2)  #scale the chebyshev nodes according to volume
-                
-                s = test_radius/r_prhiz[i] 
-                #print("test_radius", test_radius, s, n_approx)
-                Phi_current = Phi_A[i]* (s**2-2*np.log(s)) + Phi_C[i]
-                #print("Phi_soil",Phi_current,Phi_root[i], Phi_A[i]* ((r_root[i]/r_prhiz[i])**2-2*np.log((r_root[i]/r_prhiz[i]))) + Phi_C[i], Phi_outer[i])
-                current_watercontent = vg.water_content(vg.fast_imfp[self.sp](Phi_current),self.sp)
-                if self.lookup_table_sr_solutes_simp:
-                    F=self.lookup_table_sr_solutes_simp((Phi_current,0))-F0
+        #for i in range(n_segments):
+        #    #determine F0
+        if different_vg:
+            if multiple_vg:
+                if self.lookup_table_sr_solutes_simp_global:
+                    F_func = lambda Phi_ : self.lookup_table_sr_solutes_simp_global((Phi_,np.full(len(Phi_),vg_params[:,2]),np.full(len(Phi_),vg_params[:,0]/(vg_params[:,1]-vg_params[:,0]))))
                 else:
-                    F=self.integral_AdvectionDiffusion_(Phi_current,self.sp)-F0
-                c_sol_mean2root[i] += weights[j] * math.exp(max(min(-F*D_tilde,10),-10)) * current_watercontent
-                mean_watercontent[i] += weights[j] * current_watercontent
-            c_sol_mean2root[i] = c_sol_mean2root[i] / mean_watercontent[i]
+                    F_func = lambda Phi_ : np.array([self.integral_AdvectionDiffusion_(Phi,vg.Parameters(vg_params[ind,:])) for ind,Phi in enumerate(Phi_)])
+            else:
+                if self.lookup_table_sr_solutes_simp_global:
+                    F_func = lambda Phi_ : self.lookup_table_sr_solutes_simp_global((Phi_,np.full(len(Phi_),vg_params[0,2]),np.full(len(Phi_),vg_params[0,0]/(vg_params[0,1]-vg_params[0,0])))) 
+                else:
+                    F_func = lambda Phi_ : np.array([self.integral_AdvectionDiffusion_(Phi,vg.Parameters(vg_params[0,:])) for Phi in Phi_])
+        else:    
+            if self.lookup_table_sr_solutes_simp:
+                #F0=self.lookup_table_sr_solutes_simp((Phi_root[i],0))
+                F_func = lambda Phi_ : self.lookup_table_sr_solutes_simp((Phi_,np.zeros(len(Phi_))))
+            else:
+                if self.lookup_table_sr_solutes_simp_global:
+                    F_func = lambda Phi_ : self.lookup_table_sr_solutes_simp_global((Phi_,np.full(len(Phi_),self.sp.m),np.full(len(Phi_),self.sp.theta_R/(self.sp.theta_S-self.sp.theta_R))))  
+                else:
+                    #F0=self.integral_AdvectionDiffusion_(Phi_root[i],self.sp)
+                    F_func = lambda Phi_ : np.array([self.integral_AdvectionDiffusion_(Phi,self.sp) for Phi in Phi_])
+
+        F0 = F_func(Phi_root)
+        #compute the ratio of (c_mean-C_SW) to (c_root-C_SW) (weighted by water content and cylinder volume)
+        for j in range(n_approx):
+            test_radius = np.array([math.sqrt(x[j] * (r_prhiz[i]**2-r_root[i]**2)+r_root[i]**2) for i in range(len(r_root))])  #scale the chebyshev nodes according to volume
+            
+            s = test_radius/r_prhiz 
+            Phi_current = Phi_A* (s**2-2*np.log(s)) + Phi_C
+            #print("Phi_soil",Phi_current,Phi_root[i], Phi_A[i]* ((r_root[i]/r_prhiz[i])**2-2*np.log((r_root[i]/r_prhiz[i]))) + Phi_C[i], Phi_outer[i])
+            #current_watercontent = vg.water_content(vg.fast_imfp[self.sp](Phi_current),self.sp)
+            vg_params=np.zeros((len(Phi_current),5))
+            vg_params[:,0]=np.full(len(Phi_current),self.sp.theta_R)
+            vg_params[:,1]=np.full(len(Phi_current),self.sp.theta_S)
+            vg_params[:,2]=np.full(len(Phi_current),self.sp.n)
+            vg_params[:,3]=np.full(len(Phi_current),self.sp.alpha)
+            vg_params[:,4]=np.full(len(Phi_current),self.sp.Ksat)
+            current_watercontent = vg.water_content_(vg.fast_imfp[self.sp](Phi_current),vg_params)
+            F = F_func(Phi_current)-F0
+            #     if self.lookup_table_sr_solutes_simp:
+            #         F=self.lookup_table_sr_solutes_simp((Phi_current,0))-F0
+            #     else:
+            #         F=self.integral_AdvectionDiffusion_(Phi_current,self.sp)-F0
+            c_sol_mean2root += np.array([weights[j] * math.exp(max(min(-F[i]*D_tilde[i],10),-10)) * current_watercontent[i] for i in range(len(Phi_root))])
+            mean_watercontent += weights[j] * current_watercontent
+        c_sol_mean2root = c_sol_mean2root / mean_watercontent
         
+        for i in range(len(c_bulk)):
             #solve quadratic eqation # TODO: Link to publication
             a1=c_bulk[i]/c_sol_mean2root[i]
             a2=(1-1/c_sol_mean2root[i])/(waterflow[i])
             p=Km[i]-a2*Vmax[i]-a1
             q=-Km[i]*a1
+            if a1<0:
+                print("wrong a1 value", c_bulk[i], c_sol_mean2root[i], waterflow[i], Phi_root[i], Phi_soil[i])
             r1=-p/2-math.sqrt((p/2)**2-q)
             r2=-p/2+math.sqrt((p/2)**2-q)
             if r1<0:
                 rsc[i]=r2
             else:
                 rsc[i]=r1 
-            temp = math.exp(-D_tilde*F)
+            #temp = math.exp(-D_tilde*F)
             uptake = Vmax[i]*rsc[i]/(rsc[i]+Km[i])
             uptake2 = Vmax[i]*rsc[i]/(rsc[i]+Km[i])*(2*np.pi*r_root[i])
             #print("outer c", a1, a2, temp, uptake, uptake2, rsc[i], waterflow[i], rsc[i] * temp + (1-temp) *  uptake / waterflow[i], c_sol_mean2root[i])

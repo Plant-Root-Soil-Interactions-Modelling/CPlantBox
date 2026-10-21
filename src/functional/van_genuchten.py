@@ -286,19 +286,19 @@ def water_content_(h_, vg_parameters_):
     A single van Genuchten parameter set (array size 5) is also allowed.
     """
     
-    h_ = np.clip(h,-np.inf,-0.0)
+    h_ = np.clip(h_,-np.inf,-0.0)
     
     different_vg = False # are there different van Genuchten parameters?
-    if size(vg_parameters_)==[5]:
+    if np.size(vg_parameters_)==[5]:
         different_vg = False
         watercontent_func = lambda i: vg_parameters_[0] + (vg_parameters_[1] - vg_parameters_[0]) / pow(1. + pow(vg_parameters_[2] * abs(h_[i]), vg_parameters_[3]), 1-1/vg_parameters_[3]) # theta_R + (theta_S - theta_R) / (pow(1+pow(alpha*h,n),m)
     else:
-        assert len(h_) == size(vg_parameters_,0), "h_ and vg_parameters_ must have the same length"
+        assert len(h_) == np.size(vg_parameters_,axis=0), "h_ and vg_parameters_ must have the same length"
         watercontent_func = lambda i: vg_parameters_[i,0] + (vg_parameters_[i,1] - vg_parameters_[i,0]) / pow(1. + pow(vg_parameters_[i,2] * abs(h_[i]), vg_parameters_[i,3]), 1-1/vg_parameters_[i,3]) # theta_R + (theta_S - theta_R) / (pow(1+pow(alpha*h,n),m)
    
     n_inputs = len(h_)
     #water_content_ = np.zeros(n_inputs)
-    water_content_ = np.array([imfp_func(i) for i in range(n_inputs)])
+    water_content_ = np.array([watercontent_func(i) for i in range(n_inputs)])
     return water_content_ 
 
 def pressure_head_(wc_, vg_parameters_):
