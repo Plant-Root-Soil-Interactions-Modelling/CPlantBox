@@ -1,10 +1,10 @@
 import xml.etree.ElementTree as ET
-import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial import distance
 
-from plantbox.rsml.rsml_writer import Metadata
+from .rsml_writer import Metadata
 
 """ 
 RSML Reader, by Daniel Leitner (2019-2021), see also rsml_data.py

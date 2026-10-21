@@ -10,6 +10,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plantbox as pb
+
+if not hasattr(pb, "__path__"):
+    pb.__path__ = [os.path.abspath("../src")]
+
 import plantbox.visualisation.vtk_plot as vp
 from plantbox.functional.PlantHydraulicModel import HydraulicModel_Doussan, HydraulicModel_Meunier
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters

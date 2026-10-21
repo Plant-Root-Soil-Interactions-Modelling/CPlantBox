@@ -210,9 +210,7 @@ class Quaternion {
      * @note the formula is v' = q * v * q^-1
     */
     Vector3d Rotate(const Vector3d& v) const {
-      Quaternion standin = *this;
-      standin.w = 1.0;
-      auto result = (standin * Quaternion(0, v) * standin.conjugate()).v;
+      auto result = (*this * Quaternion(0, v) * conjugate()).v;
       return result / result.length() * v.length();
     }
 

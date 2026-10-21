@@ -13,6 +13,10 @@ from contextlib import redirect_stdout
 import numpy as np
 
 import plantbox as pb
+
+if not hasattr(pb, "__path__"):
+    pb.__path__ = [os.path.abspath("../src")]
+
 from plantbox.functional.PlantHydraulicParameters import PlantHydraulicParameters
 
 
