@@ -13,7 +13,7 @@ import plantbox as pb
 rs = pb.Plant()
 
 # Open plant and root parameter from a file
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 

@@ -82,6 +82,10 @@ set_target_properties(CPlantBox PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     BUILD_WITH_INSTALL_RPATH TRUE
     INSTALL_RPATH "${CPB_INSTALL_RPATH}"
+    # The sources carry no dllexport declarations, so without this MSVC
+    # produces no import library for the DLL and consumers cannot link.
+    # This mirrors the default symbol visibility on ELF/Mach-O platforms.
+    WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
 
 target_include_directories(CPlantBox

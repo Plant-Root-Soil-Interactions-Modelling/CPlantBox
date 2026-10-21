@@ -3,7 +3,7 @@
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
-path = path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 filename = "fspm2023"
 
 sim_time = 30  # days

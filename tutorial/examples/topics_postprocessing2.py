@@ -5,7 +5,7 @@ import plantbox.visualisation.vtk_plot as vp
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Zea_mays_1_Leitner_2010"
 
 plant = pb.Plant()

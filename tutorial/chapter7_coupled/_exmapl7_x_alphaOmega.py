@@ -39,7 +39,7 @@ cell_number = [1, 1, N]  # ~[4*4*1] cm3
 kx = 10 * 4.32e-2  # axial conductivity (cm3 day-1)
 kr = 1.728e-4  # radial conductivity (1 day-1)
 
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml
 trans = 1.5 * 400  # cm3 day-1 (sinusoidal) = mL day-1
 wilting_point = -15000  # cm
@@ -75,7 +75,7 @@ plant.setRectangularGrid(pb.Vector3d(box_min), pb.Vector3d(box_max), pb.Vector3d
 
 # root hydraulic properties
 params = PlantHydraulicParameters()  # |\label{l7xa:hydraulic}|
-params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreur2012")
+params.read_parameters(pb.data_path() + "/functional/plant_hydraulics/couvreur2012")
 # params.set_kr_const(kr)
 # params.set_kx_const(kx)
 # params.plot_conductivities(True) # |\label{l7xa:plot_conductivities}|

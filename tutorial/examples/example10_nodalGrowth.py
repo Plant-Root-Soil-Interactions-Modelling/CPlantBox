@@ -33,7 +33,7 @@ for item in test:
 #
 #######################
 pl = pb.MappedPlant(seednum = 1)  # set seed
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "4testrel"
 
 pl.readParameters(path + name + ".xml")

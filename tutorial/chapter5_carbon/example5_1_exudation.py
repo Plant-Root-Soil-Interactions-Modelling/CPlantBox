@@ -13,7 +13,7 @@ from plantbox.visualisation import figure_style
 
 # Root system
 rs = pb.RootSystem()  # |\label{l5_2_exudation:rsstart}|
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 filename = "Faba_synMRI"
 rs.readParameters(path + filename + ".xml")
 rs.setRandomSeed(1)  # |\label{l5_2_exudation:setRandomSeed}|

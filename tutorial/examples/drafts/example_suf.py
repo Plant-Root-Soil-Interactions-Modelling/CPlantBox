@@ -19,7 +19,7 @@ p_s = np.linspace(-200, -400, 2001)  # 2 meter down, from -200 to -400, resoluti
 soil_index = lambda x, y, z : int(-10*z) # maps to p_s (hydrostatic equilibirum)
 rs.setSoilGrid(soil_index)
 
-path = "../../../modelparameter/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 rs.setSeed(1)
 rs.readParameters(path + name + ".xml")

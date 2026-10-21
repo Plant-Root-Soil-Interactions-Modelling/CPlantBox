@@ -7,7 +7,7 @@ import plantbox.visualisation.vtk_plot as vp
 import plantbox.visualisation.vtk_animate as vp_animate
 
 plant = pb.Plant()
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 filename = "Anagallis_femina_Leitner_2010"
 plant.readParameters(path + filename + ".xml")
 

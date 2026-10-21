@@ -5,7 +5,7 @@ import plantbox as pb
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Zea_mays_1_Leitner_2010"  # Zea_mays_1_Leitner_2010, Brassica_napus_a_Leitner_2010
 
 rs = pb.Plant()

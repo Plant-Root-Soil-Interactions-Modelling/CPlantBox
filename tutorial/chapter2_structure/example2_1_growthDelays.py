@@ -6,7 +6,7 @@ import plantbox as pb
 import plantbox.visualisation.vtk_animate as va
 import plantbox.visualisation.vtk_plot as vp
 
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 simTime = 10
 dt = 0.1
 N = int(simTime / dt)

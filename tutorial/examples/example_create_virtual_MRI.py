@@ -65,7 +65,7 @@ def noisy(image, mean, var):
 
 #########################################################
 rs = pb.RootSystem()
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Faba_synMRI"
 # name = "Zeamays_synMRI"
 SNR = 5  # can be changed to other values

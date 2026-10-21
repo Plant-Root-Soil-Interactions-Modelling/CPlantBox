@@ -21,7 +21,7 @@ architectures = [  # |\label{l42:architecture}|
     "Zea_mays_1_Leitner_2010",
 ]
 
-path = "../../modelparameter/structural/rootsystem/"  # |\label{l42:architecture_end}|
+path = pb.data_path() + "/structural/rootsystem/"  # |\label{l42:architecture_end}|
 
 # Root hydraulic properties |\label{l42:roothydraulics}|
 param = PlantHydraulicParameters()

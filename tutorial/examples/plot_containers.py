@@ -9,7 +9,7 @@ rs = pb.Plant()
 
 
 # Open plant and root parameter from a file
-path = path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Zea_mays_4_Leitner_2014"
 rs.readParameters(path + name + ".xml")
 

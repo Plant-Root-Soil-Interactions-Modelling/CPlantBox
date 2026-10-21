@@ -19,7 +19,7 @@ def set_all_sd(rs, s):
 
 
 # Parameters
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Zea_mays_1_Leitner_2010"
 simtime = 25
 N = 25  # resolution of paramter

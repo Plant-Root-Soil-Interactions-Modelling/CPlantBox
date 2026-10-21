@@ -36,7 +36,7 @@ box_min = [-35.0, -10.0, -50.0]  # cm
 box_max = [35.0, 10.0, 0.0]  # cm
 cell_number = [1, 1, 50]  # ~4*4*1 cm3
 
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 filename = "Zeamays_synMRI_modified"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml
 t_pot = 25  # cm3 day-1 (sinusoidal) = mL day-1
 wilting_point = -15000  # cm
@@ -72,7 +72,7 @@ plant.setRectangularGrid(pb.Vector3d(box_min), pb.Vector3d(box_max), pb.Vector3d
 
 # root hydraulic properties
 params = PlantHydraulicParameters()  # |\label{l7xa:hydraulic}|
-params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreur2012")
+params.read_parameters(pb.data_path() + "/functional/plant_hydraulics/couvreur2012")
 # params.plot_conductivities(True) # |\label{l7xa:plot_conductivities}|
 hm = HydraulicModel_Doussan(plant, params)
 hm.wilting_point = wilting_point  # |\label{l7xa:hydraulic_end}|

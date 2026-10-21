@@ -19,7 +19,7 @@ simtime = 14  # [day] for task b
 
 """ root system """
 rs = pb.MappedPlant()
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "manyleaves"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 rs.readParameters(path + name + ".xml")
 soil_index = lambda x, y, z: 0

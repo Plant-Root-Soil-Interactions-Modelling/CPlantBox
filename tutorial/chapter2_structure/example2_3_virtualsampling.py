@@ -6,7 +6,7 @@ import numpy as np
 import plantbox as pb
 from plantbox.visualisation import figure_style
 
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 filename = "wheat"
 
 months = 8  # |\label{l2_3:timebegin}|
