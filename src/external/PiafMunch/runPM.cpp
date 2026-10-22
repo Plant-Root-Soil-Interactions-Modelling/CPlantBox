@@ -772,7 +772,7 @@ std::vector<int> PhloemFlux::getGrowingNodes(std::shared_ptr<CPlantBox::Organ> o
 				for(; ((PhytoIdx < stemParams->ln.size())&(!foundPhytoIdx));PhytoIdx++)
 				{
 					double maxPhytoLen = stemParams->ln.at(PhytoIdx);
-					double currentPhytoLen = org->getLength(org->getChild(PhytoIdx+1)->parentNI) - org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI);
+					double currentPhytoLen = org->getLength(org->getChild(PhytoIdx+1)->getParentNI()) - org->getLength(org->getChild(std::max(0,PhytoIdx))->getParentNI());
 					foundPhytoIdx = (maxPhytoLen - currentPhytoLen > 1e-10);//first still growing phytomere
 					if(maxPhytoLen - currentPhytoLen < -1e-10){throw std::runtime_error("maxPhytoLen - currentPhytoLen < -1e10;");}
 					

@@ -41,7 +41,7 @@ class TestPlant(unittest.TestCase):  # |\label{l9_1:TestPlant}|
             age.append(o.getParameter("age"))
             ct.append(o.getParameter("creationTime"))
 
-        nol = round(self.root.getParameter("numberOfLaterals"))  # |\label{l9_1:parasend}|
+        nol = sum(1 for i in range(self.root.getNumberOfChildren()) if self.root.getChild(i).getAge() > 0)  # |\label{l9_1:parasend}|
         for i in range(0, nol):
             self.assertAlmostEqual(age[i], sim_time - ct[i], 10, "getParameter: age and creation time does not agree")  # |\label{l9_1:AssertAlmostEqual}|
 

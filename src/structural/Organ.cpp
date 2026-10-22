@@ -105,6 +105,19 @@ double Organ::getLength(bool realized) const {
 }
 
 /**
+ * @brief Returns the number of polyline segments.
+ *
+ * Segments connect consecutive nodes, so the count equals the number of
+ * nodes minus one (clamped to zero for empty organs).
+ *
+ * @return Number of segments.
+ */
+int Organ::getNumberOfSegments() const {
+    const int numberOfNodes = getNumberOfNodes();
+    return (numberOfNodes > 0) ? (numberOfNodes - 1) : 0;
+}
+
+/**
  * @brief Returns the organ type.
  *
  * Coarse classification: ot_organ=0, ot_seed=1, ot_root=2, ot_stem=3, ot_leaf=4.
@@ -278,25 +291,11 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>> &v, bool all) 
 }
 
 /**
- * @brief Returns the number of children whose age > 0 (i.e. emerged laterals).
- * @see getNumberOfChildren()
- */
-int Organ::getNumberOfLaterals() const {
-    int nol = 0;
-    for (auto &c : children) {
-        if (c->getAge() > 0) { // born
-            nol++;
-        }
-    }
-    return nol;
-}
-
-/**
  * @brief Returns a named scalar parameter of the organ.
  *
  * Recognises organ-specific fields (subType, a, radius, diameter, iHeadingX/Y/Z, parentNI,
  * parent-node), member variables (organType, id, alive, active, age, length, lengthTh,
- * numberOfNodes, numberOfSegments, hasMoved, oldNumberOfNodes, numberOfLaterals, creationTime,
+ * numberOfNodes, numberOfSegments, hasMoved, oldNumberOfNodes, creationTime,
  * order, one), and delegates to OrganRandomParameter::getParameter() for anything else.
  *
  * Intended for post-processing; flexible but slower than direct member access.
@@ -319,13 +318,13 @@ double Organ::getParameter(std::string name, std::map<std::string, double> addPa
     }
     // organ member variables
     if (name == "iHeadingX") { // root initial heading x - coordinate [cm]
-        return getiHeading0().x;
+        return getInitialHeading().x;
     }
     if (name == "iHeadingY") { // root initial heading y - coordinate [cm]
-        return getiHeading0().y;
+        return getInitialHeading().y;
     }
     if (name == "iHeadingZ") { // root initial heading z - coordinate [cm]
-        return getiHeading0().z;
+        return getInitialHeading().z;
     }
     if (name == "parentNI") { // local parent node index where the lateral emerges
         return parentNI;
@@ -383,9 +382,6 @@ double Organ::getParameter(std::string name, std::map<std::string, double> addPa
     }
     if (name == "oldNumberOfNodes") {
         return getOldNumberOfNodes();
-    }
-    if (name == "numberOfLaterals") {
-        return getNumberOfLaterals();
     }
     // further
     if (name == "creationTime") {
@@ -579,7 +575,7 @@ void Organ::abs2rel() {
  * Reconstructed from partialIHeading and the parent's heading at parentNI.
  * Handles base organs (no parent), shoot-borne roots, and root-borne shoots as special cases.
  */
-Vector3d Organ::getiHeading0() const {
+Vector3d Organ::getInitialHeading() const {
     if (!getParent()) { // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created manually have no parent
         Vector3d vparentHeading;
         if (organType() <= Organism::ot_root) { // root (2) or unrecognized organ (0)
@@ -613,7 +609,7 @@ Vector3d Organ::getiHeading0() const {
  * @brief Returns the absolute heading at node @p n.
  *
  * For n > 0 and at least two nodes: direction of segment [n-1, n], normalised.
- * For n == 0 or single-node organs: falls back to getiHeading0().
+ * For n == 0 or single-node organs: falls back to getInitialHeading().
  * Negative @p n is treated as the last node.
  */
 Vector3d Organ::heading(int n) const {
@@ -626,7 +622,7 @@ Vector3d Organ::heading(int n) const {
         h.normalize();
         return h;
     } else {
-        return getiHeading0();
+        return getInitialHeading();
     }
 }
 
@@ -872,7 +868,6 @@ void Organ::createLateral(double dt, bool verbose) {
         }
     }
     created_linking_node++;
-    storeLinkingNodeLocalId(created_linking_node, verbose); // needed (currently) only for stems when doing nodal growth
 }
 
 /**

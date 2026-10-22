@@ -54,7 +54,8 @@ class Stem : public Organ {
     void addNode(Vector3d n, int id, double t, size_t index, bool shift) override; //< adds a node to the root
 
   protected:
-    void storeLinkingNodeLocalId(int numCreatedLN, bool silence) override; ///<  override by @see Organ::createNonGrowingLateral()
+    void createLateral(double dt, bool verbose) override;         ///< creates the laterals and stores the local id of the new linking node
+    void storeLinkingNodeLocalId(int numCreatedLN, bool verbose); ///< stores the local id of the newly created linking node
     std::vector<int> localId_linking_nodes;
     void minusPhytomerId(int subtype) { stemphytomerId[subtype]--; }
     int getphytomerId(int subtype) { return stemphytomerId[subtype]; }

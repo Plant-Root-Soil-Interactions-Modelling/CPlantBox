@@ -31,7 +31,7 @@ std::string RootDelay::toString() const
     std::string str = Organ::toString();
     str.replace(0, 6, "Delay");
     std::stringstream newstring;
-    newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index" << parentNI << ".";
+    newstring << "; initial heading: " << getInitialHeading().toString() << ", parent node index" << parentNI << ".";
     return str+newstring.str();
 }
 

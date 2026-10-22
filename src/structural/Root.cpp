@@ -327,7 +327,7 @@ double Root::getParameter(std::string name, std::map<std::string, double> addPar
  */
 std::string Root::toString() const {
     std::stringstream newstring;
-    newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index" << parentNI << ".";
+    newstring << "; initial heading: " << getInitialHeading().toString() << ", parent node index" << parentNI << ".";
     return Organ::toString() + newstring.str();
 }
 

@@ -746,7 +746,7 @@ std::vector<Vector3d> Leaf::getLeafVis_cuboid(int i) {
     double l = getLength(i);
     std::vector<Vector3d> coords;
     auto x = getLeafVisX_cuboid(l).at(0);
-    Vector3d x1 = getiHeading0();
+    Vector3d x1 = getInitialHeading();
     x1.normalize();
     Vector3d y1 = Vector3d(0, 0, -1).cross(x1); // todo angle between leaf - halfs
     if (y1.length() < 1.e-4) {                  // if x1 and 0,0,-1 are parallel, we take cross product between down and final position
@@ -779,7 +779,7 @@ std::vector<Vector3d> Leaf::getLeafVis_2D(int i) {
         if (n > 0) {
             std::vector<Vector3d> coords;
             auto x_ = getLeafVisX_2D(l);
-            Vector3d x1 = getiHeading0();
+            Vector3d x1 = getInitialHeading();
             x1.normalize();
             Vector3d y1 = Vector3d(0, 0, -1).cross(x1); // todo angle between leaf - halfs
             double l = y1.length();
@@ -861,7 +861,7 @@ std::shared_ptr<const LeafSpecificParameter> Leaf::param() const { return std::s
  */
 std::string Leaf::toString() const {
     std::stringstream newstring;
-    newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index " << parentNI << ".";
+    newstring << "; initial heading: " << getInitialHeading().toString() << ", parent node index " << parentNI << ".";
     return Organ::toString() + newstring.str();
 }
 
@@ -896,9 +896,9 @@ Vector3d Leaf::heading(int n) const {
     } else {
         if (pseudostem) { // the sheath of a pseudostem grows straight upward (no theta), the bending starts at the blade
             this->partialIHeading = Vector3d::rotAB(0., beta);
-            return getiHeading0();
+            return getInitialHeading();
         } else {
-            return getiHeading0();
+            return getInitialHeading();
         }
     }
 }

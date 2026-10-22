@@ -162,7 +162,7 @@ class TestPlant(unittest.TestCase):  # |\label{test_example:TestClass}|
             rsp = r.getParam()
             if rsp.subType > 1:
                 dl = r.getParent().getOrganRandomParameter().ldelay  # only works because deviation == 0
-                et = r.getParent().getNodeCT(r.parentNI) + dl
+                et = r.getParent().getNodeCT(r.getParentNI()) + dl
             self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
 
     def test_missing_laterals(self):

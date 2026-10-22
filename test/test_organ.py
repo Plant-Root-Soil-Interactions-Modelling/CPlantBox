@@ -140,7 +140,7 @@ class TestOrgan(unittest.TestCase):
     # -------------------------------------------------------------------------
 
     def test_tree_accessors(self):
-        """Tests getId, getNumberOfChildren, getChild, getParent, parentNI, isAlive, isActive."""
+        """Tests getId, getNumberOfChildren, getChild, getParent, getParentNI, isAlive, isActive."""
         self.hand_example()
         # id is a non-negative integer
         self.assertIsInstance(self.hand.getId(), int, "getId: expected int")
@@ -153,19 +153,10 @@ class TestOrgan(unittest.TestCase):
         self.assertIs(self.hand.getChild(1), self.little_finger, "getChild(1): expected little_finger")
         # parent link
         self.assertIs(self.thumb.getParent(), self.hand, "getParent: thumb's parent should be hand")
-        self.assertEqual(self.thumb.parentNI, 0, "parentNI: expected 0")
+        self.assertEqual(self.thumb.getParentNI(), 0, "parentNI: expected 0")
         # alive / active flags set at construction
         self.assertTrue(self.hand.isAlive(), "isAlive: hand should be alive")
         self.assertTrue(self.hand.isActive(), "isActive: hand should be active")
-
-    def test_getNumberOfLaterals(self):
-        """Tests getNumberOfLaterals() before and after children emerge."""
-        self.hand_example()
-        # before simulate: both children have negative age (not yet emerged)
-        self.assertEqual(self.hand.getNumberOfLaterals(), 0, "getNumberOfLaterals: expected 0 before simulate")
-        # after simulate(10): thumb (age=6) and little_finger (age=7) have both emerged
-        self.hand.simulate(10)
-        self.assertEqual(self.hand.getNumberOfLaterals(), 2, "getNumberOfLaterals: expected 2 after simulate(10)")
 
     def test_node_accessors(self):
         """Tests getNodeId, getNodeIds, getNodeCT, getNodes, getLength, dx, dxMin."""

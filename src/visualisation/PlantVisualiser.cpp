@@ -421,7 +421,7 @@ void PlantVisualiser::BuildAttachmentMap()
   {
     if(organ->getParent() != nullptr)
     {
-      const Vector3d parent_position = organ->getParent()->getNode(organ->parentNI);
+      const Vector3d parent_position = organ->getParent()->getNode(organ->getParentNI());
       const Vector3d organ_position = organ->getNode(0);
       leaf_attachment_map_[organ->getId()] = std::make_pair(organ->getParent()->getId(), vectorNormalized(organ_position - parent_position));
     }
@@ -618,10 +618,10 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 	auto stem = leaf->getParent();
   Vector3d origin = leaf->getOrigin();
   Vector3d origin_neighbor;
-  if(leaf->parentNI < stem->getNumberOfNodes() - 1)
-    origin_neighbor = stem->getNode(leaf->parentNI + 1);
+  if(leaf->getParentNI() < stem->getNumberOfNodes() - 1)
+    origin_neighbor = stem->getNode(leaf->getParentNI() + 1);
   else 
-    origin_neighbor = stem->getNode(leaf->parentNI - 1);
+    origin_neighbor = stem->getNode(leaf->getParentNI() - 1);
   Vector3d direction = (origin_neighbor - origin).normalized();
   if(verbose_)
   {

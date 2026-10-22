@@ -162,7 +162,7 @@ class TestRoot(unittest.TestCase):
             radius.append(o.getParameter("radius"))
             order.append(o.getParameter("order"))
 
-        nol = round(self.root.getParameter("numberOfLaterals"))
+        nol = sum(1 for i in range(self.root.getNumberOfChildren()) if self.root.getChild(i).getAge() > 0)
         type_ = [1.0]
         type_.extend([2.0] * nol)
         self.assertEqual(type, type_, "getParameter: unexpected root sub types")
@@ -257,8 +257,9 @@ class TestRoot(unittest.TestCase):
                 print("minimum segment length ", np.min(length_segments), " below dxMin ", self.p0.dxMin)
             if self.p0.dx < np.max(length_segments) * 0.99:
                 print("maximum segment length ", np.max(length_segments), " above dx ", self.p0.dx)
-            if len(np.where(ln <= (l_th - effectiveLa))[0]) != self.root.getParameter("numberOfLaterals"):
-                print("\n\n\nnumeric and analytic number of laterals different: ", ln, l_th, effectiveLa, l_th - effectiveLa, len(np.where(ln <= (l_th - effectiveLa))[0]), self.root.getParameter("numberOfLaterals"))
+            nol = sum(1 for i in range(self.root.getNumberOfChildren()) if self.root.getChild(i).getAge() > 0)
+            if len(np.where(ln <= (l_th - effectiveLa))[0]) != nol:
+                print("\n\n\nnumeric and analytic number of laterals different: ", ln, l_th, effectiveLa, l_th - effectiveLa, len(np.where(ln <= (l_th - effectiveLa))[0]), nol)
 
         for i in range(0, len(dt)):
             self.assertAlmostEqual(nl_th[i], nl[i], 10, "numeric and analytic lengths do not agree in time step " + str(i + 1))
@@ -314,7 +315,7 @@ class TestRoot(unittest.TestCase):
         for i in range(self.root.getNumberOfChildren()):
             r = self.root.getChild(i)
             rparent = r.getParent()
-            lengthAtCreation = rparent.getLength(r.parentNI)
+            lengthAtCreation = rparent.getLength(r.getParentNI())
             ageLN = rparent.calcAge(lengthAtCreation)  # age of root when lateral node is created
             ageLG = rparent.calcAge(lengthAtCreation + effectiveLa)  # age of the root, when the lateral starts growing (i.e when the apical zone is developed)
             dl = ageLG - ageLN
@@ -329,7 +330,7 @@ class TestRoot(unittest.TestCase):
             r = self.root.getChild(i)
             rsp = r.getParam()
             dl = r.getParent().getOrganRandomParameter().ldelay  # only works because deviation == 0
-            et = r.getParent().getNodeCT(r.parentNI) + dl
+            et = r.getParent().getNodeCT(r.getParentNI()) + dl
             self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
 
         self.root_example_rtp2(delay_definition=2)  # depends on ldelay of lateral organ
@@ -340,7 +341,7 @@ class TestRoot(unittest.TestCase):
             r = self.root.getChild(i)
             rsp = r.getParam()
             dl = r.getOrganRandomParameter().ldelay  # only works because deviation == 0
-            et = r.getParent().getNodeCT(r.parentNI) + dl
+            et = r.getParent().getNodeCT(r.getParentNI()) + dl
             self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
 
 

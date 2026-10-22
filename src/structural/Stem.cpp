@@ -492,6 +492,14 @@ double Stem::calcAge(double length) const {
 }
 
 /**
+ * Creates the laterals of a new linking node (@see Organ::createLateral) and stores the local id of the node
+ */
+void Stem::createLateral(double dt, bool verbose) {
+    Organ::createLateral(dt, verbose);
+    storeLinkingNodeLocalId(created_linking_node, verbose);
+}
+
+/**
  * stores the local id of the linking node. used by @see Stem::internodalGrowth()
  */
 void Stem::storeLinkingNodeLocalId(int numCreatedLN, bool verbose) {
@@ -534,8 +542,8 @@ void Stem::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
         nodeCTs.insert(nodeCTs.begin() + index, t);
         for (auto kid : children) { // if carries children after the added node, update their "parent node index"
 
-            if ((kid->parentNI >= index - 1) && (kid->parentNI > 0)) {
-                kid->moveOrigin(kid->parentNI + 1);
+            if ((kid->getParentNI() >= index - 1) && (kid->getParentNI() > 0)) {
+                kid->moveOrigin(kid->getParentNI() + 1);
             }
         }
         for (int numnode = 0; numnode < localId_linking_nodes.size(); numnode++) { // update the local ids of the linking nodes
@@ -564,7 +572,7 @@ std::shared_ptr<const StemSpecificParameter> Stem::param() const { return std::s
  */
 std::string Stem::toString() const {
     std::stringstream newstring;
-    newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index" << parentNI << ".";
+    newstring << "; initial heading: " << getInitialHeading().toString() << ", parent node index" << parentNI << ".";
     return Organ::toString() + newstring.str();
 }
 

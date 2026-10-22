@@ -380,7 +380,6 @@ PYBIND11_MODULE(plantbox, m) {
         .def("copy", &Organ::copy)
         .def("organType", &Organ::organType)
         .def("simulate", &Organ::simulate, py::arg("dt"), py::arg("verbose") = bool(false)) // default
-        .def("getNumberOfLaterals", &Organ::getNumberOfLaterals)
         .def("setParent", &Organ::setParent)
         .def("getParent", &Organ::getParent)
         .def("getParentNI", &Organ::getParentNI)
@@ -423,8 +422,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("__str__", &Organ::toString)
         .def("orgVolume", &Organ::orgVolume, py::arg("length_") = -1, py::arg("realized") = false)
         .def("orgVolume2Length", &Organ::orgVolume2Length)
-        .def("getiHeading0", &Organ::getiHeading0)
-        .def_readwrite("parentNI", &Organ::parentNI);
+        .def("getInitialHeading", &Organ::getInitialHeading);
 
     /*
      * Organism.h
