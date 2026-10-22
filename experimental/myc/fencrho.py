@@ -13,7 +13,8 @@ from sklearn.linear_model import LinearRegression
 
 # I changed the c++ code, so set might not be valid anymore
 # good_seeds = [10, 15, 25, 30, 45, 50, 70, 105, 115, 125]
-good_seeds = [25]
+# good_seeds = [25+ i for i in range(10)]
+good_seeds = [25,10]
 path = "tomatoparameters/"
 name = "TwoHyphaePlusBAS"
 
@@ -37,7 +38,7 @@ dt, nSteps = amf.setUpSimulationTime(5,24)
 simulation = []
 for seed in good_seeds:
     start_sim = time.perf_counter()
-    mycp, time_star, times = amf.makeSimulation(seed, path, name, height,petri_dish, small_hyphae_dish, half_dish,dt,nSteps, 80, "compare_COCO",animation=False,verbose=False)
+    mycp, time_star, times = amf.makeSimulation(seed, path, name, height,petri_dish, small_hyphae_dish, half_dish,dt,nSteps, 60, "compare_COCO",animation=False,verbose=False)
     # mycp, times = amf.makeFreeSimulation(seed, path, name, dt, nSteps,"colonizationvisforfspm",True,False)
     finished_sim = time.perf_counter()
     # vp.plot_roots_and_container(mycp,petri_dish)
@@ -46,19 +47,15 @@ for seed in good_seeds:
     received_ana_data = time.perf_counter()
     # fewer_rings = rings[0:int(nRings/2)]
     # Ringe -> Zeile // Zeitabschnitt -> Spalte
-    tipMat = amf.getParaSumperRing("nodeTips",times,mycp,rings)
-    tipMat_time = time.perf_counter()
-    anaMat = amf.getParaSumperRing("anastomosis",times,mycp,rings)
-    anaMat_time = time.perf_counter()
-    lenMat = amf.getParaSumperRing("length",times,mycp, rings)
+    mats = amf.getParasPerRing(["nodeTips","anastomosis","length"],times,mycp,rings)
+    tipMat, anaMat, lenMat = mats["nodeTips"], mats["anastomosis"], mats["length"]
     lenMat_time = time.perf_counter()
-    area = np.pi /2 * radius*radius/nRings
-    vol =  area * height
+    vol = amf.ringVolume(radius, nRings, height, barrier_thickness) # one volume per ring
     simulation.append({"label": "seed " + str(seed), "mycp": mycp, "time_star": time_star, "times": times, "tipMat": tipMat, "anaMat": anaMat, "lenMat": lenMat, "vol": vol})
 
-print("Time to make the dishes ", finished_dishes - start_dishes)
-print("Time to run the simulation ", finished_sim - start_sim)
-print("Time to get all Paras per Ring", lenMat_time -received_ana_data)
+    print("Time to make the dishes ", finished_dishes - start_dishes)
+    print("Time to run the simulation ", finished_sim - start_sim)
+    print("Time to get all Paras per Ring", lenMat_time -received_ana_data)
 
 all_results = amf.analyze_simulations(simulation, window = 0.05, step=0.01,min_points =20)
 

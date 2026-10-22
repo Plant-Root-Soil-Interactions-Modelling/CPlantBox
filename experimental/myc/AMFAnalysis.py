@@ -6,6 +6,7 @@ from scipy.optimize import curve_fit
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import plantbox.visualisation.vtk_plot as vp
+import networkx as nx
 
 def getMycSegmentAnalyser(plant, write=[],filename = "write",step = 0, stdwrite = False,):
         ana = pb.SegmentAnalyser(plant)
@@ -35,7 +36,46 @@ def getLengthPerSubtype(plant):
         hyphae.pack()
     return lenSubtype
 
+def getRingIndex(ana, rings):
+    # ring index of each segment (-1 = in no ring), uses the segment midpoint like ana.getSummed(name, ring)
+    nodes = np.array([[n.x, n.y, n.z] for n in ana.nodes])
+    segs = np.array([[s.x, s.y] for s in ana.segments], dtype=int)
+    mids = 0.5 * (nodes[segs[:, 0]] + nodes[segs[:, 1]])
+    ringIdx = np.full(len(mids), -1)
+    for i, m in enumerate(mids):
+        p = pb.Vector3d(m[0], m[1], m[2])
+        for k, ring in enumerate(rings):
+            if ring.getDist(p) < 0:
+                ringIdx[i] = k
+                break
+    return ringIdx
+
+def getParasPerRing(parameters, times, plant, rings):
+    # same matrices as getParaSumperRing (rings x len(times)-1), but for all parameters at once:
+    # one SegmentAnalyser, ring of each segment computed once, time intervals binned with numpy
+    ana = getMycSegmentAnalyser(plant)
+    ringIdx = getRingIndex(ana, rings)
+    ct = np.array(ana.getParameter("creationTime"))
+    n = len(times) - 1
+    timeIdx = np.searchsorted(times, ct, side="left") # 0: ct <= times[0], i: times[i-1] < ct <= times[i]
+    valid = (ringIdx >= 0) & (ct >= 0) & (timeIdx <= n)
+    mats = {}
+    for parameter in parameters:
+        values = np.array(ana.getParameter(parameter))
+        summed = np.zeros((len(rings), n + 1))
+        np.add.at(summed, (ringIdx[valid], timeIdx[valid]), values[valid])
+        if parameter == "nodeTips": # we want to look only at actively growing tips. (Oyarte Galvez 2025 page 3 when discussing Fig 2b)
+            mat = summed[:, 1:] # created in (times[i], times[i+1]]
+        else:
+            mat = np.cumsum(summed, axis=1)[:, 1:] # created until times[i+1]
+            mat[:, 0] = summed[:, 1] # first column only counts (times[0], times[1]], as in getParaSumperRing
+        mats[parameter] = mat
+    return mats
+
 def getParaSumperRing(parameter, times, plant, rings):
+    return getParasPerRing([parameter], times, plant, rings)[parameter]
+
+def getParaSumperRing_old(parameter, times, plant, rings):
     print("Parameter sum for "+ parameter)
     paradenmat = np.zeros((len(rings),len(times[1:])))
     flipped = np.flip(np.asarray(times))
@@ -96,6 +136,10 @@ def makedishes(diameter, height, barrier_thickness, barrier_height, opening_leng
     helper_staff = pb.SDF_PlantBox(barrier_thickness,barrier_height,diameter)
     # helper container for opening in barrier
     helper_staff2 = pb.SDF_PlantBox(barrier_thickness,opening_height,opening_length)
+    # since master (3b88115e) SDF_PlantBox is shifted down by eps = 0.25 cm, which would move barrier and opening; keep the old geometry
+    if hasattr(helper_staff, "eps"):
+        helper_staff.eps = 0.
+        helper_staff2.eps = 0.
     # have to  move the helper staff for the right position of the opening and barrier, the midpoint is the distance from the center of the helper staff to the center of the petri dish, the bottompoint is the distance from the center of the helper staff to the center of the petri dish in the y direction, and the helper staff is moved to the position of the opening and barrier
     midpoint = opening_length / 2 - diameter / 2
     bottompoint = opening_height / 2 - barrier_height / 2
@@ -121,12 +165,46 @@ def makedishes(diameter, height, barrier_thickness, barrier_height, opening_leng
         old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
         small_hyphae_dish2 = pb.SDF_Difference(small_hyphae_dish2,old_dish)
         rings.append(small_hyphae_dish2)
-    
     return petri_dish, small_hyphae_dish, half_dish, rings
 
-def makeBoxes(radius,nRings,height, other = 0.):
-    length = radius*np.sqrt(1/nRings)
-    box = pb.SDF_PlantContainer(length,length,height,True)
+def makeBoxes(radius, height, boxlength, barrier_thickness, small_hyphae_dish, resolution = 0.005):
+    # non overlapping square boxes (edge length boxlength) tiling the hyphae side of the dish (x > -barrier_thickness/2),
+    # each box is cut with small_hyphae_dish, boxes outside the dish are dropped
+    # returns boxes, centres of the uncut boxes (n x 2) and volume of each cut box
+    box = pb.SDF_PlantContainer(boxlength/2, boxlength/2, height, True) # square container has half edge length r
+    x_left = -barrier_thickness/2
+    nx = int(np.ceil((radius - x_left)/boxlength))
+    ny = int(np.ceil(2*radius/boxlength))
+    # area of the cut boxes on a fine grid, same geometry as small_hyphae_dish
+    s = (np.arange(round(boxlength/resolution)) + 0.5) * resolution - boxlength/2
+    sx, sy = np.meshgrid(s, s)
+    boxes, centres, volumes = [], [], []
+    for i in range(nx):
+        for j in range(ny):
+            cx = x_left + (i + 0.5)*boxlength
+            cy = -ny*boxlength/2 + (j + 0.5)*boxlength
+            x, y = sx + cx, sy + cy
+            area = np.count_nonzero((x*x + y*y < radius*radius) & (x > x_left)) * resolution*resolution
+            if area > 0:
+                moved_box = pb.SDF_RotateTranslate(box, 0, 0, pb.Vector3d(cx, cy, 0))
+                boxes.append(pb.SDF_Intersection(moved_box, small_hyphae_dish))
+                centres.append([cx, cy])
+                volumes.append(area*height)
+    return boxes, np.array(centres), np.array(volumes)
+
+def ringLocations(radius, nRings):
+    # outer radius of each ring, rings have equal area (see makedishes)
+    return np.array([radius*np.sqrt(i/nRings) for i in range(1, nRings+1)])
+
+def ringVolume(radius, nRings, height, barrier_thickness = 0.):
+    # volume of each ring (array of length nRings), the rings are cut at x = -barrier_thickness/2 (see makedishes),
+    # so besides the half annulus they contain the strip -barrier_thickness/2 < x < 0
+    c = barrier_thickness / 2
+    R = np.concatenate(([0.], ringLocations(radius, nRings)))
+    c_ = np.minimum(c, R)
+    # area of the disk of radius R with x > -c: half disk + segment between x = -c and x = 0
+    area = np.pi / 2 * R*R + c_*np.sqrt(R*R - c_*c_) + R*R*np.arcsin(np.divide(c_, R, out=np.zeros_like(R), where=R > 0))
+    return np.diff(area) * height
 
 def setUpSimulationTime(simTime, fps):
     # set up simulation time
@@ -182,34 +260,11 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
         mycp.simulate(dt,verbose)
         if (animation):
             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim",step = i+nSteps, stdwrite= True)    # look at roots and container
-    times = np.linspace(time_star, max(mycp.getParameter("creationTime"))+0.01, 100)
+    nmbtimes = (max(mycp.getParameter("creationTime")) - time_star)*24
+    nmbtimespoint = (max(mycp.getParameter("creationTime")) + 0.1 - time_star)*24
+    times = np.linspace(time_star, max(mycp.getParameter("creationTime"))+0.01, max(round(nmbtimes),round(nmbtimespoint)))
     # times = times - time_star
     return mycp, time_star, times
-
-def makeFreeSimulation(seed, path, name, dt, nSteps, filename, animation = False, verbose = False):
-    # set up simulation
-    #### WORK IN PROGRESS
-    mycp = pb.MycorrhizalPlant(seed)
-    mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
-    seed_para = pb.SeedRandomParameter(mycp)
-    seed_para.seedPos.z = - 3
-    mycp.setOrganRandomParameter(seed_para)
-    root = mycp.getOrganRandomParameter(pb.root)
-    for rp in root:
-        rp.hyphalEmergenceDensity = 4.0
-        rp.lmbd = 0.15
-        mycp.setOrganRandomParameter(rp)
-    mycp.initialize()
-
-    print("Starting simulation with seed: " + str(seed))
-    for i in range(nSteps):
-        if (i % 10 == 0):
-            print("Step " + str(i) + " of " + str(nSteps))
-        mycp.simulate(dt,verbose)
-        if (animation):
-            getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
-    times = np.linspace(0, max(mycp.getParameter("creationTime"))+0.01, 100)
-    return mycp, times
 
 def sigmoidLengthDens(t, K1,lamda_dens,t_arrival):
     rho = K1/(1+np.exp(lamda_dens*(t_arrival-t)))
@@ -224,17 +279,8 @@ def arrivalTimeDensFit(t,rho):
     param, param_cov = curve_fit(sigmoidLengthDens, t, rho, p0)
     return param, param_cov
 
-def findAnaDensDep(t, ana, rings, power = 1):
-    ana_densities = getParaSumperRing("anastomosis", t, ana, rings)
-    tip_densities = getParaSumperRing("nodeTips", t, ana, rings)
-    length_densities = getParaSumperRing("length", t, ana, rings)
-    ana_rates = np.zeros(len(rings),len(t[1:]))
-    for i in range(len(rings)):
-        ana_rates[i,:] = ana_densities[i,:]/tip_densities[i,:]
-        coefs = np.polyfit(length_densities[i,:], ana_rates[i,:], deg = power)
-
 def prepare_data(lenMat, vol, anaMat, tipMat):
-    rho = lenMat / vol
+    rho = lenMat / np.reshape(vol, (-1, 1)) # vol: one value or one per ring/box
     # print(rho)
     f_enc = np.divide(
         anaMat, tipMat,
@@ -344,56 +390,196 @@ def plot_linear_analysis(all_results):
     plt.tight_layout()
     plt.show()
 
-# def sensitivity_analysis(seed,path,name,runnerhyphae = {},BAS = {}, geometry = {},run = {}):
-#     mycp = pb.MycorrhizalPlant(seed)
-#     mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
-#     seed_para = pb.SeedRandomParameter(mycp)
-#     seed_para.seedPos.z = -geometry["height"] / 2
-#     seed_para.seedPos.x = -9.4 / 2 + 0.5
-#     seed_para.seedPos.y = 0
-#     mycp.setOrganRandomParameter(seed_para)
-#     hyphae = mycp.getOrganRandomParameter(pb.hyphae)
-#     for h in hyphae:
-#         if h.subType == 1:
-#             h.a = runnerhyphae["a"]
-#         if h.subType == 2:
-#             h.a = BAS["a"]
+def interpolate_to_common_time(simulations, key, n_times=99):
+    # interpolates sim[key] (rings x times) of all simulations onto the time range they share
+    from scipy.interpolate import interp1d
+    t_common = np.linspace(
+        max(sim["times"][0] for sim in simulations),
+        min(sim["times"][-1] for sim in simulations),
+        n_times
+    )
+    interp = np.stack([interp1d(sim["times"], sim[key], axis=1)(t_common) for sim in simulations])
+    return t_common, interp   # (n_sim, n_r, n_t)
 
-#     mycp.setGeometry(geometry["half_dish"])
-#     mycp.initialize()
+def plot_ring_heatmap(times, location, mat, cbar_label, filename):
+    plt.pcolormesh(times, location, mat, shading='auto', cmap='plasma')
+    plt.colorbar(label=cbar_label)
+    plt.xlabel("Time [days]")
+    plt.ylabel("Distance [cm] from centre")
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.close()
 
-#     print("Starting simulation with seed: " + str(seed))
-#     for i in range(run["nSteps"]):
-#         if (i % 10 == 0):
-#             print("Step " + str(i) + " of " + str(run["nSteps"]))
-#         mycp.simulate(run["dt"],run["verbose"])
-#     root = mycp.getOrganRandomParameter(pb.root)
-#     for rp in root:
-#         rp.hyphalEmergenceDensity = 4.0
-#         rp.lmbd = 0.15
-#         mycp.setOrganRandomParameter(rp)
+def plot_radial_profiles(location, t_common, interp, indices, ylabel="Tip amount"):
+    # mean +- std over simulations at the time indices given
+    mean = interp.mean(axis=0)
+    std = interp.std(axis=0)
+    fig, ax = plt.subplots(figsize=(6, 5))
+    colors = plt.get_cmap("plasma")(np.linspace(0.2, 0.9, len(indices)))
+    for color, i in zip(colors, indices):
+        ax.plot(location, mean[:, i], color=color, lw=2, label=f"t = {t_common[i]:.2f}")
+        ax.fill_between(location, mean[:, i] - std[:, i], mean[:, i] + std[:, i], color=color, alpha=0.3)
+    ax.set_xlabel(r"Distance from origin $r$ (mm)")
+    ax.set_ylabel(ylabel)
+    ax.legend()
+    plt.savefig("TipDensOverAllSim", dpi=300, bbox_inches="tight")
 
-#     mycp.changeGeometry(5,geometry["petri_dish"])
 
-#     crossed_barrier = 0
+def estimate_carbon_cost_per_Org(length,radius,pdry,pcarbon,dcell,CUE):
+    gamma = np.pi * radius *radius*dcell*pdry*pcarbon
+    gamma = gamma / CUE
+    carbon_cost = gamma*length
+    return carbon_cost
 
-#     while crossed_barrier < 3:
-#         # N+=1
-#         mycp.simulate(dt,verbose)
-#         ana = getMycSegmentAnalyser(mycp)
-#         ana.filter("organType",5)
-#         ana.filter("subType",1,2)
-#         ana.pack()
-#         crossed_barrier = ana.getSummed("nodeTips",small_hyphae_dish)
+def getAnastomosisMerges(mycp):
+    # {tip node id: node id it merged with}, at an anastomosis the hypha gets a new node at the position
+    # of the target node (see MycorrhizalPlant::simulateAnastomosis), both are the same point in the network
+    merges = {}
+    for h in mycp.getOrgans(pb.hyphae):
+        mergeID = int(h.getParameter("mergePointID"))
+        if mergeID > -1:
+            merges[h.getNodeId(h.getNumberOfNodes() - 1)] = mergeID
+    for tip in merges: # a target might itself be a merged tip
+        target = merges[tip]
+        while target in merges and merges[target] != tip:
+            target = merges[target]
+        merges[tip] = target
+    return merges
 
-#     crossed_time = mycp.getSimTime()
-#     for i in range(0, hours_hyphae):
-#         if (i % 10 == 0):
-#             print("Step " + str(i) + " of " + str(hours_hyphae))
-#         mycp.simulate(dt,verbose)
-#         if (animation):
-#             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim" +str(i) + ".vtp", stdwrite= True)    # look at roots and container
-#     times = np.linspace(crossed_time, max(mycp.getParameter("creationTime"))+0.01, 100)
-#     return mycp, crossed_time, times
+def getNetworkX(mycp, geometry = None, hyphae_only = True):
+    # undirected networkx graph of the hyphal network (inside geometry, e.g. small_hyphae_dish)
+    # nodes: node ids of the plant (cut nodes from crop get new ids), attribute "pos" (x, y, z)
+    # edges: one per segment, attributes "length" (3D), "length_xy" (projected to x-y plane) and all per segment data of getMycSegmentAnalyser
+    # anastomoses: the tip node is merged with the node it fused with, so the hyphal trees are connected
+    import networkx as nx
+    ana = getMycSegmentAnalyser(mycp)
+    if hyphae_only:
+        ana.filter("organType", 5)
+    if geometry is not None:
+        ana.crop(geometry) # no pack(), it would renumber the nodes and the anastomosis ids would not fit anymore
+    nodes = np.array([[n.x, n.y, n.z] for n in ana.nodes])
+    segs = np.array([[s.x, s.y] for s in ana.segments], dtype=int)
+    inside = set(segs.ravel().tolist())
+    merges = {tip: target for tip, target in getAnastomosisMerges(mycp).items() if target in inside} # fusions with hyphae outside geometry are not connected
+    segs_merged = np.vectorize(lambda i: merges.get(i, i), otypes=[int])(segs) if (merges and len(segs) > 0) else segs
+    data = {"length": np.array(ana.getParameter("length"))}
+    data["length_xy"] = np.linalg.norm(nodes[segs[:, 0], :2] - nodes[segs[:, 1], :2], axis=1) if len(segs) > 0 else np.zeros(0)
+    for key in ana.data.keys():
+        data[key] = np.array(ana.data[key])
+    G = nx.Graph()
+    for i in np.unique(segs_merged):
+        G.add_node(int(i), pos = tuple(nodes[i].tolist()))
+    keys = list(data.keys())
+    for k, (u, v) in enumerate(segs_merged):
+        if u != v: # an anastomosis segment of zero length could become a self loop
+            G.add_edge(int(u), int(v), **{key: float(data[key][k]) for key in keys})
+    return G
 
-# def estimate_carbon_cost(length,radius,pdry,pcarbon,dcell,CUE,)
+def lengthWeight(dim):
+    # edge attribute used as weight: 3D length or length projected to the x-y plane (dish seen from above)
+    return "length" if dim == 3 else "length_xy"
+
+def simplifyGraph(G, weights = ("length", "length_xy")):
+    # multigraph with only junctions and ends of G (degree != 2), each chain of degree 2 nodes becomes one edge
+    # with summed weights and the number of segments ("segments"); a multigraph keeps parallel chains and loops,
+    # so total length is unchanged and shortest paths between the kept nodes are the same as in G
+    import networkx as nx
+    keep = {n for n, d in G.degree() if d != 2}
+    for comp in nx.connected_components(G): # closed loops without any junction
+        if not any(n in keep for n in comp):
+            keep.add(min(comp))
+    S = nx.MultiGraph()
+    for n in keep:
+        S.add_node(n, **G.nodes[n])
+    visited = set()
+    for n in keep:
+        for nb in G.neighbors(n):
+            if frozenset((n, nb)) in visited:
+                continue
+            sums = {w: 0. for w in weights}
+            segments = 0
+            prev, cur = n, nb
+            while True:
+                visited.add(frozenset((prev, cur)))
+                for w in weights:
+                    sums[w] += G.edges[prev, cur][w]
+                segments += 1
+                if cur in keep:
+                    break
+                prev, cur = cur, next(x for x in G.neighbors(cur) if x != prev) # cur has degree 2
+            S.add_edge(n, cur, segments = segments, **sums)
+    return S
+
+def getReferenceNetworks(S, dim = 3):
+    # Delaunay triangulation and Euclidean minimum spanning tree on the nodes of S (use simplifyGraph first),
+    # dim = 2: triangulation of the x-y positions (dish seen from above), dim = 3: tetrahedra in x, y, z
+    # edges get "length" and "length_xy" (straight lines), the MST minimises lengthWeight(dim)
+    import networkx as nx
+    from scipy.spatial import Delaunay
+    nodes = list(S.nodes)
+    pos = np.array([S.nodes[n]["pos"] for n in nodes])
+    tri = Delaunay(pos[:, :dim], qhull_options = "QJ") # QJ: robust against duplicate and coplanar points
+    D = nx.Graph()
+    for n in nodes:
+        D.add_node(n, **S.nodes[n])
+    for simplex in tri.simplices:
+        for a in range(len(simplex)):
+            for b in range(a + 1, len(simplex)):
+                i, j = simplex[a], simplex[b]
+                D.add_edge(nodes[i], nodes[j], length = float(np.linalg.norm(pos[i] - pos[j])), length_xy = float(np.linalg.norm(pos[i, :2] - pos[j, :2])))
+    M = nx.minimum_spanning_tree(D, weight = lengthWeight(dim)) # the Euclidean MST is always part of the Delaunay graph
+    return D, M
+
+def weightedEfficiency(G, dim = 3):
+    # global efficiency of Latora & Marchiori (2001): sum of 1/(shortest path length) over all node pairs,
+    # normalised by sum of 1/(straight line distance), 1 = every pair connected by a straight line;
+    # unconnected pairs contribute 0, pairs at the same position are skipped
+    import networkx as nx
+    from scipy.spatial.distance import pdist
+    weight = lengthWeight(dim)
+    nodes = list(G.nodes)
+    pos = np.array([G.nodes[n]["pos"] for n in nodes])[:, :dim]
+    eucl = pdist(pos)
+    inv_eucl = 2 * np.sum(1. / eucl[eucl > 0])
+    inv_path = 0.
+    for s in nodes:
+        dist = nx.single_source_dijkstra_path_length(G, s, weight = weight)
+        inv_path += sum(1. / d for t, d in dist.items() if t != s and d > 0)
+    return float(inv_path / inv_eucl)
+
+def getSourcesTargets(G, barrier_thickness, tol = 1.e-5):
+    # sources: nodes where hyphae cross into the hyphal compartment, i.e. the nodes crop(small_hyphae_dish) created
+    # on the cut plane x = -barrier_thickness/2 (degree 1); targets: all other nodes of degree 1 (tips and ends)
+    ends = [n for n, d in G.degree() if d == 1]
+    sources = [n for n in ends if abs(G.nodes[n]["pos"][0] + barrier_thickness / 2) < tol]
+    s = set(sources)
+    targets = [n for n in ends if n not in s]
+    return sources, targets
+
+def weightedEfficiencySubset(G, sources, targets, dim = 3):
+    # efficiency of Latora & Marchiori (2001) only for the pairs (source, target):
+    # sum of 1/(shortest path length) normalised by sum of 1/(straight line distance), unconnected pairs contribute 0
+    import networkx as nx
+    from scipy.spatial.distance import cdist
+    weight = lengthWeight(dim)
+    targets = [t for t in targets if t not in set(sources)]
+    pos_s = np.array([G.nodes[n]["pos"] for n in sources])[:, :dim]
+    pos_t = np.array([G.nodes[n]["pos"] for n in targets])[:, :dim]
+    eucl = cdist(pos_s, pos_t)
+    inv_eucl = np.sum(1. / eucl[eucl > 0])
+    inv_path = 0.
+    for s in sources:
+        dist = nx.single_source_dijkstra_path_length(G, s, weight = weight)
+        inv_path += sum(1. / dist[t] for t in targets if t in dist and dist[t] > 0)
+    return float(inv_path / inv_eucl)
+
+def betweennessSubset(G, sources, targets, dim = 3, edges = False):
+    # fraction of all shortest (source, target) paths running through each node (or edge, if edges = True);
+    # networkx counts every path in an undirected graph with 0.5 and its normalized=True divides by (n-1)(n-2), so rescale here
+    import networkx as nx
+    weight = lengthWeight(dim)
+    if edges:
+        bc = nx.edge_betweenness_centrality_subset(G, sources, targets, normalized = False, weight = weight)
+    else:
+        bc = nx.betweenness_centrality_subset(G, sources, targets, normalized = False, weight = weight)
+    scale = 2. / (len(sources) * len(targets)) if (sources and targets) else 0.
+    return {k: v * scale for k, v in bc.items()}
