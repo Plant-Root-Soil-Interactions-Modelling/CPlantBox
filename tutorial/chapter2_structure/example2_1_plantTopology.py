@@ -6,7 +6,7 @@ import plantbox.visualisation.vtk_plot as vp
 path = pb.data_path() + "/structural/plant/"
 
 # Define a simple plant topology, part A
-plant = pb.Plant(2)
+plant = pb.Plant(2)  # |\label{l2_1:Plant2}|
 plant.readParameters(path + "example2_1_2.xml", verbose=True)
 
 rrp = plant.getOrganRandomParameter(pb.root)[1]  # laterals of taproot #|\label{l2_1:arrayStart1}|
