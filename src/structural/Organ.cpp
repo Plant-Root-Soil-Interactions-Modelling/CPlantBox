@@ -522,7 +522,8 @@ Vector3d Organ::getInitialHeading() const {
  * @brief Returns the absolute coordinate of node @p i.
  *
  * Organs with relative coordinates (Stem, Leaf, and roots carried by them) calculate it from getOrigin() and the relative nodes:
- * node j is stored as the segment vector expressed in the orthonormal system of the heading at node j-1.
+ * node j is stored as the segment vector expressed in the orthonormal system of the direction of the segment [j-2, j-1]
+ * (for j = 1 of the initial heading), see segmentHeading().
  */
 Vector3d Organ::getNode(int i) const {
     if (!hasRelCoord()) {
@@ -532,15 +533,11 @@ Vector3d Organ::getNode(int i) const {
         throw std::out_of_range("Organ::getNode: node index out of range");
     }
     Vector3d p = getParent() ? getOrigin() : nodes.at(0);
-    Vector3d h = startHeading(); // heading at node j-1
-    double len = 0.;                  // length until node j
+    Vector3d h = getInitialHeading(); // direction of the previous segment
     for (int j = 1; j <= i; j++) {
         Vector3d s = Matrix3d::ons(h).times(nodes[j]); // segment [j-1, j]
         p = p.plus(s);
-        len += s.length();
-        if (j < i) {
-            h = nextHeading(s.normalized(), j, len);
-        }
+        h = s.normalized();
     }
     return p;
 }
@@ -561,48 +558,42 @@ std::vector<Vector3d> Organ::getNodes() const {
         return v;
     }
     v.push_back(getParent() ? getOrigin() : nodes.at(0));
-    Vector3d h = startHeading(); // heading at node j-1
-    double len = 0.;                  // length until node j
+    Vector3d h = getInitialHeading(); // direction of the previous segment
     for (size_t j = 1; j < nodes.size(); j++) {
         Vector3d s = Matrix3d::ons(h).times(nodes[j]); // segment [j-1, j]
         v.push_back(v.back().plus(s));
-        len += s.length();
-        h = nextHeading(s.normalized(), int(j), len);
+        h = s.normalized();
     }
     return v;
 }
 
 /**
- * @brief Returns the absolute heading at node @p n, calculated from the relative node coordinates.
+ * @brief Returns the direction of the segment [n-1, n] (initial heading for n == 0), calculated from the relative node coordinates.
  *
- * The heading at node 0 is the initial heading, the heading at node j is the direction of the segment [j-1, j]
- * (see nextHeading()), which is stored in the orthonormal system of the heading at node j-1.
+ * This is the orthonormal system in which the next relative node is stored.
  * Negative @p n is treated as the last node.
- * Override for organs with absolute coordinates (Root) or other geometry (GrassLeaf).
  */
-Vector3d Organ::heading(int n) const {
+Vector3d Organ::segmentHeading(int n) const {
     if (n < 0) {
         n = nodes.size() - 1;
     }
     n = std::min(n, int(nodes.size()) - 1);
-    Vector3d h = startHeading();
-    double len = 0.; // length until node j
+    Vector3d h = getInitialHeading();
     for (int j = 1; j <= n; j++) {
-        Vector3d s = Matrix3d::ons(h).times(nodes[j]); // segment [j-1, j]
-        len += s.length();
-        h = nextHeading(s.normalized(), j, len);
+        h = Matrix3d::ons(h).times(nodes[j]);
+        h.normalize();
     }
     return h;
 }
 
 /**
- * @brief Heading at node @p j given the direction @p d of the segment [j-1, j]; by default the segment direction itself.
+ * @brief Returns the absolute heading at node @p n, calculated from the relative node coordinates.
  *
- * @param d    Normalised direction of the segment [j-1, j].
- * @param j    Node index (>= 1).
- * @param len  Length of the organ until node j [cm].
+ * The heading at node 0 is the initial heading, the heading at node j is the direction of the segment [j-1, j].
+ * Negative @p n is treated as the last node.
+ * Override for organs with absolute coordinates (Root), other geometry (GrassLeaf), or bending (Leaf).
  */
-Vector3d Organ::nextHeading(const Vector3d &d, int j, double len) const { return d; }
+Vector3d Organ::heading(int n) const { return segmentHeading(n); }
 
 /**
  * @brief Returns organ volume [cm³].
@@ -758,7 +749,7 @@ void Organ::createSegments(double l, double dt, bool verbose, int phytoIdx) {
         if (hasRelCoord()) { // the new node is inserted at index nn+i, its predecessor is the node nn+i-1
             int pi = nn + i - 1;
             Vector3d newdx = getIncrement(getNode(pi), sdx, pi);
-            Vector3d h = heading(pi);
+            Vector3d h = segmentHeading(pi);
             newnode = Matrix3d::ons(h).inverse().times(newdx); // relative coordinate
         } else {
             Vector3d newdx = getIncrement(nodes.back(), sdx);

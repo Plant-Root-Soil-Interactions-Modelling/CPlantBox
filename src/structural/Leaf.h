@@ -68,8 +68,7 @@ public:
 
 protected:
   Vector3d getIncrement(const Vector3d &p, double sdx, int n = -1) override; ///< called by createSegments, to determine growth direction
-  Vector3d startHeading() const override;                                    ///< heading at node 0, the sheath of a pseudostem grows straight upward (no theta)
-  Vector3d nextHeading(const Vector3d &d, int j, double len) const override; ///< heading at node j, a pseudostem bends at the first node of the blade
+  Vector3d heading(int n) const override;                                    ///< heading at node n, a pseudostem bends at the first node of the blade
   int getleafphytomerID(int subtype);
   void minusPhytomerId(int subtype);
   void addleafphytomerID(int subtype);

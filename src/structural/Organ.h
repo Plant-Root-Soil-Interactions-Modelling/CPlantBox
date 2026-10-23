@@ -135,9 +135,7 @@ public:
 
 protected:
 
-  virtual Vector3d startHeading() const { return getInitialHeading(); } ///< Heading at node 0 used when calculating node positions; override in Leaf
-  virtual Vector3d nextHeading(const Vector3d &d, int j,
-                               double len) const; ///< Heading at node @p j (relative coordinates), given the direction @p d of the segment [j-1, j] and the length @p len until node j; override in Leaf
+  Vector3d segmentHeading(int n) const; ///< Direction of the segment [n-1, n] (relative coordinates), the system in which the next relative node is stored
   virtual void createLateral(double ageLN, bool silence); ///< Creates a new lateral organ at the current tip; called from simulate(); override in RootDelay
   virtual Vector3d getIncrement(const Vector3d &p, double sdx,
                                 int n = -1); ///< Returns the growth increment vector of length @p sdx from point @p p; override in Leaf

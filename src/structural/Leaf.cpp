@@ -63,7 +63,10 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, double delay, std::shared_
         double scale = getLeafRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
         theta *= scale;
     }
-    // used when computing actual heading, @see LEaf::getIHeading
+    if (getLeafRandomParameter()->isPseudostem) { // the sheath of a pseudostem grows straight upward (no theta), the bending starts at the blade
+        theta = 0.;                               // @see Leaf::heading
+    }
+    // used when computing actual heading, @see Organ::getInitialHeading
     this->partialIHeading = Vector3d::rotAB(theta, beta);
     // Rewritten ends
     if (parent->organType() != Organism::ot_seed) { // if not base organ
@@ -844,34 +847,28 @@ std::string Leaf::toString() const {
 }
 
 /**
- * @return Heading at node 0. The sheath of a pseudostem grows straight upward (no theta), the bending starts at the blade
+ * @param n     node index (negative: last node)
+ * @return Heading at node n: the direction of the segment [n-1, n], in a pseudostem the blade bends at its first node.
+ *         The bend is not part of the relative coordinates, which are stored in the system of the segment directions (@see Organ::segmentHeading),
+ *         it is applied to the growth direction of the next segment (@see Leaf::getIncrement).
  */
-Vector3d Leaf::startHeading() const {
-    if (getLeafRandomParameter()->isPseudostem) {
-        this->partialIHeading = Vector3d::rotAB(0., beta);
+Vector3d Leaf::heading(int n) const {
+    if (n < 0) {
+        n = nodes.size() - 1;
     }
-    return getInitialHeading();
-}
-
-/**
- * @param d     direction of the segment from node j-1 to node j
- * @param j     node index
- * @param len   length of the leaf until node j [cm]
- * @return Heading at node j: the direction of the segment, in a pseudostem the blade bends at its first node
- */
-Vector3d Leaf::nextHeading(const Vector3d &d, int j, double len) const {
-    if (getLeafRandomParameter()->isPseudostem) {
+    n = std::min(n, int(nodes.size()) - 1);
+    Vector3d h = segmentHeading(n);
+    if (getLeafRandomParameter()->isPseudostem && (n > 0)) {
         double lb = param()->lb;
-        bool isBlade = (len - lb > -1e-10);                                  // node j in blade
-        bool previousIsBlade = (len - nodes[j].length() - lb > -1e-10); // previous node in blade
-        if (isBlade && !previousIsBlade) {                                   // add bending at the start of the blade
+        bool isBlade = (getLength(n) - lb > -1e-10);             // current node in blade
+        bool previousIsBlade = (getLength(n - 1) - lb > -1e-10); // previous node in blade
+        if (isBlade && !previousIsBlade) {                       // add bending at the start of the blade
             Vector3d myPartialIHeading = Vector3d::rotAB(param()->theta, beta);
-            Vector3d dd = d;
-            Vector3d new_heading = Matrix3d::ons(dd).times(myPartialIHeading);
+            Vector3d new_heading = Matrix3d::ons(h).times(myPartialIHeading);
             return Matrix3d::ons(new_heading).column(0);
         }
     }
-    return d;
+    return h;
 }
 
 /**
