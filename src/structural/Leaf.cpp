@@ -882,13 +882,13 @@ Vector3d Leaf::getIncrement(const Vector3d &p, double sdx, int n) {
 
     Vector3d h = heading(n);
     Matrix3d ons = Matrix3d::ons(h);
-    bool isPseudoStem = getParameter("isPseudostem");
-    bool isSheath = (getLength(n) - getParameter("lb") < -1e-10);
-    if (isPseudoStem && isSheath) {
+    bool isPseudoStem = getLeafRandomParameter()->isPseudostem;
+    bool isSheath = (getLength(n) - param()->lb < -1e-10);
+    if (isPseudoStem && isSheath) { // disable tropism
         getLeafRandomParameter()->f_tf->setSigma(0.);
     }
     Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this(), n + 1);
-    if (isPseudoStem && isSheath) {
+    if (isPseudoStem && isSheath) { // enable again
         getLeafRandomParameter()->f_tf->setSigma(getLeafRandomParameter()->tropismS);
     }
     // for leaves: necessary?

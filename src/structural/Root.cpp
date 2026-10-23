@@ -102,9 +102,9 @@ bool Root::hasRelCoord() const {
  * Roots carried by a stem or leaf have relative coordinates, @see Organ::heading
  */
 Vector3d Root::heading(int n) const {
-    if (hasRelCoord()) {
-        return Organ::heading(n);
-    }
+    // if (hasRelCoord()) {
+    //     return Organ::heading(n);
+    // } % DL even if root is attached to stem, we leave coordinates absolute, just shift position
     if (n < 0) {
         n = nodes.size() - 1;
     }

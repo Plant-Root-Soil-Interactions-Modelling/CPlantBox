@@ -526,11 +526,11 @@ Vector3d Organ::getInitialHeading() const {
  * (for j = 1 of the initial heading), see segmentHeading().
  */
 Vector3d Organ::getNode(int i) const {
-    if (!hasRelCoord()) {
-        return nodes.at(i);
-    }
     if ((i < 0) || (i >= int(nodes.size()))) {
         throw std::out_of_range("Organ::getNode: node index out of range");
+    }
+    if (!hasRelCoord()) {
+        return nodes.at(i);
     }
     Vector3d p = getParent() ? getOrigin() : nodes.at(0);
     Vector3d h = getInitialHeading(); // direction of the previous segment
