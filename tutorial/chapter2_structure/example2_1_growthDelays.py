@@ -21,12 +21,12 @@ plant.readParameters(path + "example2_1_3.xml")
 srp = plant.getOrganRandomParameter(pb.seed)[0]
 
 srp.delayDefinitionRoot = pb.dd_distance  # roots: laterals wait for the apical zone to pass  |\label{l2_1_3:ddRoot}|
-srp.delayDefinitionShoot = pb.dd_time_self  # shoot: time-based delay     |\label{l2_1_3:ddShoot}|
+srp.delayDefinitionShoot = pb.dd_time_self  # shoot: time-based delay   |\label{l2_1_3:ddShoot}|
 
 # Leaf subType 1
 lrp = plant.getOrganRandomParameter(pb.leaf)[1]
-lrp.ldelay = 2.5  # |\label{l2_1_3:leaf_ldelayC}|
-lrp.ldelays = 0.0  # |\label{l2_1_3:leaf_ldelaysC}|
+lrp.ldelay = 2.5  # |\label{l2_1_3:leaf_ldelayA}|
+lrp.ldelays = 0.0  # |\label{l2_1_3:leaf_ldelaysA}|
 
 plant.initialize(False)  # |\label{l2_1_3:init}|
 
@@ -61,8 +61,8 @@ plant = pb.MappedPlant(2)
 plant.readParameters(path + "example2_1_3.xml")
 
 srp = plant.getOrganRandomParameter(pb.seed)[0]
-srp.delayDefinitionRoot = pb.dd_time_self  # roots: time-based delay      |\label{l2_1_3:ddRootC}|
-srp.delayDefinitionShoot = pb.dd_time_self  # shoot: lateral decides its own delay       |\label{l2_1_3:ddShootC}|
+srp.delayDefinitionRoot = pb.dd_time_self  # roots: time-based delay      |\label{l2_1_3:ddRootB}|
+srp.delayDefinitionShoot = pb.dd_time_self  # shoot: lateral decides its own delay       |\label{l2_1_3:ddShootB}|
 
 
 # Root subType 2 (laterals)
@@ -77,8 +77,8 @@ srp.delayNGEnd = 7  # |\label{l2_1_3:delayNGEnd}|
 
 # Leaf subType 1
 lrp = plant.getOrganRandomParameter(pb.leaf)[1]
-lrp.ldelay = 2.5  # |\label{l2_1_3:leaf_ldelayC}|
-lrp.ldelays = 0.0  # |\label{l2_1_3:leaf_ldelaysC}|
+lrp.ldelay = 2.5  # |\label{l2_1_3:leaf_ldelayB}|
+lrp.ldelays = 0.0  # |\label{l2_1_3:leaf_ldelaysB}|
 
 plant.initialize(False)
 
@@ -103,8 +103,6 @@ print(f"  Leaf delay : {lrp.ldelay:.2f} days  (std {lrp.ldelays:.2f})")
 # # ---------------------------------------------------------------------------
 # # Part C - Mixed distance-based delays for roots, time-based for shoot (self-defined fixed delay)
 # # ---------------------------------------------------------------------------
-
-
 # plant = pb.MappedPlant(2)
 # plant.readParameters(path + "example2_x.xml")
 
