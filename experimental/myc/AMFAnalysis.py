@@ -76,7 +76,7 @@ def getParaSumperRing(parameter, times, plant, rings):
     return getParasPerRing([parameter], times, plant, rings)[parameter]
 
 def getParaSumperRing_old(parameter, times, plant, rings):
-    print("Parameter sum for "+ parameter)
+    # print("Parameter sum for "+ parameter)
     paradenmat = np.zeros((len(rings),len(times[1:])))
     flipped = np.flip(np.asarray(times))
     for k, ring in enumerate(rings):
@@ -227,10 +227,10 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     mycp.setGeometry(half_dish)
     mycp.initialize()
 
-    print("Starting simulation with seed: " + str(seed))
+    # print("Starting simulation with seed: " + str(seed))
     for i in range(nSteps):
-        if (i % 10 == 0):
-            print("Step " + str(i) + " of " + str(nSteps))
+        # if (i % 10 == 0):
+        #     print("Step " + str(i) + " of " + str(nSteps))
         mycp.simulate(dt,verbose)
         if (animation):
             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim",step = i, stdwrite= True)    # look at roots and container
@@ -255,8 +255,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
 
     time_star = mycp.getSimTime()
     for i in range(0, hours_hyphae):
-        if (i % 10 == 0):
-            print("Step " + str(i) + " of " + str(hours_hyphae))
+        # if (i % 10 == 0):
+        #     print("Step " + str(i) + " of " + str(hours_hyphae))
         mycp.simulate(dt,verbose)
         if (animation):
             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim",step = i+nSteps, stdwrite= True)    # look at roots and container
@@ -423,6 +423,20 @@ def plot_radial_profiles(location, t_common, interp, indices, ylabel="Tip amount
     ax.legend()
     plt.savefig("TipDensOverAllSim", dpi=300, bbox_inches="tight")
 
+def save_simulation(filename, sim):
+    # stores one simulation dict (only arrays/numbers, e.g. "times", "tip_dens", ...) as .npz
+    np.savez(filename, **sim)
+
+def load_simulations(pattern):
+    # loads all .npz files matching pattern (e.g. "results/seed_*.npz") into a list of dicts, sorted by filename
+    import glob
+    simulations = []
+    for f in sorted(glob.glob(pattern)):
+        with np.load(f) as data:
+            simulations.append({key: data[key] for key in data.files})
+    # print("Loaded " + str(len(simulations)) + " simulations from " + pattern)
+    return simulations
+
 
 def estimate_carbon_cost_per_Org(length,radius,pdry,pcarbon,dcell,CUE):
     gamma = np.pi * radius *radius*dcell*pdry*pcarbon
@@ -555,22 +569,51 @@ def getSourcesTargets(G, barrier_thickness, tol = 1.e-5):
     targets = [n for n in ends if n not in s]
     return sources, targets
 
-def weightedEfficiencySubset(G, sources, targets, dim = 3):
-    # efficiency of Latora & Marchiori (2001) only for the pairs (source, target):
+def weightedEfficiencySubset(G, sources, targets = None, dim = 3):
+    # efficiency of Latora & Marchiori (2001) only for the pairs (source, target), or for all pairs within sources if targets is None:
     # sum of 1/(shortest path length) normalised by sum of 1/(straight line distance), unconnected pairs contribute 0
     import networkx as nx
     from scipy.spatial.distance import cdist
     weight = lengthWeight(dim)
-    targets = [t for t in targets if t not in set(sources)]
+    sources = list(sources)
+    if targets is None:
+        targets = sources
+    else:
+        targets = [t for t in targets if t not in set(sources)]
     pos_s = np.array([G.nodes[n]["pos"] for n in sources])[:, :dim]
     pos_t = np.array([G.nodes[n]["pos"] for n in targets])[:, :dim]
-    eucl = cdist(pos_s, pos_t)
+    eucl = cdist(pos_s, pos_t) # pairs within one set are counted twice, as are the paths below
     inv_eucl = np.sum(1. / eucl[eucl > 0])
     inv_path = 0.
     for s in sources:
         dist = nx.single_source_dijkstra_path_length(G, s, weight = weight)
-        inv_path += sum(1. / dist[t] for t in targets if t in dist and dist[t] > 0)
+        inv_path += sum(1. / dist[t] for t in targets if t != s and t in dist and dist[t] > 0)
     return float(inv_path / inv_eucl)
+
+def getTerminalRootNodes(mycp, S, barrier_thickness, root_dist = 0.5):
+    # node sets as in Oyarte Galvez et al. (2025), both restricted to the nodes of S (e.g. simplifyGraph(getNetworkX(mycp, small_hyphae_dish))):
+    # R (root nodes): all nodes within root_dist [cm] (5 mm) of the barrier face on the hyphal side (x = barrier_thickness/2),
+    #                 i.e. sites of crossing from the root compartment
+    # T (terminal nodes): growing tips (last node of active non-BAS hyphae) and attachment sites of BAS (first node of a BAS,
+    #                 subType 3, whose parent is no BAS); nodes in R are not in T
+    x_root = barrier_thickness / 2 + root_dist
+    R = [n for n in S.nodes if S.nodes[n]["pos"][0] <= x_root]
+    in_R = set(R)
+    T = set()
+    for h in mycp.getOrgans(pb.hyphae):
+        if int(h.getParameter("subType")) == 3:
+            p = h.getParent()
+            if not (int(p.getParameter("organType")) == 5 and int(p.getParameter("subType")) == 3):
+                T.add(h.getNodeId(0))
+        elif h.isActive():
+            T.add(h.getNodeId(h.getNumberOfNodes() - 1))
+    T = [n for n in T if n in S and n not in in_R]
+    return T, R
+
+def getEfficiencies(S, T, R, dim = 3):
+    # (i) global efficiency: transport between arbitrary pairs of the transport relevant nodes T and R
+    # (ii) root efficiency: transport between the terminal nodes T and the root nodes R
+    return weightedEfficiencySubset(S, list(T) + list(R), None, dim), weightedEfficiencySubset(S, T, R, dim)
 
 def betweennessSubset(G, sources, targets, dim = 3, edges = False):
     # fraction of all shortest (source, target) paths running through each node (or edge, if edges = True);

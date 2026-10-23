@@ -3,13 +3,19 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 import numpy as np
-import time
+import os
 import AMFAnalysis as amf
 
+# Usage: python3 petridishsimauto.py <seed>
+# one seed per run, e.g. one per cluster job (see run_petridish.sh). Seed 0 means random seed in CPlantBox, so use seeds > 0.
+# Results go to results_dir, the radial profile over all seeds is made by petridishcombine.py
 # I changed the c++ code, so set might not be valid anymore
 # good_seeds = [10, 25, 45, 50, 70, 105, 115, 125]
-good_seeds = [10 + i for i in range(100)]
-# good_seeds = [25, 10]
+if len(sys.argv) != 2:
+    sys.exit("Usage: python3 petridishsimauto.py <seed>")
+seed = int(sys.argv[1])
+results_dir = "petridish_results/densities/"
+os.makedirs(results_dir, exist_ok=True)
 path = "tomatoparameters/"
 name = "TwoHyphaePlusBAS"
 animation = False
@@ -33,32 +39,25 @@ vol = amf.ringVolume(radius, nRings, height, barrier_thickness)[:, None] # one v
 
 dt, nSteps = amf.setUpSimulationTime(5, 24)
 
-simulations = []
-allsims = time.perf_counter()
-for seed in good_seeds:
-    filename = "petridish_nowait_seed_" + str(seed)
-    start = time.perf_counter()
-    mycp, time_star, times = amf.makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation=animation)
-    print("Time for simulation: ", time.perf_counter() - start)
-    if show_3d:
-        vp.plot_roots_and_container(mycp, petri_dish)
-    if not animation:
-        amf.getMycSegmentAnalyser(mycp, stdwrite=True, filename="animation/" + filename, step=nSteps)
+filename = "petridish_nowait_seed_" + str(seed)
+mycp, time_star, times = amf.makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation=animation)
+if show_3d:
+    vp.plot_roots_and_container(mycp, petri_dish)
+if not animation:
+    amf.getMycSegmentAnalyser(mycp, stdwrite=True, filename="animation/" + filename, step=nSteps)
 
     # Ringe -> Zeile // Zeitabschnitt -> Spalte
-    mats = amf.getParasPerRing(["nodeTips", "anastomosis", "length"], times, mycp, rings)
-    simulations.append({
-        "times": times[1:],   # getParasPerRing returns len(times)-1 columns
-        "tip_dens": mats["nodeTips"] / vol,
-        "ana_densities": mats["anastomosis"],
-        "length_densities": mats["length"] / vol,
-    })
-print("Time for all simulations: ", time.perf_counter() - allsims)
-
-for sim, seed in zip(simulations, good_seeds):
-    if (seed % 10 == 0):
-        amf.plot_ring_heatmap(sim["times"], location, sim["tip_dens"], "Tip Density [mm$^{-3}$]", f"plots/tip_densities_seed_{seed:03d}.png")
-        amf.plot_ring_heatmap(sim["times"], location, sim["ana_densities"], "Anastomoses per ring", f"plots/ana_densities_seed_{seed:03d}.png")
-
-t_common, tip_dens_interp = amf.interpolate_to_common_time(simulations, "tip_dens")
-amf.plot_radial_profiles(location, t_common, tip_dens_interp, indices=[0, 30, 60, 90], ylabel="Tip density")
+mats = amf.getParasPerRing(["nodeTips", "anastomosis", "length"], times, mycp, rings)
+sim = {
+    "seed": seed,
+    "time_star": time_star,
+    "location": location,
+    "times": times[1:],   # getParasPerRing returns len(times)-1 columns
+    "tip_dens": mats["nodeTips"] / vol,
+    "ana_densities": mats["anastomosis"],
+    "length_densities": mats["length"] / vol,
+}
+amf.save_simulation(results_dir + f"seed_{seed:03d}.npz", sim)
+if (seed % 10 == 0):
+    amf.plot_ring_heatmap(sim["times"], location, sim["tip_dens"], "Tip Density [mm$^{-3}$]", f"plots/tip_densities_seed_{seed:03d}.png")
+    amf.plot_ring_heatmap(sim["times"], location, sim["ana_densities"], "Anastomoses per ring", f"plots/ana_densities_seed_{seed:03d}.png")
