@@ -84,9 +84,7 @@ class TestStem(unittest.TestCase):
         ''' simulates a single stem and checks length against analytic length '''
         nl, nl2, nlth, non = [], [], [], []
         for t in dt:
-            self.plant.abs2rel()
             self.stem.simulate(t , False)
-            self.plant.rel2abs()
             nl.append(self.stem.getParameter("length"))
             nlth.append(self.stem.getParameter("lengthTh"))
             non.append(self.stem.getNumberOfNodes())
@@ -115,21 +113,15 @@ class TestStem(unittest.TestCase):
         ''' tests if nodes created in last time step are correct '''
         self.stem_example_rtp()
         r = self.stem
-        self.plant.abs2rel()
         r.simulate(2, False)
-        self.plant.rel2abs()
         # because of nodal growth, hasMoved() == True for leaves and stems
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
 
-        self.plant.abs2rel()
         r.simulate(1, False)
-        self.plant.rel2abs()
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
         non = r.getNumberOfNodes()
 
-        self.plant.abs2rel()
         r.simulate(20, False)
-        self.plant.rel2abs()
         self.assertEqual(r.getOldNumberOfNodes(), non, "dynamics: wrong number of old nodes")
         dx = r.getStemRandomParameter().dx
         p = r.param()
@@ -235,9 +227,7 @@ class TestStem(unittest.TestCase):
         ''' tests some parameters on sequential organ list '''
         self.stem_example_rtp()
         simtime = 30.
-        self.plant.abs2rel()
         self.stem.simulate(simtime, False)
-        self.plant.rel2abs()
         organs = self.stem.getOrgans()
         type, age, radius, order, ct = [], [], [], [], []
         for o in organs:
@@ -259,9 +249,7 @@ class TestStem(unittest.TestCase):
         '''check sequetial and equal growth dynamic of the phytomeres'''
         self.stem_example_rtp("equal")
         simtime = 50.
-        self.plant.abs2rel()
         self.stem.simulate(simtime, False)
-        self.plant.rel2abs()
         r = self.stem
         p = r.param()
         stemLength_th = stemLength(simtime, p.r, p.getK(), p.delayNGStart, p.delayNGEnd, p.lb)
@@ -285,7 +273,6 @@ class TestStem(unittest.TestCase):
             self.assertAlmostEqual(PhytoLengths_th[i], PhytoLengths_real[i], 10, "phytomereGrowth: unexpected phytomere length")
 
         self.stem_example_rtp("sequential")
-        self.plant.abs2rel()
         self.stem.simulate(simtime, False)
         r = self.stem
         p = r.param()
@@ -370,10 +357,8 @@ class TestStem(unittest.TestCase):
     def test_new_delay_types(self):
         self.stem_example_rtp2(delay_definition = 0) #depends on la
         r = self.stem
-        self.plant.abs2rel()
         time = 100
         r.simulate(time, False)
-        self.plant.rel2abs()
         meanLn = self.stem.getParameter("lnMean")# mean inter-lateral distance
         effectiveLa = max(self.stem.getParameter("la")-meanLn/2, 0.)#effective apical distance, observed apical distance is in la-ln/2, la+ln/2
         ageLN = self.stem.calcAge(self.stem.param().lb)# age of root when lateral node is created
@@ -387,10 +372,8 @@ class TestStem(unittest.TestCase):
             
         self.stem_example_rtp2(delay_definition = 1) #depends on ldelay of parent organ
         r = self.stem
-        self.plant.abs2rel()
         time = 10
         r.simulate(time, False)
-        self.plant.rel2abs()
         firstChild = self.stem.getChild(0)
         for i in range(self.stem.getNumberOfChildren()):  
             r = self.stem.getChild(i)
@@ -402,10 +385,8 @@ class TestStem(unittest.TestCase):
             
         self.stem_example_rtp2(delay_definition = 2) #depends on ldelay of lateral organ
         r = self.stem
-        self.plant.abs2rel()
         time = 10
         r.simulate(time, False)
-        self.plant.rel2abs()
         firstChild = self.stem.getChild(0)
         for i in range(self.stem.getNumberOfChildren()):  
             r = self.stem.getChild(i)

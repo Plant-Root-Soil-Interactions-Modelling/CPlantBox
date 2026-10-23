@@ -1121,9 +1121,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("simulateLimited", &Plant::simulateLimited)
         .def("initCallbacks", &Plant::initCallbacks)
         .def("createTropismFunction", &Plant::createTropismFunction)
-        .def("createGrowthFunction", &Plant::createGrowthFunction)
-        .def("abs2rel", &Plant::abs2rel)
-        .def("rel2abs", &Plant::rel2abs);
+        .def("createGrowthFunction", &Plant::createGrowthFunction);
 
     py::class_<MappedPlant, Plant, MappedSegments, std::shared_ptr<MappedPlant>>(m, "MappedPlant")
         .def(py::init<unsigned int>(), py::arg("seednum") = 0)

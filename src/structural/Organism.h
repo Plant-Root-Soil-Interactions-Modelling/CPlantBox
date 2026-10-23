@@ -131,7 +131,6 @@ class Organism : public std::enable_shared_from_this<Organism> {
 
     std::vector<std::shared_ptr<Organ>> baseOrgans; ///< base organs of the organism (e.g. seed, or initial plant)
 
-    virtual bool hasRelCoord() { return false; } ///< Overridden by derived classes with relative coordinates.
     int getDelayDefinition(int ot_lat);          ///< Returns delay-definition mode for a lateral organ type.
 
     int plantId; ///< Unique organism id (mainly for debugging/copy tracing).

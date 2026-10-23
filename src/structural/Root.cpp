@@ -66,7 +66,7 @@ Root::Root(std::shared_ptr<Organism> plant_, int subType, double delay, std::sha
                 //  @see stem::leafGrow
                 creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
             }
-            addNode(Vector3d(0., 0., 0.), parent->getNodeId(pni), creationTime);
+            addNode(Vector3d(0., 0., 0.), parent->getNodeId(pni), creationTime); // relative coordinate = (0,0,0)
         }
     }
 }
@@ -87,6 +87,34 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs) {
         r->children[i]->setParent(r);
     }
     return r;
+}
+
+/**
+ * Roots carried by a stem or leaf store relative coordinates, so that they follow the shoot organ (e.g. during internodal growth).
+ */
+bool Root::hasRelCoord() const {
+    auto p = getParent();
+    return (p != nullptr) && p->hasRelCoord();
+}
+
+/**
+ * Absolute heading at node n: direction of the segment [n-1, n], or the initial heading for n == 0.
+ * Roots carried by a stem or leaf have relative coordinates, @see Organ::heading
+ */
+Vector3d Root::heading(int n) const {
+    if (hasRelCoord()) {
+        return Organ::heading(n);
+    }
+    if (n < 0) {
+        n = nodes.size() - 1;
+    }
+    if ((nodes.size() > 1) && (n > 0)) {
+        n = std::min(int(nodes.size()) - 1, n);
+        Vector3d h = nodes.at(n).minus(nodes.at(n - 1));
+        h.normalize();
+        return h;
+    }
+    return getInitialHeading();
 }
 
 /**
@@ -113,7 +141,7 @@ void Root::simulate(double dt, bool verbose) {
 
         // probabilistic branching model
         if ((age > 0) && (age - dt <= 0)) { // the root emerges in this time step
-            double P = getRootRandomParameter()->f_sbp->getValue(nodes.back(), shared_from_this());
+            double P = getRootRandomParameter()->f_sbp->getValue(getNode(nodes.size() - 1), shared_from_this());
             if (P < 1.) {                       // P==1 means the lateral emerges with probability 1 (default case)
                 double p = 1. - (1. - P * dt);  // probability of emergence in this time step
                 if (plant.lock()->rand() > p) { // not rand()<p
@@ -140,7 +168,7 @@ void Root::simulate(double dt, bool verbose) {
                 double targetlength = calcLength(age_ + dt_) + this->epsilonDx;
 
                 double e = targetlength - length; // unimpeded elongation in time step dt
-                double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+                double scale = getRootRandomParameter()->f_se->getValue(getNode(nodes.size() - 1), shared_from_this());
                 double dl = std::max(scale * e, 0.); //  length increment = calculated length + increment from last time step too small to be added
                 length = getLength();
                 this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)

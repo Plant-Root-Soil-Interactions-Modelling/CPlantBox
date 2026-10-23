@@ -31,19 +31,12 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
 
     // Anchor the meristem at the attachment point with the parent's heading as
     // the initial turtle frame (+x = heading, +z = up).
-    Vector3d anchorPos(0., 0., 0.); // relative coordinate; abs is resolved via rel2abs
+    Vector3d anchorPos(0., 0., 0.); // relative coordinate; the absolute position is resolved in GrassLeaf::getNode
     Matrix3d anchorFrame;           // identity = upward along x, will be overridden below
 
     // Anchor frame: align heading column with parent heading at pni.
     if (parent->getNumberOfNodes() > 0) {
-        Vector3d h;
-        if (parent->hasRelCoord()) {
-            parent->rel2abs(); 
-            h = parent->heading(pni); // otherwise that does not work
-            parent->abs2rel();
-        } else {
-            h = parent->heading(pni);
-        }
+        Vector3d h = parent->heading(pni);
         anchorFrame = Matrix3d::ons(h); // heading: col 0; col 1, 2 perpendicular
     }
     double beta = getPlant()->leafphytomerID.at(subtype)* M_PI; // distichous (two-ranked) phyllotaxy (180 degree rotation)
@@ -73,6 +66,22 @@ Vector3d GrassLeaf::getNode(int i) const {
         turtle.setAnchor(anchorPoint);
         return turtle.getNode(i-1); // -1 because the initial node at index 0 
     }
+}
+
+/**
+ * @brief Returns the heading at node @p i: direction of the turtle segment [i-1, i], or the initial heading for i == 0.
+ */
+Vector3d GrassLeaf::heading(int n) const {
+    int nn = getNumberOfNodes();
+    if (n < 0) {
+        n = nn - 1;
+    }
+    if ((nn > 1) && (n > 0)) {
+        Vector3d h = getNode(std::min(n, nn - 1)).minus(getNode(std::min(n, nn - 1) - 1));
+        h.normalize();
+        return h;
+    }
+    return getInitialHeading();
 }
 
 /**

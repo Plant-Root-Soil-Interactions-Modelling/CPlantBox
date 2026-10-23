@@ -50,7 +50,8 @@ class Stem : public Organ {
     std::vector<int> stemphytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int shootborneType = 5;
 
-    Vector3d getNode(int i) const override { return nodes.at(i); }                 ///< i-th node of the organ
+    bool hasRelCoord() const override { return true; }                             ///< stem nodes are stored relative to the origin
+    bool hasMoved() const override { return true; }                                ///< nodes move with the parent, or because of internodal growth
     void addNode(Vector3d n, int id, double t, size_t index, bool shift) override; //< adds a node to the root
 
   protected:

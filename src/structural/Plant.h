@@ -87,8 +87,6 @@ class Plant : public Organism {
     std::string toString() const override;
 
     std::vector<int> leafphytomerID = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    void abs2rel();
-    void rel2abs();
 
   protected:
     std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam

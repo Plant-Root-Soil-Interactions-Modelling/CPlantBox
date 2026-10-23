@@ -32,7 +32,7 @@ public:
 
   void simulate(double dt, bool silence = false) override; ///< leaf growth for a time span of \param dt
 
-  Vector3d getNode(int i) const override { return nodes.at(i); } ///< i-th node of the organ
+  bool hasRelCoord() const override { return true; } ///< leaf nodes are stored relative to the origin
 
   double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ parameter of Plant::ScalarType
 
@@ -68,7 +68,8 @@ public:
 
 protected:
   Vector3d getIncrement(const Vector3d &p, double sdx, int n = -1) override; ///< called by createSegments, to determine growth direction
-  Vector3d heading(int n) const override;                                    ///< current (absolute) heading of the organs at node n
+  Vector3d startHeading() const override;                                    ///< heading at node 0, the sheath of a pseudostem grows straight upward (no theta)
+  Vector3d nextHeading(const Vector3d &d, int j, double len) const override; ///< heading at node j, a pseudostem bends at the first node of the blade
   int getleafphytomerID(int subtype);
   void minusPhytomerId(int subtype);
   void addleafphytomerID(int subtype);
@@ -78,7 +79,7 @@ protected:
   std::vector<double> getLeafVisX_cuboid(double l);
   std::vector<Vector3d> getLeafVis_2D(int i);
   std::vector<Vector3d> getLeafVis_cuboid(int i);
-  bool ageDependentTropism = false; ///< do we need to check the leaf's age to see when to update the tropism effect?, @see Leaf::rel2abs
+  bool ageDependentTropism = false; ///< do we need to check the leaf's age to see when to update the tropism effect?, @see Leaf::getIncrement
 };
 
 } // namespace CPlantBox

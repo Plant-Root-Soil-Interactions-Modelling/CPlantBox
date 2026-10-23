@@ -46,10 +46,8 @@ public:
 
   void simulate(double dt, bool verbose = false) override;
 
-  void abs2rel() override {} ///< No-op: GrassLeaf geometry is meristem-managed, not nodes-based.
-  void rel2abs() override {} ///< No-op: GrassLeaf geometry is meristem-managed, not nodes-based.
-
   int getNumberOfNodes() const override { return turtle.size() + 1; } ///< +1 because the anchor point is not stored in the meristem
+  Vector3d heading(int n) const override; ///< Heading at node n from the turtle polyline.
   Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
 
   double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;

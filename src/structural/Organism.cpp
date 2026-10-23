@@ -247,11 +247,7 @@ std::vector<std::vector<Vector3d>> Organism::getPolylines(int ot) const {
     auto organs = getOrgans(ot);
     std::vector<std::vector<Vector3d>> nodes = std::vector<std::vector<Vector3d>>(organs.size());
     for (size_t j = 0; j < organs.size(); j++) {
-        std::vector<Vector3d> n = std::vector<Vector3d>(organs[j]->getNumberOfNodes());
-        for (size_t i = 0; i < organs[j]->getNumberOfNodes(); i++) { // loop over all nodes of all organs
-            n.at(i) = organs[j]->getNode(i);
-        }
-        nodes[j] = n;
+        nodes[j] = organs[j]->getNodes();
     }
     return nodes;
 }
@@ -288,8 +284,9 @@ std::vector<Vector3d> Organism::getNodes() const {
         nv.at(o->getNodeId(0)) = o->getNode(0);
     }
     for (const auto &o : organs) {                           // copy all organ nodes
+        auto on = o->getNodes();
         for (size_t i = 1; i < o->getNumberOfNodes(); i++) { // since all base nodes are stored twice as base and along root
-            nv.at(o->getNodeId(i)) = o->getNode(i);
+            nv.at(o->getNodeId(i)) = on.at(i);
         }
     }
     return nv;
@@ -424,8 +421,9 @@ std::vector<Vector3d> Organism::getUpdatedNodes() const {
         if (o->hasMoved() && (o->getOldNumberOfNodes() > 1)) {
             if ((o->organType() > 2)) {
                 int onon = o->getOldNumberOfNodes(); // in case of internodal growth, not just last node needs to be updated
+                auto on = o->getNodes();
                 for (int i = 1; i < onon; i++) {
-                    nv.push_back(o->getNode(i));
+                    nv.push_back(on.at(i));
                 }
             } else {
                 nv.push_back(o->getNode(o->getOldNumberOfNodes() - 1));
@@ -466,8 +464,9 @@ std::vector<Vector3d> Organism::getNewNodes() const {
     std::vector<Vector3d> nv(this->getNumberOfNewNodes());
     for (const auto &o : organs) {
         int onon = o->getOldNumberOfNodes();
+        auto on = o->getNodes();
         for (size_t i = onon; i < o->getNumberOfNodes(); i++) { // loop over all new nodes
-            nv.at(o->getNodeId(i) - this->oldNumberOfNodes) = o->getNode(i);
+            nv.at(o->getNodeId(i) - this->oldNumberOfNodes) = on.at(i);
         }
     }
     return nv;

@@ -91,10 +91,10 @@ public:
   virtual int getNumberOfNodes() const { return nodes.size(); }          ///< Returns the number of nodes
   int getNumberOfSegments() const;                                       ///< Returns the number of polyline segments (nodes - 1), clamped to zero
   Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< Returns the absolute coordinate of the organ's attachment point on the parent
-  virtual Vector3d getNode(int i) const { return nodes.at(i); }          ///< Returns the absolute (or relative) coordinate of node @p i
+  virtual Vector3d getNode(int i) const;                                 ///< Returns the absolute coordinate of node @p i; for relative organs calculated from getOrigin() and the relative nodes
   int getNodeId(int i) const { return nodeIds.at(i); }                   ///< Returns the global node index of local node @p i
   std::vector<int> getNodeIds() const { return nodeIds; }                ///< Returns all global node indices
-  const std::vector<Vector3d> &getNodes() const { return nodes; }        ///< Returns all node coordinates
+  virtual std::vector<Vector3d> getNodes() const;                        ///< Returns the absolute coordinates of all nodes
   double getNodeCT(int i) const { return nodeCTs.at(i); }                ///< Returns the creation time of node @p i [days]
   void addNode(Vector3d n, double t, size_t index, bool shift);          ///< Adds a node using the next global index from the organism
   virtual void addNode(Vector3d n, int id, double t, size_t index,
@@ -102,17 +102,13 @@ public:
   void addNode(Vector3d n, int id, double t) { addNode(n, id, t, size_t(0), false); } ///< pybind convenience overload (no index or shift)
   void addNode(Vector3d n, double t) { addNode(n, t, size_t(0), false); };            ///< pybind convenience overload (no id, index, or shift)
   std::vector<Vector2i> getSegments() const;                                          ///< Returns all polyline segments as pairs of global node indices
-  virtual Vector3d heading(int n) const; ///< Returns the absolute heading at node @p n (direction of segment [n-1, n], or initial heading if n==0)
-  Vector3d getInitialHeading() const;    ///< Returns the absolute initial heading when the organ was created
+  virtual Vector3d heading(int n) const; ///< Returns the absolute heading at node @p n (direction of segment [n-1, n], or initial heading if n==0); calculated from relative coordinates, override for absolute coordinates
+  Vector3d getInitialHeading() const;         ///< Returns the absolute initial heading when the organ was created
   double dx() const;                     ///< Returns the maximal axial segment length from the organ random parameter [cm]
   double dxMin() const;                  ///< Returns the minimal axial segment length from the organ random parameter [cm]
 
-  //
-  virtual void rel2abs();     ///< Converts node coordinates from relative to absolute (recursive over children)
-  virtual void abs2rel();     ///< Converts node coordinates from absolute to relative (recursive over children)
-  void moveOrigin(int idx);   ///< Updates the parent attachment node index (used during internodal growth)
-  bool hasRelCoord() const;   ///< Returns true if node coordinates are currently stored in relative form
-  bool has_rel_coord = false; ///< Flag: true when nodes are in relative coordinates
+  void moveOrigin(int idx);                                    ///< Updates the parent attachment node index (used during internodal growth)
+  virtual bool hasRelCoord() const { return false; }           ///< Returns true if nodes are stored in relative form (Stem, Leaf, and roots carried by them)
 
   /* last time step */
   virtual bool hasMoved() const { return moved; };             ///< Returns true if any node moved during the last simulate() call
@@ -139,9 +135,9 @@ public:
 
 protected:
 
-  int parentNI;                     ///< Local node index in the parent organ where this organ is attached
-  mutable Vector3d partialIHeading; ///< Initial relative heading used to compute getInitialHeading(); mutable to allow derived-class caching
-
+  virtual Vector3d startHeading() const { return getInitialHeading(); } ///< Heading at node 0 used when calculating node positions; override in Leaf
+  virtual Vector3d nextHeading(const Vector3d &d, int j,
+                               double len) const; ///< Heading at node @p j (relative coordinates), given the direction @p d of the segment [j-1, j] and the length @p len until node j; override in Leaf
   virtual void createLateral(double ageLN, bool silence); ///< Creates a new lateral organ at the current tip; called from simulate(); override in RootDelay
   virtual Vector3d getIncrement(const Vector3d &p, double sdx,
                                 int n = -1); ///< Returns the growth increment vector of length @p sdx from point @p p; override in Leaf
@@ -151,7 +147,6 @@ protected:
   virtual double getLatGrowthDelay(int ot_lat, int st_lat,
                                    double dt) const; ///< Returns the emergence delay for a new lateral of type (@p ot_lat, @p st_lat) [days]
   bool getApplyHere(int i) const;                    ///< Returns true if successor rule @p i applies at the current linking node
-  std::vector<int> addIncrement;                     ///< Scratch indices tracking inserted nodes during coordinate-system switching
 
   /* Up and down the organ tree */
   std::weak_ptr<Organism> plant;                ///< Owning organism (weak to avoid reference cycles)
@@ -169,9 +164,12 @@ protected:
   double length = 0;               ///< Theoretical organ length [cm] (may exceed realised length by epsilonDx)
   double epsilonDx = 0;            ///< Residual growth too small for a new segment; carried forward to the next time step [cm]
   size_t created_linking_node = 0; ///< Number of linking nodes (lateral attachment points) created so far
+  int parentNI;                     ///< Local node index in the parent organ where this organ is attached
+  mutable Vector3d partialIHeading; ///< Initial relative heading used to compute getInitialHeading(); mutable to allow derived-class caching
+
 
   /* Node data */
-  std::vector<Vector3d> nodes; ///< Node coordinates [cm] (absolute or relative, see has_rel_coord)
+  std::vector<Vector3d> nodes; ///< Node coordinates [cm]; absolute, or relative if hasRelCoord()
   std::vector<int> nodeIds;    ///< Global node indices corresponding to each node
   std::vector<double> nodeCTs; ///< Node creation times [days]
 

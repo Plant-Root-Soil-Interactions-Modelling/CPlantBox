@@ -106,9 +106,6 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p) {
  * @param verbose  indicates if status messages are written to the console (cout) (default = false)
  */
 void Stem::simulate(double dt, bool verbose) {
-    if (!hasRelCoord()) {
-        throw std::runtime_error("organism not set in rel coord");
-    }
     const StemSpecificParameter &p = *param(); // rename
     firstCall = true;
     oldNumberOfNodes = nodes.size();
@@ -126,8 +123,7 @@ void Stem::simulate(double dt, bool verbose) {
 
         // probabilistic branching model (todo test)
         if ((age > 0) && (age - dt <= 0)) { // the root emerges in this time step
-            // use relative coordinates for this function. Delete as it s not a root?
-            double P = getStemRandomParameter()->f_sbp->getValue(nodes.back(), shared_from_this());
+            double P = getStemRandomParameter()->f_sbp->getValue(getNode(nodes.size() - 1), shared_from_this());
             if (P < 1.) {                       // P==1 means the lateral emerges with probability 1 (default case)
                 double p = 1. - (1. - P * dt);  // probability of emergence in this time step
                 if (plant.lock()->rand() > p) { // not rand()<p

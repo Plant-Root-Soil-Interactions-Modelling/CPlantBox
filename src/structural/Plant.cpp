@@ -209,11 +209,7 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
  */
-void Plant::simulate(double dt, bool verbose) {
-    abs2rel();
-    Organism::simulate(dt, verbose);
-    rel2abs();
-}
+void Plant::simulate(double dt, bool verbose) { Organism::simulate(dt, verbose); }
 
 /**
  * Simulates plant growth for the time span defined in the root system parameters
@@ -305,32 +301,6 @@ double Plant::weightedSum(std::string paramName, std::vector<double> scales) con
         sum += scales.at(i) * o->getParameter(paramName);
     }
     return sum;
-}
-
-/**
- * go from absolute to relative coordinates for aboveground organs
- */
-void Plant::abs2rel() {
-    auto s = getSeed();
-    for (int i = 0; i < s->getNumberOfChildren(); i++) {
-        auto child = s->getChild(i);
-        // if(child->organType() >2){ //if aboveground-organ
-        child->abs2rel(); // apply to all organs
-        //}
-    }
-}
-
-/**
- * go from relative to absolute coordinates for aboveground organs
- */
-void Plant::rel2abs() {
-    auto s = getSeed();
-    for (int i = 0; i < s->getNumberOfChildren(); i++) {
-        auto child = s->getChild(i);
-        // if(child->organType() >2){ //if aboveground-organ
-        child->rel2abs(); // apply to all organs
-        //}
-    }
 }
 
 /**

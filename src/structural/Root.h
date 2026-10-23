@@ -30,6 +30,10 @@ class Root : public Organ {
 
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
 
+    bool hasRelCoord() const override;                           ///< true if the root is carried by a Stem or Leaf (relative coordinates, like its parent)
+    Vector3d heading(int n) const override;                      ///< absolute heading at node n
+    bool hasMoved() const override { return moved || hasRelCoord(); } ///< nodes of shoot-borne roots move with the parent
+
     double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)'
     std::string toString() const override;
 
