@@ -1,0 +1,15 @@
+number	crop	startyear	sowingdoy	emergencedoy	maturitydoy	yield	reldem
+0	winter wheat	1991	277	289	207	850	11
+1	winter wheat	1992	283	299	222	842	15
+2	winter wheat	1993	285	302	212	760	16
+3	winter wheat	1994	284	301	215	780	16
+4	winter wheat	1995	285	297	234	730	11
+5	winter wheat	1996	284	299	220	859	14
+6	winter wheat	1997	283	297	215	869	13
+7	winter wheat	1998	281	295	212	801	13
+8	winter wheat	1999	276	295	216	880	18
+9	winter wheat	2000	275	300	219	796	24
+10	winter wheat	2001	283	295	218	802	11
+11	winter wheat	2002	280	293	209	805	12
+12	winter wheat	2003	272	285	221	826	12
+13	winter wheat	2004	367	367	367	0	0

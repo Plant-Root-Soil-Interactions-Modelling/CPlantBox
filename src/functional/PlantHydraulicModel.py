@@ -1,11 +1,11 @@
 import numpy as np
-import plantbox as pb
-import plantbox.rsml.rsml_reader as rsml
 import scipy.sparse.linalg as LA
+from scipy import sparse
+
+import plantbox as pb
 from plantbox import PlantHydraulicModel as PlantHydraulicModelCPP
 from plantbox.functional.Perirhizal import PerirhizalPython as Perirhizal
 from plantbox.structural.MappedOrganism import MappedPlantPython
-from scipy import sparse
 
 
 class PlantHydraulicModel(PlantHydraulicModelCPP):
@@ -39,6 +39,8 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         @param params hydraulic conductivities described by PlantHydraulicParameters
         @param if cached == "True" sparse factorization is cached for faster solving using solve_again()
         """
+        if params is None:
+            params = pb.PlantHydraulicParameters()
         if isinstance(ms, str):
             ms = self.read_rsml(ms)
             super().__init__(ms, params)
@@ -114,32 +116,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         @file_name     the file name of the rsml, including file extension (e.g. "test.rsml" )
         @return a CPlantBox MappedSegments object
         """
-        polylines, props, funcs, _ = rsml.read_rsml(file_name)
-        bn = 0  # count base roots
-        for i, _ in enumerate(polylines):
-            if props["parent-poly"][i] < 0:
-                bn += 1
-        if bn > 1:
-            rsml.artificial_shoot(polylines, props, funcs)
-            if verbose:
-                print("XylemFluxPython.read_rsml: added an artificial shoot")
-        nodes, segs = rsml.get_segments(polylines, props)
-        if verbose:
-            print("XylemFluxPython.read_rsml: read rsml with", len(nodes), "nodes and", len(segs), "segments")
-        nodes2 = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]  # Conversions to PlantBox types
-        segs2 = [pb.Vector2i(int(s[0]), int(s[1])) for s in segs]
-
-        radii, cts, types, tag_names = rsml.get_parameter(polylines, funcs, props)
-        segRadii = np.zeros((segs.shape[0], 1))  # convert to paramter per segment
-        segTypes = np.zeros((segs.shape[0], 1))
-        for i, s in enumerate(segs):
-            segRadii[i] = radii[s[1]]  # seg to node index
-            segTypes[i] = types[s[1]]
-        if verbose:
-            print("                           cts [{:g}, {:g}] days".format(np.min(cts), np.max(cts)))
-            print("                           raddii [{:g}, {:g}] cm".format(np.min(radii), np.max(radii)))
-            print("                           subTypes Doussan[{:g}, {:g}] ".format(np.min(types), np.max(types)))
-        return pb.MappedSegments(nodes2, cts, segs2, segRadii, segTypes)  # root system grid
+        return MappedPlantPython.read_rsml(file_name, verbose)
 
     def collar_index(self):
         """returns the segment index of the collar segment, node index of the collar node is always 0"""
@@ -788,7 +765,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def get_krs(self, sim_time):
         """Overload get_krs so that get_krs and get_krs_ return the same data
-            return None so that we always get two objects from get_krs
+        return None so that we always get two objects from get_krs
         """
         try:
             return self.krs, None

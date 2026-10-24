@@ -1,5 +1,4 @@
 """shows the influence of tropism paramters"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import matplotlib.pyplot as plt
@@ -30,7 +29,7 @@ for i, n in enumerate(N_):
         p0.tropismN = n
         p0.tropismS = sigma
 
-        plant.initializeLB(True)
+plant.initialize(True)
         plant.simulate(65, True)
 
         nodes = plant.getNodes()

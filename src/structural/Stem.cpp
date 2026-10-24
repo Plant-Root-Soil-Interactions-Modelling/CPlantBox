@@ -276,9 +276,7 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
         std::cout << "create lat, delay def " << delayDefinition << " " << getId() << " " << (nodes.size() - 1) << " " << age << " "
                   << getNodeId(nodes.size() - 1) << " " << getNodeId(0) << std::endl;
     }
-    if (verbose) {
-        std::cout << "create lat, delay def " << delayDefinition << std::endl;
-    }
+
     // count the number of laterals of subtype st already created on this organ std::function<double(int, int, std::shared_ptr<Organ>)>
     auto correctST = [ot_lat, st_lat](std::shared_ptr<Organ> org) -> double {
         return double((org->getParameter("organType") == ot_lat) && (org->getParameter("subType") == st_lat));
@@ -307,7 +305,8 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     case Organism::dd_time_lat: { // lateral has to wait for a fixed time (defined by parent organ)
         // time the lateral has to wait
         forDelay = std::max(rp->ldelay + plant.lock()->randn() * rp->ldelays, 0.);
-        if (verbose) {
+        multiplyDelay *= rp->multDelay;
+		if (verbose) {
             std::cout << "Organism::dd_time_lat " << rp->ldelay << " " << rp->ldelays << " " << forDelay << std::endl;
         }
         break;
@@ -315,7 +314,8 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     case Organism::dd_time_self: {                                          // lateral has to wait for a fixed time (defined by lateral organ itself)
         auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
         forDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
-        if (verbose) {
+        multiplyDelay *= latRp->multDelay;
+		if (verbose) {
             std::cout << "create lat, delay output " << forDelay << std::endl;
             std::cout << "						 " << ot_lat << ", " << st_lat << " " << latRp->ldelay << " " << latRp->ldelays << " "
                       << forDelay << " " << nodes.size() << std::endl;
@@ -400,7 +400,7 @@ void Stem::internodalGrowth(double dl, double dt, bool verbose) {
  * @param name 		parameter name (returns nan if not available)
  *
  */
-double Stem::getParameter(std::string name) const {
+double Stem::getParameter(std::string name, std::map<std::string, double> addParams) const {
     if (name == "lb") {
         return param()->lb;
     } // basal zone [cm]
@@ -463,7 +463,7 @@ double Stem::getParameter(std::string name) const {
     if (name == "parentNI") {
         return parentNI;
     } // local parent node index where the lateral emerges
-    return Organ::getParameter(name);
+    return Organ::getParameter(name, addParams);
 }
 
 /**
@@ -489,6 +489,14 @@ double Stem::calcAge(double length) const {
         age__ += (param()->delayNGEnd - param()->delayNGStart);
     }
     return age__;
+}
+
+/**
+ * Creates the laterals of a new linking node (@see Organ::createLateral) and stores the local id of the node
+ */
+void Stem::createLateral(double dt, bool verbose) {
+    Organ::createLateral(dt, verbose);
+    storeLinkingNodeLocalId(created_linking_node, verbose);
 }
 
 /**
@@ -534,8 +542,8 @@ void Stem::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
         nodeCTs.insert(nodeCTs.begin() + index, t);
         for (auto kid : children) { // if carries children after the added node, update their "parent node index"
 
-            if ((kid->parentNI >= index - 1) && (kid->parentNI > 0)) {
-                kid->moveOrigin(kid->parentNI + 1);
+            if ((kid->getParentNI() >= index - 1) && (kid->getParentNI() > 0)) {
+                kid->moveOrigin(kid->getParentNI() + 1);
             }
         }
         for (int numnode = 0; numnode < localId_linking_nodes.size(); numnode++) { // update the local ids of the linking nodes
@@ -564,7 +572,7 @@ std::shared_ptr<const StemSpecificParameter> Stem::param() const { return std::s
  */
 std::string Stem::toString() const {
     std::stringstream newstring;
-    newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index" << parentNI << ".";
+    newstring << "; initial heading: " << getInitialHeading().toString() << ", parent node index" << parentNI << ".";
     return Organ::toString() + newstring.str();
 }
 

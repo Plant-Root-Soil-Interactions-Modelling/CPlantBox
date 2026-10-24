@@ -8,7 +8,7 @@ from plantbox.visualisation import figure_style
 
 sim_time = 14  # [day]  # |\label{l2_1g:defineStart}|
 plant = MappedPlantPython()  # |\label{l2_1g:MappedPlantPython}|
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 filename = "fspm2023"
 plant.readParameters(path + filename + ".xml")
 

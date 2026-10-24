@@ -1,5 +1,4 @@
 """ introctionary example """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -8,7 +7,7 @@ import plantbox.visualisation.vtk_plot as vp
 plant = pb.Plant()
 
 # Open plant and root parameter from a file
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "fspm2023"
 plant.readParameters(path + name + ".xml")
 

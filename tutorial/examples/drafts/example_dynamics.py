@@ -1,6 +1,3 @@
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/")
-sys.path.append("../../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux python binding
-sys.path.append("../../../../dumux-rosi/python/modules/")  # python wrappers
 
 """ SRA example draft """
 import plantbox as pb
@@ -37,7 +34,7 @@ max_b = [4., 4., 0.]
 cell_number = [8, 8, 25]  # [16, 16, 30]  # [32, 32, 60]
 periodic = True
 
-path = "../../../../CPlantBox/modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 loam = [0.08, 0.43, 0.04, 1.6, 50]
 initial = -659.8 + 12.5  # -659.8

@@ -9,7 +9,7 @@ import plantbox.visualisation.vtk_plot as vp
 plant = pb.Plant()
 
 # Open plant and root parameter from a file
-path = path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 filename = "Zea_mays_4_Leitner_2014"
 plant.readParameters(path + filename + ".xml")
 

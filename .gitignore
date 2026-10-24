@@ -7,6 +7,10 @@ src/Makefile
 src/cmake_install.cmake
 test/__pycache__/
 
+# environments
+cpb/
+cpbenv/
+
 # auto-saved files
 *~
 
@@ -63,5 +67,6 @@ tutorial/jupyter/.ipynb_checkpoints/
 
 # images
 *.png
+*.jpg
 .vscode/settings.json
 

@@ -307,7 +307,7 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage=True):
             sb.SetHeight(0.9 * height)
             sb.SetWidth(width)
             sb.SetPosition(y)
-            ren.AddActor2D(sb)
+            ren.AddViewProp(sb)
 
     axes = vtk.vtkAxesActor()
     axes.AxisLabelsOff()  # because i am too lazy to change font size
@@ -413,7 +413,7 @@ def write_jpg(renWin, fileName, magnification=5):
     ren = renWin.GetRenderers().GetFirstRenderer()
 
     # Find and temporarily adjust the scalar bar, so that screenshot has nice scale but viewer can also be reset
-    bars = [a for a in ren.GetActors2D() if isinstance(a, vtk.vtkScalarBarActor)]
+    bars = [a for a in ren.GetViewProps() if isinstance(a, vtk.vtkScalarBarActor)]  # GetActors2D is deprecated since VTK 9.7
     # Patch titles with \n, hardcoded as there is no clean solution
     original_titles = []
     for bar in bars:

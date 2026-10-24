@@ -2,9 +2,6 @@
 
 """ Sounds very interesting, who wrote it?  """
 
-import sys
-sys.path.append("../../")
-sys.path.append("../../src")
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 import numpy as np
@@ -68,7 +65,7 @@ def noisy(image, mean, var):
 
 #########################################################
 rs = pb.RootSystem()
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Faba_synMRI"
 # name = "Zeamays_synMRI"
 SNR = 5  # can be changed to other values

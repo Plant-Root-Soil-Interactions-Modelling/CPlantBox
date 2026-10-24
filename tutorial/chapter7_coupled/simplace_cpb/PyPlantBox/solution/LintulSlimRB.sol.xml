@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE solution PUBLIC "-//SIMPLACE/DTD SOL 1.0//EN" "http://simplace.net/dtd/SimSolution_3_3.dtd">
+
+<solution version="4.1" check="OFF">
+  <description title="LintulSlim" author="G. Krauss" qualitylevel="I">WIKI_START
+=== Purpose ===
+TECHNIAL TEST SOLUTION: PLEASE DON'T USE THIS SOLUTION FOR SCIENTIFIC SIMULATIONS!  
+
+=== References ===
+
+=== Data ===
+
+=== Remarks ===
+
+=== Usage ===
+
+WIKI_END</description>
+  <variables>
+    <var id="vCLIMATEZONE" datatype="CHAR">00002</var>
+    <var id="vRootDepth" datatype="DOUBLE">1</var>
+    <var id="vUnusedRootBiomass" datatype="DOUBLE">0</var>
+    <var id="vNitrogenNutritionIndex" datatype="DOUBLE">1</var>
+    <var id="vOptimalIrrigationFactor" datatype="DOUBLE">0</var>
+    <var id="vTempLimit" datatype="DOUBLE">35</var>
+    <var id="vTempSlopeAboveLimit" datatype="DOUBLE">7</var>
+    <var id="vAverageGroundTemperature" datatype="DOUBLE">9.50977253442255</var>
+    <var id="vAverageBulkDensity" datatype="DOUBLE">1.0975000000000001</var>
+    <var id="vFirstDayMeanTemp" datatype="DOUBLE">2.2000000178813934</var>
+    <var id="vCarbonContent" datatype="DOUBLE">0.77</var>
+    <var id="vSoiltype" datatype="CHAR">sandy loam</var>
+    <var id="vCropName" datatype="CHAR">winter wheat</var>
+    <var id="vBaseLUE" datatype="DOUBLE">3.0</var>
+    <var id="vBaseTempBeforeAnt" datatype="DOUBLE">3.0</var>
+    <var id="vBaseTempAfterAnt" datatype="DOUBLE">3.0</var>
+    <var id="vTRANRF" datatype="DOUBLE">1.0</var>
+    <var id="vSoilWaterContent" datatype="DOUBLE">1.0</var>
+    <var id="vWCWP" datatype="DOUBLE">0.075</var>
+    <var id="vWCFC" datatype="DOUBLE">0.23</var>
+    <var id="vWCST" datatype="DOUBLE">0.4</var>
+    <var id="vWCWET" datatype="DOUBLE">0.35</var>
+    <var id="vWCAD" datatype="DOUBLE">0.025</var>
+    <var id="vWaterContentInitial" datatype="DOUBLE">0.23</var>
+    <var id="vCO2StartYear" datatype="INT">2000</var>
+    <var id="startdate" datatype="DATE">15.10.1991</var>
+    <var id="enddate" datatype="DATE">01.08.1992</var>
+    <var id="vRunNr" datatype="INT">1</var>
+    
+    <var id="vMD95" datatype="INT">0</var>
+    <var id="vUnusedRootBiomass" datatype="DOUBLE">0</var>
+    <var id="vFRR" datatype="DOUBLEARRAY">{
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0}</var>
+    <var id="vRootLengthDensityPerLayer" datatype="DOUBLEARRAY">{
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0}</var>
+    <var id="vRainScale" datatype="DOUBLE">1.0</var>
+    <var id="vCalculateSoilStrength" datatype="BOOLEAN">true</var>
+    
+    
+  </variables>
+  
+  <interfaces default="simpool">
+    <interface id="compare" type="CSV">
+      <poolsize>2</poolsize>
+      <divider>;</divider>
+      <filename>${_WORKDIR_}/PyPlantBox/data/lintul/compare/compare_LintulSlim.csv</filename>
+    </interface>
+    <interface id="weatherfile" type="CSV">
+      <poolsize>2</poolsize>
+      <divider />
+      <filename>${_WORKDIR_}/PyPlantBox/data/lintul/${vCLIMATEZONE}Weather.txt</filename>
+    </interface>
+    <interface id="phenologyfile" type="CSV">
+      <poolsize>1</poolsize>
+      <filename>${_WORKDIR_}/PyPlantBox/data/lintul/LintulPhenologyObservations.csv</filename>
+    </interface>
+    <interface id="cropdata" type="XML">
+      <poolsize>1</poolsize>
+      <filename>${_WORKDIR_}/PyPlantBox/data/lintul/CropPropertiesLintulWaterstress.xml</filename>
+    </interface>
+    <interface id="SoilFile" type="CSV">
+      <poolsize>1</poolsize>
+      <divider>;</divider>
+      <filename>${_WORKDIR_}/PyPlantBox/data/slim/SoilPropertiesSlimRB.csv</filename>
+    </interface>
+    <interface id="SlimAlfaFile" type="CSV">
+      <poolsize>1</poolsize>
+      <divider>;</divider>
+      <filename>${_WORKDIR_}/PyPlantBox/data/slim/SlimAlfa.csv</filename>
+    </interface>
+    <interface id="SLIMFile" type="XML">
+      <poolsize>1</poolsize>
+      <divider />
+      <filename>${_WORKDIR_}/PyPlantBox/data/slim/SLIMProperties_ln92i13.xml</filename>
+    </interface>
+    <interface id="yieldout" type="CSV">
+      <poolsize>100</poolsize>
+      <divider>;</divider>
+      <filename>${_OUTPUTDIR_}/PyPlantBox/lintul/slim_rootbox_yieldout.csv</filename>
+    </interface>
+    <interface id="slimout" type="CSV">
+      <poolsize>100</poolsize>
+      <divider>;</divider>
+      <filename>${_OUTPUTDIR_}/PyPlantBox/lintul/slim_rootbox.csv</filename>
+    </interface>
+    <interface id="stmpout" type="CSV">
+      <poolsize>100</poolsize>
+      <divider>;</divider>
+      <filename>${_OUTPUTDIR_}/PyPlantBox/lintul/slim_rootbox_stmp.csv</filename>
+    </interface>
+    <interface id="sumyieldout" type="CSV">
+      <poolsize>100</poolsize>
+      <divider>;</divider>
+      <filename>${_OUTPUTDIR_}/PyPlantBox/lintul/slim_rootbox_sumyieldout.csv</filename>
+    </interface>
+  </interfaces>
+  <resources>
+    <resource id="referencedata" interface="compare" frequence="DAILY">
+      <header>
+        <res id="CURRENTDATE" datatype="DATE" key="CURRENT.DATE" />
+        <res id="yield" datatype="DOUBLE" />
+      </header>
+    </resource>
+    <resource id="weather" interface="weatherfile" frequence="DAILY">
+      <header>
+        <res id="KeyValue" datatype="CHAR" />
+        <res id="PolygonCode" datatype="CHAR" />
+        <res id="CURRENTDATE" datatype="DATE" key="CURRENT.DATE" />
+        <res id="Rain" unit="mm" datatype="DOUBLE" />
+        <res id="AirTemperatureMax" unit="°C" datatype="DOUBLE" />
+        <res id="AirTemperatureMin" unit="°C" datatype="DOUBLE" />
+        <res id="GlobalSolarRadiation" unit="MJ*m**-2" datatype="DOUBLE" />
+        <res id="WindSpeed" unit="m*s**-1" datatype="DOUBLE" />
+        <res id="ReferenceEvapotranspiration" unit="mm" datatype="DOUBLE" />
+      </header>
+    </resource>
+    <resource id="phenology" interface="phenologyfile" frequence="COMPLEX" rule="${DefaultManagement.DoHarvest}">
+      <header>
+        <res id="number" datatype="INT" key="LintulPhenology.CropCycleCount" />
+        <res id="crop" datatype="CHAR" />
+        <res id="year" datatype="INT" />
+        <res id="sowingdoy" datatype="INT" />
+        <res id="emergencedoy" datatype="INT" />
+        <res id="maturitydoy" datatype="INT" />
+        <res id="yield" datatype="DOUBLE" />
+        <res id="reldem" datatype="INT" />
+      </header>
+    </resource>
+    <resource id="soil" interface="SoilFile" frequence="YEARLY">
+      <header>
+        <res id="soiltype" datatype="CHAR" key="vSoiltype" />
+        <res id="dampingdepth" unit="m" datatype="DOUBLE" />
+        <res id="soilwater_fc_global" unit="cm3*cm-3" datatype="DOUBLE" />
+        <res id="soilwater_sat_global" unit="cm3*cm-3" datatype="DOUBLE" />
+        <res id="drainage_rate" unit="mm" datatype="DOUBLE" />
+        <res id="depth" datatype="DOUBLEARRAY" />
+        <res id="soilwater_fc" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="soilwater_red" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="soilwater_wp" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="soilwater_sat" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="soilwater_res" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="soilwater_init" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="bulkdensity" unit="g*cm-3" datatype="DOUBLEARRAY" />
+        <res id="clay" unit="g/100g" datatype="DOUBLEARRAY" />
+        <res id="carbon" unit="g/100g" datatype="DOUBLEARRAY" />
+        <res id="ammonium" unit="mg/kg" datatype="DOUBLEARRAY" />
+        <res id="nitrate" unit="mg/kg" datatype="DOUBLEARRAY" />
+        <res id="sand" unit="g/100g" datatype="DOUBLEARRAY" />
+        <res id="n" unit="" datatype="DOUBLEARRAY" />
+        <res id="alpha" unit="" datatype="DOUBLEARRAY" />
+        <res id="SoilPenetrationResistance" unit="MPa" datatype="DOUBLEARRAY" />
+        <res id="SoilPenetrationResistance_a" unit="1000 * m^2/s^2" datatype="DOUBLE" />
+        <res id="SoilPenetrationResistance_b" unit="1" datatype="DOUBLE" />
+        <res id="SoilPenetrationResistance_c" unit="1" datatype="DOUBLE" />
+      </header>
+    </resource>
+    <resource id="slimalfa" interface="SlimAlfaFile" frequence="YEARLY">
+      <header>
+        <res id="runnr" datatype="INT" key="vRunNr" />
+        <res id="ALFA" unit="" datatype="DOUBLEARRAY" />
+      </header>
+    </resource>
+    <resource id="slim" interface="SLIMFile" frequence="YEARLY">
+      <header>
+        <res id="soiltype" datatype="CHAR" key="vSoiltype" />
+        <res id="THICKL" unit="m" datatype="DOUBLE" />
+        <res id="SEEDD" unit="m" datatype="DOUBLE" />
+        <res id="MaxSoilEvaporationDepth" datatype="DOUBLE" />
+        <res id="MT" unit="-" datatype="INT" />
+        <res id="MY" unit="-" datatype="INT" />
+        <res id="MD" unit="-" datatype="INT" />
+        <res id="WMGENT" unit="mm" datatype="DOUBLE" />
+        <res id="WRGENT" unit="mm" datatype="DOUBLE" />
+        <res id="WMGENS" unit="mm" datatype="DOUBLE" />
+        <res id="WRGENS" unit="mm" datatype="DOUBLE" />
+        <res id="IFWGEN" unit="mm" datatype="BOOLEAN" />
+        <res id="ALFA" unit="" datatype="DOUBLE" />
+        <res id="DP" datatype="DOUBLE" />
+        <res id="WALIQ" unit="mm" datatype="DOUBLE" />
+        <res id="WM1S" datatype="DOUBLE" />
+        <res id="WRST" datatype="DOUBLE" />
+        <res id="WRSS" datatype="DOUBLE" />
+        <res id="SMD" datatype="DOUBLE" />
+        <res id="AREA" unit="m**2" datatype="DOUBLE" />
+        <res id="BGEN" datatype="DOUBLE" />
+        <res id="ELIM" datatype="DOUBLE" />
+        <res id="SCONC" unit="-" datatype="DOUBLE" />
+        <res id="SEEDD" unit="m" datatype="DOUBLE" />
+        <res id="AX" unit="m" datatype="DOUBLE" />
+        <res id="AMEQ" unit="m" datatype="DOUBLE" />
+        <res id="SCMIN" unit="m" datatype="DOUBLE" />
+        <res id="TEMCO1" unit="m" datatype="DOUBLE" />
+        <res id="TEMCO2" unit="m" datatype="DOUBLE" />
+        <res id="FLOWNR" unit="m" datatype="DOUBLE" />
+        <res id="AMR2" unit="m" datatype="DOUBLE" />
+        <res id="AMR1" unit="m" datatype="DOUBLE" />
+        <res id="HBT" unit="m" datatype="DOUBLE" />
+        <res id="HBS" unit="m" datatype="DOUBLE" />
+        <res id="CalculateRunoffWater" datatype="BOOLEAN" />
+        <res id="BulkDensityThresholdLower" datatype="DOUBLE" />
+        <res id="BulkDensityThresholdMiddle" datatype="DOUBLE" />
+        <res id="BulkDensityThresholdUpper" datatype="DOUBLE" />
+        <res id="MinimalBDSeminalRootReductionFactor" datatype="DOUBLE" />
+        <res id="SoilStrengthParameter" datatype="DOUBLE" />
+        <res id="MaximalSeminalRootLengthPerDay" datatype="DOUBLE" />
+        <res id="DeadRootsDevStage" datatype="DOUBLE" />
+        <res id="DailyDeadRootsRate" datatype="DOUBLE" />
+      </header>
+    </resource>
+    <resource id="crop" interface="cropdata" frequence="COMPLEX" rule="${DefaultManagement.DoSow}">
+      <header>
+        <res id="CROPNAME" datatype="CHAR" key="vCropName" />
+        <res id="AirTemperatureSumAnthesis" unit="K" datatype="DOUBLE" />
+        <res id="AirTemperatureSumMilkripeness" unit="K" datatype="DOUBLE" />
+        <res id="AirTemperatureSumMaturity" unit="K" datatype="DOUBLE" />
+        <res id="RelativeDayOfEmergence" unit="-" datatype="INT" />
+        <res id="DroughtTolerance" unit="-" datatype="DOUBLE" />
+        <res id="BaseTempBeforeAnt" unit="°C" datatype="DOUBLE" />
+        <res id="BaseTempAfterAnt" unit="°C" datatype="DOUBLE" />
+        <res id="LUE" unit="-" datatype="DOUBLE" />
+        <res id="SLA" unit="m**2 m**-2" datatype="DOUBLE" />
+        <res id="RGRL" unit="-" datatype="DOUBLE" />
+        <res id="LaiNStressReduction" unit="-" datatype="DOUBLE" />
+        <res id="LueNStressReduction" unit="-" datatype="DOUBLE" />
+        <res id="SlaNStressReduction" unit="-" datatype="DOUBLE" />
+        <res id="PartitioningNStressReduction" unit="-" datatype="DOUBLE" />
+        <res id="LaiCritical" unit="-" datatype="DOUBLE" />
+        <res id="TRANCO" unit="mm" datatype="DOUBLE" />
+        <res id="RDRSHM" unit="-" datatype="DOUBLE" />
+        <res id="RDRL" unit="-" datatype="DOUBLE" />
+        <res id="RDRNS" unit="-" datatype="DOUBLE" />
+        <res id="K" unit="-" datatype="DOUBLE" />
+        <res id="VernalDaysMax" unit="-" datatype="INT" />
+        <res id="VernalisationTLow" unit="°C" datatype="DOUBLE" />
+        <res id="VernalisationTHigh" unit="°C" datatype="DOUBLE" />
+        <res id="Latitude" unit="°" datatype="DOUBLE" />
+        <res id="ROOTDI" unit="m" datatype="DOUBLE" />
+        <res id="ROOTDM" unit="m" datatype="DOUBLE" />
+        <res id="RRDMAX" unit="m" datatype="DOUBLE" />
+        <res id="RDRT" unit="-" datatype="DOUBLEARRAY" />
+        <res id="FRTTB" unit="-" datatype="DOUBLEARRAY" />
+        <res id="FLVTB" unit="-" datatype="DOUBLEARRAY" />
+        <res id="FSTTB" unit="-" datatype="DOUBLEARRAY" />
+        <res id="FSOTB" unit="-" datatype="DOUBLEARRAY" />
+        <res id="FSOTB" unit="-" datatype="DOUBLEARRAY" />
+      </header>
+    </resource>
+   <transform id="weather_transform" frequence="DAILY" class="net.simplace.sim.transformers.DefaultSQLStatementTransformer" resource="weather">
+      <header>
+        <res id="CURRENTDATE" datatype="DATE" key="CURRENT.DATE" />
+        <res id="Rain" unit="mm" datatype="DOUBLE" />
+        <res id="AirTemperatureMean" unit="°C" datatype="DOUBLE" />
+        <res id="EffectiveTempRateBeforeAnt" unit="K" datatype="DOUBLE" />
+        <res id="EffectiveTempRateAfterAnt" unit="K" datatype="DOUBLE" />
+      </header>
+      <input id="statement">SELECT 
+						CURRENTDATE,
+						Rain * ${vRainScale} AS Rain,
+						AirTemperatureMean, 
+						CASE WHEN EffectiveTempRateBeforeAnt &gt; 0 THEN EffectiveTempRateBeforeAnt ELSE 0 END AS EffectiveTempRateBeforeAnt, 
+						CASE WHEN EffectiveTempRateAfterAnt &gt; 0 THEN EffectiveTempRateAfterAnt ELSE 0 END AS EffectiveTempRateAfterAnt
+					   FROM (SELECT 
+					   			CURRENTDATE, 
+					   			Rain,
+					   			AirTemperatureMean, 
+					   			CASE WHEN AirTemperatureMean &gt; ${vTempLimit} THEN TempRateBeforeAnt - ${vTempSlopeAboveLimit} * (AirTemperatureMean - ${vTempLimit}) 
+					   				ELSE TempRateBeforeAnt END AS EffectiveTempRateBeforeAnt,
+					   			CASE WHEN AirTemperatureMean &gt; ${vTempLimit} THEN TempRateAfterAnt - ${vTempSlopeAboveLimit} * (AirTemperatureMean - ${vTempLimit}) 
+					   				ELSE TempRateAfterAnt END AS EffectiveTempRateAfterAnt 
+					   		FROM (SELECT 
+					   				CURRENTDATE,
+					   				Rain, 
+					   				AirTemperatureMin, 
+					   				(AirTemperatureMin+AirTemperatureMax)* 0.5 AS AirTemperatureMean, 
+					   				(AirTemperatureMin+AirTemperatureMax)* 0.5 - ${vBaseTempBeforeAnt} AS TempRateBeforeAnt,  
+					   				(AirTemperatureMin+AirTemperatureMax)* 0.5 - ${vBaseTempAfterAnt} AS TempRateAfterAnt
+					   			  FROM weather))</input>
+    </transform>
+
+    <transform id="soil_transform" resource="soil" frequence="YEARLY" class="net.simplace.sim.transformers.SoilLayerTransformer">
+      <header>
+        <res id="soiltype" datatype="CHAR" key="vSoiltype" />
+        <res id="dampingdepth" unit="m" datatype="DOUBLE" />
+        <res id="soilwater_fc_global" unit="cm3*cm-3" datatype="DOUBLE" />
+        <res id="soilwater_sat_global" unit="cm3*cm-3" datatype="DOUBLE" />
+        <res id="drainage_rate" unit="mm" datatype="DOUBLE" />
+        <res id="depth" datatype="DOUBLEARRAY" />
+        <res id="soilwater_fc" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="soilwater_red" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="soilwater_wp" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="soilwater_sat" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="soilwater_res" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="soilwater_init" unit="cm3*cm-3" datatype="DOUBLEARRAY" />
+        <res id="bulkdensity" unit="g*cm-3" datatype="DOUBLEARRAY" />
+        <res id="clay" unit="g/100g" datatype="DOUBLEARRAY" />
+        <res id="carbon" unit="g/100g" datatype="DOUBLEARRAY" />
+        <res id="ammonium" unit="mg/kg" datatype="DOUBLEARRAY" />
+        <res id="nitrate" unit="mg/kg" datatype="DOUBLEARRAY" />
+        <res id="sand" unit="g/100g" datatype="DOUBLEARRAY" />
+        <res id="n" unit="" datatype="DOUBLEARRAY" />
+        <res id="alpha" unit="" datatype="DOUBLEARRAY" />
+        <res id="SoilPenetrationResistance" unit="MPa" datatype="DOUBLEARRAY" />
+      </header>
+      <input id="layercount" />
+      <input id="layerthickness">0.03</input>
+      <input id="depthfieldid">depth</input>
+    </transform>
+  </resources>
+  <simmodel>
+    <simcomponent id="DefaultManagement" class="net.simplace.sim.components.DefaultManagement">
+      <action rule="${CURRENT.DOY}==${phenology.emergencedoy}">
+        <mgm id="DoSow" datatype="BOOLEAN" default="false" rule="true" />
+        <mgm id="Crop" datatype="CHAR" rule="${vCropName}" />
+      </action>
+      <action rule="${LintulPhenology.sDevStage} + 0.021 &gt;=2">
+        <mgm id="DoHarvest" datatype="BOOLEAN" default="false" rule="true" />
+        <mgm id="Crop" datatype="CHAR" />
+      </action>
+      <action rule="${LintulPhenology.sDevStage}&gt;0 &amp;&amp; ${LintulPhenology.sDevStage} + 0.021 &lt; 2">
+        <mgm id="WithCrop" datatype="BOOLEAN" default="false" rule="true" />
+      </action>
+    </simcomponent>
+    <simcomponent id="EvapTranDemand" class="net.simplace.sim.components.models.lintul.EvapTranDemand">
+      <input id="iRadiation" source="weather.GlobalSolarRadiation" />
+      <input id="iRAIN" source="weather_transform.Rain" />
+      <input id="iWindspeed" source="weather.WindSpeed" />
+      <input id="iAirTemperatureMean" source="weather_transform.AirTemperatureMean" />
+      <input id="iOpenPanEvaporation" source="weather.ReferenceEvapotranspiration" />
+      <input id="iLAI" source="LintulBiomass.sLAI" />
+    </simcomponent>
+    <!--simcomponent id="Co2InfluenceOnLUE" class="net.simplace.client.simulation.lap.Co2InfluenceOnLUE">
+			<input id="cStartYear" source="vCO2StartYear"/>
+			<input id="cReferenceLueValue" source="vBaseLUE"/>
+		</simcomponent>
+		<simcomponent id="Co2InfluenceOnTranspiration" class="net.simplace.client.simulation.lap.Co2InfluenceOnTranspiration">
+			<input id="cStartYear" source="vCO2StartYear"/>
+			<input id="iActualTranspiration" source="SlimWater.Transpiration"/>
+		</simcomponent-->
+    <simcomponent id="LintulPhenology" class="net.simplace.sim.components.models.lintul.LintulPhenology">
+      <input id="cAirTemperatureSumAnthesis" source="crop.AirTemperatureSumAnthesis" />
+      <input id="cAirTemperatureSumMilkripeness" source="crop.AirTemperatureSumMilkripeness" />
+      <input id="cAirTemperatureSumMaturity" source="crop.AirTemperatureSumMaturity" />
+      <input id="cRelativeDayOfEmergence" source="crop.RelativeDayOfEmergence" />
+      <input id="iRTEFFAnt" source="VernalisationAndPhotoresponse.RTSUM" />
+      <input id="iRTEFFMat" source="VernalisationAndPhotoresponse.RTSUM" />
+      <input id="iDoSow" source="DefaultManagement.DoSow" />
+      <input id="iDoHarvest" source="DefaultManagement.DoHarvest" />
+    </simcomponent>
+    <simcomponent id="VernalisationAndPhotoresponse" class="net.simplace.sim.components.crop.VernalisationAndPhotoresponse">
+      <input id="cVernalDaysMax" source="crop.VernalDaysMax" />
+      <input id="cApplyVernalisation" datatype="BOOLEAN">true</input>
+      <input id="cApplyPhotoresponse" datatype="BOOLEAN">true</input>
+      <input id="cThigh" source="crop.VernalisationTHigh" />
+      <input id="cTlow" source="crop.VernalisationTLow" />
+      <input id="cLatitude" source="crop.Latitude" />
+      <input id="iDAVTMP" source="weather_transform.AirTemperatureMean" />
+      <input id="iTSumBaseAnt" source="weather_transform.EffectiveTempRateBeforeAnt" />
+      <input id="iTSumBaseMat" source="weather_transform.EffectiveTempRateAfterAnt" />
+      <input id="iDevStage" source="LintulPhenology.sDevStage" />
+    </simcomponent>
+    <simcomponent id="SlimRoots" class="net.simplace.sim.components.soil.slim.SlimRoots">
+      <input id="cSoilLayerDepth" source="soil_transform.depth" />
+      <input id="cBulkDensity" source="soil_transform.bulkdensity" />
+      <input id="cSEEDD" source="slim.SEEDD" />
+      <input id="cMaximalSeminalRootLengthPerDay" source="slim.MaximalSeminalRootLengthPerDay" />
+      <input id="cDeadRootsDevStage" source="slim.DeadRootsDevStage" />
+      <input id="cDailyDeadRootsRate" source="slim.DailyDeadRootsRate" />
+      <input id="cBulkDensityThresholdLower" source="slim.BulkDensityThresholdLower" />
+      <input id="cBulkDensityThresholdMiddle" source="slim.BulkDensityThresholdMiddle" />
+      <input id="cBulkDensityThresholdUpper" source="slim.BulkDensityThresholdUpper" />
+      <input id="cMinimalBDSeminalRootReductionFactor" source="slim.MinimalBDSeminalRootReductionFactor" />
+      <input id="cSoilStrengthParameter" source="slim.SoilStrengthParameter" />
+      <input id="cSandPercentage" source="soil_transform.sand" />
+      <input id="iSoilTemperature" source="STMPsimCalculator.SoilTempArray" />
+      <input id="iDryFactor" source="SlimWater.DRYFAC" />
+      <input id="iTMIN" source="weather.AirTemperatureMin" />
+      <input id="iTMAX" source="weather.AirTemperatureMax" />
+      <input id="iDevStage" source="LintulPhenology.sDevStage" />
+      <input id="iRWRT" source="LintulBiomass.rRWRT" />
+      <input id="iIsHarvest" source="DefaultManagement.DoHarvest" />
+    </simcomponent>
+    <simcomponent id="SlimWater" class="net.simplace.sim.components.soil.slim.SlimWater">
+      <input id="cSoilLayerDepth" source="soil_transform.depth" />
+      <input id="cSoilWaterFieldCapacity" source="soil_transform.soilwater_fc" />
+      <input id="cSoilWaterReducedThreshold" source="soil_transform.soilwater_red" />
+      <input id="cSoilWaterWiltingPoint" source="soil_transform.soilwater_wp" />
+      <input id="cSoilWaterSaturation" source="soil_transform.soilwater_sat" />
+      <input id="cSoilWaterInitial" source="soil_transform.soilwater_init" />
+      <input id="cMT" source="slim.MT" />
+      <input id="cMD" source="slim.MD" />
+      <input id="cDP" source="slim.DP" />
+      <input id="cALFA" source="slimalfa.ALFA" />
+      <input id="cWALIQ" source="slim.WALIQ" />
+      <input id="cWM1S" source="slim.WM1S" />
+      <input id="cWRST" source="slim.WRST" />
+      <input id="cWRSS" source="slim.WRSS" />
+      <input id="cSMD" source="slim.SMD" />
+      <input id="cSEEDD" source="slim.SEEDD" />
+      <input id="cCalculateRunoffWater" source="slim.CalculateRunoffWater" />
+      <input id="cWMGENT" source="slim.WMGENT" />
+      <input id="cWRGENT" source="slim.WRGENT" />
+      <input id="cWMGENS" source="slim.WMGENS" />
+      <input id="cWRGENS" source="slim.WRGENS" />
+      <input id="cIFWGEN" source="slim.IFWGEN" />
+      <input id="cELIM" source="slim.ELIM" />
+      <input id="cMaxSoilEvaporationDepth" source="slim.MaxSoilEvaporationDepth" />
+      <input id="iWithCrop" source="DefaultManagement.WithCrop" />
+      <input id="iPotentialTranspiration" source="EvapTranDemand.PotentialTranspiration" />
+      <input id="iRAIN" source="weather_transform.Rain" />
+      <input id="iReferenceCropEvapotranspiration" source="weather.ReferenceEvapotranspiration" />
+      <input id="iFRR" source="vFRR" />
+      <input id="iMD95" source="vMD95" />
+    </simcomponent>
+     <simcomponent id="LintulWaterStress" class="net.simplace.sim.components.models.lintul.LintulWaterStress">
+      <input id="cDroughtTolerance" source="crop.DroughtTolerance" />
+      <input id="iPotentialTranspiration" source="SlimWater.PotentialTranspiration" />
+      <input id="iActualTranspiration" source="SlimWater.ActualTranspiration" />
+    </simcomponent>
+    <simcomponent id="LintulPartitioning" class="net.simplace.sim.components.models.lintul.LintulPartitioning">
+      <input id="cPartitionNStressReduction" source="crop.AirTemperatureSumAnthesis" />
+      <input id="cFRTTB" source="crop.FRTTB" />
+      <input id="cFLVTB" source="crop.FLVTB" />
+      <input id="cFSTTB" source="crop.FSTTB" />
+      <input id="cFSOTB" source="crop.FSOTB" />
+      <input id="iTRANRF" source="LintulWaterStress.TRANRF" />
+      <input id="iNitrogenNutritionIndex" datatype="DOUBLE">1.0</input>
+      <input id="iDevStage" source="LintulPhenology.sDevStage" />
+      <input id="iDoSow" source="DefaultManagement.DoSow" />
+    </simcomponent>
+    <simcomponent id="LintulBiomass" class="net.simplace.sim.components.models.lintul.LintulBiomass">
+      <input id="cK" source="crop.K" />
+      <input id="cLaiCritical" source="crop.LaiCritical" />
+      <input id="cRDRSHM" source="crop.RDRSHM" />
+      <input id="cRDRNS" source="crop.RDRNS" />
+      <input id="cRDRL" source="crop.RDRL" />
+      <input id="cRGRL" source="crop.RGRL" />
+      <input id="cSLA" source="crop.SLA" />
+      <input id="cLaiNStressReduction" source="crop.LaiNStressReduction" />
+      <input id="cLueNStressReduction" source="crop.LueNStressReduction" />
+      <input id="cSlaNStressReduction" source="crop.SlaNStressReduction" />
+      <input id="cRDRT" source="crop.RDRT" />
+      <input id="cRelativeDayOfEmergence" source="phenology.reldem" />
+      <input id="iDoSow" source="DefaultManagement.DoSow" />
+      <input id="iDoHarvest" source="DefaultManagement.DoHarvest" />
+      <input id="iUnusedRootBiomass" source="vUnusedRootBiomass" />
+      <input id="iNitrogenNutritionIndex" datatype="DOUBLE">1.0</input>
+      <input id="iEffectiveTempRateBeforeAnt" source="weather_transform.EffectiveTempRateBeforeAnt" />
+      <input id="iEffectiveTempRateAfterAnt" source="weather_transform.EffectiveTempRateAfterAnt" />
+      <input id="iAirTemperatureMean" source="weather_transform.AirTemperatureMean" />
+      <input id="iRadiation" source="weather.GlobalSolarRadiation" />
+      <input id="iDevStage" source="LintulPhenology.sDevStage" />
+      <input id="iCropAvailWaterContent" source="SlimWater.sCAWT" />
+      <input id="iTRANRF" source="LintulWaterStress.TRANRF" />
+      <input id="iPartRootFactor" source="LintulPartitioning.FractionRoot" />
+      <input id="iPartStemsFactor" source="LintulPartitioning.FractionStems" />
+      <input id="iPartStorageOrgansFactor" source="LintulPartitioning.FractionStorageOrgans" />
+      <input id="iPartLeavesFactor" source="LintulPartitioning.FractionLeaves" />
+      <input id="iLUE" source="crop.LUE" />
+    </simcomponent>
+    <simcomponent id="SnowCoverCalculator" class="net.simplace.sim.components.soil.temperature.SnowCoverCalculator">
+      <input id="cCarbonContent" source="vCarbonContent" />
+      <input id="iTempMax" source="weather.AirTemperatureMax" />
+      <input id="iTempMin" source="weather.AirTemperatureMin" />
+      <input id="iRadiation" source="weather.GlobalSolarRadiation" />
+      <input id="iRAIN" source="weather_transform.Rain" />
+      <input id="iCropResidues" source="LintulBiomass.AboveGroundBiomass" />
+      <input id="iPotentialSoilEvaporation" source="SlimWater.PotentialSoilEvaporation" />
+      <input id="iLeafAreaIndex" source="LintulBiomass.sLAI" />
+      <input id="iSoilTempArray" source="STMPsimCalculator.SoilTempArray" />
+    </simcomponent>
+    <simcomponent id="STMPsimCalculator" class="net.simplace.sim.components.soil.temperature.STMPsimCalculator">
+      <input id="cSoilLayerDepth" source="soil_transform.depth" />
+      <input id="cFirstDayMeanTemp" source="vFirstDayMeanTemp" />
+      <input id="cAVT" source="vAverageGroundTemperature" />
+      <input id="cABD" source="vAverageBulkDensity" />
+      <input id="cDampingDepth" source="soil_transform.dampingdepth" />
+      <input id="iSoilSurfaceTemperature" source="SnowCoverCalculator.SoilSurfaceTemperature" />
+      <input id="iSoilWaterContent" source="SlimWater.TLW" />
+    </simcomponent>
+  </simmodel>
+  <outputs>
+    <!--output id="Lintul" interface="yieldout" frequence="DAILY" cachesize="10">
+      <header>
+        <out id="DevStage" datatype="DOUBLE" rule="LintulPhenology.sDevStage" />
+        <out id="TSUM" datatype="DOUBLE" rule="LintulPhenology.sTSUM" />
+        <out id="LAI" datatype="DOUBLE" rule="LintulBiomass.sLAI" />
+        <out id="Yield" datatype="DOUBLE" rule="LintulBiomass.sWSO" />
+        <out id="AGBm" datatype="DOUBLE" rule="LintulBiomass.AboveGroundBiomass" />
+        <out id="UnRBM" datatype="DOUBLE" rule="SlimRoots.UnusedRootBiomass" />
+        <out id="WC" datatype="DOUBLE" rule="SlimWater.sCAWT" />
+        <out id="PEVAP_S" datatype="DOUBLE" rule="SlimWater.PotentialSoilEvaporation" />
+        <out id="PTRAN_S" datatype="DOUBLE" rule="SlimWater.PotentialTranspiration" />
+        <out id="EVAP" datatype="DOUBLE" rule="SlimWater.ActualSoilEvaporation" />
+        <out id="TRAN" datatype="DOUBLE" rule="SlimWater.ActualTranspiration" />
+        <out id="TRANRF" datatype="DOUBLE" rule="LintulWaterStress.TRANRF" />
+        <out id="MD95" datatype="INT" rule="SlimRoots.MD95" />
+        <out id="rwrt" datatype="DOUBLE" rule="SlimRoots.iRWRT" />
+        <out id="emd" datatype="INT" rule="phenology.emergencedoy" />
+        <out id="gp" datatype="INT" rule="LintulPhenology.CropCycleCount" />
+      </header>
+    </output -->
+    <output id="Slim" interface="slimout" frequence="DAILY" cachesize="10">
+      <header>
+        <out id="DevStage" datatype="DOUBLE" rule="LintulPhenology.sDevStage" />
+        <out id="LAI" datatype="DOUBLE" rule="LintulBiomass.sLAI" />
+        <out id="Yield" datatype="DOUBLE" rule="LintulBiomass.sWSO" />
+        <out id="AGBm" datatype="DOUBLE" rule="LintulBiomass.AboveGroundBiomass" />
+        <out id="PEVAP" datatype="DOUBLE" rule="SlimWater.PotentialSoilEvaporation" />
+        <out id="PTRAN" datatype="DOUBLE" rule="SlimWater.PotentialTranspiration" />
+        <out id="EVAP" datatype="DOUBLE" rule="SlimWater.ActualSoilEvaporation" />
+        <out id="TRAN" datatype="DOUBLE" rule="SlimWater.ActualTranspiration" />
+        <out id="TRANRF" datatype="DOUBLE" rule="LintulWaterStress.TRANRF" />
+        <out id="RWRT" datatype="DOUBLE" rule="LintulBiomass.rRWRT" />
+        <out id="MaxRootLayerNr_sr" datatype="INT" rule="SlimRoots.MD95" />
+        <out id="MaxRootLayerNr_rb" datatype="INT" rule="SlimWater.iMD95" />
+        <out id="UnusedBm_sr" datatype="INT" rule="SlimRoots.UnusedRootBiomass" />
+        <out id="UnusedBm_rb" datatype="INT" rule="vUnusedRootBiomass" />
+        <out id="FRR_sr|1-40" datatype="DOUBLEARRAY" rule="SlimRoots.RootRestrictionFactor" />
+        <out id="FRR_rb|1-40" datatype="DOUBLEARRAY" rule="SlimWater.iFRR" />
+        <out id="RLD_sr|1-40" datatype="DOUBLEARRAY" rule="SlimRoots.RootLengthDensityPerLayer" />
+        <out id="RLD_rb|1-40" datatype="DOUBLEARRAY" rule="vRootLengthDensityPerLayer" />
+        
+      </header>
+    </output>
+    <!-- output id="Slim" interface="stmpout" frequence="DAILY" cachesize="10">
+			<header>
+			     <out id="SnowWC" datatype="DOUBLE"  rule="SnowCoverCalculator.SnowWaterContent"/>
+			     <out id="BCV" datatype="DOUBLE"  rule="SnowCoverCalculator.SnowIsolationIndex"/>
+			     <out id="SurfT" datatype="DOUBLE"  rule="SnowCoverCalculator.SoilSurfaceTemperature"/>
+			     <out id="STMP|1-40" datatype="DOUBLEARRAY"  rule="STMPsimCalculator.SoilTempArray" />
+			</header>
+		</output -->
+    <!-- output id="LintulSum" interface="sumyieldout" frequence="YEARLY" cachesize="2">
+      <header>
+        <out id="TSUM" datatype="DOUBLE" mode="MAX" rule="LintulPhenology.sTSUM" />
+        <out id="LAI" datatype="DOUBLE" mode="MAX" rule="LintulBiomass.sLAI" />
+        <out id="Yield" datatype="DOUBLE" mode="MAX" rule="LintulBiomass.sWSO" />
+        <out id="AGBm" datatype="DOUBLE" mode="MAX" rule="LintulBiomass.AboveGroundBiomass" />
+      </header>
+    </output -->
+  </outputs>
+</solution>
+

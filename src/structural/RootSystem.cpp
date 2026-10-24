@@ -107,16 +107,16 @@ void RootSystem::initializeReader()
  * Calls initializeLB (default, "lengthBased", "length_based")
  * or initializeDB ("delayBased", "delay_based")
  */
-void RootSystem::initialize(bool verbose, std::string mode)
+void RootSystem::initialize(bool verbose)
 {
-    if (mode == "" || mode == "lengthBased" || mode == "length_based") {
-        initializeLB(4, 5, verbose);
-    } else if (mode == "delayBased" || mode == "delay_based") {
-        initializeDB(4, 5, verbose);
-    } else {
-        throw std::invalid_argument("RootSystem::initialize: unknown mode '" + mode +
-                                    "', expected \"lengthBased\", \"length_based\", \"delayBased\", or \"delay_based\"");
-    }
+    // if (mode == "" || mode == "lengthBased" || mode == "length_based") {
+    initializeLB(4, 5, verbose);
+    // } else if (mode == "delayBased" || mode == "delay_based") {
+    //     initializeDB(4, 5, verbose);
+    // } else {
+    //     throw std::invalid_argument("RootSystem::initialize: unknown mode '" + mode +
+    //                                 "', expected \"lengthBased\", \"length_based\", \"delayBased\", or \"delay_based\"");
+    // }
 }
 
 /**
@@ -165,7 +165,7 @@ void RootSystem::initializeDB(int basal, int shootborne, bool verbose)
 
     seed = std::make_shared<SeedDB>(shared_from_this());
 	auto srp = std::static_pointer_cast<SeedRandomParameter>(this->getOrganRandomParameter(Organism::ot_seed,0 ));
-	srp->delayDefinition = Organism::dd_time_self;
+	srp->delayDefinitionRoot = Organism::dd_time_self;
     initialize_(basal, shootborne, verbose);
 }
 

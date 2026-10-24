@@ -1,13 +1,11 @@
 """small example"""
-import sys
-sys.path.append("../../..")
 import plantbox as pb
 import vtk_plot as vp
 
 rs = pb.RootSystem()
 
 # Open plant and root parameter from a file
-path = "../../../modelparameter/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 

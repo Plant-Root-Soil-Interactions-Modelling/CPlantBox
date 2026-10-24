@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from plantbox.visualisation import figure_style
-from rosi.richards_flat import RichardsFlatWrapper  # Python part of cylindrcial
+from rosi.richards_no_mpi_flat import RichardsNoMPIFlatWrapper   # Python part of cylindrcial
 from rosi.rosi_richardsnc_cyl import RichardsNCCylFoam  # C++ part (Dumux binding), macroscopic soil model
 
 
@@ -46,7 +46,7 @@ def plot_history(area, w, c, n_steps):  # |\label{l63:plot_history_start}|
 
 
 # Soil |\label{l63:soil_start}|
-s = RichardsFlatWrapper(RichardsNCCylFoam())  # water & single solute
+s = RichardsNoMPIFlatWrapper(RichardsNCCylFoam())  # water & single solute
 logbase = 0.5
 NC = 10  # spatial resolution (1D model)
 a_in = 0.02  # cm
@@ -118,7 +118,7 @@ volumef = np.sum(np.multiply(theta, area))  # |\label{l63:vol}|
 print("domain water volume", volumef, "cm3 cm-1  = ", volumef / 1000.0, "l cm-1")  # |\label{l63:results}|
 print("change in water volume", volumef - volume0, "cm3 cm-1 = ", 1.0e-3 * (volumef - volume0), "l cm-1")
 
-area = np.squeeze(area, -1)
+
 plot_history(area, w, c, n_steps)  # |\label{l63:plot_history}|
 plot_profile(cc, h[-1], c[-1])  # |\label{l63:plot_profile}|
 plt.show()

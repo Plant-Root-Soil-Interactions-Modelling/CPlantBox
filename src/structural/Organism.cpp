@@ -150,7 +150,7 @@ int Organism::getParameterSubType(int organtype, std::string str) const {
 /**
  * @brief Optional initialization hook for derived classes.
  */
-void Organism::initialize(bool verbose, std::string mode) {}
+void Organism::initialize(bool verbose) {}
 
 /**
  * Simulates the development of the organism in a time span of @param dt days.
@@ -333,7 +333,7 @@ std::vector<Vector2i> Organism::getSegments(int ot) const {
     segs.reserve(this->getNumberOfSegments(ot)); // for speed up
     for (const auto &o : organs) {
         auto s = o->getSegments();
-        segs.insert(segs.end(), s.begin(), s.end()); // append s; todo check if it works..
+        segs.insert(segs.end(), s.begin(), s.end()); 
     }
     return segs;
 }
@@ -544,7 +544,7 @@ int Organism::getDelayDefinition(int ot_lat) {
     if ((ot_lat == Organism::ot_stem) || (ot_lat == Organism::ot_leaf)) {
         return srp->delayDefinitionShoot;
     } else {
-        return srp->delayDefinition;
+        return srp->delayDefinitionRoot;
     }
 }
 

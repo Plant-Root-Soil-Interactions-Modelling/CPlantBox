@@ -369,7 +369,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("ldelays", &OrganRandomParameter::ldelays)
         .def_readwrite("plant", &OrganRandomParameter::plant)
         .def_readwrite("f_gf", &OrganRandomParameter::f_gf)
-        .def_readwrite("f_tf", &OrganRandomParameter::f_tf);
+        .def_readwrite("f_tf", &OrganRandomParameter::f_tf)
+        .def_readwrite("multDelay", &OrganRandomParameter::multDelay);
     /**
      * Organ.h
      */
@@ -379,12 +380,12 @@ PYBIND11_MODULE(plantbox, m) {
         .def("copy", &Organ::copy)
         .def("organType", &Organ::organType)
         .def("simulate", &Organ::simulate, py::arg("dt"), py::arg("verbose") = bool(false)) // default
-        .def("getNumberOfLaterals", &Organ::getNumberOfLaterals)
         .def("setParent", &Organ::setParent)
         .def("getParent", &Organ::getParent)
         .def("getParentNI", &Organ::getParentNI)
         .def("setOrganism", &Organ::setOrganism)
         .def("getOrganism", &Organ::getOrganism)
+        .def("getPlant", &Organ::getPlant)
         .def("addChild", &Organ::addChild)
         .def("getNumberOfChildren", &Organ::getNumberOfChildren)
         .def("getChild", &Organ::getChild)
@@ -417,12 +418,11 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getOrgans", (std::vector<std::shared_ptr<Organ>> (Organ::*)(int otype, bool all))&Organ::getOrgans, py::arg("ot") = -1,
              py::arg("all") = false) // overloads, default
         .def("getOrgans", (void (Organ::*)(int otype, std::vector<std::shared_ptr<Organ>> &v, bool all))&Organ::getOrgans)
-        .def("getParameter", &Organ::getParameter)
+        .def("getParameter", &Organ::getParameter, py::arg("name"), py::arg("addParams") = std::map<std::string, double>())
         .def("__str__", &Organ::toString)
         .def("orgVolume", &Organ::orgVolume, py::arg("length_") = -1, py::arg("realized") = false)
         .def("orgVolume2Length", &Organ::orgVolume2Length)
-        .def("getiHeading0", &Organ::getiHeading0)
-        .def_readwrite("parentNI", &Organ::parentNI);
+        .def("getInitialHeading", &Organ::getInitialHeading);
 
     /*
      * Organism.h
@@ -439,7 +439,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getSeed", &Organism::getSeed)
         .def("setStochastic", &Organism::setStochastic)
         .def("addOrgan", &Organism::addOrgan)
-        .def("initialize", &Organism::initialize, py::arg("verbose") = true, py::arg("mode") = "")
+        .def("initialize", &Organism::initialize, py::arg("verbose") = true)
         .def("simulate", &Organism::simulate, py::arg("dt"), py::arg("verbose") = false) // default
         .def("getSimTime", &Organism::getSimTime)
 
@@ -616,7 +616,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<SegmentAnalyser, std::shared_ptr<SegmentAnalyser>>(m, "SegmentAnalyser")
         .def(py::init<>())
         .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, std::vector<double>>())
-        .def(py::init<Organism &>())
+        .def(py::init<Organism &, std::map<std::string, double>>(), py::arg("plant"), py::arg("addParams") = std::map<std::string, double>())
         .def(py::init<SegmentAnalyser &>())
         .def(py::init<MappedSegments &>())
         .def("addSegments", (void (SegmentAnalyser::*)(const Organism &))&SegmentAnalyser::addSegments)        // overloads
@@ -634,7 +634,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("pack", &SegmentAnalyser::pack)
         .def("getMinBounds", &SegmentAnalyser::getMinBounds)
         .def("getMaxBounds", &SegmentAnalyser::getMaxBounds)
-        .def("getParameter", &SegmentAnalyser::getParameter, py::arg("name"), py::arg("def") = std::numeric_limits<double>::quiet_NaN())
+        .def("getParameter", &SegmentAnalyser::getParameter, py::arg("name"), py::arg("def") = std::numeric_limits<double>::quiet_NaN(),
+             py::arg("addParams") = std::map<std::string, double>())
         .def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
         .def("getSummed", (double (SegmentAnalyser::*)(std::string) const) & SegmentAnalyser::getSummed)                                          // overloads
         .def("getSummed", (double (SegmentAnalyser::*)(std::string, std::shared_ptr<SignedDistanceFunction>) const) & SegmentAnalyser::getSummed) // overloads
@@ -711,7 +712,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def(py::init<std::shared_ptr<Organism>>())
         .def_readwrite("seedPos", &SeedRandomParameter::seedPos)
         .def_readwrite("seedPoss", &SeedRandomParameter::seedPoss)
-        .def_readwrite("delayDefinition", &SeedRandomParameter::delayDefinition)
+        .def_readwrite("delayDefinitionRoot", &SeedRandomParameter::delayDefinitionRoot)
         .def_readwrite("delayDefinitionShoot", &SeedRandomParameter::delayDefinitionShoot)
         .def_readwrite("firstB", &SeedRandomParameter::firstB)
         .def_readwrite("firstBs", &SeedRandomParameter::firstBs)
@@ -880,9 +881,15 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("delayNGStart", &StemSpecificParameter::delayNGStart)
         .def_readwrite("delayNGEnd", &StemSpecificParameter::delayNGEnd);
     /**
-     * Root.h
+     * Root.h – trampoline to allow Python subclasses to override getParameter().
      */
-    py::class_<Root, Organ, std::shared_ptr<Root>>(m, "Root")
+    struct PyRoot : Root {
+        using Root::Root;
+        double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override {
+            PYBIND11_OVERRIDE(double, Root, getParameter, name, addParams);
+        }
+    };
+    py::class_<Root, Organ, PyRoot, std::shared_ptr<Root>>(m, "Root")
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
         .def("calcLength", &Root::calcLength)
@@ -1003,7 +1010,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setGeometry", &RootSystem::setGeometry)
         .def("setSoil", &RootSystem::setSoil)
         .def("reset", &RootSystem::reset)
-        .def("initialize", (void (RootSystem::*)(bool, std::string))&RootSystem::initialize, py::arg("verbose") = true, py::arg("mode") = "")
+        .def("initialize", (void (RootSystem::*)(bool))&RootSystem::initialize, py::arg("verbose") = true)
         .def("initializeLB", (void (RootSystem::*)(int, int, bool))&RootSystem::initializeLB, py::arg("basal"), py::arg("shootborne"),
              py::arg("verbose") = true)
         .def("initializeDB", (void (RootSystem::*)(int, int, bool))&RootSystem::initializeDB, py::arg("basal"), py::arg("shootborne"),
@@ -1102,9 +1109,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("createRoot", &Plant::createRoot)
         .def("createStem", &Plant::createStem)
         .def("createLeaf", &Plant::createLeaf)
-        .def("initialize", &Plant::initialize, py::arg("verbose") = true, py::arg("mode") = "")
-        .def("initializeLB", &Plant::initializeLB, py::arg("verbose") = true)
-        .def("initializeDB", &Plant::initializeDB, py::arg("verbose") = true)
+        .def("initialize", &Plant::initialize, py::arg("verbose") = true)
         .def("setGeometry", &Plant::setGeometry)
         .def("setSoil", &Plant::setSoil)
         .def("reset", &Plant::reset)
@@ -1125,8 +1130,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("mappedSegments", &MappedPlant::mappedSegments)
         .def("printNodes", &MappedPlant::printNodes)
         .def("plant", &MappedPlant::plant)
-        .def("initializeLB", &MappedPlant::initializeLB, py::arg("verbose") = true)
-        .def("initializeDB", &MappedPlant::initializeDB, py::arg("verbose") = true)
+        .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true)
         .def("getSegmentIds", &MappedPlant::getSegmentIds)
         .def("disableExtraNode", &MappedPlant::disableExtraNode)
         .def("enableExtraNode", &MappedPlant::enableExtraNode)

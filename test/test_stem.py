@@ -246,7 +246,7 @@ class TestStem(unittest.TestCase):
             ct.append(o.getParameter("creationTime"))
             radius.append(o.getParameter("radius"))
             order.append(o.getParameter("order"))
-        nol = round(self.stem.getParameter("numberOfLaterals"))
+        nol = sum(1 for i in range(self.stem.getNumberOfChildren()) if self.stem.getChild(i).getAge() > 0)
         type_ = [1.]
         type_.extend([5.] * (nol))
         self.assertEqual(type, type_, "getParameter: unexpected stem sub types")

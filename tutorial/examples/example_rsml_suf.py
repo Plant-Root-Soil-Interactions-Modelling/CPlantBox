@@ -1,7 +1,6 @@
 """SUF, and Krs 
 TODO fix it (remove XylemFlux class...)
 """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 from plantbox.functional.xylem_flux import XylemFluxPython  # Python hybrid solver

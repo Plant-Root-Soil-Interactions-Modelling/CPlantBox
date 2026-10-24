@@ -1,4 +1,6 @@
 
+import numpy as np
+
 
 class RootSoilSoluteInteraction:
 
@@ -20,18 +22,18 @@ class RootSoilSoluteInteraction:
 
     def solute_fluxes(self, c):
         """ concentrations @param c [kg/m3], returns [g/day]
-        self.Vmax [kg/(m2 day)]
-        self.Km [kg/m3]
-        self.Cmin [kg/m3]
+        self.vmax [kg/(m2 day)]
+        self.km [kg/m3]
+        self.cmin [kg/m3]
         """
         segs = self.rs.segments
         a = self.rs.radii
         l = self.rs.segLength()
         assert(len(segs) == len(c))
         sf = np.zeros(len(segs),)
-        c = np.maximum(c, self.CMin)  ###############################################
+        c = np.maximum(c, self.cmin)
         for i, s in enumerate(segs):
-            sf[i] = -2 * np.pi * a[i] * l[i] * 1.e-4 * ((c[i] - self.CMin) * self.Vmax / (self.Km + (c[i] - self.CMin)))  # kg/day
+            sf[i] = -2 * np.pi * a[i] * l[i] * 1.e-4 * ((c[i] - self.cmin) * self.vmax / (self.km + (c[i] - self.cmin)))  # kg/day
         sf = np.minimum(sf, 0.)
         return sf * 1.e3  # kg/day -> g/day
 

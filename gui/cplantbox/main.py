@@ -64,15 +64,30 @@ def _prune_cache_dir():
     import time
 
     now = time.time()
-    files = sorted(glob.glob(os.path.join(RUN_CACHE_DIR, "*.pkl")), key=os.path.getmtime, reverse=True)
+    # Other worker processes may delete files concurrently, so mtime lookups can race with them.
+    mtimes = {}
+    for path in glob.glob(os.path.join(RUN_CACHE_DIR, "*.pkl")):
+        try:
+            mtimes[path] = os.path.getmtime(path)
+        except OSError:
+            pass
+    files = sorted(mtimes, key=mtimes.get, reverse=True)
     for i, path in enumerate(files):
-        too_old = (now - os.path.getmtime(path)) > CACHE_TTL_SECONDS
+        too_old = (now - mtimes[path]) > CACHE_TTL_SECONDS
         over_limit = i >= MAX_CACHED_RUNS
         if too_old or over_limit:
             try:
                 os.remove(path)
             except OSError:
                 pass
+
+    # Leftover temp files from writes interrupted by a crash/SIGKILL aren't *.pkl, so sweep them separately.
+    for tmp_path in glob.glob(os.path.join(RUN_CACHE_DIR, "*.tmp")):
+        try:
+            if (now - os.path.getmtime(tmp_path)) > CACHE_TTL_SECONDS:
+                os.remove(tmp_path)
+        except OSError:
+            pass
 
 
 def cache_simulation_run(vtk_data, result_data):
@@ -85,9 +100,16 @@ def cache_simulation_run(vtk_data, result_data):
     }
     final_path = _cache_file_path(run_id)
     tmp_path = f"{final_path}.{uuid.uuid4().hex}.tmp"
-    with open(tmp_path, "wb") as f:
-        pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)
-    os.replace(tmp_path, final_path)  # atomic move
+    try:
+        with open(tmp_path, "wb") as f:
+            pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)
+        os.replace(tmp_path, final_path)  # atomic move
+    except BaseException:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+        raise
     _prune_cache_dir()
     return run_id
 

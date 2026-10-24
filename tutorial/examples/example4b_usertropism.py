@@ -1,5 +1,4 @@
 """user defined tropism in python"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -42,7 +41,7 @@ class My_Age_Tropism(pb.Tropism):
 
 
 rs = pb.Plant()
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "Zea_mays_1_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 rs.initialize()

@@ -5,7 +5,6 @@ adapted from "example_plant_anim", "example10_nodalGrowth"
 We present here parameters specific for leaves and stems
 
 """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -26,7 +25,7 @@ getImage = False
 # #create plant:
 plant = pb.Plant()
 # Open plant and root parameter from a file
-path = path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "example1e"
 plant.readParameters(path + name + ".xml")
 

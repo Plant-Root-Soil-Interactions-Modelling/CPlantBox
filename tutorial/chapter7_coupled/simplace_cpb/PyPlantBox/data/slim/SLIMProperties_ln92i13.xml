@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SLIMProperties>
+	<type>
+		<parameter id="soiltype">sandy loam</parameter>
+		<parameter id="THICKL">0.03</parameter>
+		<parameter id="SEEDD" unit = "http://www.wurvoc.org/vocabularies/om-1.8/degree">0.02</parameter>
+		<parameter id="MaxSoilEvaporationDepth">0.2</parameter>
+		<parameter id="MT">5</parameter>
+		<parameter id="MY">5</parameter>
+		<parameter id="MD">-1</parameter>
+		<parameter id="WMGENT">2.75</parameter>
+		<parameter id="WRGENT">9.10</parameter>
+		<parameter id="WMGENS">1.90</parameter>
+		<parameter id="WRGENS">11.60</parameter>
+		<parameter id="IFWGEN">false</parameter>
+		<parameter id="ALFA">0.95</parameter>
+		<parameter id="DP">0.00</parameter>
+		<parameter id="WALIQ">3.00</parameter>
+		<parameter id="WM1S">10.30</parameter>
+		<parameter id="WRST">4.35</parameter>
+		<parameter id="WRSS">7.15</parameter>
+		<parameter id="SMD">0.0</parameter>
+		<parameter id="AREA">1.0</parameter>
+		<parameter id="BGEN">66.0</parameter>
+		<parameter id="ELIM">0.05</parameter>
+		<parameter id="SCMIN">0.2</parameter>
+		<parameter id="SCONC" unit="g m**-3">5.0</parameter>
+		<parameter id="HBS">0.3</parameter>
+		<parameter id="HBT">0.1</parameter>
+		<parameter id="FLOWNR">40</parameter>
+		<parameter id="AMR1">0.32</parameter>
+		<parameter id="AMR2">0.1363</parameter>
+		<parameter id="TEMCO1">0d</parameter>
+		<parameter id="TEMCO2">0d</parameter>
+		<parameter id="AX">0.2</parameter>
+		<parameter id="AMEQ">1.0</parameter>
+
+		<parameter id="CalculateRunoffWater">true</parameter>
+
+		<parameter id="BulkDensityThresholdLower" unit = "http://www.wurvoc.org/vocabularies/om-1.8/one">0.7</parameter>
+		<parameter id="BulkDensityThresholdMiddle" unit = "http://www.wurvoc.org/vocabularies/om-1.8/gram_per_cubic_centimetre">1.4</parameter>
+		<parameter id="BulkDensityThresholdUpper" unit = "http://www.wurvoc.org/vocabularies/om-1.8/gram_per_cubic_centimetre">1.7</parameter>
+		<parameter id="MinimalBDSeminalRootReductionFactor" unit = "http://www.wurvoc.org/vocabularies/om-1.8/one">-1</parameter>
+
+		<parameter id="SoilStrengthParameter" unit = "http://www.wurvoc.org/vocabularies/om-1.8/one">-1</parameter>
+
+		<parameter id="MaximalSeminalRootLengthPerDay">0.033</parameter>
+
+		<parameter id="DeadRootsDevStage" unit = "http://www.wurvoc.org/vocabularies/om-1.8/one">1.5</parameter>
+		<parameter id="DailyDeadRootsRate">0.00</parameter>
+
+
+	</type>
+</SLIMProperties>

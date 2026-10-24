@@ -6,7 +6,7 @@ import plantbox.visualisation.vtk_plot as vp  # |\label{l14:vtk_plot}|
 plant = pb.Plant()  # Create a new plant |\label{l14:plant}|
 
 # Open plant and root parameter from a file
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "fspm2023"
 plant.readParameters(path + name + ".xml")  # |\label{l14:readparameters}|
 
@@ -26,6 +26,7 @@ root[2].dx = 0.5  # Change axial resolution dx (cm) |\label{l14:change_params_dx
 root[2].dxMin = 0.1  # Change minimal axial resolution dxMin (cm)
 
 print(root[1])  # Print new root parameters |\label{l14:print_new}|
+plant.writeParameters(path + name + "_mod.xml")  # Save modified Params |\label{l14:save}|
 
 plant.initialize()  # Initialize |\label{l14:initialize}|
 sim_time = 40  # days

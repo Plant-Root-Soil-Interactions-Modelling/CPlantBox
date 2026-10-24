@@ -17,7 +17,7 @@ t_pot = -1  # potential plant transpiration (cm3 day-1) |\label{l41:t_pot}|
 
 # Root system |\label{l41:rootsystem}|
 plant = pb.MappedPlant()  # |\label{l41:mappedplant}|
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 filename = "Anagallis_femina_Leitner_2010"
 plant.readParameters(path + filename + ".xml")
 plant.initialize()

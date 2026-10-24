@@ -38,6 +38,7 @@ GrassLeafRandomParameter::GrassLeafRandomParameter(std::shared_ptr<Organism> pla
     organType = Organism::ot_leaf;
     subType = -1;
     f_tf = std::make_shared<Tropism>(plant);
+    f_gf = std::make_shared<LinearGrowth>(); // fixed to linear growth
     bindParameters();
 }
 

@@ -1,10 +1,9 @@
 """dgf and vtp, and rsml export example"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 
 rs = pb.Plant()
-path = "../../modelparameter/structural/rootsystem/"
+path = pb.data_path() + "/structural/rootsystem/"
 name = "wheat"  # "Brassica_napus_a_Leitner_2010"  # "Brassica_napus_a_Leitner_2010"  # "Anagallis_femina_Leitner_2010"  #
 rs.readParameters(path + name + ".xml")
 

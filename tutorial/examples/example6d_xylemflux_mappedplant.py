@@ -1,5 +1,4 @@
 """ water movement within the root (static soil) """
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -21,7 +20,7 @@ k_soil = []
 
 """ root system """
 rs = pb.MappedPlant()
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 name = "manyleaves"  # "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 rs.readParameters(path + name + ".xml")
 soil_index = lambda x, y, z: 0

@@ -3,10 +3,10 @@
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 
 # Define a simple plant topology, part A
-plant = pb.MappedPlant(2) # |\label{l2_1:mappedplant}|
+plant = pb.Plant(2)  # |\label{l2_1:Plant2}|
 plant.readParameters(path + "example2_1_2.xml", verbose=True)
 
 rrp = plant.getOrganRandomParameter(pb.root)[1]  # laterals of taproot #|\label{l2_1:arrayStart1}|
@@ -29,7 +29,7 @@ vp.plot_plant(plant, "organType")
 plant.write("results/example2_1_2a.vtp")  # |\label{l2_1:simulateEnd1}|
 
 # Several successor types, specific locations, part B
-plant = pb.MappedPlant(2)
+plant = pb.Plant(2)
 plant.readParameters(path + "example2_1_2.xml")
 
 rrp = plant.getOrganRandomParameter(pb.root)[1]  # |\label{l2_1:arrayStart2}|
@@ -52,7 +52,7 @@ vp.plot_plant(plant, "organType")
 plant.write("results/example2_1_2b.vtp")
 
 # Probabilistic branching, part C
-plant = pb.MappedPlant(2)
+plant = pb.Plant(2)
 plant.readParameters(path + "example2_1_2.xml")
 
 rrp = plant.getOrganRandomParameter(pb.root)[1]  # |\label{l2_1:arrayStart3}|

@@ -131,9 +131,7 @@ public:
     void disableExtraNode() { extraNode = 0; }
     void enableExtraNode() { extraNode = 1; } // extra collar node for collar BC easier
 
-    // I made all initializer functions virtual and having only the verbose as argument to avoid confusion, stochasity can be set by Organism::setStochastic
-    void initializeLB(bool verbose = true) override { initialize_(verbose,  true); }; ///< overridden, length based initialization
-	void initializeDB(bool verbose = true) override { initialize_(verbose,  false); }; ///< overridden, delay based based initialization
+    void initialize(bool verbose = true) override; ///< initializes plant, then builds mapped nodes/segments with optional extra collar node
 	void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
 
     void printNodes(); ///< print information
@@ -162,7 +160,7 @@ public:
 
 	bool rootHairs = true; // todo: determine from parameters, and set within constructor
 
-	void initialize_(bool verbose = true, bool lengthBased = true);
+	
 	void getSegment2leafIds(); ///< fill segment2Leaf vector
 
 };

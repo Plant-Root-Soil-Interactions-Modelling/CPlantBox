@@ -259,11 +259,11 @@ def generate_mp4(plant_, time_slider, seed_data, root_data, stem_data, leaf_data
             for a in cur_actors:
                 ren.RemoveActor(a)
             if cur_bar is not None:
-                ren.RemoveActor2D(cur_bar)
+                ren.RemoveViewProp(cur_bar)
             for a in actors:
                 ren.AddActor(a)
             if scalar_bar:
-                ren.AddActor2D(scalar_bar)
+                ren.AddViewProp(scalar_bar)
             cur_actors, cur_bar = actors, scalar_bar
 
             vp.write_jpg(renWin, os.path.join(tmpdir, f"frame_{i}"), magnification=1)

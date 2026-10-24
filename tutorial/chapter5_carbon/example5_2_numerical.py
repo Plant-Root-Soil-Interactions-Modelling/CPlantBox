@@ -29,12 +29,12 @@ depth = 60
 p_mean = -600  # mean soil water potential (cm)
 
 # Weather data
-path = "../../modelparameter/functional/climate/"
+path = pb.data_path() + "/functional/climate/"
 weatherData = pd.read_csv(path + "Selhausen_weather_data.txt", delimiter="\t")
 
 # Plant
 plant = pb.MappedPlant(seednum=2)
-path = "../../modelparameter/structural/plant/"
+path = pb.data_path() + "/structural/plant/"
 filename = "Triticum_aestivum_test_2021_shapeType2"  # "Triticum_aestivum_adapted_2023"
 plant.readParameters(path + filename + ".xml")
 
@@ -57,10 +57,10 @@ plant.setSoilGrid(picker)
 
 # Plant functional properties
 params = PlantHydraulicParameters()  # |\label{l52:hydraulic}|
-params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l52:hydraulic_end}|
+params.read_parameters(pb.data_path() + "/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l52:hydraulic_end}|
 hm = PhloemFluxPython(plant, params)  # |\label{l52:phloempy}|
 hm.wilting_point = -10000
-path = "../../modelparameter/functional/"
+path = pb.data_path() + "/functional/"
 hm.read_photosynthesis_parameters(filename=path + "plant_photosynthesis/photosynthesis_parameters2025")  # |\label{l52:read}|
 hm.read_phloem_parameters(filename=path + "plant_sucrose/phloem_parameters2025")  # |\label{l52:read2}|
 # list_data = hm.get_phloem_data_list() # option of data that can be obtained from the phloem model # |\label{l52:outputOptions}|

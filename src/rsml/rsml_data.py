@@ -1,6 +1,6 @@
-import plantbox.rsml.rsml_reader as rsml_reader
-
 import numpy as np
+
+from . import rsml_reader
 
 
 class RsmlData:
