@@ -36,6 +36,7 @@ public:
     double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
 
     void addNode(Vector3d n, int id, double t, size_t index, bool shift) override;
+    double calcCreationTime(double length, double dt) override; ///< as Organ::calcCreationTime, but never later than the end of the current time step
 
     std::string toString() const override;
 

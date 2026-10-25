@@ -284,6 +284,17 @@ double Hyphae::calcAge(double length) const
 }
 
 /**
+ * Organ::calcCreationTime returns nodeCTs[0] + age for the newest node, which is summed up separately from the
+ * simulation time and can exceed it by rounding errors. Laterals inherit the creation time of their parent node,
+ * so the creation time is limited to the end of the current time step (simtime + dt, simtime is increased after the organs are simulated).
+ */
+double Hyphae::calcCreationTime(double length, double dt)
+{
+    auto plant_ = plant.lock();
+    return std::min(Organ::calcCreationTime(length, dt), plant_->getSimTime() + plant_->getDt());
+}
+
+/**
  * @return The RootTypeParameter from the plant
  */
 std::shared_ptr<HyphaeRandomParameter> Hyphae::getHyphaeRandomParameter() const

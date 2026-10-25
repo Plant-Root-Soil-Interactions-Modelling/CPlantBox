@@ -8,6 +8,7 @@
 #include "Organ.h"
 #include "Organism.h"
 #include "math.h"
+#include <cmath>
 
 namespace CPlantBox {
 
@@ -74,6 +75,17 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
     }
 }
 
+/**
+ * Organ::calcCreationTime returns nodeCTs[0] + age for the newest node, which is summed up separately from the
+ * simulation time and can exceed it by rounding errors. Hyphae and colonization use the end of the current time step
+ * (simtime + dt, simtime is increased after the organs are simulated), so node creation times are limited to it.
+ */
+double MycorrhizalRoot::calcCreationTime(double length, double dt)
+{
+    auto plant_ = plant.lock();
+    return std::min(Organ::calcCreationTime(length, dt), plant_->getSimTime() + plant_->getDt());
+}
+
 std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 {
     auto r = std::make_shared<MycorrhizalRoot>(*this); // shallow copy
@@ -90,7 +102,10 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 void MycorrhizalRoot::primaryColonization(double dt, bool silence){
     double lmbd;
     double highres = getRootRandomParameter()->highresolution;
-    // Determine the appropriate colonization rate for each node based on soil properties and age  
+    // absolute time at the end of the current time step (age is the age of this root, not the simulation time;
+    // plant->getSimTime() is only increased after all organs are simulated), node creation times are limited to it (see calcCreationTime)
+    double t = plant.lock()->getSimTime() + plant.lock()->getDt();
+    // Determine the appropriate colonization rate for each node based on soil properties and age
     for (size_t i = 1; i < nodes.size(); i++){
         if (std::dynamic_pointer_cast<SoilLookUpSDF>(getRootRandomParameter()->f_inf))
         {
@@ -99,15 +114,15 @@ void MycorrhizalRoot::primaryColonization(double dt, bool silence){
         else {
             lmbd = getRootRandomParameter()->lmbd;
         }
-        if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {lmbd = 0;}//account for minimal age in rate
-        lmbd = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * lmbd; // account for maximal age in rate
+        if (t - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {lmbd = 0;}//account for minimal age (of the node) in rate
+        lmbd = (1 - (t - nodeCTs.at(i))/getRootRandomParameter()->maxAge) * lmbd; // account for maximal age (of the node) in rate
         // Determine the probability for colonization of the current node and infect if successful
         // Also refine the root if the segment is too long and a new node is inserted, which inherits the colonization status based on parent node
         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
         if (colonized.at(i) == 0 && plant.lock()->rand() < lmbd*cursegLength*dt)
         {
             // insert node here if segment too long and set all nodes to be colonized
-            setColonization(i,1,age);
+            setColonization(i,1,t);
             if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
                 int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
                 Vector3d fromNode = nodes.at(i-1);   // freeze endpoints before any insertion
@@ -130,7 +145,8 @@ void MycorrhizalRoot::primaryColonization(double dt, bool silence){
 
 // TODO: this functino is a bit hard to read, might be good to break it up in smaller parts.
 void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
-    double max_length_colonization = age*getRootRandomParameter()->vi;
+    double max_length_colonization = age*getRootRandomParameter()->vi; // age used as duration here
+    double t = plant.lock()->getSimTime() + plant.lock()->getDt(); // absolute time at the end of the current time step, see primaryColonization
     double infTime;
     double highres = getRootRandomParameter()->highresolution;
     for (size_t i = 0; i < nodes.size(); ++i)
@@ -156,9 +172,9 @@ void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
                     }
 
                     infTime = colonizationTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
-                    if (infTime > age) {break;}  // front hasn't reached here yet; farther nodes are worse
+                    if (infTime > t) {break;}  // front hasn't reached here yet; farther nodes are worse
 
-                    setColonization(basalnode,2,infTime);
+                    setColonization(basalnode,2,std::max(infTime, nodeCTs.at(basalnode))); // node can only be colonized after it is created
 
                     if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
                         int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
@@ -207,9 +223,9 @@ void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
                 }
 
                 infTime = colonizationTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
-                if (infTime > age) {break;}
+                if (infTime > t) {break;}
 
-                setColonization(apicalnode,2,infTime);
+                setColonization(apicalnode,2,std::max(infTime, nodeCTs.at(apicalnode))); // node can only be colonized after it is created (the tip node gets a new creation time when it is moved)
                 if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
                     int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
                     Vector3d fromNode = nodes.at(oldNode);
@@ -355,11 +371,17 @@ void MycorrhizalRoot::setColonization(int i, int colonization, double t)
 void MycorrhizalRoot::createHyphae(int pni)
 {
     double delay = getRootRandomParameter()->hyphalDelay;
-	double delay_for_creation = colonizationTime.at(pni) + delay - shared_from_this()->getNodeCT(pni);//difference between creation of parent node and that of the hyphae
+    double emergenceTime = colonizationTime.at(pni) + delay;
+    double parentCT = getNodeCT(pni);
+	double delay_for_creation = emergenceTime - parentCT; //difference between creation of parent node and that of the hyphae
+    if (parentCT + delay_for_creation > emergenceTime) { // the Hyphae constructor uses parentCT + delay, which must not round above emergenceTime
+        delay_for_creation = std::nextafter(delay_for_creation, 0.);
+    }
     assert(delay_for_creation >= 0 && "MycorrhizalRoot::createHyphae delay_for_creation < 0");
     // as in Organ::createLateral: the constructor sets age = -delay_for_creation, so the hypha has to be simulated for the time
-    // since the creation of the parent node (not since emergence), then it has age 0 at emergence (colonizationTime + delay)
-    double dt_ = plant.lock()->getSimTime() - shared_from_this()->getNodeCT(pni);
+    // since the creation of the parent node (not since emergence), then it has age 0 at emergence (colonizationTime + delay).
+    // End of the current time step, plant->getSimTime() is only increased after all organs are simulated
+    double dt_ = plant.lock()->getSimTime() + plant.lock()->getDt() - parentCT;
     int subType = 1;
     auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay_for_creation, shared_from_this(), pni);
     children.push_back(hyphae);

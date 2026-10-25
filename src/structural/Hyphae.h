@@ -48,6 +48,7 @@ public:
     //    /* From analytical equations */
     double calcLength(double age); ///< analytical length of the root
     double calcAge(double length) const; ///< analytical age of the root
+    double calcCreationTime(double length, double dt) override; ///< as Organ::calcCreationTime, but never later than the end of the current time step
 
     int hyphalTreeIndex=-1;
 
