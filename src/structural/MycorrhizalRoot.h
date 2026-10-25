@@ -20,6 +20,7 @@ public:
 
     std::vector<int> colonized;
     std::vector<int> emergedHyphae;
+    std::vector<bool> hyphalEmergenceDone; ///< true if the hyphae of this node have been created (highresolution < 1), also if that number was 0
     std::vector<double> colonizationTime;
 
     virtual ~MycorrhizalRoot() { };

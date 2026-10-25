@@ -24,6 +24,7 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
         {
             colonized.push_back(0);
             emergedHyphae.push_back(0);
+            hyphalEmergenceDone.push_back(false);
             colonizationTime.push_back(-1);
 
         }else{
@@ -31,6 +32,7 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
             }
             colonized.push_back(0);
             emergedHyphae.push_back(0);
+            hyphalEmergenceDone.push_back(false);
             colonizationTime.push_back(-1);
         }
     }
@@ -52,6 +54,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
         Organ::addNode(n, id,  t,  index, shift);
         colonized.push_back(0);
         emergedHyphae.push_back(0);
+        hyphalEmergenceDone.push_back(false);
         colonizationTime.push_back(-1);
     }
     else {
@@ -60,6 +63,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 		nodeCTs.insert(nodeCTs.begin() + index-1, t);
         colonized.insert(colonized.begin()+index-1, colonized.at(index-1));
         emergedHyphae.insert(emergedHyphae.begin()+index-1, 0);
+        hyphalEmergenceDone.insert(hyphalEmergenceDone.begin()+index-1, false);
         colonizationTime.insert(colonizationTime.begin()+index-1, std::max(colonizationTime.at(index-1), t));
 
         for(auto kid : children){//if carries children after the added node, update their "parent node index"
@@ -241,38 +245,23 @@ void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
     if (getRootRandomParameter()->highresolution >= 1) { // Version where at every node there is one hypha created
         for (size_t i = 1; i < nodes.size(); i++) {
             if (colonized.at(i) > 0 && emergedHyphae.at(i) == 0){ // if the current node is colonized and the number of hyphae to be created is reached
-                createHyphae(i);
-                emergedHyphae.at(i) += 1; // increase the number of hyphae at this node
+                createHyphae(i); // increases emergedHyphae.at(i)
             }
         }
-    } else { // Version where a set number of hyphae are created based on hyphal emergence density and root segment length
-        auto rrp = getRootRandomParameter(); // param()
-        double hed = rrp->hyphalEmergenceDensity;
-
-        // double cumLength = 0.; // cumulative colonized length
-        double numberOfHyphae= 0;
-
-        for (size_t i = 0; i < nodes.size(); i++) {
-            numberOfHyphae += emergedHyphae.at(i);
-        }
-
-        int new_noh = int(hed * getParameter("colonizationLength") - numberOfHyphae); // account for rounding errors
-        if (hed * getParameter("colonizationLength") - numberOfHyphae - new_noh > 0.5) {
-            new_noh += 1; // round up if the difference is larger than 0.5
-        }
-        double new_total_noh = numberOfHyphae + new_noh;
-
-        int currentNode = 1;
-        while (new_noh > 0 && numberOfHyphae < new_total_noh)
-        {
-            if (colonized.at(currentNode) > 0){ // if the current node is colonized and the number of hyphae to be created is reached
-                createHyphae(currentNode);
-                numberOfHyphae += 1;
-                new_noh -= 1;
-            }
-            currentNode++;
-            if (currentNode >= nodes.size() && new_noh > 0) {
-                currentNode = 1; // reset to the first node if the end of the nodes vector is reached
+    } else { // Version where the number of hyphae of a node is based on hyphal emergence density and the length of the segment ending at that node
+        double hed = getRootRandomParameter()->hyphalEmergenceDensity;
+        double s = 0.; // length along the root from its base to node i
+        for (size_t i = 1; i < nodes.size(); i++) {
+            double s_prev = s;
+            s += nodes.at(i).minus(nodes.at(i-1)).length();
+            if (colonized.at(i) > 0 && !hyphalEmergenceDone.at(i)) { // hyphae emerge in the time step the node is colonized
+                // one hypha every 1/hed cm along the root: the segment ending at node i gets the multiples of 1/hed within (s_prev, s],
+                // so the hyphae are evenly distributed independent of the order of colonization (tolerance for rounding)
+                int noh = int(std::floor(hed * s + 1.e-9) - std::floor(hed * s_prev + 1.e-9));
+                for (int k = 0; k < noh; k++) {
+                    createHyphae(i);
+                }
+                hyphalEmergenceDone.at(i) = true;
             }
         }
     }
@@ -366,11 +355,13 @@ void MycorrhizalRoot::setColonization(int i, int colonization, double t)
 void MycorrhizalRoot::createHyphae(int pni)
 {
     double delay = getRootRandomParameter()->hyphalDelay;
-    double dt_ = plant.lock()->getSimTime() - colonizationTime.at(pni) - delay; // time the hyphae should have grown
 	double delay_for_creation = colonizationTime.at(pni) + delay - shared_from_this()->getNodeCT(pni);//difference between creation of parent node and that of the hyphae
     assert(delay_for_creation >= 0 && "MycorrhizalRoot::createHyphae delay_for_creation < 0");
+    // as in Organ::createLateral: the constructor sets age = -delay_for_creation, so the hypha has to be simulated for the time
+    // since the creation of the parent node (not since emergence), then it has age 0 at emergence (colonizationTime + delay)
+    double dt_ = plant.lock()->getSimTime() - shared_from_this()->getNodeCT(pni);
     int subType = 1;
-    auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay_for_creation, shared_from_this(), pni); // delay - dt_
+    auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay_for_creation, shared_from_this(), pni);
     children.push_back(hyphae);
     emergedHyphae.at(pni) += 1;
     hyphae->setHyphalTreeIndex(-1);
