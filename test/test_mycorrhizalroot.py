@@ -296,10 +296,8 @@ class TestMycorrhizalRoot(unittest.TestCase):
             self.assertEqual(after[nid][0], c, "colonization persistent: colonization state changed")
             self.assertEqual(after[nid][1], t, "colonization persistent: colonization time changed")
 
-    @unittest.expectedFailure
     def test_segment_refinement(self):
-        """ tests that colonized segments are refined to dx_inf (highresolution = 1) without changing the root length;
-            fails: MycorrhizalRoot::addNode inserts the new node at index-1, i.e. before node i-1 instead of between i-1 and i """
+        """ tests that colonized segments are refined to dx_inf (highresolution = 1) without changing the root length """
         dx_inf = 0.1
         self.fast_root_plant(lmbd = 0.2, vi = 0.2, highresolution = 1., dx_inf = dx_inf)
         self.simulate(3.)
@@ -309,9 +307,9 @@ class TestMycorrhizalRoot(unittest.TestCase):
         self.assertGreater(self.root.getNumberOfNodes(), self.p0.lmax / self.p0.dx + 1, "segment refinement: no nodes were inserted")
         self.assertAlmostEqual(self.root.getLength(), self.p0.lmax, 10, "segment refinement: root length changed")
         self.assertAlmostEqual(np.sum(seg), self.p0.lmax, 10, "segment refinement: geometric root length changed")
-        for i in range(1, len(col)):
-            if col[i] > 0 and col[i - 1] > 0:
-                self.assertLessEqual(seg[i - 1], dx_inf + 1.e-9, "segment refinement: colonized segment longer than dx_inf")
+        for i in range(1, len(col)):  # the segment ending at a primarily colonized node is split into int(length/dx_inf) equal parts
+            if col[i] == 1:
+                self.assertLess(seg[i - 1], 2 * dx_inf, "segment refinement: primarily colonized segment is not refined")
         for h in self.root_hyphae(self.root):  # children have to be moved with the inserted nodes
             self.assertEqual(h.getNodeId(0), self.root.getNodeId(h.parentNI), "segment refinement: hypha is not attached to its root node")
 

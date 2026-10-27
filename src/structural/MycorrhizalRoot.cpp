@@ -46,8 +46,11 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
  * @param n        new node
  * @param id       global node index
  * @param t        exact creation time of the node
- * @param index	   position were new node is to be added
- * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
+ * @param index	   position were new node is to be added (between the nodes index-1 and index, if shift)
+ * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes to refine a colonized segment?)
+ *
+ * An inserted node takes the colonization state and time of the node at index (the node behind it), as in Stem::addNode
+ * the global node indices are not kept in order along the root
  */
 void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
     if (!shift)
@@ -59,16 +62,19 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
         colonizationTime.push_back(-1);
     }
     else {
-		nodes.insert(nodes.begin() + index-1, n);//add the node at index
+        assert((index > 0) && (index < nodes.size()) && "MycorrhizalRoot::addNode: nodes can only be inserted between existing nodes");
+        int col = colonized.at(index); // copies, the vectors are modified below
+        double colTime = colonizationTime.at(index);
+		nodes.insert(nodes.begin() + index, n);//add the node at index
 		nodeIds.push_back(id);
-		nodeCTs.insert(nodeCTs.begin() + index-1, t);
-        colonized.insert(colonized.begin()+index-1, colonized.at(index-1));
-        emergedHyphae.insert(emergedHyphae.begin()+index-1, 0);
-        hyphalEmergenceDone.insert(hyphalEmergenceDone.begin()+index-1, false);
-        colonizationTime.insert(colonizationTime.begin()+index-1, std::max(colonizationTime.at(index-1), t));
+		nodeCTs.insert(nodeCTs.begin() + index, t);
+        colonized.insert(colonized.begin() + index, col);
+        emergedHyphae.insert(emergedHyphae.begin() + index, 0);
+        hyphalEmergenceDone.insert(hyphalEmergenceDone.begin() + index, false);
+        colonizationTime.insert(colonizationTime.begin() + index, std::max(colTime, t));
 
         for(auto kid : children){//if carries children after the added node, update their "parent node index"
-			if((kid->parentNI >= index-1 )&&(kid->parentNI > 0)){
+			if(kid->parentNI >= index){
 				kid->moveOrigin(kid->parentNI + 1);
 			}
 		}
@@ -135,7 +141,7 @@ void MycorrhizalRoot::primaryColonization(double dt, bool silence){
                     double newz = fromNode.z + (toNode.z - fromNode.z) *(j+1)/(newNodesNumber +1);
                     Vector3d newNode = Vector3d(newx,newy,newz);
                     addNode(newNode,plant.lock()->getNodeIndex(), toCT, i, true);
-                    // insertion happens at i-1, shifting i (the colonized endpoint) up by 1
+                    // insertion happens between i-1 and i, shifting i (the colonized endpoint) up by 1
                     i++;
                 }
             }
@@ -187,9 +193,11 @@ void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
                             double newy = fromNode.y + (toNode.y - fromNode.y) *(j+1)/(newNodesNumber +1);
                             double newz = fromNode.z + (toNode.z - fromNode.z) *(j+1)/(newNodesNumber +1);
                             Vector3d newNode = Vector3d(newx,newy,newz);
-                            addNode(newNode,plant.lock()->getNodeIndex(), toCT, basalnode, true);
-                            basalnode++;
-                            oldNode++;
+                            // insertion happens between basalnode and basalnode+1 (each new node closer to basalnode than the one before),
+                            // the new node is colonized like basalnode, not like the node behind it
+                            addNode(newNode,plant.lock()->getNodeIndex(), toCT, basalnode+1, true);
+                            setColonization(basalnode+1, colonized.at(basalnode), colonizationTime.at(basalnode));
+                            i++; // the start node i is shifted by the insertion
                         }
                     }
 
@@ -237,8 +245,7 @@ void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
                         double newy = fromNode.y + (toNode.y - fromNode.y) *(j+1)/(newNodesNumber +1);
                         double newz = fromNode.z + (toNode.z - fromNode.z) *(j+1)/(newNodesNumber +1);
                         Vector3d newNode = Vector3d(newx,newy,newz);
-                        addNode(newNode,plant.lock()->getNodeIndex(), toCT, apicalnode, true);
-                        oldNode++;
+                        addNode(newNode,plant.lock()->getNodeIndex(), toCT, apicalnode, true); // insertion between apicalnode-1 and apicalnode
                         apicalnode++;
                     }
                 }
