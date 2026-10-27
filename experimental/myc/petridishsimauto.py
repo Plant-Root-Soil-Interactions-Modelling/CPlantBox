@@ -4,8 +4,13 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 import numpy as np
 import os
+import resource
 import time
 import AMFAnalysis as amf
+
+def peak_memory_mb():
+    # peak resident memory of this process so far (ru_maxrss is in kB on Linux)
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
 
 # Usage: python3 petridishsimauto.py <seed>
 # one seed per run, e.g. one per cluster job (see run_petridish.sh). Seed 0 means random seed in CPlantBox, so use seeds > 0.
@@ -47,7 +52,7 @@ mycp, time_star, times = amf.makeSimulation(seed, path, name, height, petri_dish
                                             animation=animation, max_wait_days=max_wait_days, stats=stats)
 stats["max_wait_days"] = max_wait_days if max_wait_days is not None else np.inf
 if stats["status"] != "ok": # store the run statistics anyway, petridishcombine.py skips this seed, petridishtiming.py counts it
-    amf.save_simulation(results_dir + f"seed_{seed:03d}.npz", {"seed": seed, **stats})
+    amf.save_simulation(results_dir + f"seed_{seed:03d}.npz", {"seed": seed, **stats, "peak_memory_mb": peak_memory_mb()})
     sys.exit(0)
 t_analysis = time.perf_counter()
 if show_3d:
@@ -68,6 +73,7 @@ sim = {
     "length_densities": mats["length"] / vol,
     **stats,
     "wall_analysis": time.perf_counter() - t_analysis,
+    "peak_memory_mb": peak_memory_mb(),
 }
 amf.save_simulation(results_dir + f"seed_{seed:03d}.npz", sim)
 if (seed % 10 == 0):

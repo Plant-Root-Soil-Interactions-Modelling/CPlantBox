@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Combines the per-seed results of run_petridish.sh, submit with --dependency=afterok:<jobid of the array>
+# Run statistics (petridish_timing.png) and radial profile over all seeds (TipDensOverAllSim*.png) from the per-seed results
+# of run_petridish.sh. Submit with --dependency=afterany:<jobid of the array>, so it also runs if single seeds failed or timed out.
 #
 #SBATCH --job-name=petricombine
 #SBATCH --ntasks=1
@@ -19,4 +20,5 @@ source cpbenv/bin/activate
 cd CPlantBox/experimental/myc/
 export MPLBACKEND=Agg
 
+python3 petridishtiming.py
 python3 petridishcombine.py

@@ -4,10 +4,12 @@
 # Each copy is a normal 1-CPU job like before, $SLURM_ARRAY_TASK_ID (0, 1, 2, ...) picks the seed from SEEDS.
 # --array must be 0-(number of seeds - 1), e.g. 100 seeds -> 0-99
 #
-# Submit from the home directory (same place as the old single job):
+# Submit from the home directory (same place as the old single job), after C++ changes with the build first:
 #   mkdir -p slurmOut slurmErr
-#   jobid=$(sbatch --parsable CPlantBox/experimental/myc/run_petridish.sh)
-#   sbatch --dependency=afterok:$jobid CPlantBox/experimental/myc/run_petridish_combine.sh
+#   buildid=$(sbatch --parsable build_plantbox.sh)
+#   jobid=$(sbatch --parsable --dependency=afterok:$buildid run_petridish.sh)
+#   sbatch --dependency=afterany:$jobid run_petridish_combine.sh
+# Seeds that do not reach t* within max_wait_days (petridishsimauto.py) end normally with status "not_crossed".
 #
 #SBATCH --job-name=petrisimjob
 #SBATCH --array=0-99%5
@@ -39,7 +41,7 @@ mkdir -p plots animation petridish_results/densities
 export MPLBACKEND=Agg
 
 echo "Task $SLURM_ARRAY_TASK_ID: seed $SEED on $(hostname), start $(date)"
-# /usr/bin/time -v writes runtime ("Elapsed (wall clock) time") and peak memory ("Maximum resident set size")
-# to the .err log, since slurm accounting is not available on the cluster
-/usr/bin/time -v python3 petridishsimauto.py "$SEED"
+# runtime per phase and peak memory are stored by petridishsimauto.py itself (see petridishtiming.py),
+# since slurm accounting is not available on the cluster (and /usr/bin/time is not installed on the nodes)
+python3 petridishsimauto.py "$SEED"
 echo "Seed $SEED done $(date)"

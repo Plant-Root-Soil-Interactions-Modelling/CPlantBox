@@ -27,6 +27,9 @@ if len(wait_ok):
 for p in phases:
     print("%-14s median %.1f min, max %.1f min" % (p, np.median(wall[p]), wall[p].max()))
 print("%-14s median %.1f min, max %.1f min" % ("total", np.median(wall_total), wall_total.max()))
+memory = np.array([float(sim["peak_memory_mb"]) for sim in simulations if "peak_memory_mb" in sim])
+if len(memory):
+    print("%-14s median %.0f MB, max %.0f MB (for --mem in run_petridish.sh)" % ("peak memory", np.median(memory), memory.max()))
 
 c_ok, c_stopped, c_ref = "#4c72b0", "#dd8452", "0.4"
 fig, axes = plt.subplots(2, 2, figsize=(11, 8))
