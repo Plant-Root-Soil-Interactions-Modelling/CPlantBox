@@ -183,13 +183,17 @@ class TestHyphaeParameter(unittest.TestCase):
         self.assertAlmostEqual(np.mean(hlt) / 10., 1., 1, "realize: unexpected mean of hlt")
         self.assertAlmostEqual(np.std(hlt) / 1., 1., 1, "realize: unexpected standard deviation of hlt")
 
-    @unittest.expectedFailure
     def test_realize_lmax(self):
-        """ HyphaeSpecificParameter::lmax is never set by the constructor, so Hyphae::getParameter("lmax") is undefined """
+        """ tests that the realized lmax equals the maximal length getK(), with and without laterals """
         self.hyphae_example()
         self.set_deviations_zero()
         p = self.hrp.realize()
-        self.assertAlmostEqual(p.lmax, self.hrp.lmax, 12, "realize: lmax is not set in the specific parameter")
+        self.assertAlmostEqual(p.lmax, self.hrp.lmax, 10, "realize: unexpected lmax with laterals")
+        self.assertAlmostEqual(p.lmax, p.getK(), 12, "realize: lmax should equal getK()")
+        self.hrp.successor = []
+        self.hrp.successorP = []
+        p = self.hrp.realize()
+        self.assertAlmostEqual(p.lmax, self.hrp.lmax, 12, "realize: unexpected lmax without laterals")
 
     def test_set_in_organism(self):
         """ tests if the hyphae parameter can be set and retrieved from an organism """
