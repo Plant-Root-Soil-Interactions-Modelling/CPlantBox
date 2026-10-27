@@ -58,7 +58,8 @@ std::vector<int> MycorrhizalPlant::getNodeColonizations(int ot) const {
     }
 
     for (const auto & o : organs) {
-        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++) { // TOOO check if here we need to check for organ type!!!
+        if (o->organType() != Organism::ot_root) { continue; } // only roots are colonized
+        for (size_t i = 1; i < o ->getNumberOfNodes(); i++) { // node 0 is set by the parent
             infs.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeColonization(i);
         }
     }
@@ -75,7 +76,8 @@ std::vector<double> MycorrhizalPlant::getNodeColonizationTime(int ot) const {
     }
 
     for (const auto & o : organs){
-        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++){ // TOOO check if here we need to check for organ type!!!
+        if (o->organType() != Organism::ot_root) { continue; } // only roots are colonized
+        for (size_t i = 1; i < o ->getNumberOfNodes(); i++){ // node 0 is set by the parent
             infTime.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeColonizationTime(i);
         }
     }

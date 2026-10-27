@@ -302,16 +302,17 @@ void MycorrhizalRoot::simulateColonization(double dt, bool verbose) {
         // Secondary Colonization
         secondaryColonization(verbose,dt);
 
+        // Transfer to the laterals. The laterals are not colonized here, they colonize themselves in their own simulate()
+        // (called by Root::simulate() before), MycorrhizalPlant::simulateColonization() calls every root
         for (auto l : children)
         {
             if (l->organType()==Organism::ot_root) {
                 if (colonized.at(l->parentNI) != 0) { // the base of root l is colonized
                     if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeColonization(1) == 0) {
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setColonization(0, 3, 
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setColonization(0, 3,
 								std::max( l->getNodeCT(0), colonizationTime.at(l->parentNI))); //root can only be colonized after it is born (and need to account for growth delay)
                     }
                 }
-                std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateColonization(dt, verbose);
             }
         }
     }

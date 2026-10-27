@@ -96,9 +96,8 @@ class TestMycorrhizalPlant(unittest.TestCase):
                 self.assertEqual(col[nid], r.getNodeColonization(i), "getNodeColonizations: unexpected state")
                 self.assertEqual(ct[nid], r.getNodeColonizationTime(i), "getNodeColonizationTime: unexpected time")
 
-    @unittest.expectedFailure
     def test_node_colonizations_tips(self):
-        """ getNodeColonizations() and getNodeColonizationTime() skip the last node of each root (loop i < n-1) """
+        """ tests getNodeColonizations() at the root tips """
         roots, col, ct = self.node_colonizations()
         tips = [(r.getNodeId(r.getNumberOfNodes() - 1), r.getNodeColonization(r.getNumberOfNodes() - 1)) for r in roots]
         self.assertGreater(sum(1 for _, c in tips if c > 0), 0, "getNodeColonizations: no colonized root tip in this example")
@@ -199,10 +198,8 @@ class TestMycorrhizalPlant(unittest.TestCase):
         self.simulate(0.5)
         self.assertEqual([h.getLength() for h in hyphae], length, "turnOffSidePetriDish: deactivated hyphae grew")
 
-    @unittest.expectedFailure
     def test_colonization_rate_laterals(self):
-        """ the primary colonization rate of laterals equals that of the tap root;
-            fails: MycorrhizalRoot::simulate() colonizes laterals in their own simulate() and again in the parent's simulateColonization() """
+        """ tests that the primary colonization rate of laterals equals that of the tap root (laterals are colonized once per time step) """
         lmbd, dt, time = 0.2, 0.1, 3.
         stats = {1: [0, 0], 2: [0, 0]}  # sub type: [uncolonized nodes, colonized nodes]
         for seed in range(1, 21):
