@@ -10,15 +10,18 @@ Phase 1: Morris-Auswertung für alle Outputs, Teilbereiche und Zeitpunkte.
 mu* ist in Output-Einheiten pro Durchlaufen des gesamten Faktorbereichs angegeben
 (normierte Faktoren) und damit zwischen Faktoren, nicht aber zwischen Outputs vergleichbar.
 Für den Vergleich dient mu*_rel = mu* / max(mu*) innerhalb eines Outputs.
+mu*, mu, sigma und das Bootstrap-KI kommen aus SALib.analyze.morris; das Rauschniveau
+aus den Replikaten wird hier berechnet.
 """
 import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from SALib.analyze import morris as morris_analyze
 
 import config
-import morris
+from design import morris_problem
 
 KEY = ["time", "region", "output"]
 NAMES = [f.name for f in config.FACTORS]
@@ -47,27 +50,58 @@ def _color(name):
     return C_PULLER if SUBTYPE[name] == 1 else C_RUNNER
 
 
+def _elementary_effects(X, Y):
+    """EEs je Trajektorie (nur fürs Rauschniveau, SALib gibt sie nicht heraus).
+    X: (r, k+1, k) normiert, Y: (..., r, k+1). Gibt EE: (..., r, k) zurück, normiert wie
+    SALib: Output-Änderung pro Schritt Δ im normierten Faktorbereich."""
+    dX = np.diff(X, axis=1)                              # (r, k, k): je Schritt ändert sich ein Faktor
+    i = np.abs(dX).argmax(-1)                            # (r, k): welcher Faktor in welchem Schritt
+    dx = np.take_along_axis(dX, i[..., None], -1)[..., 0]
+    ee_step = np.diff(Y, axis=-1) / dx                   # (..., r, k) in Schrittreihenfolge
+    EE = np.empty_like(ee_step)
+    np.put_along_axis(EE, np.broadcast_to(i, ee_step.shape), ee_step, -1)
+    return EE
+
+
 def compute():
     design = pd.read_csv(config.RESULTS_DIR / "design_morris.csv")
-    X = np.load(config.RESULTS_DIR / "morris_X.npy")
-    order = np.load(config.RESULTS_DIR / "morris_order.npy")
+    problem = morris_problem()
+    k = problem["num_vars"]
+    X = np.load(config.RESULTS_DIR / "morris_X.npy").reshape(-1, k + 1, k)   # (r, k+1, k)
     out = pd.read_csv(config.RESULTS_DIR / "outputs_morris.csv").merge(
         design[["run_id", "traj", "step", "rep"]], on="run_id")
-    r, kp1, k = X.shape
+    r, kp1, _ = X.shape
     R = int(design["rep"].max()) + 1
     vals = out.set_index(KEY + ["rep", "traj", "step"])["value"]
     rows = []
     for key, s in vals.groupby(level=[0, 1, 2]):
-        # Jedes Replikat ist eine in sich konsistente Trajektorie (gemeinsamer Seed) -> EE je Replikat
         Y = np.full((R, r, kp1), np.nan)
         for (_, _, _, rep, t, st), v in s.items():
             Y[rep, t, st] = v
-        EE_rep = np.stack([morris.elementary_effects(X, Y[q], order) for q in range(R)])
-        EE = np.nanmean(EE_rep, 0)                         # über Replikate gemittelt
-        res = morris.analyze(EE, seed=config.BASE_SEED)
+        # Jedes Replikat ist eine in sich konsistente Trajektorie (gemeinsamer Seed) -> zählt nur
+        # vollständig. Gültig sind Trajektorien mit mind. einem vollständigen Replikat.
+        complete = np.isfinite(Y).all(-1)                  # (R, r)
+        Y = np.where(complete[..., None], Y, np.nan)
+        valid = complete.any(0)
+        n_valid = int(valid.sum())
+        res = {m: np.full(k, np.nan) for m in ("mu_star", "mu", "sigma")}
+        res["n_valid"] = np.full(k, n_valid)
+        res["mu_star_lo"], res["mu_star_hi"] = np.full(k, np.nan), np.full(k, np.nan)
+        if n_valid:
+            # EE ist linear in Y: Replikate vorher mitteln == EEs über Replikate mitteln
+            Y_mean = np.nanmean(Y[:, valid], 0)
+            Si = morris_analyze.analyze(problem, X[valid].reshape(-1, k), Y_mean.reshape(-1),
+                                        num_resamples=1000, conf_level=0.95,
+                                        num_levels=config.MORRIS_LEVELS, seed=config.BASE_SEED)
+            for m in ("mu_star", "mu", "sigma"):
+                res[m] = np.asarray(Si[m], dtype=float)
+            # SALib liefert das KI als Halbbreite (Normalapproximation des Bootstraps)
+            res["mu_star_lo"] = np.maximum(res["mu_star"] - Si["mu_star_conf"], 0)
+            res["mu_star_hi"] = res["mu_star"] + Si["mu_star_conf"]
         # Rauschniveau je Faktor: mu*, das ein wirkungsloser Faktor allein durch Seed-Rauschen
         # hätte. SE des Replikat-Mittels je EE, E|N(0,se)| = se*sqrt(2/pi), gemittelt über Trajektorien.
         if R > 1:
+            EE_rep = _elementary_effects(X, Y)             # (R, r, k)
             se = np.nanstd(EE_rep, 0, ddof=1) / np.sqrt(R)
             res["noise_level"] = np.nanmean(se, 0) * np.sqrt(2 / np.pi)
         else:

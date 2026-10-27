@@ -2,7 +2,7 @@
 Erzeugt die Designtabellen (eine Zeile = ein Simulationslauf).
 
     python design.py phase0     -> results/design_phase0.csv
-    python design.py morris     -> results/design_morris.csv (+ morris_order.npy)
+    python design.py morris     -> results/design_morris.csv (+ morris_X.npy)
 
 Danach: `python run_one.py <design.csv> <zeile>` bzw. per SLURM-Array.
 """
@@ -10,10 +10,17 @@ import sys
 
 import numpy as np
 import pandas as pd
+from SALib.sample import morris as morris_sample
 
 import config
-import morris
 from xml_tools import nominal_values
+
+
+def morris_problem():
+    """SALib-Problemdefinition auf dem normierten Faktorraum [0,1]^k.
+    Die Umrechnung in physikalische Werte (inkl. log) macht `to_physical`."""
+    k = len(config.FACTORS)
+    return {"num_vars": k, "names": [f.name for f in config.FACTORS], "bounds": [[0.0, 1.0]] * k}
 
 
 def to_physical(U):
@@ -45,10 +52,14 @@ def phase0():
 
 
 def phase1_morris():
-    k = len(config.FACTORS)
-    X, order = morris.sample(k, config.MORRIS_TRAJECTORIES, config.MORRIS_LEVELS,
-                             config.MORRIS_CANDIDATES, seed=config.BASE_SEED)
-    names = [f.name for f in config.FACTORS]
+    problem = morris_problem()
+    k, names = problem["num_vars"], problem["names"]
+    # Trajektorienauswahl aus MORRIS_CANDIDATES nach maximaler Spreizung (Ruano et al. 2012,
+    # schnelle Variante von Campolongo et al. 2007). Zeilen: Trajektorie für Trajektorie à k+1 Punkte.
+    X_flat = morris_sample.sample(problem, config.MORRIS_CANDIDATES, num_levels=config.MORRIS_LEVELS,
+                                  optimal_trajectories=config.MORRIS_TRAJECTORIES,
+                                  local_optimization=True, seed=config.BASE_SEED)
+    X = X_flat.reshape(-1, k + 1, k)
     rows = []
     R = config.MORRIS_REPLICATES
     for t in range(X.shape[0]):
@@ -65,8 +76,7 @@ def phase1_morris():
     df = pd.DataFrame(rows)
     path = config.RESULTS_DIR / "design_morris.csv"
     df.to_csv(path, index=False)
-    np.save(config.RESULTS_DIR / "morris_order.npy", order)
-    np.save(config.RESULTS_DIR / "morris_X.npy", X)
+    np.save(config.RESULTS_DIR / "morris_X.npy", X_flat)
     print(f"{X.shape[0]} Trajektorien × {k + 1} Punkte × {R} Replikate = {len(df)} Läufe -> {path}")
 
 

@@ -11,7 +11,7 @@ Simulation muss nur `model_hook.py` angeschlossen werden.
 | `template/hyphae_template.xml` | durch dein vollständiges Nominal-Parameterfile ersetzen |
 | `model_hook.py` | `simulate()` an eure Python-Bindings anschließen (Seed setzen, Snapshots speichern), `carbon_cost()` mit eurer Definition |
 | `config.py` | **Faktorbereiche** (aktuell alle ±25 % Platzhalter), `SIM_TIME`, `SNAPSHOT_TIMES`, `DOMAIN`, `REGIONS` |
-| `slurm/*.sbatch` | Umgebung laden (module/venv), ggf. Partition/Account, Speicher |
+| `slurm/*.sbatch` | Umgebung laden (module/venv, mit `SALib`), ggf. Partition/Account, Speicher |
 
 Falls eure bestehende Auswertung die Outputs schon berechnet: in `evaluate.py`
 `region_outputs()` durch Aufrufe eurer Funktionen ersetzen. Wichtig ist nur das
@@ -66,9 +66,13 @@ Keine Neusimulation nötig, solange die Snapshots die Rohdaten enthalten.
   „im Rauschen" (Spalte `in_noise`, schwarze Markierung im Ranking-Plot).
 - **μ* in normierten Einheiten:** Output-Änderung pro Durchlaufen des Faktorbereichs,
   zwischen Faktoren vergleichbar. `mu_star_rel` normiert zusätzlich je Output.
-- Morris ist selbst implementiert (`morris.py`, Trajektorienauswahl nach Campolongo
-  et al. 2007), damit Replikat- und Seed-Logik sauber passen. Ergebnisse entsprechen
-  `SALib.analyze.morris`.
+- **Morris über SALib** (`pip install SALib`): Design mit `SALib.sample.morris`
+  (Trajektorienauswahl nach maximaler Spreizung, `local_optimization`), Auswertung mit
+  `SALib.analyze.morris` auf dem Replikat-Mittel. Faktoren werden auf `[0,1]` gesampelt
+  und in `design.to_physical` umgerechnet (auch log-uniform). Selbst berechnet wird nur
+  das Rauschniveau, weil SALib die einzelnen EEs nicht herausgibt.
+- **Fehlgeschlagene Läufe:** Ein Replikat einer Trajektorie zählt nur, wenn alle k+1
+  Punkte vorliegen; eine Trajektorie zählt, wenn mind. ein Replikat vollständig ist.
 
 ## Was Phase 0 entscheidet
 
@@ -82,7 +86,7 @@ Keine Neusimulation nötig, solange die Snapshots die Rohdaten enthalten.
 ## Ergebnisse
 
 - `results/morris_indices.csv`: μ*, KI, μ, σ, Rauschniveau je `time × region × output × factor`
-- `results/plots/morris_ranking_t*.png`: μ* mit Bootstrap-KI, gesamter Zielbereich
+- `results/plots/morris_ranking_t*.png`: μ* mit Bootstrap-KI (SALib: μ* ± Halbbreite), gesamter Zielbereich
 - `results/plots/morris_musigma_t*.png`: μ* vs. σ (σ ≳ μ*: nichtlinear/Interaktionen)
 - `results/plots/morris_regions_t*.png`: relative Sensitivität je Teilbereich
 
