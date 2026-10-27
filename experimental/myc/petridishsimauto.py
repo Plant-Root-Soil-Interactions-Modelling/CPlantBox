@@ -4,6 +4,7 @@ import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
 import numpy as np
 import os
+import time
 import AMFAnalysis as amf
 
 # Usage: python3 petridishsimauto.py <seed>
@@ -21,6 +22,7 @@ name = "TwoHyphaePlusBAS"
 animation = False
 show_3d = False      # vtk window after each simulation (blocks until closed)
 hours_hyphae = 60   ### HIER VERÄNDERUNG DAUER HYPHEN SIMULATION
+max_wait_days = 20  # stop if less than 10 cm hyphae are behind the barrier after this many simulated days (None = no limit)
 
 ## Setting up petri dish
 diameter = 9.4
@@ -40,7 +42,14 @@ vol = amf.ringVolume(radius, nRings, height, barrier_thickness)[:, None] # one v
 dt, nSteps = amf.setUpSimulationTime(5, 24)
 
 filename = "petridish_nowait_seed_" + str(seed)
-mycp, time_star, times = amf.makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation=animation)
+stats = {}
+mycp, time_star, times = amf.makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename,
+                                            animation=animation, max_wait_days=max_wait_days, stats=stats)
+stats["max_wait_days"] = max_wait_days if max_wait_days is not None else np.inf
+if stats["status"] != "ok": # store the run statistics anyway, petridishcombine.py skips this seed, petridishtiming.py counts it
+    amf.save_simulation(results_dir + f"seed_{seed:03d}.npz", {"seed": seed, **stats})
+    sys.exit(0)
+t_analysis = time.perf_counter()
 if show_3d:
     vp.plot_roots_and_container(mycp, petri_dish)
 if not animation:
@@ -57,6 +66,8 @@ sim = {
     "stopped_tip_dens": mats["nodeTips"] / vol,                        # tips that stopped growing in each interval (old "tip_dens")
     "ana_densities": mats["anastomosis"],
     "length_densities": mats["length"] / vol,
+    **stats,
+    "wall_analysis": time.perf_counter() - t_analysis,
 }
 amf.save_simulation(results_dir + f"seed_{seed:03d}.npz", sim)
 if (seed % 10 == 0):

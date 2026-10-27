@@ -250,9 +250,16 @@ def setUpSimulationTime(simTime, fps):
     nSteps = int(simTime / dt)
     return dt, nSteps
 
-def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False, verbose = False):
+def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False, verbose = False,
+                   max_wait_days = None, stats = None):
     # set up simulation
+    # max_wait_days: stop waiting for t* (10 cm hyphae behind the barrier) after this many simulated days, then returns mycp, None, None
+    #                (None = wait without limit, as before). A limit in simulated time is reproducible, a wall clock limit is not.
+    # stats: optional dict, filled with "status" ("ok" or "not_crossed"), the wall clock time of each phase [s] ("wall_root", "wall_wait",
+    #        "wall_hyphae"), "t_root_end" (simulation time after the root phase), "wait_days" (simulated days until t*, or until the stop)
+    #        and the length behind the barrier after each waiting step ("crossed_t", "crossed_len")
     #### WORK IN PROGRESS
+    t_wall = time.perf_counter()
     mycp = pb.MycorrhizalPlant(seed)
     mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
     seed_para = pb.SeedRandomParameter(mycp)
@@ -279,15 +286,33 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
 
     mycp.changeGeometry(5,petri_dish)
 
+    wall_root = time.perf_counter() - t_wall
+    t_wall = time.perf_counter()
+    t_root_end = mycp.getSimTime()
+    crossed_t, crossed_len = [], []
+    status = "ok"
     crossed_barrier = 0
 
     while crossed_barrier < 10:
-        # N+=1
+        if max_wait_days is not None and mycp.getSimTime() - t_root_end >= max_wait_days - 1.e-9:
+            status = "not_crossed"
+            break
         mycp.simulate(dt,verbose)
-        ana = getMycSegmentAnalyser(mycp)
+        ana = pb.SegmentAnalyser(mycp) # only the length is needed, cheaper than getMycSegmentAnalyser (no colonization, anastomosis, tips)
         ana.filter("organType",5)
         ana.pack()
         crossed_barrier = ana.getSummed("length",small_hyphae_dish)
+        crossed_t.append(mycp.getSimTime())
+        crossed_len.append(crossed_barrier)
+
+    if stats is not None:
+        stats.update({"status": status, "wall_root": wall_root, "wall_wait": time.perf_counter() - t_wall, "wall_hyphae": 0.,
+                      "t_root_end": t_root_end, "wait_days": mycp.getSimTime() - t_root_end,
+                      "crossed_t": np.array(crossed_t), "crossed_len": np.array(crossed_len)})
+    if status != "ok":
+        print("Seed " + str(seed) + ": less than 10 cm hyphae behind the barrier after " + str(max_wait_days) + " days, stopped")
+        return mycp, None, None
+    t_wall = time.perf_counter()
 
     time_star = mycp.getSimTime()
     for i in range(0, hours_hyphae):
@@ -296,6 +321,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
         mycp.simulate(dt,verbose)
         if (animation):
             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim",step = i+nSteps, stdwrite= True)    # look at roots and container
+    if stats is not None:
+        stats["wall_hyphae"] = time.perf_counter() - t_wall
     nmbtimes = (max(mycp.getParameter("creationTime")) - time_star)*24
     nmbtimespoint = (max(mycp.getParameter("creationTime")) + 0.1 - time_star)*24
     times = np.linspace(time_star, max(mycp.getParameter("creationTime"))+0.01, max(round(nmbtimes),round(nmbtimespoint)))

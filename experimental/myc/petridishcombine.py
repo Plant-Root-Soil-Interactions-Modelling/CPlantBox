@@ -6,6 +6,10 @@ import AMFAnalysis as amf
 results_dir = "petridish_results/densities/"
 
 simulations = amf.load_simulations(results_dir + "seed_*.npz")
+# seeds stopped before t* (see max_wait_days in petridishsimauto.py) have no densities, older files have no status
+stopped = [int(sim["seed"]) for sim in simulations if str(sim.get("status", "ok")) != "ok"]
+simulations = [sim for sim in simulations if str(sim.get("status", "ok")) == "ok"]
+print(str(len(simulations)) + " simulations reached t*, " + str(len(stopped)) + " were stopped before: " + str(stopped))
 location = amf.ringCenters(simulations[0]["location"])   # "location" stores the outer ring radii
 
 # time since t* (hyphae behind the barrier reached 10 cm total length), the absolute times of different seeds do not overlap
