@@ -75,6 +75,37 @@ def getParasPerRing(parameters, times, plant, rings):
 def getParaSumperRing(parameter, times, plant, rings):
     return getParasPerRing([parameter], times, plant, rings)[parameter]
 
+def getActiveTipsPerRing(times, plant, rings, ot = 5):
+    # number of actively growing tips per ring at times[1:] (rings x len(times)-1, same layout as getParasPerRing),
+    # reconstructed from the final plant: an organ is growing at time t if it was created (node 0) before t and
+    # its last node after t (or it is still active at the end). Its tip at time t is its last node created until t.
+    # (node 1 is not used as start, it gets a new creation time as long as the first segment is shorter than dx and the node is moved)
+    # ("nodeTips" in getParasPerRing instead counts organs whose last node was created in the interval, i.e. that stopped growing then)
+    t_eval = np.asarray(times)[1:]
+    mat = np.zeros((len(rings), len(t_eval)))
+    ringOfNode = {} # global node id -> ring index (-1 = in no ring)
+    for o in plant.getOrgans(ot):
+        n = o.getNumberOfNodes()
+        cts = np.array([o.getNodeCT(i) for i in range(n)])
+        t_start, t_stop = cts[0], cts[-1] # node 0 is the branching point on the parent, its creation time is the emergence of the organ
+        active = (t_eval >= t_start) & ((t_eval < t_stop) | o.isActive())
+        if not active.any():
+            continue
+        tipIdx = np.searchsorted(cts, t_eval[active], side="right") - 1 # last node created until t
+        for j, k in zip(np.nonzero(active)[0], tipIdx):
+            nodeId = o.getNodeId(int(k))
+            if nodeId not in ringOfNode:
+                ringOfNode[nodeId] = -1
+                p = o.getNode(int(k))
+                for r, ring in enumerate(rings):
+                    if ring.getDist(p) < 0:
+                        ringOfNode[nodeId] = r
+                        break
+            r = ringOfNode[nodeId]
+            if r >= 0:
+                mat[r, j] += 1
+    return mat
+
 def getParaSumperRing_old(parameter, times, plant, rings):
     # print("Parameter sum for "+ parameter)
     paradenmat = np.zeros((len(rings),len(times[1:])))
@@ -195,6 +226,11 @@ def makeBoxes(radius, height, boxlength, barrier_thickness, small_hyphae_dish, r
 def ringLocations(radius, nRings):
     # outer radius of each ring, rings have equal area (see makedishes)
     return np.array([radius*np.sqrt(i/nRings) for i in range(1, nRings+1)])
+
+def ringCenters(outer):
+    # radius that splits each ring into two halves of equal area, from the outer radii (ringLocations)
+    inner = np.concatenate(([0.], outer[:-1]))
+    return np.sqrt((inner*inner + outer*outer) / 2)
 
 def ringVolume(radius, nRings, height, barrier_thickness = 0.):
     # volume of each ring (array of length nRings), the rings are cut at x = -barrier_thickness/2 (see makedishes),
@@ -393,11 +429,11 @@ def plot_linear_analysis(all_results):
 def interpolate_to_common_time(simulations, key, n_times=99):
     # interpolates sim[key] (rings x times) of all simulations onto the time range they share
     from scipy.interpolate import interp1d
-    t_common = np.linspace(
-        max(sim["times"][0] for sim in simulations),
-        min(sim["times"][-1] for sim in simulations),
-        n_times
-    )
+    t_start = max(sim["times"][0] for sim in simulations)
+    t_end = min(sim["times"][-1] for sim in simulations)
+    if t_start >= t_end:
+        raise ValueError(f"interpolate_to_common_time: time ranges of the simulations do not overlap (latest start {t_start}, earliest end {t_end})")
+    t_common = np.linspace(t_start, t_end, n_times)
     interp = np.stack([interp1d(sim["times"], sim[key], axis=1)(t_common) for sim in simulations])
     return t_common, interp   # (n_sim, n_r, n_t)
 
@@ -409,19 +445,29 @@ def plot_ring_heatmap(times, location, mat, cbar_label, filename):
     plt.savefig(filename, dpi=300, bbox_inches="tight")
     plt.close()
 
-def plot_radial_profiles(location, t_common, interp, indices, ylabel="Tip amount"):
-    # mean +- std over simulations at the time indices given
-    mean = interp.mean(axis=0)
-    std = interp.std(axis=0)
+def plot_radial_profiles(location, t_common, interp, indices, ylabel="Tip amount", stat="median", filename="TipDensOverAllSim.png"):
+    # profiles over the simulations at the time indices given, location should be the ring centers (ringCenters)
+    # stat = "median": median with 25%-75% quantiles (robust, the distribution over seeds is skewed), "mean": mean +- std
+    if stat == "median":
+        mid = np.median(interp, axis=0)
+        low, high = np.percentile(interp, [25, 75], axis=0)
+        band = "25%-75% quantile"
+    else:
+        mid = interp.mean(axis=0)
+        std = interp.std(axis=0)
+        low, high = mid - std, mid + std
+        band = r"mean $\pm$ std"
     fig, ax = plt.subplots(figsize=(6, 5))
     colors = plt.get_cmap("plasma")(np.linspace(0.2, 0.9, len(indices)))
     for color, i in zip(colors, indices):
-        ax.plot(location, mean[:, i], color=color, lw=2, label=f"t = {t_common[i]:.2f}")
-        ax.fill_between(location, mean[:, i] - std[:, i], mean[:, i] + std[:, i], color=color, alpha=0.3)
-    ax.set_xlabel(r"Distance from origin $r$ (mm)")
+        ax.plot(location, mid[:, i], color=color, lw=2, marker="o", ms=3, label=f"t = {t_common[i]:.2f} d")
+        ax.fill_between(location, low[:, i], high[:, i], color=color, alpha=0.3)
+    ax.set_xlabel(r"Distance from centre $r$ (cm)")
     ax.set_ylabel(ylabel)
-    ax.legend()
-    plt.savefig("TipDensOverAllSim", dpi=300, bbox_inches="tight")
+    ax.set_title(f"{stat} over {interp.shape[0]} simulations, band: {band}", fontsize=9)
+    ax.legend(title=r"time after $t^*$")
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.close(fig)
 
 def save_simulation(filename, sim):
     # stores one simulation dict (only arrays/numbers, e.g. "times", "tip_dens", ...) as .npz

@@ -323,7 +323,7 @@ double Hyphae::getParameter(std::string name, std::map<std::string, double> addP
         if (name=="b") { return param()->b; } // Branching rate [1 day-1]
         if (name=="la") { return param()->la; } // Apical zone [cm]
         if (name=="lb") { return param()->lb; } // Basal zone [cm]
-        if (name=="lmax") { return param()->lmax; } // Maximal length [cm]
+        if (name=="lmax") { return param()->getK(); } // Maximal length [cm]
         if (name=="ln") { return param()->ln.size()>0 ? param()->ln.at(0) : 0.; } // Inter-lateral distance [cm], return first value of vector for simplicity, TODO update this
         if (name=="hlt") { return param()->hlt; } // Hyphal life time [day]
         if (name=="theta") { return param()->theta; } // Branching angle [rad]

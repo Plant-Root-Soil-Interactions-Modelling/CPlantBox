@@ -53,11 +53,12 @@ sim = {
     "time_star": time_star,
     "location": location,
     "times": times[1:],   # getParasPerRing returns len(times)-1 columns
-    "tip_dens": mats["nodeTips"] / vol,
+    "tip_dens": amf.getActiveTipsPerRing(times, mycp, rings) / vol,   # actively growing tips at each time
+    "stopped_tip_dens": mats["nodeTips"] / vol,                        # tips that stopped growing in each interval (old "tip_dens")
     "ana_densities": mats["anastomosis"],
     "length_densities": mats["length"] / vol,
 }
 amf.save_simulation(results_dir + f"seed_{seed:03d}.npz", sim)
 if (seed % 10 == 0):
-    amf.plot_ring_heatmap(sim["times"], location, sim["tip_dens"], "Tip Density [mm$^{-3}$]", f"plots/tip_densities_seed_{seed:03d}.png")
-    amf.plot_ring_heatmap(sim["times"], location, sim["ana_densities"], "Anastomoses per ring", f"plots/ana_densities_seed_{seed:03d}.png")
+    amf.plot_ring_heatmap(sim["times"], amf.ringCenters(location), sim["tip_dens"], "Tip Density [cm$^{-3}$]", f"plots/tip_densities_seed_{seed:03d}.png")
+    amf.plot_ring_heatmap(sim["times"], amf.ringCenters(location), sim["ana_densities"], "Anastomoses per ring", f"plots/ana_densities_seed_{seed:03d}.png")

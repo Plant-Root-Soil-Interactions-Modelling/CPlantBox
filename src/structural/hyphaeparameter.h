@@ -25,7 +25,7 @@ public:
 
     HyphaeSpecificParameter(): HyphaeSpecificParameter(-1, 0., 0., std::vector<double>(), 0., 0., 0., 0., 0., 0., false) { } ///< Default constructor
     HyphaeSpecificParameter(int subType, double la, double lb, std::vector<double> ln, double a, double v, double b, double hlt, double theta,double b_prob, bool laterals = false):
-            OrganSpecificParameter(subType, a), lb(lb), la(la),ln(ln), v(v), b(b), hlt(hlt), theta(theta), b_prob(b_prob), laterals(laterals) { }; ///< Constructor setting all parameters
+            OrganSpecificParameter(subType, a), lb(lb), la(la),ln(ln), v(v), b(b), hlt(hlt), theta(theta), b_prob(b_prob), laterals(laterals) { lmax = getK(); }; ///< Constructor setting all parameters
 
     double v;              ///< tip elongation rate [cm/day]
     double b;              ///< branching rate [1/day] TODO figure out what to do about tip splitting

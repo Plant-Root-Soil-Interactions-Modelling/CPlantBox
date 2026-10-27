@@ -39,5 +39,7 @@ mkdir -p plots animation petridish_results/densities
 export MPLBACKEND=Agg
 
 echo "Task $SLURM_ARRAY_TASK_ID: seed $SEED on $(hostname), start $(date)"
-python3 petridishsimauto.py "$SEED"
+# /usr/bin/time -v writes runtime ("Elapsed (wall clock) time") and peak memory ("Maximum resident set size")
+# to the .err log, since slurm accounting is not available on the cluster
+/usr/bin/time -v python3 petridishsimauto.py "$SEED"
 echo "Seed $SEED done $(date)"
