@@ -127,7 +127,7 @@ void Hyphae::simulate(double dt, bool verbose)
 
         if (age>0) {
 
-            if (p.b_prob > plant.lock()->rand()) // checks if tip splitting
+            if (p.b_prob > 0.5) // checks if tip splitting
             {
                 if (children.size() == 0) { // ELONGATE
                     double dt_;
@@ -389,7 +389,6 @@ Vector3d Hyphae::getMergePoint(int id)
 {
     for (auto i=0; i<getNumberOfNodes(); i++)
     {
-        std::cout << "Node ID: " << id << std::endl;
         if (getNodeId(i) == id) {
             return getNode(i);
         }

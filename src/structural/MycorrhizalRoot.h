@@ -44,7 +44,6 @@ public:
     std::shared_ptr<const MycorrhizalRootSpecificParameter> param() const;
 
     int getNodeColonization(int i) const {return colonized.at(i);}
-    int getNumberofColonizedNodes() const;
     double getNodeColonizationTime(int i) const {return colonizationTime.at(i);}
     void setColonization(int i, int inf, double t);
 

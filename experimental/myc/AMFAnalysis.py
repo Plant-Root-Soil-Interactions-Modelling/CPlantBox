@@ -7,6 +7,11 @@ from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import plantbox.visualisation.vtk_plot as vp
 import networkx as nx
+import glob
+from scipy.interpolate import interp1d
+from scipy.spatial import Delaunay
+from scipy.spatial.distance import pdist
+from scipy.spatial.distance import cdist
 
 def getMycSegmentAnalyser(plant, write=[],filename = "write",step = 0, stdwrite = False,):
         ana = pb.SegmentAnalyser(plant)
@@ -154,7 +159,12 @@ def getParameterOverTime(parameter, times, plant, subType):
         paradenmat[k-1,-1] = np.array(summed).sum()
     return paradenmat
 
-def makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, rootradius,nRings):
+def makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, rootradius,nRings,
+               opening_at_top = False, hyphae_layer = None):
+    # height: height of the modelled domain, z in [-height, 0] (for the medium heights of the experiment see medium_heights.py)
+    # opening_at_top: opening at the top of the barrier, z in [-opening_height, 0], instead of at the bottom
+    # hyphae_layer: thickness of the layer at the top in which the hyphae grow in the fungal compartment (on the cellophane),
+    #               None = whole height; small_hyphae_dish and rings are restricted to this layer
     radius = diameter / 2
     # petri dish has a radius of 9.4 cm and a height of 1.6 cm
     petri_dish = pb.SDF_PlantContainer(radius,radius,height,False)
@@ -174,6 +184,8 @@ def makedishes(diameter, height, barrier_thickness, barrier_height, opening_leng
     # have to  move the helper staff for the right position of the opening and barrier, the midpoint is the distance from the center of the helper staff to the center of the petri dish, the bottompoint is the distance from the center of the helper staff to the center of the petri dish in the y direction, and the helper staff is moved to the position of the opening and barrier
     midpoint = opening_length / 2 - diameter / 2
     bottompoint = opening_height / 2 - barrier_height / 2
+    if opening_at_top:
+        bottompoint = -bottompoint # opening at the upper edge of the barrier
     # container for opening moved to the right position
     helper_staff2 = pb.SDF_RotateTranslate(helper_staff2, 0,0,pb.Vector3d(0, bottompoint, midpoint))
     # opening made in the barrier
@@ -181,19 +193,26 @@ def makedishes(diameter, height, barrier_thickness, barrier_height, opening_leng
     # barrier moved to the right position
     moved_helper_dish2 = pb.SDF_RotateTranslate(helper_dish2, 90, pb.SDF_Axis.xaxis , pb.Vector3d(0, -radius, -height/2))
     petri_dish = pb.SDF_Difference(petri_dish, moved_helper_dish2)
+    h_hyphae = height
+    if hyphae_layer is not None:
+        # behind the barrier (x > barrier_thickness/2) the hyphae can only grow in the top layer, z in [-hyphae_layer, 0]
+        h_hyphae = hyphae_layer
+        below_layer = pb.SDF_PlantContainer(radius, radius, height - hyphae_layer, True)
+        below_layer = pb.SDF_RotateTranslate(below_layer, 0, 0, pb.Vector3d(radius + barrier_thickness/2, 0, -hyphae_layer))
+        petri_dish = pb.SDF_Difference(petri_dish, below_layer)
 
     moved_helper_dish_hyphae = pb.SDF_RotateTranslate(helper_dish, 0, 0, pb.Vector3d(-(radius+barrier_thickness/2), 0, 0))
-    small_dish = pb.SDF_PlantContainer(radius,radius,height,False)
+    small_dish = pb.SDF_PlantContainer(radius,radius,h_hyphae,False)
     small_hyphae_dish = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
 
-    small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),height,False)
+    small_dish = pb.SDF_PlantContainer(radius*np.sqrt(1/nRings),radius*np.sqrt(1/nRings),h_hyphae,False)
     ringone = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
     rings = []
     rings.append(ringone)
     for i in range(2, nRings+1):
-        small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),height,False)
+        small_dish = pb.SDF_PlantContainer(radius*np.sqrt(i/nRings),radius*np.sqrt(i/nRings),h_hyphae,False)
         small_hyphae_dish2 = pb.SDF_Difference(small_dish, moved_helper_dish_hyphae)
-        old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),height,False),moved_helper_dish_hyphae)
+        old_dish = pb.SDF_Difference(pb.SDF_PlantContainer(radius*np.sqrt((i-1)/nRings),radius*np.sqrt((i-1) /nRings),h_hyphae,False),moved_helper_dish_hyphae)
         small_hyphae_dish2 = pb.SDF_Difference(small_hyphae_dish2,old_dish)
         rings.append(small_hyphae_dish2)
     return petri_dish, small_hyphae_dish, half_dish, rings
@@ -202,7 +221,8 @@ def makeBoxes(radius, height, boxlength, barrier_thickness, small_hyphae_dish, r
     # non overlapping square boxes (edge length boxlength) tiling the hyphae side of the dish (x > -barrier_thickness/2),
     # each box is cut with small_hyphae_dish, boxes outside the dish are dropped
     # returns boxes, centres of the uncut boxes (n x 2) and volume of each cut box
-    box = pb.SDF_PlantContainer(boxlength/2, boxlength/2, height, True) # square container has half edge length r
+    # height: height of small_hyphae_dish, i.e. hyphae_layer if makedishes was called with it
+    box =pb.SDF_PlantContainer(boxlength/2, boxlength/2, height, True) # square container has half edge length r
     x_left = -barrier_thickness/2
     nx = int(np.ceil((radius - x_left)/boxlength))
     ny = int(np.ceil(2*radius/boxlength))
@@ -235,6 +255,7 @@ def ringCenters(outer):
 def ringVolume(radius, nRings, height, barrier_thickness = 0.):
     # volume of each ring (array of length nRings), the rings are cut at x = -barrier_thickness/2 (see makedishes),
     # so besides the half annulus they contain the strip -barrier_thickness/2 < x < 0
+    # height: height of the rings, i.e. hyphae_layer if makedishes was called with it; height = 1 gives the area of each ring
     c = barrier_thickness / 2
     R = np.concatenate(([0.], ringLocations(radius, nRings)))
     c_ = np.minimum(c, R)
@@ -455,7 +476,7 @@ def plot_linear_analysis(all_results):
 
 def interpolate_to_common_time(simulations, key, n_times=99):
     # interpolates sim[key] (rings x times) of all simulations onto the time range they share
-    from scipy.interpolate import interp1d
+    
     t_start = max(sim["times"][0] for sim in simulations)
     t_end = min(sim["times"][-1] for sim in simulations)
     if t_start >= t_end:
@@ -502,7 +523,7 @@ def save_simulation(filename, sim):
 
 def load_simulations(pattern):
     # loads all .npz files matching pattern (e.g. "results/seed_*.npz") into a list of dicts, sorted by filename
-    import glob
+
     simulations = []
     for f in sorted(glob.glob(pattern)):
         with np.load(f) as data:
@@ -537,7 +558,6 @@ def getNetworkX(mycp, geometry = None, hyphae_only = True):
     # nodes: node ids of the plant (cut nodes from crop get new ids), attribute "pos" (x, y, z)
     # edges: one per segment, attributes "length" (3D), "length_xy" (projected to x-y plane) and all per segment data of getMycSegmentAnalyser
     # anastomoses: the tip node is merged with the node it fused with, so the hyphal trees are connected
-    import networkx as nx
     ana = getMycSegmentAnalyser(mycp)
     if hyphae_only:
         ana.filter("organType", 5)
@@ -552,7 +572,7 @@ def getNetworkX(mycp, geometry = None, hyphae_only = True):
     data["length_xy"] = np.linalg.norm(nodes[segs[:, 0], :2] - nodes[segs[:, 1], :2], axis=1) if len(segs) > 0 else np.zeros(0)
     for key in ana.data.keys():
         data[key] = np.array(ana.data[key])
-    G = nx.Graph()
+    G = nx.Graph(n_plant_nodes = mycp.getNumberOfNodes()) # node ids >= n_plant_nodes are cut nodes made by crop
     for i in np.unique(segs_merged):
         G.add_node(int(i), pos = tuple(nodes[i].tolist()))
     keys = list(data.keys())
@@ -569,12 +589,11 @@ def simplifyGraph(G, weights = ("length", "length_xy")):
     # multigraph with only junctions and ends of G (degree != 2), each chain of degree 2 nodes becomes one edge
     # with summed weights and the number of segments ("segments"); a multigraph keeps parallel chains and loops,
     # so total length is unchanged and shortest paths between the kept nodes are the same as in G
-    import networkx as nx
     keep = {n for n, d in G.degree() if d != 2}
     for comp in nx.connected_components(G): # closed loops without any junction
         if not any(n in keep for n in comp):
             keep.add(min(comp))
-    S = nx.MultiGraph()
+    S = nx.MultiGraph(**G.graph)
     for n in keep:
         S.add_node(n, **G.nodes[n])
     visited = set()
@@ -600,8 +619,6 @@ def getReferenceNetworks(S, dim = 3):
     # Delaunay triangulation and Euclidean minimum spanning tree on the nodes of S (use simplifyGraph first),
     # dim = 2: triangulation of the x-y positions (dish seen from above), dim = 3: tetrahedra in x, y, z
     # edges get "length" and "length_xy" (straight lines), the MST minimises lengthWeight(dim)
-    import networkx as nx
-    from scipy.spatial import Delaunay
     nodes = list(S.nodes)
     pos = np.array([S.nodes[n]["pos"] for n in nodes])
     tri = Delaunay(pos[:, :dim], qhull_options = "QJ") # QJ: robust against duplicate and coplanar points
@@ -620,8 +637,7 @@ def weightedEfficiency(G, dim = 3):
     # global efficiency of Latora & Marchiori (2001): sum of 1/(shortest path length) over all node pairs,
     # normalised by sum of 1/(straight line distance), 1 = every pair connected by a straight line;
     # unconnected pairs contribute 0, pairs at the same position are skipped
-    import networkx as nx
-    from scipy.spatial.distance import pdist
+    
     weight = lengthWeight(dim)
     nodes = list(G.nodes)
     pos = np.array([G.nodes[n]["pos"] for n in nodes])[:, :dim]
@@ -634,10 +650,14 @@ def weightedEfficiency(G, dim = 3):
     return float(inv_path / inv_eucl)
 
 def getSourcesTargets(G, barrier_thickness, tol = 1.e-5):
-    # sources: nodes where hyphae cross into the hyphal compartment, i.e. the nodes crop(small_hyphae_dish) created
-    # on the cut plane x = -barrier_thickness/2 (degree 1); targets: all other nodes of degree 1 (tips and ends)
+    # sources: nodes where hyphae cross into the hyphal compartment, i.e. the nodes crop(small_hyphae_dish) created within the
+    # barrier (x <= barrier_thickness/2): on the cut plane x = -barrier_thickness/2, or with makedishes(hyphae_layer = ...)
+    # also at the lower side of the layer inside the opening (degree 1); targets: all other nodes of degree 1 (tips and ends)
     ends = [n for n, d in G.degree() if d == 1]
-    sources = [n for n in ends if abs(G.nodes[n]["pos"][0] + barrier_thickness / 2) < tol]
+    if "n_plant_nodes" in G.graph:
+        sources = [n for n in ends if n >= G.graph["n_plant_nodes"] and G.nodes[n]["pos"][0] <= barrier_thickness / 2 + tol]
+    else: # graph without this information, only the cut plane
+        sources = [n for n in ends if abs(G.nodes[n]["pos"][0] + barrier_thickness / 2) < tol]
     s = set(sources)
     targets = [n for n in ends if n not in s]
     return sources, targets
@@ -645,8 +665,7 @@ def getSourcesTargets(G, barrier_thickness, tol = 1.e-5):
 def weightedEfficiencySubset(G, sources, targets = None, dim = 3):
     # efficiency of Latora & Marchiori (2001) only for the pairs (source, target), or for all pairs within sources if targets is None:
     # sum of 1/(shortest path length) normalised by sum of 1/(straight line distance), unconnected pairs contribute 0
-    import networkx as nx
-    from scipy.spatial.distance import cdist
+    
     weight = lengthWeight(dim)
     sources = list(sources)
     if targets is None:
@@ -691,7 +710,6 @@ def getEfficiencies(S, T, R, dim = 3):
 def betweennessSubset(G, sources, targets, dim = 3, edges = False):
     # fraction of all shortest (source, target) paths running through each node (or edge, if edges = True);
     # networkx counts every path in an undirected graph with 0.5 and its normalized=True divides by (n-1)(n-2), so rescale here
-    import networkx as nx
     weight = lengthWeight(dim)
     if edges:
         bc = nx.edge_betweenness_centrality_subset(G, sources, targets, normalized = False, weight = weight)

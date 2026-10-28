@@ -153,7 +153,6 @@ void MycorrhizalPlant::turnOffSidePetriDish(double minnodex, double maxnodez, do
 void MycorrhizalPlant::simulateHyphae(double dt, bool verbose) {
     auto hyphae = getOrgans(5);
     this->dt = dt;
-	std::cout <<"MycorrhizalPlant::simulateHyphae "<< oldNumberOfNodes <<" "<< getNumberOfNodes()<<std::endl;
     oldNumberOfNodes = getNumberOfNodes();
     oldNumberOfOrgans = getNumberOfOrgans();
     for (const auto & h : hyphae) {
@@ -310,6 +309,7 @@ std::vector<int> MycorrhizalPlant::getNodeTips( int ot) const {
     auto organs = this -> getOrgans(ot);
     std::vector<int> tips(getNumberOfNodes(), 0);
     for (const auto& o : baseOrgans) {
+        if (o ->organType() == ot)
         tips.at(o->getNodeId(o->getNumberOfNodes()-1)) = 1;
     }
 

@@ -201,13 +201,6 @@ void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
                         }
                     }
 
-                    // TODO: Y is this hier? we will never get basalnode==0  in that loop
-                    if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()))
-                    {
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->setColonization(parentNI,3,infTime);
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->simulateColonization(dt,silence);
-                    }
-
                     oldNode = basalnode;
                     basalnode--;
                 }
@@ -402,21 +395,8 @@ std::string MycorrhizalRoot::toString() const
 {
     // TODO add additional stuff
     std::stringstream newstring;
-    newstring << "; number of colonized Nodes " << getNumberofColonizedNodes() << "; length of colonized root segments "<< getParameter("colonizationLength")<< ".";
+    newstring << "; length of colonized root segments "<< getParameter("colonizationLength")<< ".";
     return  Root::toString()+newstring.str();
-}
-
-int MycorrhizalRoot::getNumberofColonizedNodes() const
-{
-    int numberColonizedNodes =0;
-    for (size_t i = 0; i < getNumberOfNodes()-1; i++)
-    {
-        if (colonized.at(i)!=0)
-        {
-            numberColonizedNodes++;
-        }
-    }
-    return numberColonizedNodes;
 }
 
 }

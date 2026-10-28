@@ -7,6 +7,7 @@ import os
 import resource
 import time
 import AMFAnalysis as amf
+import medium_heights as mh
 
 def peak_memory_mb():
     # peak resident memory of this process so far (ru_maxrss is in kB on Linux)
@@ -32,17 +33,22 @@ max_wait_days = 20  # stop if less than 10 cm hyphae are behind the barrier afte
 ## Setting up petri dish
 diameter = 9.4
 radius = diameter / 2
-height = 1.6
 # introduce parameters for barrier and opening
 barrier_thickness = 0.16
-barrier_height = height
 opening_length = 5.0
 opening_height = 0.2
+# the modelled domain is the medium (z in [-height, 0]), its height follows from the filled volumes of the experiment
+heights = mh.estimate_heights(diameter, barrier_thickness)
+mh.print_heights(heights, diameter, barrier_thickness)
+height = heights["root"]
+barrier_height = height
+hyphae_layer = 0.1  # hyphae grow on the cellophane in the fungal compartment, i.e. in a thin layer at the top
 
 nRings = 15
-petri_dish, small_hyphae_dish, half_dish, rings = amf.makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, 0.1, nRings)
+petri_dish, small_hyphae_dish, half_dish, rings = amf.makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, 0.1, nRings,
+                                                                  opening_at_top=True, hyphae_layer=hyphae_layer)
 location = amf.ringLocations(radius, nRings)
-vol = amf.ringVolume(radius, nRings, height, barrier_thickness)[:, None] # one volume per ring (column vector)
+vol = amf.ringVolume(radius, nRings, hyphae_layer, barrier_thickness)[:, None] # one volume per ring (column vector), rings are in the layer
 
 dt, nSteps = amf.setUpSimulationTime(5, 24)
 
@@ -66,6 +72,8 @@ sim = {
     "seed": seed,
     "time_star": time_star,
     "location": location,
+    "height": height,
+    "hyphae_layer": hyphae_layer,
     "times": times[1:],   # getParasPerRing returns len(times)-1 columns
     "tip_dens": amf.getActiveTipsPerRing(times, mycp, rings) / vol,   # actively growing tips at each time
     "stopped_tip_dens": mats["nodeTips"] / vol,                        # tips that stopped growing in each interval (old "tip_dens")
