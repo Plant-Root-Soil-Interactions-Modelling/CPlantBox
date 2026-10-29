@@ -14,14 +14,17 @@ simulations = [sim for sim in amf.load_simulations(results_dir + "seed_*.npz") i
 if not simulations:
     sys.exit("no run statistics found (files written before petridishsimauto.py stored them)")
 ok = [sim for sim in simulations if str(sim["status"]) == "ok"]
-stopped = [sim for sim in simulations if str(sim["status"]) != "ok"]
+stopped = [sim for sim in simulations if str(sim["status"]) == "not_crossed"]
+stalled = [sim for sim in simulations if str(sim["status"]) == "stalled"] # reached t*, but the front stalled afterwards
+reached = ok + stalled
 
-wait_ok = np.array([float(sim["wait_days"]) for sim in ok])
+wait_ok = np.array([float(sim["wait_days"]) for sim in reached])
 phases = ["wall_root", "wall_wait", "wall_hyphae", "wall_analysis"]
 wall = {p: np.array([float(sim.get(p, 0.)) / 60 for sim in simulations]) for p in phases} # [min]
 wall_total = sum(wall.values())
 
-print(str(len(ok)) + " seeds reached t*, " + str(len(stopped)) + " were stopped: " + str([int(sim["seed"]) for sim in stopped]))
+print(str(len(reached)) + " seeds reached t*, " + str(len(stopped)) + " were stopped before: " + str([int(sim["seed"]) for sim in stopped]))
+print(str(len(stalled)) + " seeds stalled after t*: " + str([(int(sim["seed"]), round(float(sim["growing_t"][-1] - sim["growing_t"][0]), 2)) for sim in stalled]) + " (seed, days after t*)")
 if len(wait_ok):
     print("simulated days until t*: median %.2f, %d%% quantile %.2f, max %.2f" % (np.median(wait_ok), quantile * 100, np.quantile(wait_ok, quantile), wait_ok.max()))
 for p in phases:
@@ -43,11 +46,11 @@ if len(wait_ok):
     ax.annotate("%d%%: %.1f d" % (quantile * 100, q), (q, ax.get_ylim()[1] * 0.95), xytext=(4, 0), textcoords="offset points", va="top", fontsize=9)
 ax.set_xlabel("simulated days from end of root phase to t* [d]")
 ax.set_ylabel("seeds")
-ax.set_title("Waiting time until t* (%d reached, %d stopped)" % (len(ok), len(stopped)), fontsize=10)
+ax.set_title("Waiting time until t* (%d reached, %d stopped)" % (len(reached), len(stopped)), fontsize=10)
 
 # (b) hyphal length behind the barrier while waiting
 ax = axes[0, 1]
-for sim in ok:
+for sim in reached:
     ax.plot(sim["crossed_t"] - float(sim["t_root_end"]), sim["crossed_len"], color=c_ok, lw=0.8, alpha=0.4)
 for sim in stopped:
     ax.plot(sim["crossed_t"] - float(sim["t_root_end"]), sim["crossed_len"], color=c_stopped, lw=1.2)
@@ -79,7 +82,7 @@ ax.set_title("Wall clock time per phase", fontsize=10)
 # (d) does the wall clock time of waiting follow the simulated waiting time?
 ax = axes[1, 1]
 wait_all = np.array([float(sim["wait_days"]) for sim in simulations])
-is_ok = np.array([str(sim["status"]) == "ok" for sim in simulations])
+is_ok = np.array([str(sim["status"]) != "not_crossed" for sim in simulations]) # reached t*
 ax.scatter(wait_all[is_ok], wall["wall_wait"][is_ok], s=12, color=c_ok, label="reached t*")
 if (~is_ok).any():
     ax.scatter(wait_all[~is_ok], wall["wall_wait"][~is_ok], s=12, color=c_stopped, label="stopped")

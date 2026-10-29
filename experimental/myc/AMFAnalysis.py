@@ -83,17 +83,19 @@ def getParaSumperRing(parameter, times, plant, rings):
 def getActiveTipsPerRing(times, plant, rings, ot = 5):
     # number of actively growing tips per ring at times[1:] (rings x len(times)-1, same layout as getParasPerRing),
     # reconstructed from the final plant: an organ is growing at time t if it was created (node 0) before t and
-    # its last node after t (or it is still active at the end). Its tip at time t is its last node created until t.
+    # its last node was created after the start of the interval (times[i], times[i+1] = t]. Its tip at time t is its last node created until t.
+    # o.isActive() is not used: a hypha whose ancestor died is not simulated anymore (Hyphae::simulate), it stays active but does not grow
     # (node 1 is not used as start, it gets a new creation time as long as the first segment is shorter than dx and the node is moved)
     # ("nodeTips" in getParasPerRing instead counts organs whose last node was created in the interval, i.e. that stopped growing then)
     t_eval = np.asarray(times)[1:]
+    t_prev = np.asarray(times)[:-1]
     mat = np.zeros((len(rings), len(t_eval)))
     ringOfNode = {} # global node id -> ring index (-1 = in no ring)
     for o in plant.getOrgans(ot):
         n = o.getNumberOfNodes()
         cts = np.array([o.getNodeCT(i) for i in range(n)])
         t_start, t_stop = cts[0], cts[-1] # node 0 is the branching point on the parent, its creation time is the emergence of the organ
-        active = (t_eval >= t_start) & ((t_eval < t_stop) | o.isActive())
+        active = (t_eval >= t_start) & (t_prev < t_stop)
         if not active.any():
             continue
         tipIdx = np.searchsorted(cts, t_eval[active], side="right") - 1 # last node created until t
@@ -271,14 +273,29 @@ def setUpSimulationTime(simTime, fps):
     nSteps = int(simTime / dt)
     return dt, nSteps
 
+def countGrowingTips(plant, geometry, window, ot = 5):
+    # number of organs whose last node lies in geometry and was created within the last window days, i.e. tips that are really growing
+    # (a hypha whose ancestor died stays active but is not simulated anymore, see getActiveTipsPerRing)
+    t_min = plant.getSimTime() - window
+    n = 0
+    for o in plant.getOrgans(ot):
+        k = o.getNumberOfNodes() - 1
+        if o.getNodeCT(k) >= t_min and geometry.getDist(o.getNode(k)) < 0:
+            n += 1
+    return n
+
 def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False, verbose = False,
-                   max_wait_days = None, stats = None):
+                   max_wait_days = None, stats = None, min_growing_tips = None, stall_fraction = None, growing_window = 0.25):
     # set up simulation
     # max_wait_days: stop waiting for t* (10 cm hyphae behind the barrier) after this many simulated days, then returns mycp, None, None
     #                (None = wait without limit, as before). A limit in simulated time is reproducible, a wall clock limit is not.
-    # stats: optional dict, filled with "status" ("ok" or "not_crossed"), the wall clock time of each phase [s] ("wall_root", "wall_wait",
-    #        "wall_hyphae"), "t_root_end" (simulation time after the root phase), "wait_days" (simulated days until t*, or until the stop)
-    #        and the length behind the barrier after each waiting step ("crossed_t", "crossed_len")
+    # min_growing_tips: stop the hyphae phase after t* as soon as fewer tips than this grow behind the barrier (created a node in small_hyphae_dish
+    #                   within the last growing_window days), then returns mycp, None, None with status "stalled" (None = no check)
+    # stall_fraction: same, if the number of growing tips falls below stall_fraction times its maximum so far (e.g. 0.5, None = no check)
+    # stats: optional dict, filled with "status" ("ok", "not_crossed" or "stalled"), the wall clock time of each phase [s] ("wall_root", "wall_wait",
+    #        "wall_hyphae"), "t_root_end" (simulation time after the root phase), "wait_days" (simulated days until t*, or until the stop),
+    #        the length behind the barrier after each waiting step ("crossed_t", "crossed_len") and, with min_growing_tips, the number of
+    #        growing tips behind the barrier after each hyphae step ("growing_t", "growing_n")
     #### WORK IN PROGRESS
     t_wall = time.perf_counter()
     mycp = pb.MycorrhizalPlant(seed)
@@ -336,14 +353,25 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     t_wall = time.perf_counter()
 
     time_star = mycp.getSimTime()
+    growing_t, growing_n = [], []
     for i in range(0, hours_hyphae):
         # if (i % 10 == 0):
         #     print("Step " + str(i) + " of " + str(hours_hyphae))
         mycp.simulate(dt,verbose)
         if (animation):
             getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim",step = i+nSteps, stdwrite= True)    # look at roots and container
+        if min_growing_tips is not None or stall_fraction is not None:
+            growing_t.append(mycp.getSimTime())
+            growing_n.append(countGrowingTips(mycp, small_hyphae_dish, growing_window))
+            if (min_growing_tips is not None and growing_n[-1] < min_growing_tips) or \
+               (stall_fraction is not None and growing_n[-1] < stall_fraction * max(growing_n)):
+                status = "stalled"
+                break
     if stats is not None:
-        stats["wall_hyphae"] = time.perf_counter() - t_wall
+        stats.update({"status": status, "wall_hyphae": time.perf_counter() - t_wall, "growing_t": np.array(growing_t), "growing_n": np.array(growing_n)})
+    if status != "ok":
+        print("Seed " + str(seed) + ": only " + str(growing_n[-1]) + " growing tips behind the barrier " + str(mycp.getSimTime() - time_star) + " days after t*, stopped")
+        return mycp, None, None
     nmbtimes = (max(mycp.getParameter("creationTime")) - time_star)*24
     nmbtimespoint = (max(mycp.getParameter("creationTime")) + 0.1 - time_star)*24
     times = np.linspace(time_star, max(mycp.getParameter("creationTime"))+0.01, max(round(nmbtimes),round(nmbtimespoint)))
@@ -351,17 +379,51 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     return mycp, time_star, times
 
 def sigmoidLengthDens(t, K1,lamda_dens,t_arrival):
-    rho = K1/(1+np.exp(lamda_dens*(t_arrival-t)))
+    rho = K1/(1+np.exp(np.minimum(lamda_dens*(t_arrival-t), 700.))) # limited to avoid overflow, exp(700) is already infinite for the fit
     return rho
 
 def sigmoidTipDens(t, K2,lamda_tips,t_arrival):
-    n = (K2 * np.exp(lamda_tips*(t_arrival-t)))/(1+np.exp(lamda_tips*(t_arrival-t)))
+    # derivative of the sigmoid (bell curve), scaled such that K2 is the peak height at t = t_arrival
+    e = np.exp(-np.abs(lamda_tips*(t_arrival-t))) # symmetric, using the smaller exponent avoids overflow
+    n = 4 * K2 * e / (1+e)**2
     return n
 
 def arrivalTimeDensFit(t,rho):
-    p0 = [max(rho), np.median(t),1, min(rho)]
-    param, param_cov = curve_fit(sigmoidLengthDens, t, rho, p0)
+    # fits sigmoidLengthDens to the length density rho(t) of one ring, returns (K1, lamda_dens, t_arrival) and their covariance
+    span = t[-1] - t[0]
+    p0 = [max(rho.max(), 1.e-12), 4 / span, t[np.argmax(rho >= rho.max() / 2)]]
+    bounds = ([0, 0, t[0] - span], [np.inf, np.inf, t[-1] + span])
+    param, param_cov = curve_fit(sigmoidLengthDens, t, rho, p0, bounds=bounds, maxfev=10000)
     return param, param_cov
+
+def arrivalTimeTipFit(t, n, t_arrival, lamda):
+    # fits sigmoidTipDens to the tip density n(t) of one ring, starting from the arrival time and rate of the length density fit
+    span = t[-1] - t[0]
+    p0 = [max(n.max(), 1.e-12), lamda, t_arrival]
+    bounds = ([0, 0, t[0] - span], [np.inf, np.inf, t[-1] + span])
+    param, param_cov = curve_fit(sigmoidTipDens, t, n, p0, bounds=bounds, maxfev=10000)
+    return param, param_cov
+
+def fitArrivalTimes(t, rho, tips, min_fraction=0.5):
+    # arrival time of the network at each ring (rows of rho and tips, columns at times t) from a sigmoid fit of the length density rho,
+    # tips are fitted with the sigmoid derivative. Only rings where the arrival lies within t and rho reaches min_fraction of the fitted
+    # saturation K1 are kept. Returns a list of dicts with "ring", "t_n", "length" (K1, lamda, t_arrival) and "tips" (K2, lamda, t_arrival or None)
+    fits = []
+    for k in range(rho.shape[0]):
+        if rho[k].max() <= 0:
+            continue
+        try:
+            pl, _ = arrivalTimeDensFit(t, rho[k])
+        except (RuntimeError, ValueError):
+            continue
+        if not (t[0] < pl[2] < t[-1]) or rho[k, -1] < min_fraction * pl[0]:
+            continue
+        try:
+            pt, _ = arrivalTimeTipFit(t, tips[k], pl[2], pl[1])
+        except (RuntimeError, ValueError):
+            pt = None
+        fits.append({"ring": k, "t_n": pl[2], "length": pl, "tips": pt})
+    return fits
 
 def prepare_data(lenMat, vol, anaMat, tipMat):
     rho = lenMat / np.reshape(vol, (-1, 1)) # vol: one value or one per ring/box
@@ -494,7 +556,7 @@ def plot_ring_heatmap(times, location, mat, cbar_label, filename):
     plt.close()
 
 def plot_radial_profiles(location, t_common, interp, indices, ylabel="Tip amount", stat="median", filename="TipDensOverAllSim.png"):
-    # profiles over the simulations at the time indices given, location should be the ring centers (ringCenters)
+    # profiles over the simulations at the time indices given, location should be the ring centers (ringCenters) [cm], plotted in mm
     # stat = "median": median with 25%-75% quantiles (robust, the distribution over seeds is skewed), "mean": mean +- std
     if stat == "median":
         mid = np.median(interp, axis=0)
@@ -508,14 +570,71 @@ def plot_radial_profiles(location, t_common, interp, indices, ylabel="Tip amount
     fig, ax = plt.subplots(figsize=(6, 5))
     colors = plt.get_cmap("plasma")(np.linspace(0.2, 0.9, len(indices)))
     for color, i in zip(colors, indices):
-        ax.plot(location, mid[:, i], color=color, lw=2, marker="o", ms=3, label=f"t = {t_common[i]:.2f} d")
-        ax.fill_between(location, low[:, i], high[:, i], color=color, alpha=0.3)
-    ax.set_xlabel(r"Distance from centre $r$ (cm)")
+        ax.plot(location * 10, mid[:, i], color=color, lw=2, marker="o", ms=3, label=f"t = {t_common[i]:.2f} d")
+        ax.fill_between(location * 10, low[:, i], high[:, i], color=color, alpha=0.3)
+    ax.set_xlabel(r"Distance from centre $r$ (mm)")
     ax.set_ylabel(ylabel)
     ax.set_title(f"{stat} over {interp.shape[0]} simulations, band: {band}", fontsize=9)
     ax.legend(title=r"time after $t^*$")
     plt.savefig(filename, dpi=300, bbox_inches="tight")
     plt.close(fig)
+
+def plot_spatial_temporal(simulations, location, n_profiles=4, filename="SpatialTemporalProfile.png"):
+    # figure as Oyarte Galvez et al. 2025 Fig. 2b. simulations: dicts with "times" (days since t*), "length_densities" [mm mm^-2]
+    # and "tip_dens" [mm^-2] (rings x times), location: ring centers (ringCenters) [cm]
+    # left, spatial profile: median (band 25%-75% quantile) over the simulations at n_profiles times, coloured by time
+    # right, temporal profile: each ring of each simulation shifted by its arrival time t_n (fitArrivalTimes), points are data,
+    #        lines the sigmoid (length) and sigmoid derivative (tips) fits, coloured by t_n
+    # the first column of length_densities only counts the first interval (see getParasPerRing), so it is left out
+    sims = [{"times": sim["times"][1:], "rho": sim["length_densities"][:, 1:] * 1000, "tips": sim["tip_dens"][:, 1:]} for sim in simulations] # rho in um mm^-2
+    t_common, rho_i = interpolate_to_common_time(sims, "rho")
+    _, tips_i = interpolate_to_common_time(sims, "tips")
+    indices = np.linspace(0, len(t_common) - 1, n_profiles).astype(int)
+    fits = []
+    for sim in sims:
+        t_h = sim["times"] * 24
+        for f in fitArrivalTimes(t_h, sim["rho"], sim["tips"]):
+            f.update({"t": t_h, "rho_data": sim["rho"][f["ring"]], "tip_data": sim["tips"][f["ring"]]})
+            fits.append(f)
+    t_max = max(t_common[-1], max([f["t_n"] / 24 for f in fits], default=0))
+    norm = plt.Normalize(0, t_max)
+    cmaps = [plt.get_cmap("viridis"), plt.get_cmap("plasma")]
+    fig, axes = plt.subplots(2, 2, figsize=(10, 7), sharex="col")
+    r = location * 10
+    for row, (data, cmap) in enumerate(zip([rho_i, tips_i], cmaps)):
+        ax = axes[row, 0]
+        mid = np.median(data, axis=0)
+        low, high = np.percentile(data, [25, 75], axis=0)
+        for i in indices:
+            c = cmap(norm(t_common[i]))
+            ax.plot(r, mid[:, i], color=c, lw=2)
+            ax.fill_between(r, low[:, i], high[:, i], color=c, alpha=0.3)
+        ax = axes[row, 1]
+        key, func = ["length", "tips"][row], [sigmoidLengthDens, sigmoidTipDens][row]
+        for f in fits:
+            c = cmap(norm(f["t_n"] / 24))
+            ax.scatter(f["t"] - f["t_n"], f[["rho_data", "tip_data"][row]], color=c, s=4, alpha=0.4, edgecolors="none")
+            if f[key] is not None:
+                ts = np.linspace(f["t"][0], f["t"][-1], 200)
+                ax.plot(ts - f["t_n"], func(ts, *f[key]), color=c, lw=1.2)
+        fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes[row, :], label="Time (days)")
+    if fits: # saturation of the length density
+        K1 = np.median([f["length"][0] for f in fits])
+        for ax in axes[0]:
+            ax.axhline(K1, color="k", ls="--", lw=1)
+    axes[0, 0].set_title("Spatial profile")
+    axes[0, 1].set_title(f"Temporal profile ({len(fits)} rings of {len(sims)} simulations)")
+    axes[0, 0].set_ylabel(r"Filament density ($\mu$m mm$^{-2}$)")
+    axes[1, 0].set_ylabel(r"Tip density (mm$^{-2}$)")
+    axes[1, 0].set_xlabel(r"Distance from centre $r$ (mm)")
+    axes[1, 1].set_xlabel(r"Shifted time $t - t_n$ (h)")
+    axes[1, 1].set_xlim(-30, 30)
+    for ax in axes.flat:
+        ax.set_ylim(bottom=0)
+        ax.spines[["top", "right"]].set_visible(False)
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    return fits
 
 def save_simulation(filename, sim):
     # stores one simulation dict (only arrays/numbers, e.g. "times", "tip_dens", ...) as .npz
