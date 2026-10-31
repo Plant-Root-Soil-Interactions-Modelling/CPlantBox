@@ -349,4 +349,52 @@ void StaticRoot::initializeLaterals() {
     }
 }
 
+OrganState Root::getState() const {
+    OrganState s = Organ::getState();
+    stateSet(s, "insertionAngle", insertionAngle);
+    if (auto p = param()) {
+        stateSet(s, "param.lb", p->lb);
+        stateSet(s, "param.la", p->la);
+        stateSet(s, "param.ln", p->ln);
+        stateSet(s, "param.r", p->r);
+        stateSet(s, "param.theta", p->theta);
+        stateSet(s, "param.rlt", p->rlt);
+        stateSet(s, "param.laterals", p->laterals);
+    }
+    return s;
+}
+
+void Root::setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    Organ::setState(state, organs);
+    if (param_) {
+        auto p = std::make_shared<RootSpecificParameter>(*param());
+        stateGet(state, "subType", p->subType);
+        stateGet(state, "param.a", p->a);
+        stateGet(state, "param.lb", p->lb);
+        stateGet(state, "param.la", p->la);
+        stateGet(state, "param.ln", p->ln);
+        stateGet(state, "param.r", p->r);
+        stateGet(state, "param.theta", p->theta);
+        stateGet(state, "param.rlt", p->rlt);
+        stateGet(state, "param.laterals", p->laterals);
+        param_ = p;
+    }
+    stateGet(state, "insertionAngle", insertionAngle);
+}
+
+OrganState StaticRoot::getState() const {
+    OrganState s = Root::getState();
+    stateSet(s, "lateralNodeIndices", lateralNodeIndices);
+    stateSet(s, "lateralTypes", lateralTypes);
+    stateSet(s, "lateralDelays", lateralDelays);
+    return s;
+}
+
+void StaticRoot::setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    Root::setState(state, organs);
+    stateGet(state, "lateralNodeIndices", lateralNodeIndices);
+    stateGet(state, "lateralTypes", lateralTypes);
+    stateGet(state, "lateralDelays", lateralDelays);
+}
+
 } // end namespace CPlantBox

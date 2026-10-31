@@ -6,6 +6,8 @@
 #include "Root.h"
 #include <stdlib.h>
 #include <cstdlib>
+#include <limits>
+#include <sstream>
 
 namespace CPlantBox {
 
@@ -78,6 +80,35 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
         b = bestB;
     }
     return Vector2d(a,b);
+}
+
+/**
+ * State of the normal distribution (including its cached value), needed to reproduce random draws after a restore
+ */
+std::vector<double> Tropism::getNDState() const
+{
+    std::stringstream ss;
+    ss.precision(std::numeric_limits<double>::max_digits10);
+    ss << ND;
+    std::vector<double> v;
+    double d;
+    while (ss >> d) {
+        v.push_back(d);
+    }
+    return v;
+}
+
+void Tropism::setNDState(const std::vector<double>& v)
+{
+    std::stringstream ss;
+    ss.precision(std::numeric_limits<double>::max_digits10);
+    for (double d : v) {
+        ss << d << ' ';
+    }
+    std::normal_distribution<double> tmp;
+    if (ss >> tmp) {
+        ND = tmp;
+    }
 }
 
 /**

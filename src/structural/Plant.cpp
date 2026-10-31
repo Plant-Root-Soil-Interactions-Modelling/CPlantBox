@@ -4,6 +4,7 @@
 #include "grassleafparameter.h"
 #include "RootDelay.h"
 
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -391,5 +392,43 @@ std::shared_ptr<GrowthFunction> Plant::createGrowthFunction(int gft) {
  * todo most important debug informations
  */
 std::string Plant::toString() const { return "Plant " + Organism::toString(); }
+
+OrganismState Plant::getState() const {
+    OrganismState s = Organism::getState();
+    s["leafphytomerID"] = std::vector<double>(leafphytomerID.begin(), leafphytomerID.end());
+    for (int ot : {ot_root, ot_stem, ot_leaf}) { // age switch of the tropisms is drawn randomly in initCallbacks()
+        for (const auto &p : organParam[ot]) {
+            if (p.second && p.second->f_tf) {
+                const std::string key = std::to_string(ot) + "." + std::to_string(p.first);
+                s["tropismAgeSwitch." + key] = {p.second->f_tf->ageSwitch};
+                s["tropismND." + key] = p.second->f_tf->getNDState();
+            }
+        }
+    }
+    return s;
+}
+
+void Plant::setState(const OrganismState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    Organism::setState(state, organs);
+    auto it = state.find("leafphytomerID");
+    if (it != state.end()) {
+        leafphytomerID.clear();
+        for (double d : it->second) {
+            leafphytomerID.push_back(static_cast<int>(std::lround(d)));
+        }
+    }
+    for (int ot : {ot_root, ot_stem, ot_leaf}) {
+        for (const auto &p : organParam[ot]) {
+            auto a = state.find("tropismAgeSwitch." + std::to_string(ot) + "." + std::to_string(p.first));
+            if (a != state.end() && !a->second.empty() && p.second && p.second->f_tf) {
+                p.second->f_tf->ageSwitch = a->second[0];
+            }
+            auto nd = state.find("tropismND." + std::to_string(ot) + "." + std::to_string(p.first));
+            if (nd != state.end() && p.second && p.second->f_tf) {
+                p.second->f_tf->setNDState(nd->second);
+            }
+        }
+    }
+}
 
 } // namespace CPlantBox

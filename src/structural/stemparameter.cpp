@@ -250,13 +250,12 @@ default:
 		std::cout<<"set delayNGEnd_ = delayNGStart_ = "<<delayNGStart_<<std::endl;
 		delayNGEnd_ = delayNGStart_;
 	}
-	double ldelay_ = std::max(ldelay + p->randn()*ldelays, 0.);
 
 
 
 
 
-    return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,hasLaterals, this->nodalGrowth, delayNGStart_, delayNGEnd_, ldelay_);
+    return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,hasLaterals, this->nodalGrowth, delayNGStart_, delayNGEnd_);
 }
 
 

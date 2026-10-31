@@ -280,4 +280,59 @@ std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int typ
     return plant->createStem(type, delay, shared_from_this(), 0);
 }
 
+OrganState Seed::getState() const {
+    OrganState s = Organ::getState();
+    stateSet(s, "tapType", tapType);
+    stateSet(s, "basalType", basalType);
+    stateSet(s, "shootborneType", shootborneType);
+    stateSet(s, "mainStemType", mainStemType);
+    stateSet(s, "tillerType", tillerType);
+    stateSet(s, "rootCrowns", rootCrowns_);
+    if (auto p = param()) {
+        stateSet(s, "param.seedPos", p->seedPos);
+        stateSet(s, "param.firstB", p->firstB);
+        stateSet(s, "param.delayB", p->delayB);
+        stateSet(s, "param.maxB", p->maxB);
+        stateSet(s, "param.nC", p->nC);
+        stateSet(s, "param.firstSB", p->firstSB);
+        stateSet(s, "param.delaySB", p->delaySB);
+        stateSet(s, "param.delayRC", p->delayRC);
+        stateSet(s, "param.nz", p->nz);
+        stateSet(s, "param.maxTil", p->maxTil);
+        stateSet(s, "param.firstTil", p->firstTil);
+        stateSet(s, "param.delayTil", p->delayTil);
+        stateSet(s, "param.simtime", p->simtime);
+    }
+    return s;
+}
+
+void Seed::setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    Organ::setState(state, organs);
+    if (param_) {
+        auto p = std::make_shared<SeedSpecificParameter>(*param());
+        stateGet(state, "subType", p->subType);
+        stateGet(state, "param.a", p->a);
+        stateGet(state, "param.seedPos", p->seedPos);
+        stateGet(state, "param.firstB", p->firstB);
+        stateGet(state, "param.delayB", p->delayB);
+        stateGet(state, "param.maxB", p->maxB);
+        stateGet(state, "param.nC", p->nC);
+        stateGet(state, "param.firstSB", p->firstSB);
+        stateGet(state, "param.delaySB", p->delaySB);
+        stateGet(state, "param.delayRC", p->delayRC);
+        stateGet(state, "param.nz", p->nz);
+        stateGet(state, "param.maxTil", p->maxTil);
+        stateGet(state, "param.firstTil", p->firstTil);
+        stateGet(state, "param.delayTil", p->delayTil);
+        stateGet(state, "param.simtime", p->simtime);
+        param_ = p;
+    }
+    stateGet(state, "tapType", tapType);
+    stateGet(state, "basalType", basalType);
+    stateGet(state, "shootborneType", shootborneType);
+    stateGet(state, "mainStemType", mainStemType);
+    stateGet(state, "tillerType", tillerType);
+    stateGet(state, "rootCrowns", rootCrowns_);
+}
+
 } // namespace CPlantBox

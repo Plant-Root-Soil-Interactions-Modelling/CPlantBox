@@ -11,7 +11,10 @@
 #include <chrono>
 #include <ctime>
 #include <fstream>
+#include <cmath>
 #include <iostream>
+#include <limits>
+#include <sstream>
 #include <numeric>
 #include <stdexcept>
 
@@ -959,6 +962,111 @@ std::shared_ptr<Organ> Organism::createStem(int subType, double delay, std::shar
  */
 std::shared_ptr<Organ> Organism::createLeaf(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
     return std::make_shared<Leaf>(shared_from_this(), subType, delay, parent, pni);
+}
+
+namespace {
+template <class T> std::vector<double> streamToNumbers(const T &obj) {
+    std::stringstream ss;
+    ss.precision(std::numeric_limits<double>::max_digits10);
+    ss << obj;
+    std::vector<double> v;
+    double d;
+    while (ss >> d) {
+        v.push_back(d);
+    }
+    return v;
+}
+
+template <class T> bool numbersToStream(const std::vector<double> &v, T &obj) {
+    std::stringstream ss;
+    ss.precision(std::numeric_limits<double>::max_digits10);
+    for (double d : v) {
+        ss << d << ' ';
+    }
+    T tmp;
+    if (!(ss >> tmp)) {
+        return false;
+    }
+    obj = tmp;
+    return true;
+}
+} // namespace
+
+/**
+ * @brief Returns the organism state by variable name.
+ *
+ * Includes time, counters, stochasticity settings, the state of the random number generators ("gen", "ND"),
+ * and "baseOrganIds". Not included: organ parameters, confining geometry, rsmlProperties (strings), organs themselves.
+ */
+OrganismState Organism::getState() const {
+    OrganismState s;
+    s["plantId"] = {static_cast<double>(plantId)};
+    s["simtime"] = {simtime};
+    s["dt"] = {dt};
+    s["organId"] = {static_cast<double>(organId)};
+    s["nodeId"] = {static_cast<double>(nodeId)};
+    s["oldNumberOfNodes"] = {static_cast<double>(oldNumberOfNodes)};
+    s["oldNumberOfOrgans"] = {static_cast<double>(oldNumberOfOrgans)};
+    s["rsmlSkip"] = {static_cast<double>(rsmlSkip)};
+    s["minDx"] = {minDx};
+    s["seed_val"] = {static_cast<double>(seed_val)};
+    s["stochastic"] = {stochastic ? 1. : 0.};
+    s["gen"] = streamToNumbers(gen);
+    s["ND"] = streamToNumbers(ND);
+    std::vector<double> ids;
+    for (const auto &o : baseOrgans) {
+        ids.push_back(o->getId());
+    }
+    s["baseOrganIds"] = ids;
+    return s;
+}
+
+/**
+ * @brief Restores the state created by getState(); keys missing in @p state are left unchanged.
+ *
+ * If @p organs (id -> organ) is non-empty and all base organs are found, baseOrgans is re-linked.
+ */
+void Organism::setState(const OrganismState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    auto get = [&](const char *key, double &v) {
+        auto it = state.find(key);
+        if (it == state.end() || it->second.empty()) {
+            return false;
+        }
+        v = it->second[0];
+        return true;
+    };
+    double d;
+    if (get("plantId", d)) plantId = static_cast<int>(std::lround(d));
+    if (get("simtime", d)) simtime = d;
+    if (get("dt", d)) dt = d;
+    if (get("organId", d)) organId = static_cast<int>(std::lround(d));
+    if (get("nodeId", d)) nodeId = static_cast<int>(std::lround(d));
+    if (get("oldNumberOfNodes", d)) oldNumberOfNodes = static_cast<int>(std::lround(d));
+    if (get("oldNumberOfOrgans", d)) oldNumberOfOrgans = static_cast<int>(std::lround(d));
+    if (get("rsmlSkip", d)) rsmlSkip = static_cast<int>(std::lround(d));
+    if (get("minDx", d)) minDx = d;
+    if (get("seed_val", d)) seed_val = static_cast<unsigned int>(std::llround(d));
+    if (get("stochastic", d)) stochastic = (d != 0.);
+    auto it = state.find("gen");
+    if (it != state.end()) {
+        numbersToStream(it->second, gen);
+    }
+    it = state.find("ND");
+    if (it != state.end()) {
+        numbersToStream(it->second, ND);
+    }
+    it = state.find("baseOrganIds");
+    if (it != state.end() && !organs.empty()) {
+        std::vector<std::shared_ptr<Organ>> base;
+        for (double id : it->second) {
+            auto o = organs.find(static_cast<int>(std::lround(id)));
+            if (o == organs.end()) {
+                return; // unknown organ, keep the current base organs
+            }
+            base.push_back(o->second);
+        }
+        baseOrgans = base;
+    }
 }
 
 } // namespace CPlantBox

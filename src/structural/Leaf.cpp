@@ -929,4 +929,45 @@ Vector3d Leaf::getIncrement(const Vector3d &p, double sdx, int n) {
     return sv.times(sdx);
 }
 
+OrganState Leaf::getState() const {
+    OrganState s = Organ::getState();
+    stateSet(s, "beta", beta);
+    stateSet(s, "ageDependentTropism", ageDependentTropism);
+    if (auto p = param()) {
+        stateSet(s, "param.lb", p->lb);
+        stateSet(s, "param.la", p->la);
+        stateSet(s, "param.ln", p->ln);
+        stateSet(s, "param.r", p->r);
+        stateSet(s, "param.theta", p->theta);
+        stateSet(s, "param.rlt", p->rlt);
+        stateSet(s, "param.areaMax", p->areaMax);
+        stateSet(s, "param.laterals", p->laterals);
+        stateSet(s, "param.width_blade", p->width_blade);
+        stateSet(s, "param.width_petiole", p->width_petiole);
+    }
+    return s;
+}
+
+void Leaf::setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    Organ::setState(state, organs);
+    if (param_) {
+        auto p = std::make_shared<LeafSpecificParameter>(*param());
+        stateGet(state, "subType", p->subType);
+        stateGet(state, "param.a", p->a);
+        stateGet(state, "param.lb", p->lb);
+        stateGet(state, "param.la", p->la);
+        stateGet(state, "param.ln", p->ln);
+        stateGet(state, "param.r", p->r);
+        stateGet(state, "param.theta", p->theta);
+        stateGet(state, "param.rlt", p->rlt);
+        stateGet(state, "param.areaMax", p->areaMax);
+        stateGet(state, "param.laterals", p->laterals);
+        stateGet(state, "param.width_blade", p->width_blade);
+        stateGet(state, "param.width_petiole", p->width_petiole);
+        param_ = p;
+    }
+    stateGet(state, "beta", beta);
+    stateGet(state, "ageDependentTropism", ageDependentTropism);
+}
+
 } // namespace CPlantBox

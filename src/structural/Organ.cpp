@@ -9,6 +9,8 @@
 
 // standard library
 #include <algorithm>
+#include <cmath>
+#include <typeinfo>
 #include <iostream>
 
 namespace CPlantBox {
@@ -67,6 +69,156 @@ std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism> p) {
         o->children[i]->setParent(o);
     }
     return o;
+}
+
+/* state helpers */
+void Organ::stateSet(OrganState &s, const std::string &key, const std::vector<Vector3d> &v) {
+    std::vector<double> d;
+    d.reserve(3 * v.size());
+    for (const auto &p : v) {
+        d.insert(d.end(), {p.x, p.y, p.z});
+    }
+    s[key] = d;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, double &v) {
+    auto it = s.find(key);
+    if (it == s.end() || it->second.empty()) return false;
+    v = it->second[0];
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, bool &v) {
+    double d;
+    if (!stateGet(s, key, d)) return false;
+    v = (d != 0.);
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, int &v) {
+    double d;
+    if (!stateGet(s, key, d)) return false;
+    v = static_cast<int>(std::lround(d));
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, size_t &v) {
+    double d;
+    if (!stateGet(s, key, d)) return false;
+    v = static_cast<size_t>(std::llround(d));
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, std::vector<double> &v) {
+    auto it = s.find(key);
+    if (it == s.end()) return false;
+    v = it->second;
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, std::vector<int> &v) {
+    auto it = s.find(key);
+    if (it == s.end()) return false;
+    v.clear();
+    for (double d : it->second) v.push_back(static_cast<int>(std::lround(d)));
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, Vector3d &v) {
+    auto it = s.find(key);
+    if (it == s.end() || it->second.size() < 3) return false;
+    v = Vector3d(it->second[0], it->second[1], it->second[2]);
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, std::vector<Vector3d> &v) {
+    auto it = s.find(key);
+    if (it == s.end()) return false;
+    v.clear();
+    for (size_t i = 0; i + 2 < it->second.size(); i += 3) v.push_back(Vector3d(it->second[i], it->second[i + 1], it->second[i + 2]));
+    return true;
+}
+
+/**
+ * @brief Returns all member variables of the organ by name.
+ *
+ * Links to organs are stored as ids ("parentId" is -1 without parent, "childIds" lists the children).
+ * The owning organism is not stored. Derived classes extend the returned map.
+ * Only valid while the plant is in absolute coordinates (between simulate() calls); relative-coordinate scratch
+ * variables (has_rel_coord, addIncrement) and firstCall (reset in simulate()) are therefore not stored.
+ */
+OrganState Organ::getState() const {
+    OrganState s;
+    stateSet(s, "id", id);
+    stateSet(s, "organType", organType());
+    stateSet(s, "subType", param_ ? param_->subType : -1);
+    if (param_) {
+        stateSet(s, "param.a", param_->a);
+    }
+    auto p = parent.lock();
+    stateSet(s, "parentId", p ? p->getId() : -1);
+    std::vector<int> cids;
+    for (const auto &c : children) cids.push_back(c->getId());
+    stateSet(s, "childIds", cids);
+    stateSet(s, "parentNI", parentNI);
+    stateSet(s, "partialIHeading", partialIHeading);
+    stateSet(s, "alive", alive);
+    stateSet(s, "active", active);
+    stateSet(s, "age", age);
+    stateSet(s, "length", length);
+    stateSet(s, "epsilonDx", epsilonDx);
+    stateSet(s, "created_linking_node", static_cast<double>(created_linking_node));
+    stateSet(s, "nodes", nodes);
+    stateSet(s, "nodeIds", nodeIds);
+    stateSet(s, "nodeCTs", nodeCTs);
+    stateSet(s, "moved", moved);
+    stateSet(s, "oldNumberOfNodes", oldNumberOfNodes);
+    return s;
+}
+
+/**
+ * @brief Restores member variables from a state created by getState().
+ *
+ * Keys missing in @p state are left unchanged. The organ id is const and not restored.
+ * If @p organs (id -> organ) is non-empty, parent and children are looked up by id; links with unknown ids are left unchanged.
+ */
+void Organ::setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    if (param_ && typeid(*param_) == typeid(OrganSpecificParameter)) { // derived classes restore their own parameter type
+        auto p = std::make_shared<OrganSpecificParameter>(*param_);
+        stateGet(state, "subType", p->subType);
+        stateGet(state, "param.a", p->a);
+        param_ = p;
+    }
+    stateGet(state, "parentNI", parentNI);
+    stateGet(state, "partialIHeading", partialIHeading);
+    stateGet(state, "alive", alive);
+    stateGet(state, "active", active);
+    stateGet(state, "age", age);
+    stateGet(state, "length", length);
+    stateGet(state, "epsilonDx", epsilonDx);
+    stateGet(state, "created_linking_node", created_linking_node);
+    stateGet(state, "nodes", nodes);
+    stateGet(state, "nodeIds", nodeIds);
+    stateGet(state, "nodeCTs", nodeCTs);
+    stateGet(state, "moved", moved);
+    stateGet(state, "oldNumberOfNodes", oldNumberOfNodes);
+    if (!organs.empty()) {
+        int pid = -1;
+        if (stateGet(state, "parentId", pid)) {
+            auto it = organs.find(pid);
+            if (it != organs.end()) {
+                parent = it->second;
+            } else if (pid < 0) {
+                parent.reset();
+            }
+        }
+        std::vector<int> cids;
+        if (stateGet(state, "childIds", cids)) {
+            std::vector<std::shared_ptr<Organ>> c;
+            for (int cid : cids) {
+                auto it = organs.find(cid);
+                if (it == organs.end()) {
+                    break;
+                }
+                c.push_back(it->second);
+            }
+            if (c.size() == cids.size()) { // only relink if all children are known
+                children = c;
+            }
+        }
+    }
 }
 
 /**

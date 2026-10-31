@@ -47,6 +47,9 @@ class Stem : public Organ {
     std::shared_ptr<StemRandomParameter> getStemRandomParameter() const; ///< root type parameter of this root
     std::shared_ptr<const StemSpecificParameter> param() const;          ///< root parameter
 
+    OrganState getState() const override; ///< Adds the Stem members to the state of Organ::getState()
+    void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
+
     std::vector<int> stemphytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int shootborneType = 5;
 

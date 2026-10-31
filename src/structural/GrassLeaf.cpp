@@ -326,4 +326,67 @@ std::vector<Vector3d> GrassLeaf::getLeafVis(int i) {
     return { node.plus(y1.times(bw)), node.minus(y1.times(bw)) };
 }
 
+OrganState GrassLeaf::getState() const {
+    OrganState s = Organ::getState();
+    stateSet(s, "initialSheathAngle", initialSheathAngle);
+    stateSet(s, "sheathLength", sheathLength);
+    stateSet(s, "bladeLength", bladeLength);
+    stateSet(s, "turtleAnchor", turtle.getAnchor());
+    const Matrix3d f = turtle.getAnchorFrame();
+    stateSet(s, "turtleAnchorFrame", std::vector<double>{f.r0.x, f.r0.y, f.r0.z, f.r1.x, f.r1.y, f.r1.z, f.r2.x, f.r2.y, f.r2.z}); // row-wise
+    std::vector<double> tn; // (yaw, pitch, roll, dist) per turtle node
+    for (const auto &n : turtle.getTurtleNodes()) {
+        tn.insert(tn.end(), {n.yaw, n.pitch, n.roll, n.dist});
+    }
+    stateSet(s, "turtleNodes", tn);
+    stateSet(s, "turtleInitialNodeIndex", turtle.getInitialNodeIndex());
+    if (auto p = param()) {
+        stateSet(s, "param.bladeAngle", p->bladeAngle);
+        stateSet(s, "param.bladeWidth", p->bladeWidth);
+        stateSet(s, "param.bladeLength", p->bladeLength);
+        stateSet(s, "param.sheathLength", p->sheathLength);
+        stateSet(s, "param.leafGrowthDuration", p->leafGrowthDuration);
+        stateSet(s, "param.bladeBending", p->bladeBending);
+    }
+    return s;
+}
+
+void GrassLeaf::setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    Organ::setState(state, organs);
+    if (param_) {
+        auto p = std::make_shared<GrassLeafSpecificParameter>(*param());
+        stateGet(state, "subType", p->subType);
+        stateGet(state, "param.a", p->a);
+        stateGet(state, "param.bladeAngle", p->bladeAngle);
+        stateGet(state, "param.bladeWidth", p->bladeWidth);
+        stateGet(state, "param.bladeLength", p->bladeLength);
+        stateGet(state, "param.sheathLength", p->sheathLength);
+        stateGet(state, "param.leafGrowthDuration", p->leafGrowthDuration);
+        stateGet(state, "param.bladeBending", p->bladeBending);
+        param_ = p;
+    }
+    stateGet(state, "initialSheathAngle", initialSheathAngle);
+    stateGet(state, "sheathLength", sheathLength);
+    stateGet(state, "bladeLength", bladeLength);
+    Vector3d a;
+    if (stateGet(state, "turtleAnchor", a)) {
+        turtle.setAnchor(a);
+    }
+    std::vector<double> f;
+    if (stateGet(state, "turtleAnchorFrame", f) && f.size() >= 9) {
+        turtle.setAnchorFrame(Matrix3d(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]));
+    }
+    std::vector<double> tn;
+    if (stateGet(state, "turtleNodes", tn)) {
+        turtle.clearNodes();
+        for (size_t i = 0; i + 3 < tn.size(); i += 4) {
+            turtle.addNodeBack(tn[i + 3], tn[i], tn[i + 1], tn[i + 2]);
+        }
+    }
+    int idx;
+    if (stateGet(state, "turtleInitialNodeIndex", idx)) {
+        turtle.setInitialNodeIndex(idx);
+    }
+}
+
 } // end namespace CPlantBox
