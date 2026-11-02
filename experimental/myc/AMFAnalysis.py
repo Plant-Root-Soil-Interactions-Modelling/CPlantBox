@@ -407,7 +407,11 @@ def arrivalTimeTipFit(t, n, t_arrival, lamda):
 def fitArrivalTimes(t, rho, tips, min_fraction=0.5):
     # arrival time of the network at each ring (rows of rho and tips, columns at times t) from a sigmoid fit of the length density rho,
     # tips are fitted with the sigmoid derivative. Only rings where the arrival lies within t and rho reaches min_fraction of the fitted
-    # saturation K1 are kept. Returns a list of dicts with "ring", "t_n", "length" (K1, lamda, t_arrival) and "tips" (K2, lamda, t_arrival or None)
+    # saturation K1 are kept. Returns a list of dicts with "ring", "t_n", "length" (K1, lamda, t_arrival) and "tips" (K2, lamda, t_arrival or None),
+    # and the coefficient of determination of both fits "R2_length", "R2_tips" (nan without tip fit)
+    def R2(y, y_fit):
+        ss = np.sum((y - y.mean())**2)
+        return 1 - np.sum((y - y_fit)**2) / ss if ss > 0 else np.nan
     fits = []
     for k in range(rho.shape[0]):
         if rho[k].max() <= 0:
@@ -422,7 +426,22 @@ def fitArrivalTimes(t, rho, tips, min_fraction=0.5):
             pt, _ = arrivalTimeTipFit(t, tips[k], pl[2], pl[1])
         except (RuntimeError, ValueError):
             pt = None
-        fits.append({"ring": k, "t_n": pl[2], "length": pl, "tips": pt})
+        fits.append({"ring": k, "t_n": pl[2], "length": pl, "tips": pt, "R2_length": R2(rho[k], sigmoidLengthDens(t, *pl)),
+                     "R2_tips": R2(tips[k], sigmoidTipDens(t, *pt)) if pt is not None else np.nan})
+    return fits
+
+def collectArrivalFits(simulations):
+    # fitArrivalTimes for all simulations (dicts with "times" [days since t*], "length_densities" [mm mm^-2], "tip_dens" [mm^-2]),
+    # time in h and length density in um mm^-2. Adds "seed" and the data "t", "rho_data", "tip_data" to each fit
+    # the first column of length_densities only counts the first interval (see getParasPerRing), so it is left out
+    fits = []
+    for sim in simulations:
+        t_h = sim["times"][1:] * 24
+        rho = sim["length_densities"][:, 1:] * 1000
+        tips = sim["tip_dens"][:, 1:]
+        for f in fitArrivalTimes(t_h, rho, tips):
+            f.update({"seed": int(sim["seed"]), "t": t_h, "rho_data": rho[f["ring"]], "tip_data": tips[f["ring"]]})
+            fits.append(f)
     return fits
 
 def prepare_data(lenMat, vol, anaMat, tipMat):
@@ -590,12 +609,7 @@ def plot_spatial_temporal(simulations, location, n_profiles=4, filename="Spatial
     t_common, rho_i = interpolate_to_common_time(sims, "rho")
     _, tips_i = interpolate_to_common_time(sims, "tips")
     indices = np.linspace(0, len(t_common) - 1, n_profiles).astype(int)
-    fits = []
-    for sim in sims:
-        t_h = sim["times"] * 24
-        for f in fitArrivalTimes(t_h, sim["rho"], sim["tips"]):
-            f.update({"t": t_h, "rho_data": sim["rho"][f["ring"]], "tip_data": sim["tips"][f["ring"]]})
-            fits.append(f)
+    fits = collectArrivalFits(simulations)
     t_max = max(t_common[-1], max([f["t_n"] / 24 for f in fits], default=0))
     norm = plt.Normalize(0, t_max)
     cmaps = [plt.get_cmap("viridis"), plt.get_cmap("plasma")]
@@ -650,6 +664,33 @@ def load_simulations(pattern):
     # print("Loaded " + str(len(simulations)) + " simulations from " + pattern)
     return simulations
 
+
+def load_petridish_results(pattern, verbose=True):
+    # loads the per-seed results of petridishsimauto.py (e.g. "petridish_results/densities/seed_*.npz") that can be combined:
+    # seeds stopped before t* (status "not_crossed", see max_wait_days) or because the front stalled after t* (status "stalled",
+    # see min_growing_tips, stall_fraction) have no densities and are skipped, older files have no status.
+    # Older files have densities per cm^3: with hyphae_layer (thin layer geometry) they are converted to mm^-2
+    # (cm^-3 * layer [cm] = cm^-2 = mm^-2 * 100), without it (old geometry, densities per volume of the whole height) they are skipped.
+    # "times" are shifted to days since t* (the absolute times of different seeds do not overlap)
+    simulations = load_simulations(pattern)
+    stopped = [int(sim["seed"]) for sim in simulations if str(sim.get("status", "ok")) != "ok"]
+    simulations = [sim for sim in simulations if str(sim.get("status", "ok")) == "ok"]
+    for sim in simulations:
+        if "density_per" not in sim and "hyphae_layer" in sim:
+            h = float(sim["hyphae_layer"])
+            for key in ["tip_dens", "stopped_tip_dens"]:
+                sim[key] = sim[key] * h / 100
+            sim["length_densities"] = sim["length_densities"] * h / 10 # cm cm^-3 -> cm cm^-2 -> mm mm^-2
+            sim["density_per"] = "mm^2"
+    old = [int(sim["seed"]) for sim in simulations if "density_per" not in sim]
+    simulations = [sim for sim in simulations if "density_per" in sim]
+    for sim in simulations:
+        sim["times"] = sim["times"] - sim["time_star"]
+    if verbose:
+        if old:
+            print("skipping " + str(len(old)) + " seeds of the old geometry (rerun them): " + str(old))
+        print(str(len(simulations)) + " simulations reached t*, " + str(len(stopped)) + " were stopped: " + str(stopped))
+    return simulations
 
 def estimate_carbon_cost_per_Org(length,radius,pdry,pcarbon,dcell,CUE):
     gamma = np.pi * radius *radius*dcell*pdry*pcarbon

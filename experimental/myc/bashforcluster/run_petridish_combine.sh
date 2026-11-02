@@ -22,3 +22,4 @@ export MPLBACKEND=Agg
 
 python3 petridishtiming.py
 python3 petridishcombine.py
+python3 petridishstats.py
