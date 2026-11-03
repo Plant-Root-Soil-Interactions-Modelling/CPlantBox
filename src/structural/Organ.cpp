@@ -72,66 +72,6 @@ std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism> p) {
     return o;
 }
 
-/* state helpers */
-void Organ::stateSet(OrganState &s, const std::string &key, const std::vector<Vector3d> &v) {
-    std::vector<double> d;
-    d.reserve(3 * v.size());
-    for (const auto &p : v) {
-        d.insert(d.end(), {p.x, p.y, p.z});
-    }
-    s[key] = d;
-}
-bool Organ::stateGet(const OrganState &s, const std::string &key, double &v) {
-    auto it = s.find(key);
-    if (it == s.end() || it->second.empty()) return false;
-    v = it->second[0];
-    return true;
-}
-bool Organ::stateGet(const OrganState &s, const std::string &key, bool &v) {
-    double d;
-    if (!stateGet(s, key, d)) return false;
-    v = (d != 0.);
-    return true;
-}
-bool Organ::stateGet(const OrganState &s, const std::string &key, int &v) {
-    double d;
-    if (!stateGet(s, key, d)) return false;
-    v = static_cast<int>(std::lround(d));
-    return true;
-}
-bool Organ::stateGet(const OrganState &s, const std::string &key, size_t &v) {
-    double d;
-    if (!stateGet(s, key, d)) return false;
-    v = static_cast<size_t>(std::llround(d));
-    return true;
-}
-bool Organ::stateGet(const OrganState &s, const std::string &key, std::vector<double> &v) {
-    auto it = s.find(key);
-    if (it == s.end()) return false;
-    v = it->second;
-    return true;
-}
-bool Organ::stateGet(const OrganState &s, const std::string &key, std::vector<int> &v) {
-    auto it = s.find(key);
-    if (it == s.end()) return false;
-    v.clear();
-    for (double d : it->second) v.push_back(static_cast<int>(std::lround(d)));
-    return true;
-}
-bool Organ::stateGet(const OrganState &s, const std::string &key, Vector3d &v) {
-    auto it = s.find(key);
-    if (it == s.end() || it->second.size() < 3) return false;
-    v = Vector3d(it->second[0], it->second[1], it->second[2]);
-    return true;
-}
-bool Organ::stateGet(const OrganState &s, const std::string &key, std::vector<Vector3d> &v) {
-    auto it = s.find(key);
-    if (it == s.end()) return false;
-    v.clear();
-    for (size_t i = 0; i + 2 < it->second.size(); i += 3) v.push_back(Vector3d(it->second[i], it->second[i + 1], it->second[i + 2]));
-    return true;
-}
-
 /**
  * @brief Returns all member variables of the organ by name.
  *
@@ -1074,4 +1014,67 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // over
     }
     return growthDelay;
 }
+
+/* state helpers */
+void Organ::stateSet(OrganState &s, const std::string &key, const std::vector<Vector3d> &v) {
+    std::vector<double> d;
+    d.reserve(3 * v.size());
+    for (const auto &p : v) {
+        d.insert(d.end(), {p.x, p.y, p.z});
+    }
+    s[key] = d;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, double &v) {
+    auto it = s.find(key);
+    if (it == s.end() || it->second.empty()) return false;
+    v = it->second[0];
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, bool &v) {
+    double d;
+    if (!stateGet(s, key, d)) return false;
+    v = (d != 0.);
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, int &v) {
+    double d;
+    if (!stateGet(s, key, d)) return false;
+    v = static_cast<int>(std::lround(d));
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, size_t &v) {
+    double d;
+    if (!stateGet(s, key, d)) return false;
+    v = static_cast<size_t>(std::llround(d));
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, std::vector<double> &v) {
+    auto it = s.find(key);
+    if (it == s.end()) return false;
+    v = it->second;
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, std::vector<int> &v) {
+    auto it = s.find(key);
+    if (it == s.end()) return false;
+    v.clear();
+    for (double d : it->second) v.push_back(static_cast<int>(std::lround(d)));
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, Vector3d &v) {
+    auto it = s.find(key);
+    if (it == s.end() || it->second.size() < 3) return false;
+    v = Vector3d(it->second[0], it->second[1], it->second[2]);
+    return true;
+}
+bool Organ::stateGet(const OrganState &s, const std::string &key, std::vector<Vector3d> &v) {
+    auto it = s.find(key);
+    if (it == s.end()) return false;
+    v.clear();
+    for (size_t i = 0; i + 2 < it->second.size(); i += 3) v.push_back(Vector3d(it->second[i], it->second[i + 1], it->second[i + 2]));
+    return true;
+}
+
+
+
 } // namespace CPlantBox

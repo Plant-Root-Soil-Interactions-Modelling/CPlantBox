@@ -575,7 +575,6 @@ std::string Stem::toString() const {
 OrganState Stem::getState() const {
     OrganState s = Organ::getState();
     stateSet(s, "stemphytomerId", stemphytomerId);
-    stateSet(s, "shootborneType", shootborneType);
     stateSet(s, "localId_linking_nodes", localId_linking_nodes);
     if (auto p = param()) {
         stateSet(s, "param.lb", p->lb);
@@ -611,7 +610,6 @@ void Stem::setState(const OrganState &state, const std::map<int, std::shared_ptr
         param_ = p;
     }
     stateGet(state, "stemphytomerId", stemphytomerId);
-    stateGet(state, "shootborneType", shootborneType);
     stateGet(state, "localId_linking_nodes", localId_linking_nodes);
 }
 

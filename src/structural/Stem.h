@@ -51,7 +51,6 @@ class Stem : public Organ {
     void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
 
     std::vector<int> stemphytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int shootborneType = 5;
 
     bool hasRelCoord() const override { return true; }                             ///< stem nodes are stored relative to the origin
     bool hasMoved() const override { return true; }                                ///< nodes move with the parent, or because of internodal growth
