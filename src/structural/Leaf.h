@@ -72,6 +72,12 @@ protected:
   int getleafphytomerID(int subtype);
   void minusPhytomerId(int subtype);
   void addleafphytomerID(int subtype);
+public:
+  OrganState getState() const override; ///< Adds the Leaf members to the state of Organ::getState()
+  void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
+
+protected:
+
   double beta;
 
   std::vector<double> getLeafVisX_2D(double l);

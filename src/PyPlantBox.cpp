@@ -422,6 +422,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("__str__", &Organ::toString)
         .def("orgVolume", &Organ::orgVolume, py::arg("length_") = -1, py::arg("realized") = false)
         .def("orgVolume2Length", &Organ::orgVolume2Length)
+        .def("getState", &Organ::getState)
+        .def("setState", &Organ::setState, py::arg("state"), py::arg("organs") = std::map<int, std::shared_ptr<Organ>>())
         .def("getInitialHeading", &Organ::getInitialHeading);
 
     /*
@@ -488,6 +490,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setSeed", &Organism::setSeed) // bit missleading
         .def("setRandomSeed", &Organism::setRandomSeed)
         .def("getSeedVal", &Organism::getSeedVal)
+        .def("getState", &Organism::getState)
+        .def("setState", &Organism::setState, py::arg("state"), py::arg("organs") = std::map<int, std::shared_ptr<Organ>>())
         .def_readwrite("plantId", &Organism::plantId)
 
         .def("rand", &Organism::rand)
@@ -818,6 +822,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("theta", &LeafSpecificParameter::theta)
         .def_readwrite("rlt", &LeafSpecificParameter::rlt)
         .def_readwrite("leafArea", &LeafSpecificParameter::areaMax)
+        .def_readwrite("areaMax", &LeafSpecificParameter::areaMax)
         .def_readwrite("laterals", &LeafSpecificParameter::laterals)
         .def_readwrite("laterals", &LeafSpecificParameter::width_blade)
         .def_readwrite("laterals", &LeafSpecificParameter::width_petiole)
@@ -878,6 +883,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("rlt", &StemSpecificParameter::rlt)
         .def("getK", &StemSpecificParameter::getK)
         .def("nob", &StemSpecificParameter::nob)
+        .def_readwrite("nodalGrowth", &StemSpecificParameter::nodalGrowth)
         .def_readwrite("delayNGStart", &StemSpecificParameter::delayNGStart)
         .def_readwrite("delayNGEnd", &StemSpecificParameter::delayNGEnd);
     /**

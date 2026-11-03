@@ -43,6 +43,9 @@ class Seed : public Organ {
     virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type,
                                               double delay); ///< overwrite if you want to change class types used by intialize()
 
+    OrganState getState() const override; ///< Adds the Seed members to the state of Organ::getState()
+    void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
+
     int tapType = 1; ///< defauts, may be adapted by intialize()
     int basalType = 4;
     int shootborneType = 5;

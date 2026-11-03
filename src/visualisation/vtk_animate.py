@@ -90,7 +90,7 @@ class AnimateRoots:
     def __init__(self, rootsystem=None, container_sdf=None, add_params={}):
         # Root system data source
         self.rootsystem = rootsystem
-        self.root_name = "subType"
+        self.param_name = "subType"
         self.plant = False  # True → include leaf polygons via plot_plant
         self.add_params = add_params
 
@@ -237,9 +237,9 @@ class AnimateRoots:
 
         ana.addAge(self.simtime)
         if self.plant:
-            new_actors, root_cbar = plot_plant(ana, self.root_name, render=False)
+            new_actors, root_cbar = plot_plant(ana, self.param_name, render=False)
         else:
-            new_actors, root_cbar = plot_roots(ana, self.root_name, render=False)
+            new_actors, root_cbar = plot_roots(ana, self.param_name, render=False)
 
         if isinstance(new_actors, list):
             self.actors.extend(new_actors)
