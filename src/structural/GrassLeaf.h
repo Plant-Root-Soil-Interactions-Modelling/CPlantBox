@@ -54,6 +54,9 @@ public:
 
   double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
 
+  OrganState getState() const override; ///< Adds the GrassLeaf members to the state of Organ::getState()
+  void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
+
   std::string toString() const override;
 
   double calcLength(double age) override;

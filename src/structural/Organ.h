@@ -21,6 +21,8 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace CPlantBox {
@@ -42,6 +44,13 @@ class Plant;
  *
  * @see Root, Stem, Leaf, Seed, Organism
  */
+/**
+ * Flat snapshot of an organ's state: variable name -> values.
+ * Scalars (bool, int, double) are stored as a single value, vectors as sequences, Vector3d as (x,y,z) triplets,
+ * and links to other organs as organ ids (-1 = no organ). Suited for conversion to JSON on the Python side.
+ */
+using OrganState = std::unordered_map<std::string, std::vector<double>>;
+
 class Organ : public std::enable_shared_from_this<Organ> {
 
 public:
@@ -129,6 +138,12 @@ public:
   void writeRSML(tinyxml2::XMLDocument &doc,
                  tinyxml2::XMLElement *parent) const; ///< Appends an RSML @c <root> element for this organ to @p parent; not exposed to Python
 
+  /* state (de)serialisation */
+  virtual OrganState getState() const; ///< Returns all member variables by name; parent/child links as organ ids (-1 = none), the owning organism is omitted
+  virtual void setState(const OrganState &state,
+                        const std::map<int, std::shared_ptr<Organ>> &organs = {}); ///< Restores member variables from @p state (the const id is not changed);
+                                                                                    ///< if @p organs (id -> organ) is non-empty, parent and children are re-linked
+
   /* for carbon-limited growth (know future (or past) volume (or length))*/
   virtual double
   orgVolume(double length_ = -1.,
@@ -151,6 +166,19 @@ protected:
   virtual double getLatGrowthDelay(int ot_lat, int st_lat,
                                    double dt) const; ///< Returns the emergence delay for a new lateral of type (@p ot_lat, @p st_lat) [days]
   bool getApplyHere(int i) const;                    ///< Returns true if successor rule @p i applies at the current linking node
+  static void stateSet(OrganState &s, const std::string &key, double v) { s[key] = {v}; }                ///< state helper
+  static void stateSet(OrganState &s, const std::string &key, const std::vector<int> &v) { s[key] = std::vector<double>(v.begin(), v.end()); } ///< state helper
+  static void stateSet(OrganState &s, const std::string &key, const Vector3d &v) { s[key] = {v.x, v.y, v.z}; }                                  ///< state helper
+  static void stateSet(OrganState &s, const std::string &key, const std::vector<double> &v) { s[key] = v; }                                    ///< state helper
+  static void stateSet(OrganState &s, const std::string &key, const std::vector<Vector3d> &v);                                                  ///< state helper
+  static bool stateGet(const OrganState &s, const std::string &key, double &v);                          ///< reads a scalar if present
+  static bool stateGet(const OrganState &s, const std::string &key, bool &v);                            ///< reads a bool if present
+  static bool stateGet(const OrganState &s, const std::string &key, int &v);                             ///< reads an int if present
+  static bool stateGet(const OrganState &s, const std::string &key, size_t &v);                          ///< reads a size_t if present
+  static bool stateGet(const OrganState &s, const std::string &key, std::vector<int> &v);                ///< reads an int vector if present
+  static bool stateGet(const OrganState &s, const std::string &key, std::vector<double> &v);             ///< reads a double vector if present
+  static bool stateGet(const OrganState &s, const std::string &key, Vector3d &v);                        ///< reads a Vector3d if present
+  static bool stateGet(const OrganState &s, const std::string &key, std::vector<Vector3d> &v);           ///< reads a Vector3d vector if present
   std::vector<int> addIncrement;                     ///< Scratch indices tracking inserted nodes during coordinate-system switching
 
   /* Up and down the organ tree */

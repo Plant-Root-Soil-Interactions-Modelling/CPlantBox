@@ -86,6 +86,9 @@ class Plant : public Organism {
 
     std::string toString() const override;
 
+    OrganismState getState() const override; ///< Adds leafphytomerID and the (randomly drawn) tropism age switches and normal-distribution state of the tropisms to Organism::getState()
+    void setState(const OrganismState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organism::setState()
+
     std::vector<int> leafphytomerID = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     void abs2rel();
     void rel2abs();

@@ -26,7 +26,7 @@ public:
 
     StemSpecificParameter(): StemSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
     StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt,
-	bool laterals= false, int nodalGrowth = 0, double delayNGStart = 0.,double delayNGEnd = 0., double delayLat = 0.):
+	bool laterals= false, int nodalGrowth = 0, double delayNGStart = 0.,double delayNGEnd = 0.):
         OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln),
 		laterals(laterals), nodalGrowth(nodalGrowth), delayNGStart(delayNGStart), delayNGEnd(delayNGEnd){ } ///< Constructor setting all parameters
 

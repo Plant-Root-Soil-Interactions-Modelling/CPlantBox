@@ -576,4 +576,47 @@ std::string Stem::toString() const {
     return Organ::toString() + newstring.str();
 }
 
+OrganState Stem::getState() const {
+    OrganState s = Organ::getState();
+    stateSet(s, "stemphytomerId", stemphytomerId);
+    stateSet(s, "shootborneType", shootborneType);
+    stateSet(s, "localId_linking_nodes", localId_linking_nodes);
+    if (auto p = param()) {
+        stateSet(s, "param.lb", p->lb);
+        stateSet(s, "param.la", p->la);
+        stateSet(s, "param.ln", p->ln);
+        stateSet(s, "param.r", p->r);
+        stateSet(s, "param.theta", p->theta);
+        stateSet(s, "param.rlt", p->rlt);
+        stateSet(s, "param.laterals", p->laterals);
+        stateSet(s, "param.nodalGrowth", p->nodalGrowth);
+        stateSet(s, "param.delayNGStart", p->delayNGStart);
+        stateSet(s, "param.delayNGEnd", p->delayNGEnd);
+    }
+    return s;
+}
+
+void Stem::setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    Organ::setState(state, organs);
+    if (param_) {
+        auto p = std::make_shared<StemSpecificParameter>(*param());
+        stateGet(state, "subType", p->subType);
+        stateGet(state, "param.a", p->a);
+        stateGet(state, "param.lb", p->lb);
+        stateGet(state, "param.la", p->la);
+        stateGet(state, "param.ln", p->ln);
+        stateGet(state, "param.r", p->r);
+        stateGet(state, "param.theta", p->theta);
+        stateGet(state, "param.rlt", p->rlt);
+        stateGet(state, "param.laterals", p->laterals);
+        stateGet(state, "param.nodalGrowth", p->nodalGrowth);
+        stateGet(state, "param.delayNGStart", p->delayNGStart);
+        stateGet(state, "param.delayNGEnd", p->delayNGEnd);
+        param_ = p;
+    }
+    stateGet(state, "stemphytomerId", stemphytomerId);
+    stateGet(state, "shootborneType", shootborneType);
+    stateGet(state, "localId_linking_nodes", localId_linking_nodes);
+}
+
 } // namespace CPlantBox

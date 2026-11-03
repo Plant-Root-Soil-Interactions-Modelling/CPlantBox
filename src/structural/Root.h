@@ -41,6 +41,9 @@ class Root : public Organ {
     std::shared_ptr<RootRandomParameter> getRootRandomParameter() const; ///< root type parameter of this root
     std::shared_ptr<const RootSpecificParameter> param() const;          ///< root parameter
 
+    OrganState getState() const override; ///< Adds the Root members to the state of Organ::getState()
+    void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
+
     double insertionAngle = 0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa TODO some better idea?
 };
 
@@ -59,6 +62,9 @@ class StaticRoot : public Root {
     virtual ~StaticRoot() {}; ///< no need to do anything, children are deleted in ~Organ()
 
     void simulate(double dt, bool silence = false) override { Organ::simulate(dt, silence); }
+
+    OrganState getState() const override; ///< Adds the StaticRoot members to the state of Organ::getState()
+    void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
 
     void initializeLaterals();
 
