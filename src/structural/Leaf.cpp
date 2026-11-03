@@ -25,7 +25,7 @@ namespace CPlantBox {
  */
 Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_,
            int pni, bool moved, int oldNON)
-    : Organ(id, param, alive, active, age, length, partialIHeading_, pni, moved, oldNON) {}
+    : Organ(id, param, alive, active, age, length, partialIHeading_, pni, moved, oldNON), beta(0.) {}
 
 /**
  * Constructor
