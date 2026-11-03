@@ -7,6 +7,11 @@ import numpy as np
 import pandas as pd
 import plantbox as pb
 
+# depth (cm) down to which the temperature profile / scale elongation grid is defined,
+# matches the depth of the soil domain (SOIL_SPACE_PARAMS)
+PROFILE_DEPTH = 500
+PROFILE_RESOLUTION = 10  # cm, spacing of the soil temperature depths
+
 
 def make_seed(
     base_seed: int,
@@ -47,8 +52,11 @@ def load_soil_temperatures(
     """
 
     if filepath.suffix == ".csv":
-        # implement version to use csv instead
-        pass
+        df_soil_temp = pd.read_csv(filepath, index_col="date", parse_dates=True)
+        df_soil_temp = df_soil_temp.drop(
+            columns=df_soil_temp.columns[df_soil_temp.columns.str.startswith("source_")]
+        )
+        return df_soil_temp.loc[start_date:end_date]
     elif filepath.suffix == ".pkl":
         df_soil_temp = pd.read_pickle(filepath)
         return df_soil_temp.loc[start_date:end_date]
@@ -71,18 +79,12 @@ def initialize_soil_temperature(
         np.ndarray: Array of soil temperatures at different depths.
     """
 
-    soil_temp = np.zeros((14,))
+    measured = df_soil_temp.iloc[time_step].to_numpy(dtype=float)
 
-    soil_temp[0] = df_soil_temp["10"].iloc[time_step]
-    soil_temp[1] = df_soil_temp["20"].iloc[time_step]
-    soil_temp[2] = df_soil_temp["30"].iloc[time_step]
-    soil_temp[3] = df_soil_temp["40"].iloc[time_step]
-    soil_temp[4] = df_soil_temp["50"].iloc[time_step]
-    # soil_temp[5] = df_soil_temp['60'].iloc[time_step] #only 1995 has values for 60cm (others have a second 10cm column)
-
-    soil_temp[5:] = soil_temp[
-        4
-    ]  # anything below measured data depth set to value at 50cm
+    # one value per 10cm layer (+1 for the lower grid boundary), anything below
+    # the deepest data depth set to the value at that depth
+    n_values = PROFILE_DEPTH // PROFILE_RESOLUTION + 1
+    soil_temp = np.pad(measured, (0, n_values - measured.size), mode="edge")
 
     return soil_temp
 
@@ -99,7 +101,7 @@ def compute_temperature_scaling(soil_temp: np.array, dataset) -> np.ndarray:
         np.ndarray: Array of temperature scaling factors.
     """
 
-    scales = np.ones((14,))
+    scales = np.ones_like(soil_temp)
 
     for depth in range(soil_temp.size):
         if soil_temp[depth] > dataset.TEMP_MAX or soil_temp[depth] < dataset.TEMP_MIN:
@@ -137,6 +139,6 @@ def create_scale_elongation_grid(scales: np.array) -> pb.EquidistantGrid1D:
         pb.EquidistantGrid1D: Equidistant grid with scale elongation data.
     """
 
-    scale_elongation = pb.EquidistantGrid1D(0, -150, 15)
+    scale_elongation = pb.EquidistantGrid1D(0, -PROFILE_DEPTH, scales.size)
     scale_elongation.data = scales
     return scale_elongation

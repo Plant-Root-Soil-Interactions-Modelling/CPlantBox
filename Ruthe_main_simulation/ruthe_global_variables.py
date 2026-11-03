@@ -85,7 +85,7 @@ class RutheConfig:
 
     # File paths (string or Path; leave empty and set externally)
     PATH_TO_SOIL_TEMPERATURE_DATA: str | Path = ""
-    PATH_TO_PLANT_PARAMETERS: str | Path = ""
+    PATH_TO_PLANT_PARAMETERS=DATA_RUTHE_RAW / "wheat.xml"
     PATH_TO_SOIL_CORE_DATA: str | Path = ""
     PATH_TO_MINIRHIZOTRON_DATA_1: str | Path = ""
     PATH_TO_MINIRHIZOTRON_DATA_2: str | Path = ""
@@ -94,8 +94,9 @@ class RutheConfig:
 
     # Simulation parameters
     SIMULATION_TIME: int = 277  # days
+    SOIL_CORE_DAY: int = 277  # day of soil core sampling, soil core simulation stops here
     TIME_STEP: int = 1  # days
-    N_SIMULATION_RUNS: int = 3  # number of simulation runs
+    N_SIMULATION_RUNS: int = 40  # number of simulation runs
     BASE_SEED_PLANT: int = 34567
     BASE_SEED: int = 56789
     BASE_SEED_SOIL_CORE: int = 12345
@@ -105,8 +106,8 @@ RUTHE_1994_95 = RutheConfig(
     START_DATE="19941106",
     END_DATE="19950809",
     SIMULATION_TIME=227,  # day of last measurement, total growth period actually 277 days
-    PATH_TO_SOIL_TEMPERATURE_DATA=DATA_RUTHE_PROCESSED / "bodentemp_95.pkl",
-    PATH_TO_PLANT_PARAMETERS=DATA_RUTHE_RAW / "wheat_1995_org1.xml",
+    SOIL_CORE_DAY=227,
+    PATH_TO_SOIL_TEMPERATURE_DATA=DATA_RUTHE_PROCESSED / "soil_temperature_95.csv",
     PATH_TO_SOIL_CORE_DATA=DATA_RUTHE_RAW / "SoilCores1995.csv",
     PATH_TO_MINIRHIZOTRON_DATA_1=DATA_RUTHE_RAW / "MiniRhizoDV260495.csv",
     PATH_TO_MINIRHIZOTRON_DATA_2=DATA_RUTHE_RAW / "MiniRhizoDV150595.csv",
@@ -125,8 +126,8 @@ RUTHE_1995_96 = RutheConfig(
     START_DATE="19951102",
     END_DATE="19960827",
     SIMULATION_TIME=238,  # day of last measurement, total growth period actually 300 days
-    PATH_TO_SOIL_TEMPERATURE_DATA=DATA_RUTHE_PROCESSED / "bodentemp_96.pkl",
-    PATH_TO_PLANT_PARAMETERS=DATA_RUTHE_RAW / "wheat_1996_org1.xml",
+    SOIL_CORE_DAY=238,
+    PATH_TO_SOIL_TEMPERATURE_DATA=DATA_RUTHE_PROCESSED / "soil_temperature_96.csv",
     PATH_TO_SOIL_CORE_DATA=DATA_RUTHE_RAW / "SoilCores1996.csv",
     PATH_TO_MINIRHIZOTRON_DATA_1=DATA_RUTHE_RAW / "MiniRhizo1996.csv",
     DAYS_TO_ANALYZE_MINIRHIZOTRON=[181, 195, 209, 230],
@@ -142,10 +143,10 @@ RUTHE_1995_96 = RutheConfig(
 
 RUTHE_1996_97 = RutheConfig(
     START_DATE="19961105",
-    END_DATE="19970616",
-    SIMULATION_TIME=224,
-    PATH_TO_SOIL_TEMPERATURE_DATA=DATA_RUTHE_PROCESSED / "bodentemp_97.pkl",
-    PATH_TO_PLANT_PARAMETERS=DATA_RUTHE_RAW / "wheat_1997_org1.xml",
+    END_DATE="19970812",
+    SIMULATION_TIME=240,  # day of last measurement, total growth period actually 281 days
+    SOIL_CORE_DAY=224,
+    PATH_TO_SOIL_TEMPERATURE_DATA=DATA_RUTHE_PROCESSED / "soil_temperature_97.csv",
     PATH_TO_SOIL_CORE_DATA=DATA_RUTHE_RAW / "SoilCores1997.csv",
     PATH_TO_MINIRHIZOTRON_DATA_1=DATA_RUTHE_RAW / "MiniRhizo1997.csv",
     DAYS_TO_ANALYZE_MINIRHIZOTRON=[162, 193, 207, 227, 240],
@@ -154,7 +155,7 @@ RUTHE_1996_97 = RutheConfig(
         r"16$^{\mathrm{th}}$ May, 1997",
         r"30$^{\mathrm{th}}$ May, 1997",
         r"19$^{\mathrm{th}}$ June, 1997",
-        r"02$^{\mathrm{th}}$ July, 1997",
+        r"02$^{\mathrm{nd}}$ July, 1997",
     ],
     MEASUREMENT_DAY_SOIL_CORE=r"16$^{\mathrm{th}}$ June, 1997",
 )

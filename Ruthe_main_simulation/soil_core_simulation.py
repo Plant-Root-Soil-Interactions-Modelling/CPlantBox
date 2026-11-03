@@ -274,7 +274,7 @@ def run_daily_growth_simulation(
         dataset: Module containing global variables for a certain experiment.
     """
 
-    sim_time = dataset.SIMULATION_TIME
+    sim_time = dataset.SOIL_CORE_DAY
     dt = dataset.TIME_STEP
 
     soil_temp = np.zeros((14,))

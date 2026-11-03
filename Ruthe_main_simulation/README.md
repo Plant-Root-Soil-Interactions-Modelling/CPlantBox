@@ -2,7 +2,7 @@
 
 This repository contains the analysis and visualization code accompanying:
 
-Hack J., Ullah S., Leitner D., Vanderborght J., Kage H., Schnepf A. XXXX. Simulating soil-temperature-driven seasonal and interannual variation in winter wheat root development under field conditions and comparing perirhizal radius estimates with CPlantBox. XXX
+Hack J., Ullah S., Leitner D., Vanderborght J., Kage H., Schnepf A. XXXX. From field data to perirhizal radii: soil-temperature-dependent 3D root system architecture simulations of three winter wheat seasons with a unified parameter set. XXX
 
 Please cite the above publication when using this code.
 
@@ -48,10 +48,10 @@ The data/ folder contains the input data used by the simulations and analyses:
 data_raw/ conains:  
     - CSV files of the soil core and minirhizotron data from the field  
     - Excel files of the climate data for 1994-98  
-    - XML files with the root system architectural parameters
+    - XML file with the root system architectural parameters
 
 data_processed/ contains:  
-    - pickle files of the soil temperature for the three growing periods  
+    - CSV files of the soil temperature for the three growing periods  
     - CSV versions of the climate data Excel files  
     - cleaned climate data CSVs
 

@@ -32,10 +32,10 @@ from simulation_utils import (
 # Set parameters for the different vegetation periods
 # 1995: RUTHE_1994_95, 227
 # 1996: RUTHE_1995_96, 238
-# 1997: RUTHE_1996_97, 224
-DATASET = RUTHE_1996_97
-SOIL_CORE_DAY = 224
-year = 1997
+# 1997: RUTHE_1996_97, 240
+DATASET = RUTHE_1994_95
+SOIL_CORE_DAY = 227
+year = 1995
 
 SEED = 56789
 
@@ -44,8 +44,8 @@ SEED = 56789
 # - False: generic change-of-variables via Jacobian
 USE_ANALYTIC_RLD_TO_RADIUS_PDF = True
 
-CV_RLD_A: float = -35.49029721531007
-CV_RLD_B: float = 39.075961056298176
+CV_RLD_A: float = -71.71101126734618
+CV_RLD_B: float = 38.76350124842039
 
 def cv_from_rld(rld: float) -> float:
     return CV_RLD_A * np.log10(rld) + CV_RLD_B
@@ -355,7 +355,13 @@ class PeriodicDomainAnalyser:
 
         simulation_data = {}
 
-        for idx in sorted_layers:
+        # One panel per layer, filled row by row from the top layer to the bottom layer
+        fig = plt.figure(figsize=(11, 8))
+        panels = fig.add_gridspec(
+            2, 2, left=0.09, right=0.985, bottom=0.1, top=0.945, wspace=0.14, hspace=0.27
+        )
+
+        for panel, idx in enumerate(sorted_layers):
             z_top, z_bot = self.depth_layers[idx]
 
             layer_data = data[data["layer_id"] == idx]
@@ -453,20 +459,11 @@ class PeriodicDomainAnalyser:
             # still keep the main plot limited to (0, 0.5) while showing the peak.
             use_broken_y = bool(rld_curve) and (rld_curve[3] > 0.5)
 
-            # Deterministic layout (avoid tight_layout differences between 1-axes and broken-axes plots)
-            # Use fixed margins so layout stays identical across plot types.
-            fig_left = 0.12
-            fig_right = 0.78
-            fig_bottom = 0.14
-            fig_top = 0.86
-
             if use_broken_y:
-                fig, (ax_top, ax_bot) = plt.subplots(
-                    2,
-                    1,
-                    sharex=True,
-                    figsize=(6, 4),
-                    gridspec_kw={"height_ratios": [1, 3], "hspace": 0.05},
+                ax_top, ax_bot = (
+                    panels[panel]
+                    .subgridspec(2, 1, height_ratios=[1, 3], hspace=0.05)
+                    .subplots(sharex=True)
                 )
 
                 # Ensure the top axes (and its legend) draws above the bottom axes.
@@ -492,7 +489,7 @@ class PeriodicDomainAnalyser:
                 axes_main = ax_bot
                 axes_peak = ax_top
             else:
-                fig, ax = plt.subplots(figsize=(6, 4))
+                ax = fig.add_subplot(panels[panel])
                 axes_main = ax
                 axes_peak = None
 
@@ -502,7 +499,7 @@ class PeriodicDomainAnalyser:
                 density,
                 width=dx,
                 alpha=0.5,
-                label="Histogram (volume-weighted PDF)",
+                label="Histogram",
             )
 
             # --- plot lognormal fit on main axis ---
@@ -557,39 +554,12 @@ class PeriodicDomainAnalyser:
                     )
 
             # --- formatting ---
-            title = f"Depth {max(z_top, z_bot)} to {min(z_top, z_bot)} cm"
-            fig.suptitle(title, y=0.95)
-
-            xlabel = "Perirhizal radius (mm)"
-            ylabel = "Volume-weighted probability density (1/mm)"
-
-            axes_main.set_xlabel(xlabel)
-            if use_broken_y:
-                # Center the y-label across both panels for broken-axis plots
-                axes_main.set_ylabel("")
-                fig.text(0.04, 0.5, ylabel, ha="left", va="center", rotation="vertical")
-            else:
-                axes_main.set_ylabel(ylabel)
+            title_ax = axes_peak if use_broken_y else axes_main
+            title_ax.set_title(f"Depth {max(z_top, z_bot)} to {min(z_top, z_bot)} cm", fontsize=17)
+            title_ax.set_title("abcd"[panel], loc="left", fontweight="bold", fontsize=20)
 
             axes_main.set_xlim(0, 30)
             axes_main.set_ylim(0, 0.5)
-
-            # Fixed margins for consistent title/label spacing across both plot types
-            if use_broken_y:
-                fig.subplots_adjust(
-                    left=fig_left,
-                    right=fig_right,
-                    bottom=fig_bottom,
-                    top=fig_top,
-                    hspace=0.05,
-                )
-            else:
-                fig.subplots_adjust(
-                    left=fig_left,
-                    right=fig_right,
-                    bottom=fig_bottom,
-                    top=fig_top,
-                )
 
             # Legend: place inside the plot, top-right.
             handles, labels = axes_main.get_legend_handles_labels()
@@ -599,17 +569,24 @@ class PeriodicDomainAnalyser:
                     handles,
                     labels,
                     loc="upper right",
-                    fontsize="small",
+                    fontsize=13,
                     frameon=True,
                 )
                 leg.set_zorder(10)
 
-            # --- save per layer ---
-            path = f"{output_prefix}_layer_{idx}_lognormal.png"
-            plt.savefig(path)
-            plt.close()
+        # Axis labels are shared by all panels
+        fig.supxlabel("Perirhizal radius (mm)", y=0.015, fontsize=17)
+        fig.supylabel("Volume-weighted probability density (1/mm)", x=0.015, fontsize=17)
 
-            print(f"Saved {path}")
+        for ax in fig.axes:
+            ax.tick_params(labelsize=15)
+
+        # --- save combined figure ---
+        path = f"{output_prefix}_lognormal_simple_40_runs.png"
+        fig.savefig(path, dpi=300)
+        plt.close(fig)
+
+        print(f"Saved {path}")
 
         print("Simulation parameters:", simulation_data)
 
