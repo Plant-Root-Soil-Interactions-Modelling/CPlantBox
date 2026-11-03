@@ -54,6 +54,8 @@ using OrganState = std::unordered_map<std::string, std::vector<double>>;
 class Organ : public std::enable_shared_from_this<Organ> {
 
 public:
+  friend class Stem;
+
   Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni,
         bool moved = false, int oldNON = 0); ///< Constructs an organ from explicit state; tree links must be set by the caller
   Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double delay,
@@ -97,6 +99,7 @@ public:
   double calcCreationTime(double length, double dt); ///< Returns the analytical creation time of a node at @p length along the organ [days]
 
   /* geometry */
+  virtual bool hasRelCoord() const { return false; }           ///< Returns true if nodes are stored in relative form (Stem, Leaf, and roots carried by them)
   virtual int getNumberOfNodes() const { return nodes.size(); }          ///< Returns the number of nodes
   int getNumberOfSegments() const;                                       ///< Returns the number of polyline segments (nodes - 1), clamped to zero
   Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< Returns the absolute coordinate of the organ's attachment point on the parent
@@ -115,9 +118,6 @@ public:
   Vector3d getInitialHeading() const;         ///< Returns the absolute initial heading when the organ was created
   double dx() const;                     ///< Returns the maximal axial segment length from the organ random parameter [cm]
   double dxMin() const;                  ///< Returns the minimal axial segment length from the organ random parameter [cm]
-
-  void moveOrigin(int idx);                                    ///< Updates the parent attachment node index (used during internodal growth)
-  virtual bool hasRelCoord() const { return false; }           ///< Returns true if nodes are stored in relative form (Stem, Leaf, and roots carried by them)
 
   /* last time step */
   virtual bool hasMoved() const { return moved; };             ///< Returns true if any node moved during the last simulate() call

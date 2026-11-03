@@ -283,19 +283,6 @@ void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
 }
 
 /**
- * @brief Updates the parent attachment node index.
- *
- * Used during internodal (stem) growth.  Also updates the first nodeId to match
- * the new attachment node.
- *
- * @param idx  New local parent node index.
- */
-void Organ::moveOrigin(int idx) {
-    this->parentNI = idx;
-    nodeIds.at(0) = getParent()->getNodeId(idx);
-}
-
-/**
  * @brief Adds a node using the next global index from the organism.
  *
  * Convenience wrapper around addNode(n, id, t, index, shift) that fetches

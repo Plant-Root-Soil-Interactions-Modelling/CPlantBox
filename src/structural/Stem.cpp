@@ -539,7 +539,8 @@ void Stem::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
         for (auto kid : children) { // if carries children after the added node, update their "parent node index"
 
             if ((kid->getParentNI() >= index - 1) && (kid->getParentNI() > 0)) {
-                kid->moveOrigin(kid->getParentNI() + 1);
+                kid->incParentNI();
+                kid->nodeIds.at(0) = kid->getParent()->getNodeId(kid->getParentNI());
             }
         }
         for (int numnode = 0; numnode < localId_linking_nodes.size(); numnode++) { // update the local ids of the linking nodes
