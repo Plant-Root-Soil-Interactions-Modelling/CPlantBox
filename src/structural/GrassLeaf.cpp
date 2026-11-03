@@ -378,7 +378,9 @@ void GrassLeaf::setState(const OrganState &state, const std::map<int, std::share
     }
     std::vector<double> tn;
     if (stateGet(state, "turtleNodes", tn)) {
+        const int initialNodeIndex = turtle.getInitialNodeIndex();
         turtle.clearNodes();
+        turtle.setInitialNodeIndex(initialNodeIndex);
         for (size_t i = 0; i + 3 < tn.size(); i += 4) {
             turtle.addNodeBack(tn[i + 3], tn[i], tn[i + 1], tn[i + 2]);
         }
