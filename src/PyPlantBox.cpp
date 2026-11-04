@@ -1252,7 +1252,10 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getNodeTips", &MycorrhizalPlant::getNodeTips)
         .def("getNodeColonizationTime", &MycorrhizalPlant::getNodeColonizationTime)
         .def("getNodeColonizations", &MycorrhizalPlant::getNodeColonizations)
-        .def("turnOffSidePetriDish", &MycorrhizalPlant::turnOffSidePetriDish);
+        .def("turnOffSidePetriDish", &MycorrhizalPlant::turnOffSidePetriDish)
+        .def("turnOffRoots", &MycorrhizalPlant::turnOffRoots, py::arg("growth") = true, py::arg("colonization") = true)
+        .def_readonly("rootGrowthOff", &MycorrhizalPlant::rootGrowthOff)
+        .def_readonly("rootColonizationOff", &MycorrhizalPlant::rootColonizationOff);
 
     /**
      * Perirhizal.h

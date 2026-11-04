@@ -296,13 +296,16 @@ def countGrowingTips(plant, geometry, window, ot = 5):
     return n
 
 def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False, verbose = False,
-                   max_wait_days = None, stats = None, min_growing_tips = None, stall_fraction = None, growing_window = 0.25, animation_dir = "animation/"):
+                   max_wait_days = None, stats = None, min_growing_tips = None, stall_fraction = None, growing_window = 0.25, animation_dir = "animation/",
+                   turn_off_root_growth = False, turn_off_colonization = False):
     # set up simulation
     # max_wait_days: stop waiting for t* (10 cm hyphae behind the barrier) after this many simulated days, then returns mycp, None, None
     #                (None = wait without limit, as before). A limit in simulated time is reproducible, a wall clock limit is not.
     # min_growing_tips: stop the hyphae phase after t* as soon as fewer tips than this grow behind the barrier (created a node in small_hyphae_dish
     #                   within the last growing_window days), then returns mycp, None, None with status "stalled" (None = no check)
     # stall_fraction: same, if the number of growing tips falls below stall_fraction times its maximum so far (e.g. 0.5, None = no check)
+    # turn_off_root_growth, turn_off_colonization: at t*, when the hyphae have grown to the other side of the barrier, the roots stop growing,
+    #                   or stop colonization and the emergence of new hyphae from the roots (mycp.turnOffRoots), the hyphae keep growing
     # stats: optional dict, filled with "status" ("ok", "not_crossed" or "stalled"), the wall clock time of each phase [s] ("wall_root", "wall_wait",
     #        "wall_hyphae"), "t_root_end" (simulation time after the root phase), "wait_days" (simulated days until t*, or until the stop),
     #        the length behind the barrier after each waiting step ("crossed_t", "crossed_len") and, with min_growing_tips, the number of
@@ -364,6 +367,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     t_wall = time.perf_counter()
 
     time_star = mycp.getSimTime()
+    if turn_off_root_growth or turn_off_colonization:
+        mycp.turnOffRoots(turn_off_root_growth, turn_off_colonization)
     growing_t, growing_n = [], []
     for i in range(0, hours_hyphae):
         # if (i % 10 == 0):

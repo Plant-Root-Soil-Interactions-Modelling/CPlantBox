@@ -48,6 +48,7 @@ public:
     void setColonization(int i, int inf, double t);
 
 protected:
+    bool colonizationOff() const; ///< colonization and hyphal emergence turned off, @see MycorrhizalPlant::turnOffRoots
     void createHyphae(int pni);
     int hyphalTreeIndex = -1;
     void primaryColonization(double dt, bool silence);

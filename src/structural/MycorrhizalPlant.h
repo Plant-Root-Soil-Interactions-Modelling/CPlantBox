@@ -37,6 +37,11 @@ class MycorrhizalPlant :public Plant {
 
     int getNextHyphalTreeIndex() { hyphalTreeIndex++; return hyphalTreeIndex; }
 	void turnOffSidePetriDish(double minnodex, double maxnodez, double maxnodey, double minnodey) ;
+    ///< turns off root functions, also for roots that emerge later; the hyphae keep growing. growth: roots stop growing (no elongation, no laterals),
+    ///< colonization: no primary and secondary colonization and no new hyphae emerge from the roots. turnOffRoots(false, false) turns everything on again
+    void turnOffRoots(bool growth = true, bool colonization = true) { rootGrowthOff = growth; rootColonizationOff = colonization; }
+    bool rootGrowthOff = false; ///< @see turnOffRoots
+    bool rootColonizationOff = false; ///< @see turnOffRoots
 
     std::shared_ptr<SDF_RootSystem> sdf; // direction from tip towards root base
 

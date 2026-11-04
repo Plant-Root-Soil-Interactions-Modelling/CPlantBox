@@ -1,6 +1,7 @@
 #include "mycorrhizalrootparameter.h"
 #include "hyphaeparameter.h"
 #include "MycorrhizalRoot.h"
+#include "MycorrhizalPlant.h"
 #include "Hyphae.h"
 #include "Root.h"
 #include "Stem.h"
@@ -249,15 +250,29 @@ void MycorrhizalRoot::secondaryColonization(bool silence, double dt){
     }
 }
 
+bool MycorrhizalRoot::colonizationOff() const {
+    auto mp = std::dynamic_pointer_cast<MycorrhizalPlant>(plant.lock());
+    return mp && mp->rootColonizationOff;
+}
+
 void MycorrhizalRoot::simulateSecondaryColonization(double dt) {
+    if (colonizationOff()) {
+        return;
+    }
     secondaryColonization(false,dt);
 }
 
 void MycorrhizalRoot::simulatePrimaryColonization(double dt) {
+    if (colonizationOff()) {
+        return;
+    }
     primaryColonization(dt,false);
 }
 
 void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
+    if (colonizationOff()) { // hyphae emerge only from colonized nodes in the time step they are colonized
+        return;
+    }
     if (getRootRandomParameter()->highresolution >= 1) { // Version where at every node there is one hypha created
         for (size_t i = 1; i < nodes.size(); i++) {
             if (colonized.at(i) > 0 && emergedHyphae.at(i) == 0){ // if the current node is colonized and the number of hyphae to be created is reached
@@ -287,7 +302,7 @@ void MycorrhizalRoot::simulateHyphalGrowth(double dt, bool verbose) {
 
 void MycorrhizalRoot::simulateColonization(double dt, bool verbose) {
 
-    if (this->nodes.size()>1) {
+    if (this->nodes.size()>1 && !colonizationOff()) {
 
         //Primary Colonization
         primaryColonization(dt,verbose);
@@ -314,7 +329,18 @@ void MycorrhizalRoot::simulateColonization(double dt, bool verbose) {
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
+    // root growth turned off (MycorrhizalPlant::turnOffRoots): inactive roots do not elongate and create no laterals,
+    // but Root::simulate still simulates their children (hyphae). Root::simulate sets active again from the length, so it is reset afterwards
+    // (colonization and hyphal emergence are turned off in the functions below, see colonizationOff)
+    auto mp = std::dynamic_pointer_cast<MycorrhizalPlant>(plant.lock());
+    bool off = mp && mp->rootGrowthOff;
+    if (off) {
+        active = false;
+    }
     Root::simulate(dt,verbose);
+    if (off) {
+        active = false;
+    }
     simulateColonization(dt,verbose);
     simulateHyphalGrowth(dt,verbose);
 }

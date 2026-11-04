@@ -68,9 +68,10 @@ def summary(name, x, unit = "", test_zero = False):
     print(s)
     return {"mean": x.mean(), "lo": lo, "hi": hi, "p": p, "n": len(x)}
 
-def annotate(ax, text):
-    # result of the panel in its upper left corner
-    ax.text(0.03, 0.97, text, transform=ax.transAxes, va="top", ha="left", fontsize=8.5,
+def annotate(ax, text, lower_right = False):
+    # result of the panel in its upper left (or lower right) corner
+    x, y, va, ha = (0.97, 0.03, "bottom", "right") if lower_right else (0.03, 0.97, "top", "left")
+    ax.text(x, y, text, transform=ax.transAxes, va=va, ha=ha, fontsize=8.5,
             bbox=dict(boxstyle="round,pad=0.4", facecolor="white", edgecolor="0.8"))
 
 def per_seed_slopes(data, y):
@@ -148,6 +149,7 @@ if len(vel):
     ax.axvline(vel["slope"].mean(), color="k", ls="--", lw=1)
 ax.set_xlabel("Slope of the lines in 1a (h/mm) = time the front needs per mm")
 ax.set_ylabel("Number of seeds")
+ax.yaxis.get_major_locator().set_params(integer=True)
 ax.set_title("1b. How fast does the front move?", fontsize=10)
 if res_slope is not None:
     annotate(ax, f"dashed: mean slope {ci_text(res_slope)} h/mm\n"
@@ -161,7 +163,7 @@ ax.set_xlabel("Filament density the passing tip wave lays down\n"
               r"$v_{tip} \cdot \int n\,dt = v_{tip} \cdot 4 K_2 / \lambda_{tips}$ ($\mu$m mm$^{-2}$)")
 ax.set_ylabel("Final filament density in the ring $K_1$ ($\\mu$m mm$^{-2}$)")
 ax.set_title("3. Is the filament length laid down by the tips of the front?", fontsize=10)
-annotate(ax, "one point = one ring, dashed: 1:1 (all length from the front tips)\n"
+annotate(ax, "one point = one ring\ndashed: 1:1 (all length from the front tips)\n"
              f"ratio $K_1$ / expected: {ci_text(res_ratio, '{:.2f}')}\n"
              r"$\lambda_{length} / \lambda_{tips}$: " + ci_text(res_lam, '{:.2f}'))
 labels = {"K1": "Final filament density in the ring $K_1$ ($\\mu$m mm$^{-2}$)",
@@ -178,7 +180,7 @@ for ax, (y, (data, unit)) in zip(axes[1], shape.items()):
         ax.plot(rr, s["intercept"] + s["slope"] * rr, lw=0.6, alpha=0.6)
     if y == "K1":
         ax.axhline(paper["K1"], color="k", ls="--", lw=1, label="paper (Fig. 2b)")
-        ax.legend(frameon=False, loc="upper right")
+        ax.legend(frameon=False, loc="lower left")
     ax.set_xlabel("Distance from centre $r$ (mm)")
     ax.set_ylabel(labels[y])
     ax.set_title(titles[y], fontsize=10)
