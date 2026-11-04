@@ -738,7 +738,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("hyphalEmergenceDensity", &MycorrhizalRootRandomParameter::hyphalEmergenceDensity);
     py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")
         .def(py::init<>())
-        .def(py::init<int, double, double, const std::vector<double> &, double, double, double, double, double, double, bool>())
+        .def(py::init<int, double, double, const std::vector<double> &, double, double, double, double, bool, double, double>())
         .def_readwrite("lmbd", &MycorrhizalRootSpecificParameter::lmbd)
         .def_readwrite("vi", &MycorrhizalRootSpecificParameter::vi);
     /*
@@ -772,9 +772,10 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("ana", &HyphaeRandomParameter::ana);
     py::class_<HyphaeSpecificParameter, OrganSpecificParameter, std::shared_ptr<HyphaeSpecificParameter>>(m, "HyphaeSpecificParameter")
         .def(py::init<>())
-        .def(py::init<int, double, double, std::vector<double>, double, double, double, double, double, bool>())
+        .def(py::init<int, double, double, std::vector<double>, double, double, double, double, double, double, bool>())
         .def("getK", &HyphaeSpecificParameter::getK)
         .def_readwrite("v", &HyphaeSpecificParameter::v)
+        .def_readwrite("b_prob", &HyphaeSpecificParameter::b_prob)
         .def_readwrite("b", &HyphaeSpecificParameter::b)
         .def_readwrite("hlt", &HyphaeSpecificParameter::hlt)
         .def_readwrite("theta", &HyphaeSpecificParameter::theta)
@@ -996,6 +997,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("toString", &Hyphae::toString)
             .def("getHyphaeRandomParameter", &Hyphae::getHyphaeRandomParameter)
             .def("createLateral", &Hyphae::createLateral)
+            .def("getHyphalTreeIndex", &Hyphae::getHyphalTreeIndex)
+            .def("getMergePoint", &Hyphae::getMergePoint)
 			.def_readwrite("mergePointID", &Hyphae::mergePointID)
 			.def("getMergedHyphae", &Hyphae::getMergedHyphae)
             .def("param", &Hyphae::param);
@@ -1242,6 +1245,9 @@ PYBIND11_MODULE(plantbox, m) {
         .def("simulateHyphalGrowth", &MycorrhizalPlant::simulateHyphalGrowth)
         .def("simulateHyphae", &MycorrhizalPlant::simulateHyphae)
         .def("simulateColonization", &MycorrhizalPlant::simulateColonization)
+        .def("simulatePrimaryColonization", &MycorrhizalPlant::simulatePrimaryColonization)
+        .def("simulateSecondaryColonization", &MycorrhizalPlant::simulateSecondaryColonization)
+        .def("simulateAnastomosis", &MycorrhizalPlant::simulateAnastomosis)
         .def("getAnastomosisPoints", &MycorrhizalPlant::getAnastomosisPoints)
         .def("getNodeTips", &MycorrhizalPlant::getNodeTips)
         .def("getNodeColonizationTime", &MycorrhizalPlant::getNodeColonizationTime)

@@ -45,3 +45,4 @@ echo "Task $SLURM_ARRAY_TASK_ID: seed $SEED on $(hostname), start $(date)"
 # since slurm accounting is not available on the cluster (and /usr/bin/time is not installed on the nodes)
 python3 petridishsimauto.py "$SEED"
 echo "Seed $SEED done $(date)"
+ 
