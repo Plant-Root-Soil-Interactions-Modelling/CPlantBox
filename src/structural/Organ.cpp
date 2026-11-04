@@ -666,13 +666,29 @@ Vector3d Organ::segmentHeading(int n) const {
 }
 
 /**
- * @brief Returns the absolute heading at node @p n, calculated from the relative node coordinates.
+ * @brief Returns the absolute heading at node @p n.
  *
  * The heading at node 0 is the initial heading, the heading at node j is the direction of the segment [j-1, j].
- * Negative @p n is treated as the last node.
- * Override for organs with absolute coordinates (Root), other geometry (GrassLeaf), or bending (Leaf).
+ * Negative @p n is treated as the last node. Relative-coordinate organs use their segment coordinates;
+ * absolute-coordinate organs use the direction between their absolute node positions.
  */
-Vector3d Organ::heading(int n) const { return segmentHeading(n); }
+Vector3d Organ::heading(int n) const {
+    if (hasRelCoord()) {
+        return segmentHeading(n);
+    }
+
+    int numberOfNodes = getNumberOfNodes();
+    if (n < 0) {
+        n = numberOfNodes - 1;
+    }
+    if (numberOfNodes > 1 && n > 0) {
+        n = std::min(numberOfNodes - 1, n);
+        Vector3d h = getNode(n).minus(getNode(n - 1));
+        h.normalize();
+        return h;
+    }
+    return getInitialHeading();
+}
 
 /**
  * @brief Returns organ volume [cm³].
@@ -689,6 +705,16 @@ double Organ::orgVolume(double length_, bool realized) const {
     }
     return M_PI * length_ * param_->a * param_->a; // cylinder
 };
+
+/**
+ * @brief Returns the organ length [cm] corresponding to a volume, assuming a cylinder.
+ *
+ * @param volume_ Organ volume [cm³].
+ * @return Organ length [cm].
+ */
+double Organ::orgVolume2Length(double volume_) {
+    return volume_ / (M_PI * param_->a * param_->a);
+}
 
 /**
  * @brief Returns the growth increment vector for the next segment.

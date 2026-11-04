@@ -98,26 +98,6 @@ bool Root::hasRelCoord() const {
 }
 
 /**
- * Absolute heading at node n: direction of the segment [n-1, n], or the initial heading for n == 0.
- * Roots carried by a stem or leaf have relative coordinates, @see Organ::heading
- */
-Vector3d Root::heading(int n) const {
-    // if (hasRelCoord()) {
-    //     return Organ::heading(n);
-    // } % DL even if root is attached to stem, we leave coordinates absolute, just shift position
-    if (n < 0) {
-        n = nodes.size() - 1;
-    }
-    if ((nodes.size() > 1) && (n > 0)) {
-        n = std::min(int(nodes.size()) - 1, n);
-        Vector3d h = nodes.at(n).minus(nodes.at(n - 1));
-        h.normalize();
-        return h;
-    }
-    return getInitialHeading();
-}
-
-/**
  * Simulates the development of the organ in a time span of @param dt days.
  *
  * @param dt        time step [day]

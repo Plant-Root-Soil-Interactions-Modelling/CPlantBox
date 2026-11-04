@@ -114,7 +114,7 @@ public:
   void addNode(Vector3d n, int id, double t) { addNode(n, id, t, size_t(0), false); } ///< pybind convenience overload (no index or shift)
   void addNode(Vector3d n, double t) { addNode(n, t, size_t(0), false); };            ///< pybind convenience overload (no id, index, or shift)
   std::vector<Vector2i> getSegments() const;                                          ///< Returns all polyline segments as pairs of global node indices
-  virtual Vector3d heading(int n) const; ///< Returns the absolute heading at node @p n (direction of segment [n-1, n], or initial heading if n==0); calculated from relative coordinates, override for absolute coordinates
+  virtual Vector3d heading(int n) const; ///< Returns the absolute heading at node @p n (direction of segment [n-1, n], or initial heading if n==0)
   Vector3d getInitialHeading() const;         ///< Returns the absolute initial heading when the organ was created
   double dx() const;                     ///< Returns the maximal axial segment length from the organ random parameter [cm]
   double dxMin() const;                  ///< Returns the minimal axial segment length from the organ random parameter [cm]
@@ -144,9 +144,7 @@ public:
   virtual double
   orgVolume(double length_ = -1.,
             bool realized = false) const; ///< Returns organ volume [cm³] for the current or a specified length; cylinder approximation by default
-  virtual double orgVolume2Length(double volume_) {
-    return volume_ / (M_PI * getParameter("radius") * getParameter("radius"));
-  } ///< Inverse of orgVolume(): returns the organ length [cm] that corresponds to @p volume_
+  virtual double orgVolume2Length(double volume_); ///< Inverse of orgVolume(): returns the organ length [cm] that corresponds to @p volume_
 
 protected:
 
