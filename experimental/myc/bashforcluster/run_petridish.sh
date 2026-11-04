@@ -17,9 +17,9 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=cpu256
-#SBATCH --time=10:00:00
-#SBATCH --mem=6G
-#SBATCH --mail-type=BEGIN,TIME_LIMIT_50,END
+#SBATCH --time=5:00:00
+#SBATCH --mem=3G
+#SBATCH --mail-type=BEGIN,TIME_LIMIT_80,END
 #SBATCH --mail-user=an.heck@fz-juelich.de
 #SBATCH --output=./slurmOut/slurm-%A_%a.out
 #SBATCH --error=./slurmErr/slurm-%A_%a.err
