@@ -40,10 +40,10 @@ def load_soil_temperatures(
     filepath: Path, start_date: str, end_date: str
 ) -> pd.DataFrame:
     """
-    Load soil temperature data from CSV or pickle file.
+    Load soil temperature data from CSV.
 
     Args:
-        filepath (Path): Path to the CSV or pickle file.
+        filepath (Path): Path to the CSV.
         start_date (str): Start date for filtering (inclusive).
         end_date (str): End date for filtering (inclusive).
 
@@ -57,12 +57,9 @@ def load_soil_temperatures(
             columns=df_soil_temp.columns[df_soil_temp.columns.str.startswith("source_")]
         )
         return df_soil_temp.loc[start_date:end_date]
-    elif filepath.suffix == ".pkl":
-        df_soil_temp = pd.read_pickle(filepath)
-        return df_soil_temp.loc[start_date:end_date]
     else:
         raise ValueError(
-            "Unsupported file format for soil temperatures. Use csv or pickle file instead."
+            "Unsupported file format for soil temperatures. Use csv file instead."
         )
 
 
