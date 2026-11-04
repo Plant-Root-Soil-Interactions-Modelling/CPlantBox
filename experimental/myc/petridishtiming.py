@@ -7,7 +7,8 @@ import AMFAnalysis as amf
 # Run statistics of the per-seed results written by petridishsimauto.py: how long (simulated) it takes until t* (10 cm hyphae
 # behind the barrier), how long each phase takes on the wall clock, and which seeds were stopped by max_wait_days.
 # Used to choose max_wait_days and the SLURM time limit.
-results_dir = "petridish_results/densities/"
+out = amf.petridishOutputDirs() # below $PETRIDISH_OUT (cluster) or petridish_results
+results_dir = out["densities"]
 quantile = 0.95
 
 simulations = [sim for sim in amf.load_simulations(results_dir + "seed_*.npz") if "status" in sim]
@@ -94,5 +95,5 @@ ax.set_title("Simulated vs. wall clock waiting time", fontsize=10)
 for ax in axes.flat:
     ax.spines[["top", "right"]].set_visible(False)
 plt.tight_layout()
-plt.savefig("petridish_timing.png", dpi=200, bbox_inches="tight")
-print("written petridish_timing.png")
+plt.savefig(out["plots"] + "petridish_timing.png", dpi=200, bbox_inches="tight")
+print("written " + out["plots"] + "petridish_timing.png")

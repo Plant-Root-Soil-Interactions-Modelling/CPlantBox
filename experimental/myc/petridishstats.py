@@ -13,7 +13,8 @@ import AMFAnalysis as amf
 # 3. consistency: the length behind the front is grown by the tips, K1 ~ v_tip * integral of the tip density = v_tip * 4 K2 / lamda_tips
 # The rings of one seed are not independent, so every quantity is first reduced to one value per seed (slope, median),
 # the seeds are the independent replicates (t-test, bootstrap confidence interval over the seeds).
-results_dir = "petridish_results/densities/"
+out = amf.petridishOutputDirs() # below $PETRIDISH_OUT (cluster) or petridish_results
+results_dir = out["densities"]
 R2_min_length = 0.9   # minimal coefficient of determination of the sigmoid fit of the length density
 R2_min_tips = 0.5     # minimal coefficient of determination of the sigmoid derivative fit of the tip density
 saturation_min = 0.8  # for K1: the length density at the end has to reach this fraction of the fitted saturation (else K1 is extrapolated)
@@ -37,7 +38,7 @@ for f in amf.collectArrivalFits(simulations):
     rows.append({"seed": f["seed"], "ring": f["ring"], "r": r_ring[f["ring"]], "t_n": t_n, "K1": K1, "lam_len": lam_len, "R2_length": f["R2_length"],
                  "saturation": f["rho_data"][-1] / K1, "K2": K2, "lam_tip": lam_tip, "t_tip": t_tip, "width": fwhm / lam_tip, "R2_tips": f["R2_tips"]})
 df = pd.DataFrame(rows)
-df.to_csv("petridish_wave_fits.csv", index=False)
+df.to_csv(out["base"] + "petridish_wave_fits.csv", index=False)
 good = df[df["R2_length"] >= R2_min_length]
 good_tips = good[good["R2_tips"] >= R2_min_tips]
 good_K1 = good[good["saturation"] >= saturation_min]
@@ -156,5 +157,5 @@ for ax, (y, (data, unit)) in zip(axes[1], shape.items()):
 for ax in axes.flat:
     ax.spines[["top", "right"]].set_visible(False)
 plt.tight_layout()
-plt.savefig("petridish_stats.png", dpi=200, bbox_inches="tight")
-print("\nwritten petridish_stats.png")
+plt.savefig(out["plots"] + "petridish_stats.png", dpi=200, bbox_inches="tight")
+print("\nwritten " + out["plots"] + "petridish_stats.png")

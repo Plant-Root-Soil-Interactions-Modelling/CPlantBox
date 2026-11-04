@@ -8,10 +8,21 @@ import matplotlib.pyplot as plt
 import plantbox.visualisation.vtk_plot as vp
 import networkx as nx
 import glob
+import os
 from scipy.interpolate import interp1d
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import pdist
 from scipy.spatial.distance import cdist
+
+def petridishOutputDirs():
+    # output folders of the petri dish scripts (petridishsimauto.py, petridishcombine.py, petridishtiming.py, petridishstats.py):
+    # below the environment variable PETRIDISH_OUT (set by run_petridish.sh on the cluster), else below petridish_results in the
+    # current folder. Returns a dict with "base" (combined results), "densities" (seed_*.npz), "plots" and "animation" (vtp), each ending with "/"
+    base = os.environ.get("PETRIDISH_OUT", "petridish_results")
+    dirs = {"base": base, "densities": os.path.join(base, "densities"), "plots": os.path.join(base, "plots"), "animation": os.path.join(base, "animation")}
+    for d in dirs.values():
+        os.makedirs(d, exist_ok=True)
+    return {k: os.path.join(d, "") for k, d in dirs.items()}
 
 def getMycSegmentAnalyser(plant, write=[],filename = "write",step = 0, stdwrite = False,):
         ana = pb.SegmentAnalyser(plant)
@@ -285,7 +296,7 @@ def countGrowingTips(plant, geometry, window, ot = 5):
     return n
 
 def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False, verbose = False,
-                   max_wait_days = None, stats = None, min_growing_tips = None, stall_fraction = None, growing_window = 0.25):
+                   max_wait_days = None, stats = None, min_growing_tips = None, stall_fraction = None, growing_window = 0.25, animation_dir = "animation/"):
     # set up simulation
     # max_wait_days: stop waiting for t* (10 cm hyphae behind the barrier) after this many simulated days, then returns mycp, None, None
     #                (None = wait without limit, as before). A limit in simulated time is reproducible, a wall clock limit is not.
@@ -314,7 +325,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
         #     print("Step " + str(i) + " of " + str(nSteps))
         mycp.simulate(dt,verbose)
         if (animation):
-            getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim",step = i, stdwrite= True)    # look at roots and container
+            getMycSegmentAnalyser(mycp,filename = animation_dir + filename + "_anim",step = i, stdwrite= True)    # look at roots and container
 
     root = mycp.getOrganRandomParameter(pb.root)
     for rp in root:
@@ -359,7 +370,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
         #     print("Step " + str(i) + " of " + str(hours_hyphae))
         mycp.simulate(dt,verbose)
         if (animation):
-            getMycSegmentAnalyser(mycp,filename = "animation/" + filename + "_anim",step = i+nSteps, stdwrite= True)    # look at roots and container
+            getMycSegmentAnalyser(mycp,filename = animation_dir + filename + "_anim",step = i+nSteps, stdwrite= True)    # look at roots and container
         if min_growing_tips is not None or stall_fraction is not None:
             growing_t.append(mycp.getSimTime())
             growing_n.append(countGrowingTips(mycp, small_hyphae_dish, growing_window))
