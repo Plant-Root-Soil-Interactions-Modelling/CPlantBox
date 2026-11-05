@@ -1,0 +1,101 @@
+image, source, root, root_name, mark_type, position_from_base, diameter, angle, x, y, root_order, root_ontology, value
+Run4 E.09, Run4 E.09, 90e819e8-45d3-46ae-b968-4cd97f14f911, lat_10, Origin, 0.0, 0.0, 0.0, 17.221954, 13.973473, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 90e819e8-45d3-46ae-b968-4cd97f14f911, lat_10, Length, 0.17996725, 0.0, 0.0, 17.3725, 14.05084, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 07f87598-1fb9-4fa4-b62e-2bb5b7530639, lat_9, Origin, 0.0, 0.0, 0.0, 16.989506, 14.183379, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 07f87598-1fb9-4fa4-b62e-2bb5b7530639, lat_9, Length, 0.3122047, 0.0, 0.0, 17.24852, 14.34262, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 47100e44-a9d6-4c37-a5cf-d4487a0e4180, lat_8_01, Origin, 0.0, 0.0, 0.0, 17.17947, 14.418254, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 47100e44-a9d6-4c37-a5cf-d4487a0e4180, lat_8_01, Length, 0.10062829, 0.0, 0.0, 17.261015, 14.460342, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 821a75ca-19cb-4c04-982f-96655c06bbde, lat_8_02, Origin, 0.0, 0.0, 0.0, 17.77059, 14.008933, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 821a75ca-19cb-4c04-982f-96655c06bbde, lat_8_02, Length, 0.5935557, 0.0, 0.0, 18.322197, 14.007082, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 3cc10de1-19f5-47ed-8744-9b64109aec67, lat_8, Origin, 0.0, 0.0, 0.0, 16.42251, 14.776162, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 3cc10de1-19f5-47ed-8744-9b64109aec67, lat_8, Free Text, 0.84089553, 0.016931733, 0.40634596, 17.1704, 14.418734, 0, Root, lat_8_01
+Run4 E.09, Run4 E.09, 3cc10de1-19f5-47ed-8744-9b64109aec67, lat_8, Free Text, 1.5719081, 0.0126957055, 0.719311, 17.7673, 13.999633, 0, Root, lat_8_02
+Run4 E.09, Run4 E.09, 3cc10de1-19f5-47ed-8744-9b64109aec67, lat_8, Length, 1.8279036, 0.0, 0.0, 17.950771, 13.824198, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 1c53c426-9ab4-4487-8d0a-c25a3b1296bc, lat_7, Origin, 0.0, 0.0, 0.0, 15.885451, 15.833735, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 1c53c426-9ab4-4487-8d0a-c25a3b1296bc, lat_7, Length, 0.12365259, 0.0, 0.0, 15.949908, 15.730451, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, b3ac9349-3426-4195-8bba-30a29c0137d0, lat_6, Origin, 0.0, 0.0, 0.0, 15.927344, 15.988074, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, b3ac9349-3426-4195-8bba-30a29c0137d0, lat_6, Length, 0.6941151, 0.0, 0.0, 15.339921, 16.2723, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, c021d200-414d-49d3-abf9-3795e6bd7529, lat_5_02, Origin, 0.0, 0.0, 0.0, 15.250297, 16.57911, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, c021d200-414d-49d3-abf9-3795e6bd7529, lat_5_02, Length, 0.30380598, 0.0, 0.0, 15.302068, 16.285582, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 08f38540-a607-467d-90e5-aa2a0d4604e9, lat_5_01, Origin, 0.0, 0.0, 0.0, 15.355267, 16.646309, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 08f38540-a607-467d-90e5-aa2a0d4604e9, lat_5_01, Length, 0.21953262, 0.0, 0.0, 15.3982525, 16.436913, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 3fc7a769-cbb7-4d34-95d3-d486b1089d65, lat_5, Origin, 0.0, 0.0, 0.0, 16.327091, 17.112186, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 3fc7a769-cbb7-4d34-95d3-d486b1089d65, lat_5, Free Text, 1.1414024, 0.016551644, 3.1302302, 15.3543, 16.641233, 0, Root, lat_5_01
+Run4 E.09, Run4 E.09, 3fc7a769-cbb7-4d34-95d3-d486b1089d65, lat_5, Free Text, 1.2686977, 0.010577919, 2.5321443, 15.2484665, 16.581966, 0, Root, lat_5_02
+Run4 E.09, Run4 E.09, 3fc7a769-cbb7-4d34-95d3-d486b1089d65, lat_5, Length, 2.4045706, 0.0, 0.0, 14.218941, 16.932701, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 1bd33bbf-9487-4ecb-8536-aab00592751f, lat_4_05, Origin, 0.0, 0.0, 0.0, 14.51179, 18.745968, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 1bd33bbf-9487-4ecb-8536-aab00592751f, lat_4_05, Length, 0.3064406, 0.0, 0.0, 14.237568, 18.715832, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, ac01e25c-244d-4083-ac1f-669ade4e86ef, lat_4_06, Origin, 0.0, 0.0, 0.0, 14.330923, 18.824745, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, ac01e25c-244d-4083-ac1f-669ade4e86ef, lat_4_06, Length, 0.121853895, 0.0, 0.0, 14.233281, 18.76356, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, b5daaea8-c84c-4af1-b1bb-f9f73baa8a46, lat_4_04, Origin, 0.0, 0.0, 0.0, 15.0990305, 18.574383, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, b5daaea8-c84c-4af1-b1bb-f9f73baa8a46, lat_4_04, Length, 1.424483, 0.0, 0.0, 14.786662, 19.536184, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, a59c9ddb-ed95-4c2c-96d4-8325bfcf00c5, lat_4_02, Origin, 0.0, 0.0, 0.0, 15.991228, 18.496508, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, a59c9ddb-ed95-4c2c-96d4-8325bfcf00c5, lat_4_02, Number, 0.72041917, 0.014589509, 2.3264728, 15.3035, 18.5166, 0, Root, 1
+Run4 E.09, Run4 E.09, a59c9ddb-ed95-4c2c-96d4-8325bfcf00c5, lat_4_02, Length, 0.96689206, 0.0, 0.0, 15.279679, 18.28434, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, c506fd0f-0e40-412c-a2a7-f37cbf493bcd, lat_4_01, Origin, 0.0, 0.0, 0.0, 16.202444, 18.477404, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, c506fd0f-0e40-412c-a2a7-f37cbf493bcd, lat_4_01, Length, 0.6739384, 0.0, 0.0, 15.906051, 19.054716, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 78d5a96f-20ad-45e2-96b3-2aa08b96dad2, lat_4, Origin, 0.0, 0.0, 0.0, 16.902678, 18.311758, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 78d5a96f-20ad-45e2-96b3-2aa08b96dad2, lat_4, Free Text, 0.7277621, 0.01856832, 3.473508, 16.200966, 18.474266, 0, Root, lat_4_01
+Run4 E.09, Run4 E.09, 78d5a96f-20ad-45e2-96b3-2aa08b96dad2, lat_4, Free Text, 0.9403529, 0.01480516, 3.5857677, 15.993533, 18.495434, 0, Root, lat_4_02
+Run4 E.09, Run4 E.09, 78d5a96f-20ad-45e2-96b3-2aa08b96dad2, lat_4, Free Text, 1.220901, 0.020937096, 3.2371757, 15.718367, 18.5293, 0, Root, lat_4_03
+Run4 E.09, Run4 E.09, 78d5a96f-20ad-45e2-96b3-2aa08b96dad2, lat_4, Free Text, 1.8511624, 0.014821867, 3.281249, 15.096066, 18.5674, 0, Root, lat_4_04
+Run4 E.09, Run4 E.09, 78d5a96f-20ad-45e2-96b3-2aa08b96dad2, lat_4, Free Text, 2.4722664, 0.017090471, 3.7496917, 14.507633, 18.740967, 0, Root, lat_4_05
+Run4 E.09, Run4 E.09, 78d5a96f-20ad-45e2-96b3-2aa08b96dad2, lat_4, Free Text, 2.6683242, 0.012700024, 3.2920065, 14.329833, 18.825634, 0, Root, lat_4_06
+Run4 E.09, Run4 E.09, 78d5a96f-20ad-45e2-96b3-2aa08b96dad2, lat_4, Length, 2.7845697, 0.0, 0.0, 14.330774, 18.930037, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 49db18c5-3984-4b69-b762-87b39fe401e8, lat_3, Origin, 0.0, 0.0, 0.0, 17.578726, 19.732431, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 49db18c5-3984-4b69-b762-87b39fe401e8, lat_3, Length, 0.87006915, 0.0, 0.0, 16.930347, 20.260471, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 5336b84b-1a10-4593-945b-85e4d3f9d5ee, lat_2_01, Origin, 0.0, 0.0, 0.0, 18.202784, 21.485981, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 5336b84b-1a10-4593-945b-85e4d3f9d5ee, lat_2_01, Length, 0.43459442, 0.0, 0.0, 17.786106, 21.526413, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, e77b5ee8-beae-45a4-acbf-56fe1dabba47, lat_2_02, Origin, 0.0, 0.0, 0.0, 18.06575, 21.630217, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, e77b5ee8-beae-45a4-acbf-56fe1dabba47, lat_2_02, Length, 0.026884275, 0.0, 0.0, 18.040346, 21.62142, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 3052c699-8f41-4937-aeb5-f1b983c547d8, lat_2, Origin, 0.0, 0.0, 0.0, 18.434132, 21.27969, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 3052c699-8f41-4937-aeb5-f1b983c547d8, lat_2, Free Text, 0.3043749, 0.014536194, 3.903017, 18.203333, 21.479933, 0, Root, lat_2_01
+Run4 E.09, Run4 E.09, 3052c699-8f41-4937-aeb5-f1b983c547d8, lat_2, Free Text, 0.50791794, 0.017686753, 4.0841875, 18.063633, 21.6281, 0, Root, lat_2_02
+Run4 E.09, Run4 E.09, 3052c699-8f41-4937-aeb5-f1b983c547d8, lat_2, Length, 0.69738203, 0.0, 0.0, 17.943632, 21.771845, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 013ca9b8-2c7d-4a99-a5e4-c50c7a8b9229, lat_1, Origin, 0.0, 0.0, 0.0, 18.521002, 21.406519, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, 013ca9b8-2c7d-4a99-a5e4-c50c7a8b9229, lat_1, Length, 0.31014183, 0.0, 0.0, 18.298191, 21.228706, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Origin, 0.0, 0.0, 0.0, 18.290493, 21.015606, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 0.06095857, 0.052197088, 2.1218517, 18.258366, 20.963467, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 0.21425448, 0.05282283, 2.0529249, 18.1737, 20.832233, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 0.35858575, 0.050817937, 2.0741837, 18.105967, 20.705233, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 0.4722696, 0.05674143, 2.0796182, 18.050934, 20.603634, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 0.71627325, 0.048687235, 2.1098657, 17.923933, 20.400433, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 0.74915624, 0.047425848, 1.9822891, 17.907, 20.3708, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 1.4507996, 0.04557847, 2.0515935, 17.585266, 19.748499, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 1.4865918, 0.04643152, 2.0515935, 17.568333, 19.714634, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 1.680351, 0.033099193, 2.0398326, 17.4879, 19.541067, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 2.135512, 0.039875157, 1.822978, 17.2847, 19.134666, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 3.0437832, 0.037457444, 1.9213021, 16.9037, 18.3134, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 3.3384962, 0.044040367, 2.0380394, 16.7767, 18.0467, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 3.9323993, 0.036283594, 2.093258, 16.501534, 17.526, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 4.91356, 0.032637708, 1.8871169, 16.196733, 16.5989, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 5.147944, 0.03209312, 1.8193665, 16.112066, 16.383, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 5.5899663, 0.034884233, 1.9688779, 15.925799, 15.980833, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 5.7145796, 0.034583084, 1.8183885, 15.891933, 15.8623, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 5.756944, 0.036575753, 1.7517776, 15.883467, 15.8242, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 5.9594584, 0.043414477, 1.5202069, 15.8496, 15.620999, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 6.155691, 0.03596832, 0.9766848, 15.930033, 15.447433, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 6.9756117, 0.033944555, 0.966488, 16.4084, 14.7828, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 7.3378897, 0.033284042, 0.87741476, 16.6243, 14.494933, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 7.816339, 0.035440527, 0.68704265, 16.984133, 14.181666, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 8.122324, 0.03259734, 0.7924078, 17.212732, 13.978466, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 8.020055, 0.031748373, 0.7435873, 17.136534, 14.0462, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Free Text, 1.46898, 0.046011765, 2.0515935, 17.5768, 19.731565, 0, Root, lat_3
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Free Text, 4.377889, 0.03286159, 1.6901076, 16.327967, 17.115366, 0, Root, lat_5
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Free Text, 5.5855184, 0.034721665, 1.9688779, 15.930033, 15.985066, 0, Root, lat_6
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Free Text, 8.146365, 0.03339414, 0.7924078, 17.229666, 13.961534, 0, Root, lat_10
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Free Text, 7.8199067, 0.035553798, 0.68704265, 16.988367, 14.177433, 0, Root, lat_9
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Free Text, 6.986659, 0.03364458, 0.966488, 16.412634, 14.774333, 0, Root, lat_8
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Free Text, 3.0369146, 0.036801238, 1.9213021, 16.907932, 18.321867, 0, Root, lat_4
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Measure, 4.387306, 0.03254108, 1.6901076, 16.327967, 17.1069, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Free Text, 5.739224, 0.03748779, 1.8183885, 15.883467, 15.841133, 0, Root, lat_7
+Run4 E.09, Run4 E.09, dcd47c2d-85a5-49af-992c-fb3ce1f0d953, root_0, Length, 8.330428, 0.0, 0.0, 17.371685, 13.845869, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, cbc03c7b-b741-46ca-8222-8f58de462cfe, root_1, Origin, 0.0, 0.0, 0.0, 18.729015, 21.720203, 0, Root, Run4 E.09
+Run4 E.09, Run4 E.09, cbc03c7b-b741-46ca-8222-8f58de462cfe, root_1, Measure, 0.1299172, 0.04630411, 2.0974352, 18.660534, 21.606934, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, cbc03c7b-b741-46ca-8222-8f58de462cfe, root_1, Measure, 0.26930124, 0.055099316, 2.2850177, 18.5928, 21.484167, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, cbc03c7b-b741-46ca-8222-8f58de462cfe, root_1, Measure, 0.3678352, 0.06213997, 2.2850177, 18.525066, 21.412199, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, cbc03c7b-b741-46ca-8222-8f58de462cfe, root_1, Measure, 0.44925478, 0.06000779, 2.1888318, 18.4785, 21.344467, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, cbc03c7b-b741-46ca-8222-8f58de462cfe, root_1, Measure, 0.5248891, 0.05785762, 2.0733624, 18.4404, 21.280966, 0, Root, MEASURE
+Run4 E.09, Run4 E.09, cbc03c7b-b741-46ca-8222-8f58de462cfe, root_1, Free Text, 0.36698234, 0.06207903, 2.2850177, 18.5293, 21.412199, 0, Root, lat_1
+Run4 E.09, Run4 E.09, cbc03c7b-b741-46ca-8222-8f58de462cfe, root_1, Free Text, 0.53032786, 0.057699837, 2.0733624, 18.436167, 21.276733, 0, Root, lat_2
+Run4 E.09, Run4 E.09, cbc03c7b-b741-46ca-8222-8f58de462cfe, root_1, Length, 0.83708405, 0.0, 0.0, 18.287798, 21.011108, 0, Root, Run4 E.09

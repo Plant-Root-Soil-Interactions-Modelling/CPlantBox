@@ -1,0 +1,589 @@
+image, source, root, root_name, mark_type, position_from_base, diameter, angle, x, y, root_order, root_ontology, value
+Run4 F.04, Run4 F.04, 34e45eeb-ce67-4ec4-8495-7a708f7759cc, lat_10_lat_6, Origin, 0.0, 0.0, 0.0, 20.112316, 8.469782, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 34e45eeb-ce67-4ec4-8495-7a708f7759cc, lat_10_lat_6, Length, 0.08502604, 0.0, 0.0, 20.041065, 8.481613, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 63c84b51-e1be-48e8-80d3-871588baa47f, lat_10_lat_5, Origin, 0.0, 0.0, 0.0, 19.853174, 7.948536, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 63c84b51-e1be-48e8-80d3-871588baa47f, lat_10_lat_5, Length, 0.13736108, 0.0, 0.0, 19.984808, 7.919244, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f971c1ea-7586-40b7-80a5-c7a6b7fc7c11, lat_10_lat_4, Origin, 0.0, 0.0, 0.0, 19.737913, 7.876618, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f971c1ea-7586-40b7-80a5-c7a6b7fc7c11, lat_10_lat_4, Length, 0.0897387, 0.0, 0.0, 19.696024, 7.952641, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ffc2b359-90e8-4040-a315-ae48b6e5360b, lat_10_lat_3, Origin, 0.0, 0.0, 0.0, 19.67998, 7.6999636, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ffc2b359-90e8-4040-a315-ae48b6e5360b, lat_10_lat_3, Length, 0.09520651, 0.0, 0.0, 19.7555, 7.6623893, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c25b6904-f7c1-4acc-a282-df1939edd1ff, lat_10_lat_2, Origin, 0.0, 0.0, 0.0, 19.041649, 6.985142, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c25b6904-f7c1-4acc-a282-df1939edd1ff, lat_10_lat_2, Length, 0.12799384, 0.0, 0.0, 18.953768, 7.074606, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 74ddd367-c1f0-4e3e-8433-c4915cbed889, lat_10_lat_1, Origin, 0.0, 0.0, 0.0, 18.866123, 6.485449, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 74ddd367-c1f0-4e3e-8433-c4915cbed889, lat_10_lat_1, Length, 0.10033108, 0.0, 0.0, 18.942823, 6.533948, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 63d3b254-330f-4166-b1ae-b313ca444b3c, lat_10, Origin, 0.0, 0.0, 0.0, 18.85408, 6.4701424, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 63d3b254-330f-4166-b1ae-b313ca444b3c, lat_10, Number, 0.017058289, 0.015531529, 4.9142065, 18.855267, 6.4854665, 0, Root, 1
+Run4 F.04, Run4 F.04, 63d3b254-330f-4166-b1ae-b313ca444b3c, lat_10, Number, 0.5584517, 0.010526502, 5.5537424, 19.05, 6.9765334, 0, Root, 2
+Run4 F.04, Run4 F.04, 63d3b254-330f-4166-b1ae-b313ca444b3c, lat_10, Number, 1.5363932, 0.01592991, 5.3673067, 19.668066, 7.7089, 0, Root, 3
+Run4 F.04, Run4 F.04, 63d3b254-330f-4166-b1ae-b313ca444b3c, lat_10, Number, 1.7116631, 0.016937112, 5.325062, 19.744267, 7.8613, 0, Root, 4
+Run4 F.04, Run4 F.04, 63d3b254-330f-4166-b1ae-b313ca444b3c, lat_10, Number, 1.843668, 0.01269634, 5.31051, 19.8374, 7.958667, 0, Root, 5
+Run4 F.04, Run4 F.04, 63d3b254-330f-4166-b1ae-b313ca444b3c, lat_10, Number, 2.4344501, 0.021004857, 5.1572866, 20.125267, 8.4581995, 0, Root, 6
+Run4 F.04, Run4 F.04, 63d3b254-330f-4166-b1ae-b313ca444b3c, lat_10, Length, 4.561348, 0.0, 0.0, 20.032215, 10.272651, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, d64a5548-b37f-4313-a233-38ad588e8dae, lat_9_lat_13, Origin, 0.0, 0.0, 0.0, 15.143688, 5.052615, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, d64a5548-b37f-4313-a233-38ad588e8dae, lat_9_lat_13, Length, 0.14110315, 0.0, 0.0, 15.109392, 4.9178433, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, d432ceb6-b1f8-4990-8d26-09af9bc7c372, lat_9_lat_12, Origin, 0.0, 0.0, 0.0, 15.268063, 5.4546146, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, d432ceb6-b1f8-4990-8d26-09af9bc7c372, lat_9_lat_12, Length, 0.20412585, 0.0, 0.0, 15.462912, 5.4573393, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 68f9c8f8-b17a-4c9e-87c8-5db62dc68f6a, lat_9_lat_11, Origin, 0.0, 0.0, 0.0, 15.140157, 5.7361355, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 68f9c8f8-b17a-4c9e-87c8-5db62dc68f6a, lat_9_lat_11, Length, 0.1106357, 0.0, 0.0, 15.186531, 5.6974783, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f05461d5-dea7-4be5-957d-9e081e177df0, lat_9_lat_10, Origin, 0.0, 0.0, 0.0, 15.149014, 6.179608, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f05461d5-dea7-4be5-957d-9e081e177df0, lat_9_lat_10, Length, 0.2984511, 0.0, 0.0, 15.415379, 6.066949, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, fcfe916b-42ae-4528-ad7b-85c1e3f25239, lat_9_lat_9, Origin, 0.0, 0.0, 0.0, 15.197926, 6.3996983, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, fcfe916b-42ae-4528-ad7b-85c1e3f25239, lat_9_lat_9, Length, 0.108748265, 0.0, 0.0, 15.246685, 6.3044615, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 1eeeb5ec-d0a4-42dc-ae82-3ae85f2c0d97, lat_9_lat_8, Origin, 0.0, 0.0, 0.0, 15.310728, 6.5643735, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 1eeeb5ec-d0a4-42dc-ae82-3ae85f2c0d97, lat_9_lat_8, Length, 0.14124423, 0.0, 0.0, 15.18413, 6.5572505, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 17ac5026-0ec4-4b2c-aba2-7751267b4ea2, lat_9_lat_7, Origin, 0.0, 0.0, 0.0, 15.533497, 6.642344, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 17ac5026-0ec4-4b2c-aba2-7751267b4ea2, lat_9_lat_7, Length, 0.22780152, 0.0, 0.0, 15.665493, 6.4652004, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 09101972-038f-4702-948e-f56dad86fb52, lat_9_lat_6, Origin, 0.0, 0.0, 0.0, 15.66545, 6.758517, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 09101972-038f-4702-948e-f56dad86fb52, lat_9_lat_6, Length, 0.09311168, 0.0, 0.0, 15.586359, 6.7412906, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, dca482f6-9cc0-4ef8-a6df-ddbef5fbd068, lat_9_lat_5, Origin, 0.0, 0.0, 0.0, 15.841072, 6.7928896, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, dca482f6-9cc0-4ef8-a6df-ddbef5fbd068, lat_9_lat_5, Length, 0.052608516, 0.0, 0.0, 15.821317, 6.7460847, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, dabaffa7-cb82-478d-bd8b-3ab18614f791, lat_9_lat_4, Origin, 0.0, 0.0, 0.0, 15.995649, 6.855883, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, dabaffa7-cb82-478d-bd8b-3ab18614f791, lat_9_lat_4, Length, 0.23475534, 0.0, 0.0, 16.002663, 7.0821943, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4e7a968b-2331-4149-9ae2-cff58970fdf7, lat_9_lat_3, Origin, 0.0, 0.0, 0.0, 16.21155, 6.766983, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4e7a968b-2331-4149-9ae2-cff58970fdf7, lat_9_lat_3, Length, 0.0334222, 0.0, 0.0, 16.199377, 6.7358627, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 8942341a-8aff-406c-bec9-8143b82e299d, lat_9_lat_2, Origin, 0.0, 0.0, 0.0, 16.53434, 6.8474607, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 8942341a-8aff-406c-bec9-8143b82e299d, lat_9_lat_2, Length, 0.16311675, 0.0, 0.0, 16.42913, 6.9575634, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f8556664-f2e6-426a-a3ae-e0c6b5a7e53c, lat_9_lat_1, Origin, 0.0, 0.0, 0.0, 16.851175, 6.945766, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f8556664-f2e6-426a-a3ae-e0c6b5a7e53c, lat_9_lat_1, Length, 0.03557424, 0.0, 0.0, 16.864935, 6.913691, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Origin, 0.0, 0.0, 0.0, 16.838947, 7.387612, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 0.45182228, 0.016029593, 1.4657394, 16.844433, 6.9553666, 0, Root, 1
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 0.82565284, 0.014818376, 2.7333932, 16.539633, 6.8326, 0, Root, 2
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 1.1813779, 0.0126530705, 3.705979, 16.209433, 6.7818, 0, Root, 3
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 1.4007044, 0.018851051, 3.1319933, 16.001999, 6.8410664, 0, Root, 4
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 1.57351, 0.019242745, 3.0242367, 15.8369, 6.8114333, 0, Root, 5
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 1.7524152, 0.014817939, 2.5593886, 15.663333, 6.773333, 0, Root, 6
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 1.9409573, 0.019046549, 2.5684938, 15.5194, 6.6505666, 0, Root, 7
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 2.163389, 0.020723773, 2.7867942, 15.320434, 6.5532, 0, Root, 8
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 2.3641965, 0.016932577, 2.144226, 15.193433, 6.405033, 0, Root, 9
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 2.6006713, 0.019047359, 1.6836591, 15.134167, 6.1806664, 0, Root, 10
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 3.0562246, 0.012698252, 1.1518995, 15.1257, 5.7361665, 0, Root, 11
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 3.3629968, 0.008310692, 1.1337826, 15.2484665, 5.4567666, 0, Root, 12
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Number, 3.8042443, 0.008408261, 2.8388119, 15.1384, 5.0630665, 0, Root, 13
+Run4 F.04, Run4 F.04, 809839ca-218f-4f40-b61e-4942c9cc5ea5, lat_9, Length, 4.164261, 0.0, 0.0, 14.811165, 5.076026, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 221c9170-2a88-45c0-851d-a74b56f05316, lat_8_lat_4, Origin, 0.0, 0.0, 0.0, 14.151327, 7.1368613, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 221c9170-2a88-45c0-851d-a74b56f05316, lat_8_lat_4, Length, 0.020791894, 0.0, 0.0, 14.135526, 7.150375, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 25a78816-7b7e-44a7-8570-b00b29217a4e, lat_8_lat_3, Origin, 0.0, 0.0, 0.0, 14.325598, 7.2158046, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 25a78816-7b7e-44a7-8570-b00b29217a4e, lat_8_lat_3, Length, 0.010987195, 0.0, 0.0, 14.327855, 7.2050514, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, dabf8eea-d7f6-4f87-a6d3-b4104ce04e9a, lat_8_lat_2, Origin, 0.0, 0.0, 0.0, 14.65953, 7.67471, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, dabf8eea-d7f6-4f87-a6d3-b4104ce04e9a, lat_8_lat_2, Length, 0.020501832, 0.0, 0.0, 14.665106, 7.6549807, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 3b411b57-3ccd-4baf-acbe-a35bd90aaad0, lat_8_lat_1, Origin, 0.0, 0.0, 0.0, 15.266373, 8.292765, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 3b411b57-3ccd-4baf-acbe-a35bd90aaad0, lat_8_lat_1, Length, 0.050459523, 0.0, 0.0, 15.26328, 8.243916, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, be869765-456f-4227-aeb3-33a7fbd3f301, lat_8, Origin, 0.0, 0.0, 0.0, 15.643901, 8.552368, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, be869765-456f-4227-aeb3-33a7fbd3f301, lat_8, Number, 0.46503717, 0.012699256, 2.8431678, 15.261167, 8.297333, 0, Root, 1
+Run4 F.04, Run4 F.04, be869765-456f-4227-aeb3-33a7fbd3f301, lat_8, Number, 1.9443332, 0.023285143, 2.274197, 14.321366, 7.230533, 0, Root, 3
+Run4 F.04, Run4 F.04, be869765-456f-4227-aeb3-33a7fbd3f301, lat_8, Number, 2.140814, 0.02147321, 2.305494, 14.164733, 7.1204667, 0, Root, 4
+Run4 F.04, Run4 F.04, be869765-456f-4227-aeb3-33a7fbd3f301, lat_8, Number, 1.376169, 0.012700472, 2.182962, 14.6558, 7.6792665, 0, Root, 2
+Run4 F.04, Run4 F.04, be869765-456f-4227-aeb3-33a7fbd3f301, lat_8, Length, 3.8707902, 0.0, 0.0, 12.635787, 6.5495634, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 1f55aabe-4dd3-43d9-8bd3-cc83bab096d9, lat_7_lat_29, Origin, 0.0, 0.0, 0.0, 21.179462, 18.702705, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 1f55aabe-4dd3-43d9-8bd3-cc83bab096d9, lat_7_lat_29, Length, 1.2655565, 0.0, 0.0, 21.090508, 17.530163, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 298c7157-eb27-4f88-975f-5996d82a8362, lat_7_lat_28, Origin, 0.0, 0.0, 0.0, 21.004019, 18.949512, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 298c7157-eb27-4f88-975f-5996d82a8362, lat_7_lat_28, Length, 1.7832274, 0.0, 0.0, 21.01583, 17.572138, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, a253b375-d0b9-408b-a0a2-aa5dd3109208, lat_7_lat_27, Origin, 0.0, 0.0, 0.0, 20.922531, 18.980087, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, a253b375-d0b9-408b-a0a2-aa5dd3109208, lat_7_lat_27, Length, 0.81330836, 0.0, 0.0, 20.157743, 18.890438, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 22af889c-d1b6-4fce-8afb-5c47d528da44, lat_7_lat_26, Origin, 0.0, 0.0, 0.0, 20.710587, 19.214487, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 22af889c-d1b6-4fce-8afb-5c47d528da44, lat_7_lat_26, Length, 0.30942395, 0.0, 0.0, 20.66876, 18.911043, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, edc91f7f-c107-4243-b8a4-66b1e63f7fb9, lat_7_lat_25, Origin, 0.0, 0.0, 0.0, 20.60078, 19.34921, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, edc91f7f-c107-4243-b8a4-66b1e63f7fb9, lat_7_lat_25, Length, 1.5300385, 0.0, 0.0, 20.005518, 18.15577, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 23674065-dbe8-4f1b-a8a1-f4d6111746ec, lat_7_lat_24, Origin, 0.0, 0.0, 0.0, 20.5208, 19.531504, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 23674065-dbe8-4f1b-a8a1-f4d6111746ec, lat_7_lat_24, Length, 0.8474348, 0.0, 0.0, 21.089655, 20.102839, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 369952a5-d8b2-47e0-96d3-7b7ffbc5393d, lat_7_lat_23, Origin, 0.0, 0.0, 0.0, 20.24234, 19.732855, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 369952a5-d8b2-47e0-96d3-7b7ffbc5393d, lat_7_lat_23, Length, 2.318258, 0.0, 0.0, 20.798542, 17.972258, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f130db41-61c0-4895-a08c-840b8d4499e9, lat_7_lat_22, Origin, 0.0, 0.0, 0.0, 20.178108, 20.166538, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f130db41-61c0-4895-a08c-840b8d4499e9, lat_7_lat_22, Length, 0.8699418, 0.0, 0.0, 20.944115, 20.46015, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 165bae7f-6bf4-4625-a333-46f30aaa65fe, lat_7_lat_21_lat_1, Origin, 0.0, 0.0, 0.0, 20.732344, 20.433994, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 165bae7f-6bf4-4625-a333-46f30aaa65fe, lat_7_lat_21_lat_1, Length, 0.24721092, 0.0, 0.0, 20.525656, 20.539019, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4bbcad69-8221-44b8-91fa-413d26db5df8,  lat_7_lat_21, Origin, 0.0, 0.0, 0.0, 20.160196, 20.20542, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4bbcad69-8221-44b8-91fa-413d26db5df8,  lat_7_lat_21, Length, 0.8816364, 0.0, 0.0, 20.93881, 20.500504, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 6a2b26f9-54b4-41b3-aca3-3fefae8a5d71, lat_7_lat_20, Origin, 0.0, 0.0, 0.0, 19.970749, 20.360216, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 6a2b26f9-54b4-41b3-aca3-3fefae8a5d71, lat_7_lat_20, Length, 0.34750798, 0.0, 0.0, 19.756664, 20.101889, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 0776df9b-0788-4259-9afe-3f1958721ef1, lat_7_lat_19, Origin, 0.0, 0.0, 0.0, 19.966747, 20.409983, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 0776df9b-0788-4259-9afe-3f1958721ef1, lat_7_lat_19, Length, 0.5848968, 0.0, 0.0, 20.517473, 20.445982, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 08dbb506-8181-440a-b7be-0b46c29ddecd, lat_7_lat_18, Origin, 0.0, 0.0, 0.0, 19.831049, 20.50415, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 08dbb506-8181-440a-b7be-0b46c29ddecd, lat_7_lat_18, Length, 2.385292, 0.0, 0.0, 22.035986, 20.181316, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, aa30755d-c0e2-4d80-b91e-8345464ede17, lat_7_lat_17, Origin, 0.0, 0.0, 0.0, 19.737917, 20.61845, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, aa30755d-c0e2-4d80-b91e-8345464ede17, lat_7_lat_17, Length, 0.07532639, 0.0, 0.0, 19.785492, 20.672667, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, d9d2db35-a375-4cea-931c-a90e6ede9cf0, lat_7_lat_16, Origin, 0.0, 0.0, 0.0, 19.382313, 20.72446, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, d9d2db35-a375-4cea-931c-a90e6ede9cf0, lat_7_lat_16, Length, 0.24526845, 0.0, 0.0, 19.35091, 20.48839, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 38024709-cdf9-4955-a3b6-cd760f73ae2b, lat_7_lat_15, Origin, 0.0, 0.0, 0.0, 19.292358, 20.787737, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 38024709-cdf9-4955-a3b6-cd760f73ae2b, lat_7_lat_15, Length, 0.1893596, 0.0, 0.0, 19.322586, 20.96723, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 90da8d9d-2aff-4404-8f53-f0e71396e964, lat_7_lat_14, Origin, 0.0, 0.0, 0.0, 18.926113, 20.614573, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 90da8d9d-2aff-4404-8f53-f0e71396e964, lat_7_lat_14, Length, 0.41200712, 0.0, 0.0, 18.980577, 20.221642, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, e476bc00-cdf9-4c25-a3f4-7b53f82ddfdd, lat_7_lat_13, Origin, 0.0, 0.0, 0.0, 18.725542, 20.557133, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, e476bc00-cdf9-4c25-a3f4-7b53f82ddfdd, lat_7_lat_13, Length, 0.6035233, 0.0, 0.0, 18.48869, 21.054659, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 54c400cd-0c4d-4cd5-ba04-1ade64ba68af, lat_7_lat_12, Origin, 0.0, 0.0, 0.0, 18.67485, 20.531546, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 54c400cd-0c4d-4cd5-ba04-1ade64ba68af, lat_7_lat_12, Length, 0.8175064, 0.0, 0.0, 18.43668, 21.28429, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4c7a70ff-908e-43aa-8530-c5ed19fbc072, lat_7_lat_11, Origin, 0.0, 0.0, 0.0, 18.466764, 20.360977, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4c7a70ff-908e-43aa-8530-c5ed19fbc072, lat_7_lat_11, Length, 0.063081026, 0.0, 0.0, 18.4822, 20.30142, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f7db0b6e-2b87-44dd-b32d-cbe01e9f2036, lat_7_lat_10, Origin, 0.0, 0.0, 0.0, 18.387161, 20.3703, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f7db0b6e-2b87-44dd-b32d-cbe01e9f2036, lat_7_lat_10, Length, 0.15568505, 0.0, 0.0, 18.330183, 20.514141, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5af20401-2aba-490c-8f2b-13cfcd4b784d, lat_7_lat_9, Origin, 0.0, 0.0, 0.0, 18.265755, 20.292686, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5af20401-2aba-490c-8f2b-13cfcd4b784d, lat_7_lat_9, Length, 0.59844077, 0.0, 0.0, 18.355827, 19.737865, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, e28b2084-06b3-493b-a516-ed0b65b22b03, lat_7_lat_8, Origin, 0.0, 0.0, 0.0, 17.533407, 20.241728, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, e28b2084-06b3-493b-a516-ed0b65b22b03, lat_7_lat_8, Length, 0.17438543, 0.0, 0.0, 17.567804, 20.072916, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ede046ef-4d00-4918-8bb9-7db27a6c7e39, lat_7_lat_7, Origin, 0.0, 0.0, 0.0, 17.187122, 20.27463, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ede046ef-4d00-4918-8bb9-7db27a6c7e39, lat_7_lat_7, Length, 0.05979314, 0.0, 0.0, 17.167376, 20.219784, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, feeedd3c-0b7b-4f0d-a0aa-81d69cf85cb9, lat_7_lat_6, Origin, 0.0, 0.0, 0.0, 16.786085, 20.393145, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, feeedd3c-0b7b-4f0d-a0aa-81d69cf85cb9, lat_7_lat_6, Length, 0.08207685, 0.0, 0.0, 16.809834, 20.46932, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 06b5c277-474e-4c5a-93cd-4a89254ff237, lat_7_lat_5, Origin, 0.0, 0.0, 0.0, 16.334316, 20.49145, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 06b5c277-474e-4c5a-93cd-4a89254ff237, lat_7_lat_5, Length, 0.022609811, 0.0, 0.0, 16.32279, 20.472012, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, db7e51fc-6ba1-41f8-b8f9-3d1cc0a356cf, lat_7_lat_4, Origin, 0.0, 0.0, 0.0, 16.19933, 20.59634, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, db7e51fc-6ba1-41f8-b8f9-3d1cc0a356cf, lat_7_lat_4, Length, 0.11970727, 0.0, 0.0, 16.100805, 20.537434, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ed49e999-6b9b-499d-ac1d-586a8838e926, lat_7_lat_3, Origin, 0.0, 0.0, 0.0, 15.6907, 21.38256, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ed49e999-6b9b-499d-ac1d-586a8838e926, lat_7_lat_3, Length, 0.019436685, 0.0, 0.0, 15.705866, 21.394716, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 1f7da280-0166-44bd-8f12-8a29f1b9d46b, lat_7_lat_2, Origin, 0.0, 0.0, 0.0, 15.318316, 22.10435, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 1f7da280-0166-44bd-8f12-8a29f1b9d46b, lat_7_lat_2, Length, 0.13388345, 0.0, 0.0, 15.245562, 21.9931, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, d718dc31-5669-4d95-9b6c-7f4327ab5773, lat_7_lat_1, Origin, 0.0, 0.0, 0.0, 14.84739, 22.423077, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, d718dc31-5669-4d95-9b6c-7f4327ab5773, lat_7_lat_1, Length, 0.098557435, 0.0, 0.0, 14.93379, 22.469826, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Origin, 0.0, 0.0, 0.0, 14.397444, 22.78839, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 0.5936624, 0.012700972, 0.5198024, 14.842067, 22.419733, 0, Root, 1
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 1.1757112, 0.0148195615, 0.6854402, 15.324666, 22.1107, 0, Root, 2
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 2.0118644, 0.014819698, 1.0272243, 15.676033, 21.3741, 0, Root, 3
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 2.950543, 0.016937088, 0.7954965, 16.2052, 20.603634, 0, Root, 4
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 3.1177397, 0.017073853, 0.24551857, 16.336433, 20.502033, 0, Root, 5
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 3.5861282, 0.014919577, 0.2500101, 16.785166, 20.379267, 0, Root, 6
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 4.000287, 0.02047359, 0.26113883, 17.1831, 20.286133, 0, Root, 7
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 4.3540254, 0.018083837, 6.146832, 17.530233, 20.252266, 0, Root, 8
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 5.0973043, 0.014802039, 5.981338, 18.2626, 20.298834, 0, Root, 9
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 5.237491, 0.016926253, 5.9381905, 18.393833, 20.353867, 0, Root, 10
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 5.3085623, 0.01692665, 5.79354, 18.461567, 20.375032, 0, Root, 11
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 5.571727, 0.019045966, 5.720785, 18.6817, 20.514732, 0, Root, 12
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 5.6321297, 0.019421378, 5.9653473, 18.736732, 20.540133, 0, Root, 13
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 5.8356004, 0.019051174, 5.5090423, 18.914534, 20.629032, 0, Root, 14
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 6.2536616, 0.012697335, 0.28423834, 19.287066, 20.7645, 0, Root, 15
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 6.3445587, 0.016702821, 0.06098305, 19.375967, 20.7391, 0, Root, 16
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 6.726503, 0.014742614, 0.6133223, 19.731565, 20.6121, 0, Root, 17
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 6.867208, 0.014814886, 0.7403562, 19.833166, 20.514732, 0, Root, 18
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 7.03283, 0.019043386, 0.872393, 19.9517, 20.3962, 0, Root, 19
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 7.0746164, 0.017644137, 0.9327353, 19.9771, 20.366566, 0, Root, 20
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 7.312719, 0.012639129, 0.63198644, 20.146433, 20.201466, 0, Root, 21
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 7.361774, 0.017138476, 1.2806256, 20.163366, 20.159134, 0, Root, 22
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 7.7983813, 0.0126996, 1.0027822, 20.252266, 19.740032, 0, Root, 23
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 8.138024, 0.016923796, 0.96682155, 20.502033, 19.515667, 0, Root, 24
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 8.322722, 0.010582788, 0.95209163, 20.603634, 19.359034, 0, Root, 25
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 8.5015545, 0.016560476, 0.70099205, 20.717934, 19.223566, 0, Root, 26
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 8.822777, 0.016928809, 0.8253521, 20.938066, 18.994967, 0, Root, 27
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 8.896721, 0.015220021, 0.8455383, 20.988867, 18.939934, 0, Root, 28
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Number, 9.194476, 0.018910771, 0.32613713, 21.1836, 18.724033, 0, Root, 29
+Run4 F.04, Run4 F.04, c8a93b52-adfb-475f-96be-0c70e9218133, lat_7, Length, 9.398232, 0.0, 0.0, 21.36927, 18.64006, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, dad4c976-0183-4e97-bc56-d70bde4bd709, lat_6_lat_3, Origin, 0.0, 0.0, 0.0, 13.616516, 23.797684, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, dad4c976-0183-4e97-bc56-d70bde4bd709, lat_6_lat_3, Length, 0.22448954, 0.0, 0.0, 13.421961, 23.893532, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 45b09c3a-ee31-4df7-8608-5c398c03fa73, lat_6_lat_2, Origin, 0.0, 0.0, 0.0, 13.744544, 23.929169, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 45b09c3a-ee31-4df7-8608-5c398c03fa73, lat_6_lat_2, Length, 0.06750144, 0.0, 0.0, 13.704361, 23.982918, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c243a2bf-0702-492a-82b9-d43110bd7ed6, lat_6_lat_1, Origin, 0.0, 0.0, 0.0, 14.039515, 23.988195, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c243a2bf-0702-492a-82b9-d43110bd7ed6, lat_6_lat_1, Length, 0.14594741, 0.0, 0.0, 13.909177, 24.050951, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 734865a6-3821-4651-b2e7-ccdec3e78ac2, lat_6, Origin, 0.0, 0.0, 0.0, 14.70025, 24.280283, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 734865a6-3821-4651-b2e7-ccdec3e78ac2, lat_6, Number, 0.7473044, 0.014817853, 3.0907695, 14.041966, 23.9776, 0, Root, 1
+Run4 F.04, Run4 F.04, 734865a6-3821-4651-b2e7-ccdec3e78ac2, lat_6, Number, 1.0454061, 0.016264893, 2.5619383, 13.7541, 23.918333, 0, Root, 2
+Run4 F.04, Run4 F.04, 734865a6-3821-4651-b2e7-ccdec3e78ac2, lat_6, Number, 1.2206141, 0.014816499, 2.1854556, 13.635567, 23.791332, 0, Root, 3
+Run4 F.04, Run4 F.04, 734865a6-3821-4651-b2e7-ccdec3e78ac2, lat_6, Length, 1.6665618, 0.0, 0.0, 13.441963, 23.393726, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, e5f54393-e15e-4f6e-bdca-ee40d41fd6c2, lat_5_lat_56, Origin, 0.0, 0.0, 0.0, 22.747816, 26.28265, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, e5f54393-e15e-4f6e-bdca-ee40d41fd6c2, lat_5_lat_56, Length, 0.3171809, 0.0, 0.0, 22.943277, 26.507149, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, b06a5a0d-d6f4-4b23-b6f6-c3543f279aa4, lat_5_lat_55, Origin, 0.0, 0.0, 0.0, 22.446161, 26.1688, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, b06a5a0d-d6f4-4b23-b6f6-c3543f279aa4, lat_5_lat_55, Length, 0.47787046, 0.0, 0.0, 22.172747, 26.525494, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f59477a6-1ea9-457c-a0c0-00f94a4057c7, lat_5_lat_54, Origin, 0.0, 0.0, 0.0, 22.325928, 25.988266, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f59477a6-1ea9-457c-a0c0-00f94a4057c7, lat_5_lat_54, Length, 0.87728184, 0.0, 0.0, 23.149923, 25.947788, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 533f30c5-82c0-4e5e-aaf2-b6969a4f8cb4, lat_5_lat_53, Origin, 0.0, 0.0, 0.0, 22.237638, 25.669323, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 533f30c5-82c0-4e5e-aaf2-b6969a4f8cb4, lat_5_lat_53, Length, 0.35065165, 0.0, 0.0, 22.56608, 25.65378, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 74214fdc-8b3c-4b6b-9bc8-bfb044889e94, lat_5_lat_52, Origin, 0.0, 0.0, 0.0, 22.100649, 25.483463, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 74214fdc-8b3c-4b6b-9bc8-bfb044889e94, lat_5_lat_52, Length, 0.26545307, 0.0, 0.0, 21.943861, 25.692802, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 2225519c-0b61-4f7c-8b04-66dc5d74b59c, lat_5_lat_51, Origin, 0.0, 0.0, 0.0, 22.009298, 25.291359, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 2225519c-0b61-4f7c-8b04-66dc5d74b59c, lat_5_lat_51, Length, 0.16860609, 0.0, 0.0, 22.123554, 25.175943, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 582ee00c-c700-41f3-88f7-603873ed99f4, lat_5_lat_50, Origin, 0.0, 0.0, 0.0, 21.85515, 24.888775, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 582ee00c-c700-41f3-88f7-603873ed99f4, lat_5_lat_50, Length, 0.5026827, 0.0, 0.0, 21.430897, 25.103436, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f601169b-7ab1-456d-85f5-553f55e0d266, lat_5_lat_49, Origin, 0.0, 0.0, 0.0, 21.905949, 24.79564, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f601169b-7ab1-456d-85f5-553f55e0d266, lat_5_lat_49, Length, 0.11342948, 0.0, 0.0, 22.00199, 24.855677, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 2374183d-abbc-4c2c-b3e3-34a6d5fc9372, lat_5_lat_49, Origin, 0.0, 0.0, 0.0, 22.27179, 24.100395, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 2374183d-abbc-4c2c-b3e3-34a6d5fc9372, lat_5_lat_49, Length, 0.051132128, 0.0, 0.0, 22.234995, 24.134853, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 15ec69a1-e9a6-4a37-8b7d-91ec627b5047, lat_5_lat_48, Origin, 0.0, 0.0, 0.0, 21.901527, 23.236732, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 15ec69a1-e9a6-4a37-8b7d-91ec627b5047, lat_5_lat_48, Length, 0.38249412, 0.0, 0.0, 22.2379, 23.079351, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 92e4de2c-c87d-4901-8821-eb9abe7b75a0, lat_5_lat_47, Origin, 0.0, 0.0, 0.0, 21.703943, 22.882898, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 92e4de2c-c87d-4901-8821-eb9abe7b75a0, lat_5_lat_47, Length, 0.32688877, 0.0, 0.0, 22.021692, 22.898226, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ea7c0d3c-ef76-49ba-923e-2b32d2ed5887, lat_5_lat_46, Origin, 0.0, 0.0, 0.0, 21.512308, 22.59204, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ea7c0d3c-ef76-49ba-923e-2b32d2ed5887, lat_5_lat_46, Length, 0.20568669, 0.0, 0.0, 21.451427, 22.41222, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, cdbf9103-a488-4daf-9eb5-b17d4e3b3d0f, lat_5_lat_45, Origin, 0.0, 0.0, 0.0, 21.402521, 22.502829, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, cdbf9103-a488-4daf-9eb5-b17d4e3b3d0f, lat_5_lat_45, Length, 0.13331932, 0.0, 0.0, 21.37326, 22.622528, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4cb66504-d213-4720-8c1a-cee9ba399a57, lat_5_lat_44, Origin, 0.0, 0.0, 0.0, 21.190987, 22.333153, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4cb66504-d213-4720-8c1a-cee9ba399a57, lat_5_lat_44, Length, 0.2545503, 0.0, 0.0, 21.056414, 22.529652, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, e205a8dc-ff8a-4220-b9f4-75a3acf9ae4d, lat_5_lat_43, Origin, 0.0, 0.0, 0.0, 20.994465, 22.20841, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, e205a8dc-ff8a-4220-b9f4-75a3acf9ae4d, lat_5_lat_43, Length, 0.17544824, 0.0, 0.0, 20.96744, 22.045435, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 6c31d4b5-93a8-4729-a0a7-d9b01fbaf29b, lat_5_lat_42, Origin, 0.0, 0.0, 0.0, 20.810013, 22.180418, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 6c31d4b5-93a8-4729-a0a7-d9b01fbaf29b, lat_5_lat_42, Length, 0.789067, 0.0, 0.0, 21.002506, 21.427694, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ce311c68-1328-4d43-93f1-17fe18229b35, lat_5_lat_41, Origin, 0.0, 0.0, 0.0, 20.562359, 22.290571, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ce311c68-1328-4d43-93f1-17fe18229b35, lat_5_lat_41, Length, 0.08728194, 0.0, 0.0, 20.563375, 22.215658, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 81653556-4dbb-4faf-81be-e6101875d6ea, lat_5_lat_40, Origin, 0.0, 0.0, 0.0, 20.48214, 22.363224, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 81653556-4dbb-4faf-81be-e6101875d6ea, lat_5_lat_40, Length, 0.3220996, 0.0, 0.0, 20.631886, 22.630323, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c72b129d-243b-4c7e-9684-bbb8ef721cbf, lat_5_lat_39, Origin, 0.0, 0.0, 0.0, 20.283585, 22.469383, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c72b129d-243b-4c7e-9684-bbb8ef721cbf, lat_5_lat_39, Length, 0.5658472, 0.0, 0.0, 20.732521, 22.748598, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 619d70fa-4980-463e-93f2-a030124fde35, lat_5_lat_38, Origin, 0.0, 0.0, 0.0, 20.205414, 22.475004, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 619d70fa-4980-463e-93f2-a030124fde35, lat_5_lat_38, Length, 0.23521739, 0.0, 0.0, 20.315603, 22.301727, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, a11761bc-870c-428e-bf8f-1682606fd39c, lat_5_lat_37, Origin, 0.0, 0.0, 0.0, 19.947779, 22.630388, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, a11761bc-870c-428e-bf8f-1682606fd39c, lat_5_lat_37, Length, 0.5122331, 0.0, 0.0, 20.067766, 22.162872, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5b2a754b-319e-4aaf-8737-85005abdfeb4, lat_5_lat_36, Origin, 0.0, 0.0, 0.0, 19.841051, 22.688839, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5b2a754b-319e-4aaf-8737-85005abdfeb4, lat_5_lat_36, Length, 0.114070974, 0.0, 0.0, 19.77311, 22.597439, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ca03b656-1055-48ce-aa2b-4eb4e1fd7d19, lat_5_lat_35, Origin, 0.0, 0.0, 0.0, 19.797525, 22.825016, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ca03b656-1055-48ce-aa2b-4eb4e1fd7d19, lat_5_lat_35, Length, 1.8858138, 0.0, 0.0, 21.403374, 22.93991, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5dc34cb3-c8a2-4783-8081-218cdaf311df, lat_5_lat_34, Origin, 0.0, 0.0, 0.0, 19.670183, 23.107649, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5dc34cb3-c8a2-4783-8081-218cdaf311df, lat_5_lat_34, Length, 0.24961182, 0.0, 0.0, 19.47096, 22.966757, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c7e75fee-b796-4bf3-97eb-d1133062a0aa, lat_5_lat_33, Origin, 0.0, 0.0, 0.0, 19.636652, 23.27697, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c7e75fee-b796-4bf3-97eb-d1133062a0aa, lat_5_lat_33, Length, 1.352193, 0.0, 0.0, 20.411812, 23.704624, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 94416297-50c1-45fe-99a6-3ba3640e777b, lat_5_lat_32, Origin, 0.0, 0.0, 0.0, 19.64042, 23.4008, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 94416297-50c1-45fe-99a6-3ba3640e777b, lat_5_lat_32, Length, 1.4836619, 0.0, 0.0, 20.41907, 22.223085, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 9fd4ff66-1fce-441c-8c1c-f04c2423cc49, lat_5_lat_31, Origin, 0.0, 0.0, 0.0, 19.650337, 23.656635, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 9fd4ff66-1fce-441c-8c1c-f04c2423cc49, lat_5_lat_31, Length, 0.09501789, 0.0, 0.0, 19.723976, 23.607977, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4f88ab15-02ec-487d-b343-3793bf87461b, lat_5_lat_30, Origin, 0.0, 0.0, 0.0, 19.650927, 23.689781, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4f88ab15-02ec-487d-b343-3793bf87461b, lat_5_lat_30, Length, 0.85514235, 0.0, 0.0, 20.450731, 23.7151, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, fe00ed55-27e8-41ed-adb4-bb974770536c, lat_5_lat_29, Origin, 0.0, 0.0, 0.0, 19.737476, 24.033787, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, fe00ed55-27e8-41ed-adb4-bb974770536c, lat_5_lat_29, Length, 0.524047, 0.0, 0.0, 20.230194, 24.085157, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 83a29d2c-9a90-41f7-9e35-103373b6d5b6, lat_5_lat_28, Origin, 0.0, 0.0, 0.0, 19.733683, 24.17445, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 83a29d2c-9a90-41f7-9e35-103373b6d5b6, lat_5_lat_28, Length, 1.0504977, 0.0, 0.0, 19.711525, 23.44092, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 390441ef-f374-458e-9984-760cac56aea2, lat_5_lat_27_lat_1, Origin, 0.0, 0.0, 0.0, 18.998121, 24.187635, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 390441ef-f374-458e-9984-760cac56aea2, lat_5_lat_27_lat_1, Length, 0.04816012, 0.0, 0.0, 18.96688, 24.223879, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, aae20dcb-7044-4606-9bc9-17962a57c804, lat_5_lat_27, Origin, 0.0, 0.0, 0.0, 19.73778, 24.308867, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, aae20dcb-7044-4606-9bc9-17962a57c804, lat_5_lat_27, Length, 2.5997825, 0.0, 0.0, 17.383625, 23.785666, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 45676eb8-7251-4b74-9d69-3c97ea256035, lat_5_lat_26, Origin, 0.0, 0.0, 0.0, 19.80589, 24.573412, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 45676eb8-7251-4b74-9d69-3c97ea256035, lat_5_lat_26, Length, 0.037615195, 0.0, 0.0, 19.842365, 24.568249, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ce87d6c1-8f0d-4e1c-896b-687ceb81b57c, lat_5_lat_25, Origin, 0.0, 0.0, 0.0, 19.847904, 24.818722, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ce87d6c1-8f0d-4e1c-896b-687ceb81b57c, lat_5_lat_25, Length, 0.72659653, 0.0, 0.0, 19.202785, 24.602905, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c2bcd118-f43f-4a70-b269-259fb4c47084, lat_5_lat_24, Origin, 0.0, 0.0, 0.0, 19.860117, 25.05279, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, c2bcd118-f43f-4a70-b269-259fb4c47084, lat_5_lat_24, Length, 1.2640911, 0.0, 0.0, 19.026459, 24.203133, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 9dfb4f64-ea00-4741-a22f-471be55306a4, lat_5_lat_23, Origin, 0.0, 0.0, 0.0, 19.873457, 25.248663, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 9dfb4f64-ea00-4741-a22f-471be55306a4, lat_5_lat_23, Length, 1.1497229, 0.0, 0.0, 18.831274, 24.854862, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 8f3b79eb-c53a-4183-ba28-94a768704b95, lat_5_lat_22, Origin, 0.0, 0.0, 0.0, 19.94746, 25.66485, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 8f3b79eb-c53a-4183-ba28-94a768704b95, lat_5_lat_22, Length, 0.130519, 0.0, 0.0, 19.863003, 25.572306, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 97fdf9f4-501b-4079-ae59-a70b9f54e5f0, lat_5_lat_21, Origin, 0.0, 0.0, 0.0, 19.975061, 25.79501, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 97fdf9f4-501b-4079-ae59-a70b9f54e5f0, lat_5_lat_21, Length, 0.039359283, 0.0, 0.0, 20.006502, 25.771996, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 069637cd-5efc-4d08-bae5-d301c51ef053, lat_5_lat_20, Origin, 0.0, 0.0, 0.0, 20.013628, 26.058247, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 069637cd-5efc-4d08-bae5-d301c51ef053, lat_5_lat_20, Length, 0.30341482, 0.0, 0.0, 20.309048, 26.079685, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 6da24aaf-ebbd-4534-a65a-4c01db379371, lat_5_lat_19, Origin, 0.0, 0.0, 0.0, 19.901289, 26.561682, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 6da24aaf-ebbd-4534-a65a-4c01db379371, lat_5_lat_19, Length, 0.22931984, 0.0, 0.0, 19.746365, 26.396927, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, bf05cf78-0e93-4f13-9da8-cfd9f6815867, lat_5_lat_18, Origin, 0.0, 0.0, 0.0, 19.810423, 26.707087, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, bf05cf78-0e93-4f13-9da8-cfd9f6815867, lat_5_lat_18, Length, 0.167639, 0.0, 0.0, 19.741798, 26.561417, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, e96f6427-761c-4b2a-986b-43fbf0b52446, lat_5_lat_17, Origin, 0.0, 0.0, 0.0, 19.721111, 26.9166, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, e96f6427-761c-4b2a-986b-43fbf0b52446, lat_5_lat_17, Length, 1.4173092, 0.0, 0.0, 19.870981, 26.06915, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4966719a-f617-46f2-9a83-993e4047707f, lat_5_lat_16, Origin, 0.0, 0.0, 0.0, 19.593552, 27.071016, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4966719a-f617-46f2-9a83-993e4047707f, lat_5_lat_16, Length, 0.30721256, 0.0, 0.0, 19.42917, 26.854292, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 9348858f-c9e2-49c1-9b3f-211e0b7b137e, lat_5_lat_15, Origin, 0.0, 0.0, 0.0, 19.58059, 27.162046, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 9348858f-c9e2-49c1-9b3f-211e0b7b137e, lat_5_lat_15, Length, 0.216692, 0.0, 0.0, 19.745615, 27.270784, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 308a7174-7aac-4caa-a170-b798bdd5001f, lat_5_lat_14, Origin, 0.0, 0.0, 0.0, 19.420185, 27.37165, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 308a7174-7aac-4caa-a170-b798bdd5001f, lat_5_lat_14, Length, 0.34410205, 0.0, 0.0, 19.191896, 27.124313, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 3f0f0708-2afd-40bf-a193-999064e33ad0, lat_5_lat_13, Origin, 0.0, 0.0, 0.0, 19.314583, 27.48915, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 3f0f0708-2afd-40bf-a193-999064e33ad0, lat_5_lat_13, Length, 0.34021872, 0.0, 0.0, 19.165977, 27.18937, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5f84a408-fd46-4a28-88aa-433d90ee85f5, lat_5_lat_12, Origin, 0.0, 0.0, 0.0, 19.15777, 27.765358, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5f84a408-fd46-4a28-88aa-433d90ee85f5, lat_5_lat_12, Length, 0.078620076, 0.0, 0.0, 19.125711, 27.6987, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, db08df9c-7415-4427-9d08-2459e739a74a, lat_5_lat_11, Origin, 0.0, 0.0, 0.0, 19.166334, 27.843695, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, db08df9c-7415-4427-9d08-2459e739a74a, lat_5_lat_11, Length, 1.4154634, 0.0, 0.0, 19.360294, 26.742735, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 83155a08-8182-43d3-800b-a2811b8e0704, lat_5_lat_10, Origin, 0.0, 0.0, 0.0, 19.069302, 28.423649, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 83155a08-8182-43d3-800b-a2811b8e0704, lat_5_lat_10, Length, 0.72487545, 0.0, 0.0, 18.836878, 27.835651, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 992d136f-0810-4386-ab60-ae8f9582afc8, lat_5_lat_9, Origin, 0.0, 0.0, 0.0, 19.06256, 28.532297, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 992d136f-0810-4386-ab60-ae8f9582afc8, lat_5_lat_9, Length, 0.2560812, 0.0, 0.0, 19.095615, 28.294928, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 301d4b9d-5e81-478f-81b2-bb71aaa2d2d1, lat_5_lat_8, Origin, 0.0, 0.0, 0.0, 19.026716, 28.74645, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 301d4b9d-5e81-478f-81b2-bb71aaa2d2d1, lat_5_lat_8, Length, 0.45103884, 0.0, 0.0, 18.617624, 28.588377, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ea2e8155-8446-41bc-b2d1-30ecefafa858, lat_5_lat_7, Origin, 0.0, 0.0, 0.0, 18.914177, 29.118599, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ea2e8155-8446-41bc-b2d1-30ecefafa858, lat_5_lat_7, Length, 0.15878361, 0.0, 0.0, 18.84531, 29.239056, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 7cdb8677-debe-4ab1-9367-fb2ab025a503, lat_5_lat_6, Origin, 0.0, 0.0, 0.0, 18.76181, 29.30902, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 7cdb8677-debe-4ab1-9367-fb2ab025a503, lat_5_lat_6, Length, 0.57884866, 0.0, 0.0, 19.270159, 29.085678, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5c1287d1-284b-49e9-8339-d477ddfeed02, lat_5_lat_5, Origin, 0.0, 0.0, 0.0, 18.607935, 29.41275, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5c1287d1-284b-49e9-8339-d477ddfeed02, lat_5_lat_5, Length, 0.17089432, 0.0, 0.0, 18.457088, 29.486027, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, aa4d6c8e-bffa-4d7d-9d58-b3b23e7f218c, lat_5_lat_4, Origin, 0.0, 0.0, 0.0, 18.486582, 29.51474, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, aa4d6c8e-bffa-4d7d-9d58-b3b23e7f218c, lat_5_lat_4, Length, 0.2878285, 0.0, 0.0, 18.594246, 29.255894, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, b56b901c-46fb-409a-bbc1-699015bdc194, lat_5_lat_3, Origin, 0.0, 0.0, 0.0, 17.855108, 29.80029, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, b56b901c-46fb-409a-bbc1-699015bdc194, lat_5_lat_3, Length, 0.12599571, 0.0, 0.0, 17.965199, 29.856403, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 740250b1-9bee-4308-8302-40e972a10108, lat_5_lat_2, Origin, 0.0, 0.0, 0.0, 17.662525, 29.73277, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 740250b1-9bee-4308-8302-40e972a10108, lat_5_lat_2, Length, 0.19289848, 0.0, 0.0, 17.744183, 29.563929, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 73f31d8d-e318-48a5-84fe-6b3282a35109, lat_5_lat_1, Origin, 0.0, 0.0, 0.0, 17.444384, 29.62325, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 73f31d8d-e318-48a5-84fe-6b3282a35109, lat_5_lat_1, Length, 0.013302167, 0.0, 0.0, 17.454977, 29.615206, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Origin, 0.0, 0.0, 0.0, 17.22926, 29.488056, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 0.2544922, 0.012705697, 5.598939, 17.432867, 29.633333, 0, Root, 1
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 0.5102669, 0.019061713, 5.802111, 17.661467, 29.7434, 0, Root, 2
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 0.6915028, 0.018998563, 6.191124, 17.835033, 29.785732, 0, Root, 3
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 1.4043713, 0.018740563, 0.6827205, 18.474266, 29.535967, 0, Root, 4
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 1.5945495, 0.018816883, 0.6283984, 18.613966, 29.404734, 0, Root, 5
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 1.7655426, 0.019041458, 0.57862645, 18.753666, 29.307365, 0, Root, 6
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 2.02548, 0.016928256, 0.8474036, 18.927233, 29.116867, 0, Root, 7
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 2.415903, 0.016010093, 1.4278098, 19.0373, 28.748566, 0, Root, 8
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 2.611012, 0.016929328, 1.3415931, 19.066933, 28.558065, 0, Root, 9
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 2.7457309, 0.014819518, 1.5432203, 19.079634, 28.4226, 0, Root, 10
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 3.3305488, 0.012705053, 1.4680768, 19.1516, 27.846867, 0, Root, 11
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 3.4031332, 0.012705053, 1.3376004, 19.160067, 27.7749, 0, Root, 12
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 3.7255447, 0.016367886, 0.8084519, 19.3167, 27.499733, 0, Root, 13
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 3.8888679, 0.016939053, 0.8149143, 19.426767, 27.376966, 0, Root, 14
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 4.15041, 0.016926682, 1.1349846, 19.566467, 27.156834, 0, Root, 15
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 4.241417, 0.016931733, 1.1115853, 19.604567, 27.076399, 0, Root, 16
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 4.43084, 0.019050036, 1.11929, 19.701933, 26.915533, 0, Root, 17
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 4.6706915, 0.019047868, 0.90290076, 19.828934, 26.712334, 0, Root, 18
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 4.8405113, 0.0148230335, 1.1179382, 19.913599, 26.564167, 0, Root, 19
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 5.3624945, 0.01905289, 1.5608857, 19.994034, 26.056166, 0, Root, 20
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 5.621499, 0.01717909, 1.8898475, 19.968634, 25.797934, 0, Root, 21
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 5.7563143, 0.013642067, 1.6818026, 19.9517, 25.6667, 0, Root, 22
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 6.179141, 0.013652596, 1.7109789, 19.883966, 25.2476, 0, Root, 23
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 6.3765173, 0.014659185, 1.5158514, 19.871267, 25.052866, 0, Root, 24
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 6.613887, 0.017890131, 1.6157442, 19.8501, 24.8158, 0, Root, 25
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 6.8632345, 0.012701962, 1.9066657, 19.795067, 24.5745, 0, Root, 26
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 7.138195, 0.010586441, 1.4296072, 19.748499, 24.3078, 0, Root, 27
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 7.272801, 0.012698801, 1.5532869, 19.748499, 24.176567, 0, Root, 28
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 7.4147353, 0.018431978, 1.858003, 19.727333, 24.036867, 0, Root, 29
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 7.772474, 0.010586731, 1.870701, 19.642666, 23.689734, 0, Root, 30
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 7.808997, 0.014186613, 1.5489037, 19.638433, 23.655867, 0, Root, 31
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 8.063968, 0.010313612, 1.4956268, 19.6469, 23.401867, 0, Root, 32
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 8.192557, 0.01462504, 1.6169537, 19.642666, 23.274866, 0, Root, 33
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 8.364787, 0.017802535, 1.3496467, 19.676533, 23.105534, 0, Root, 34
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 8.66958, 0.016931394, 1.063153, 19.7739, 22.817667, 0, Root, 35
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 8.8090515, 0.016726445, 0.69229174, 19.8501, 22.703367, 0, Root, 36
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 8.928051, 0.017750215, 0.56407815, 19.947466, 22.635633, 0, Root, 37
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 9.226857, 0.01956364, 0.30541027, 20.2057, 22.487467, 0, Root, 38
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 9.291275, 0.014664555, 0.9264362, 20.264967, 22.4663, 0, Root, 39
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 9.53186, 0.012699854, 0.4407189, 20.4724, 22.347767, 0, Root, 40
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 9.631289, 0.012634769, 0.23648222, 20.5613, 22.301199, 0, Root, 41
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 9.906209, 0.016857862, 6.245514, 20.806833, 22.191133, 0, Root, 42
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 10.092778, 0.012318844, 6.1736794, 20.9931, 22.220766, 0, Root, 43
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 10.322056, 0.018569697, 5.706047, 21.200533, 22.3139, 0, Root, 44
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 10.600825, 0.01904685, 5.4469995, 21.412199, 22.4917, 0, Root, 45
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 10.743183, 0.017951032, 5.3115115, 21.5011, 22.601767, 0, Root, 46
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 11.0850115, 0.01639336, 5.1257763, 21.687366, 22.885399, 0, Root, 47
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 11.4940195, 0.014646192, 5.3287334, 21.877867, 23.245234, 0, Root, 48
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 12.4581785, 0.012516847, 4.922546, 22.280033, 24.087666, 0, Root, 49
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 13.401206, 0.0148262605, 4.7056046, 21.890566, 24.7904, 0, Root, 50
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 13.499808, 0.01515748, 4.7737794, 21.8694, 24.883533, 0, Root, 51
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 13.929511, 0.018531045, 5.317418, 21.992167, 25.294167, 0, Root, 52
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 14.145513, 0.012700024, 5.2975187, 22.1107, 25.471966, 0, Root, 53
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 14.381403, 0.012702347, 5.2569985, 22.216534, 25.683634, 0, Root, 54
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 14.703088, 0.015994735, 5.053059, 22.305433, 25.992666, 0, Root, 55
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 14.9257345, 0.02117404, 5.916022, 22.449366, 26.1493, 0, Root, 56
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Number, 15.247652, 0.016931968, 5.854221, 22.749933, 26.267834, 0, Root, 57
+Run4 F.04, Run4 F.04, 723a0c83-6100-4138-ae3a-7296c593e49f, lat_5, Length, 15.732118, 0.0, 0.0, 23.221123, 26.36604, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 469a4edd-cdd3-46c2-8c51-b3250efd2ee6, lat_4, Origin, 0.0, 0.0, 0.0, 18.497984, 30.979914, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 469a4edd-cdd3-46c2-8c51-b3250efd2ee6, lat_4, Length, 0.66248775, 0.0, 0.0, 18.086048, 31.484457, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 1efd1bb8-45e7-4b80-8e4e-9f725df8f3f6, lat_3_lat_14, Origin, 0.0, 0.0, 0.0, 18.363832, 32.947784, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 1efd1bb8-45e7-4b80-8e4e-9f725df8f3f6, lat_3_lat_14, Length, 0.16179302, 0.0, 0.0, 18.221626, 33.01064, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 8c5bf8f3-d7a0-4af7-b2ea-2326d6c26f71, lat_3_lat_13, Origin, 0.0, 0.0, 0.0, 18.552584, 32.954384, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 8c5bf8f3-d7a0-4af7-b2ea-2326d6c26f71, lat_3_lat_13, Length, 0.10238485, 0.0, 0.0, 18.5267, 33.047997, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ee38fd3c-9c5e-4302-ab44-31357e2cceb5, lat_3_lat_12, Origin, 0.0, 0.0, 0.0, 18.864733, 32.993088, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ee38fd3c-9c5e-4302-ab44-31357e2cceb5, lat_3_lat_12, Length, 0.7827975, 0.0, 0.0, 18.606745, 33.635193, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 839e4864-a889-445e-889b-d30fd7e68b1e, lat_3_lat_11, Origin, 0.0, 0.0, 0.0, 19.172842, 32.837196, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 839e4864-a889-445e-889b-d30fd7e68b1e, lat_3_lat_11, Length, 0.1600495, 0.0, 0.0, 19.038235, 32.914406, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 383fabd7-b042-450d-9abd-579781bc5ca1, lat_3_lat_10, Origin, 0.0, 0.0, 0.0, 19.17669, 32.833664, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 383fabd7-b042-450d-9abd-579781bc5ca1, lat_3_lat_10, Length, 0.6227393, 0.0, 0.0, 18.712263, 32.439392, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f45b0743-53d1-416d-8429-b9150cf2f9a4, lat_3_lat_9, Origin, 0.0, 0.0, 0.0, 19.665041, 32.645233, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, f45b0743-53d1-416d-8429-b9150cf2f9a4, lat_3_lat_9, Length, 0.3636424, 0.0, 0.0, 19.47265, 32.89735, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, d2eb30ca-6739-4ea5-9fd2-33c824cdc2e0, lat_3_lat_8, Origin, 0.0, 0.0, 0.0, 19.899656, 32.50082, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, d2eb30ca-6739-4ea5-9fd2-33c824cdc2e0, lat_3_lat_8, Length, 1.052554, 0.0, 0.0, 18.897814, 32.406536, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 92dd0075-b22f-4628-87f3-7dead4b1a203, lat_3_lat_7, Origin, 0.0, 0.0, 0.0, 20.154902, 32.370094, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 92dd0075-b22f-4628-87f3-7dead4b1a203, lat_3_lat_7, Length, 0.30244434, 0.0, 0.0, 19.89108, 32.311443, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 28e44149-5b16-4fec-8b1c-5ef4937a62f9, lat_3_lat_6, Origin, 0.0, 0.0, 0.0, 20.283884, 32.275803, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 28e44149-5b16-4fec-8b1c-5ef4937a62f9, lat_3_lat_6, Length, 0.562855, 0.0, 0.0, 19.746758, 32.247486, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 3f5db1c5-57e9-4f0b-9981-02fda4b93768, lat_3_lat_5, Origin, 0.0, 0.0, 0.0, 20.632177, 32.209568, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 3f5db1c5-57e9-4f0b-9981-02fda4b93768, lat_3_lat_5, Length, 0.480206, 0.0, 0.0, 20.205957, 32.414223, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 34a14cd6-744b-4469-a657-ee1d89fddee5, lat_3_lat_4, Origin, 0.0, 0.0, 0.0, 20.793087, 32.204792, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 34a14cd6-744b-4469-a657-ee1d89fddee5, lat_3_lat_4, Length, 0.64831406, 0.0, 0.0, 20.307201, 32.57533, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 9b06a91c-5198-48f5-b9a3-6e74e0f57418, lat_3_lat_3, Origin, 0.0, 0.0, 0.0, 21.154276, 32.08027, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 9b06a91c-5198-48f5-b9a3-6e74e0f57418, lat_3_lat_3, Length, 0.18284634, 0.0, 0.0, 21.117632, 32.25227, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5b397d0d-0348-4df7-88f1-7ab2d73b0bd8, lat_3_lat_2, Origin, 0.0, 0.0, 0.0, 21.254593, 32.000103, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 5b397d0d-0348-4df7-88f1-7ab2d73b0bd8, lat_3_lat_2, Length, 0.04338162, 0.0, 0.0, 21.245644, 31.95782, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, db01dafe-3e81-4ae5-8de1-5f8b34be7e1a, lat_3_lat_1, Origin, 0.0, 0.0, 0.0, 21.34235, 31.531982, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, db01dafe-3e81-4ae5-8de1-5f8b34be7e1a, lat_3_lat_1, Length, 0.26942337, 0.0, 0.0, 21.600615, 31.497831, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Origin, 0.0, 0.0, 0.0, 21.007107, 31.337933, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 0.41200334, 0.017893897, 5.7176414, 21.331766, 31.538334, 0, Root, 1
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 0.9994078, 0.014811154, 3.6671565, 21.2598, 32.012466, 0, Root, 2
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 1.1271784, 0.014817938, 3.588084, 21.1455, 32.0675, 0, Root, 3
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 1.5072199, 0.014823816, 3.2148912, 20.7899, 32.190266, 0, Root, 4
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 1.6644117, 0.014815029, 2.9366076, 20.633266, 32.198734, 0, Root, 5
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 2.020835, 0.012698772, 3.4598057, 20.290367, 32.2834, 0, Root, 6
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 2.174604, 0.016827404, 3.4895716, 20.159134, 32.355366, 0, Root, 7
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 2.471903, 0.012708418, 3.8270888, 19.909367, 32.512, 0, Root, 8
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 2.7512636, 0.01224161, 3.8715222, 19.668066, 32.643234, 0, Root, 9
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 3.2858553, 0.02314405, 3.1448863, 19.193933, 32.8422, 0, Root, 10
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 3.289693, 0.02262606, 4.143892, 19.1897, 32.8422, 0, Root, 11
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 3.6530309, 0.014810815, 3.0453072, 18.863733, 32.977665, 0, Root, 12
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 3.9724538, 0.012565707, 2.963506, 18.554699, 32.943798, 0, Root, 13
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Number, 4.1638775, 0.014824845, 3.4470754, 18.3642, 32.948032, 0, Root, 14
+Run4 F.04, Run4 F.04, 0a8877f2-de59-4e87-a05a-8e9565ea323c, lat_3, Length, 4.6646895, 0.0, 0.0, 17.943863, 33.188183, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, b8a7b181-1be5-41ff-8b72-601812a52839, lat_2_lat_7, Origin, 0.0, 0.0, 0.0, 21.367184, 34.167156, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, b8a7b181-1be5-41ff-8b72-601812a52839, lat_2_lat_7, Length, 0.052243885, 0.0, 0.0, 21.315577, 34.16096, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 0c54a104-b61c-45ce-ac3c-702d033dfee7, lat_2_lat_6, Origin, 0.0, 0.0, 0.0, 21.537083, 33.809517, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 0c54a104-b61c-45ce-ac3c-702d033dfee7, lat_2_lat_6, Length, 0.13307816, 0.0, 0.0, 21.629751, 33.904022, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 0281b04c-1970-476e-b4b0-6d5f865746b2, lat_2_lat_5, Origin, 0.0, 0.0, 0.0, 21.63409, 33.502567, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 0281b04c-1970-476e-b4b0-6d5f865746b2, lat_2_lat_5, Length, 0.12191836, 0.0, 0.0, 21.52029, 33.49956, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, aa6ae52e-6596-4cd0-b218-881b71caac1f, lat_2_lat_4, Origin, 0.0, 0.0, 0.0, 21.791082, 32.967083, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, aa6ae52e-6596-4cd0-b218-881b71caac1f, lat_2_lat_4, Length, 0.12803605, 0.0, 0.0, 21.823156, 33.08567, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4c5a6835-1a58-4612-9d63-e2fe6863fe31, lat_2_lat_3, Origin, 0.0, 0.0, 0.0, 21.841316, 32.846355, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4c5a6835-1a58-4612-9d63-e2fe6863fe31, lat_2_lat_3, Length, 0.17326957, 0.0, 0.0, 21.997421, 32.78009, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 28a87087-2de4-403f-b5fe-fd41ac4eb297, lat_2_lat_2, Origin, 0.0, 0.0, 0.0, 21.917955, 32.50247, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 28a87087-2de4-403f-b5fe-fd41ac4eb297, lat_2_lat_2, Length, 0.38531792, 0.0, 0.0, 22.192713, 32.756645, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 83bb9321-e2ea-48d0-bc26-7ece645cf1d2, lat_2_lat_1, Origin, 0.0, 0.0, 0.0, 21.774212, 31.4706, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 83bb9321-e2ea-48d0-bc26-7ece645cf1d2, lat_2_lat_1, Length, 0.08585444, 0.0, 0.0, 21.694445, 31.459667, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 91957d75-1dd6-4a64-9fb3-a9d85185ea55, lat_2, Origin, 0.0, 0.0, 0.0, 21.773087, 31.087616, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 91957d75-1dd6-4a64-9fb3-a9d85185ea55, lat_2, Number, 0.3995865, 0.014821673, 4.907533, 21.784733, 31.466366, 0, Root, 1
+Run4 F.04, Run4 F.04, 91957d75-1dd6-4a64-9fb3-a9d85185ea55, lat_2, Number, 1.4811996, 0.014818119, 4.267396, 21.9075, 32.495068, 0, Root, 2
+Run4 F.04, Run4 F.04, 91957d75-1dd6-4a64-9fb3-a9d85185ea55, lat_2, Number, 1.8412192, 0.014665981, 4.316312, 21.831299, 32.8422, 0, Root, 3
+Run4 F.04, Run4 F.04, 91957d75-1dd6-4a64-9fb3-a9d85185ea55, lat_2, Number, 1.9647253, 0.01693172, 4.284166, 21.7805, 32.9565, 0, Root, 4
+Run4 F.04, Run4 F.04, 91957d75-1dd6-4a64-9fb3-a9d85185ea55, lat_2, Number, 2.5506082, 0.008465273, 4.371911, 21.645033, 33.506832, 0, Root, 5
+Run4 F.04, Run4 F.04, 91957d75-1dd6-4a64-9fb3-a9d85185ea55, lat_2, Number, 2.8766098, 0.008646804, 3.1358256, 21.526499, 33.803165, 0, Root, 6
+Run4 F.04, Run4 F.04, 91957d75-1dd6-4a64-9fb3-a9d85185ea55, lat_2, Number, 3.2921512, 0.016934918, 4.438504, 21.378332, 34.167233, 0, Root, 7
+Run4 F.04, Run4 F.04, 91957d75-1dd6-4a64-9fb3-a9d85185ea55, lat_2, Length, 5.3450985, 0.0, 0.0, 20.904871, 36.113457, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 534c5616-7129-481e-b6a5-6cb24be373f2, lat_1_lat_8, Origin, 0.0, 0.0, 0.0, 24.925865, 31.214571, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 534c5616-7129-481e-b6a5-6cb24be373f2, lat_1_lat_8, Length, 0.14018999, 0.0, 0.0, 24.983292, 31.093132, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4b04083a-5c23-456c-8cc4-07dc31d49087, lat_1_lat_7, Origin, 0.0, 0.0, 0.0, 24.886158, 31.231445, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 4b04083a-5c23-456c-8cc4-07dc31d49087, lat_1_lat_7, Length, 0.5844375, 0.0, 0.0, 24.98124, 31.729197, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 1740fd1c-f9d0-488e-8241-40c1de61bde7, lat_1_lat_6, Origin, 0.0, 0.0, 0.0, 24.757507, 31.186632, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 1740fd1c-f9d0-488e-8241-40c1de61bde7, lat_1_lat_6, Length, 0.020356704, 0.0, 0.0, 24.76264, 31.166933, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, b309239e-cd56-4957-a095-1391d353a767, lat_1_lat_5, Origin, 0.0, 0.0, 0.0, 24.526823, 31.147497, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, b309239e-cd56-4957-a095-1391d353a767, lat_1_lat_5, Length, 0.014069709, 0.0, 0.0, 24.534424, 31.135658, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 14d8329e-a3c0-482a-8801-5efe83c24e2b, lat_1_lat_4, Origin, 0.0, 0.0, 0.0, 24.235794, 31.14292, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 14d8329e-a3c0-482a-8801-5efe83c24e2b, lat_1_lat_4, Length, 0.17804937, 0.0, 0.0, 24.290709, 30.99175, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 225bcd68-6751-4d40-b7d8-2daa42a53608, lat_1_lat_3, Origin, 0.0, 0.0, 0.0, 23.962784, 31.167915, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 225bcd68-6751-4d40-b7d8-2daa42a53608, lat_1_lat_3, Length, 0.048594143, 0.0, 0.0, 23.962948, 31.121948, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 7930d689-9bb9-4326-b9ba-fffb99b019ca, lat_1_lat_2, Origin, 0.0, 0.0, 0.0, 23.565208, 31.17853, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, 7930d689-9bb9-4326-b9ba-fffb99b019ca, lat_1_lat_2, Length, 0.1655419, 0.0, 0.0, 23.649324, 31.298138, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, a7bdcd16-cd24-485c-934e-2c792c8395b0, lat_1_lat_1, Origin, 0.0, 0.0, 0.0, 23.002874, 31.134094, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, a7bdcd16-cd24-485c-934e-2c792c8395b0, lat_1_lat_1, Length, 0.12521933, 0.0, 0.0, 23.059343, 31.026873, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ca7a73cb-d59d-4042-b81b-4b0009093a3a, lat_1, Origin, 0.0, 0.0, 0.0, 22.50863, 30.84204, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, ca7a73cb-d59d-4042-b81b-4b0009093a3a, lat_1, Number, 0.65221274, 0.019053554, 6.2178407, 22.9997, 31.1404, 0, Root, 1
+Run4 F.04, Run4 F.04, ca7a73cb-d59d-4042-b81b-4b0009093a3a, lat_1, Number, 1.2256241, 0.019025484, 6.172966, 23.562733, 31.174267, 0, Root, 2
+Run4 F.04, Run4 F.04, ca7a73cb-d59d-4042-b81b-4b0009093a3a, lat_1, Number, 1.6286747, 0.014157003, 0.027615761, 23.960667, 31.174267, 0, Root, 3
+Run4 F.04, Run4 F.04, ca7a73cb-d59d-4042-b81b-4b0009093a3a, lat_1, Number, 1.8991071, 0.025550507, 6.1058545, 24.2316, 31.157333, 0, Root, 4
+Run4 F.04, Run4 F.04, ca7a73cb-d59d-4042-b81b-4b0009093a3a, lat_1, Number, 2.1902487, 0.01693697, 6.1950264, 24.519466, 31.157333, 0, Root, 5
+Run4 F.04, Run4 F.04, ca7a73cb-d59d-4042-b81b-4b0009093a3a, lat_1, Number, 2.4320138, 0.019057719, 6.117466, 24.756533, 31.1912, 0, Root, 6
+Run4 F.04, Run4 F.04, ca7a73cb-d59d-4042-b81b-4b0009093a3a, lat_1, Number, 2.5630727, 0.012703903, 6.1210756, 24.883533, 31.220833, 0, Root, 7
+Run4 F.04, Run4 F.04, ca7a73cb-d59d-4042-b81b-4b0009093a3a, lat_1, Number, 2.604518, 0.012703903, 6.1739902, 24.921633, 31.233534, 0, Root, 8
+Run4 F.04, Run4 F.04, ca7a73cb-d59d-4042-b81b-4b0009093a3a, lat_1, Length, 2.7408, 0.0, 0.0, 25.058828, 31.252844, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, fc405d98-6e5d-47b7-ab51-1f018f50c58e, main_2, Origin, 0.0, 0.0, 0.0, 8.833588, 19.953056, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, fc405d98-6e5d-47b7-ab51-1f018f50c58e, main_2, Number, 0.39880544, 0.09905254, 5.4875426, 9.144, 20.197233, 0, Root, 1
+Run4 F.04, Run4 F.04, fc405d98-6e5d-47b7-ab51-1f018f50c58e, main_2, Number, 1.0600457, 0.12149822, 4.82404, 9.427633, 20.7772, 0, Root, 2
+Run4 F.04, Run4 F.04, fc405d98-6e5d-47b7-ab51-1f018f50c58e, main_2, Number, 1.1969893, 0.12000635, 4.82404, 9.440333, 20.912666, 0, Root, 3
+Run4 F.04, Run4 F.04, fc405d98-6e5d-47b7-ab51-1f018f50c58e, main_2, Length, 1.9962198, 0.0, 0.0, 9.985386, 21.431978, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Origin, 0.0, 0.0, 0.0, 23.959215, 30.25434, 0, Root, Run4 F.04
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 0.3241745, 0.02326879, 3.6100895, 23.651632, 30.361465, 0, Root, 1
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 0.5862435, 0.021164743, 3.5716245, 23.414566, 30.471533, 0, Root, 2
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 0.76509887, 0.023825096, 3.5295417, 23.2537, 30.543499, 0, Root, 3
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 0.8526964, 0.028381003, 3.571404, 23.169033, 30.577366, 0, Root, 4
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 1.0007955, 0.023080764, 3.504692, 23.033566, 30.6324, 0, Root, 5
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 1.2939162, 0.021491706, 3.879303, 22.754166, 30.725533, 0, Root, 6
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 1.5698792, 0.019912735, 3.3668623, 22.500166, 30.822899, 0, Root, 7
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 1.8255042, 0.019055557, 3.5137897, 22.258867, 30.8991, 0, Root, 8
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 2.0632184, 0.01904111, 3.6508281, 22.0345, 30.971066, 0, Root, 9
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 2.3508413, 0.0236638, 3.4634619, 21.7678, 31.0642, 0, Root, 10
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 2.5361984, 0.020296557, 4.268835, 21.59, 31.110765, 0, Root, 11
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 2.7186728, 0.021176452, 4.466975, 21.4376, 31.1912, 0, Root, 12
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 2.8278902, 0.021288602, 3.4218094, 21.352934, 31.250465, 0, Root, 13
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 2.9708948, 0.019061161, 3.4535115, 21.213234, 31.292799, 0, Root, 14
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 3.1948504, 0.019046247, 3.4127824, 20.997334, 31.313967, 0, Root, 15
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 3.416943, 0.02072617, 3.862276, 20.781433, 31.364767, 0, Root, 16
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 3.541118, 0.02379068, 3.5642788, 20.667133, 31.407099, 0, Root, 17
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 3.6388776, 0.020630628, 3.468091, 20.578234, 31.440966, 0, Root, 18
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 3.9659863, 0.022116942, 3.5716565, 20.273434, 31.5595, 0, Root, 19
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 4.153854, 0.023285137, 3.1880028, 20.0914, 31.601833, 0, Root, 20
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 4.34128, 0.021174219, 3.17459, 19.905132, 31.597599, 0, Root, 21
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 4.567732, 0.01692595, 2.8902586, 19.680767, 31.567966, 0, Root, 22
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 4.8927164, 0.019036433, 2.6143568, 19.3675, 31.627234, 0, Root, 23
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 5.305343, 0.019061185, 2.616283, 19.0246, 31.3944, 0, Root, 24
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 5.508962, 0.022897515, 2.4575644, 18.867966, 31.271633, 0, Root, 25
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 5.9803615, 0.02191075, 2.4075105, 18.5166, 30.954132, 0, Root, 26
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 6.680126, 0.01904853, 2.3491125, 18.0213, 30.463066, 0, Root, 27
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 7.052024, 0.021053758, 2.2686558, 17.771534, 30.1879, 0, Root, 28
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 7.797453, 0.016925795, 2.197379, 17.2974, 29.612165, 0, Root, 29
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 7.9605827, 0.024819326, 2.0955641, 17.204266, 29.480932, 0, Root, 30
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 8.798004, 0.016928319, 2.1485505, 16.7386, 28.786667, 0, Root, 31
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 9.1730995, 0.01692832, 2.1144388, 16.5481, 28.4607, 0, Root, 32
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 9.411218, 0.016928319, 1.9892663, 16.438034, 28.253265, 0, Root, 33
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 10.131893, 0.027338428, 1.9216264, 16.120533, 27.6098, 0, Root, 34
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 10.371274, 0.017306454, 2.102027, 16.035866, 27.385433, 0, Root, 35
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 10.41169, 0.019701673, 2.1948595, 16.0147, 27.351566, 0, Root, 36
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 10.502049, 0.023891635, 2.3888342, 15.955433, 27.288067, 0, Root, 37
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 11.1149845, 0.019046573, 1.9448597, 15.680266, 26.741966, 0, Root, 38
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 11.299034, 0.019050907, 1.8573897, 15.620999, 26.5684, 0, Root, 39
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 11.352536, 0.019050907, 1.8542655, 15.604067, 26.5176, 0, Root, 40
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 11.48153, 0.024600897, 1.9018227, 15.565967, 26.394833, 0, Root, 41
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 11.84196, 0.022604272, 2.120671, 15.434733, 26.0604, 0, Root, 42
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 12.152465, 0.019052943, 1.8698763, 15.299267, 25.789467, 0, Root, 43
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 12.515372, 0.017872255, 2.6838381, 15.193433, 25.4508, 0, Root, 44
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 12.617993, 0.019984214, 1.9077827, 15.1553335, 25.357666, 0, Root, 45
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 12.730926, 0.019045128, 1.9455861, 15.113, 25.251833, 0, Root, 46
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 13.37671, 0.014814971, 1.8949074, 14.930966, 24.638, 0, Root, 47
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 13.579024, 0.0149617065, 1.6260995, 14.816667, 24.4729, 0, Root, 48
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 13.796375, 0.020920547, 2.004223, 14.723534, 24.278166, 0, Root, 49
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 14.220074, 0.019049661, 2.0061476, 14.579599, 23.880234, 0, Root, 50
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 14.33357, 0.019049661, 2.00306, 14.533033, 23.774399, 0, Root, 51
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 14.39209, 0.01966991, 1.940484, 14.511867, 23.719366, 0, Root, 52
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 14.790917, 0.016930824, 1.6617217, 14.418734, 23.334133, 0, Root, 53
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 14.951273, 0.014815741, 1.6740566, 14.4018, 23.173265, 0, Root, 54
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 15.336488, 0.014815814, 1.9607515, 14.3764, 22.792267, 0, Root, 55
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 15.56689, 0.014818606, 1.803224, 14.334066, 22.5679, 0, Root, 56
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 15.779552, 0.017437609, 1.9456503, 14.308666, 22.356234, 0, Root, 57
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 16.36561, 0.014818051, 1.2094156, 14.2494, 21.7805, 0, Root, 58
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 16.92906, 0.014815622, 1.8301103, 14.152033, 21.2344, 0, Root, 59
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 17.038645, 0.01900784, 1.6919172, 14.130866, 21.128567, 0, Root, 60
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 17.68079, 0.014816244, 1.7455117, 13.999633, 20.497799, 0, Root, 61
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 18.128633, 0.016932502, 1.6197416, 13.889566, 20.066, 0, Root, 62
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 18.743568, 0.020558944, 1.5500152, 13.830299, 19.4564, 0, Root, 63
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 18.853022, 0.018458398, 1.648669, 13.826067, 19.346333, 0, Root, 64
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 19.625069, 0.021897094, 1.9194506, 13.660967, 18.597033, 0, Root, 65
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 19.98739, 0.019093666, 2.2640026, 13.5255, 18.2626, 0, Root, 66
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 20.338308, 0.01693418, 1.9589316, 13.368867, 17.953566, 0, Root, 67
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 20.503546, 0.016939867, 1.79144, 13.326533, 17.7927, 0, Root, 68
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 21.09503, 0.015385273, 2.0783494, 13.288433, 17.204266, 0, Root, 69
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 21.299932, 0.02046476, 1.8907325, 13.2207, 17.013767, 0, Root, 70
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 21.554417, 0.020662295, 1.8962461, 13.1445, 16.768232, 0, Root, 71
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 21.947788, 0.01905451, 1.7962961, 13.034433, 16.391466, 0, Root, 72
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 22.054268, 0.01905451, 1.6494191, 13.034433, 16.285633, 0, Root, 73
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 22.244627, 0.019380907, 1.6044562, 13.009033, 16.099367, 0, Root, 74
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 22.395107, 0.016931502, 1.5179493, 13.0005665, 15.9512, 0, Root, 75
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 22.822868, 0.014684613, 1.2592872, 12.983633, 15.523633, 0, Root, 76
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 22.880213, 0.015899573, 1.5290208, 12.9921, 15.4686, 0, Root, 77
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 23.320715, 0.023331996, 1.5606589, 13.102166, 15.041033, 0, Root, 78
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 23.364202, 0.031176165, 1.5606589, 13.102166, 14.9987, 0, Root, 79
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 23.599981, 0.021161279, 1.241442, 13.165667, 14.774333, 0, Root, 80
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 23.817396, 0.016937701, 1.1995836, 13.2588, 14.575366, 0, Root, 81
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 24.10326, 0.016934192, 1.3038596, 13.364634, 14.308666, 0, Root, 82
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 24.359297, 0.016801944, 1.6801227, 13.419666, 14.063133, 0, Root, 83
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 24.767563, 0.01693327, 1.183523, 13.517034, 13.669434, 0, Root, 84
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 25.038342, 0.017644877, 1.5818456, 13.618633, 13.419666, 0, Root, 85
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 25.412914, 0.014814495, 0.774987, 13.7541, 13.072534, 0, Root, 86
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 25.679966, 0.021160694, 1.3094301, 13.9192, 12.8651, 0, Root, 87
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 25.775171, 0.019047862, 0.8675106, 13.97, 12.788899, 0, Root, 88
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 26.095984, 0.01905512, 0.9555549, 14.164733, 12.5349, 0, Root, 89
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 26.494112, 0.019050363, 0.9055933, 14.397567, 12.213166, 0, Root, 90
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 26.65131, 0.018992541, 1.5057188, 14.418734, 12.060766, 0, Root, 91
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 26.956238, 0.016929677, 1.4017019, 14.461066, 11.7602, 0, Root, 92
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 27.068434, 0.021882052, 1.2600511, 14.482233, 11.650133, 0, Root, 93
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 27.274015, 0.019656057, 1.0646302, 14.575366, 11.463866, 0, Root, 94
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 27.492502, 0.0190535, 1.1814269, 14.6939, 11.281834, 0, Root, 95
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 27.538778, 0.019053498, 0.99672973, 14.710834, 11.2395, 0, Root, 96
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 27.846455, 0.016847003, 0.7936527, 14.8039665, 10.9601, 0, Root, 97
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 28.028484, 0.03938579, 1.005836, 14.8970995, 10.824634, 0, Root, 98
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 28.779612, 0.019234452, 1.6825045, 15.206133, 10.151533, 0, Root, 99
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 28.966246, 0.016911773, 1.2652247, 15.2527, 9.9695, 0, Root, 100
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 29.466, 0.016932316, 1.1166668, 15.4008665, 9.499599, 0, Root, 101
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 29.71089, 0.016932316, 1.3460082, 15.481299, 9.266767, 0, Root, 102
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 29.90484, 0.016018393, 1.5046086, 15.536333, 9.084733, 0, Root, 103
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 30.455229, 0.026602883, 0.8606341, 15.663333, 8.555567, 0, Root, 104
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 30.835323, 0.016950246, 1.2927665, 15.891933, 8.255, 0, Root, 105
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 31.059437, 0.016928604, 0.8776428, 16.006233, 8.0645, 0, Root, 106
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 31.21435, 0.02178942, 0.86673397, 16.107834, 7.9459667, 0, Root, 107
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 31.411879, 0.023286, 1.1462435, 16.2179, 7.7808666, 0, Root, 108
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 31.710318, 0.01905054, 0.9040578, 16.366066, 7.5268664, 0, Root, 109
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 31.795073, 0.02108734, 0.33015847, 16.446499, 7.5057, 0, Root, 110
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 32.200935, 0.016931448, 0.085605696, 16.8402, 7.4083333, 0, Root, 111
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 32.363068, 0.029525217, 1.1288636, 16.975666, 7.361767, 0, Root, 112
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 32.736965, 0.021696027, 0.35059816, 17.263533, 7.1374, 0, Root, 113
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 32.988903, 0.019051097, 0.40686846, 17.496367, 7.0442667, 0, Root, 114
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 33.21857, 0.019051097, 0.65228945, 17.695333, 6.9299664, 0, Root, 115
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 33.42051, 0.019051097, 0.5760787, 17.860434, 6.8156667, 0, Root, 116
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 33.569218, 0.023278568, 0.09492251, 17.991667, 6.7564, 0, Root, 117
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 34.07803, 0.024804035, 0.27967256, 18.495434, 6.688667, 0, Root, 118
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 34.17995, 0.028276866, 0.58846015, 18.584333, 6.6421, 0, Root, 119
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 34.50123, 0.031747617, 0.5316362, 18.838333, 6.4473667, 0, Root, 120
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 34.956497, 0.025393927, 0.23430352, 19.270134, 6.3034334, 0, Root, 121
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 35.028954, 0.024546346, 0.38290128, 19.337866, 6.2780333, 0, Root, 122
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 35.398853, 0.029631354, 0.5731591, 19.6723, 6.1256332, 0, Root, 123
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 35.6157, 0.031262238, 0.5916413, 19.845867, 5.9986334, 0, Root, 124
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 36.11301, 0.023284897, 0.62897736, 20.2311, 5.6853666, 0, Root, 125
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 36.5227, 0.025396882, 0.65003544, 20.574, 5.461, 0, Root, 126
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 36.743225, 0.029203493, 0.5895421, 20.756033, 5.342467, 0, Root, 127
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 36.84907, 0.029848175, 0.57004267, 20.8534, 5.2959, 0, Root, 128
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 37.956314, 0.025172992, 6.0000277, 21.814367, 4.8556333, 0, Root, 129
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 38.281796, 0.01904896, 0.16962668, 22.1234, 4.9360666, 0, Root, 130
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 39.005634, 0.021129103, 0.54685175, 22.838833, 4.8725667, 0, Root, 131
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 39.4563, 0.025395894, 0.3474443, 23.224066, 4.6482, 0, Root, 132
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 40.87507, 0.014725318, 5.500793, 24.570267, 5.0038, 0, Root, 133
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Number, 41.646458, 0.014106799, 5.1355753, 24.8793, 5.6853666, 0, Root, 134
+Run4 F.04, Run4 F.04, a89b8e1c-8574-4097-aeb4-eac151ad0b46, main_1, Length, 42.4376, 0.0, 0.0, 25.038261, 6.455155, 0, Root, Run4 F.04
