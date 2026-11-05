@@ -1010,7 +1010,7 @@ void Leaf::createSegments(double l, double dt, bool verbose) {
         // the new node is inserted at index nn+i, its predecessor is the node nn+i-1
         int pi = nn + i - 1;
         Vector3d newdx = getIncrement(getNode(pi), sdx, pi);
-        Vector3d h = heading(pi);
+        Vector3d h = Organ::heading(pi);
         Vector3d newnode = Matrix3d::ons(h).inverse().times(newdx); // relative coordinate
         double et = this->calcCreationTime(getLength(true) + shiftl + sl,
                                            dt); // here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
