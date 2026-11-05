@@ -33,9 +33,9 @@ from simulation_utils import (
 # 1995: RUTHE_1994_95, 227
 # 1996: RUTHE_1995_96, 238
 # 1997: RUTHE_1996_97, 240
-DATASET = RUTHE_1996_97
-SOIL_CORE_DAY = 240
-year = 1997
+DATASET = RUTHE_1994_95
+SOIL_CORE_DAY = 227
+year = 1995
 
 SEED = 56789
 
@@ -44,8 +44,8 @@ SEED = 56789
 # - False: generic change-of-variables via Jacobian
 USE_ANALYTIC_RLD_TO_RADIUS_PDF = True
 
-CV_RLD_A: float = -71.71101126734618
-CV_RLD_B: float = 38.76350124842039
+CV_RLD_A: float = -44.476211164247225
+CV_RLD_B: float = 42.38824994899611
 
 # Coefficients from the cv-rld fit of the unscaled simulation run
 # CV_RLD_A: float = -16.186239485728194
