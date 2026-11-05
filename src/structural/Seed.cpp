@@ -108,9 +108,11 @@ void Seed::initialize(bool verbose)
 		}
 		double delay = sp->firstB;
 		for (int i=0; i<maxB; i++) {
-			std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType,  delay);
-			basalroot->addNode(getNode(0), getNodeId(0), delay);
-			this->addChild(basalroot);
+			for (int j=0; j<sp->numB; j++) {
+				std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType,  delay);
+				basalroot->addNode(getNode(0), getNodeId(0), delay);
+				this->addChild(basalroot);				
+			}
 			delay += sp->delayB;
 		}
 	}

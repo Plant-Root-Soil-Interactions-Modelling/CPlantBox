@@ -67,6 +67,7 @@ std::shared_ptr<OrganSpecificParameter> SeedRandomParameter::realize()
     double fB = std::max(firstB + p->randn()*firstBs, 0.);
     double dB = std::max(delayB + p->randn()*delayBs, 0.);
 	int mB = (int)(std::max(maxB + p->randn()*maxBs, 0.) +0.5);
+	int nB = (int)(std::max(numB + p->randn()*numBs, 0.) +0.5);
     double nC_ = std::max(nC + p->randn()*nCs, 0.);
 
     double fSB = std::max(firstSB + p->randn()*firstSBs, 0.);
@@ -78,7 +79,7 @@ std::shared_ptr<OrganSpecificParameter> SeedRandomParameter::realize()
 	double fTi = std::max(firstTil + p->randn()*firstTils, 0.);
     double dTi = std::max(delayTil + p->randn()*delayTils, 0.);
     int maxtil = std::max(maxTil + p->randn()*maxTils, 0.);
-    return std::make_shared<SeedSpecificParameter>(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, maxtil, st,fTi, dTi);
+    return std::make_shared<SeedSpecificParameter>(subType, sP, fB, dB, mB, nB, nC_, fSB, dSB,dRC, nz_, maxtil, st,fTi, dTi);
 }
 
 /**
@@ -119,6 +120,7 @@ void SeedRandomParameter::bindParameters()
     bindParameter("firstB", &firstB, "Emergence of first basal root [day]", &firstBs);
     bindParameter("delayB", &delayB, "Time delay between the basal roots [day]", &delayBs);
     bindParameter("maxB", &maxB, "Maximal number of basal roots [1]", &maxBs);
+    bindParameter("numB", &numB, "Maximal number of basal per burst [1]", &numBs);
     bindParameter("nC", &nC, "Maximal number of roots per root crown [1]", &nCs);
     bindParameter("firstSB", &firstSB, "First emergence of a shoot borne root [day]", &firstSBs);
     bindParameter("delaySB", &delaySB, "Time delay between the shoot borne roots [day]", &delaySBs);

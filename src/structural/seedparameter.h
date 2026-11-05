@@ -24,10 +24,10 @@ class SeedSpecificParameter :public OrganSpecificParameter
 {
 
 public:
-    SeedSpecificParameter():SeedSpecificParameter(0,Vector3d(0.,0.,-3), 1.e9, 1.e9, 0, 0., 1.e9, 1.e9, 1.e9, 1., 0, 30.) { }; ///< Default constructor
-    SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nC, double fSB, double dSB, double dRC,
+    SeedSpecificParameter():SeedSpecificParameter(0,Vector3d(0.,0.,-3), 1.e9, 1.e9, 0, 0, 0., 1.e9, 1.e9, 1.e9, 1., 0, 30.) { }; ///< Default constructor
+    SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nB, int nC, double fSB, double dSB, double dRC,
         double nz, int maxtil, double simtime,  double fTi = 0., double dTi = 0.):
-            OrganSpecificParameter(type, 0.), seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), firstSB(fSB), delaySB(dSB),
+            OrganSpecificParameter(type, 0.), seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB),numB(nB), nC(nC), firstSB(fSB), delaySB(dSB),
             delayRC(dRC), nz(nz), maxTil(maxtil), firstTil(fTi), delayTil(dTi),  simtime(simtime) {  };
     virtual ~SeedSpecificParameter() { };
 
@@ -40,6 +40,7 @@ public:
     double firstB;      ///< Emergence of first basal root [day]
     double delayB;      ///< Time delay between the basal roots [day]
     int maxB;           ///< Maximal number of basal roots [1]
+    int numB;           ///< Maximal number of basal roots [1]
 
     //Shoot borne roots (crown roots)
     int nC;             ///< Maximal number of roots per root crown [1]
@@ -91,6 +92,8 @@ public:
     double delayBs = 0.;   ///< Standard deviation of time delay between the basal roots [day]
     double maxB = 0.;      ///< Mean maximal number of basal roots [1]
     double maxBs = 0.;     ///< Standard deviation of maximal number of basal roots [1]
+    double numB = 0.;      ///< Mean maximal number of basal roots [1]
+    double numBs = 0.;     ///< Standard deviation of maximal number of basal roots [1]
 
     // Shoot borne roots (crown roots)
     double nC = 7.;        ///< Mean maximal number of roots per root crown [1]
