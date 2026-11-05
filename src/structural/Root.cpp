@@ -1,6 +1,8 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "Root.h"
 
+#include "Plant.h"
+
 #include <numeric>
 
 namespace CPlantBox {
@@ -22,8 +24,7 @@ namespace CPlantBox {
  * @param moved     indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
-Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni,
-           bool moved, int oldNON)
+Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni, bool moved, int oldNON)
     : Organ(id, param, alive, active, age, length, partialIHeading_, pni, moved, oldNON) {
     insertionAngle = this->param()->theta;
 }
@@ -53,19 +54,14 @@ Root::Root(std::shared_ptr<Organism> plant_, int subType, double delay, std::sha
     insertionAngle = theta;
     this->partialIHeading = Vector3d::rotAB(theta, beta);
 
-    if (!(parent->organType() == Organism::ot_seed)) {
+    int ot = parent->organType();
+    if (!(ot == Organism::ot_seed)) {
         double creationTime = parent->getNodeCT(pni) + delay; // default
-        if (!parent->hasRelCoord())                           // the first node of the base roots must be created in RootSystem::initialize()
-        {
+        // shoot-borne if attached to a stem or leaf, or to shoot-borne root
+        shootborne = (ot != Organism::ot_root) || std::static_pointer_cast<Root>(parent)->shootborne; // for a stem or leaf parent, || short-circuits, so the static cast is never evaluated
+        if (!shootborne) {
             addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
-
         } else {
-            if ((parent->organType() == Organism::ot_stem) && (parent->getNumberOfChildren() > 0)) {
-                // if lateral of stem, initial creation time:
-                // time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
-                //  @see stem::leafGrow
-                creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
-            }
             addNode(Vector3d(0., 0., 0.), parent->getNodeId(pni), creationTime); // relative coordinate = (0,0,0)
         }
     }
@@ -90,11 +86,83 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs) {
 }
 
 /**
- * Roots carried by a stem or leaf store relative coordinates, so that they follow the shoot organ (e.g. during internodal growth).
+ * @brief Returns the length from the first node up to node index @p i.
+ *
+ * Roots with absolute coordinates sum up the distances between consecutive nodes,
+ * shoot-borne roots (relative coordinates) use the default Organ implementation.
  */
-bool Root::hasRelCoord() const {
-    auto p = getParent();
-    return (p != nullptr) && p->hasRelCoord();
+double Root::getLength(int i) const {
+    double l = 0.;
+    for (int j = 0; j < i; j++) {
+        l += getNode(j + 1).minus(getNode(j)).length();
+    }
+    return l;
+}
+
+/**
+ * @brief Returns the absolute coordinate of node @p i.
+ */
+Vector3d Root::getNode(int i) const {
+    if (this->isShootborne()) {
+        return parent.lock()->getNode(parentNI).plus(nodes.at(i));
+    } else {
+        return nodes.at(i);
+    }
+}
+
+/**
+ * @brief Returns the absolute coordinates of all nodes.
+ */
+std::vector<Vector3d> Root::getNodes() const {
+    Vector3d o = Vector3d(); // (0,0,0)
+    if (this->isShootborne()) {
+        o = parent.lock()->getNode(parentNI);
+    }
+    std::vector<Vector3d> v;
+    for (int i = 0; i < getNumberOfNodes(); i++) {
+        v.push_back(o.plus(nodes.at(i)));
+    }
+    return v;
+}
+
+/**
+ * @brief Returns the heading (direction) of the segment ending at node @p n. For n == 0, returns the initial heading, for negative tip direction.
+ */
+Vector3d Root::heading(int n) const {
+    int numberOfNodes = getNumberOfNodes();
+    if (n < 0) {
+        n = numberOfNodes - 1;
+    }
+    if (numberOfNodes > 1 && n > 0) {
+        n = std::min(numberOfNodes - 1, n);
+        Vector3d h = getNode(n).minus(getNode(n - 1));
+        h.normalize();
+        return h;
+    } else {
+        return getInitialHeading();
+    }
+}
+
+/**
+ * Analytical length of the single root at a given age
+ *
+ * @param age          age of the root [day]
+ * @return             root length [cm]
+ */
+double Root::calcLength(double age) {
+    assert(age >= 0 && "Root::calcLength() negative root age");
+    return getRootRandomParameter()->f_gf->getLength(age, param()->r, param()->getK(), shared_from_this());
+}
+
+/**
+ * Analytical age of the single root at a given length
+ *
+ * @param length   length of the root [cm]
+ * @return local age [day]
+ */
+double Root::calcAge(double length) const {
+    assert(length >= 0 && "Root::calcAge() negative root length");
+    return getRootRandomParameter()->f_gf->getAge(length, param()->r, param()->getK(), shared_from_this());
 }
 
 /**
@@ -104,13 +172,14 @@ bool Root::hasRelCoord() const {
  * @param verbose   turns console output on or off
  */
 void Root::simulate(double dt, bool verbose) {
+
     firstCall = true;
     moved = false;
     oldNumberOfNodes = nodes.size();
 
     const RootSpecificParameter &p = *param(); // rename
 
-    if (alive) { // dead roots wont grow
+    if (alive) { // dead roots won't grow
 
         // increase age
         if (age + dt > p.rlt) { // root life time
@@ -131,6 +200,7 @@ void Root::simulate(double dt, bool verbose) {
         }
 
         if (age > 0) { // unborn  roots have no children
+
             // children first (lateral roots grow even if base root is inactive)
             for (auto l : children) {
                 l->simulate(dt, verbose);
@@ -166,8 +236,8 @@ void Root::simulate(double dt, bool verbose) {
                             dl -= ddx; // ddx already has been created
                             length = p.lb;
                             //							if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in
-                            //rootparameter::realize to avoid this 								throw std::runtime_error("Root::simulate: p.lb - length < dxMin"); 							} // this could happen, if
-                            //the tip ends in this section
+                            // rootparameter::realize to avoid this 								throw std::runtime_error("Root::simulate: p.lb - length < dxMin");
+                            // } // this could happen, if the tip ends in this section
                         }
                     }
                     /* branching zone */
@@ -175,8 +245,7 @@ void Root::simulate(double dt, bool verbose) {
                         double s = p.lb; // summed length
                         for (size_t i = 0; ((i < p.ln.size()) && (dl > 0)); i++) {
                             s += p.ln.at(i);
-                            if (length <=
-                                s) { // need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
+                            if (length <= s) { // need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
 
                                 if (i == created_linking_node) { // new lateral
                                     createLateral(dt_, verbose);
@@ -194,8 +263,9 @@ void Root::simulate(double dt, bool verbose) {
                                         dl -= ddx;
                                         length = s;
                                         //									if(this->epsilonDx != 0){//this sould not happen
-                                        //as p.lb was redefined in rootparameter::realize to avoid this 										throw std::runtime_error( "Root::simulate: p.ln.at(i) -
-                                        //length < dxMin"); 									} // this could happen, if the tip ends in this section
+                                        // as p.lb was redefined in rootparameter::realize to avoid this 										throw
+                                        // std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin"); 									} // this could happen,
+                                        // if the tip ends in this section
                                     }
                                 }
                             }
@@ -221,29 +291,124 @@ void Root::simulate(double dt, bool verbose) {
             active = getLength(false) <= (p.getK() * (1 - 1e-11)); // become inactive, if final length is nearly reached
         }
     } // if alive
-    // std::cout << "end" << getId() << "\n" << std::flush;
 }
 
 /**
- * Analytical length of the single root at a given age
+ * @brief Returns the growth increment vector for the next segment.
  *
- * @param age          age of the root [day]
- * @return             root length [cm]
+ * Queries the tropism function (f_tf) to obtain heading angles alpha/beta,
+ * then rotates the heading frame accordingly.
+ *
+ * @param p    Coordinates of the previous node.
+ * @param sdx  Length of the next segment [cm].
+ * @param n    Node index used to determine the current heading (-1 = last node).
+ * @return     Increment vector of length @p sdx in the growth direction.
  */
-double Root::calcLength(double age) {
-    assert(age >= 0 && "Root::calcLength() negative root age");
-    return getRootRandomParameter()->f_gf->getLength(age, param()->r, param()->getK(), shared_from_this());
+Vector3d Root::getIncrement(const Vector3d &p, double sdx, int n) {
+    Vector3d h = heading(n);
+    Matrix3d ons = Matrix3d::ons(h);
+    Vector2d ab = getOrganRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this());
+    Vector3d sv = ons.times(Vector3d::rotAB(ab.x, ab.y));
+    return sv.times(sdx);
 }
 
 /**
- * Analytical age of the single root at a given length
+ * @brief Creates polyline segments totalling length @p l.
  *
- * @param length   length of the root [cm]
- * @return local age [day]
+ * On the first call shifts the last existing node
+ * if it is shorter than dx(), then appends new nodes at intervals of dx().
+ * Residual growth smaller than dxMin() is stored in epsilonDx.
+ *
+ * @param l         Total length of new segments to create [cm].
+ * @param dt        Current time step [days] (used for creation-time calculation).
+ * @param verbose   If true, print diagnostic output.
  */
-double Root::calcAge(double length) const {
-    assert(length >= 0 && "Root::calcAge() negative root length");
-    return getRootRandomParameter()->f_gf->getAge(length, param()->r, param()->getK(), shared_from_this());
+void Root::createSegments(double l, double dt, bool verbose) {
+    if (l == 0) {
+        std::cout << "Root::createSegments: zero length encountered \n";
+        return;
+    }
+    if (l < 0) {
+        std::cout << "Root::createSegments: negative length encountered \n";
+        return;
+    }
+    // shift first node to axial resolution
+    double shiftl = 0; // length produced by shift
+    int nn = nodes.size();
+    if (firstCall) { // first call of createSegments (in simulate)
+        firstCall = false;
+        // don t move first node
+        bool notFirstNode = (nn > 1);
+        bool notChildBaseNode = (children.empty() || (nn - 1 != std::static_pointer_cast<Organ>(children.back())->getParentNI()));
+        // don't move a child base node
+        if (notFirstNode && notChildBaseNode) {
+            Vector3d h;
+            Vector3d n2 = nodes.at(nn - 2);
+
+            if (shootborne) {
+                h = Vector3d(nodes.at(nn - 1));
+            } else {
+                Vector3d n1 = nodes.at(nn - 1);
+                h = n1.minus(n2);
+            }
+            double olddx = h.length();        // length of last segment
+            if (olddx < dx() * (1 - 1e-10)) { // shift node instead of creating a new node
+                shiftl = std::min(dx() - olddx, l);
+                double sdx = olddx + shiftl; // length of new segment
+                h.normalize();
+                if (shootborne) {
+                    nodes.at(nn - 1) = h.times(sdx);
+                } else {
+                    nodes.at(nn - 1) = Vector3d(n2.plus(h.times(sdx)));
+                }
+                double et = this->calcCreationTime(getLength(true) + shiftl, dt);
+                nodeCTs.at(nn - 1) = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+                moved = true;
+                l -= shiftl;
+                if (l <= 0) { // ==0 should be enough
+                    return;
+                }
+            } else {
+                moved = false;
+            }
+        } else {
+            moved = false;
+        }
+    } // first call
+
+    // create n+1 new nodes
+    double sl = 0; // summed length of created segment
+    int n = floor(l / dx());
+    for (int i = 0; i < n + 1; i++) {
+
+        double sdx;  // segment length (<=dx)
+        if (i < n) { // normal case
+            sdx = dx();
+        } else { // last segment
+            sdx = l - n * dx();
+            if (sdx < dxMin() * (1 - 1e-10)) { // quit if l is too small
+                this->epsilonDx = sdx;
+                return;
+            }
+            this->epsilonDx = 0; // no residual
+        }
+        sl += sdx;
+        Vector3d newnode;
+        if (shootborne) { // the new node is inserted at index nn+i, its predecessor is the node nn+i-1
+            int pi = nn + i - 1;
+            Vector3d newdx = getIncrement(getNode(pi), sdx, pi);
+            Vector3d h = heading(pi);
+            newnode = Matrix3d::ons(h).inverse().times(newdx); // relative coordinate
+        } else {
+            Vector3d newdx = getIncrement(nodes.back(), sdx);
+            newnode = Vector3d(nodes.back().plus(newdx));
+        }
+        double et = this->calcCreationTime(getLength(true) + shiftl + sl,
+                                           dt); // here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
+        // in case of impeded growth the node emergence time is not exact anymore,
+        // but might break down to temporal resolution
+        addNode(newnode, et);
+    }
 }
 
 /**
@@ -288,7 +453,6 @@ double Root::getParameter(std::string name, std::map<std::string, double> addPar
     if (name == "theta_deg") {
         return insertionAngle / M_PI * 180.;
     } // angle between root and parent root [°]
-
     if (name == "rlt") {
         return param()->rlt;
     } // root life time [day]
@@ -325,7 +489,7 @@ double Root::getParameter(std::string name, std::map<std::string, double> addPar
     } // root volume [cm^3]
     if (name == "surface") {
         return 2 * param()->a * M_PI * getLength(true);
-    }                                 // root surface [cm^2]
+    } // root surface [cm^2]
     return Organ::getParameter(name, addParams); // pass to base class
 }
 
@@ -343,8 +507,7 @@ std::string Root::toString() const {
  * Static root
  */
 
-StaticRoot::StaticRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, double length, int pni)
-    : Root(id, param, true, false, 0., length, Vector3d(0., 0., -1.), pni, false, 0) {}
+StaticRoot::StaticRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, double length, int pni) : Root(id, param, true, false, 0., length, Vector3d(0., 0., -1.), pni, false, 0) {}
 
 void StaticRoot::initializeLaterals() {
     assert(lateralNodeIndices.size() == lateralTypes.size() && lateralNodeIndices.size() == lateralDelays.size() && "Root::Root parent must be set");
@@ -360,6 +523,7 @@ void StaticRoot::initializeLaterals() {
 OrganState Root::getState() const {
     OrganState s = Organ::getState();
     stateSet(s, "insertionAngle", insertionAngle);
+    stateSet(s, "shootborne", shootborne);
     if (auto p = param()) {
         stateSet(s, "param.lb", p->lb);
         stateSet(s, "param.la", p->la);
@@ -388,6 +552,7 @@ void Root::setState(const OrganState &state, const std::map<int, std::shared_ptr
         param_ = p;
     }
     stateGet(state, "insertionAngle", insertionAngle);
+    stateGet(state, "shootborne", shootborne);
 }
 
 OrganState StaticRoot::getState() const {

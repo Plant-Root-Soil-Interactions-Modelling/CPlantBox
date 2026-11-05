@@ -2,6 +2,7 @@ import math
 import unittest
 
 import plantbox as pb
+from relative_organ_helpers import relative_nodes, set_initial_heading
 
 
 class TestOrgan(unittest.TestCase):
@@ -15,7 +16,7 @@ class TestOrgan(unittest.TestCase):
 
     def hand_example(self):
         """Creates the hand/thumb/little_finger organ tree and stores it on self."""
-        self.ons = pb.Vector3d(0.0, 0.0, 1.0)
+        self.ons = pb.Vector3d(-1.0, 0.0, 0.0)
         self.human1 = pb.Organism()
         otp = pb.OrganRandomParameter(self.human1)
         self.human1.setOrganRandomParameter(otp)
@@ -32,6 +33,8 @@ class TestOrgan(unittest.TestCase):
 
         Two getNodeIndex() calls make the global node counter disagree with the
         organ node counter so tests can verify id tracking.
+        The fixture's points below describe the desired absolute layout; they
+        are converted to the local segment frames before being stored.
         Resulting node layout:
           hand:          (0,0,0), (0,0,1.5), (0,-1,1.6), (0,1,1.6)
           thumb:         (0,-1,1.6) [shared id], (0,-2,2.5)
@@ -39,16 +42,19 @@ class TestOrgan(unittest.TestCase):
         """
         self.human1.getNodeIndex()
         self.human1.getNodeIndex()  # to make global and organ index disagree
-        self.hand.addNode(pb.Vector3d(0, 0, 0), 0)
-        self.hand.addNode(pb.Vector3d(0, 0, 1.5), 0)
-        self.hand.addNode(pb.Vector3d(0, -1, 1.6), 0)  # thumb base
-        self.hand.addNode(pb.Vector3d(0, 1, 1.6), 0)  # little finger base
+        hand_nodes = relative_nodes(self.hand, [(0, 0, 0), (0, 0, 1.5), (0, -1, 1.6), (0, 1, 1.6)])
+        for node in hand_nodes:
+            self.hand.addNode(node, 0)
         thumb = self.hand.getNodeId(2)
         lf = self.hand.getNodeId(3)
-        self.thumb.addNode(pb.Vector3d(0, -1, 1.6), thumb, 4)
-        self.thumb.addNode(pb.Vector3d(0, -2, 2.5), 4)
-        self.little_finger.addNode(pb.Vector3d(0, 1, 1.6), lf, 3)
-        self.little_finger.addNode(pb.Vector3d(0, 1.7, 2.5), 3)
+        set_initial_heading(self.thumb, (1, 0, 0))
+        set_initial_heading(self.little_finger, (1, 0, 0))
+        thumb_nodes = relative_nodes(self.thumb, [(0, 0, 0), (0, -1, 0.9)])
+        little_finger_nodes = relative_nodes(self.little_finger, [(0, 0, 0), (0, 0.7, 0.9)])
+        self.thumb.addNode(thumb_nodes[0], thumb, 4)
+        self.thumb.addNode(thumb_nodes[1], 4)
+        self.little_finger.addNode(little_finger_nodes[0], lf, 3)
+        self.little_finger.addNode(little_finger_nodes[1], 3)
 
     def test_constructors(self):
         """Tests three different construction modes and deep copy."""
@@ -89,8 +95,10 @@ class TestOrgan(unittest.TestCase):
         self.add_nodes()
         ring = pb.Organ(self.human1, self.thumb, 0, 0, 4, 0)  # ring on the thumb
         self.thumb.addChild(ring)
-        ring.addNode(pb.Vector3d(0, -1, 1.6), self.thumb.getNodeId(1), 4)
-        ring.addNode(pb.Vector3d(0, -1, 1.6), 4)
+        set_initial_heading(ring, (1, 0, 0))
+        ring_nodes = relative_nodes(ring, [(0, 0, 0), (0, 0, 0)])
+        ring.addNode(ring_nodes[0], self.thumb.getNodeId(1), 4)
+        ring.addNode(ring_nodes[1], 4)
         organs = self.hand.getOrgans()
         self.assertEqual(len(organs), 4, "wrong number of organs in sequential list")
 
@@ -104,7 +112,7 @@ class TestOrgan(unittest.TestCase):
             self.assertEqual(o.getNumberOfNodes(), expected_nodes[oi], "wrong number of nodes")
             self.assertEqual(len(o.getSegments()), expected_nodes[oi] - 1, "wrong number of segments")
             for i in range(o.getNumberOfNodes()):
-                self.assertEqual(o.getNode(i).x, 0, "x coordinate should be zero")
+                self.assertAlmostEqual(o.getNode(i).x, 0, msg="x coordinate should be zero")
 
     def test_parameter(self):
         """Tests getParameter() for 'age' and topological 'order'."""
@@ -132,7 +140,7 @@ class TestOrgan(unittest.TestCase):
         self.assertEqual(self.thumb.getNumberOfNodes() - self.thumb.getOldNumberOfNodes(), 0, "wrong number of new nodes for thumb after second simulate")
         # adding a node manually between simulates is detected
         self.hand.simulate(1)
-        self.little_finger.addNode(pb.Vector3d(0, 1, 1.6), 6)
+        self.little_finger.addNode(relative_nodes(self.little_finger, [(0, 0, 0), (0, 0, 0)])[1], 6)
         self.assertEqual(self.little_finger.getNumberOfNodes() - self.little_finger.getOldNumberOfNodes(), 1, "wrong number of new nodes after manual addNode")
 
     # -------------------------------------------------------------------------

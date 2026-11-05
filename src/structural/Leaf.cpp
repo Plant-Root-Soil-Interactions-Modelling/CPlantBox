@@ -857,7 +857,7 @@ Vector3d Leaf::heading(int n) const {
         n = nodes.size() - 1;
     }
     n = std::min(n, int(nodes.size()) - 1);
-    Vector3d h = segmentHeading(n);
+    Vector3d h = Organ::heading(n);
     if (getLeafRandomParameter()->isPseudostem && (n > 0)) {
         double lb = param()->lb;
         bool isBlade = (getLength(n) - lb > -1e-10);             // current node in blade
@@ -936,6 +936,88 @@ void Leaf::setState(const OrganState &state, const std::map<int, std::shared_ptr
     }
     stateGet(state, "beta", beta);
     stateGet(state, "ageDependentTropism", ageDependentTropism);
+}
+
+/**
+ * @brief Creates polyline segments totalling length @p l.
+ *
+ * On the first call shifts the last existing node
+ * if it is shorter than dx(), then appends new nodes at intervals of dx().
+ * Residual growth smaller than dxMin() is stored in epsilonDx.
+ *
+ * @param l         Total length of new segments to create [cm].
+ * @param dt        Current time step [days] (used for creation-time calculation).
+ * @param verbose   If true, print diagnostic output.
+ */
+void Leaf::createSegments(double l, double dt, bool verbose) {
+    if (l == 0) {
+        std::cout << "Leaf::createSegments: zero length encountered \n";
+        return;
+    }
+    if (l < 0) {
+        std::cout << "Leaf::createSegments: negative length encountered \n";
+        return;
+    }
+    // shift first node to axial resolution
+    double shiftl = 0; // length produced by shift
+    int nn = nodes.size();
+    if (firstCall) { // first call of createSegments (in simulate)
+        firstCall = false;
+        // don t move first node
+        bool notFirstNode = (nn > 1);
+        bool notChildBaseNode = (children.empty() || (nn - 1 != std::static_pointer_cast<Organ>(children.back())->getParentNI()));
+        // don't move a child base node
+        if (notFirstNode && notChildBaseNode) {
+            Vector3d h = nodes.at(nn - 1); // relative node = last segment vector
+            double olddx = h.length();        // length of last segment
+            if (olddx < dx() * (1 - 1e-10)) { // shift node instead of creating a new node
+                shiftl = std::min(dx() - olddx, l);
+                double sdx = olddx + shiftl; // length of new segment
+                h.normalize();
+                nodes.at(nn - 1) = h.times(sdx);
+                double et = this->calcCreationTime(getLength(true) + shiftl, dt);
+                nodeCTs.at(nn - 1) = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+                moved = true;
+                l -= shiftl;
+                if (l <= 0) { // ==0 should be enough
+                    return;
+                }
+            } else {
+                moved = false;
+            }
+        } else {
+            moved = false;
+        }
+    } // first call
+
+    // create n+1 new nodes
+    double sl = 0; // summed length of created segment
+    int n = floor(l / dx());
+    for (int i = 0; i < n + 1; i++) {
+
+        double sdx;  // segment length (<=dx)
+        if (i < n) { // normal case
+            sdx = dx();
+        } else { // last segment
+            sdx = l - n * dx();
+            if (sdx < dxMin() * (1 - 1e-10)) { // quit if l is too small
+                this->epsilonDx = sdx;
+                return;
+            }
+            this->epsilonDx = 0; // no residual
+        }
+        sl += sdx;
+        // the new node is inserted at index nn+i, its predecessor is the node nn+i-1
+        int pi = nn + i - 1;
+        Vector3d newdx = getIncrement(getNode(pi), sdx, pi);
+        Vector3d h = heading(pi);
+        Vector3d newnode = Matrix3d::ons(h).inverse().times(newdx); // relative coordinate
+        double et = this->calcCreationTime(getLength(true) + shiftl + sl,
+                                           dt); // here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
+        // in case of impeded growth the node emergence time is not exact anymore,
+        // but might break down to temporal resolution
+        addNode(newnode, et);
+    }
 }
 
 } // namespace CPlantBox

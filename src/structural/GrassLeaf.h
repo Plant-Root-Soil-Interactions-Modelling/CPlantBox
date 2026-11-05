@@ -57,7 +57,7 @@ public:
 
   std::string toString() const override;
 
-  double calcLength(double age) override;
+  double calcLength(double age);
   double calcAge(double length) const override;
 
   double getSheathLength() const { return sheathLength; } ///< Returns the current sheath length grown so far [cm].

@@ -389,6 +389,9 @@ PYBIND11_MODULE(plantbox, m) {
         .def("addChild", &Organ::addChild)
         .def("getNumberOfChildren", &Organ::getNumberOfChildren)
         .def("getChild", &Organ::getChild)
+        .def("incParentNI", &Organ::incParentNI)
+        .def("calcAge", &Organ::calcAge)
+        .def("calcLength", &Organ::calcLength)
         .def("calcCreationTime", &Organ::calcCreationTime)
         .def("getId", &Organ::getId)
         .def("getParam", &Organ::param) // backward compatibility
@@ -407,6 +410,9 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getNodeId", &Organ::getNodeId)
         .def("getNodeIds", &Organ::getNodeIds)
         .def("getNodeCT", &Organ::getNodeCT)
+        .def("getNodeCTs", &Organ::getNodeCTs)
+        .def("insertNode", &Organ::insertNode, py::arg("n"), py::arg("t"), py::arg("index"))
+        .def("heading", &Organ::heading)
         .def("addNode", (void (Organ::*)(Vector3d n, double t))&Organ::addNode, py::arg("n"), py::arg("t"))                        // overloads
         .def("addNode", (void (Organ::*)(Vector3d n, int id, double t))&Organ::addNode, py::arg("n"), py::arg("id"), py::arg("t")) // overloads
         .def("getSegments", &Organ::getSegments)
