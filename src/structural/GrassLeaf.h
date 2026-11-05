@@ -48,6 +48,16 @@ public:
 
   int getNumberOfNodes() const override { return turtle.size() + 1; } ///< +1 because the anchor point is not stored in the meristem
   Vector3d heading(int n) const override; ///< Heading at node n from the turtle polyline.
+  std::vector<Vector3d> getNodes() const override {
+    std::vector<Vector3d> result;
+    result.reserve(getNumberOfNodes());
+    for (int i = 0; i < getNumberOfNodes(); ++i) {
+      result.push_back(getNode(i));
+    }
+    return result;
+  }
+  double getLength(int i) const override { return turtle.getLength(i); }
+  using Organ::getLength;
   Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
 
   double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
