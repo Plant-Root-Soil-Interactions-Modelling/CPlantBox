@@ -157,12 +157,12 @@ void Stem::simulate(double dt, bool verbose) {
                     /* basal zone */
                     if ((dl > 0) && (length < p.lb)) { // length is the current length of the root
                         if (length + dl <= p.lb) {
-                            createSegments(dl, dt_, verbose);
+                            createSegments(dl, dt_);
                             length += dl;
                             dl = 0;
                         } else {
                             double ddx = p.lb - length;
-                            createSegments(ddx, dt_, verbose);
+                            createSegments(ddx, dt_);
                             dl -= ddx; // ddx already has been created
                             length = p.lb;
                         }
@@ -173,7 +173,7 @@ void Stem::simulate(double dt, bool verbose) {
                         for (size_t i = 0; (i < p.ln.size()); i++) {
                             createLateral(dt_, verbose);
                             if (p.ln.at(created_linking_node - 1) > 0) {
-                                createSegments(this->dxMin(), dt_, verbose);
+                                createSegments(this->dxMin(), dt_);
                                 dl -= this->dxMin();
                                 length += this->dxMin();
                             }
@@ -193,7 +193,7 @@ void Stem::simulate(double dt, bool verbose) {
                         double currentInternodeDistance = getLength(nn) - p.lb;                     // actual length of branching zone
                         double ddx = std::min(maxInternodeDistance - currentInternodeDistance, dl); // length to add to branching zone
                         if (ddx > 0) {
-                            internodalGrowth(ddx, dt_, verbose);
+                            internodalGrowth(ddx, dt_);
                             dl -= ddx;
                             length += ddx;
                         }
@@ -201,12 +201,12 @@ void Stem::simulate(double dt, bool verbose) {
                     /* apical zone */
                     // only grows once the basal and branching nodes are developped (TODO)
                     if ((dl > 0) && (length - (maxInternodeDistance + p.lb) > -1e-9)) {
-                        createSegments(dl, dt_, verbose);
+                        createSegments(dl, dt_);
                         length += dl;
                     }
                 } else { // no laterals
                     if (dl > 0) {
-                        createSegments(dl, dt_, verbose);
+                        createSegments(dl, dt_);
                         length += dl;
                     }
                 }
@@ -231,14 +231,13 @@ void Stem::simulate(double dt, bool verbose) {
  * @param p    Coordinates of the previous node.
  * @param sdx  Length of the next segment [cm].
  * @param n    Node index used to determine the current heading (-1 = last node).
- * @return     Increment vector of length @p sdx in the growth direction.
+ * @return     Increment vector of length @p sdx in the growth direction, relative to the heading frame (Matrix3d::ons of the heading).
  */
 Vector3d Stem::getIncrement(const Vector3d &p, double sdx, int n) {
     Vector3d h = heading(n);
     Matrix3d ons = Matrix3d::ons(h);
     Vector2d ab = getOrganRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this());
-    Vector3d sv = ons.times(Vector3d::rotAB(ab.x, ab.y));
-    return sv.times(sdx);
+    return Vector3d::rotAB(ab.x, ab.y).times(sdx); // relative to the heading frame (ons)
 }
 
 /**
@@ -250,10 +249,9 @@ Vector3d Stem::getIncrement(const Vector3d &p, double sdx, int n) {
  *
  * @param l         Total length of new segments to create [cm].
  * @param dt        Current time step [days] (used for creation-time calculation).
- * @param verbose   If true, print diagnostic output.
  * @param phytoIdx  Node index for internodal elongation; -1 for tip growth.
  */
-void Stem::createSegments(double l, double dt, bool verbose, int phytoIdx) {
+void Stem::createSegments(double l, double dt, int phytoIdx) {
     if (l == 0) {
         std::cout << "Stem::createSegments: zero length encountered \n";
         return;
@@ -323,13 +321,9 @@ void Stem::createSegments(double l, double dt, bool verbose, int phytoIdx) {
         sl += sdx;
         // the new node is inserted at index nn+i, its predecessor is the node nn+i-1
         int pi = nn + i - 1;
-        Vector3d newdx = getIncrement(getNode(pi), sdx, pi);
-        Vector3d h = heading(pi);
-        Vector3d newnode = Matrix3d::ons(h).inverse().times(newdx); // relative coordinate
-        double et = this->calcCreationTime(getLength(true) + shiftl + sl,
-                                           dt); // here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
-        // in case of impeded growth the node emergence time is not exact anymore,
-        // but might break down to temporal resolution
+        // TODO: build node and heading incrementially (starting from nn) to quadratic behavior
+        Vector3d newnode = getIncrement(getNode(pi), sdx, pi);                 // relative coordinate
+        double et = this->calcCreationTime(getLength(true) + shiftl + sl, dt); // here length or getLength? it's the same because epsilonDx was set back to 0 at beginning of simulate?
         if (stemElongation) {
             insertNode(newnode, et, size_t(nn + i));
         } else {
@@ -343,7 +337,7 @@ void Stem::createSegments(double l, double dt, bool verbose, int phytoIdx) {
  */
 void Stem::createLateral(double dt, bool verbose) {
     Organ::createLateral(dt, verbose);
-    storeLinkingNodeLocalId(created_linking_node, verbose);
+    storeLinkingNodeLocalId(created_linking_node);
 }
 
 /**
@@ -441,13 +435,12 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
  * Simulates internodal growth of dl for this stem
  * divid total stem growth between the phytomeres
  * currently two option:
- * (p.nodalGrowth == 1) growth devided equally between the phytomeres or
  * (p.nodalGrowth == 0) the phytomere grow sequentially
+ * (p.nodalGrowth == 1) growth devided equally between the phytomeres or
  *
  * @param 	dl			total length of the segments that are created [cm]
- * @param	verbose		print information
  */
-void Stem::internodalGrowth(double dl, double dt, bool verbose) {
+void Stem::internodalGrowth(double dl, double dt) {
     const StemSpecificParameter &p = *param(); // rename
     std::vector<double> toGrow(p.ln.size());
     double dl_;
@@ -476,7 +469,7 @@ void Stem::internodalGrowth(double dl, double dt, bool verbose) {
         }
         dl_ = std::max(0., std::min(std::min(toGrow[phytomerId], availableForGrowth), dl));
         if (dl_ > 0) {
-            createSegments(dl_, dt, verbose, nn2);
+            createSegments(dl_, dt, nn2);
             dl -= dl_;
         }
         if ((phytomerId + 1) < p.ln.size()) {
@@ -486,9 +479,8 @@ void Stem::internodalGrowth(double dl, double dt, bool verbose) {
             toGrow.at(0) += toGrow.at(phytomerId) - dl_;
             loopId++;
             phytomerId = 0;
-        } // loop twice other the children
+        } // loop twice
     }
-
     if (std::abs(dl) > 1e-6) { // this sould not happen as computed dl to be <= sum(availableForGrowth)
         std::stringstream errMsg;
         errMsg << "Stem::internodalGrowth length left to grow: " << dl;
@@ -596,7 +588,7 @@ double Stem::calcAge(double length) const {
 /**
  * stores the local id of the linking node. used by @see Stem::internodalGrowth()
  */
-void Stem::storeLinkingNodeLocalId(int numCreatedLN, bool verbose) {
+void Stem::storeLinkingNodeLocalId(int numCreatedLN) {
     localId_linking_nodes.push_back(nodes.size() - 1);
     if (numCreatedLN != localId_linking_nodes.size()) {
         throw std::runtime_error("wrong number of linking nodes in stem: " + std::to_string(numCreatedLN) + " against " + std::to_string(localId_linking_nodes.size()));
