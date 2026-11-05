@@ -119,16 +119,7 @@ void Stem::simulate(double dt, bool verbose) {
         }
         age += dt;
 
-        // probabilistic branching model (todo test)
-        if ((age > 0) && (age - dt <= 0)) { // the root emerges in this time step
-            double P = getStemRandomParameter()->f_sbp->getValue(getNode(nodes.size() - 1), shared_from_this());
-            if (P < 1.) {                       // P==1 means the lateral emerges with probability 1 (default case)
-                double p = 1. - (1. - P * dt);  // probability of emergence in this time step
-                if (plant.lock()->rand() > p) { // not rand()<p
-                    age -= dt;                  // the root does not emerge in this time step
-                }
-            }
-        }
+        // we currently do not use a probabilistic branching model
 
         if (age > 0) { // unborn  roots have no children
 
@@ -138,15 +129,14 @@ void Stem::simulate(double dt, bool verbose) {
             }
 
             if (active) {
+
                 double dt_;     // time step
                 if (age < dt) { // the root emerged in this time step, adjust time step
                     dt_ = age;
                 } else {
                     dt_ = dt;
                 }
-
-                // length increment
-                double age__ = age;
+                double age__ = age;         // length increment
                 if (age > p.delayNGStart) { // simulation ends after start of growth pause
                     if (age < p.delayNGEnd) {
                         age__ = p.delayNGStart; // during growth pause
@@ -154,15 +144,14 @@ void Stem::simulate(double dt, bool verbose) {
                         age__ = age - (p.delayNGEnd - p.delayNGStart); // simulation ends after end of growth pause
                     }
                 } // delay to apply
-                /*as we currently do not implement impeded growth for stem and leaves
-                 *we can use directly the organ's age to cumpute the target length
-                 */
+
+                // we currently do not implement impeded growth for stem and leaves
                 double targetlength = calcLength(age__) + this->epsilonDx;
                 double e = targetlength - length; // store value of elongation to add
-                // can be negative
-                double dl = e; // length increment = calculated length + increment from last time step too small to be added
+                double dl = e;                    // length increment = calculated length + increment from last time step too small to be added
                 length = getLength(true);
                 this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
+
                 // create geometry
                 if (p.laterals) { // stem has laterals
                     /* basal zone */
@@ -179,8 +168,7 @@ void Stem::simulate(double dt, bool verbose) {
                         }
                     }
                     /* branching zone */
-                    // go into branching zone if organ has laterals and has reached
-                    // the end of the basal zone
+                    // go into branching zone if organ has laterals and has reached the end of the basal zone
                     if (((created_linking_node) < (p.ln.size() + 1)) && (length >= p.lb)) {
                         for (size_t i = 0; (i < p.ln.size()); i++) {
                             createLateral(dt_, verbose);
@@ -211,7 +199,7 @@ void Stem::simulate(double dt, bool verbose) {
                         }
                     }
                     /* apical zone */
-                    // only grows once the basal and branching nodes are developped
+                    // only grows once the basal and branching nodes are developped (TODO)
                     if ((dl > 0) && (length - (maxInternodeDistance + p.lb) > -1e-9)) {
                         createSegments(dl, dt_, verbose);
                         length += dl;
@@ -221,16 +209,14 @@ void Stem::simulate(double dt, bool verbose) {
                         createSegments(dl, dt_, verbose);
                         length += dl;
                     }
-                } // if lateralgetLengths
-                if (dl < 0) { // to keep in memory that realised length is too long, as created nodes to carry children
-
+                }
+                if (dl < 0) {                  // to keep in memory that realised length is too long, as created nodes to carry children
                     this->epsilonDx = dl;      // targetlength + e - length;
                     length += this->epsilonDx; // go back to having length = theoratical length
                 }
             } // if active
             // set limit below 1e-10, as the test files see if correct length
             // once rounded at the 10th decimal
-            //@see test/test_stem_ng.py
             active = getLength(false) <= (p.getK() * (1 - 1e-11)); // become inactive, if final length is nearly reached
         }
     } // if alive
@@ -350,6 +336,14 @@ void Stem::createSegments(double l, double dt, bool verbose, int phytoIdx) {
             addNode(newnode, et);
         }
     }
+}
+
+/**
+ * Creates the laterals of a new linking node (@see Organ::createLateral) and stores the local id of the node
+ */
+void Stem::createLateral(double dt, bool verbose) {
+    Organ::createLateral(dt, verbose);
+    storeLinkingNodeLocalId(created_linking_node, verbose);
 }
 
 /**
@@ -501,6 +495,7 @@ void Stem::internodalGrowth(double dl, double dt, bool verbose) {
         throw std::runtime_error(errMsg.str().c_str());
     }
 }
+
 /**
  * Returns a parameter per organ
  *
@@ -596,14 +591,6 @@ double Stem::calcAge(double length) const {
         age__ += (param()->delayNGEnd - param()->delayNGStart);
     }
     return age__;
-}
-
-/**
- * Creates the laterals of a new linking node (@see Organ::createLateral) and stores the local id of the node
- */
-void Stem::createLateral(double dt, bool verbose) {
-    Organ::createLateral(dt, verbose);
-    storeLinkingNodeLocalId(created_linking_node, verbose);
 }
 
 /**

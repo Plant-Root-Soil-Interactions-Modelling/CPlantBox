@@ -5,7 +5,6 @@
 #include "Organism.h"
 #include "stemparameter.h"
 
-#include <assert.h>
 #include <iostream>
 
 namespace CPlantBox {
@@ -31,10 +30,7 @@ class Stem : public Organ {
     int organType() const override { return Organism::ot_stem; } ///< returns the organs type
 
     /* development */
-    void simulate(double dt, bool silence = false) override;           ///< stem growth for a time span of \param dt
-    void internodalGrowth(double dl, double dt, bool silence = false); ///< internodal growth of \param dl [cm]
-    double getLatInitialGrowth(double dt) override;
-    double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const override;
+    void simulate(double dt, bool silence = false) override;      ///< stem growth for a time span of \param dt
     void insertNode(Vector3d n, double t, size_t index) override; ///< inserts a node between existing nodes (internodal growth) and updates the linking nodes
 
     /* last time step */
@@ -57,13 +53,17 @@ class Stem : public Organ {
     void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
 
   protected:
-    std::vector<int> stemphytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};          ///< number of phytomers per subtype created so far, used for the initial rotation beta
-    Vector3d getIncrement(const Vector3d &p, double sdx, int n = -1);          ///< Returns the growth increment vector of length @p sdx from point @p p
     void createSegments(double l, double dt, bool silence, int phytoIdx = -1); ///< Creates segments totalling length @p l; phytoIdx>=0 for internodal growth
-    void createLateral(double dt, bool verbose) override;                      ///< creates the laterals and stores the local id of the new linking node
-    void storeLinkingNodeLocalId(int numCreatedLN, bool verbose);              ///< stores the local id of the newly created linking node
+    Vector3d getIncrement(const Vector3d &p, double sdx, int n = -1);          ///< Returns the growth increment vector of length @p sdx from point @p p
+    void internodalGrowth(double dl, double dt, bool silence = false);         ///< internodal growth of \param dl [cm]
+
+    void createLateral(double dt, bool verbose) override; ///< creates the laterals and stores the local id of the new linking node
+    double getLatInitialGrowth(double dt) override;
+    double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const override;
+    void storeLinkingNodeLocalId(int numCreatedLN, bool verbose); ///< stores the local id of the newly created linking node
     std::vector<int> localId_linking_nodes;
 
+    std::vector<int> stemphytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; ///< number of phytomers per subtype created so far, used for the initial rotation beta
     void minusPhytomerId(int subtype) { stemphytomerId[subtype]--; }
     int getphytomerId(int subtype) { return stemphytomerId[subtype]; }
     void addPhytomerId(int subtype) { stemphytomerId[subtype]++; }

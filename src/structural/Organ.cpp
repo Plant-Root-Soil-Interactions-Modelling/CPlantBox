@@ -777,31 +777,6 @@ void Organ::createLateral(double dt, bool verbose) {
 }
 
 /**
- * @brief Returns true if successor rule @p i applies at the current linking node.
- *
- * Checks successorWhere[i]: positive values list included nodes, negative values
- * list excluded nodes.  An empty successorWhere entry means the rule applies everywhere.
- *
- * @param i  Successor rule index.
- */
-bool Organ::getApplyHere(int i) const {
-    bool applyHere;
-    auto rp = getOrganRandomParameter(); // rename
-    if ((rp->successorWhere.size() > i) && (rp->successorWhere.at(i).size() > 0)) {
-        if (!std::signbit(rp->successorWhere.at(i).at(0))) // true if number is signed
-        {                                                  // gave which linking nodes to include
-            applyHere = (std::find(rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), created_linking_node) != rp->successorWhere.at(i).end());
-        } else { // gave which linking nodes to ignore
-            applyHere = !(std::find(rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), -double(created_linking_node)) != rp->successorWhere.at(i).end());
-        }
-
-    } else {
-        applyHere = true;
-    } // default
-    return applyHere;
-}
-
-/**
  * @brief Returns the initial growth period to pass to a newly created lateral.
  *
  * Computed as the time elapsed between the lateral node's creation and the
@@ -865,6 +840,31 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // over
     }
     }
     return growthDelay;
+}
+
+/**
+ * @brief Returns true if successor rule @p i applies at the current linking node.
+ *
+ * Checks successorWhere[i]: positive values list included nodes, negative values
+ * list excluded nodes.  An empty successorWhere entry means the rule applies everywhere.
+ *
+ * @param i  Successor rule index.
+ */
+bool Organ::getApplyHere(int i) const {
+    bool applyHere;
+    auto rp = getOrganRandomParameter(); // rename
+    if ((rp->successorWhere.size() > i) && (rp->successorWhere.at(i).size() > 0)) {
+        if (!std::signbit(rp->successorWhere.at(i).at(0))) // true if number is signed
+        {                                                  // gave which linking nodes to include
+            applyHere = (std::find(rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), created_linking_node) != rp->successorWhere.at(i).end());
+        } else { // gave which linking nodes to ignore
+            applyHere = !(std::find(rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), -double(created_linking_node)) != rp->successorWhere.at(i).end());
+        }
+
+    } else {
+        applyHere = true;
+    } // default
+    return applyHere;
 }
 
 /* state helpers */

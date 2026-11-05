@@ -342,30 +342,20 @@ void Root::createSegments(double l, double dt, bool verbose) {
         bool notChildBaseNode = (children.empty() || (nn - 1 != std::static_pointer_cast<Organ>(children.back())->getParentNI()));
         // don't move a child base node
         if (notFirstNode && notChildBaseNode) {
-            Vector3d h;
             Vector3d n2 = nodes.at(nn - 2);
-
-            if (shootborne) {
-                h = Vector3d(nodes.at(nn - 1));
-            } else {
-                Vector3d n1 = nodes.at(nn - 1);
-                h = n1.minus(n2);
-            }
+            Vector3d n1 = nodes.at(nn - 1);
+            Vector3d h = n1.minus(n2);
             double olddx = h.length();        // length of last segment
             if (olddx < dx() * (1 - 1e-10)) { // shift node instead of creating a new node
                 shiftl = std::min(dx() - olddx, l);
                 double sdx = olddx + shiftl; // length of new segment
                 h.normalize();
-                if (shootborne) {
-                    nodes.at(nn - 1) = h.times(sdx);
-                } else {
-                    nodes.at(nn - 1) = Vector3d(n2.plus(h.times(sdx)));
-                }
+                nodes.at(nn - 1) = Vector3d(n2.plus(h.times(sdx)));
                 double et = this->calcCreationTime(getLength(true) + shiftl, dt);
                 nodeCTs.at(nn - 1) = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
-                if (l <= 0) { // ==0 should be enough
+                if (l <= 0) { // == 0 should be enough
                     return;
                 }
             } else {
@@ -380,7 +370,6 @@ void Root::createSegments(double l, double dt, bool verbose) {
     double sl = 0; // summed length of created segment
     int n = floor(l / dx());
     for (int i = 0; i < n + 1; i++) {
-
         double sdx;  // segment length (<=dx)
         if (i < n) { // normal case
             sdx = dx();
@@ -394,17 +383,10 @@ void Root::createSegments(double l, double dt, bool verbose) {
         }
         sl += sdx;
         Vector3d newnode;
-        if (shootborne) { // the new node is inserted at index nn+i, its predecessor is the node nn+i-1
-            int pi = nn + i - 1;
-            Vector3d newdx = getIncrement(getNode(pi), sdx, pi);
-            Vector3d h = heading(pi);
-            newnode = Matrix3d::ons(h).inverse().times(newdx); // relative coordinate
-        } else {
-            Vector3d newdx = getIncrement(nodes.back(), sdx);
-            newnode = Vector3d(nodes.back().plus(newdx));
-        }
-        double et = this->calcCreationTime(getLength(true) + shiftl + sl,
-                                           dt); // here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
+        Vector3d newdx = getIncrement(nodes.back(), sdx);
+        newnode = Vector3d(nodes.back().plus(newdx));
+        double et = this->calcCreationTime(getLength(true) + shiftl + sl, dt);
+        // here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
         // in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
         addNode(newnode, et);
