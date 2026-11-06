@@ -11,10 +11,30 @@ sys.path.insert(0, "../src/")
 import json
 import unittest
 
-import plantbox as pb
 from test_grassleaf import _build_plant
 
-BASE_KEYS = {"id", "organType", "subType", "parentId", "childIds", "parentNI", "partialIHeading", "alive", "active", "age", "length", "epsilonDx", "created_linking_node", "nodes", "nodeIds", "nodeCTs", "moved", "oldNumberOfNodes"}
+import plantbox as pb
+
+BASE_KEYS = {
+    "id",
+    "organType",
+    "subType",
+    "parentId",
+    "childIds",
+    "parentNI",
+    "partialIHeading",
+    "alive",
+    "active",
+    "age",
+    "length",
+    "epsilonDx",
+    "created_linking_node",
+    "nodes",
+    "nodeIds",
+    "nodeCTs",
+    "moved",
+    "oldNumberOfNodes",
+}
 
 
 def _maize(days=15):
@@ -63,7 +83,12 @@ class TestState(unittest.TestCase):
         plant = _maize()
         orgs, _ = self.organs(plant)
         orgs = orgs + [orgs[0].getParent()]  # the seed is not returned by getOrgans
-        expected = {pb.seed: {"tapType", "basalType", "shootborneType", "mainStemType", "tillerType", "rootCrowns"}, pb.root: {"insertionAngle"}, pb.stem: {"stemphytomerId", "localId_linking_nodes"}, pb.leaf: {"beta", "ageDependentTropism"}}
+        expected = {
+            pb.seed: {"tapType", "basalType", "shootborneType", "mainStemType", "tillerType", "rootCrowns"},
+            pb.root: {"insertionAngle"},
+            pb.stem: {"stemphytomerId", "localId_linking_nodes"},
+            pb.leaf: {"beta", "ageDependentTropism"},
+        }
         found = set()
         for o in orgs:
             if o.organType() in expected:
@@ -140,7 +165,6 @@ class TestState(unittest.TestCase):
                 self.assertEqual(s["param.theta"], [p.theta])
             elif o.organType() == pb.stem:
                 self.assertEqual(s["param.r"], [p.r])
-                self.assertEqual(s["param.nodalGrowth"], [float(p.nodalGrowth)])
             elif o.organType() == pb.leaf:
                 self.assertEqual(s["param.areaMax"], [p.areaMax])
             elif o.organType() == pb.seed:
@@ -183,7 +207,23 @@ class TestOrganismState(unittest.TestCase):
     def test_keys_and_json(self):
         plant = _maize()
         s = plant.getState()
-        for k in ("plantId", "simtime", "dt", "organId", "nodeId", "oldNumberOfNodes", "oldNumberOfOrgans", "rsmlSkip", "minDx", "seed_val", "stochastic", "gen", "ND", "baseOrganIds", "leafphytomerID"):
+        for k in (
+            "plantId",
+            "simtime",
+            "dt",
+            "organId",
+            "nodeId",
+            "oldNumberOfNodes",
+            "oldNumberOfOrgans",
+            "rsmlSkip",
+            "minDx",
+            "seed_val",
+            "stochastic",
+            "gen",
+            "ND",
+            "baseOrganIds",
+            "leafphytomerID",
+        ):
             self.assertIn(k, s)
         self.assertEqual(s["simtime"], [15.0])
         self.assertEqual(s["organId"], [float(plant.getNumberOfOrgans() - 1)])

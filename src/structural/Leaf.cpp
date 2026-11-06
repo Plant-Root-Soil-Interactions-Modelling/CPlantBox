@@ -320,8 +320,8 @@ double Leaf::leafArea(bool realized, bool withPetiole) const {
         int shapeType = getLeafRandomParameter()->shapeType;
         switch (shapeType) {
         case LeafRandomParameter::shape_cuboid: {
-            double Width_blade = getParameter("Width_blade");
-            double Width_petiole = getParameter("Width_petiole");
+            double Width_blade = getParameter("width_blade");
+            double Width_petiole = getParameter("width_petiole");
             if (length_ <= param()->lb) {
                 surfacePetiole = Width_petiole * length_;
             } else {
@@ -409,13 +409,13 @@ double Leaf::leafAreaAtSeg(int localSegId, bool realized, bool withPetiole) {
         assert(((lengthInBlade + lengthInPetiole) == length_) && "leafAreaAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
         switch (shapeType) {
         case LeafRandomParameter::shape_cuboid: {
-            double Width_blade = getParameter("Width_blade");
+            double Width_blade = getParameter("width_blade");
 
             double surfaceBlade = Width_blade * lengthInBlade;
             surface_ = surfaceBlade;
             double surfacePetiole = 0;
             if (withPetiole) {
-                double Width_petiole = getParameter("Width_petiole");
+                double Width_petiole = getParameter("width_petiole");
                 surfacePetiole = Width_petiole * lengthInPetiole;
                 surface_ += surfacePetiole;
             }
@@ -497,13 +497,13 @@ double Leaf::leafVolAtSeg(int localSegId, bool realized, bool withPetiole) {
         assert(((lengthInBlade + lengthInPetiole) == length_) && "leafVolAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
         switch (shapeType) {
         case LeafRandomParameter::shape_cuboid: {
-            double Width_blade = getParameter("Width_blade");
+            double Width_blade = getParameter("width_blade");
 
             double volBlade = Width_blade * lengthInBlade * a;
             vol_ = volBlade;
             double volPetiole = 0;
             if (withPetiole) {
-                double Width_petiole = getParameter("Width_petiole");
+                double Width_petiole = getParameter("width_petiole");
                 volPetiole = Width_petiole * lengthInPetiole * a;
                 vol_ += volPetiole;
             }
@@ -554,8 +554,8 @@ double Leaf::orgVolume(double length_, bool realized) const {
     } // theoretical
     switch (shapeType) {
     case LeafRandomParameter::shape_cuboid: {
-        double Width_blade = getParameter("Width_blade");
-        double Width_petiole = getParameter("Width_petiole");
+        double Width_blade = getParameter("width_blade");
+        double Width_petiole = getParameter("width_petiole");
         if ((p.laterals) || (length_ <= p.lb)) {
             vol_ = Width_petiole * length_ * p.a;
         } else {
@@ -595,8 +595,8 @@ double Leaf::orgVolume2Length(double volume_) {
     int shapeType = getLeafRandomParameter()->shapeType;
     switch (shapeType) {
     case LeafRandomParameter::shape_cuboid: {
-        double Width_blade = getParameter("Width_blade");
-        double Width_petiole = getParameter("Width_petiole");
+        double Width_blade = getParameter("width_blade");
+        double Width_petiole = getParameter("width_petiole");
         double volPetiole = Width_petiole * p.lb * p.a; // assume p.a is thickness
         if (volume_ <= volPetiole) {
             length_ = volume_ / (Width_petiole * p.a); // assume p.a is thickness

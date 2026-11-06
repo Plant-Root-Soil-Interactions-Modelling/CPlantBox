@@ -68,6 +68,15 @@ Vector3d GrassLeaf::getNode(int i) const {
     }
 }
 
+std::vector<Vector3d> GrassLeaf::getNodes() const {
+    std::vector<Vector3d> result;
+    result.reserve(getNumberOfNodes());
+    for (int i = 0; i < getNumberOfNodes(); ++i) {
+        result.push_back(getNode(i));
+    }
+    return result;
+}
+
 /**
  * @brief Returns the heading at node @p i: direction of the turtle segment [i-1, i], or the initial heading for i == 0.
  */

@@ -34,11 +34,9 @@ class Tropism;
  */
 class OrganSpecificParameter {
   public:
-    OrganSpecificParameter(int t, double a) : subType(t), a(a) {} ///< @param t sub-type index, @param a radius [cm]
-
-    virtual ~OrganSpecificParameter() {}
     int subType = -1;                     ///< Sub-type index of the organ; matches OrganRandomParameter::subType
     double a = 0.;                        ///< Radius of the organ [cm]
+    double ldelay = 0.;                   ///< Lateral organ delay [cm]
     virtual std::string toString() const; ///< Returns a short human-readable summary for debugging
 };
 
@@ -71,18 +69,22 @@ class OrganRandomParameter {
 
     virtual std::string toString(bool verbose = true) const; ///< Returns a human-readable summary; verbose=true prints a full parameter table, false prints a one-liner
 
-    virtual void readXML(tinyxml2::XMLElement *element, bool verbose); ///< Reads parameters from @c <parameter> child tags; missing tags leave defaults unchanged; called by Organism::readParameters
-    void readSuccessor(tinyxml2::XMLElement *p, bool verbose);         ///< Parses a @c <parameter name="successor"> element and updates the successor rule vectors
-    void readXML(std::string name, bool verbose);                      ///< Reads parameters from an XML file (convenience overload for testing/debugging)
+    virtual void readXML(tinyxml2::XMLElement *element,
+                         bool verbose);                        ///< Reads parameters from @c <parameter> child tags; missing tags leave defaults unchanged; called by Organism::readParameters
+    void readSuccessor(tinyxml2::XMLElement *p, bool verbose); ///< Parses a @c <parameter name="successor"> element and updates the successor rule vectors
+    void readXML(std::string name, bool verbose);              ///< Reads parameters from an XML file (convenience overload for testing/debugging)
     virtual tinyxml2::XMLElement *writeXML(tinyxml2::XMLDocument &doc,
                                            bool comments = true) const; ///< Serialises all registered parameters and successor rules to an XML element; not exposed to Python
     void writeXML(std::string name) const;                              ///< Writes this parameter set to an XML file (convenience overload for testing/debugging)
 
-    int getLateralType(const Vector3d &pos, int ruleId); ///< Stochastically selects a lateral sub-type index using successorP[ruleId]; returns -1 if no lateral emerges
+    int getLateralType(const Vector3d &pos,
+                       int ruleId); ///< Stochastically selects a lateral sub-type index using successorP[ruleId]; returns -1 if no lateral emerges
 
     virtual void bindParameters(); ///< Registers all scalar parameters in the introspection maps; called by constructor; derived classes must call base first
-    void bindParameter(std::string name, int *i, std::string descr = "", double *dev = nullptr);    ///< Registers an int member under @p name in the introspection maps
-    void bindParameter(std::string name, double *d, std::string descr = "", double *dev = nullptr); ///< Registers a double member under @p name in the introspection maps
+    void bindParameter(std::string name, int *i, std::string descr = "",
+                       double *dev = nullptr); ///< Registers an int member under @p name in the introspection maps
+    void bindParameter(std::string name, double *d, std::string descr = "",
+                       double *dev = nullptr); ///< Registers a double member under @p name in the introspection maps
 
     std::string name = "organ"; ///< Name of the organ sub-type (e.g. "taproot", "small lateral")
     int organType = 0;          ///< Organ type identifier (0 = unspecified, 1 = seed, 2 = root, 3 = stem, 4 = leaf)
@@ -94,7 +96,7 @@ class OrganRandomParameter {
     double ldelay = -1.;        ///< Mean lateral emergence delay [day]; used by RootDelay and Organism::delayDefinition != Organism::dd_distance
                                 ///< @see RootDelay, RootSystem::initializeDB
     double ldelays = 0.;        ///< Standard deviation of the lateral emergence delay [day]
-    int multDelay = 1;          ///< by how much multiply the delay between each consecutive lateral, see @Stem::getLatGrowthDelay
+    double sequentialDelay = 1; ///< by how much multiply the delay between each consecutive lateral, see @Stem::getLatGrowthDelay
 
     /// @brief Position-based activation flag for each successor rule.
     ///
@@ -102,7 +104,6 @@ class OrganRandomParameter {
     /// A value of +1 means "apply", -1 means "do not apply".  An empty vector (default) means
     /// the rule applies at every linking node.  double is used to distinguish -0 from 0.
     std::vector<std::vector<double>> successorWhere = std::vector<std::vector<double>>(0, std::vector<double>(0, 0));
-
     std::vector<std::vector<int>> successorOT = std::vector<std::vector<int>>(0, std::vector<int>(0, 0));         ///< Organ types of candidate laterals for each successor rule [1]
     std::vector<std::vector<int>> successorST = std::vector<std::vector<int>>(0, std::vector<int>(0, 0));         ///< Sub-types of candidate laterals for each successor rule [1]
     std::vector<std::vector<double>> successorP = std::vector<std::vector<double>>(0, std::vector<double>(0, 0)); ///< Emergence probabilities for each candidate lateral (values must sum to ≤ 1) [1]
@@ -124,7 +125,8 @@ class OrganRandomParameter {
     std::string vector2string(std::vector<int> vec) const;                      ///< Converts an int vector to a comma-separated string for XML output
     std::string vector2string(std::vector<double> vec) const;                   ///< Converts a double vector to a comma-separated string for XML output
 
-    /// Queries a string XML attribute under one of several candidate @p keyNames and appends parsed values to @p vToFill; falls back to @p defaultVal if not found and @p replaceByDefault is true
+    /// Queries a string XML attribute under one of several candidate @p keyNames and appends parsed values to @p vToFill; falls back to @p defaultVal if not
+    /// found and @p replaceByDefault is true
     template <class IntOrDouble>
     void cpb_queryStringAttribute(std::vector<std::string> keyNames, IntOrDouble defaultVal, int sizeVector, bool replaceByDefault, std::vector<IntOrDouble> &vToFill, tinyxml2::XMLElement *key);
 };

@@ -401,7 +401,7 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     case Organism::dd_time_lat: { // lateral has to wait for a fixed time (defined by parent organ)
         // time the lateral has to wait
         forDelay = std::max(rp->ldelay + plant.lock()->randn() * rp->ldelays, 0.);
-        multiplyDelay *= rp->multDelay;
+        multiplyDelay *= rp->sequentialDelay;
         if (verbose) {
             std::cout << "Organism::dd_time_lat " << rp->ldelay << " " << rp->ldelays << " " << forDelay << std::endl;
         }
@@ -410,7 +410,7 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     case Organism::dd_time_self: {                                          // lateral has to wait for a fixed time (defined by lateral organ itself)
         auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
         forDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
-        multiplyDelay *= latRp->multDelay;
+        multiplyDelay *= latRp->sequentialDelay;
         if (verbose) {
             std::cout << "create lat, delay output " << forDelay << std::endl;
             std::cout << "						 " << ot_lat << ", " << st_lat << " " << latRp->ldelay << " " << latRp->ldelays << " " << forDelay << " " << nodes.size()
@@ -445,11 +445,11 @@ void Stem::internodalGrowth(double dl, double dt) {
     std::vector<double> toGrow(p.ln.size());
     double dl_;
     const int ln_0 = std::count(p.ln.cbegin(), p.ln.cend(), 0); // number of laterals which grow from the same branching point as the one before
-    if (p.nodalGrowth == 0) {                                   // sequentiall growth
+    if (getStemRandomParameter()->internodeGrowth == 0) {       // sequentiall growth
         toGrow[0] = dl;
         std::fill(toGrow.begin() + 1, toGrow.end(), 0);
     }
-    if (p.nodalGrowth == 1) { // equal growth
+    if (getStemRandomParameter()->internodeGrowth == 1) { // equal growth
         std::fill(toGrow.begin(), toGrow.end(), dl / (p.ln.size() - ln_0));
     }
     int loopId = 0;
@@ -648,7 +648,6 @@ OrganState Stem::getState() const {
         stateSet(s, "param.theta", p->theta);
         stateSet(s, "param.rlt", p->rlt);
         stateSet(s, "param.laterals", p->laterals);
-        stateSet(s, "param.nodalGrowth", p->nodalGrowth);
         stateSet(s, "param.delayNGStart", p->delayNGStart);
         stateSet(s, "param.delayNGEnd", p->delayNGEnd);
     }
@@ -668,7 +667,6 @@ void Stem::setState(const OrganState &state, const std::map<int, std::shared_ptr
         stateGet(state, "param.theta", p->theta);
         stateGet(state, "param.rlt", p->rlt);
         stateGet(state, "param.laterals", p->laterals);
-        stateGet(state, "param.nodalGrowth", p->nodalGrowth);
         stateGet(state, "param.delayNGStart", p->delayNGStart);
         stateGet(state, "param.delayNGEnd", p->delayNGEnd);
         param_ = p;
