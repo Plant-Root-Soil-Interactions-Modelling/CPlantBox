@@ -12,7 +12,7 @@
 # Seeds that do not reach t* within max_wait_days (petridishsimauto.py) end normally with status "not_crossed".
 #
 #SBATCH --job-name=petrisimjob
-#SBATCH --array=0-99%5
+#SBATCH --array=0-99%50
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
