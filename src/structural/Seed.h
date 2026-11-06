@@ -28,23 +28,26 @@ class Seed : public Organ {
 
     virtual int organType() const override { return Organism::ot_seed; }
 
-    virtual std::string toString() const override;
+    /** use absolute coordinates for root nodes, ignore getLength, heading because seed has only 1 point */
+    Vector3d getNode(int i) const override;          ///< returns the absolute coordinate of node @p i
+    std::vector<Vector3d> getNodes() const override; ///< returns the absolute coordinates of all nodes
 
-    void initialize(
-        bool verbose = true); ///< initialization creates the initial organs, i.e. taproot, optional: basal, shoot borne root, if plant stem, optional: tillers
+    virtual std::string toString() const override; ///< Returns organ information and the seed's maximum numbers of basal roots, shootborne roots, and tillers.
+
+    void initialize(bool verbose = true); ///< initialization creates the initial organs, i.e. taproot, optional: basal, shoot borne root, if plant stem, optional: tillers
 
     std::shared_ptr<const SeedSpecificParameter> param() const { return std::static_pointer_cast<const SeedSpecificParameter>(param_); }
 
     std::vector<std::shared_ptr<Organ>> baseOrgans() { return children; } // created by initialize
     std::vector<std::shared_ptr<Organ>> copyBaseOrgans(std::shared_ptr<Organism> plant);
 
-    virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type,
-                                              double delay); ///< overwrite if you want to change class types used by intialize()
-    virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type,
-                                              double delay); ///< overwrite if you want to change class types used by intialize()
-
-    OrganState getState() const override; ///< Adds the Seed members to the state of Organ::getState()
+    /* state (de)serialisation */
+    OrganState getState() const override;                                                                      ///< Adds the Seed members to the state of Organ::getState()
     void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
+
+    /* parameters*/
+    int getNumberOfRootCrowns() const { return rootCrowns_; } ///< returns the number of root crowns, after initialization (currently == 1)
+    double getMaxSimTime() const { return param()->simtime; } ///< returns the recommended final simulation time
 
     int tapType = 1; ///< defauts, may be adapted by intialize()
     int basalType = 4;
@@ -60,11 +63,13 @@ class Seed : public Organ {
                                   ///< copied from to the tap root type
     bool shootBorneRootDefined(); ///< is there a shoot borne root definition in the parameter set? works only before initialization, otherwise the shoot borne
                                   ///< root type is copied from to the tap
-    bool tillersDefined(); ///< is there a tiller definition in the parameter set? works only before initialization, otherwise the tiller type is copied from to
-                           ///< the stem type
+    bool tillersDefined();        ///< is there a tiller definition in the parameter set? works only before initialization, otherwise the tiller type is copied from to
+                                  ///< the stem type
 
-    int getNumberOfRootCrowns() const { return rootCrowns_; }            ///< returns the number of root crowns, after initialization (currently == 1)
-    double getMaxSimTime() const { return param()->simtime; } ///< returns the recommended final simulation time
+    virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type,
+                                              double delay); ///< overwrite if you want to change class types used by intialize()
+    virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type,
+                                              double delay); ///< overwrite if you want to change class types used by intialize()
 
   protected:
     int rootCrowns_ = 0;

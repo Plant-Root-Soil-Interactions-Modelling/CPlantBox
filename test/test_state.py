@@ -63,7 +63,7 @@ class TestState(unittest.TestCase):
         plant = _maize()
         orgs, _ = self.organs(plant)
         orgs = orgs + [orgs[0].getParent()]  # the seed is not returned by getOrgans
-        expected = {pb.seed: {"tapType", "basalType", "shootborneType", "mainStemType", "tillerType", "rootCrowns"}, pb.root: {"insertionAngle"}, pb.stem: {"stemphytomerId", "shootborneType", "localId_linking_nodes"}, pb.leaf: {"beta", "ageDependentTropism"}}
+        expected = {pb.seed: {"tapType", "basalType", "shootborneType", "mainStemType", "tillerType", "rootCrowns"}, pb.root: {"insertionAngle"}, pb.stem: {"stemphytomerId", "localId_linking_nodes"}, pb.leaf: {"beta", "ageDependentTropism"}}
         found = set()
         for o in orgs:
             if o.organType() in expected:

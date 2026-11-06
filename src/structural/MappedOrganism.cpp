@@ -23,6 +23,11 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> 
 		std::vector<double> radii, std::vector<int> subTypes, std::vector<int> organTypes) :
 									nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes), organTypes(organTypes)
 {
+	// initialize leaf data and segment pointers, needed e.g. by cutSegments()
+	leafBladeSurface.assign(segments.size(), 0.);
+	segVol.assign(segments.size(), 0.);
+	bladeLength.assign(segments.size(), 0.);
+	segO.resize(segments.size());
 	assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
 	assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
 	assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");
@@ -44,6 +49,11 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> 
 {
 	organTypes.resize(segments.size());
 	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root);
+	// initialize leaf data and segment pointers, needed e.g. by cutSegments()
+	leafBladeSurface.assign(segments.size(), 0.);
+	segVol.assign(segments.size(), 0.);
+	bladeLength.assign(segments.size(), 0.);
+	segO.resize(segments.size());
 	assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
 	assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
 	assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");
@@ -67,6 +77,11 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i
 	organTypes.resize(segments.size());
 	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root);
 	setSubTypes(0);
+	// initialize leaf data and segment pointers, needed e.g. by cutSegments()
+	leafBladeSurface.assign(segments.size(), 0.);
+	segVol.assign(segments.size(), 0.);
+	bladeLength.assign(segments.size(), 0.);
+	segO.resize(segments.size());
     assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
 	assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
 	assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");

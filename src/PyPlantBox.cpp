@@ -389,6 +389,9 @@ PYBIND11_MODULE(plantbox, m) {
         .def("addChild", &Organ::addChild)
         .def("getNumberOfChildren", &Organ::getNumberOfChildren)
         .def("getChild", &Organ::getChild)
+        .def("incParentNI", &Organ::incParentNI)
+        .def("calcAge", &Organ::calcAge)
+        .def("calcLength", &Organ::calcLength)
         .def("calcCreationTime", &Organ::calcCreationTime)
         .def("getId", &Organ::getId)
         .def("getParam", &Organ::param) // backward compatibility
@@ -407,6 +410,9 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getNodeId", &Organ::getNodeId)
         .def("getNodeIds", &Organ::getNodeIds)
         .def("getNodeCT", &Organ::getNodeCT)
+        .def("getNodeCTs", &Organ::getNodeCTs)
+        .def("insertNode", &Organ::insertNode, py::arg("n"), py::arg("t"), py::arg("index"))
+        .def("heading", &Organ::heading)
         .def("addNode", (void (Organ::*)(Vector3d n, double t))&Organ::addNode, py::arg("n"), py::arg("t"))                        // overloads
         .def("addNode", (void (Organ::*)(Vector3d n, int id, double t))&Organ::addNode, py::arg("n"), py::arg("id"), py::arg("t")) // overloads
         .def("getSegments", &Organ::getSegments)
@@ -809,7 +815,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("leafGeometry", &LeafRandomParameter::leafGeometry)
         .def_readwrite("leafGeometryPhi", &LeafRandomParameter::leafGeometryPhi)
         .def_readwrite("leafGeometryX", &LeafRandomParameter::leafGeometryX)
-        .def_readwrite("shapeType", &LeafRandomParameter::shapeType);
+        .def_readwrite("shapeType", &LeafRandomParameter::shapeType)
+        .def_readwrite("isPseudostem", &LeafRandomParameter::isPseudostem);
 
     py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
         .def(py::init<>())
@@ -1127,9 +1134,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("simulateLimited", &Plant::simulateLimited)
         .def("initCallbacks", &Plant::initCallbacks)
         .def("createTropismFunction", &Plant::createTropismFunction)
-        .def("createGrowthFunction", &Plant::createGrowthFunction)
-        .def("abs2rel", &Plant::abs2rel)
-        .def("rel2abs", &Plant::rel2abs);
+        .def("createGrowthFunction", &Plant::createGrowthFunction);
 
     py::class_<MappedPlant, Plant, MappedSegments, std::shared_ptr<MappedPlant>>(m, "MappedPlant")
         .def(py::init<unsigned int>(), py::arg("seednum") = 0)

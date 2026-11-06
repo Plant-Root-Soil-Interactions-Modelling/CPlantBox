@@ -90,8 +90,6 @@ class Plant : public Organism {
     void setState(const OrganismState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organism::setState()
 
     std::vector<int> leafphytomerID = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    void abs2rel();
-    void rel2abs();
 
   protected:
     std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam

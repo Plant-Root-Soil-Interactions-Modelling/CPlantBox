@@ -21,6 +21,25 @@ Seed::Seed(std::shared_ptr<Organism> plant) : Organ(plant, nullptr, Organism::ot
 }
 
 /**
+ * @brief Returns the absolute coordinate of node @p i.
+ */
+Vector3d Seed::getNode(int i) const {
+    return nodes.at(i);
+}
+
+/**
+ * @brief Returns the absolute coordinates of all nodes.
+ */
+std::vector<Vector3d> Seed::getNodes() const {
+    std::vector<Vector3d> v;
+    for (int i = 0; i < getNumberOfNodes(); i++) {
+        v.push_back(getNode(i));
+    }
+    return v;
+}
+
+
+/**
  * Deep copies the organ into the new plant @param rs.
  * All laterals are deep copied, plant and parent pointers are updated.
  *
@@ -267,14 +286,16 @@ std::string Seed::toString() const {
 }
 
 /**
- * todo doc
+ * Creates a root of the given subtype and delay, attached to this seed at node 0.
+ * The organism's factory method selects the concrete root class.
  */
 std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, double delay) {
     return plant->createRoot(type, delay, shared_from_this(), 0);
 }
 
 /**
- * todo doc// overwrite if you want to change the types
+ * Creates a stem of the given subtype and delay, attached to this seed at node 0.
+ * The organism's factory method selects the concrete stem class.
  */
 std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, double delay) {
     return plant->createStem(type, delay, shared_from_this(), 0);

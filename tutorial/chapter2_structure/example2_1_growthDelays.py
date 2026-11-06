@@ -39,12 +39,12 @@ plant = pb.MappedPlant(2)  # |\label{l2_1_3:plantStart}|
 plant.readParameters(path + "example2_1_3.xml")
 srp = plant.getOrganRandomParameter(pb.seed)[0]
 
-srp.delayDefinitionRoot = pb.dd_distance  # roots: laterals wait for the apical zone to emerge  |\label{l2_1_3:ddRoot}|
-srp.delayDefinitionShoot = pb.dd_time_self  # shoot: time-based value for all laterals |\label{l2_1_3:ddShoot}|
+srp.delayDefinitionRoot = pb.dd_distance  # roots: laterals wait for the apical zone to pass  |\label{l2_1_3:ddRoot}|
+srp.delayDefinitionShoot = pb.dd_time_self  # shoot: time-based delay   |\label{l2_1_3:ddShoot}|
 
 # Leaf subType 1
 lrp = plant.getOrganRandomParameter(pb.leaf)[1]
-lrp.ldelay = 3  # |\label{l2_1_3:leaf_ldelayA}|
+lrp.ldelay = 2.5  # |\label{l2_1_3:leaf_ldelayA}|
 lrp.ldelays = 0.0  # |\label{l2_1_3:leaf_ldelaysA}|
 
 show_me(plant, simTime=15)
@@ -58,6 +58,52 @@ growthDelay = ageLG - ageLN  # time the lateral has to wait #|\label{l2_1_3:anal
 
 print("\n=== Part A: Distance- (for roots) and time-  (for shoot) based delay ===")
 print(f"  Root delay : {growthDelay:.2f} days  (or {effectiveLa:.2f} cm)")
+print(f"  Leaf delay : {lrp.ldelay:.2f} days  (std {lrp.ldelays:.2f})")
+
+
+# ---------------------------------------------------------------------------
+# Part B - Mixed distance-based delays for roots, time-based for shoot (self-defined fixed delay)
+# ---------------------------------------------------------------------------
+plant = pb.MappedPlant(2)
+plant.readParameters(path + "example2_1_3.xml")
+
+srp = plant.getOrganRandomParameter(pb.seed)[0]
+srp.delayDefinitionRoot = pb.dd_time_self  # roots: time-based delay      |\label{l2_1_3:ddRootB}|
+srp.delayDefinitionShoot = pb.dd_time_self  # shoot: lateral decides its own delay       |\label{l2_1_3:ddShootB}|
+
+
+# Root subType 2 (laterals)
+rrp = plant.getOrganRandomParameter(pb.root)[2]
+rrp.ldelay = 2.5  # mean lateral delay [days]   |\label{l2_1_3:root_ldelayB}|
+rrp.ldelays = 0.0  # std dev of delay  [days]    |\label{l2_1_3:root_ldelaysB}|
+
+# Stem subType 1 (main stem)
+srp = plant.getOrganRandomParameter(pb.stem)[1]
+srp.delayNGStart = 3  # |\label{l2_1_3:delayNGStart}|
+srp.delayNGEnd = 7  # |\label{l2_1_3:delayNGEnd}|
+
+# Leaf subType 1
+lrp = plant.getOrganRandomParameter(pb.leaf)[1]
+lrp.ldelay = 2.5  # |\label{l2_1_3:leaf_ldelayB}|
+lrp.ldelays = 0.0  # |\label{l2_1_3:leaf_ldelaysB}|
+
+plant.initialize(False)
+
+anim = va.AnimateRoots(plant)
+anim.min = min_
+anim.max = max_
+anim.res = [1, 1, 1]
+anim.plant = True
+anim.start()
+
+for i in range(0, N):
+    plant.simulate(dt, False)
+    anim.update()
+vp.plot_plant(plant, "creationTime")  # "creationTime")
+
+
+print("\n=== Part B: Time-based delay ===")
+print(f"  Root delay : {rrp.ldelay:.2f} days (std {rrp.ldelays:.2f})")
 print(f"  Leaf delay : {lrp.ldelay:.2f} days  (std {lrp.ldelays:.2f})")
 
 
