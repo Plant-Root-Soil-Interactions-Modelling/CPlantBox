@@ -64,9 +64,9 @@ class Leaf : public Organ {
     void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
 
   protected:
-    Vector3d getIncrement(const Vector3d &p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
-    void createSegments(double l, double dt, bool silence);           ///< Creates segments totalling length @p l; called from simulate()
-    Vector3d heading(int n) const override;                           ///< heading at node n, a pseudostem bends at the first node of the blade
+    Vector3d getIncrement(const Vector3d &p, Vector3d &h, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
+    void createSegments(double l, double dt, bool silence);                        ///< Creates segments totalling length @p l; called from simulate()
+    Vector3d heading(int n) const override;                                        ///< heading at node n, a pseudostem bends at the first node of the blade
     int getleafphytomerID(int subtype);
     void minusPhytomerId(int subtype);
     void addleafphytomerID(int subtype);

@@ -233,8 +233,7 @@ void Stem::simulate(double dt, bool verbose) {
  * @param n    Node index used to determine the current heading (-1 = last node).
  * @return     Increment vector of length @p sdx in the growth direction, relative to the heading frame (Matrix3d::ons of the heading).
  */
-Vector3d Stem::getIncrement(const Vector3d &p, double sdx, int n) {
-    Vector3d h = heading(n);
+Vector3d Stem::getIncrement(const Vector3d &p, Vector3d &h, double sdx) {
     Matrix3d ons = Matrix3d::ons(h);
     Vector2d ab = getOrganRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this());
     return Vector3d::rotAB(ab.x, ab.y).times(sdx); // relative to the heading frame (ons)
@@ -301,6 +300,8 @@ void Stem::createSegments(double l, double dt, int phytoIdx) {
     // create n+1 new nodes
     double sl = 0; // summed length of created segment
     int n = floor(l / dx());
+    Vector3d h = heading(nn - 1); // heading and position of the node preceding the new one, updated incrementally
+    Vector3d p = getNode(nn - 1);
     for (int i = 0; i < n + 1; i++) {
 
         double sdx;  // segment length (<=dx)
@@ -320,15 +321,16 @@ void Stem::createSegments(double l, double dt, int phytoIdx) {
         }
         sl += sdx;
         // the new node is inserted at index nn+i, its predecessor is the node nn+i-1
-        int pi = nn + i - 1;
-        // TODO: build node and heading incrementially (starting from nn) to quadratic behavior
-        Vector3d newnode = getIncrement(getNode(pi), sdx, pi);                 // relative coordinate
+        Vector3d newnode = getIncrement(p, h, sdx);                            // relative coordinate
         double et = this->calcCreationTime(getLength(true) + shiftl + sl, dt); // here length or getLength? it's the same because epsilonDx was set back to 0 at beginning of simulate?
         if (stemElongation) {
             insertNode(newnode, et, size_t(nn + i));
         } else {
             addNode(newnode, et);
         }
+        Vector3d s = Matrix3d::ons(h).times(newnode); // absolute segment vector
+        p = p.plus(s);
+        h = s.normalized();
     }
 }
 
