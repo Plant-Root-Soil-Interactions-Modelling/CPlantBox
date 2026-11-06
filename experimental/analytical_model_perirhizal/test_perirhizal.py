@@ -73,14 +73,14 @@ d_idx = 1 #Dirichlet B is the second scenario
 
 # general parameters
 #fraction_time = 100
-max_time = 10.0 # d
-n_times = 1000+1 # number of time slots, -1 for intervals
+max_time = 1.0 # d
+n_times = 100+1 # number of time slots, -1 for intervals
 r_prhiz = 0.6 # perirhizal radius[cm], computed for a RLD above 1cm/cm3
-r_root = 0.02# root radius [cm]
+r_root = 0.03# root radius [cm]
 length = 1 #default length of the segment, will not change the outcpme as all variables are assumed constant in this direction [cm]
 b = 0 #buffer power
 
-bool_phosphate = False
+bool_phosphate = True
 if bool_phosphate:
     #ads = 0.05 L/(g,hr), kdes = 0.05 1/hr
     #b = rho_ Kd according to richards1p2cproblem.hh, but Kd = kdes/kads that does not make sense: increase in kdes should lower the amount of adsorption
@@ -89,7 +89,7 @@ if bool_phosphate:
     b = 0.16
 f_b = 1
 #initial conditions
-initial_waterpotential = -100
+initial_waterpotential = -200
 initial_soluteconcentration = 1.6e-6#mol/cm3, 103mg/L of NO3 (one of the Tereno measurements in 2015, TODO: look for another source) leads to slightly above 1.6
 
 #space for the outputs
@@ -99,6 +99,7 @@ values = np.zeros((n_methods, n_scenarios, n_times, NC+3))
 #discretisation
 lb = 0.5
 points = np.logspace(np.log(r_root) / np.log(lb), np.log(r_prhiz) / np.log(lb), NC+1, base = lb) 
+#print("points", points)
 CC = np.array([(points[i] + points[i+1])/2 for i in range(NC)])
 volumes = np.array([(points[i+1]**2 - points[i]**2)*3.14 for i in range(NC)])
 
@@ -127,16 +128,18 @@ factor2 = 1/1000/100*2.512
 Vmax = 4.0e-11 * (2*3.14*r_root) * (24*3600)*molarMassSolute /factor  #mol/(cm2 s) * cm * cm * (s/d) -> mol / (cm d) 
 Vmax_per_area = Vmax / (2*3.14*r_root) #g / (cm d) /cm = g/(cm2d)
 Vmax_per_area2 = 4.0e-11 * molarMassSolute * (24*3600) # g/(cm2d)
-Km = 1.5e-7*molarMassSolute   #mol/cm3 -> g/cm3
+Km = 3*1.5e-7*molarMassSolute   #mol/cm3 -> g/cm3
     
 total_volume = np.pi*(r_prhiz**2-r_root**2)*length    
     
 initial_solutemass = initial_soluteconcentration * molarMassSolute
 #diffusion coefficient of nitrate
-Ds = 1.902e-5 * 24 * 3600  #cm2/s -> cm2/d
+Ds = 1.902e-5  #cm2/s
+
 if bool_phosphate:
-    Ds = 0.6e-5 * 24 * 3600  #cm2/s -> cm2/d
-    
+    Ds = 0.6e-5  #cm2/s
+   
+Ds_CPlantBox = Ds * 24 * 3600   #cm2/s -> cm2/d
 
 # load the perirhizal model
 peri = PerirhizalPython() 
@@ -153,7 +156,7 @@ rho_b = 1.5 #bulk soil density
 peri2 = PerirhizalPython() 
 sp = vg.Parameters(soilVG)
 peri2.set_soil(sp)
-#peri2.create_integralAdvectionDiffusion_lookup("processing/lookup_nitrate_simp", sp)
+peri2.create_integralAdvectionDiffusion_lookup("processing/lookup_nitrate_simp", sp)
 peri2.open_lookup_solutes_simp("processing/lookup_nitrate_simp")   
 #peri2.create_solute_sr_lookup("processing/lookup_nitrate_sr", sp)
 #peri2.open_lookup_solutes("processing/lookup_nitrate_sr") 
@@ -175,7 +178,7 @@ if do_computation:
         s.createGrid1d(points, length = length/100)  # [m] -> [cm]
         s.setVGParameters([soilVG])
         s.setHomogeneousIC(initial_waterpotential)  # cm pressure head
-        s.setBotBC("constantFluxCyl",(waterdemand*facto_w)) # "noFlux")# Flux in cm/d
+        s.setBotBC("constantFluxCyl",(waterdemand)) # "noFlux")# Flux in cm/d
         if s == s_nf:
             s.setTopBC("constantFluxCyl",(0.0))  #  [cm/day] "noFlux")#default, will be changed for one scenario
             s.setParameter("Soil.BC.Top.SType", "3")  # constantFluxCyl=3 (SType = Solute Type)
@@ -188,7 +191,7 @@ if do_computation:
         s.setParameter("Soil.BC.Bot.SType", "8")  # michaelisMenten=8 (SType = Solute Type)
         s.setParameter("Soil.BC.Bot.CValue", "0.0") #should not matter
         #s.setParameter("RootSystem.Uptake.Vmax", str(Vmax_per_area/1000/100*2.512*factor)) #mol/(cm2d) -> g/(cm2 d) #I have tested this scaling, yet I do not understand it #1/1000/100*2.512
-        s.setParameter("RootSystem.Uptake.Vmax", s.dumux_str(Vmax_per_area*r_root*9.95248e-3)) #mol/(cm2d) -> g/(cm2 d) #I have tested this scaling, yet I do not understand it #1/1000/100*2.512
+        s.setParameter("RootSystem.Uptake.Vmax", s.dumux_str(Vmax_per_area)) #mol/(cm2d) -> g/(cm2 d) #I have tested this scaling, yet I do not understand it #1/1000/100*2.512#*9.95248e-3#*2*np.pi*r_root
         #s.setParameter("RootSystem.Uptake.Vmax", str(Vmax_per_area2)) #mol/(cm2d) -> g/(cm2 d) #I have tested this scaling, yet I do not understand it #1/1000/100*2.512
             #s.setParameter("RootSystem.Uptake.Vmax", str(Vmax*molarMassSolute)) #mol/d -> g/d #TODO: Vmax or Vmax per area?
         s.setParameter("RootSystem.Uptake.Km", s.dumux_str(Km)) # mol/cm3 -> g/cm3
@@ -196,7 +199,7 @@ if do_computation:
         s.setParameter("Component.MolarMass", s.dumux_str(molarMassWater/1000)) #g/mol -> kg/mol water
         s.setParameter("1.Component.MolarMass", s.dumux_str(molarMassSolute/1000)) #g/mol -> kg/mol nitrate
         #s.setParameter("1.Component.LiquidDiffusionCoefficient", str(Ds / 1.e4 / (24*3600) )) #cm^2/d -> m^2/s
-        s.setParameter("1.Component.LiquidDiffusionCoefficient", str(Ds / 1.e4/ (24*3600) * 4)) #cm^2/d -> m^2/s #TODO: why times 4?
+        s.setParameter("1.Component.LiquidDiffusionCoefficient", str(Ds / 1.e4 )) #cm^2/s -> m^2/s #TODO: why times 4?#* 4
         #print("problems in the beginning", s.dumux_str(Ds / 1.e4/ (24*3600)))
         #s.setParameter("1.Component.LiquidDiffusionCoefficient", str(Ds)) #cm^2/d -> m^2/s
         s.setParameter("Component.BufferPower", s.dumux_str(b*f_b))
@@ -312,7 +315,7 @@ if do_computation:
         #determine means 
         #for the explicit Euler method of the timesteps
         f_root = (2*np.pi*r_root)/(np.pi*(r_prhiz**2-r_root**2))
-        f_prhiz = Ds* pow(0.25,13/3)/(0.4**2)*(2*np.pi*r_prhiz)/(np.pi*(r_prhiz**2-r_root**2)) #only have diffusion on the outside for now, assume water content of 0.25, saturated watercontent of 0.4
+        f_prhiz = Ds_CPlantBox* pow(0.25,13/3)/(0.4**2)*(2*np.pi*r_prhiz)/(np.pi*(r_prhiz**2-r_root**2)) #only have diffusion on the outside for now, assume water content of 0.25, saturated watercontent of 0.4
         IC = initial_soluteconcentration*molarMassSolute
         
         change_water_nf = 2*np.pi * (-rootuptake_w_nf*r_root + inflow_w_nf* r_prhiz) / (np.pi * (r_prhiz**2 - r_root**2)) * dt
@@ -434,7 +437,7 @@ if do_computation:
         #solutes_sr_simp[0,r,1] = mean_soluteconcent_sr_simp_nf * mean_watercontent_nf/(mean_watercontent_nf+change_water_nf)
         mean_soluteconcent_sr_simp_nf = mean_soluteconcent_sr_simp_nf * mean_watercontent_ana_nf/(mean_watercontent_ana_nf+change_water_nf)
         values[s_sr_simp,nf_idx,r,0] = mean_soluteconcent_sr_simp_nf
-
+        #print("----mean solute",mean_soluteconcent_sr_simp_nf)
         
         #Dirichlet BC
         mean_waterpotential_ana_d = vg.pressure_head(mean_watercontent_ana_d, peri.sp)
@@ -448,12 +451,12 @@ if do_computation:
         print("mean watercontents", mean_watercontent_nf, mean_watercontent_d)
 
         #result_solutes_sr_nf = peri.soil_root_solutes_steadyrate_simplified_([vg.fast_mfp[peri.sp](values[wp_num,nf_idx,r,3])], [vg.fast_mfp[peri.sp](values[wp_num,nf_idx,r,-1])], [r_root], [r_prhiz], [mean_soluteconcent_sr_simp_nf], [-Vmax_per_area], [Km], Ds, [waterdemand], peri.sp, n_approx = 10)
-        result_solutes_sr_simp_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_soil_nf], [r_root], [r_prhiz], [mean_soluteconcent_sr_simp_nf*mean_watercontent_ana_nf/(mean_watercontent_ana_nf+b)], [Vmax_per_area], [Km], Ds, [-waterdemand], peri.sp, n_approx = 30)
-        print("ingredients",Phi_root_nf, Phi_soil_nf, r_root, r_prhiz, mean_soluteconcent_sr_simp_nf, Vmax_per_area, Km, Ds, -waterdemand)
+        result_solutes_sr_simp_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_soil_nf], [r_root], [r_prhiz], [mean_soluteconcent_sr_simp_nf*mean_watercontent_ana_nf/(mean_watercontent_ana_nf+b)], [Vmax_per_area], [Km], Ds_CPlantBox, [-waterdemand], peri.sp, n_approx = 30)
+        print("ingredients",Phi_root_nf, Phi_soil_nf, r_root, r_prhiz, mean_soluteconcent_sr_simp_nf, Vmax_per_area, Km, Ds_CPlantBox, -waterdemand)
 
         #result_solutes_sr_nf = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_nf], [Phi_outer_nf], [r_root], [r_prhiz], [mean_soluteconcent_sr_simp_nf], [-Vmax_per_area], [Km], Ds, [waterdemand], peri.sp, n_approx = 10)
         #result_solutes_sr_d = peri.soil_root_solutes_steadyrate_simplified_([vg.fast_mfp[peri.sp](values[wp_num,d_idx,r,3])], [vg.fast_mfp[peri.sp](values[wp_num,d_idx,r,-1])], [r_root], [r_prhiz], [mean_soluteconcent_sr_simp_d], [-Vmax_per_area], [Km], Ds, [waterdemand], peri.sp, n_approx = 10)
-        result_solutes_sr_simp_d = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_d], [Phi_soil_d], [r_root], [r_prhiz], [mean_soluteconcent_sr_simp_d*mean_watercontent_ana_d/(mean_watercontent_ana_d+b)], [Vmax_per_area], [Km], Ds, [-waterdemand], peri.sp, n_approx = 30)
+        result_solutes_sr_simp_d = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_d], [Phi_soil_d], [r_root], [r_prhiz], [mean_soluteconcent_sr_simp_d*mean_watercontent_ana_d/(mean_watercontent_ana_d+b)], [Vmax_per_area], [Km], Ds_CPlantBox, [-waterdemand], peri.sp, n_approx = 30)
         #result_solutes_sr_d = peri.soil_root_solutes_steadyrate_simplified_([Phi_root_d], [Phi_outer_d], [r_root], [r_prhiz], [mean_soluteconcent_sr_simp_d], [-Vmax_per_area], [Km], Ds, [waterdemand], peri.sp, n_approx = 10)
         
         print("special_simp",Phi_root_nf,Phi_soil_nf,Phi_root_d,Phi_soil_d)
@@ -473,18 +476,18 @@ if do_computation:
         F0_nf = peri.integral_AdvectionDiffusion_(Phi_simp_nf(r_root),peri.sp)
         #F0_af = peri.integral_AdvectionDiffusion_(Phi_af(r_root),peri.sp)
         F0_d = peri.integral_AdvectionDiffusion_(Phi_simp_d(r_root),peri.sp)
-        D_tilde = 1/Ds/math.pow(sp.theta_S-sp.theta_R,13/3)*(sp.theta_S*sp.theta_S)
+        D_tilde = 1/Ds_CPlantBox/math.pow(sp.theta_S-sp.theta_R,10/3)*(sp.theta_S*sp.theta_S) #TODO: before there was 13/3
         
         #print("Comparison waterfunction", Phi_soil_nf, Phi_nf(CC[-1]))
         
         # the ratio of waterflow and soluteflow is assumed to remain constant throughout the perirhizal zone
         for j in range(NC):
-            r_current = points[j] #CC[j] #TODO: how do I want to plot this?
+            r_current = points[j] #CC[j] #TODO: how do I want to plot this?#
             F_nf = peri.integral_AdvectionDiffusion_(Phi_simp_nf(r_current),peri.sp)-F0_nf
             F_d = peri.integral_AdvectionDiffusion_(Phi_simp_d(r_current),peri.sp)-F0_d
             F_tilde_nf=math.exp(-F_nf*D_tilde)
             F_tilde_d=math.exp(-F_d*D_tilde)
-            print("test F", F_tilde_nf)
+            print("test F", F_tilde_nf, Phi_simp_nf(r_current))
             #solutes_sr_simp[0,r,2+j] = result_solutes_sr_nf * F_tilde_nf + (1-F_tilde_nf) * solutes_sr_simp[0,r,0] / (waterdemand)  #rewrite this using water solutes disc
             values[s_sr_simp,nf_idx,r,3+j] = result_solutes_sr_simp_nf * F_tilde_nf + (1-F_tilde_nf) * values[s_sr_simp,nf_idx,r,1] / (waterdemand)  #rewrite this using water solutes disc
             values[s_sr_simp,nf_idx,r,3+j]*=(values[wc_ana_sr,nf_idx,r,3+j]+b)/values[wc_ana_sr,nf_idx,r,3+j]
@@ -498,7 +501,7 @@ if do_computation:
         
         #Tiina Roose approximation
         E = 0 #minimal solute uptake
-        DS_TR = Ds * mean_watercontent_nf#math.pow(mean_watercontent_nf,10/3)/(sp.theta_S**2)
+        DS_TR = Ds_CPlantBox * mean_watercontent_nf#math.pow(mean_watercontent_nf,10/3)/(sp.theta_S**2)
         waterflow_TR = 2*np.pi*r_root*waterdemand
         waterflow_TR = waterdemand
         rsc = peri.solutesuptake_convdiff_([initial_watercontent], [initial_soluteconcentration*molarMassSolute], [Vmax_per_area], [Km], DS_TR, [waterflow_TR], [CC[0]], [E], [simtimes[r]], sp)
@@ -507,12 +510,12 @@ if do_computation:
         #solutes_TR[0,r,2]=rsc[0]
         values[s_TR,nf_idx,r,3]=rsc[0]
         
-        #DS_TR = Ds * mean_watercontent_af#math.pow(mean_watercontent_af,10/3)/(sp.theta_S**2)
+        #DS_TR = Ds_CPlantBox * mean_watercontent_af#math.pow(mean_watercontent_af,10/3)/(sp.theta_S**2)
         #rsc = peri.solutesuptake_convdiff_([initial_watercontent], [initial_soluteconcentration*molarMassSolute], [Vmax_per_area], [Km], DS_TR, [waterflow_TR], [CC[0]], [E], [simtimes[r]], sp)
         #solutes_TR[1,r,0]=-Vmax_per_area*rsc[0]/(Km + rsc[0])
         #solutes_TR[1,r,2]=rsc[0]
         
-        DS_TR = Ds * mean_watercontent_d#math.pow(mean_watercontent_d,10/3)/(sp.theta_S**2)
+        DS_TR = Ds_CPlantBox * mean_watercontent_d#math.pow(mean_watercontent_d,10/3)/(sp.theta_S**2)
         rsc = peri.solutesuptake_convdiff_([initial_watercontent], [initial_soluteconcentration*molarMassSolute], [Vmax_per_area], [Km], DS_TR, [waterflow_TR], [CC[0]], [E], [simtimes[r]], sp)
         #solutes_TR[2,r,0]=-Vmax_per_area*rsc[0]/(Km + rsc[0])
         values[s_TR,d_idx,r,1]=-Vmax_per_area*rsc[0]/(Km + rsc[0])
@@ -659,6 +662,7 @@ if do_computation:
         values[s_u,nf_idx,r,3:] = np.ones(NC) * mean_soluteconcent_u_nf
         #solutes_u[1,r,2:] = np.ones(NC) * mean_soluteconcent_u_af
         values[s_u,d_idx,r,3:] = np.ones(NC) * mean_soluteconcent_u_d
+        print("jump solute test2", mean_soluteconcent_u_nf, Vmax_per_area*mean_soluteconcent_u_nf/(Km + mean_soluteconcent_u_nf))
             
             
         #return watercontent_dumux, waterpotential_dumux, watercontent_sr, waterpotential_sr, solutes_dumux, solutes_sr_simp, solutes_ss, solutes_sr, solutes_d, solutes_u, solutes_TR
@@ -817,26 +821,46 @@ suptake_u_d = values[s_u,d_idx,1:,1]# solutes_u[run, 2, 1:, 0]
 suptake_TR_nf = values[s_TR,nf_idx,1:,1]# solutes_TR[run, 0, 1:, 0]
 suptake_TR_d = values[s_TR,d_idx,1:,1]# solutes_TR[run, 2, 1:, 0]
 
+#copy
+solutes_dumux_nf = values[s_num,nf_idx,1:,0]# solutes_dumux[run, 0, 1:, 0]
+solutes_dumux_d = values[s_num,d_idx,1:,0]# solutes_dumux[run, 2, 1:, 0]
+
+solutes_sr_simp_nf = values[s_sr_simp,nf_idx,1:,0]# solutes_sr_simp[run, 0, 1:, 0]
+solutes_sr_simp_d = values[s_sr_simp,d_idx,1:,0]# solutes_sr_simp[run, 2, 1:, 0]
+
+solutes_ss_nf = values[s_ss,nf_idx,1:,0]# solutes_ss[run, 0, 1:, 0]
+solutes_ss_d = values[s_ss,d_idx,1:,0]# solutes_ss[run, 2, 1:, 0]
+
+solutes_sr_nf = values[s_sr,nf_idx,1:,0]# solutes_sr[run, 0, 1:, 0]
+solutes_sr_d = values[s_sr,d_idx,1:,0]# solutes_sr[run, 2, 1:, 0]
+
+solutes_d_d = values[s_sr_d,d_idx,1:,0]# solutes_d[run, 2, 1:, 0]
+
+solutes_u_nf = values[s_u,nf_idx,1:,0]# solutes_u[run, 0, 1:, 0]
+solutes_u_d = values[s_u,d_idx,1:,0]# solutes_u[run, 2, 1:, 0]
+
+solutes_TR_nf = values[s_TR,nf_idx,1:,0]# solutes_TR[run, 0, 1:, 0]
+solutes_TR_d = values[s_TR,d_idx,1:,0]# solutes_TR[run, 2, 1:, 0]
 
 
-ax1[0].plot(suptake_dumux_nf, suptake_dumux_nf, "m", linestyle = linestyle_dumux, label = "dumux")
-#ax1[0].scatter(suptake_dumux_nf, abs(suptake_dumux_nf), "m", marker = "*")
-ax1[0].plot(suptake_dumux_nf, abs(suptake_sr_simp_nf), "b", linestyle = linestyle_dumux, label = "steady rate simp")
-ax1[0].plot(suptake_dumux_nf, abs(suptake_sr_nf), "g", linestyle = linestyle_dumux, label = "steady rate")
-ax1[0].plot(suptake_dumux_nf, abs(suptake_ss_nf), "y", linestyle = linestyle_dumux, label = "steady state")
-ax1[0].plot(suptake_dumux_nf, abs(suptake_u_nf), "r", linestyle = linestyle_dumux, label = "uniform")
-ax1[0].plot(suptake_dumux_nf, abs(suptake_TR_nf), "k", linestyle = linestyle_dumux, label = "TR")
 
-ax1[1].plot(suptake_dumux_d, suptake_dumux_d, "m", linestyle = linestyle_dumux, label = "dumux")
-#ax1[2].scatter(suptake_dumux_d, abs(suptake_dumux_d), marker = "*")
-ax1[1].plot(suptake_dumux_d, abs(suptake_sr_simp_d), "b", linestyle = linestyle_dumux, label = "steady rate simp")
-ax1[1].plot(suptake_dumux_d, abs(suptake_sr_d), "g", linestyle = linestyle_dumux, label = "steady rate")
-ax1[1].plot(suptake_dumux_d, abs(suptake_ss_d), "y", linestyle = linestyle_dumux, label = "steady state")
-ax1[1].plot(suptake_dumux_d, abs(suptake_d_d), "c", linestyle = linestyle_dumux, label = "steady state")
-ax1[1].plot(suptake_dumux_d, abs(suptake_u_d), "r", linestyle = linestyle_dumux, label = "uniform")
-ax1[1].plot(suptake_dumux_d, abs(suptake_TR_d), "k", linestyle = linestyle_dumux, label = "TR")
+ax1[0].plot(solutes_dumux_nf, suptake_dumux_nf, "m", linestyle = linestyle_dumux, label = "dumux")
+ax1[0].plot(solutes_sr_simp_nf, abs(suptake_sr_simp_nf), "b", linestyle = linestyle_dumux, label = "steady rate simp")
+ax1[0].plot(solutes_sr_nf, abs(suptake_sr_nf), "g", linestyle = linestyle_dumux, label = "steady rate")
+ax1[0].plot(solutes_ss_nf, abs(suptake_ss_nf), "y", linestyle = linestyle_dumux, label = "steady state")
+ax1[0].plot(solutes_u_nf, abs(suptake_u_nf), "r", linestyle = linestyle_dumux, label = "uniform")
+ax1[0].plot(solutes_TR_nf, abs(suptake_TR_nf), "k", linestyle = linestyle_dumux, label = "TR")
 
-ax1[0].set_xlabel("dumux solute uptake")
+# ax1[1].plot(solutes_dumux_d, suptake_dumux_d, "m", linestyle = linestyle_dumux, label = "dumux")
+# #ax1[2].scatter(suptake_dumux_d, abs(suptake_dumux_d), marker = "*")
+# ax1[1].plot(solutes_sr_simp_d, abs(suptake_sr_simp_d), "b", linestyle = linestyle_dumux, label = "steady rate simp")
+# ax1[1].plot(solutes_sr_d, abs(suptake_sr_d), "g", linestyle = linestyle_dumux, label = "steady rate")
+# ax1[1].plot(solutes_ss_d, abs(suptake_ss_d), "y", linestyle = linestyle_dumux, label = "steady state")
+# ax1[1].plot(solutes_d_d, abs(suptake_d_d), "c", linestyle = linestyle_dumux, label = "steady state")
+# ax1[1].plot(solutes_u_d, abs(suptake_u_d), "r", linestyle = linestyle_dumux, label = "uniform")
+# ax1[1].plot(solutes_TR_d, abs(suptake_TR_d), "k", linestyle = linestyle_dumux, label = "TR")
+
+ax1[0].set_xlabel("mean solute concentration")
 ax1[0].set_ylabel("analytical approximation")
 ax1[0].legend(["solute uptake mol/cm2d"], loc="upper left")
 
@@ -850,8 +874,92 @@ ax1[1].legend(["solute uptake mol/cm2d"], loc="upper left")
 
 #np.save("input/" + filename + "_fp", np.vstack((sim_times_, -np.array(t_act_), np.array(q_soil_))))
 figure = plt.gcf() # get current figure
-figure.set_size_inches(8, 6)
+#figure.set_size_inches(8, 6)
 strFile = "relative_uptake"
+if os.path.isfile(strFile):
+   os.remove(strFile)
+plt.tight_layout()
+plt.savefig(strFile, bbox_inches = 'tight') 
+#plt.show()
+
+
+
+timestep = temp_timestep.copy()
+
+fig, ax1 = plt.subplots(nrows=1, ncols=2)
+# dumux(both)
+# left: sr no flux, ss for the no flux
+# right: ss, sr, farfield for sr waterflow
+
+#load solute uptake
+suptake_dumux_nf = values[s_num,nf_idx,1:,1]# solutes_dumux[run, 0, 1:, 0]
+suptake_dumux_d = values[s_num,d_idx,1:,1]# solutes_dumux[run, 2, 1:, 0]
+
+suptake_sr_simp_nf = values[s_sr_simp,nf_idx,1:,1]# solutes_sr_simp[run, 0, 1:, 0]
+suptake_sr_simp_d = values[s_sr_simp,d_idx,1:,1]# solutes_sr_simp[run, 2, 1:, 0]
+
+suptake_ss_nf = values[s_ss,nf_idx,1:,1]# solutes_ss[run, 0, 1:, 0]
+suptake_ss_d = values[s_ss,d_idx,1:,1]# solutes_ss[run, 2, 1:, 0]
+
+suptake_sr_nf = values[s_sr,nf_idx,1:,1]# solutes_sr[run, 0, 1:, 0]
+suptake_sr_d = values[s_sr,d_idx,1:,1]# solutes_sr[run, 2, 1:, 0]
+
+suptake_d_d = values[s_sr_d,d_idx,1:,1]# solutes_d[run, 2, 1:, 0]
+
+suptake_u_nf = values[s_u,nf_idx,1:,1]# solutes_u[run, 0, 1:, 0]
+suptake_u_d = values[s_u,d_idx,1:,1]# solutes_u[run, 2, 1:, 0]
+
+suptake_TR_nf = values[s_TR,nf_idx,1:,1]# solutes_TR[run, 0, 1:, 0]
+suptake_TR_d = values[s_TR,d_idx,1:,1]# solutes_TR[run, 2, 1:, 0]
+
+#copy
+solutes_dumux_nf = values[s_num,nf_idx,1:,0]# solutes_dumux[run, 0, 1:, 0]
+solutes_dumux_d = values[s_num,d_idx,1:,0]# solutes_dumux[run, 2, 1:, 0]
+
+solutes_sr_simp_nf = values[s_sr_simp,nf_idx,1:,0]# solutes_sr_simp[run, 0, 1:, 0]
+solutes_sr_simp_d = values[s_sr_simp,d_idx,1:,0]# solutes_sr_simp[run, 2, 1:, 0]
+
+solutes_ss_nf = values[s_ss,nf_idx,1:,0]# solutes_ss[run, 0, 1:, 0]
+solutes_ss_d = values[s_ss,d_idx,1:,0]# solutes_ss[run, 2, 1:, 0]
+
+solutes_sr_nf = values[s_sr,nf_idx,1:,0]# solutes_sr[run, 0, 1:, 0]
+solutes_sr_d = values[s_sr,d_idx,1:,0]# solutes_sr[run, 2, 1:, 0]
+
+solutes_d_d = values[s_sr_d,d_idx,1:,0]# solutes_d[run, 2, 1:, 0]
+
+solutes_u_nf = values[s_u,nf_idx,1:,0]# solutes_u[run, 0, 1:, 0]
+solutes_u_d = values[s_u,d_idx,1:,0]# solutes_u[run, 2, 1:, 0]
+
+solutes_TR_nf = values[s_TR,nf_idx,1:,0]# solutes_TR[run, 0, 1:, 0]
+solutes_TR_d = values[s_TR,d_idx,1:,0]# solutes_TR[run, 2, 1:, 0]
+
+simtimes = np.linspace(0,max_time,n_times)
+
+uniformuptakerate = lambda conc : (conc*Vmax_per_area/(conc+Km))
+
+ax1[0].plot(simtimes[1:], suptake_dumux_nf/uniformuptakerate(solutes_dumux_nf), "m", linestyle = linestyle_dumux, label = "dumux")
+ax1[0].plot(simtimes[1:], abs(suptake_sr_simp_nf)/uniformuptakerate(solutes_sr_simp_nf), "b", linestyle = linestyle_dumux, label = "steady rate simp")
+ax1[0].plot(simtimes[1:], abs(suptake_sr_nf)/uniformuptakerate(solutes_sr_nf), "g", linestyle = linestyle_dumux, label = "steady rate")
+ax1[0].plot(simtimes[1:], abs(suptake_ss_nf)/uniformuptakerate(solutes_ss_nf), "y", linestyle = linestyle_dumux, label = "steady state")
+ax1[0].plot(simtimes[1:], abs(suptake_u_nf)/uniformuptakerate(solutes_u_nf), "r", linestyle = linestyle_dumux, label = "uniform")
+#ax1[0].plot(simtimes[1:], abs(suptake_TR_nf)/uniformuptakerate(suptake_TR_nf), "k", linestyle = linestyle_dumux, label = "TR")
+
+ax1[0].set_xlabel("simtime")
+ax1[0].set_ylabel("relative uptake")
+ax1[0].legend(["solute uptake mol/cm2d"], loc="upper left")
+
+# ax1[1].set_xlabel("dumux solute uptake")
+# ax1[1].set_ylabel("analytical approximation")
+# ax1[1].legend(["solute utake mol/cm2d"], loc="upper left")
+
+ax1[1].set_xlabel("dumux solute uptake")
+ax1[1].set_ylabel("analytical approximation")
+ax1[1].legend(["solute uptake mol/cm2d"], loc="upper left")
+
+#np.save("input/" + filename + "_fp", np.vstack((sim_times_, -np.array(t_act_), np.array(q_soil_))))
+figure = plt.gcf() # get current figure
+#figure.set_size_inches(8, 6)
+strFile = "relative_uptakerate"
 if os.path.isfile(strFile):
    os.remove(strFile)
 plt.tight_layout()
@@ -1002,6 +1110,7 @@ for i in range(1):
     #load data
     
     water_dumux_nf = values[wp_num,nf_idx, timestep[i], 3:]
+    waterc_dumux_nf = values[wc_num,nf_idx, timestep[i], 3:]
     water_dumux_d = values[wp_num,d_idx, timestep[i], 3:]
     water_steadyrate_nf = values[wp_ana_sr,nf_idx, timestep[i], 3:]
     water_steadyrate_d = values[wp_ana_sr,d_idx, timestep[i], 3:]
