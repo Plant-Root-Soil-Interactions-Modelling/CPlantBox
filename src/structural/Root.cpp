@@ -383,7 +383,7 @@ void Root::createSegments(double l, double dt, bool verbose) {
         }
         sl += sdx;
         Vector3d newnode;
-        Vector3d newdx = getIncrement(nodes.back(), sdx);
+        Vector3d newdx = getIncrement(getNode(getNumberOfNodes() - 1), sdx);
         newnode = Vector3d(nodes.back().plus(newdx));
         double et = this->calcCreationTime(getLength(true) + shiftl + sl, dt);
         // here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
