@@ -34,6 +34,7 @@ max_wait_days = 30  # stop if less than 10 cm hyphae are behind the barrier afte
 # behind the barrier, or fewer than stall_fraction times the maximum so far (None = no check). Such seeds get status "stalled".
 min_growing_tips = 10
 stall_fraction = 0.5
+progress_every = 12  # one line of progress output every 12 time steps (= 12 h), None = no output
 
 ## Setting up petri dish
 diameter = 9.4
@@ -59,7 +60,7 @@ dt, nSteps = amf.setUpSimulationTime(5, 24)
 
 filename = "petridish_nowait_seed_" + str(seed)
 stats = {}
-mycp, time_star, times = amf.makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation=animation, max_wait_days=max_wait_days, stats=stats,  min_growing_tips=min_growing_tips, stall_fraction=stall_fraction, animation_dir=out["animation"])
+mycp, time_star, times = amf.makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation=animation, max_wait_days=max_wait_days, stats=stats,  min_growing_tips=min_growing_tips, stall_fraction=stall_fraction, animation_dir=out["animation"], progress_every=progress_every, turn_off_root_growth=True)
 stats["max_wait_days"] = max_wait_days if max_wait_days is not None else np.inf
 if stats["status"] != "ok": # store the run statistics anyway, petridishcombine.py skips this seed, petridishtiming.py counts it
     amf.save_simulation(results_dir + f"seed_{seed:03d}.npz", {"seed": seed, **stats, "peak_memory_mb": peak_memory_mb()})

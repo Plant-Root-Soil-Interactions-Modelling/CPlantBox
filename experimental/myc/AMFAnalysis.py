@@ -297,7 +297,7 @@ def countGrowingTips(plant, geometry, window, ot = 5):
 
 def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False, verbose = False,
                    max_wait_days = None, stats = None, min_growing_tips = None, stall_fraction = None, growing_window = 0.25, animation_dir = "animation/",
-                   turn_off_root_growth = False, turn_off_colonization = False):
+                   turn_off_root_growth = False, turn_off_colonization = False, progress_every = None):
     # set up simulation
     # max_wait_days: stop waiting for t* (10 cm hyphae behind the barrier) after this many simulated days, then returns mycp, None, None
     #                (None = wait without limit, as before). A limit in simulated time is reproducible, a wall clock limit is not.
@@ -306,12 +306,21 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     # stall_fraction: same, if the number of growing tips falls below stall_fraction times its maximum so far (e.g. 0.5, None = no check)
     # turn_off_root_growth, turn_off_colonization: at t*, when the hyphae have grown to the other side of the barrier, the roots stop growing,
     #                   or stop colonization and the emergence of new hyphae from the roots (mycp.turnOffRoots), the hyphae keep growing
+    # progress_every: print one line with the state of the simulation every progress_every time steps (None = no output), e.g. 24 = once per simulated day
     # stats: optional dict, filled with "status" ("ok", "not_crossed" or "stalled"), the wall clock time of each phase [s] ("wall_root", "wall_wait",
     #        "wall_hyphae"), "t_root_end" (simulation time after the root phase), "wait_days" (simulated days until t*, or until the stop),
     #        the length behind the barrier after each waiting step ("crossed_t", "crossed_len") and, with min_growing_tips, the number of
     #        growing tips behind the barrier after each hyphae step ("growing_t", "growing_n")
     #### WORK IN PROGRESS
     t_wall = time.perf_counter()
+    t_start = t_wall
+    def progress(phase, i, extra = ""):
+        # one line with the state after time step i of the phase, flushed so it shows up immediately in slurm output files
+        if progress_every is None or (i + 1) % progress_every != 0:
+            return
+        print(f"seed {seed} | {phase} step {i + 1} | t {mycp.getSimTime():.2f} d | wall {time.perf_counter() - t_start:.0f} s | "
+              f"roots {mycp.getSummed('length', pb.root):.1f} cm | hyphae {len(mycp.getOrgans(pb.hyphae))}, {mycp.getSummed('length', pb.hyphae):.1f} cm"
+              + (" | " + extra if extra else ""), flush=True)
     mycp = pb.MycorrhizalPlant(seed)
     mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
     seed_para = pb.SeedRandomParameter(mycp)
@@ -329,6 +338,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
         mycp.simulate(dt,verbose)
         if (animation):
             getMycSegmentAnalyser(mycp,filename = animation_dir + filename + "_anim",step = i, stdwrite= True)    # look at roots and container
+        progress("root phase", i)
 
     root = mycp.getOrganRandomParameter(pb.root)
     for rp in root:
@@ -345,6 +355,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     status = "ok"
     crossed_barrier = 0
 
+    step = 0
     while crossed_barrier < 10:
         if max_wait_days is not None and mycp.getSimTime() - t_root_end >= max_wait_days - 1.e-9:
             status = "not_crossed"
@@ -356,6 +367,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
         crossed_barrier = ana.getSummed("length",small_hyphae_dish)
         crossed_t.append(mycp.getSimTime())
         crossed_len.append(crossed_barrier)
+        progress("waiting for t*", step, f"behind barrier {crossed_barrier:.2f} of 10 cm")
+        step += 1
 
     if stats is not None:
         stats.update({"status": status, "wall_root": wall_root, "wall_wait": time.perf_counter() - t_wall, "wall_hyphae": 0.,
@@ -367,6 +380,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     t_wall = time.perf_counter()
 
     time_star = mycp.getSimTime()
+    if progress_every is not None:
+        print(f"seed {seed} | t* reached at t {time_star:.2f} d, {time_star - t_root_end:.2f} d after the root phase", flush=True)
     if turn_off_root_growth or turn_off_colonization:
         mycp.turnOffRoots(turn_off_root_growth, turn_off_colonization)
     growing_t, growing_n = [], []
@@ -383,6 +398,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
                (stall_fraction is not None and growing_n[-1] < stall_fraction * max(growing_n)):
                 status = "stalled"
                 break
+        progress("hyphae after t*", i, f"{mycp.getSimTime() - time_star:.2f} d after t*"
+                 + (f" | growing tips behind barrier {growing_n[-1]} (max {max(growing_n)})" if growing_n else ""))
     if stats is not None:
         stats.update({"status": status, "wall_hyphae": time.perf_counter() - t_wall, "growing_t": np.array(growing_t), "growing_n": np.array(growing_n)})
     if status != "ok":
@@ -869,9 +886,9 @@ def getTerminalRootNodes(mycp, S, barrier_thickness, root_dist = 0.5):
     in_R = set(R)
     T = set()
     for h in mycp.getOrgans(pb.hyphae):
-        if int(h.getParameter("subType")) == 3:
+        if int(h.getParameter("subType")) == 2:
             p = h.getParent()
-            if not (int(p.getParameter("organType")) == 5 and int(p.getParameter("subType")) == 3):
+            if not (int(p.getParameter("organType")) == 5 and int(p.getParameter("subType")) == 2):
                 T.add(h.getNodeId(0))
         elif h.isActive():
             T.add(h.getNodeId(h.getNumberOfNodes() - 1))
