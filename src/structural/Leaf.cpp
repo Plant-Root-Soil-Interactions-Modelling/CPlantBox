@@ -41,6 +41,7 @@ Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bo
  */
 Leaf::Leaf(std::shared_ptr<Organism> plant, int type, double delay, std::shared_ptr<Organ> parent, int pni) : Organ(plant, parent, Organism::ot_leaf, type, delay, pni) {
     assert(parent != nullptr && "Leaf::Leaf parent must be set");
+
     addleafphytomerID(param()->subType);
 
     // Calculate the rotation of the leaves. The code begins here needs to be rewritten, because another following project will work on the leaves. The code
@@ -64,9 +65,8 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, double delay, std::shared_
     }
     // used when computing actual heading, @see Organ::getInitialHeading
     this->partialIHeading = Vector3d::rotAB(theta, beta);
-    // Rewritten ends
-    if (parent->organType() != Organism::ot_seed) { // if not base organ
 
+    if (parent->organType() != Organism::ot_seed) { // if not base organ
         double creationTime;
         if (parent->organType() == Organism::ot_stem) {
             // if lateral of stem, initial creation time:
@@ -334,8 +334,7 @@ double Leaf::leafArea(bool realized, bool withPetiole) const {
                 surface_ += surfacePetiole;
             }
             return surface_;
-
-        } break;
+        }
         case LeafRandomParameter::shape_cylinder: {
             // divide by two to get only upper side of leaf
             double perimeter = 2 * M_PI * param()->a;
@@ -355,8 +354,7 @@ double Leaf::leafArea(bool realized, bool withPetiole) const {
                 surface_ += surfacePetiole;
             }
             return surface_;
-
-        } break;
+        }
         case LeafRandomParameter::shape_2D: {
             // how to take into account possible petiole area? add perimeter  *param()->lb /2 ?
             double perimeter = 2 * M_PI * param()->a;
@@ -373,13 +371,11 @@ double Leaf::leafArea(bool realized, bool withPetiole) const {
                 surface_ += surfacePetiole;
             }
             return surface_;
-        } break;
-
+        }
         default:
             throw std::runtime_error("Leaf::leafArea: undefined leaf shape type");
         }
     }
-    return 0.;
 };
 
 /**
@@ -405,9 +401,8 @@ double Leaf::leafAreaAtSeg(int localSegId, bool realized, bool withPetiole) {
         assert(((lengthInBlade + lengthInPetiole) == length_) && "leafAreaAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
         switch (shapeType) {
         case LeafRandomParameter::shape_cuboid: {
-            double Width_blade = getParameter("Width_blade");
-
-            double surfaceBlade = Width_blade * lengthInBlade;
+            double width_blade = getParameter("Width_blade");
+            double surfaceBlade = width_blade * lengthInBlade;
             surface_ = surfaceBlade;
             double surfacePetiole = 0;
             if (withPetiole) {
@@ -422,7 +417,6 @@ double Leaf::leafAreaAtSeg(int localSegId, bool realized, bool withPetiole) {
             if (withPetiole) {
                 surface_ += 2 * M_PI * lengthInPetiole * param()->a / 2;
             }
-
         } break;
         case LeafRandomParameter::shape_2D: {
             // TODO: compute it better later? not sur how to do it if the leaf is not convex
@@ -432,7 +426,6 @@ double Leaf::leafAreaAtSeg(int localSegId, bool realized, bool withPetiole) {
                 surface_ += 2 * M_PI * lengthInPetiole * param()->a / 2;
             }
         } break;
-
         default:
             throw std::runtime_error("Leaf::leafAreaAtSeg: undefined leaf shape type");
         }
@@ -493,9 +486,8 @@ double Leaf::leafVolAtSeg(int localSegId, bool realized, bool withPetiole) {
         assert(((lengthInBlade + lengthInPetiole) == length_) && "leafVolAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
         switch (shapeType) {
         case LeafRandomParameter::shape_cuboid: {
-            double Width_blade = getParameter("Width_blade");
-
-            double volBlade = Width_blade * lengthInBlade * a;
+            double width_blade = getParameter("Width_blade");
+            double volBlade = width_blade * lengthInBlade * a;
             vol_ = volBlade;
             double volPetiole = 0;
             if (withPetiole) {
@@ -677,10 +669,8 @@ std::vector<double> Leaf::getLeafVisX(int i) {
     switch (int(getParameter("shapeType"))) {
     case LeafRandomParameter::shape_2D:
         return getLeafVisX_2D(getLength(i));
-        break;
     case LeafRandomParameter::shape_cuboid:
         return getLeafVisX_cuboid(getLength(i));
-        break;
     default:
         return std::vector<double>();
     }
@@ -764,7 +754,6 @@ std::vector<Vector3d> Leaf::getLeafVis_2D(int i) {
                 y1 = Vector3d(0, 0, -1).cross(leaf_tip);
             }
             y1.normalize();
-
             double a = leafArea() / leafLength(); // scale radius
             for (double x : x_) {
                 coords.push_back(getNode(i).plus(y1.times(x * a)));
@@ -803,17 +792,17 @@ double Leaf::calcAge(double length) const {
 }
 
 /**
- *
+ * Decrements the phytomer ID counter for the specified leaf subtype.
  */
 void Leaf::minusPhytomerId(int subtype) { getPlant()->leafphytomerID[subtype]--; }
 
 /**
- *
+ * Returns the current phytomer ID for the specified leaf subtype.
  */
 int Leaf::getleafphytomerID(int subtype) { return getPlant()->leafphytomerID[subtype]; }
 
 /**
- *
+ * Increments the phytomer ID counter for the specified leaf subtype.
  */
 void Leaf::addleafphytomerID(int subtype) { getPlant()->leafphytomerID.at(subtype)++; }
 
@@ -1015,14 +1004,10 @@ void Leaf::createSegments(double l, double dt, bool verbose) {
         }
 
         Vector3d newnode = Matrix3d::ons(h).inverse().times(newh); // relative coordinate
-        double et = this->calcCreationTime(getLength(true) + shiftl + sl,
-                                           dt); // here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
-        // in case of impeded growth the node emergence time is not exact anymore,
-        // but might break down to temporal resolution
+        double et = this->calcCreationTime(getLength(true) + shiftl + sl, dt);
         addNode(newnode, et);
         p = p.plus(newh);
         h = newh.normalized();
-
     } // for
 }
 

@@ -5,7 +5,6 @@
 #include "Organism.h"
 #include "leafparameter.h"
 
-#include <assert.h>
 #include <iostream>
 
 namespace CPlantBox {
@@ -29,9 +28,14 @@ class Leaf : public Organ {
 
     int organType() const override { return Organism::ot_leaf; } ///< returns the organs type
 
+    /* overridden to optionally add sheath bending */
+    Vector3d heading(int n) const override; ///< heading at node n, a pseudostem bends at the first node of the blade
+
+    /* development */
     void simulate(double dt, bool silence = false) override; ///< leaf growth for a time span of \param dt
 
-    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ parameter of Plant::ScalarType
+    /* last time step */
+    bool hasMoved() const override { return true; }; ///< always need to update the coordinates of the nodes for the MappedPlant
 
     /* leaf vizualisation */
     double leafLength(bool realized = false) const { return std::max(getLength(realized) - param()->lb, 0.); /* represents the leaf base*/ }; ///< leaf surface length [cm]
@@ -42,10 +46,13 @@ class Leaf : public Organ {
     double leafLengthAtSeg(int localSegId, bool withPetiole = false);
     std::vector<double> getLeafVisX(int i);
     std::vector<Vector3d> getLeafVis(int i); // per node
+    bool nodeLeafVis(double l);              ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
 
+    /* parameters */
+    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ parameter of Plant::ScalarType
     std::string toString() const override;
 
-    /* exact from analytical equations */
+    /* from analytical equations */
     double calcLength(double age);                ///< analytical length of the leaf
     double calcAge(double length) const override; ///< analytical age of the leaf
 
@@ -53,20 +60,18 @@ class Leaf : public Organ {
     std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const; ///< root type parameter of this root
     std::shared_ptr<const LeafSpecificParameter> param() const;          ///< root parameter
 
-    /* useful */
-    bool hasMoved() const override { return true; }; ///< always need to update the coordinates of the nodes for the MappedPlant
+    /* for carbon-limited growth (know future (or past) volume (or length))* */
     double orgVolume(double length_ = -1., bool realized = false) const override;
     double orgVolume2Length(double volume_) override;
-    bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
 
     /* state (de)serialisation */
     OrganState getState() const override;                                                                      ///< Adds the Leaf members to the state of Organ::getState()
     void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
 
   protected:
-    Vector3d getIncrement(const Vector3d &p, Vector3d &h, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
     void createSegments(double l, double dt, bool silence);                        ///< Creates segments totalling length @p l; called from simulate()
-    Vector3d heading(int n) const override;                                        ///< heading at node n, a pseudostem bends at the first node of the blade
+    Vector3d getIncrement(const Vector3d &p, Vector3d &h, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
+
     int getleafphytomerID(int subtype);
     void minusPhytomerId(int subtype);
     void addleafphytomerID(int subtype);
@@ -77,8 +82,6 @@ class Leaf : public Organ {
     std::vector<double> getLeafVisX_cuboid(double l);
     std::vector<Vector3d> getLeafVis_2D(int i);
     std::vector<Vector3d> getLeafVis_cuboid(int i);
-
-    bool ageDependentTropism = false; ///< do we need to check the leaf's age to see when to update the tropism effect?, @see Leaf::getIncrement
 };
 
 } // namespace CPlantBox

@@ -25,6 +25,7 @@ class Seed : public Organ {
     virtual ~Seed() {};
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override; ///< deep copies the seed
+    std::vector<std::shared_ptr<Organ>> copyBaseOrgans(std::shared_ptr<Organism> plant);
 
     virtual int organType() const override { return Organism::ot_seed; }
 
@@ -36,10 +37,9 @@ class Seed : public Organ {
 
     void initialize(bool verbose = true); ///< initialization creates the initial organs, i.e. taproot, optional: basal, shoot borne root, if plant stem, optional: tillers
 
+    /* abbreviations */
     std::shared_ptr<const SeedSpecificParameter> param() const { return std::static_pointer_cast<const SeedSpecificParameter>(param_); }
-
     std::vector<std::shared_ptr<Organ>> baseOrgans() { return children; } // created by initialize
-    std::vector<std::shared_ptr<Organ>> copyBaseOrgans(std::shared_ptr<Organism> plant);
 
     /* state (de)serialisation */
     OrganState getState() const override;                                                                      ///< Adds the Seed members to the state of Organ::getState()

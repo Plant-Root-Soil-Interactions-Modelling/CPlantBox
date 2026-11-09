@@ -43,8 +43,7 @@ class GrassLeaf : public Organ {
 
     int organType() const override { return Organism::ot_leaf; }
 
-    void simulate(double dt, bool verbose = false) override;
-
+    /* use turtle graphics for representing the leaf centerline */
     int getNumberOfNodes() const override { return turtle.size() + 1; } ///< +1 because the anchor point is not stored in the meristem
     Vector3d heading(int n) const override;                             ///< Heading at node n from the turtle polyline.
     std::vector<Vector3d> getNodes() const override;
@@ -52,24 +51,30 @@ class GrassLeaf : public Organ {
     using Organ::getLength;
     Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
 
-    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
+    /* development */
+    void simulate(double dt, bool verbose = false) override;
 
-    OrganState getState() const override;                                                                      ///< Adds the GrassLeaf members to the state of Organ::getState()
-    void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
-
-    std::string toString() const override;
-
-    double calcLength(double age);
-    double calcAge(double length) const override;
-
+    /* leaf vizualisation */
+    std::vector<Vector3d> getLeafVis(int i);                ///< 3D edge points at node i; returns the two leaf edge points for both blade and sheath nodes.
+    double getBladeWidth(int i) const;                      ///< half-width [cm] at node i, accounting for the sheath base and blade taper
     double getSheathLength() const { return sheathLength; } ///< Returns the current sheath length grown so far [cm].
     double getBladeLength() const { return bladeLength; }   ///< Returns the current blade length grown so far [cm].
 
+    /* parameters */
+    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
+    std::string toString() const override;
+
+    /* from analytical equations */
+    double calcLength(double age);
+    double calcAge(double length) const override;
+
+    /* abbreviations */
     std::shared_ptr<GrassLeafRandomParameter> getGrassLeafRandomParameter() const;
     std::shared_ptr<const GrassLeafSpecificParameter> param() const;
 
-    std::vector<Vector3d> getLeafVis(int i); ///< 3D edge points at node i; returns the two leaf edge points for both blade and sheath nodes.
-    double getBladeWidth(int i) const;       ///< half-width [cm] at node i, accounting for the sheath base and blade taper
+    /* state (de)serialisation */
+    OrganState getState() const override;                                                                      ///< Adds the GrassLeaf members to the state of Organ::getState()
+    void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
 
   private:
     double initialSheathAngle = 1. / 180 * M_PI; ///< initial angle of the sheath (should be close to 0) [rad]
