@@ -42,7 +42,7 @@ Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bo
 Leaf::Leaf(std::shared_ptr<Organism> plant, int type, double delay, std::shared_ptr<Organ> parent, int pni) : Organ(plant, parent, Organism::ot_leaf, type, delay, pni) {
     assert(parent != nullptr && "Leaf::Leaf parent must be set");
     addleafphytomerID(param()->subType);
-    ageDependentTropism = getLeafRandomParameter()->f_tf->ageSwitch > 0;
+
     // Calculate the rotation of the leaves. The code begins here needs to be rewritten, because another following project will work on the leaves. The code
     // here is just temporally used to get some nice visualizations. When someone rewrites the code, please take "gimbal lock" into consideration.
     // Rewritten Begin:
@@ -891,7 +891,6 @@ Vector3d Leaf::getIncrement(const Vector3d &p, Vector3d &h, double sdx, int n) {
 OrganState Leaf::getState() const {
     OrganState s = Organ::getState();
     stateSet(s, "beta", beta);
-    stateSet(s, "ageDependentTropism", ageDependentTropism);
     if (auto p = param()) {
         stateSet(s, "param.lb", p->lb);
         stateSet(s, "param.la", p->la);
@@ -926,7 +925,6 @@ void Leaf::setState(const OrganState &state, const std::map<int, std::shared_ptr
         param_ = p;
     }
     stateGet(state, "beta", beta);
-    stateGet(state, "ageDependentTropism", ageDependentTropism);
 }
 
 /**
@@ -984,8 +982,9 @@ void Leaf::createSegments(double l, double dt, bool verbose) {
     // create n+1 new nodes
     double sl = 0; // summed length of created segment
     int n = floor(l / dx());
-    Vector3d p = getNode(nn - 1);        // position of the node preceding the new one, updated incrementally
-    Vector3d h = Organ::heading(nn - 1); // direction of the previous segment, updated incrementally
+    Vector3d p = getNode(nn - 1); // position of the node preceding the new one, updated incrementally
+
+    Vector3d h = heading(nn - 1); // direction of the previous segment, updated incrementally
     for (int i = 0; i < n + 1; i++) {
 
         double sdx;  // segment length (<=dx)
@@ -1002,16 +1001,29 @@ void Leaf::createSegments(double l, double dt, bool verbose) {
         sl += sdx;
         // the new node is inserted at index nn+i, its predecessor is the node nn+i-1
         int pi = nn + i - 1;
-        Vector3d newdx = getIncrement(p, h, sdx, pi);
-        Vector3d newnode = Matrix3d::ons(h).inverse().times(newdx); // relative coordinate
+        Vector3d newh = getIncrement(p, h, sdx, pi);
+
+        if (getLeafRandomParameter()->isPseudostem && (i > 0)) {
+            double lb = param()->lb;
+            bool isBlade = (getLength(i) - lb > -1e-10);             // current node in blade
+            bool previousIsBlade = (getLength(i - 1) - lb > -1e-10); // previous node in blade
+            if (isBlade && !previousIsBlade) {                       // add bending at the start of the blade
+                Vector3d myPartialIHeading = Vector3d::rotAB(param()->theta, beta);
+                Vector3d new_heading = Matrix3d::ons(newh).times(myPartialIHeading);
+                newh = new_heading;
+            }
+        }
+
+        Vector3d newnode = Matrix3d::ons(h).inverse().times(newh); // relative coordinate
         double et = this->calcCreationTime(getLength(true) + shiftl + sl,
                                            dt); // here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
         // in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
         addNode(newnode, et);
-        p = p.plus(newdx);
-        h = newdx.normalized();
-    }
+        p = p.plus(newh);
+        h = newh.normalized();
+
+    } // for
 }
 
 } // namespace CPlantBox

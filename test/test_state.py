@@ -11,8 +11,9 @@ sys.path.insert(0, "../src/")
 import json
 import unittest
 
-import plantbox as pb
 from test_grassleaf import _build_plant
+
+import plantbox as pb
 
 BASE_KEYS = {"id", "organType", "subType", "parentId", "childIds", "parentNI", "partialIHeading", "alive", "active", "age", "length", "epsilonDx", "created_linking_node", "nodes", "nodeIds", "nodeCTs", "moved", "oldNumberOfNodes"}
 
@@ -63,7 +64,7 @@ class TestState(unittest.TestCase):
         plant = _maize()
         orgs, _ = self.organs(plant)
         orgs = orgs + [orgs[0].getParent()]  # the seed is not returned by getOrgans
-        expected = {pb.seed: {"tapType", "basalType", "shootborneType", "mainStemType", "tillerType", "rootCrowns"}, pb.root: {"insertionAngle"}, pb.stem: {"stemphytomerId", "localId_linking_nodes"}, pb.leaf: {"beta", "ageDependentTropism"}}
+        expected = {pb.seed: {"tapType", "basalType", "shootborneType", "mainStemType", "tillerType", "rootCrowns"}, pb.root: {"insertionAngle"}, pb.stem: {"stemphytomerId", "localId_linking_nodes"}, pb.leaf: {"beta"}}
         found = set()
         for o in orgs:
             if o.organType() in expected:
