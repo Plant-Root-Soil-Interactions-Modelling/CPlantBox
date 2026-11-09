@@ -228,11 +228,11 @@
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1e-06"/>
         <!--Axial resolution [cm] (minimal segment size)-->
-        <parameter name="hlt" value="30" dev="2"/>
+        <parameter name="hlt" value="8" dev="2"/>
         <!--Hyphal lifetime  [day] (longer than the simulation: the children of a dead hypha are not simulated anymore, its whole subtree would freeze)-->
         <parameter name="la" value="0.01" dev="0.001"/>
         <!--Apical zone [cm]-->
-        <parameter name="lb" value="0.4" dev="0.01"/>
+        <parameter name="lb" value="0.1" dev="0.01"/>
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral emergence delay [day]-->
@@ -258,11 +258,11 @@
         <!--radius [cm]-->
         <parameter name="ana" value="1"/>
         <!--Probability of anastomosis occuring if distance is long enough-->
-        <parameter name="b" value="16" dev="1.6"/>
-        <!--Branching rate [1/day]-->
+        <parameter name="b" value="0.96" dev="0.1"/>
+        <!--Tip splitting rate [1/day]: probability of a split per time step b dt, 0.96/day = 4 % per hour-->
         <parameter name="b_prob" value="1"/>
         <!--Probability of branching to occur by tip splitting rather than lateral branching [1]-->
-        <parameter name="distTH" value="0.005" dev="0.0005"/>
+        <parameter name="distTH" value="0.01" dev="0.001"/>
         <!--Distance for tip-hyphae anastomosis [cm]-->
         <parameter name="dx" value="0.01"/>
         <!--Axial resolution [cm] (maximal segment size)-->
@@ -276,7 +276,7 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="-1"/>
         <!--Lateral emergence delay [day]-->
-        <parameter name="lmax" value="0.04" dev="0.01"/>
+        <parameter name="lmax" value="0.07" dev="0.05"/>
         <!--Maximal length of the hyphae [cm]-->
         <parameter name="ln" value="0" dev="0"/>
         <!--Inter-lateral distance [cm]-->
@@ -288,7 +288,7 @@
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="v" value="0.68" dev="0.06"/>
         <!--Tip elongation rate [cm/day]-->
-        <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="6" percentage="1"/>
-        <!--Sub type of lateral: BAS again, with probability 0.1 (as before with BAS as sub type 3; percentage 1 lets the BAS grow exponentially) -->
+        <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="6" percentage="0.5"/>
+        <!--Sub type of lateral: BAS again -->
     </hyphae>
 </plant>

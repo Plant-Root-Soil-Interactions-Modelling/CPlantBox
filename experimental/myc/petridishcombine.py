@@ -1,5 +1,6 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
+import numpy as np
 import AMFAnalysis as amf
 
 # Combines the per-seed results written by petridishsimauto.py into the radial profile over all seeds
@@ -19,3 +20,11 @@ amf.plot_radial_profiles(location, t_common, tip_dens_interp, indices=[0, 30, 60
 # spatial and temporal profiles of filament and tip density (Oyarte Galvez et al. 2025 Fig. 2b), arrival time t_n of each ring from a sigmoid fit
 fits = amf.plot_spatial_temporal(simulations, location, filename=out["plots"] + "SpatialTemporalProfile.png")
 print(str(len(fits)) + " rings with arrival time fit, t_n from " + str(round(min(f["t_n"] for f in fits), 1)) + " to " + str(round(max(f["t_n"] for f in fits), 1)) + " h after t*")
+# Runner vs BAS, anastomoses and encounter fraction (only seeds written by the current petridishsimauto.py)
+comp = amf.plot_hyphal_length_composition(simulations, location, filename=out["plots"] + "HyphalLengthComposition.png", target_fraction=0.3)
+if comp is not None:
+    print("BAS share of the hyphal length at the end: median " + str(round(float(np.nanmedian(comp["frac"][:, -1])), 3)) + " (experiment 0.3)")
+amf.plot_anastomosis_frequency(simulations, filename=out["plots"] + "AnastomosisFrequency.png", bin_h=6)
+C = amf.plot_encounter_fraction(simulations, filename=out["plots"] + "EncounterFraction.png", min_tips=5)
+if C:
+    print("encounter fraction f = C rho: " + ", ".join(f"{k} C = {v:.3e} mm^2 um^-1 h^-1" for k, v in C.items()))

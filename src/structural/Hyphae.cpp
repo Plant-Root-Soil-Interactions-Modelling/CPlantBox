@@ -151,8 +151,8 @@ void Hyphae::simulate(double dt, bool verbose)
                             length+=dl;
                         } else setActive(false);
                         
-                        // if (dl == 0.) active = false; // if no length increment, hyphae become inactive
-                        if (age * p.b>0.5 ){
+                        // tip splitting as a random event: probability b dt per time step (b in 1/day, dt in days), e.g. 4 % per hour for b = 0.96
+                        if (plant.lock()->rand() < p.b * dt_) {
                             setActive(false); // become inactive, if enough time has passed for branching
                             createLateral(dt_ ,verbose); // create a lateral hyphae
                             createLateral(dt_,verbose); // create a lateral hyphae

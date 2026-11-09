@@ -9,6 +9,7 @@ import plantbox.visualisation.vtk_plot as vp
 import networkx as nx
 import glob
 import os
+import warnings
 from scipy.interpolate import interp1d
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import pdist
@@ -66,32 +67,50 @@ def getRingIndex(ana, rings):
                 break
     return ringIdx
 
-def getParasPerRing(parameters, times, plant, rings):
+HYPHAL_SUBTYPES = {1: "runner", 2: "bas"} # hyphal sub types of TwoHyphaePlusBAS.xml (RunnerHyphae, BAS)
+
+def getParasPerRing(parameters, times, plant, rings, subTypes = None, increments = ()):
     # same matrices as getParaSumperRing (rings x len(times)-1), but for all parameters at once:
     # one SegmentAnalyser, ring of each segment computed once, time intervals binned with numpy
+    # subTypes: hyphal sub types (e.g. [1, 2]), additionally returns parameter + "_st" + subType with only the hyphae of that sub type
+    # increments: parameters for which additionally parameter + "_new" (and parameter + "_st" + subType + "_new") is returned:
+    #             the amount created in each interval (times[i], times[i+1]] instead of the cumulative amount
     ana = getMycSegmentAnalyser(plant)
     ringIdx = getRingIndex(ana, rings)
     ct = np.array(ana.getParameter("creationTime"))
     n = len(times) - 1
     timeIdx = np.searchsorted(times, ct, side="left") # 0: ct <= times[0], i: times[i-1] < ct <= times[i]
     valid = (ringIdx >= 0) & (ct >= 0) & (timeIdx <= n)
+    groups = [("", valid)]
+    if subTypes is not None:
+        ot = np.array(ana.getParameter("organType")).astype(int)
+        st = np.array(ana.getParameter("subType")).astype(int)
+        groups += [("_st" + str(s), valid & (ot == pb.hyphae) & (st == s)) for s in subTypes]
     mats = {}
     for parameter in parameters:
         values = np.array(ana.getParameter(parameter))
-        summed = np.zeros((len(rings), n + 1))
-        np.add.at(summed, (ringIdx[valid], timeIdx[valid]), values[valid])
-        if parameter == "nodeTips": # we want to look only at actively growing tips. (Oyarte Galvez 2025 page 3 when discussing Fig 2b)
-            mat = summed[:, 1:] # created in (times[i], times[i+1]]
-        else:
-            mat = np.cumsum(summed, axis=1)[:, 1:] # created until times[i+1]
-            mat[:, 0] = summed[:, 1] # first column only counts (times[0], times[1]], as in getParaSumperRing
-        mats[parameter] = mat
+        for suffix, mask in groups:
+            summed = np.zeros((len(rings), n + 1))
+            np.add.at(summed, (ringIdx[mask], timeIdx[mask]), values[mask])
+            if parameter == "nodeTips": # we want to look only at actively growing tips. (Oyarte Galvez 2025 page 3 when discussing Fig 2b)
+                mat = summed[:, 1:] # created in (times[i], times[i+1]]
+            else:
+                mat = np.cumsum(summed, axis=1)[:, 1:] # created until times[i+1]
+                mat[:, 0] = summed[:, 1] # first column only counts (times[0], times[1]], as in getParaSumperRing
+            mats[parameter + suffix] = mat
+            if parameter in increments:
+                mats[parameter + suffix + "_new"] = summed[:, 1:]
     return mats
 
 def getParaSumperRing(parameter, times, plant, rings):
     return getParasPerRing([parameter], times, plant, rings)[parameter]
 
 def getActiveTipsPerRing(times, plant, rings, ot = 5):
+    # all sub types together, see getActiveTipsPerRingPerSubtype
+    return sum(getActiveTipsPerRingPerSubtype(times, plant, rings, ot).values())
+
+def getActiveTipsPerRingPerSubtype(times, plant, rings, ot = 5):
+    # {sub type: matrix} with the matrices of getActiveTipsPerRing for each sub type
     # number of actively growing tips per ring at times[1:] (rings x len(times)-1, same layout as getParasPerRing),
     # reconstructed from the final plant: an organ is growing at time t if it was created (node 0) before t and
     # its last node was created after the start of the interval (times[i], times[i+1] = t]. Its tip at time t is its last node created until t.
@@ -100,9 +119,13 @@ def getActiveTipsPerRing(times, plant, rings, ot = 5):
     # ("nodeTips" in getParasPerRing instead counts organs whose last node was created in the interval, i.e. that stopped growing then)
     t_eval = np.asarray(times)[1:]
     t_prev = np.asarray(times)[:-1]
-    mat = np.zeros((len(rings), len(t_eval)))
+    mats = {}
     ringOfNode = {} # global node id -> ring index (-1 = in no ring)
     for o in plant.getOrgans(ot):
+        st = int(o.getParameter("subType"))
+        if st not in mats:
+            mats[st] = np.zeros((len(rings), len(t_eval)))
+        mat = mats[st]
         n = o.getNumberOfNodes()
         cts = np.array([o.getNodeCT(i) for i in range(n)])
         t_start, t_stop = cts[0], cts[-1] # node 0 is the branching point on the parent, its creation time is the emergence of the organ
@@ -122,7 +145,9 @@ def getActiveTipsPerRing(times, plant, rings, ot = 5):
             r = ringOfNode[nodeId]
             if r >= 0:
                 mat[r, j] += 1
-    return mat
+    if not mats:
+        mats[0] = np.zeros((len(rings), len(t_eval)))
+    return mats
 
 def getParaSumperRing_old(parameter, times, plant, rings):
     # print("Parameter sum for "+ parameter)
@@ -682,6 +707,172 @@ def plot_spatial_temporal(simulations, location, n_profiles=4, filename="Spatial
     plt.savefig(filename, dpi=300, bbox_inches="tight")
     plt.close(fig)
     return fits
+
+SUBTYPE_STYLE = {"total": ("k", "all hyphae"), "runner": ("tab:blue", "Runner hyphae"), "bas": ("tab:orange", "BAS")}
+
+def _plot_band(ax, x, data, key, label = None, marker = None):
+    # median (line) and 25%-75% quantile (band) over the simulations, data: (n_sim, len(x))
+    color, name = SUBTYPE_STYLE[key]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning) # rings without hyphae give NaN in all simulations
+        low, mid, high = np.nanpercentile(data, [25, 50, 75], axis=0)
+    lw = 3.5 if key == "total" else 2 # thicker, so that it stays visible below a sub type with the same values
+    ax.plot(x, mid, color=color, lw=lw, marker=marker, ms=3, label=name if label is None else label)
+    ax.fill_between(x, low, high, color=color, alpha=0.25, lw=0)
+
+def _with_keys(simulations, keys, what):
+    # simulations that contain all keys (written by the current petridishsimauto.py), prints how many were skipped
+    sims = [sim for sim in simulations if all(k in sim for k in keys)]
+    if len(sims) < len(simulations):
+        print(f"{what}: {len(simulations) - len(sims)} of {len(simulations)} simulations have no {', '.join(keys)} (older files), skipped")
+    return sims
+
+def _time_bins(simulations, bin_h):
+    # common bins [h since t*] for per-interval counts: from 0 to the end of the shortest simulation
+    t_end = min(sim["times"][-1] for sim in simulations) * 24
+    edges = np.arange(0, t_end + 1.e-9, bin_h)
+    return edges, 0.5 * (edges[1:] + edges[:-1])
+
+def _binned_rate(sim, counts, edges):
+    # counts per interval (len(times)) summed into time bins, divided by the bin width -> events per hour
+    t_h = sim["times"] * 24 # end of each interval
+    summed, _ = np.histogram(t_h - 1.e-9, bins=edges, weights=counts)
+    return summed / np.diff(edges)
+
+def plot_hyphal_length_composition(simulations, location, filename = "HyphalLengthComposition.png", target_fraction = 0.3):
+    # length of Runner hyphae and BAS in the hyphal compartment (sum over the rings) after t*, simulations as from load_petridish_results
+    # (needs "length_runner", "length_bas" [mm mm^-2] and "area" [mm^2] of petridishsimauto.py), location: ring centers [cm]
+    # a: length of both sub types, b: BAS fraction of the total hyphal length, c: BAS fraction per ring at the end
+    # target_fraction: BAS share of the hyphal length in the experiment (dashed line)
+    sims = _with_keys(simulations, ["length_runner", "length_bas", "area"], "plot_hyphal_length_composition")
+    if not sims:
+        return
+    t_end = min(sim["times"][-1] for sim in sims)
+    t = np.linspace(max(sim["times"][1] for sim in sims), t_end, 100) # first column only counts the first interval (getParasPerRing)
+    L = {}
+    for key in ["runner", "bas"]:
+        L[key] = np.array([np.interp(t, sim["times"][1:], (sim["length_" + key][:, 1:] * sim["area"][:, None]).sum(axis=0) / 10) for sim in sims]) # [cm]
+    with np.errstate(invalid="ignore", divide="ignore"):
+        frac = L["bas"] / (L["bas"] + L["runner"])
+        ring_frac = np.array([[np.interp(t_end, sim["times"], sim["length_" + k][r]) for k in ["bas", "runner"]] for sim in sims for r in range(len(location))])
+        ring_frac = (ring_frac[:, 0] / ring_frac.sum(axis=1)).reshape(len(sims), len(location)) # at the end of the shortest simulation
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
+    for key in ["runner", "bas"]:
+        _plot_band(axes[0], t * 24, L[key], key)
+    _plot_band(axes[0], t * 24, L["runner"] + L["bas"], "total")
+    axes[0].set_ylabel("Hyphal length in the hyphal compartment (cm)")
+    axes[0].set_title("a) How much of each hyphal type?")
+    _plot_band(axes[1], t * 24, frac, "bas", label="BAS / (BAS + Runner)")
+    axes[1].set_ylabel("BAS share of the hyphal length")
+    axes[1].set_title("b) BAS share over time")
+    _plot_band(axes[2], location * 10, ring_frac, "bas", label=f"BAS / (BAS + Runner) at {t_end * 24:.0f} h", marker="o")
+    axes[2].set_xlabel(r"Distance from centre $r$ (mm)")
+    axes[2].set_ylabel("BAS share of the hyphal length in the ring")
+    axes[2].set_title("c) BAS share along the radius (end)")
+    for ax in axes[:2]:
+        ax.set_xlabel(r"Time after $t^*$ (h)")
+    for ax in axes[1:]:
+        ax.axhline(target_fraction, color="k", ls="--", lw=1, label=f"experiment: {target_fraction:.0%}")
+        ax.set_ylim(0, 1)
+    for ax in axes:
+        ax.set_ylim(bottom=0)
+        ax.legend(fontsize=8)
+        ax.spines[["top", "right"]].set_visible(False)
+    fig.suptitle(f"Median over {len(sims)} simulations, band: 25%-75% quantile. Length = sum over the rings of the filament density times the ring area", fontsize=9)
+    fig.tight_layout()
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    return {"t": t, "frac": frac, **L}
+
+def plot_anastomosis_frequency(simulations, filename = "AnastomosisFrequency.png", bin_h = 6):
+    # anastomoses in the hyphal compartment after t*, all hyphae and split by the sub type of the hypha whose tip fused
+    # (needs "ana_new", "ana_new_runner", "ana_new_bas" of petridishsimauto.py: new anastomoses per ring and interval)
+    # a: frequency = anastomoses per hour, counted in bins of bin_h hours, b: cumulative number since t*
+    keys = ["total", "runner", "bas"]
+    names = {"total": "ana_new", "runner": "ana_new_runner", "bas": "ana_new_bas"}
+    sims = _with_keys(simulations, list(names.values()), "plot_anastomosis_frequency")
+    if not sims:
+        return
+    edges, centers = _time_bins(sims, bin_h)
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
+    t_cum = np.linspace(0, edges[-1], 100)
+    for key in keys:
+        rate = np.array([_binned_rate(sim, sim[names[key]].sum(axis=0), edges) for sim in sims])
+        _plot_band(axes[0], centers, rate, key, marker="o")
+        cum = np.array([np.interp(t_cum, sim["times"] * 24, np.cumsum(sim[names[key]].sum(axis=0))) for sim in sims])
+        _plot_band(axes[1], t_cum, cum, key)
+    axes[0].set_ylabel("Anastomoses per hour")
+    axes[0].set_title(f"a) Anastomosis frequency (bins of {bin_h} h)")
+    axes[1].set_ylabel(r"Anastomoses since $t^*$")
+    axes[1].set_title("b) Cumulative anastomoses")
+    for ax in axes:
+        ax.set_xlabel(r"Time after $t^*$ (h)")
+        ax.set_ylim(bottom=0)
+        ax.legend(fontsize=8, title="tip that fused")
+        ax.spines[["top", "right"]].set_visible(False)
+    fig.suptitle(f"Hyphal compartment (all rings), median over {len(sims)} simulations, band: 25%-75% quantile", fontsize=9)
+    fig.tight_layout()
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
+def plot_encounter_fraction(simulations, filename = "EncounterFraction.png", min_tips = 5, n_bins = 12):
+    # fraction of the growing tips that come close enough to another hypha to fuse (distance < distTH, with ana = 1 every such tip fuses),
+    # per hour, against the local filament density, one point per ring, interval and simulation (only with at least min_tips growing tips).
+    # f = new anastomoses in the interval / tips growing in the interval / interval length [h], rho = filament density of the ring [um mm^-2]
+    # lines: sum of the anastomoses / sum of the tips in bins of rho (equal number of points per bin), for all hyphae and per sub type
+    # (tips and anastomoses of that sub type, rho always of all hyphae); dashed: f = C rho, weighted least squares through the origin
+    # (needs "ana_new*", "active_tips*" of petridishsimauto.py)
+    sims = _with_keys(simulations, ["ana_new", "ana_new_runner", "ana_new_bas", "active_tips", "active_tips_runner", "active_tips_bas"], "plot_encounter_fraction")
+    if not sims:
+        return
+    suffix = {"total": "", "runner": "_runner", "bas": "_bas"}
+    data = {key: {"rho": [], "ana": [], "tips": []} for key in suffix}
+    for sim in sims:
+        dt_h = np.diff(np.concatenate([[0.], sim["times"]]))[1:] * 24 # interval lengths [h], first column left out (see getParasPerRing)
+        rho = sim["length_densities"][:, 1:] * 1000
+        for key, s in suffix.items():
+            ana, tips = sim["ana_new" + s][:, 1:], sim["active_tips" + s][:, 1:]
+            data[key]["rho"].append(rho.ravel())
+            data[key]["ana"].append((ana / dt_h).ravel())
+            data[key]["tips"].append(tips.ravel())
+    data = {key: {k: np.concatenate(v) for k, v in d.items()} for key, d in data.items()}
+    fig, ax = plt.subplots(figsize=(8, 5.5))
+    d = data["total"]
+    ok = d["tips"] >= min_tips
+    ax.scatter(d["rho"][ok], d["ana"][ok] / d["tips"][ok], s=4, color="0.6", alpha=0.3, edgecolors="none",
+               label=f"ring, hour and simulation (all hyphae, $\\geq${min_tips} tips)")
+    edges = np.unique(np.quantile(d["rho"][ok], np.linspace(0, 1, n_bins + 1))) if ok.any() else np.array([])
+    result = {}
+    f_max = 0.
+    for key in suffix:
+        d = data[key]
+        ok = d["tips"] >= min_tips
+        if not ok.any() or len(edges) < 2:
+            continue
+        idx = np.clip(np.searchsorted(edges, d["rho"][ok], side="right") - 1, 0, len(edges) - 2)
+        ana = np.bincount(idx, weights=d["ana"][ok], minlength=len(edges) - 1)
+        tips = np.bincount(idx, weights=d["tips"][ok], minlength=len(edges) - 1)
+        rho_c = np.bincount(idx, weights=d["rho"][ok] * d["tips"][ok], minlength=len(edges) - 1)
+        has = tips > 0
+        color, name = SUBTYPE_STYLE[key]
+        ax.plot(rho_c[has] / tips[has], ana[has] / tips[has], color=color, marker="o", lw=3.5 if key == "total" else 2, label=name)
+        f_max = max(f_max, np.max(ana[has] / tips[has]))
+        C = np.sum(d["ana"][ok] * d["rho"][ok]) / np.sum(d["tips"][ok] * d["rho"][ok] ** 2) # minimises sum tips (f - C rho)^2
+        result[key] = C
+        if key == "total":
+            r = np.linspace(0, edges[-1], 50)
+            ax.plot(r, C * r, color=color, ls="--", lw=1, label=f"$f = C\\rho$, $C$ = {C:.2e} mm$^2$ $\\mu$m$^{{-1}}$ h$^{{-1}}$")
+    ax.set_xlabel(r"Local filament density $\rho$ ($\mu$m mm$^{-2}$)")
+    ax.set_ylabel("Fraction of growing tips that fuse per hour")
+    ax.set_title(f"Tips close enough to another hypha to fuse vs. local density ({len(sims)} simulations)", fontsize=10)
+    ax.set_xlim(left=0)
+    ax.set_ylim(0, 3 * f_max if f_max > 0 else None) # the single points scatter much more than the binned values
+    ax.legend(fontsize=8)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    return result
 
 def save_simulation(filename, sim):
     # stores one simulation dict (only arrays/numbers, e.g. "times", "tip_dens", ...) as .npz

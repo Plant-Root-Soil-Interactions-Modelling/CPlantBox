@@ -72,7 +72,15 @@ if not animation:
     amf.getMycSegmentAnalyser(mycp, stdwrite=True, filename=out["animation"] + filename, step=nSteps)
 
     # Ringe -> Zeile // Zeitabschnitt -> Spalte
-mats = amf.getParasPerRing(["nodeTips", "anastomosis", "length"], times, mycp, rings)
+subtypes = amf.HYPHAL_SUBTYPES # {1: "runner", 2: "bas"}
+mats = amf.getParasPerRing(["nodeTips", "anastomosis", "length"], times, mycp, rings, subTypes=list(subtypes), increments=["anastomosis"])
+active_tips = amf.getActiveTipsPerRingPerSubtype(times, mycp, rings)
+zeros = np.zeros((len(rings), len(times) - 1))
+per_subtype = {}
+for st, key in subtypes.items():
+    per_subtype["length_" + key] = mats[f"length_st{st}"] * 10 / area          # filament density of the sub type [mm mm^-2]
+    per_subtype["active_tips_" + key] = active_tips.get(st, zeros)            # growing tips of the sub type (number per ring)
+    per_subtype["ana_new_" + key] = mats[f"anastomosis_st{st}_new"]            # new anastomoses in each interval, sub type of the tip that fused
 sim = {
     "seed": seed,
     "time_star": time_star,
@@ -81,7 +89,11 @@ sim = {
     "hyphae_layer": hyphae_layer,
     "density_per": "mm^2",   # files without this key have densities per cm^3
     "times": times[1:],   # getParasPerRing returns len(times)-1 columns
-    "tip_dens": amf.getActiveTipsPerRing(times, mycp, rings) / area,   # actively growing tips at each time [mm^-2]
+    "area": area[:, 0],                                                 # ring areas [mm^2]
+    "tip_dens": sum(active_tips.values()) / area,                       # actively growing tips at each time [mm^-2]
+    "active_tips": sum(active_tips.values()),                           # actively growing tips (number per ring)
+    "ana_new": mats["anastomosis_new"],                                 # new anastomoses in each interval (number per ring)
+    **per_subtype,
     "stopped_tip_dens": mats["nodeTips"] / area,                        # tips that stopped growing in each interval (old "tip_dens") [mm^-2]
     "ana_densities": mats["anastomosis"],
     "length_densities": mats["length"] * 10 / area,                     # [mm mm^-2]
