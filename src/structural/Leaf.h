@@ -5,7 +5,6 @@
 #include "Organism.h"
 #include "leafparameter.h"
 
-#include <assert.h>
 #include <iostream>
 
 namespace CPlantBox {
@@ -31,7 +30,8 @@ class Leaf : public Organ {
 
     void simulate(double dt, bool silence = false) override; ///< leaf growth for a time span of \param dt
 
-    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ parameter of Plant::ScalarType
+    /* geometry */
+    Vector3d heading(int n) const override; ///< heading at node n, a pseudostem bends at the first node of the blade
 
     /* leaf vizualisation */
     double leafLength(bool realized = false) const { return std::max(getLength(realized) - param()->lb, 0.); /* represents the leaf base*/ }; ///< leaf surface length [cm]
@@ -43,6 +43,7 @@ class Leaf : public Organ {
     std::vector<double> getLeafVisX(int i);
     std::vector<Vector3d> getLeafVis(int i); // per node
 
+    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ parameter of Plant::ScalarType
     std::string toString() const override;
 
     /* exact from analytical equations */
@@ -66,7 +67,7 @@ class Leaf : public Organ {
   protected:
     Vector3d getIncrement(const Vector3d &p, Vector3d &h, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
     void createSegments(double l, double dt, bool silence);                        ///< Creates segments totalling length @p l; called from simulate()
-    Vector3d heading(int n) const override;                                        ///< heading at node n, a pseudostem bends at the first node of the blade
+
     int getleafphytomerID(int subtype);
     void minusPhytomerId(int subtype);
     void addleafphytomerID(int subtype);
