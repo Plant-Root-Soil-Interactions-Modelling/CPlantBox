@@ -31,7 +31,7 @@ class Root : public Organ {
 
     int organType() const override { return Organism::ot_root; }; ///< returns the organs type
 
-    /** use absolute coordinates for root nodes, translate for shootborne roots */
+    /* use absolute coordinates for root nodes, translate for shootborne roots */
     Vector3d getNode(int i) const override;          ///< returns the absolute coordinate of node @p i
     std::vector<Vector3d> getNodes() const override; ///< returns the absolute coordinates of all nodes
     Vector3d heading(int n) const override;          ///< returns the heading of node @p n

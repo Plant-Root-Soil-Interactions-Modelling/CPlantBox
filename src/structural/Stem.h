@@ -40,7 +40,7 @@ class Stem : public Organ {
     double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ parameter
     std::string toString() const override;                                                              ///< quick info for debugging: Organ::toString() plus initial heading and parent node index
 
-    /* exact from analytical equations */
+    /* from analytical equations */
     double calcLength(double age);                ///< analytical length of the stem
     double calcAge(double length) const override; ///< analytical age of the stem
 
