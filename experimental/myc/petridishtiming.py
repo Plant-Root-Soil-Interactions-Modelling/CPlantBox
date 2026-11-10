@@ -2,16 +2,16 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import numpy as np
 import matplotlib.pyplot as plt
-import AMFAnalysis as amf
+import AMFIO as amfio
 
 # Run statistics of the per-seed results written by petridishsimauto.py: how long (simulated) it takes until t* (10 cm hyphae
 # behind the barrier), how long each phase takes on the wall clock, and which seeds were stopped by max_wait_days.
 # Used to choose max_wait_days and the SLURM time limit.
-out = amf.petridishOutputDirs() # below $PETRIDISH_OUT (cluster) or petridish_results
+out = amfio.petridishOutputDirs() # below $PETRIDISH_OUT (cluster) or petridish_results
 results_dir = out["densities"]
 quantile = 0.95
 
-simulations = [sim for sim in amf.load_simulations(results_dir + "seed_*.npz") if "status" in sim]
+simulations = [sim for sim in amfio.load_simulations(results_dir + "seed_*.npz") if "status" in sim]
 if not simulations:
     sys.exit("no run statistics found (files written before petridishsimauto.py stored them)")
 ok = [sim for sim in simulations if str(sim["status"]) == "ok"]

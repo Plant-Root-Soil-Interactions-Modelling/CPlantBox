@@ -9,7 +9,9 @@ from matplotlib.colors import ListedColormap, Normalize
 import time
 import matplotlib as mpl
 import AMFAnalysis as amf
-import medium_heights as mh
+import AMFDensities as amfd
+import AMFPlots as amfp
+import AMFSimulationSetup as amfs
 from sklearn.linear_model import LinearRegression
 
 # I changed the c++ code, so set might not be valid anymore
@@ -19,32 +21,21 @@ good_seeds = [25,10]
 path = "tomatoparameters/"
 name = "TwoHyphaePlusBAS"
 
-## Setting up petri dish
-diameter = 9.4
-radius = diameter /2
-    # introduce parameters for barrier and opening
-barrier_thickness = 0.16
-opening_length = 5.0
-opening_height = 0.2
-    # the modelled domain is the medium (z in [-height, 0]), its height follows from the filled volumes of the experiment
-heights = mh.estimate_heights(diameter, barrier_thickness)
-mh.print_heights(heights, diameter, barrier_thickness)
-height = heights["root"]
-barrier_height = height
+## Setting up petri dish (geometry of the experiment, height from the filled medium volumes, see amfs.defaultPetridish)
 hyphae_layer = 0.1 # hyphae grow on the cellophane in the fungal compartment, i.e. in a thin layer at the top
-
 nRings = 15
 start_dishes = time.perf_counter()
-petri_dish, small_hyphae_dish, half_dish, rings = amf.makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, 0.1, nRings,
-                                                                  opening_at_top=True, hyphae_layer=hyphae_layer)
+dish = amfs.defaultPetridish(nRings=nRings, hyphae_layer=hyphae_layer)
+radius, height, barrier_thickness = dish["radius"], dish["height"], dish["barrier_thickness"]
+petri_dish, small_hyphae_dish, half_dish, rings = dish["petri_dish"], dish["small_hyphae_dish"], dish["half_dish"], dish["rings"]
 
 finished_dishes = time.perf_counter()
-dt, nSteps = amf.setUpSimulationTime(5,24)
+dt, nSteps = amfs.setUpSimulationTime(5,24)
 # seed = good_seeds[0]
 simulation = []
 for seed in good_seeds:
     start_sim = time.perf_counter()
-    mycp, time_star, times = amf.makeSimulation(seed, path, name, height,petri_dish, small_hyphae_dish, half_dish,dt,nSteps, 60, "compare_COCO",animation=False,verbose=False)
+    mycp, time_star, times = amfs.makeSimulation(seed, path, name, height,petri_dish, small_hyphae_dish, half_dish,dt,nSteps, 60, "compare_COCO",animation=False,verbose=False)
     # mycp, times = amf.makeFreeSimulation(seed, path, name, dt, nSteps,"colonizationvisforfspm",True,False)
     finished_sim = time.perf_counter()
     # vp.plot_roots_and_container(mycp,petri_dish)
@@ -53,10 +44,10 @@ for seed in good_seeds:
     received_ana_data = time.perf_counter()
     # fewer_rings = rings[0:int(nRings/2)]
     # Ringe -> Zeile // Zeitabschnitt -> Spalte
-    mats = amf.getParasPerRing(["nodeTips","anastomosis","length"],times,mycp,rings)
+    mats = amfd.getParasPerRing(["nodeTips","anastomosis","length"],times,mycp,rings)
     tipMat, anaMat, lenMat = mats["nodeTips"], mats["anastomosis"], mats["length"]
     lenMat_time = time.perf_counter()
-    vol = amf.ringVolume(radius, nRings, hyphae_layer, barrier_thickness) # one volume per ring, rings are in the layer
+    vol = amfs.ringVolume(radius, nRings, hyphae_layer, barrier_thickness) # one volume per ring, rings are in the layer
     simulation.append({"label": "seed " + str(seed), "mycp": mycp, "time_star": time_star, "times": times, "tipMat": tipMat, "anaMat": anaMat, "lenMat": lenMat, "vol": vol})
 
     print("Time to make the dishes ", finished_dishes - start_dishes)
@@ -65,8 +56,8 @@ for seed in good_seeds:
 
 all_results = amf.analyze_simulations(simulation, window = 0.05, step=0.01,min_points =20)
 
-amf.plot_data(all_results)
-amf.plot_linear_analysis(all_results)
+amfp.plot_data(all_results)
+amfp.plot_linear_analysis(all_results)
 
 
 # rho = lenMat / vol 

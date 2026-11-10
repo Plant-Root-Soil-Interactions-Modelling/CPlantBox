@@ -7,7 +7,10 @@ import os
 import resource
 import time
 import AMFAnalysis as amf
-import medium_heights as mh
+import AMFDensities as amfd
+import AMFIO as amfio
+import AMFPlots as amfp
+import AMFSimulationSetup as amfs
 
 def peak_memory_mb():
     # peak resident memory of this process so far (ru_maxrss is in kB on Linux)
@@ -15,14 +18,14 @@ def peak_memory_mb():
 
 # Usage: python3 petridishsimauto.py <seed>
 # one seed per run, e.g. one per cluster job (see run_petridish.sh). Seed 0 means random seed in CPlantBox, so use seeds > 0.
-# Results go below $PETRIDISH_OUT (set in run_petridish.sh, else petridish_results, see amf.petridishOutputDirs),
+# Results go below $PETRIDISH_OUT (set in run_petridish.sh, else petridish_results, see amfio.petridishOutputDirs),
 # the radial profile over all seeds is made by petridishcombine.py
 # I changed the c++ code, so set might not be valid anymore
 # good_seeds = [10, 25, 45, 50, 70, 105, 115, 125]
 if len(sys.argv) != 2:
     sys.exit("Usage: python3 petridishsimauto.py <seed>")
 seed = int(sys.argv[1])
-out = amf.petridishOutputDirs()
+out = amfio.petridishOutputDirs()
 results_dir = out["densities"]
 path = "tomatoparameters/"
 name = "TwoHyphaePlusBAS"
@@ -36,34 +39,24 @@ min_growing_tips = 10
 stall_fraction = 0.5
 progress_every = 12  # one line of progress output every 12 time steps (= 12 h), None = no output
 
-## Setting up petri dish
-diameter = 9.4
-radius = diameter / 2
-# introduce parameters for barrier and opening
-barrier_thickness = 0.16
-opening_length = 5.0
-opening_height = 0.2
-# the modelled domain is the medium (z in [-height, 0]), its height follows from the filled volumes of the experiment
-heights = mh.estimate_heights(diameter, barrier_thickness)
-mh.print_heights(heights, diameter, barrier_thickness)
-height = heights["root"]
-barrier_height = height
+## Setting up petri dish (geometry of the experiment, height from the filled medium volumes, see amfs.defaultPetridish)
 hyphae_layer = 0.1  # hyphae grow on the cellophane in the fungal compartment, i.e. in a thin layer at the top
-
 nRings = 15
-petri_dish, small_hyphae_dish, half_dish, rings = amf.makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, 0.1, nRings, opening_at_top=True, hyphae_layer=hyphae_layer)
-location = amf.ringLocations(radius, nRings)
+dish = amfs.defaultPetridish(nRings=nRings, hyphae_layer=hyphae_layer)
+radius, height, barrier_thickness = dish["radius"], dish["height"], dish["barrier_thickness"]
+petri_dish, small_hyphae_dish, half_dish, rings = dish["petri_dish"], dish["small_hyphae_dish"], dish["half_dish"], dish["rings"]
+location = amfs.ringLocations(radius, nRings)
 # densities per area as in Oyarte Galvez et al. 2025 (tips mm^-2, length mm mm^-2), the hyphae grow in a thin layer on the cellophane
-area = amf.ringVolume(radius, nRings, 1.0, barrier_thickness)[:, None] * 100 # area of each ring [mm^2] (column vector)
+area = amfs.ringVolume(radius, nRings, 1.0, barrier_thickness)[:, None] * 100 # area of each ring [mm^2] (column vector)
 
-dt, nSteps = amf.setUpSimulationTime(5, 24)
+dt, nSteps = amfs.setUpSimulationTime(5, 24)
 
 filename = "petridish_nowait_seed_" + str(seed)
 stats = {}
-mycp, time_star, times = amf.makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation=animation, max_wait_days=max_wait_days, stats=stats,  min_growing_tips=min_growing_tips, stall_fraction=stall_fraction, animation_dir=out["animation"], progress_every=progress_every, turn_off_root_growth=True)
+mycp, time_star, times = amfs.makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation=animation, max_wait_days=max_wait_days, stats=stats,  min_growing_tips=min_growing_tips, stall_fraction=stall_fraction, animation_dir=out["animation"], progress_every=progress_every, turn_off_root_growth=True)
 stats["max_wait_days"] = max_wait_days if max_wait_days is not None else np.inf
 if stats["status"] != "ok": # store the run statistics anyway, petridishcombine.py skips this seed, petridishtiming.py counts it
-    amf.save_simulation(results_dir + f"seed_{seed:03d}.npz", {"seed": seed, **stats, "peak_memory_mb": peak_memory_mb()})
+    amfio.save_simulation(results_dir + f"seed_{seed:03d}.npz", {"seed": seed, **stats, "peak_memory_mb": peak_memory_mb()})
     sys.exit(0)
 t_analysis = time.perf_counter()
 if show_3d:
@@ -72,9 +65,9 @@ if not animation:
     amf.getMycSegmentAnalyser(mycp, stdwrite=True, filename=out["animation"] + filename, step=nSteps)
 
     # Ringe -> Zeile // Zeitabschnitt -> Spalte
-subtypes = amf.HYPHAL_SUBTYPES # {1: "runner", 2: "bas"}
-mats = amf.getParasPerRing(["nodeTips", "anastomosis", "length"], times, mycp, rings, subTypes=list(subtypes), increments=["anastomosis"])
-active_tips = amf.getActiveTipsPerRingPerSubtype(times, mycp, rings)
+subtypes = amfd.HYPHAL_SUBTYPES # {1: "runner", 2: "bas"}
+mats = amfd.getParasPerRing(["nodeTips", "anastomosis", "length"], times, mycp, rings, subTypes=list(subtypes), increments=["anastomosis"])
+active_tips = amfd.getActiveTipsPerRingPerSubtype(times, mycp, rings)
 zeros = np.zeros((len(rings), len(times) - 1))
 per_subtype = {}
 for st, key in subtypes.items():
@@ -101,7 +94,7 @@ sim = {
     "wall_analysis": time.perf_counter() - t_analysis,
     "peak_memory_mb": peak_memory_mb(),
 }
-amf.save_simulation(results_dir + f"seed_{seed:03d}.npz", sim)
+amfio.save_simulation(results_dir + f"seed_{seed:03d}.npz", sim)
 if (seed % 10 == 0):
-    amf.plot_ring_heatmap(sim["times"], amf.ringCenters(location), sim["tip_dens"], "Tip density [mm$^{-2}$]", out["plots"] + f"tip_densities_seed_{seed:03d}.png")
-    amf.plot_ring_heatmap(sim["times"], amf.ringCenters(location), sim["ana_densities"], "Anastomoses per ring", out["plots"] + f"ana_densities_seed_{seed:03d}.png")
+    amfp.plot_ring_heatmap(sim["times"], amfs.ringCenters(location), sim["tip_dens"], "Tip density [mm$^{-2}$]", out["plots"] + f"tip_densities_seed_{seed:03d}.png")
+    amfp.plot_ring_heatmap(sim["times"], amfs.ringCenters(location), sim["ana_densities"], "Anastomoses per ring", out["plots"] + f"ana_densities_seed_{seed:03d}.png")

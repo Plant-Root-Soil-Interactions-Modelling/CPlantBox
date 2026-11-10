@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, Normalize
 import time
 import matplotlib as mpl
-import AMFAnalysis as amf
+import AMFSimulationSetup as amfs
 from sklearn.linear_model import LinearRegression
 
 # I changed the c++ code, so set might not be valid anymore
@@ -30,15 +30,15 @@ opening_height = 0.2
 
 nRings = 15
 start_dishes = time.perf_counter()
-petri_dish, small_hyphae_dish, half_dish, rings = amf.makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, 0.1, nRings)
+petri_dish, small_hyphae_dish, half_dish, rings = amfs.makedishes(diameter, height, barrier_thickness, barrier_height, opening_length, opening_height, 0.1, nRings)
 
 finished_dishes = time.perf_counter()
-dt, nSteps = amf.setUpSimulationTime(5,24)
+dt, nSteps = amfs.setUpSimulationTime(5,24)
 # seed = good_seeds[0]
 simulation = []
 for seed in good_seeds:
     start_sim = time.perf_counter()
-    mycp, times = amf.makeSimulation(seed, path, name, height,petri_dish, small_hyphae_dish, half_dish,dt,nSteps, 10*24, "f_enc_vs_rho_h",animation=False,verbose=False)
+    mycp, time_star, times = amfs.makeSimulation(seed, path, name, height,petri_dish, small_hyphae_dish, half_dish,dt,nSteps, 10*24, "f_enc_vs_rho_h",animation=False,verbose=False)
     finished_sim = time.perf_counter()
     print("time taken for simulation with seed ", seed, " is ", finished_sim - start_sim)
     vp.plot_roots_and_container(mycp,petri_dish)

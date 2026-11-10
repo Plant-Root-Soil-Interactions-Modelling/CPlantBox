@@ -36,7 +36,7 @@ SEED=${SEEDS[$SLURM_ARRAY_TASK_ID]}
 
 source cpbenv/bin/activate
 mkdir -p petridish_results/densities petridish_results/plots petridish_results/animation
-# all outputs (npz, plots, vtp) go there, not into the repository (amf.petridishOutputDirs), absolute path since we cd below
+# all outputs (npz, plots, vtp) go there, not into the repository (amfio.petridishOutputDirs), absolute path since we cd below
 export PETRIDISH_OUT="$PWD/petridish_results"
 cd CPlantBox/experimental/myc/
 export MPLBACKEND=Agg

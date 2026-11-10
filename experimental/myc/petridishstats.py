@@ -4,16 +4,18 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
-import AMFAnalysis as amf
+import AMFDensities as amfd
+import AMFIO as amfio
+import AMFSimulationSetup as amfs
 
 # Statistics of the travelling wave in the per-seed results of petridishsimauto.py (see Oyarte Galvez et al. 2025 Fig. 2b),
-# from the arrival time fits of each ring (amf.collectArrivalFits, the same fits as in SpatialTemporalProfile.png of petridishcombine.py):
+# from the arrival time fits of each ring (amfd.collectArrivalFits, the same fits as in SpatialTemporalProfile.png of petridishcombine.py):
 # 1. front velocity: t_n against r per seed, v = 1/slope, constant velocity tested by the quadratic term
 # 2. constant wave shape: saturation K1, tip peak K2 and width of the tip peak against r, slope per seed
 # 3. consistency: the length behind the front is grown by the tips, K1 ~ v_tip * integral of the tip density = v_tip * 4 K2 / lamda_tips
 # The rings of one seed are not independent, so every quantity is first reduced to one value per seed (slope, median),
 # the seeds are the independent replicates (t-test, bootstrap confidence interval over the seeds).
-out = amf.petridishOutputDirs() # below $PETRIDISH_OUT (cluster) or petridish_results
+out = amfio.petridishOutputDirs() # below $PETRIDISH_OUT (cluster) or petridish_results
 results_dir = out["densities"]
 R2_min_length = 0.9   # minimal coefficient of determination of the sigmoid fit of the length density
 R2_min_tips = 0.5     # minimal coefficient of determination of the sigmoid derivative fit of the tip density
@@ -24,15 +26,15 @@ n_boot = 10000
 rng = np.random.default_rng(1)
 paper = {"K1": 1400.}  # saturation of the filament density [um mm^-2], read from Fig. 2b (dashed line); tip peak there about 0.1-0.2 mm^-2
 
-simulations = amf.load_petridish_results(results_dir + "seed_*.npz")
+simulations = amfio.load_petridish_results(results_dir + "seed_*.npz")
 if not simulations:
     sys.exit("no simulations with the current geometry found")
-r_ring = amf.ringCenters(simulations[0]["location"]) * 10  # ring centers [mm]
+r_ring = amfs.ringCenters(simulations[0]["location"]) * 10  # ring centers [mm]
 
 ## table of all fits (one row per ring and seed)
 fwhm = 2 * np.log(3 + 2 * np.sqrt(2))  # full width at half maximum of sigmoidTipDens is fwhm / lamda_tips
 rows = []
-for f in amf.collectArrivalFits(simulations):
+for f in amfd.collectArrivalFits(simulations):
     K1, lam_len, t_n = f["length"]
     K2, lam_tip, t_tip = f["tips"] if f["tips"] is not None else (np.nan, np.nan, np.nan)
     rows.append({"seed": f["seed"], "ring": f["ring"], "r": r_ring[f["ring"]], "t_n": t_n, "K1": K1, "lam_len": lam_len, "R2_length": f["R2_length"],
