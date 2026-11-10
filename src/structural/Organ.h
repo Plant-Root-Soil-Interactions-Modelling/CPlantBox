@@ -18,7 +18,6 @@
 
 // standard library
 #include <functional>
-#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -31,6 +30,7 @@ class OrganSpecificParameter;
 class OrganRandomParameter;
 class Organism;
 class Plant;
+using OrganState = std::unordered_map<std::string, std::vector<double>>; /// Flat snapshot of an organ's state (variable name -> values); vectors as sequences,
 
 /**
  * @brief Base class for all plant organs (seed, root, stem, leaf).
@@ -42,171 +42,150 @@ class Plant;
  * Post-processing utilities (getOrgans(), getParameter(), writeRSML()) are implemented
  * here and work uniformly across all organ types.
  *
+ * getNode(), getNodes(), heading(), getLength() assume relative coordinates (incremental),
+ * they are overwritten by Root and Seed (to use absolute coordinates),
+ * and by GrassLeaf to use turtle graphics
+ *
  * @see Root, Stem, Leaf, Seed, Organism
  */
-/**
- * Flat snapshot of an organ's state: variable name -> values.
- * Scalars (bool, int, double) are stored as a single value, vectors as sequences, Vector3d as (x,y,z) triplets,
- * and links to other organs as organ ids (-1 = no organ). Suited for conversion to JSON on the Python side.
- */
-using OrganState = std::unordered_map<std::string, std::vector<double>>;
-
 class Organ : public std::enable_shared_from_this<Organ> {
 
-public:
-  Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni,
-        bool moved = false, int oldNON = 0); ///< Constructs an organ from explicit state; tree links must be set by the caller
-  Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double delay,
-        int pni); ///< Simulation constructor: draws parameters via OrganRandomParameter::realize() and starts with age = -delay
-  virtual ~Organ() {}
+  public:
+    Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni, bool moved = false,
+          int oldNON = 0); ///< Constructs an organ from explicit state; tree links must be set by the caller
+    Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double delay,
+          int pni); ///< Simulation constructor: draws parameters via OrganRandomParameter::realize() and starts with age = -delay
+    virtual ~Organ() {}
 
-  virtual std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant); ///< Deep-copies the organ subtree into @p plant; caller owns the returned root
+    virtual std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant); ///< Deep-copies the organ subtree into @p plant; caller owns the returned root
 
-  virtual int organType() const; ///< Returns the coarse organ type (ot_organ=0, ot_seed=1, ot_root=2, ot_stem=3, ot_leaf=4); override in each derived class
+    virtual int organType() const; ///< Returns the coarse organ type (ot_organ=0, ot_seed=1, ot_root=2, ot_stem=3, ot_leaf=4); override in each derived class
 
-  /* development */
-  virtual void simulate(double dt, bool verbose = false); ///< Advances organ development by @p dt days; override in derived classes
+    /* development */
+    virtual void simulate(double dt, bool verbose = false); ///< Advances organ development by @p dt days; override in derived classes
 
-  /* tree */
-  void setOrganism(std::shared_ptr<Organism> p) { plant = p; }           ///< Sets the organism that owns this organ
-  std::shared_ptr<Organism> getOrganism() const { return plant.lock(); } ///< Returns the owning organism
-  void setParent(std::shared_ptr<Organ> p) { parent = p; }               ///< Sets the parent organ
-  std::shared_ptr<Plant> getPlant() const;                               ///< Returns the owning organism downcast to Plant (nullptr if not a Plant)
-  std::shared_ptr<Organ> getParent() const { return parent.lock(); }     ///< Returns the parent organ (nullptr if none)
-  void addChild(std::shared_ptr<Organ> c);                               ///< Appends @p c as a child and sets its parent pointer
-  int getNumberOfChildren() { return children.size(); }                  ///< Returns the number of direct child organs
-  std::shared_ptr<Organ> getChild(int i) { return children.at(i); }      ///< Returns the child at local index @p i
-  int getParentNI() const { return parentNI; }                           ///< Returns the local node index in the parent organ where this organ is attached
-  void incParentNI() { parentNI++; } ///< Increments the local node index in the parent organ (e.g. if parent inserts a node before pni)
+    /* tree */
+    void setOrganism(std::shared_ptr<Organism> p) { plant = p; }           ///< Sets the organism that owns this organ
+    std::shared_ptr<Organism> getOrganism() const { return plant.lock(); } ///< Returns the owning organism
+    void setParent(std::shared_ptr<Organ> p) { parent = p; }               ///< Sets the parent organ
+    std::shared_ptr<Plant> getPlant() const;                               ///< Returns the owning organism downcast to Plant (nullptr if not a Plant)
+    std::shared_ptr<Organ> getParent() const { return parent.lock(); }     ///< Returns the parent organ (nullptr if none)
+    void addChild(std::shared_ptr<Organ> c);                               ///< Appends @p c as a child and sets its parent pointer
+    int getNumberOfChildren() { return children.size(); }                  ///< Returns the number of direct child organs
+    std::shared_ptr<Organ> getChild(int i) { return children.at(i); }      ///< Returns the child at local index @p i
+    int getParentNI() const { return parentNI; }                           ///< Returns the local node index in the parent organ where this organ is attached
+    void incParentNI() { parentNI++; }                                     ///< Increments the local node index in the parent organ (e.g. if parent inserts a node before pni)
 
-  /* parameters */
-  int getId() const { return id; }                                               ///< Returns the globally unique organ id
-  std::shared_ptr<const OrganSpecificParameter> param() const { return param_; } ///< Returns the realised (instance-level) organ parameters
-  std::shared_ptr<OrganRandomParameter> getOrganRandomParameter() const;         ///< Returns the stochastic parameter set for this organ's sub-type
-  bool isAlive() const { return alive; }                                         ///< Returns true if the organ is alive
-  bool isActive() const { return active; }                                       ///< Returns true if the organ is still growing
-  double getAge() const { return age; }                                          ///< Returns the current age [days]
-  double getLength(bool realized = true) const;   ///< Returns organ length [cm]; realized=true subtracts unresolved residual growth epsilonDx
-  double getLength(int i) const;                  ///< Returns length from the first node up to node index @p i [cm]
-  double getEpsilon() const { return epsilonDx; } ///< Returns residual growth not yet converted to a new segment [cm]
+    /* parameters */
+    int getId() const { return id; }                                               ///< Returns the globally unique organ id
+    std::shared_ptr<const OrganSpecificParameter> param() const { return param_; } ///< Returns the realised (instance-level) organ parameters
+    std::shared_ptr<OrganRandomParameter> getOrganRandomParameter() const;         ///< Returns the stochastic parameter set for this organ's sub-type
+    bool isAlive() const { return alive; }                                         ///< Returns true if the organ is alive
+    bool isActive() const { return active; }                                       ///< Returns true if the organ is still growing
+    double getAge() const { return age; }                                          ///< Returns the current age [days]
+    double getLength(bool realized = true) const;                                  ///< Returns organ length [cm]; realized=true subtracts unresolved residual growth epsilonDx
+    virtual double getLength(int i) const;                                         ///< Returns length from the first node up to node index @p i [cm]
+    double getEpsilon() const { return epsilonDx; }                                ///< Returns residual growth not yet converted to a new segment [cm]
 
-  virtual double calcAge(double length) const {
-    throw std::runtime_error("calcAge() not implemented");
-  } ///< Analytic function length -> age; must be overridden; needed by getOrgans()
-  virtual double calcLength(double age) { throw std::runtime_error("calcLength() not implemented"); } ///< Analytic function age -> length; must be overridden
-  double calcCreationTime(double length, double dt); ///< Returns the analytical creation time of a node at @p length along the organ [days]
+    virtual double calcAge(double length) const { throw std::runtime_error("calcAge() not implemented"); } ///< Analytic function length -> age; override
+    virtual double calcLength(double age) { throw std::runtime_error("calcLength() not implemented"); }    ///< Analytic function age -> length; must be overridden
+    double calcCreationTime(double length, double dt);                                                     ///< Returns the analytical creation time of a node at @p length along the organ [days]
 
-  /* geometry */
-  virtual int getNumberOfNodes() const { return nodes.size(); }          ///< Returns the number of nodes
-  int getNumberOfSegments() const;                                       ///< Returns the number of polyline segments (nodes - 1), clamped to zero
-  Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< Returns the absolute coordinate of the organ's attachment point on the parent
-  virtual Vector3d getNode(int i) const { return nodes.at(i); }          ///< Returns the absolute (or relative) coordinate of node @p i
-  int getNodeId(int i) const { return nodeIds.at(i); }                   ///< Returns the global node index of local node @p i
-  std::vector<int> getNodeIds() const { return nodeIds; }                ///< Returns all global node indices
-  const std::vector<Vector3d> &getNodes() const { return nodes; }        ///< Returns all node coordinates
-  double getNodeCT(int i) const { return nodeCTs.at(i); }                ///< Returns the creation time of node @p i [days]
-  void addNode(Vector3d n, double t, size_t index, bool shift);          ///< Adds a node using the next global index from the organism
-  virtual void addNode(Vector3d n, int id, double t, size_t index,
-                       bool shift); ///< Adds a node with an explicit global id; override in Stem for phytomere handling
-  void addNode(Vector3d n, int id, double t) { addNode(n, id, t, size_t(0), false); } ///< pybind convenience overload (no index or shift)
-  void addNode(Vector3d n, double t) { addNode(n, t, size_t(0), false); };            ///< pybind convenience overload (no id, index, or shift)
-  std::vector<Vector2i> getSegments() const;                                          ///< Returns all polyline segments as pairs of global node indices
-  virtual Vector3d heading(int n) const; ///< Returns the absolute heading at node @p n (direction of segment [n-1, n], or initial heading if n==0)
-  Vector3d getInitialHeading() const;    ///< Returns the absolute initial heading when the organ was created
-  double dx() const;                     ///< Returns the maximal axial segment length from the organ random parameter [cm]
-  double dxMin() const;                  ///< Returns the minimal axial segment length from the organ random parameter [cm]
+    /* geometry */
+    virtual int getNumberOfNodes() const { return nodes.size(); }          ///< Returns the number of nodes
+    int getNumberOfSegments() const;                                       ///< Returns the number of polyline segments (nodes - 1), clamped to zero
+    Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< Returns the absolute coordinate of the organ's attachment point on the parent
+    virtual Vector3d getNode(int i) const;                                 ///< Returns the absolute coordinate of node @p i; for relative organs calculated from getOrigin() and the relative nodes
+    virtual std::vector<Vector3d> getNodes() const;                        ///< Returns the absolute coordinates of all nodes
+    int getNodeId(int i) const { return nodeIds.at(i); }                   ///< Returns the global node index of local node @p i
+    std::vector<int> getNodeIds() const { return nodeIds; }                ///< Returns all global node indices
+    double getNodeCT(int i) const { return nodeCTs.at(i); }                ///< Returns the creation time of node @p i [days]
+    std::vector<double> getNodeCTs() const { return nodeCTs; }             ///< Returns all node creation times [days]
+    void addNode(Vector3d n, int id, double t);                            ///< Appends a node with an explicit global id at the end of the organ
+    void addNode(Vector3d n, double t);                                    ///< Appends a node using the next global index from the organism
+    virtual void insertNode(Vector3d n, double t, size_t index);           ///< Inserts a node between existing nodes at position @p index (internodal growth); override in Stem
+    std::vector<Vector2i> getSegments() const;                             ///< Returns all polyline segments as pairs of global node indices
+    virtual Vector3d heading(int n) const;                                 ///< Returns the absolute heading at node @p n (direction of segment [n-1, n], or initial heading if n==0)
+    Vector3d getInitialHeading() const;                                    ///< Returns the absolute initial heading when the organ was created
+    double dx() const;                                                     ///< Returns the maximal axial segment length from the organ random parameter [cm]
+    double dxMin() const;                                                  ///< Returns the minimal axial segment length from the organ random parameter [cm]
 
-  //
-  virtual void rel2abs();     ///< Converts node coordinates from relative to absolute (recursive over children)
-  virtual void abs2rel();     ///< Converts node coordinates from absolute to relative (recursive over children)
-  void moveOrigin(int idx);   ///< Updates the parent attachment node index (used during internodal growth)
-  bool hasRelCoord() const;   ///< Returns true if node coordinates are currently stored in relative form
-  bool has_rel_coord = false; ///< Flag: true when nodes are in relative coordinates
+    /* last time step */
+    virtual bool hasMoved() const { return moved; };             ///< Returns true if any node moved during the last simulate() call
+    int getOldNumberOfNodes() const { return oldNumberOfNodes; } ///< Returns the node count before the last simulate() call
 
-  /* last time step */
-  virtual bool hasMoved() const { return moved; };             ///< Returns true if any node moved during the last simulate() call
-  int getOldNumberOfNodes() const { return oldNumberOfNodes; } ///< Returns the node count before the last simulate() call
+    /* for post processing */
+    std::vector<std::shared_ptr<Organ>> getOrgans(int ot = -1,
+                                                  bool all = false);                     ///< Returns this organ and all descendants with >1 node; ot=-1 means all types
+    void getOrgans(int otype, std::vector<std::shared_ptr<Organ>> &v, bool all = false); ///< Appends this organ and descendants to @p v (in-place variant)
+    virtual double
+    getParameter(std::string name,
+                 std::map<std::string, double> addParams = {}) const; ///< Returns a named scalar parameter; addParams entries take priority; delegates to OrganRandomParameter if not found locally
 
-  /* for post processing */
-  std::vector<std::shared_ptr<Organ>> getOrgans(int ot = -1, bool all = false); ///< Returns this organ and all descendants with >1 node; ot=-1 means all types
-  void getOrgans(int otype, std::vector<std::shared_ptr<Organ>> &v, bool all = false); ///< Appends this organ and descendants to @p v (in-place variant)
-  virtual double getParameter(std::string name, std::map<std::string, double> addParams = {})
-      const; ///< Returns a named scalar parameter; addParams entries take priority; delegates to OrganRandomParameter if not found locally
+    /* IO */
+    virtual std::string toString() const; ///< Returns a compact human-readable summary for debugging
+    void writeRSML(tinyxml2::XMLDocument &doc,
+                   tinyxml2::XMLElement *parent) const; ///< Appends an RSML @c <root> element for this organ to @p parent; not exposed to Python
 
-  /* IO */
-  virtual std::string toString() const; ///< Returns a compact human-readable summary for debugging
-  void writeRSML(tinyxml2::XMLDocument &doc,
-                 tinyxml2::XMLElement *parent) const; ///< Appends an RSML @c <root> element for this organ to @p parent; not exposed to Python
+    /* state (de)serialisation */
+    virtual OrganState getState() const; ///< Returns all member variables by name; parent/child links as organ ids (-1 = none), the owning organism is omitted
+    virtual void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}); ///< Restores member variables from @p state (the const id is not changed);
+                                                                                                              ///< if @p organs (id -> organ) is non-empty, parent and children are re-linked
 
-  /* state (de)serialisation */
-  virtual OrganState getState() const; ///< Returns all member variables by name; parent/child links as organ ids (-1 = none), the owning organism is omitted
-  virtual void setState(const OrganState &state,
-                        const std::map<int, std::shared_ptr<Organ>> &organs = {}); ///< Restores member variables from @p state (the const id is not changed);
-                                                                                    ///< if @p organs (id -> organ) is non-empty, parent and children are re-linked
+    /* for carbon-limited growth (know future (or past) volume (or length))*/
+    virtual double orgVolume(double length_ = -1.,
+                             bool realized = false) const; ///< Returns organ volume [cm³] for the current or a specified length; cylinder approximation by default
+    virtual double orgVolume2Length(double volume_);       ///< Inverse of orgVolume(): returns the organ length [cm] that corresponds to @p volume_
 
-  /* for carbon-limited growth (know future (or past) volume (or length))*/
-  virtual double
-  orgVolume(double length_ = -1.,
-            bool realized = false) const; ///< Returns organ volume [cm³] for the current or a specified length; cylinder approximation by default
-  virtual double orgVolume2Length(double volume_) {
-    return volume_ / (M_PI * getParameter("radius") * getParameter("radius"));
-  } ///< Inverse of orgVolume(): returns the organ length [cm] that corresponds to @p volume_
+  protected:
+    virtual void createLateral(double ageLN, bool silence);                    ///< Creates a new lateral organ at the current tip; called from simulate(); override in RootDelay
+    virtual double getLatInitialGrowth(double dt);                             ///< Returns the initial growth period passed to a newly created lateral [days]
+    virtual double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const; ///< Returns the emergence delay for a new lateral of type (@p ot_lat, @p st_lat) [days]
+    bool getApplyHere(int i) const;                                            ///< Returns true if successor rule @p i applies at the current linking node
 
-protected:
+    /* Up and down the organ tree */
+    std::weak_ptr<Organism> plant;                ///< Owning organism (weak to avoid reference cycles)
+    std::weak_ptr<Organ> parent;                  ///< Parent organ (nullptr if this is a base organ)
+    std::vector<std::shared_ptr<Organ>> children; ///< Direct child organs (laterals)
 
-  int parentNI;                     ///< Local node index in the parent organ where this organ is attached
-  mutable Vector3d partialIHeading; ///< Initial relative heading used to compute getInitialHeading(); mutable to allow derived-class caching
+    /* Parameters that are constant over the organ life time */
+    const int id;                                         ///< Globally unique organ id assigned at construction
+    std::shared_ptr<const OrganSpecificParameter> param_; ///< Realised parameter set for this organ instance
 
-  virtual void createLateral(double ageLN, bool silence); ///< Creates a new lateral organ at the current tip; called from simulate(); override in RootDelay
-  virtual Vector3d getIncrement(const Vector3d &p, double sdx,
-                                int n = -1); ///< Returns the growth increment vector of length @p sdx from point @p p; override in Leaf
-  void createSegments(double l, double dt, bool silence,
-                      int phytoIdx = -1);        ///< Creates segments totalling length @p l; called from simulate(); phytoIdx>=0 for internodal growth
-  virtual double getLatInitialGrowth(double dt); ///< Returns the initial growth period passed to a newly created lateral [days]
-  virtual double getLatGrowthDelay(int ot_lat, int st_lat,
-                                   double dt) const; ///< Returns the emergence delay for a new lateral of type (@p ot_lat, @p st_lat) [days]
-  bool getApplyHere(int i) const;                    ///< Returns true if successor rule @p i applies at the current linking node
-  static void stateSet(OrganState &s, const std::string &key, double v) { s[key] = {v}; }                ///< state helper
-  static void stateSet(OrganState &s, const std::string &key, const std::vector<int> &v) { s[key] = std::vector<double>(v.begin(), v.end()); } ///< state helper
-  static void stateSet(OrganState &s, const std::string &key, const Vector3d &v) { s[key] = {v.x, v.y, v.z}; }                                  ///< state helper
-  static void stateSet(OrganState &s, const std::string &key, const std::vector<double> &v) { s[key] = v; }                                    ///< state helper
-  static void stateSet(OrganState &s, const std::string &key, const std::vector<Vector3d> &v);                                                  ///< state helper
-  static bool stateGet(const OrganState &s, const std::string &key, double &v);                          ///< reads a scalar if present
-  static bool stateGet(const OrganState &s, const std::string &key, bool &v);                            ///< reads a bool if present
-  static bool stateGet(const OrganState &s, const std::string &key, int &v);                             ///< reads an int if present
-  static bool stateGet(const OrganState &s, const std::string &key, size_t &v);                          ///< reads a size_t if present
-  static bool stateGet(const OrganState &s, const std::string &key, std::vector<int> &v);                ///< reads an int vector if present
-  static bool stateGet(const OrganState &s, const std::string &key, std::vector<double> &v);             ///< reads a double vector if present
-  static bool stateGet(const OrganState &s, const std::string &key, Vector3d &v);                        ///< reads a Vector3d if present
-  static bool stateGet(const OrganState &s, const std::string &key, std::vector<Vector3d> &v);           ///< reads a Vector3d vector if present
-  std::vector<int> addIncrement;                     ///< Scratch indices tracking inserted nodes during coordinate-system switching
+    /* Parameters changing over time */
+    bool alive = true;                ///< true while the organ is alive
+    bool active = true;               ///< true while the organ is growing
+    double age = 0;                   ///< Current age [days]
+    double length = 0;                ///< Theoretical organ length [cm] (may exceed realised length by epsilonDx)
+    double epsilonDx = 0;             ///< Residual growth too small for a new segment; carried forward to the next time step [cm]
+    size_t created_linking_node = 0;  ///< Number of linking nodes (lateral attachment points) created so far
+    int parentNI;                     ///< Local node index in the parent organ where this organ is attached
+    mutable Vector3d partialIHeading; ///< Initial relative heading used to compute getInitialHeading(); mutable to allow derived-class caching
 
-  /* Up and down the organ tree */
-  std::weak_ptr<Organism> plant;                ///< Owning organism (weak to avoid reference cycles)
-  std::weak_ptr<Organ> parent;                  ///< Parent organ (nullptr if this is a base organ)
-  std::vector<std::shared_ptr<Organ>> children; ///< Direct child organs (laterals)
+    /* Node data */
+    std::vector<Vector3d> nodes; ///< Node coordinates [cm]; relative to the origin (Root: absolute, unless carried by a Stem or Leaf)
+    std::vector<int> nodeIds;    ///< Global node indices corresponding to each node
+    std::vector<double> nodeCTs; ///< Node creation times [days]
 
-  /* Parameters that are constant over the organ life time */
-  const int id;                                         ///< Globally unique organ id assigned at construction
-  std::shared_ptr<const OrganSpecificParameter> param_; ///< Realised parameter set for this organ instance
+    /* Last time step */
+    bool moved = false;       ///< True if any node moved during the last simulate() call
+    int oldNumberOfNodes = 0; ///< Node count at the start of the last simulate() call
+    bool firstCall = true;    ///< True until createSegments() is called for the first time
 
-  /* Parameters changing over time */
-  bool alive = true;               ///< true while the organ is alive
-  bool active = true;              ///< true while the organ is growing
-  double age = 0;                  ///< Current age [days]
-  double length = 0;               ///< Theoretical organ length [cm] (may exceed realised length by epsilonDx)
-  double epsilonDx = 0;            ///< Residual growth too small for a new segment; carried forward to the next time step [cm]
-  size_t created_linking_node = 0; ///< Number of linking nodes (lateral attachment points) created so far
-
-  /* Node data */
-  std::vector<Vector3d> nodes; ///< Node coordinates [cm] (absolute or relative, see has_rel_coord)
-  std::vector<int> nodeIds;    ///< Global node indices corresponding to each node
-  std::vector<double> nodeCTs; ///< Node creation times [days]
-
-  /* Last time step */
-  bool moved = false;       ///< True if any node moved during the last simulate() call
-  int oldNumberOfNodes = 0; ///< Node count at the start of the last simulate() call
-  bool firstCall = true;    ///< True until createSegments() is called for the first time
+    /* state auxilliary functions */
+    static void stateSet(OrganState &s, const std::string &key, double v) { s[key] = {v}; }                                                      ///< state helper
+    static void stateSet(OrganState &s, const std::string &key, const std::vector<int> &v) { s[key] = std::vector<double>(v.begin(), v.end()); } ///< state helper
+    static void stateSet(OrganState &s, const std::string &key, const Vector3d &v) { s[key] = {v.x, v.y, v.z}; }                                 ///< state helper
+    static void stateSet(OrganState &s, const std::string &key, const std::vector<double> &v) { s[key] = v; }                                    ///< state helper
+    static void stateSet(OrganState &s, const std::string &key, const std::vector<Vector3d> &v);                                                 ///< state helper
+    static bool stateGet(const OrganState &s, const std::string &key, double &v);                                                                ///< reads a scalar if present
+    static bool stateGet(const OrganState &s, const std::string &key, bool &v);                                                                  ///< reads a bool if present
+    static bool stateGet(const OrganState &s, const std::string &key, int &v);                                                                   ///< reads an int if present
+    static bool stateGet(const OrganState &s, const std::string &key, size_t &v);                                                                ///< reads a size_t if present
+    static bool stateGet(const OrganState &s, const std::string &key, std::vector<int> &v);                                                      ///< reads an int vector if present
+    static bool stateGet(const OrganState &s, const std::string &key, std::vector<double> &v);                                                   ///< reads a double vector if present
+    static bool stateGet(const OrganState &s, const std::string &key, Vector3d &v);                                                              ///< reads a Vector3d if present
+    static bool stateGet(const OrganState &s, const std::string &key, std::vector<Vector3d> &v);                                                 ///< reads a Vector3d vector if present
 };
 
 } // namespace CPlantBox

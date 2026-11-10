@@ -34,14 +34,7 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
 
     // Anchor frame: align heading column with parent heading at pni
     if (parent->getNumberOfNodes() > 0) {
-        Vector3d h; //  |\label{l81:heading}|
-        if (parent->hasRelCoord()) {
-            parent->rel2abs(); 
-            h = parent->heading(pni); 
-            parent->abs2rel();
-        } else {
-            h = parent->heading(pni);
-        } //  |\label{l81:heading_end}|
+        Vector3d h = parent->heading(pni); //  |\label{l81:heading}| |\label{l81:heading_end}|
         anchorFrame = Matrix3d::ons(h); //  |\label{l81:frame}|
     }
     double beta = getPlant()->leafphytomerID.at(subtype)* M_PI; // distichous (two-ranked) phyllotaxy |\label{l81:phyllotaxy}|

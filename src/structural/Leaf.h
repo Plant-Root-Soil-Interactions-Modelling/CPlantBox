@@ -5,7 +5,6 @@
 #include "Organism.h"
 #include "leafparameter.h"
 
-#include <assert.h>
 #include <iostream>
 
 namespace CPlantBox {
@@ -20,71 +19,69 @@ class Plant;
  *
  */
 class Leaf : public Organ {
-public:
-  Leaf(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni,
-       bool moved = true, int oldNON = 0);
-  Leaf(std::shared_ptr<Organism> plant, int type, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
-  virtual ~Leaf() {};
+  public:
+    Leaf(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni, bool moved = true, int oldNON = 0);
+    Leaf(std::shared_ptr<Organism> plant, int type, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
+    virtual ~Leaf() {};
 
-  std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override; ///< deep copies the root tree
+    std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override; ///< deep copies the root tree
 
-  int organType() const override { return Organism::ot_leaf; } ///< returns the organs type
+    int organType() const override { return Organism::ot_leaf; } ///< returns the organs type
 
-  void simulate(double dt, bool silence = false) override; ///< leaf growth for a time span of \param dt
+    /* overridden to optionally add sheath bending */
+    Vector3d heading(int n) const override; ///< heading at node n, a pseudostem bends at the first node of the blade
 
-  Vector3d getNode(int i) const override { return nodes.at(i); } ///< i-th node of the organ
+    /* development */
+    void simulate(double dt, bool silence = false) override; ///< leaf growth for a time span of \param dt
 
-  double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ parameter of Plant::ScalarType
+    /* last time step */
+    bool hasMoved() const override { return true; }; ///< always need to update the coordinates of the nodes for the MappedPlant
 
-  /* leaf vizualisation */
-  double leafLength(bool realized = false) const {
-    return std::max(getLength(realized) - param()->lb, 0.); /* represents the leaf base*/
-  }; ///< leaf surface length [cm]
-  double leafCenter(bool realized = false) const {
-    return std::max(getLength(realized) - param()->la - param()->lb, 0.);
-  }; ///< center of the radial parametrisation
-  double leafArea(bool realized = false, bool withPetiole = false) const; ///< returns the leaf surface area, zero if there are lateral-leafs [cm2]
-  double leafAreaAtSeg(int localSegId, bool realized = false, bool withPetiole = false); // leaf area at a specific segment
-  double leafVolAtSeg(int localSegId, bool realized = false, bool withPetiole = false);  // leaf area at a specific segment
-  double leafLengthAtSeg(int localSegId, bool withPetiole = false);
-  std::vector<double> getLeafVisX(int i);
-  std::vector<Vector3d> getLeafVis(int i); // per node
+    /* leaf vizualisation */
+    double leafLength(bool realized = false) const { return std::max(getLength(realized) - param()->lb, 0.); /* represents the leaf base*/ }; ///< leaf surface length [cm]
+    double leafCenter(bool realized = false) const { return std::max(getLength(realized) - param()->la - param()->lb, 0.); };                 ///< center of the radial parametrisation
+    double leafArea(bool realized = false, bool withPetiole = false) const;                ///< returns the leaf surface area, zero if there are lateral-leafs [cm2]
+    double leafAreaAtSeg(int localSegId, bool realized = false, bool withPetiole = false); // leaf area at a specific segment
+    double leafVolAtSeg(int localSegId, bool realized = false, bool withPetiole = false);  // leaf area at a specific segment
+    double leafLengthAtSeg(int localSegId, bool withPetiole = false);
+    std::vector<double> getLeafVisX(int i);
+    std::vector<Vector3d> getLeafVis(int i); // per node
+    bool nodeLeafVis(double l);              ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
 
-  std::string toString() const override;
+    /* parameters */
+    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override; ///< returns an organ parameter of Plant::ScalarType
+    std::string toString() const override;
 
-  /* exact from analytical equations */
-  double calcLength(double age) override;       ///< analytical length of the leaf
-  double calcAge(double length) const override; ///< analytical age of the leaf
+    /* from analytical equations */
+    double calcLength(double age);                ///< analytical length of the leaf
+    double calcAge(double length) const override; ///< analytical age of the leaf
 
-  /* abbreviations */
-  std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const; ///< root type parameter of this root
-  std::shared_ptr<const LeafSpecificParameter> param() const;          ///< root parameter
+    /* abbreviations */
+    std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const; ///< root type parameter of this root
+    std::shared_ptr<const LeafSpecificParameter> param() const;          ///< root parameter
 
-  /* useful */
-  bool hasMoved() const override { return true; }; ///< always need to update the coordinates of the nodes for the MappedPlant
-  double orgVolume(double length_ = -1., bool realized = false) const override;
-  double orgVolume2Length(double volume_) override;
-  bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
+    /* for carbon-limited growth (know future (or past) volume (or length))* */
+    double orgVolume(double length_ = -1., bool realized = false) const override;
+    double orgVolume2Length(double volume_) override;
 
-protected:
-  Vector3d getIncrement(const Vector3d &p, double sdx, int n = -1) override; ///< called by createSegments, to determine growth direction
-  Vector3d heading(int n) const override;                                    ///< current (absolute) heading of the organs at node n
-  int getleafphytomerID(int subtype);
-  void minusPhytomerId(int subtype);
-  void addleafphytomerID(int subtype);
-public:
-  OrganState getState() const override; ///< Adds the Leaf members to the state of Organ::getState()
-  void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
+    /* state (de)serialisation */
+    OrganState getState() const override;                                                                      ///< Adds the Leaf members to the state of Organ::getState()
+    void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
 
-protected:
+  protected:
+    void createSegments(double l, double dt, bool silence);                        ///< Creates segments totalling length @p l; called from simulate()
+    Vector3d getIncrement(const Vector3d &p, Vector3d &h, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
 
-  double beta;
+    int getleafphytomerID(int subtype);
+    void minusPhytomerId(int subtype);
+    void addleafphytomerID(int subtype);
 
-  std::vector<double> getLeafVisX_2D(double l);
-  std::vector<double> getLeafVisX_cuboid(double l);
-  std::vector<Vector3d> getLeafVis_2D(int i);
-  std::vector<Vector3d> getLeafVis_cuboid(int i);
-  bool ageDependentTropism = false; ///< do we need to check the leaf's age to see when to update the tropism effect?, @see Leaf::rel2abs
+    double beta;
+
+    std::vector<double> getLeafVisX_2D(double l);
+    std::vector<double> getLeafVisX_cuboid(double l);
+    std::vector<Vector3d> getLeafVis_2D(int i);
+    std::vector<Vector3d> getLeafVis_cuboid(int i);
 };
 
 } // namespace CPlantBox

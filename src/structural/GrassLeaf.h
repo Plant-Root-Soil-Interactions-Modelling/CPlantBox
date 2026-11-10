@@ -30,57 +30,61 @@ class Plant;
  * Node 0 is the attachment point on the parent organ; turtle nodes are indexed from 1.
  */
 class GrassLeaf : public Organ {
-public:
-  GrassLeaf(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni,
-            bool moved = false,
-            int oldNON = 0); ///< Restoration constructor; tree links and geometry must be set by the caller.
+  public:
+    GrassLeaf(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni, bool moved = false,
+              int oldNON = 0); ///< Restoration constructor; tree links and geometry must be set by the caller.
 
-  GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay, std::shared_ptr<Organ> parent,
-            int pni); ///< Simulation constructor – called by the plant during growth.
+    GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay, std::shared_ptr<Organ> parent,
+              int pni); ///< Simulation constructor – called by the plant during growth.
 
-  virtual ~GrassLeaf() {}
+    virtual ~GrassLeaf() {}
 
-  std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override;
+    std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override;
 
-  int organType() const override { return Organism::ot_leaf; }
+    int organType() const override { return Organism::ot_leaf; }
 
-  void simulate(double dt, bool verbose = false) override;
+    /* use turtle graphics for representing the leaf centerline */
+    int getNumberOfNodes() const override { return turtle.size() + 1; } ///< +1 because the anchor point is not stored in the meristem
+    Vector3d heading(int n) const override;                             ///< Heading at node n from the turtle polyline.
+    std::vector<Vector3d> getNodes() const override;
+    double getLength(int i) const override { return turtle.getLength(i); }
+    using Organ::getLength;
+    Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
 
-  void abs2rel() override {} ///< No-op: GrassLeaf geometry is meristem-managed, not nodes-based.
-  void rel2abs() override {} ///< No-op: GrassLeaf geometry is meristem-managed, not nodes-based.
+    /* development */
+    void simulate(double dt, bool verbose = false) override;
 
-  int getNumberOfNodes() const override { return turtle.size() + 1; } ///< +1 because the anchor point is not stored in the meristem
-  Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
+    /* leaf vizualisation */
+    std::vector<Vector3d> getLeafVis(int i);                ///< 3D edge points at node i; returns the two leaf edge points for both blade and sheath nodes.
+    double getBladeWidth(int i) const;                      ///< half-width [cm] at node i, accounting for the sheath base and blade taper
+    double getSheathLength() const { return sheathLength; } ///< Returns the current sheath length grown so far [cm].
+    double getBladeLength() const { return bladeLength; }   ///< Returns the current blade length grown so far [cm].
 
-  double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
+    /* parameters */
+    double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override;
+    std::string toString() const override;
 
-  OrganState getState() const override; ///< Adds the GrassLeaf members to the state of Organ::getState()
-  void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
+    /* from analytical equations */
+    double calcLength(double age);
+    double calcAge(double length) const override;
 
-  std::string toString() const override;
+    /* abbreviations */
+    std::shared_ptr<GrassLeafRandomParameter> getGrassLeafRandomParameter() const;
+    std::shared_ptr<const GrassLeafSpecificParameter> param() const;
 
-  double calcLength(double age) override;
-  double calcAge(double length) const override;
+    /* state (de)serialisation */
+    OrganState getState() const override;                                                                      ///< Adds the GrassLeaf members to the state of Organ::getState()
+    void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}) override; ///< Restores state, see Organ::setState()
 
-  double getSheathLength() const { return sheathLength; } ///< Returns the current sheath length grown so far [cm].
-  double getBladeLength() const { return bladeLength; }   ///< Returns the current blade length grown so far [cm].
+  private:
+    double initialSheathAngle = 1. / 180 * M_PI; ///< initial angle of the sheath (should be close to 0) [rad]
 
-  std::shared_ptr<GrassLeafRandomParameter> getGrassLeafRandomParameter() const;
-  std::shared_ptr<const GrassLeafSpecificParameter> param() const;
+    void growLeaf(double dl, double dt); ///< Prepends new base segments totalling dl [cm] to the TurtlePolyline.
+    void fixPitch();                     ///< Assigns pitch angles to every turtle node based on its position along the leaf (sheath vs blade).
 
-  std::vector<Vector3d> getLeafVis(int i); ///< 3D edge points at node i; returns the two leaf edge points for both blade and sheath nodes.
-  double getBladeWidth(int i) const; ///< half-width [cm] at node i, accounting for the sheath base and blade taper
-
-private:
-
-  double initialSheathAngle = 1. / 180*M_PI; ///< initial angle of the sheath (should be close to 0) [rad]
-
-  void growLeaf(double dl, double dt); ///< Prepends new base segments totalling dl [cm] to the TurtlePolyline.
-  void fixPitch();                     ///< Assigns pitch angles to every turtle node based on its position along the leaf (sheath vs blade).
-
-  mutable TurtlePolyline turtle; ///< Turtle-coordinate polyline of the entire leaf; mutable so getNode() can set the anchor.
-  double sheathLength = 0.;      ///< Current sheath length = length * sheathLength/(sheathLength+bladeLength) [cm]
-  double bladeLength = 0.;       ///< Current blade length  = length * bladeLength/(sheathLength+bladeLength) [cm]
+    mutable TurtlePolyline turtle; ///< Turtle-coordinate polyline of the entire leaf; mutable so getNode() can set the anchor.
+    double sheathLength = 0.;      ///< Current sheath length = length * sheathLength/(sheathLength+bladeLength) [cm]
+    double bladeLength = 0.;       ///< Current blade length  = length * bladeLength/(sheathLength+bladeLength) [cm]
 };
 
 } // end namespace CPlantBox
