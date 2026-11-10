@@ -25,27 +25,12 @@ GrassLeaf::GrassLeaf(int id, std::shared_ptr<const OrganSpecificParameter> param
 GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay, std::shared_ptr<Organ> parent, int pni) : Organ(plant, parent, Organism::ot_leaf, subtype, delay, pni) {
 
     assert(parent != nullptr && "GrassLeaf: parent must not be null");
+
     getPlant()->leafphytomerID.at(subtype)++; // we keep track of the number of leaves per leaf type
+    initialBeta = getPlant()->leafphytomerID.at(subtype) * M_PI;
 
-    // Anchor the meristem at the attachment point with the parent's heading as
-    // the initial turtle frame (+x = heading, +z = up).
-    Vector3d anchorPos(0., 0., 0.); // relative coordinate; the absolute position is resolved in GrassLeaf::getNode
-    Matrix3d anchorFrame;           // identity = upward along x, will be overridden below
-
-    // Anchor frame: align heading column with parent heading at pni.
-    if (parent->getNumberOfNodes() > 0) {
-        Vector3d h = parent->heading(pni);
-        anchorFrame = Matrix3d::ons(h); // heading: col 0; col 1, 2 perpendicular
-    }
-    double beta = getPlant()->leafphytomerID.at(subtype) * M_PI; // distichous (two-ranked) phyllotaxy (180 degree rotation)
-    anchorFrame.times(Matrix3d::rotX(beta));                     // random rotation around the heading to make the leaf orientation truly random
-    turtle.setAnchor(anchorPos);
-
-    // rotate the anchor frame: pitch the heading up by 90° so the leaf grows upward along the parent axis
-    Turtle3D t(Vector3d(0., 0., 0.), anchorFrame);
-    t.pitchUp(initialSheathAngle); // sheath is almost straight
-    anchorFrame = t.getFrame();
-    turtle.setAnchorFrame(anchorFrame);
+    turtle.setAnchor(Vector3d(0., 0., 0.));
+    turtle.setAnchorFrame(getInitialAnchorFrame());
 
     // Seed nodeIds/nodeCTs for the initial meristem node.
     double creationTime = parent->getNodeCT(pni) + std::max(delay, 0.0);
@@ -54,7 +39,22 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
 }
 
 /**
- * @brief Returns the absolute Cartesian position of meristem node @p i, with the anchor set to the parent attachment point.
+ * @brief Returns the initial anchor frame of the leaf, aligned with the parent heading and rotated by the initial beta angle.
+ */
+Matrix3d GrassLeaf::getInitialAnchorFrame() const {
+    Matrix3d frame;
+    if (getParent()->getNumberOfNodes() > 0) {
+        Vector3d h = getParent()->heading(parentNI);
+        frame = Matrix3d::ons(h);
+    }
+    frame.times(Matrix3d::rotX(initialBeta));
+    Turtle3D t(Vector3d(0., 0., 0.), frame); // passed per reference
+    t.pitchUp(initialSheathAngle);           // sheath is almost straight
+    return frame;
+}
+
+/**
+ * @brief Returns the absolute Cartesian position of node @p i, with the anchor set to the parent attachment point.
  */
 Vector3d GrassLeaf::getNode(int i) const {
     auto anchorPoint = getParent()->getNode(parentNI);
@@ -62,10 +62,14 @@ Vector3d GrassLeaf::getNode(int i) const {
         return anchorPoint;
     } else {
         turtle.setAnchor(anchorPoint);
+        turtle.setAnchorFrame(getInitialAnchorFrame());
         return turtle.getNode(i - 1); // -1 because the initial node at index 0
     }
 }
 
+/**
+ * @brief Returns the absolute Cartesian positions of all nodes, with the anchor set to the parent attachment point.
+ */
 std::vector<Vector3d> GrassLeaf::getNodes() const {
     std::vector<Vector3d> result;
     result.reserve(getNumberOfNodes());
@@ -79,16 +83,15 @@ std::vector<Vector3d> GrassLeaf::getNodes() const {
  * @brief Returns the heading at node @p i: direction of the turtle segment [i-1, i], or the initial heading for i == 0.
  */
 Vector3d GrassLeaf::heading(int n) const {
-    // TODO the anchorframe is assumed constant here, if the parent moves, it should be updated first,
-    // see constructor, where it is orinially set
     int nn = getNumberOfNodes();
     if (n < 0) {
         n = nn - 1;
     }
     if ((nn > 1) && (n > 0)) {
+        turtle.setAnchorFrame(getInitialAnchorFrame());
         return turtle.getNodeFrame(std::min(n, nn - 1) - 1).column(0); // heading = first column of the turtle frame
     }
-    return getInitialHeading();
+    return turtle.getAnchorFrame().column(0); // heading = first column of the anchor frame
 }
 
 /**
@@ -354,6 +357,7 @@ OrganState GrassLeaf::getState() const {
     }
     stateSet(s, "turtleNodes", tn);
     stateSet(s, "turtleInitialNodeIndex", turtle.getInitialNodeIndex());
+    stateSet(s, "intitialBeta", initialBeta);
     if (auto p = param()) {
         stateSet(s, "param.bladeAngle", p->bladeAngle);
         stateSet(s, "param.bladeWidth", p->bladeWidth);
@@ -382,6 +386,7 @@ void GrassLeaf::setState(const OrganState &state, const std::map<int, std::share
     stateGet(state, "initialSheathAngle", initialSheathAngle);
     stateGet(state, "sheathLength", sheathLength);
     stateGet(state, "bladeLength", bladeLength);
+    stateGet(state, "intitialBeta", initialBeta);
     Vector3d a;
     if (stateGet(state, "turtleAnchor", a)) {
         turtle.setAnchor(a);

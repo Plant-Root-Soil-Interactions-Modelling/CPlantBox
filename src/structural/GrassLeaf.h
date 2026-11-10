@@ -50,6 +50,7 @@ class GrassLeaf : public Organ {
     double getLength(int i) const override { return turtle.getLength(i); }
     using Organ::getLength;
     Vector3d getNode(int i) const override; ///< Returns Cartesian node i from the internal Meristem, anchored at the parent attachment point.
+    Matrix3d getInitialAnchorFrame() const; ///< Returns the initial anchor frame of the leaf, aligned with the parent heading and rotated by the initial beta angle.
 
     /* development */
     void simulate(double dt, bool verbose = false) override;
@@ -85,6 +86,7 @@ class GrassLeaf : public Organ {
     mutable TurtlePolyline turtle; ///< Turtle-coordinate polyline of the entire leaf; mutable so getNode() can set the anchor.
     double sheathLength = 0.;      ///< Current sheath length = length * sheathLength/(sheathLength+bladeLength) [cm]
     double bladeLength = 0.;       ///< Current blade length  = length * bladeLength/(sheathLength+bladeLength) [cm]
+    double initialBeta = 0.;       ///< Initial rotation around the heading for the leaf orientation [rad]
 };
 
 } // end namespace CPlantBox
