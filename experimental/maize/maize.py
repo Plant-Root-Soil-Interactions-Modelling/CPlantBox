@@ -56,7 +56,7 @@ class MaizeStem(pb.Stem):
         sum_ln_ = np.sum(ln_)
         scaled_ln = (ln_ / sum_ln_) * lmax  # scale internode lengths to total stem length of lmax
         self.param().ln = scaled_ln
-        self.param().r = r
+        self.param().r = 0.1  # not working, why? callbacks?
 
         # todo sanity checks ... no tillers, etc.
 
