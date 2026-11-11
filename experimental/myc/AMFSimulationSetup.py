@@ -140,6 +140,20 @@ def setUpSimulationTime(simTime, fps):
     nSteps = int(simTime / dt)
     return dt, nSteps
 
+def setHyphaeParameters(plant, parameters = None, report = ("distTH", "ana")):
+    # sets the parameters {name: value} (attributes of HyphaeRandomParameter, e.g. distTH, ana, v) for all hyphal sub types of plant,
+    # returns {name: [value of each sub type]} for the parameters in report and in parameters (the values used)
+    # note: distTH has no standard deviation in CPlantBox (a dev in the xml is ignored)
+    parameters = parameters or {}
+    rps = plant.getOrganRandomParameter(pb.hyphae)
+    for rp in rps:
+        for k, v in parameters.items():
+            if not hasattr(rp, k):
+                raise ValueError(f"setHyphaeParameters: hyphae have no parameter {k}")
+            setattr(rp, k, v)
+        plant.setOrganRandomParameter(rp)
+    return {k: [getattr(rp, k) for rp in rps] for k in list(report) + [k for k in parameters if k not in report]}
+
 def countGrowingTips(plant, geometry, window, ot = 5):
     # number of organs whose last node lies in geometry and was created within the last window days, i.e. tips that are really growing
     # (a hypha whose ancestor died stays active but is not simulated anymore, see AMFDensities.getActiveTipsPerRing)
@@ -154,7 +168,7 @@ def countGrowingTips(plant, geometry, window, ot = 5):
 def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False, verbose = False,
                    max_wait_days = None, stats = None, min_growing_tips = None, stall_fraction = None, growing_window = 0.25, animation_dir = "animation/",
                    turn_off_root_growth = False, turn_off_colonization = False, progress_every = None,
-                   seed_pos_x = -9.4 / 2 + 0.5, hyphal_emergence_density = 4.0, lmbd = 0.15, crossing_length = 10.):
+                   seed_pos_x = -9.4 / 2 + 0.5, hyphal_emergence_density = 4.0, lmbd = 0.15, crossing_length = 10., hyphae_parameters = None):
     # set up simulation
     # max_wait_days: stop waiting for t* (crossing_length cm hyphae behind the barrier) after this many simulated days, then returns mycp, None, None
     #                (None = wait without limit, as before). A limit in simulated time is reproducible, a wall clock limit is not.
@@ -167,6 +181,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     # seed_pos_x: x position of the seed [cm] (default 5 mm from the edge of the 94 mm dish), it lies at y = 0, z = -height/2
     # hyphal_emergence_density, lmbd: set for all root types after the root phase, when the hyphae start to emerge
     # crossing_length: hyphal length [cm] behind the barrier that defines t*
+    # hyphae_parameters: dict {name: value} set for all hyphal sub types after reading the xml, e.g. {"distTH": 0.02} or {"ana": 0.}
+    #                    (see setHyphaeParameters), the values used are stored in stats ("hyphae_<name>" for distTH and ana, one per sub type)
     # stats: optional dict, filled with "status" ("ok", "not_crossed" or "stalled"), the wall clock time of each phase [s] ("wall_root", "wall_wait",
     #        "wall_hyphae"), "t_root_end" (simulation time after the root phase), "wait_days" (simulated days until t*, or until the stop),
     #        the length behind the barrier after each waiting step ("crossed_t", "crossed_len") and, with min_growing_tips, the number of
@@ -183,6 +199,9 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
               + (" | " + extra if extra else ""), flush=True)
     mycp = pb.MycorrhizalPlant(seed)
     mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
+    used = setHyphaeParameters(mycp, hyphae_parameters)
+    if stats is not None:
+        stats.update({"hyphae_" + k: np.array(v) for k, v in used.items()})
     seed_para = pb.SeedRandomParameter(mycp)
     seed_para.seedPos.z = -height / 2
     seed_para.seedPos.x = seed_pos_x

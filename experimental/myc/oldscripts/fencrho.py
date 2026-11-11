@@ -1,4 +1,10 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
+import os; sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")) # AMF modules in experimental/myc
+
+# OLD: first test whether the encounter fraction f_enc is proportional to the filament density rho. Replaced by
+# plot_encounter_fraction and plot_tip_distances (petridishcombine.py) and petridishcompare.py (several distTH).
+# Note: divides the cumulative anastomoses by the tips that stopped growing in each interval and uses densities per volume.
+# Run from experimental/myc: python3 oldscripts/fencrho.py
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp

@@ -2,6 +2,7 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import numpy as np
 import plantbox as pb
 from scipy.optimize import curve_fit
+from scipy.spatial import cKDTree
 
 import AMFAnalysis as amf
 
@@ -99,6 +100,143 @@ def getActiveTipsPerRingPerSubtype(times, plant, rings, ot = 5):
     if not mats:
         mats[0] = np.zeros((len(rings), len(t_eval)))
     return mats
+
+def _pointSegmentDistance(p, a, b):
+    # distance of the points p to the segments [a, b] (all (n, 3), row by row)
+    v = b - a
+    vv = np.einsum("ij,ij->i", v, v)
+    s = np.clip(np.einsum("ij,ij->i", p - a, v) / np.where(vv > 0, vv, 1.), 0., 1.)
+    return np.linalg.norm(p - (a + s[:, None] * v), axis=1)
+
+def getTipDistances(times, plant, rings, R_max = 0.1, ot = 5):
+    # smallest distance [cm] of every actively growing tip to a hypha of another hyphal tree, at times[1:] (columns as getParasPerRing),
+    # reconstructed from the final plant: the tips are those of getActiveTipsPerRingPerSubtype, and only segments created until t count.
+    # The distance is the one of the anastomosis check of the model (MycorrhizalPlant::simulateAnastomosis, SDF_RootSystem::getDist):
+    # distance to the segment minus its radius, segments of the own hyphal tree excluded. inf if there is no such segment within R_max.
+    # With distTH = R a tip with dist < R would fuse at this check, so the fraction of tips with dist < R can be evaluated afterwards for any R <= R_max
+    # (the model checks once per time step, against the segments of the step before, this uses the segments until t, the difference is small).
+    # returns a dict with one entry per tip in a ring and time: "col" (index into times[1:]), "ring", "subtype" and "dist" [cm]
+    t_eval = np.asarray(times)[1:]
+    t_prev = np.asarray(times)[:-1]
+    # segments of the hyphae (filter without pack keeps the node indices)
+    ana = pb.SegmentAnalyser(plant)
+    ana.filter("organType", ot)
+    nodes = np.array([[n.x, n.y, n.z] for n in ana.nodes])
+    segs = np.array([[s.x, s.y] for s in ana.segments], dtype=int).reshape(-1, 2)
+    seg_ct = np.array(ana.getParameter("creationTime"))
+    seg_tree = np.array(ana.getParameter("hyphalTreeIndex")).astype(int)
+    seg_radius = np.array(ana.getParameter("radius"))
+    a, b = nodes[segs[:, 0]], nodes[segs[:, 1]]
+    mid = 0.5 * (a + b)
+    reach = R_max + (0.5 * np.linalg.norm(b - a, axis=1).max() + seg_radius.max() if len(segs) else 0.) # segment midpoints that can be within R_max
+    # growing tips at each time (as in getActiveTipsPerRingPerSubtype)
+    col, ring_, subtype, tree, pos = [], [], [], [], []
+    ringOfNode = {}
+    for o in plant.getOrgans(ot):
+        n = o.getNumberOfNodes()
+        cts = np.array([o.getNodeCT(i) for i in range(n)])
+        active = (t_eval >= cts[0]) & (t_prev < cts[-1])
+        if not active.any():
+            continue
+        st, tr = int(o.getParameter("subType")), int(o.getParameter("hyphalTreeIndex"))
+        tipIdx = np.searchsorted(cts, t_eval[active], side="right") - 1
+        for j, k in zip(np.nonzero(active)[0], tipIdx):
+            nodeId = o.getNodeId(int(k))
+            if nodeId not in ringOfNode:
+                ringOfNode[nodeId] = -1
+                p = o.getNode(int(k))
+                for r, ring in enumerate(rings):
+                    if ring.getDist(p) < 0:
+                        ringOfNode[nodeId] = r
+                        break
+            if ringOfNode[nodeId] >= 0:
+                p = o.getNode(int(k))
+                col.append(j), ring_.append(ringOfNode[nodeId]), subtype.append(st), tree.append(tr), pos.append([p.x, p.y, p.z])
+    col, tree, pos = np.array(col, dtype=int), np.array(tree, dtype=int), np.array(pos).reshape(-1, 3)
+    dist = np.full(len(col), np.inf)
+    for j in np.unique(col):
+        tips = np.nonzero(col == j)[0]
+        existing = np.nonzero(seg_ct <= t_eval[j] + 1.e-9)[0]
+        if len(existing) == 0:
+            continue
+        cand = cKDTree(mid[existing]).query_ball_point(pos[tips], reach)
+        lens = np.array([len(c) for c in cand])
+        if lens.sum() == 0:
+            continue
+        ti = np.repeat(tips, lens)
+        si = existing[np.concatenate([c for c in cand if c]).astype(int)]
+        other = seg_tree[si] != tree[ti]
+        ti, si = ti[other], si[other]
+        d = _pointSegmentDistance(pos[ti], a[si], b[si]) - seg_radius[si]
+        np.minimum.at(dist, ti, d)
+    dist[dist > R_max] = np.inf
+    return {"col": col, "ring": np.array(ring_, dtype=int), "subtype": np.array(subtype, dtype=int), "dist": dist}
+
+def tipDistanceCounts(sim, R_values, subtype = None):
+    # from the tip distances of one simulation ("tipdist_*" of petridishsimauto.py): number of growing tips (rings x columns, as "active_tips")
+    # and number of them closer than R to a hypha of another tree (len(R_values) x rings x columns), optionally only tips of one sub type
+    shape = np.shape(sim["length_densities"])
+    col, ring, d = sim["tipdist_col"], sim["tipdist_ring"], sim["tipdist_d"]
+    if subtype is not None:
+        m = sim["tipdist_subtype"] == subtype
+        col, ring, d = col[m], ring[m], d[m]
+    n_tips = np.zeros(shape)
+    np.add.at(n_tips, (ring, col), 1)
+    n_within = np.zeros((len(R_values),) + shape)
+    for i, R in enumerate(R_values):
+        m = d < R
+        np.add.at(n_within[i], (ring[m], col[m]), 1)
+    return n_tips, n_within
+
+def proportionalFit(rho, events, tips):
+    # C of f = C rho with f = events / tips: weighted least squares through the origin, minimises sum tips (events/tips - C rho)^2
+    den = np.sum(tips * rho ** 2)
+    return np.sum(events * rho) / den if den > 0 else np.nan
+
+def tipDistanceC(simulations, R_values, min_tips = 5, subtype = None):
+    # C(R) of f = C rho for every R, f = fraction of the growing tips closer than R to a hypha of another tree, rho = filament density
+    # of the ring [um mm^-2], over all rings, times (first column left out, see getParasPerRing) and simulations with at least min_tips tips.
+    # Returns C (len(R_values)) and the pooled data "rho", "tips", "within" (len(R_values) x points)
+    rho_all, tips_all, within_all = [], [], []
+    for sim in simulations:
+        n_tips, n_within = tipDistanceCounts(sim, R_values, subtype)
+        rho = sim["length_densities"][:, 1:] * 1000
+        ok = n_tips[:, 1:] >= min_tips
+        rho_all.append(rho[ok]), tips_all.append(n_tips[:, 1:][ok]), within_all.append(n_within[:, :, 1:][:, ok])
+    rho, tips, within = np.concatenate(rho_all), np.concatenate(tips_all), np.concatenate(within_all, axis=1)
+    C = np.array([proportionalFit(rho, w, tips) for w in within])
+    return C, {"rho": rho, "tips": tips, "within": within}
+
+def encounterData(simulations):
+    # realized anastomoses of the model per ring and interval: {"total", "runner", "bas": {"rho" [um mm^-2], "ana" (new anastomoses per hour),
+    # "tips" (growing tips)}}, one entry per ring, interval and simulation, first column left out (see getParasPerRing)
+    # (needs "ana_new*", "active_tips*" of petridishsimauto.py), f = ana / tips is the fraction of the growing tips that fuse per hour
+    suffix = {"total": "", "runner": "_runner", "bas": "_bas"}
+    data = {key: {"rho": [], "ana": [], "tips": []} for key in suffix}
+    for sim in simulations:
+        dt_h = np.diff(np.concatenate([[0.], sim["times"]]))[1:] * 24 # interval lengths [h]
+        rho = sim["length_densities"][:, 1:] * 1000
+        for key, s in suffix.items():
+            ana, tips = sim["ana_new" + s][:, 1:], sim["active_tips" + s][:, 1:]
+            data[key]["rho"].append(rho.ravel())
+            data[key]["ana"].append((ana / dt_h).ravel())
+            data[key]["tips"].append(tips.ravel())
+    return {key: {k: np.concatenate(v) for k, v in d.items()} for key, d in data.items()}
+
+def encounterC(simulations, min_tips = 5):
+    # C of f = C rho for the realized anastomoses per hour (encounterData), {"total", "runner", "bas": C}, only points with at least min_tips tips
+    result = {}
+    for key, d in encounterData(simulations).items():
+        ok = d["tips"] >= min_tips
+        result[key] = proportionalFit(d["rho"][ok], d["ana"][ok], d["tips"][ok]) if ok.any() else np.nan
+    return result
+
+def theoryC(R, layer, dim = 3):
+    # C [mm^2 um^-1] of a random network of straight hyphae (Poisson line process, any orientation): the expected number of hyphae closer
+    # than R to a point is pi R^2 rho_V in 3D (rho_V = rho / layer, length per volume) and 2 R rho in 2D (rho length per area),
+    # for small R the fraction is f = C rho. R and layer [cm], rho [um mm^-2]
+    R_mm, layer_mm = np.asarray(R) * 10, layer * 10
+    return np.pi * R_mm ** 2 / layer_mm / 1000 if dim == 3 else 2 * R_mm / 1000
 
 def sigmoidLengthDens(t, K1,lamda_dens,t_arrival):
     rho = K1/(1+np.exp(np.minimum(lamda_dens*(t_arrival-t), 700.))) # limited to avoid overflow, exp(700) is already infinite for the fit

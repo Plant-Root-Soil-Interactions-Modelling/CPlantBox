@@ -4,11 +4,9 @@
 # Each copy is a normal 1-CPU job like before, $SLURM_ARRAY_TASK_ID (0, 1, 2, ...) picks the seed from SEEDS.
 # --array must be 0-(number of seeds - 1), e.g. 100 seeds -> 0-99
 #
-# Submit from the home directory (same place as the old single job), after C++ changes with the build first:
-#   mkdir -p slurmOut slurmErr
-#   buildid=$(sbatch --parsable build_plantbox.sh)
-#   jobid=$(sbatch --parsable --dependency=afterok:$buildid run_petridish.sh)
-#   sbatch --dependency=afterany:$jobid run_petridish_combine.sh
+# Submit from the home directory with submit_petridish.sh (build, this array and the combine job, all with the same run name):
+#   bash submit_petridish.sh [--no-build]
+# Outputs go into petridish_results/densities/<run>, plots/<run>, animation/<run>, run = date and time of the submission ($PETRIDISH_RUN)
 # Seeds that do not reach t* within max_wait_days (petridishsimauto.py) end normally with status "not_crossed".
 #
 #SBATCH --job-name=petrisimjob
@@ -35,15 +33,17 @@ fi
 SEED=${SEEDS[$SLURM_ARRAY_TASK_ID]}
 
 source cpbenv/bin/activate
-mkdir -p petridish_results/densities petridish_results/plots petridish_results/animation
 # all outputs (npz, plots, vtp) go there, not into the repository (amfio.petridishOutputDirs), absolute path since we cd below
 export PETRIDISH_OUT="$PWD/petridish_results"
+# all tasks of the array write into the same run folders; submitted without submit_petridish.sh, the array job id is the run name
+export PETRIDISH_RUN="${PETRIDISH_RUN:-job_$SLURM_ARRAY_JOB_ID}"
 cd CPlantBox/experimental/myc/
 export MPLBACKEND=Agg
 
-echo "Task $SLURM_ARRAY_TASK_ID: seed $SEED on $(hostname), start $(date)"
+echo "Task $SLURM_ARRAY_TASK_ID: seed $SEED, run $PETRIDISH_RUN, parameters ${PETRIDISH_ARGS:-(xml)} on $(hostname), start $(date)"
 # runtime per phase and peak memory are stored by petridishsimauto.py itself (see petridishtiming.py),
 # since slurm accounting is not available on the cluster (and /usr/bin/time is not installed on the nodes)
-python3 petridishsimauto.py "$SEED"
+# PETRIDISH_ARGS: hyphal parameters name=value of submit_petridish.sh (empty: values of the xml), not quoted, so each is one argument
+python3 petridishsimauto.py "$SEED" $PETRIDISH_ARGS
 echo "Seed $SEED done $(date)"
  

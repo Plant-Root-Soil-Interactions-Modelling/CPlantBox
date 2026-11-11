@@ -64,11 +64,13 @@ def plot_linear_analysis(all_results):
     plt.tight_layout()
     plt.show()
 
-def plot_ring_heatmap(times, location, mat, cbar_label, filename):
+def plot_ring_heatmap(times, location, mat, cbar_label, filename, title = None):
     plt.pcolormesh(times, location, mat, shading='auto', cmap='plasma')
     plt.colorbar(label=cbar_label)
     plt.xlabel("Time [days]")
     plt.ylabel("Distance [cm] from centre")
+    if title is not None:
+        plt.title(title, fontsize=9)
     plt.savefig(filename, dpi=300, bbox_inches="tight")
     plt.close()
 
@@ -244,17 +246,8 @@ def plot_encounter_fraction(simulations, filename = "EncounterFraction.png", min
     sims = _with_keys(simulations, ["ana_new", "ana_new_runner", "ana_new_bas", "active_tips", "active_tips_runner", "active_tips_bas"], "plot_encounter_fraction")
     if not sims:
         return
-    suffix = {"total": "", "runner": "_runner", "bas": "_bas"}
-    data = {key: {"rho": [], "ana": [], "tips": []} for key in suffix}
-    for sim in sims:
-        dt_h = np.diff(np.concatenate([[0.], sim["times"]]))[1:] * 24 # interval lengths [h], first column left out (see getParasPerRing)
-        rho = sim["length_densities"][:, 1:] * 1000
-        for key, s in suffix.items():
-            ana, tips = sim["ana_new" + s][:, 1:], sim["active_tips" + s][:, 1:]
-            data[key]["rho"].append(rho.ravel())
-            data[key]["ana"].append((ana / dt_h).ravel())
-            data[key]["tips"].append(tips.ravel())
-    data = {key: {k: np.concatenate(v) for k, v in d.items()} for key, d in data.items()}
+    data = amfd.encounterData(sims)
+    suffix = data.keys()
     fig, ax = plt.subplots(figsize=(8, 5.5))
     d = data["total"]
     ok = d["tips"] >= min_tips
@@ -276,7 +269,7 @@ def plot_encounter_fraction(simulations, filename = "EncounterFraction.png", min
         color, name = SUBTYPE_STYLE[key]
         ax.plot(rho_c[has] / tips[has], ana[has] / tips[has], color=color, marker="o", lw=3.5 if key == "total" else 2, label=name)
         f_max = max(f_max, np.max(ana[has] / tips[has]))
-        C = np.sum(d["ana"][ok] * d["rho"][ok]) / np.sum(d["tips"][ok] * d["rho"][ok] ** 2) # minimises sum tips (f - C rho)^2
+        C = amfd.proportionalFit(d["rho"][ok], d["ana"][ok], d["tips"][ok]) # minimises sum tips (f - C rho)^2
         result[key] = C
         if key == "total":
             r = np.linspace(0, edges[-1], 50)
@@ -292,6 +285,113 @@ def plot_encounter_fraction(simulations, filename = "EncounterFraction.png", min
     plt.savefig(filename, dpi=300, bbox_inches="tight")
     plt.close(fig)
     return result
+
+TIPDIST_KEYS = ["tipdist_col", "tipdist_ring", "tipdist_d"]
+
+def _binned_fraction(rho, events, tips, edges):
+    # sum of the events / sum of the tips in bins of rho (edges), with the tip weighted mean rho of each bin
+    idx = np.clip(np.searchsorted(edges, rho, side="right") - 1, 0, len(edges) - 2)
+    ev = np.bincount(idx, weights=events, minlength=len(edges) - 1)
+    ti = np.bincount(idx, weights=tips, minlength=len(edges) - 1)
+    rc = np.bincount(idx, weights=rho * tips, minlength=len(edges) - 1)
+    has = ti > 0
+    return rc[has] / ti[has], ev[has] / ti[has]
+
+def plot_tip_distances(simulations, R_values, filename = "TipDistances.png", min_tips = 5, R_show = (0.005, 0.01, 0.02, 0.05), n_bins = 10):
+    # encounter fraction for any distance R from the stored tip distances (amfd.getTipDistances), as hyphal_network.py does for random
+    # straight hyphae: f(R) = fraction of the growing tips closer than R to a hypha of another tree (with distTH = R they would fuse at the check).
+    # a: f against R for three density classes (tertiles of rho), dashed: random straight hyphae 1 - exp(-pi R^2 rho / layer) (3D)
+    # b: f against rho for some R (R_show [cm]), binned, dashed: f = C(R) rho
+    # c: C(R) of f = C rho (weighted least squares through the origin) against R, with the random straight hyphae in 3D (pi R^2 / layer)
+    #    and in 2D (2 R), dotted: distTH of the simulations
+    # R_values [cm], rho [um mm^-2], one point per ring, time and simulation with at least min_tips growing tips; returns {"R", "C"}
+    sims = _with_keys(simulations, TIPDIST_KEYS, "plot_tip_distances")
+    if not sims:
+        return
+    R_values = np.asarray(R_values)
+    layer = float(sims[0]["hyphae_layer"])
+    C, d = amfd.tipDistanceC(sims, R_values, min_tips)
+    rho, tips, within = d["rho"], d["tips"], d["within"]
+    fig, axes = plt.subplots(1, 3, figsize=(17, 5))
+    R_mm = R_values * 10
+    # a) fraction against R in density classes
+    edges = np.quantile(rho, [0, 1/3, 2/3, 1])
+    colors = plt.get_cmap("viridis")(np.linspace(0.15, 0.85, 3))
+    for k, color in enumerate(colors):
+        m = (rho >= edges[k]) & ((rho < edges[k + 1]) if k < 2 else (rho <= edges[k + 1]))
+        if not m.any():
+            continue
+        frac = within[:, m].sum(axis=1) / tips[m].sum()
+        rho_mean = np.sum(rho[m] * tips[m]) / tips[m].sum()
+        axes[0].plot(R_mm, frac, color=color, lw=2, label=f"$\\rho$ = {edges[k]:.0f}-{edges[k + 1]:.0f} (mean {rho_mean:.0f}) $\\mu$m mm$^{{-2}}$")
+        axes[0].plot(R_mm, 1 - np.exp(-amfd.theoryC(R_values, layer) * rho_mean), color=color, ls="--", lw=1)
+    axes[0].plot([], [], color="k", ls="--", lw=1, label="random straight hyphae (3D, same $\\rho$)")
+    axes[0].set_xlabel("R (mm)")
+    axes[0].set_ylabel("Fraction of growing tips closer than R\nto a hypha of another tree")
+    axes[0].set_title("a) Fraction against R")
+    axes[0].set_ylim(0, 1)
+    # b) fraction against rho for some R
+    edges = np.unique(np.quantile(rho, np.linspace(0, 1, n_bins + 1)))
+    colors = plt.get_cmap("plasma")(np.linspace(0.1, 0.8, len(R_show)))
+    r = np.linspace(0, rho.max(), 50)
+    for R, color in zip(R_show, colors):
+        i = int(np.argmin(np.abs(R_values - R)))
+        if len(edges) >= 2:
+            x, f = _binned_fraction(rho, within[i], tips, edges)
+            axes[1].plot(x, f, color=color, marker="o", lw=2, label=f"R = {R_mm[i]:.2g} mm")
+        axes[1].plot(r, C[i] * r, color=color, ls="--", lw=1)
+    axes[1].set_xlabel(r"Local filament density $\rho$ ($\mu$m mm$^{-2}$)")
+    axes[1].set_ylabel("Fraction of growing tips closer than R")
+    axes[1].set_title(r"b) Fraction against $\rho$ (dashed: $f = C\rho$)")
+    axes[1].set_xlim(left=0)
+    axes[1].set_ylim(bottom=0)
+    # c) C against R
+    axes[2].loglog(R_mm, C, color="k", marker="o", ms=3, lw=2, label="model (fit $f = C\\rho$)")
+    axes[2].loglog(R_mm, amfd.theoryC(R_values, layer, 3), color="tab:blue", ls="--", lw=1, label=f"random straight hyphae 3D: $\\pi R^2$ / layer ({layer * 10:g} mm)")
+    axes[2].loglog(R_mm, amfd.theoryC(R_values, layer, 2), color="tab:orange", ls="--", lw=1, label="random straight hyphae 2D: $2R$")
+    for dth in np.unique(np.concatenate([np.atleast_1d(sim.get("hyphae_distTH", [])) for sim in sims])):
+        if dth > 0:
+            axes[2].axvline(dth * 10, color="0.5", ls=":", lw=1)
+            axes[2].text(dth * 10, axes[2].get_ylim()[0], f" distTH = {dth * 10:g} mm", rotation=90, va="bottom", fontsize=8, color="0.4")
+    axes[2].set_xlabel("R (mm)")
+    axes[2].set_ylabel(r"$C$ (mm$^2$ $\mu$m$^{-1}$)")
+    axes[2].set_title("c) Slope C against R")
+    for ax in axes:
+        ax.legend(fontsize=7.5)
+        ax.spines[["top", "right"]].set_visible(False)
+    fig.suptitle(f"{len(sims)} simulations, {int(tips.sum())} tips (ring, hour, simulation with $\\geq${min_tips} tips: {len(rho)} points)", fontsize=9)
+    fig.tight_layout()
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    return {"R": R_values, "C": C}
+
+def plot_C_against_R(runs, layer, filename = "C_against_R.png"):
+    # comparison of several runs (e.g. different distTH, see petridishcompare.py): runs = list of dicts with "label", "distTH" [cm],
+    # "R", "C_geometric" (C(R) from the tip distances, plot_tip_distances, or None) and "C_realized" (C of the realized anastomoses per hour,
+    # amfd.encounterC, nan without anastomoses). The model checks once per time step (1 h), so the realized fraction per hour is the
+    # geometric fraction at R = distTH, if the anastomoses do not change the network
+    fig, ax = plt.subplots(figsize=(8, 5.5))
+    colors = plt.get_cmap("tab10")(np.arange(len(runs)) % 10)
+    R_all = []
+    for run, color in zip(runs, colors):
+        if run.get("C_geometric") is not None:
+            ax.loglog(np.asarray(run["R"]) * 10, run["C_geometric"], color=color, lw=1.5, label=f"{run['label']}: tips closer than R")
+            R_all.append(np.asarray(run["R"]))
+        if np.isfinite(run.get("C_realized", np.nan)) and run["distTH"] > 0:
+            ax.loglog([run["distTH"] * 10], [run["C_realized"]], color=color, marker="*", ms=14, ls="none", markeredgecolor="k",
+                      label=f"{run['label']}: realized anastomoses per hour")
+    if R_all:
+        R = np.unique(np.concatenate(R_all))
+        ax.loglog(R * 10, amfd.theoryC(R, layer, 3), color="0.3", ls="--", lw=1, label=f"random straight hyphae 3D ($\\pi R^2$ / {layer * 10:g} mm)")
+        ax.loglog(R * 10, amfd.theoryC(R, layer, 2), color="0.3", ls=":", lw=1, label="random straight hyphae 2D ($2R$)")
+    ax.set_xlabel("R = distTH (mm)")
+    ax.set_ylabel(r"$C$ of $f = C\rho$ (mm$^2$ $\mu$m$^{-1}$, realized: per hour)")
+    ax.set_title("Encounter fraction against the anastomosis distance", fontsize=10)
+    ax.legend(fontsize=7)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.close(fig)
 
 def _with_keys(simulations, keys, what):
     # simulations that contain all keys (written by the current petridishsimauto.py), prints how many were skipped

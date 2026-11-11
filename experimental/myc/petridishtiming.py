@@ -7,7 +7,8 @@ import AMFIO as amfio
 # Run statistics of the per-seed results written by petridishsimauto.py: how long (simulated) it takes until t* (10 cm hyphae
 # behind the barrier), how long each phase takes on the wall clock, and which seeds were stopped by max_wait_days.
 # Used to choose max_wait_days and the SLURM time limit.
-out = amfio.petridishOutputDirs() # below $PETRIDISH_OUT (cluster) or petridish_results
+out = amfio.petridishOutputDirs(latest=True) # run $PETRIDISH_RUN, else the newest run, below $PETRIDISH_OUT (cluster) or petridish_results
+print("run " + out["run"])
 results_dir = out["densities"]
 quantile = 0.95
 
@@ -18,6 +19,8 @@ ok = [sim for sim in simulations if str(sim["status"]) == "ok"]
 stopped = [sim for sim in simulations if str(sim["status"]) == "not_crossed"]
 stalled = [sim for sim in simulations if str(sim["status"]) == "stalled"] # reached t*, but the front stalled afterwards
 reached = ok + stalled
+amfio.updatePlotInfo(out, "petridishtiming", {"seeds_ok": [int(sim["seed"]) for sim in ok], "seeds_not_crossed": [int(sim["seed"]) for sim in stopped],
+                                               "seeds_stalled": [int(sim["seed"]) for sim in stalled]})
 
 wait_ok = np.array([float(sim["wait_days"]) for sim in reached])
 phases = ["wall_root", "wall_wait", "wall_hyphae", "wall_analysis"]
@@ -95,5 +98,5 @@ ax.set_title("Simulated vs. wall clock waiting time", fontsize=10)
 for ax in axes.flat:
     ax.spines[["top", "right"]].set_visible(False)
 plt.tight_layout()
-plt.savefig(out["plots"] + "petridish_timing.png", dpi=200, bbox_inches="tight")
-print("written " + out["plots"] + "petridish_timing.png")
+plt.savefig(amfio.plotFile(out, "petridish_timing.png"), dpi=200, bbox_inches="tight")
+print("written " + amfio.plotFile(out, "petridish_timing.png"))

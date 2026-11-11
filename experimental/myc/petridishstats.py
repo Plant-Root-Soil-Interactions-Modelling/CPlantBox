@@ -15,7 +15,8 @@ import AMFSimulationSetup as amfs
 # 3. consistency: the length behind the front is grown by the tips, K1 ~ v_tip * integral of the tip density = v_tip * 4 K2 / lamda_tips
 # The rings of one seed are not independent, so every quantity is first reduced to one value per seed (slope, median),
 # the seeds are the independent replicates (t-test, bootstrap confidence interval over the seeds).
-out = amfio.petridishOutputDirs() # below $PETRIDISH_OUT (cluster) or petridish_results
+out = amfio.petridishOutputDirs(latest=True) # run $PETRIDISH_RUN, else the newest run, below $PETRIDISH_OUT (cluster) or petridish_results
+print("run " + out["run"])
 results_dir = out["densities"]
 R2_min_length = 0.9   # minimal coefficient of determination of the sigmoid fit of the length density
 R2_min_tips = 0.5     # minimal coefficient of determination of the sigmoid derivative fit of the tip density
@@ -40,7 +41,9 @@ for f in amfd.collectArrivalFits(simulations):
     rows.append({"seed": f["seed"], "ring": f["ring"], "r": r_ring[f["ring"]], "t_n": t_n, "K1": K1, "lam_len": lam_len, "R2_length": f["R2_length"],
                  "saturation": f["rho_data"][-1] / K1, "K2": K2, "lam_tip": lam_tip, "t_tip": t_tip, "width": fwhm / lam_tip, "R2_tips": f["R2_tips"]})
 df = pd.DataFrame(rows)
-df.to_csv(out["base"] + "petridish_wave_fits.csv", index=False)
+df.to_csv(amfio.plotFile(out, "petridish_wave_fits.csv"), index=False)
+amfio.updatePlotInfo(out, "petridishstats", {"R2_min_length": R2_min_length, "R2_min_tips": R2_min_tips, "saturation_min": saturation_min,
+                                              "min_rings": min_rings, "v_tip": v_tip, "n_boot": n_boot, "seeds": sorted(df["seed"].unique().tolist()) if "seed" in df else []})
 good = df[df["R2_length"] >= R2_min_length]
 good_tips = good[good["R2_tips"] >= R2_min_tips]
 good_K1 = good[good["saturation"] >= saturation_min]
@@ -56,7 +59,7 @@ def boot_ci(x, stat=np.mean):
 def summary(name, x, unit = "", test_zero = False):
     # one value per seed: mean, median, sd and 95% CI over the seeds, optionally t-test against 0
     # returns mean, 95% CI, p-value (nan without test) and the number of seeds, for the annotations in the figure (None for < 2 seeds)
-    x = np.asarray(x)
+    x = np.asarray(x, dtype=float) # an empty column (no seed with enough rings) has dtype object
     x = x[np.isfinite(x)]
     if len(x) < 2:
         print(f"  {name}: less than 2 seeds")
@@ -206,5 +209,5 @@ fig.text(0.01, 0.005,
          "Values in brackets: 95% bootstrap confidence interval of the mean over the seeds; p: t-test over the per-seed slopes.",
          fontsize=9, va="bottom", ha="left")
 plt.tight_layout(rect=(0, 0.1, 1, 1))
-plt.savefig(out["plots"] + "petridish_stats.png", dpi=200, bbox_inches="tight")
-print("\nwritten " + out["plots"] + "petridish_stats.png")
+plt.savefig(amfio.plotFile(out, "petridish_stats.png"), dpi=200, bbox_inches="tight")
+print("\nwritten " + amfio.plotFile(out, "petridish_stats.png"))
