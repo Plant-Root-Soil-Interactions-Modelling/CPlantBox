@@ -4,8 +4,9 @@
 # Each copy is a normal 1-CPU job like before, $SLURM_ARRAY_TASK_ID (0, 1, 2, ...) picks the seed from SEEDS.
 # --array must be 0-(number of seeds - 1), e.g. 100 seeds -> 0-99
 #
-# Submit from the home directory with submit_petridish.sh (build, this array and the combine job, all with the same run name):
-#   bash submit_petridish.sh [--no-build]
+# Submit from the home directory with submit_petridish.sh (this array and the combine job, all with the same run name,
+# with --build a build job before):
+#   bash submit_petridish.sh [--build] [name=value ...]
 # Outputs go into petridish_results/densities/<run>, plots/<run>, animation/<run>, run = date and time of the submission ($PETRIDISH_RUN)
 # Seeds that do not reach t* within max_wait_days (petridishsimauto.py) end normally with status "not_crossed".
 #
