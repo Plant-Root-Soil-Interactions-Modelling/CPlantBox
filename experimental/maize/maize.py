@@ -1,37 +1,11 @@
 """Playing around with Maize parameter"""
 
 import numpy as np
+from maize_params import get_internode_lenght, get_leaf_blade_lenght, get_leaf_sheath_length, get_leaf_width
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
-from plantbox.visualisation.vtk_animate import AnimateRoots
-
-
-def get_internode_lenght():
-    internode_length = np.array(
-        [
-            0.02,
-            0.02,
-            0.02,
-            0.02,
-            0.02,  # 1–5: basal
-            0.085,
-            0.085,
-            0.085,
-            0.085,  # 6–9: lower-middle
-            0.16,
-            0.16,
-            0.16,
-            0.16,  # 10–13: middle
-            0.115,
-            0.115,
-            0.115,
-            0.115,  # 14–17: upper
-            0.02,
-            0.02,  # 18–19: below tassel
-        ]
-    )  # [m]
-    return internode_length * 100  # [m] -> [cm]
+from plantbox.visualisation.vtk_animate import AnimatePlant, AnimateRoots
 
 
 class MaizeStem(pb.Stem):
@@ -40,25 +14,34 @@ class MaizeStem(pb.Stem):
     def __init__(self, plant, subType, delay, parent, pni):
         super().__init__(plant, subType, delay, parent, pni)
 
+        srp = self.getStemRandomParameter()
+        p = self.param()  # specific stem parameters
+
         lmax = 197  # total stem length [cm]
         r = lmax / 110  # assuming lmax is reached after 110 days
 
         print("Stem random parameters")
-        print(self.getStemRandomParameter())
+        print(srp)
         print()
         print("Stem specific parameters")
+        print(p)
 
-        print(self.param())
-        self.param().theta = 0  # straight up
-        self.param().lb = 2  # mesocotyl [cm]
-        self.param().la = 0
+        p.theta = 0  # straight up
+        p.lb = 2  # mesocotyl [cm]
+        p.la = 0
         ln_ = get_internode_lenght()  # fixed to 19 internodes for now
         sum_ln_ = np.sum(ln_)
         scaled_ln = (ln_ / sum_ln_) * lmax  # scale internode lengths to total stem length of lmax
-        self.param().ln = scaled_ln
-        self.param().r = 0.1  # not working, why? callbacks?
+        p.ln = scaled_ln
+        p.r = r
 
-        # todo sanity checks ... no tillers, etc.
+        srp.multDelay = 1
+        srp.ldelay = 5
+
+        # # todo sanity checks ... no tillers, etc.
+        # plant = self.getOrganism()
+        # seed = plant.getSeed()
+        # print(seed)
 
 
 class Maize(pb.Plant):
@@ -66,13 +49,29 @@ class Maize(pb.Plant):
 
     def __init__(self, seednum=0):
         super().__init__(seednum)
+        self.number_of_leafs = 0
+        self.ll_ = get_leaf_blade_lenght()
+        self.sl_ = get_leaf_sheath_length()
+        self.lw_ = get_leaf_width()
         self._organs = []  # keeps Python-side CarrotRoot instances alive (otherwise the wrapper is garbage collected)
 
     def createLeaf(self, subType, delay, parent, pni):
         leaf = pb.GrassLeaf(self, subType, delay, parent, pni)
-        # hack to set area
-        print("Leaf specific parameters")
-        print(leaf.param())
+        lp = leaf.param()
+        # hack to set parameters
+        # print("Leaf specific parameters")
+        # print(leaf.param())
+        # a	0.0297928
+        # bladeAngle	0.3
+        # sheathLength	5
+        #
+        # leafGrowthDuration	20
+        lp.bladeLength = self.ll_[self.number_of_leafs]
+        lp.sheathLength = self.sl_[self.number_of_leafs]
+        lp.bladeWidth = self.lw_[self.number_of_leafs]
+        lp.bladeBending = 0.01
+        self.number_of_leafs += 1
+        print(self.number_of_leafs)
         self._organs.append(leaf)
         return leaf
 
@@ -99,11 +98,14 @@ plant.readParameters(path + name + ".xml")
 srpm = plant.getOrganRandomParameter(pb.seed)
 srpm[0].seedPos.x = 0
 srpm[0].seedPos.y = 0
-# print(srpm[0])
+print(srpm[0])
+srpm[0].delayDefinitionRoot = pb.dd_distance
+srpm[0].delayDefinitionShoot = pb.dd_time_lat
+
 
 plant.initialize()
 
-sim_time = 20
+sim_time = 120
 dt = 1  # simulation step [day], animation shows one frame per step
 
 plant.simulate(sim_time)
