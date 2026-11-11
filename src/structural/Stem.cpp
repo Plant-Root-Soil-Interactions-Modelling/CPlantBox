@@ -569,7 +569,7 @@ double Stem::getParameter(std::string name, std::map<std::string, double> addPar
  */
 double Stem::calcLength(double age) {
     assert(age >= 0 && "Stem::calcLength() negative root age");
-    return getStemRandomParameter()->f_gf->getLength(age, getStemRandomParameter()->r, param()->getK(), shared_from_this());
+    return getStemRandomParameter()->f_gf->getLength(age, param()->r, param()->getK(), shared_from_this());
 }
 
 /**
@@ -580,7 +580,7 @@ double Stem::calcLength(double age) {
  */
 double Stem::calcAge(double length) const {
     assert(length >= 0 && "Stem::calcAge() negative root age");
-    double age__ = getStemRandomParameter()->f_gf->getAge(length, getStemRandomParameter()->r, param()->getK(), shared_from_this());
+    double age__ = getStemRandomParameter()->f_gf->getAge(length, param()->r, param()->getK(), shared_from_this());
     if (age__ > param()->delayNGStart) {
         age__ += (param()->delayNGEnd - param()->delayNGStart);
     }

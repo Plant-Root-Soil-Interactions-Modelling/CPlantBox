@@ -778,7 +778,7 @@ std::vector<Vector3d> Leaf::getLeafVis_2D(int i) {
  */
 double Leaf::calcLength(double age) {
     assert(age >= 0 && "Leaf::calcLength() negative root age");
-    return getLeafRandomParameter()->f_gf->getLength(age, getLeafRandomParameter()->r, param()->getK(), shared_from_this());
+    return getLeafRandomParameter()->f_gf->getLength(age, param()->r, param()->getK(), shared_from_this());
 }
 
 /**
@@ -788,7 +788,7 @@ double Leaf::calcLength(double age) {
  */
 double Leaf::calcAge(double length) const {
     assert(length >= 0 && "Leaf::calcAge() negative root length");
-    return getLeafRandomParameter()->f_gf->getAge(length, getLeafRandomParameter()->r, param()->getK(), shared_from_this());
+    return getLeafRandomParameter()->f_gf->getAge(length, param()->r, param()->getK(), shared_from_this());
 }
 
 /**
