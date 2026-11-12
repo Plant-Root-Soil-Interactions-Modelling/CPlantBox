@@ -12,8 +12,9 @@ import time
 # Every run (one set of seeds, e.g. one SLURM array job plus its combine job) has a name, the date and time it was started,
 # e.g. "2026-11-11_14-30-05". All outputs of the run go into subfolders of that name:
 #   petridish_results/densities/<run>/seed_010.npz, ...   per-seed results, run_info.json, copy of the parameter file
-#   petridish_results/plots/<run>/<plot>_<run>.png         all plots (per seed and combined), run_info.json, wave fits csv
-#   petridish_results/animation/<run>/*.vtp                vtp files, run_info.json
+#   petridish_results/plots/<run>/<plot>.png               all plots (per seed and combined), run_info.json, csv tables
+#   petridish_results/animation/<run>/seed_010_final.vtp   vtp files, run_info.json
+# The file names only describe the content (and seed), the folder name says which run (date, time and parameters).
 # The run name comes from the environment variable PETRIDISH_RUN (set once by submit_petridish.sh, so that all array tasks
 # and the combine job write into the same folders). Without it, a simulation starts a new run (to run several seeds locally
 # into one run: export PETRIDISH_RUN=$(date +%Y-%m-%d_%H-%M-%S)) and the combine scripts use the newest run.
@@ -54,9 +55,9 @@ def petridishOutputDirs(run = None, latest = False, create = ("densities", "plot
     return out
 
 def plotFile(out, name):
-    # file name of a plot in the plots folder of the run, with the run name (date and time) appended: "TipDens.png" -> plots/<run>/TipDens_<run>.png
+    # file in the plots folder of the run: "TipDens.png" -> plots/<run>/TipDens.png (the folder name says which run, date and parameters)
     stem, ext = os.path.splitext(name)
-    return out["plots"] + stem + "_" + out["run"] + (ext or ".png")
+    return out["plots"] + stem + (ext or ".png")
 
 def gitInfo():
     # commit, branch and locally changed (tracked) files of the CPlantBox repository, so the C++ state of a run is known

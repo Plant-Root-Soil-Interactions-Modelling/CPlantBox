@@ -59,7 +59,7 @@ area = amfs.ringVolume(radius, nRings, 1.0, barrier_thickness)[:, None] * 100 # 
 root_days, steps_per_day = 5, 24
 dt, nSteps = amfs.setUpSimulationTime(root_days, steps_per_day)
 
-filename = "petridish_nowait_seed_" + str(seed)
+filename = f"seed_{seed:03d}"
 # options of makeSimulation, also stored in run_info.json (together with the defaults of all options not given here)
 sim_options = {"animation": animation, "max_wait_days": max_wait_days, "min_growing_tips": min_growing_tips, "stall_fraction": stall_fraction,
                "progress_every": progress_every, "turn_off_root_growth": True, "hyphae_parameters": hyphae_parameters}
@@ -84,7 +84,7 @@ t_analysis = time.perf_counter()
 if show_3d:
     vp.plot_roots_and_container(mycp, petri_dish)
 if not animation:
-    amf.getMycSegmentAnalyser(mycp, stdwrite=True, filename=out["animation"] + filename, step=nSteps)
+    amf.getMycSegmentAnalyser(mycp, stdwrite=True, filename=out["animation"] + filename, step="final", timestamp=False) # animation/<run>/seed_010_final.vtp
 
     # Ringe -> Zeile // Zeitabschnitt -> Spalte
 subtypes = amfd.HYPHAL_SUBTYPES # {1: "runner", 2: "bas"}
@@ -129,6 +129,6 @@ amfio.save_simulation(results_dir + f"seed_{seed:03d}.npz", sim)
 if (seed % 10 == 0):
     title = f"seed {seed}, run {out['run']}"
     amfp.plot_ring_heatmap(sim["times"], amfs.ringCenters(location), sim["tip_dens"], "Tip density [mm$^{-2}$]",
-                           amfio.plotFile(out, f"tip_densities_seed_{seed:03d}.png"), title=title)
+                           amfio.plotFile(out, f"TipDensityHeatmap_seed_{seed:03d}.png"), title=title)
     amfp.plot_ring_heatmap(sim["times"], amfs.ringCenters(location), sim["ana_densities"], "Anastomoses per ring",
-                           amfio.plotFile(out, f"ana_densities_seed_{seed:03d}.png"), title=title)
+                           amfio.plotFile(out, f"AnastomosisHeatmap_seed_{seed:03d}.png"), title=title)

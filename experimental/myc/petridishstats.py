@@ -41,14 +41,14 @@ for f in amfd.collectArrivalFits(simulations):
     rows.append({"seed": f["seed"], "ring": f["ring"], "r": r_ring[f["ring"]], "t_n": t_n, "K1": K1, "lam_len": lam_len, "R2_length": f["R2_length"],
                  "saturation": f["rho_data"][-1] / K1, "K2": K2, "lam_tip": lam_tip, "t_tip": t_tip, "width": fwhm / lam_tip, "R2_tips": f["R2_tips"]})
 df = pd.DataFrame(rows)
-df.to_csv(amfio.plotFile(out, "petridish_wave_fits.csv"), index=False)
+df.to_csv(amfio.plotFile(out, "WaveFitsPerRing.csv"), index=False)
 amfio.updatePlotInfo(out, "petridishstats", {"R2_min_length": R2_min_length, "R2_min_tips": R2_min_tips, "saturation_min": saturation_min,
                                               "min_rings": min_rings, "v_tip": v_tip, "n_boot": n_boot, "seeds": sorted(df["seed"].unique().tolist()) if "seed" in df else []})
 good = df[df["R2_length"] >= R2_min_length]
 good_tips = good[good["R2_tips"] >= R2_min_tips]
 good_K1 = good[good["saturation"] >= saturation_min]
 print(f"{len(df)} ring fits of {df['seed'].nunique()} seeds, {len(good)} with R2_length >= {R2_min_length}, {len(good_tips)} of them with R2_tips >= {R2_min_tips}, "
-      f"{len(good_K1)} saturated (>= {saturation_min} K1); all fits in petridish_wave_fits.csv")
+      f"{len(good_K1)} saturated (>= {saturation_min} K1); all fits in WaveFitsPerRing.csv")
 
 def boot_ci(x, stat=np.mean):
     # 95% bootstrap confidence interval of stat over the seeds
@@ -209,5 +209,5 @@ fig.text(0.01, 0.005,
          "Values in brackets: 95% bootstrap confidence interval of the mean over the seeds; p: t-test over the per-seed slopes.",
          fontsize=9, va="bottom", ha="left")
 plt.tight_layout(rect=(0, 0.1, 1, 1))
-plt.savefig(amfio.plotFile(out, "petridish_stats.png"), dpi=200, bbox_inches="tight")
-print("\nwritten " + amfio.plotFile(out, "petridish_stats.png"))
+plt.savefig(amfio.plotFile(out, "WaveStatistics.png"), dpi=200, bbox_inches="tight")
+print("\nwritten " + amfio.plotFile(out, "WaveStatistics.png"))

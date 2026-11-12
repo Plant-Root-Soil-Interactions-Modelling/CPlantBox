@@ -290,6 +290,67 @@ def fitArrivalTimes(t, rho, tips, min_fraction=0.5):
                      "R2_tips": R2(tips[k], sigmoidTipDens(t, *pt)) if pt is not None else np.nan})
     return fits
 
+FWHM_BELL = 2 * np.log(3 + 2 * np.sqrt(2)) # full width at half maximum of sigmoidTipDens is FWHM_BELL / lamda (about 3.53 / lamda)
+
+def fitSpatialFronts(simulations, location, min_R2 = 0.5, min_rings = 5):
+    # the tip wave in space: at every time of every simulation the tip density over the rings n(r) is fitted with the bell curve
+    # sigmoidTipDens(r, A, k, r_f) (same function as over time): r_f = position of the front (peak of the tips) [mm], A = peak tip density
+    # (amplitude) [mm^-2], width = FWHM_BELL / k = full width at half maximum of the tip band [mm]. Kept only if the peak and both
+    # half maximum points r_f +- width/2 lie within the ring centers (else amplitude and width are extrapolated), R2 >= min_R2
+    # and at least min_rings rings have tips.
+    # simulations as from load_petridish_results ("times" days since t*, "tip_dens" [mm^-2]), location: ring centers [cm];
+    # first column left out (see getParasPerRing). Returns a list of dicts "seed", "j" (column of tip_dens[:, 1:]), "t" [h], "r_f", "A", "k", "width", "R2"
+    r = np.asarray(location) * 10
+    fits = []
+    for sim in simulations:
+        t_h = sim["times"][1:] * 24
+        n = sim["tip_dens"][:, 1:]
+        for j, t in enumerate(t_h):
+            y = n[:, j]
+            if np.count_nonzero(y) < min_rings or y.max() <= 0:
+                continue
+            span = r[-1] - r[0]
+            p0 = [y.max(), 8 / span, r[np.argmax(y)]]
+            bounds = ([0, 0, r[0] - span], [np.inf, np.inf, r[-1] + span])
+            try:
+                p, _ = curve_fit(sigmoidTipDens, r, y, p0, bounds=bounds, maxfev=10000)
+            except (RuntimeError, ValueError):
+                continue
+            ss = np.sum((y - y.mean())**2)
+            R2 = 1 - np.sum((y - sigmoidTipDens(r, *p))**2) / ss if ss > 0 else np.nan
+            half = FWHM_BELL / p[1] / 2
+            if not (r[0] <= p[2] - half and p[2] + half <= r[-1]) or not (R2 >= min_R2): # peak and both half maximum points within the rings
+                continue
+            fits.append({"seed": int(sim["seed"]), "j": j, "t": t, "r_f": p[2], "A": p[0], "k": p[1], "width": FWHM_BELL / p[1], "R2": R2})
+    return fits
+
+def theilSlope(x, y):
+    # robust slope and intercept of y against x (Theil-Sen, median of the pairwise slopes), nan for less than 3 points
+    x, y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
+    if len(x) < 3 or np.unique(x).size < 2:
+        return np.nan, np.nan
+    from scipy.stats import theilslopes
+    return tuple(theilslopes(y, x)[:2])
+
+def seedSummary(name, x, unit = "", test_zero = False, n_boot = 10000, seed = 1, verbose = True):
+    # one value per seed (the seeds are the independent replicates): mean, median, sd, coefficient of variation and 95% bootstrap
+    # confidence interval of the mean over the seeds, optionally a t-test against 0. Returns a dict (None for less than 2 seeds)
+    from scipy.stats import ttest_1samp
+    x = np.asarray(x, dtype=float)
+    x = x[np.isfinite(x)]
+    if len(x) < 2:
+        if verbose:
+            print(f"  {name}: less than 2 seeds")
+        return None
+    rng = np.random.default_rng(seed)
+    lo, hi = np.percentile(x[rng.integers(0, len(x), (n_boot, len(x)))].mean(axis=1), [2.5, 97.5])
+    res = {"mean": x.mean(), "median": np.median(x), "sd": x.std(ddof=1), "cv": x.std(ddof=1) / abs(x.mean()) if x.mean() != 0 else np.nan,
+           "lo": lo, "hi": hi, "p": ttest_1samp(x, 0).pvalue if test_zero else np.nan, "n": len(x)}
+    if verbose:
+        print(f"  {name}: mean {res['mean']:.4g} {unit}, median {res['median']:.4g}, sd {res['sd']:.3g} (cv {res['cv']:.2f}), "
+              f"95% CI of mean [{lo:.4g}, {hi:.4g}], n = {len(x)} seeds" + (f", t-test mean = 0: p = {res['p']:.3g}" if test_zero else ""))
+    return res
+
 def collectArrivalFits(simulations):
     # fitArrivalTimes for all simulations (dicts with "times" [days since t*], "length_densities" [mm mm^-2], "tip_dens" [mm^-2]),
     # time in h and length density in um mm^-2. Adds "seed" and the data "t", "rho_data", "tip_data" to each fit

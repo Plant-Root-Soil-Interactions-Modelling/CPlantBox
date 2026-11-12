@@ -216,7 +216,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
         #     print("Step " + str(i) + " of " + str(nSteps))
         mycp.simulate(dt,verbose)
         if (animation):
-            amf.getMycSegmentAnalyser(mycp,filename = animation_dir + filename + "_anim",step = i, stdwrite= True)    # look at roots and container
+            amf.getMycSegmentAnalyser(mycp,filename = animation_dir + filename + "_anim",step = f"{i:04d}", stdwrite= True, timestamp = False)    # look at roots and container
         progress("root phase", i)
 
     root = mycp.getOrganRandomParameter(pb.root)
@@ -269,7 +269,7 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
         #     print("Step " + str(i) + " of " + str(hours_hyphae))
         mycp.simulate(dt,verbose)
         if (animation):
-            amf.getMycSegmentAnalyser(mycp,filename = animation_dir + filename + "_anim",step = i+nSteps, stdwrite= True)    # look at roots and container
+            amf.getMycSegmentAnalyser(mycp,filename = animation_dir + filename + "_anim",step = f"{i + nSteps:04d}", stdwrite= True, timestamp = False)    # look at roots and container
         if min_growing_tips is not None or stall_fraction is not None:
             growing_t.append(mycp.getSimTime())
             growing_n.append(countGrowingTips(mycp, small_hyphae_dish, growing_window))

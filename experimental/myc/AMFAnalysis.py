@@ -9,17 +9,19 @@ from scipy.interpolate import interp1d
 # (geometry and simulation: AMFSimulationSetup, densities per ring and arrival fits: AMFDensities, network: AMFNetwork,
 #  plots: AMFPlots, saving and loading: AMFIO, old unused functions: AMFLegacy)
 
-def getMycSegmentAnalyser(plant, write=[],filename = "write",step = 0, stdwrite = False,):
+def getMycSegmentAnalyser(plant, write=[],filename = "write",step = 0, stdwrite = False, timestamp = True):
+        # write, stdwrite: writes filename_<step>[_<date-time>].vtp, timestamp = False leaves out the date and time
         ana = pb.SegmentAnalyser(plant)
         ana.addData("colonization", plant.getNodeColonizations(2))
         ana.addData("colonizationTime", plant.getNodeColonizationTime(2))
         ana.addData("anastomosis", plant.getAnastomosisPoints(5))
         ana.addData("nodeTips", plant.getNodeTips(5))
         # ana.crop(crop)
+        name = filename + "_" + str(step) + ("_" + time.strftime("%Y%m%d-%H%M%S") if timestamp else "") + ".vtp"
         if write:
-            ana.write(filename + "_" + str(step) + "_" +time.strftime("%Y%m%d-%H%M%S") + ".vtp",write)
+            ana.write(name, write)
         if stdwrite:
-            ana.write(filename + "_" + str(step) + "_" +time.strftime("%Y%m%d-%H%M%S") + ".vtp",["radius","creationTime","subType","organType","colonization","colonizationTime","anastomosis","nodeTips"])
+            ana.write(name, ["radius","creationTime","subType","organType","colonization","colonizationTime","anastomosis","nodeTips"])
         return ana
 
 def prepare_data(lenMat, vol, anaMat, tipMat):

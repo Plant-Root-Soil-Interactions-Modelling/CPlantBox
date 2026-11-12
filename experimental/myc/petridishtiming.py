@@ -98,5 +98,5 @@ ax.set_title("Simulated vs. wall clock waiting time", fontsize=10)
 for ax in axes.flat:
     ax.spines[["top", "right"]].set_visible(False)
 plt.tight_layout()
-plt.savefig(amfio.plotFile(out, "petridish_timing.png"), dpi=200, bbox_inches="tight")
-print("written " + amfio.plotFile(out, "petridish_timing.png"))
+plt.savefig(amfio.plotFile(out, "RunTiming.png"), dpi=200, bbox_inches="tight")
+print("written " + amfio.plotFile(out, "RunTiming.png"))

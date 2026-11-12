@@ -9,7 +9,7 @@ import AMFPlots as amfp
 # and one without anastomoses (ana=0): C of f = C rho against R = distTH, from the realized anastomoses per hour of each run and from
 # the distances of the growing tips to other hyphal trees (any R, see plot_tip_distances), with the random straight hyphae of hyphal_network.py.
 # Usage: python3 petridishcompare.py <run> <run> ...   (names of the run folders in petridish_results/densities)
-# Writes C_against_R_<date>.png and run_info.json (the runs and their C) into petridish_results/plots/compare_<date>
+# Writes C_against_R.png and run_info.json (the runs and their C) into petridish_results/plots/compare_<date>
 if len(sys.argv) < 2:
     sys.exit("Usage: python3 petridishcompare.py <run> <run> ...")
 runs = sys.argv[1:]
