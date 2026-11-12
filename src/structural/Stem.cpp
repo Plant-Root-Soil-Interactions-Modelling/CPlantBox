@@ -452,12 +452,12 @@ void Stem::internodalGrowth(double dl, double dt) {
     double dl_;
     const int ln_0 = std::count(p.ln.cbegin(), p.ln.cend(), 0); // number of laterals which grow from the same branching point as the one before
     if (p.nodalGrowth == 0) {                                   // sequentiall growth
-        std::cout << "Sequential growth: dl = " << dl << std::endl << std::flush;
+        // std::cout << "Sequential growth: dl = " << dl << std::endl << std::flush;
         toGrow[0] = dl;
         std::fill(toGrow.begin() + 1, toGrow.end(), 0);
     }
     if (p.nodalGrowth == 1) { // equal growth
-        std::cout << "Equal growth: dl = " << dl << std::endl << std::flush;
+        // std::cout << "Equal growth: dl = " << dl << std::endl << std::flush;
         std::fill(toGrow.begin(), toGrow.end(), dl / (p.ln.size() - ln_0));
     }
     int loopId = 0;
