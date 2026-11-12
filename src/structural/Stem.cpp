@@ -155,13 +155,13 @@ void Stem::simulate(double dt, bool verbose) {
                     /* basal zone */
                     if ((dl > 0) && (length < p.lb)) { // length is the current length of the root
                         if (length + dl <= p.lb) {
-                            std::cout << "Basal zone growth: dl = " << dl << std::endl << std::flush;
+                            // std::cout << "Basal zone growth: dl = " << dl << std::endl << std::flush;
                             createSegments(dl, dt_);
                             length += dl;
                             dl = 0;
                         } else {
                             double ddx = p.lb - length;
-                            std::cout << "Basal zone growth: ddx = " << ddx << std::endl << std::flush;
+                            // std::cout << "Basal zone growth: ddx = " << ddx << std::endl << std::flush;
                             createSegments(ddx, dt_);
                             dl -= ddx; // ddx already has been created
                             length = p.lb;
@@ -172,7 +172,7 @@ void Stem::simulate(double dt, bool verbose) {
                         for (size_t i = 0; (i < p.ln.size()); i++) {
                             createLateral(dt_, verbose);
                             if (p.ln.at(created_linking_node - 1) > 0) {
-                                std::cout << "Phytomer zone growth: " << this->dxMin() << std::endl << std::flush;
+                                // std::cout << "Phytomer zone growth: " << this->dxMin() << std::endl << std::flush;
                                 createSegments(this->dxMin(), dt_);
                                 dl -= this->dxMin();
                                 length += this->dxMin();
@@ -193,7 +193,7 @@ void Stem::simulate(double dt, bool verbose) {
                         double currentInternodeDistance = getLength(nn) - p.lb;                     // actual length of branching zone
                         double ddx = std::min(maxInternodeDistance - currentInternodeDistance, dl); // length to add to branching zone
                         if (ddx > 0) {
-                            std::cout << "Phytomer elongation: " << ddx << std::endl << std::flush;
+                            // std::cout << "Phytomer elongation: " << ddx << std::endl << std::flush;
                             internodalGrowth(ddx, dt_);
                             dl -= ddx;
                             length += ddx;
@@ -202,13 +202,13 @@ void Stem::simulate(double dt, bool verbose) {
                     /* apical zone */
                     // only grows once the basal and branching nodes are developped (TODO)
                     if ((dl > 0) && (length - (maxInternodeDistance + p.lb) > -1e-9)) {
-                        std::cout << "Apical zone growth: dl = " << dl << std::endl << std::flush;
+                        // std::cout << "Apical zone growth: dl = " << dl << std::endl << std::flush;
                         createSegments(dl, dt_);
                         length += dl;
                     }
                 } else { // no laterals
                     if (dl > 0) {
-                        std::cout << "No laterals: " << dl << std::endl << std::flush;
+                        // std::cout << "No laterals: " << dl << std::endl << std::flush;
                         createSegments(dl, dt_, 0);
                         length += dl;
                     }
@@ -290,7 +290,8 @@ void Stem::createSegments(double l, double dt, int phytoIdx) {
                 shiftl = std::min(dx() - olddx, l);
                 h.normalize();
                 nodes.at(shiftIdx) = h.times(olddx + shiftl);
-                nodeCTs.at(shiftIdx) = this->calcCreationTime(getLength(true) + shiftl, dt); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+                nodeCTs.at(shiftIdx) =
+                    this->calcCreationTime(getLength(true) + shiftl, dt); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
                 if (l <= 0) {
