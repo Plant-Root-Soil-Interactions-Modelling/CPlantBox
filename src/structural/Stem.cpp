@@ -245,13 +245,15 @@ Vector3d Stem::getIncrement(const Vector3d &p, Vector3d &h, double sdx) {
 /**
  * @brief Creates polyline segments totalling length @p l.
  *
- * On the first call (or during internodal growth) shifts the last existing node
- * if it is shorter than dx(), then appends new nodes at intervals of dx().
+ * Tip growth (phytoIdx < 0) appends nodes at the end of the stem. Internodal elongation (phytoIdx >= 0)
+ * inserts nodes directly above node phytoIdx, i.e. at the base of the phytomere.
+ * If the segment that is to be extended is shorter than dx() (first call of Stem::simulate for tip growth,
+ * always for elongation), it is lengthened first, before new nodes are created at intervals of dx().
  * Residual growth smaller than dxMin() is stored in epsilonDx.
  *
  * @param l         Total length of new segments to create [cm].
  * @param dt        Current time step [days] (used for creation-time calculation).
- * @param phytoIdx  Node index for internodal elongation; -1 for tip growth.
+ * @param phytoIdx  Node index below which the phytomere grows (internodal elongation); -1 for tip growth.
  */
 void Stem::createSegments(double l, double dt, int phytoIdx) {
     if (l == 0) {
@@ -262,43 +264,41 @@ void Stem::createSegments(double l, double dt, int phytoIdx) {
         std::cout << "Stem::createSegments: negative length encountered \n";
         return;
     }
-    // shift first node to axial resolution
+    const bool elongation = (phytoIdx >= 0);
+    const int nn = elongation ? phytoIdx + 1 : nodes.size(); // index of the first new node
+
+    // lengthen an existing segment up to dx() instead of creating a new node
     double shiftl = 0; // length produced by shift
-    int nn = nodes.size();
-    bool stemElongation = (phytoIdx >= 0); // if we are doing internodal growth,  phytoIdx >= 0.
-    if (stemElongation) {
-        nn = phytoIdx + 1;
-    }
-    if (firstCall || stemElongation) { // first call of createSegments (in Stem::simulate) or elongation
-        if (!stemElongation) {
+    if (elongation || firstCall) {
+        if (!elongation) {
             firstCall = false;
         }
-        // don t move first node
-        bool notFirstNode = (nn > 1);
-        bool notChildBaseNode = (children.empty() || (nn - 1 != std::static_pointer_cast<Organ>(children.back())->getParentNI()));
-        // don't move a child base node unless you have phytomere expansion
-        if (notFirstNode && (notChildBaseNode || stemElongation)) {
-            Vector3d h = nodes.at(nn - 1);    // relative node = last segment vector
-            double olddx = h.length();        // length of last segment
-            if (olddx < dx() * (1 - 1e-10)) { // shift node instead of creating a new node
+        int shiftIdx; // node (relative coordinate) whose segment is lengthened
+        bool canShift;
+        if (elongation) { // first segment inside the phytomere (the segment below belongs to the previous phytomere)
+            shiftIdx = nn;
+            canShift = (shiftIdx < static_cast<int>(nodes.size()));
+        } else { // last segment, unless it ends in the base node of a lateral
+            shiftIdx = nn - 1;
+            canShift = (nn > 1) && (children.empty() || (shiftIdx != children.back()->getParentNI()));
+        }
+        moved = false;
+        if (canShift) {
+            Vector3d h = nodes.at(shiftIdx);
+            double olddx = h.length();
+            if (olddx < dx() * (1 - 1e-10)) {
                 shiftl = std::min(dx() - olddx, l);
-                double sdx = olddx + shiftl; // length of new segment
                 h.normalize();
-                nodes.at(nn - 1) = h.times(sdx);
-                double et = this->calcCreationTime(getLength(true) + shiftl, dt);
-                nodeCTs.at(nn - 1) = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+                nodes.at(shiftIdx) = h.times(olddx + shiftl);
+                nodeCTs.at(shiftIdx) = this->calcCreationTime(getLength(true) + shiftl, dt); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
-                if (l <= 0) { // ==0 should be enough
+                if (l <= 0) {
                     return;
                 }
-            } else {
-                moved = false;
             }
-        } else {
-            moved = false;
         }
-    } // first call or elongation
+    }
 
     // create n+1 new nodes
     double sl = 0; // summed length of created segment
@@ -313,7 +313,7 @@ void Stem::createSegments(double l, double dt, int phytoIdx) {
         } else { // last segment
             sdx = l - n * dx();
             if (sdx < dxMin() * (1 - 1e-10)) { // quit if l is too small
-                if (phytoIdx >= 0) {
+                if (elongation) {
                     this->epsilonDx += sdx;
                 } else {
                     this->epsilonDx = sdx;
@@ -326,7 +326,7 @@ void Stem::createSegments(double l, double dt, int phytoIdx) {
         // the new node is inserted at index nn+i, its predecessor is the node nn+i-1
         Vector3d newnode = getIncrement(p, h, sdx);                            // relative coordinate
         double et = this->calcCreationTime(getLength(true) + shiftl + sl, dt); // here length or getLength? it's the same because epsilonDx was set back to 0 at beginning of simulate?
-        if (stemElongation) {
+        if (elongation) {
             insertNode(newnode, et, size_t(nn + i));
         } else {
             addNode(newnode, et);
