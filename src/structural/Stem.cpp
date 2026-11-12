@@ -209,7 +209,7 @@ void Stem::simulate(double dt, bool verbose) {
                 } else { // no laterals
                     if (dl > 0) {
                         // std::cout << "No laterals: " << dl << std::endl << std::flush;
-                        createSegments(dl, dt_, 0);
+                        createSegments(dl, dt_);
                         length += dl;
                     }
                 }
