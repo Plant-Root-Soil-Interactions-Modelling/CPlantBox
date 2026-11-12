@@ -596,8 +596,7 @@ Vector3d Organ::getInitialHeading() const {
     Vector3d parentHeading; // heading of the parent at the attachment point
     auto parent = getParent();
     bool isRoot = parent ? (organType() == Organism::ot_root) : (organType() <= Organism::ot_root); // without parent, unrecognized organs (0) are treated as roots
-    bool isBaseOrgan =
-        (parent == nullptr) || (parent->organType() == Organism::ot_seed); // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created manually there is no parent
+    bool isBaseOrgan = (parent == nullptr) || (parent->organType() == Organism::ot_seed); // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created wwithout parent
     bool isShootBornRoot = (parent != nullptr) && (parent->organType() == Organism::ot_stem) && (organType() == Organism::ot_root);
     bool isRootBornShoot = (parent != nullptr) && (parent->organType() == Organism::ot_root) && ((organType() == Organism::ot_stem) || (organType() == Organism::ot_leaf));
     if (isBaseOrgan || isShootBornRoot || isRootBornShoot) {

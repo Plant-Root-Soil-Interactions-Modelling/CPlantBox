@@ -128,7 +128,7 @@ elapsed = warmup_steps * dt
 # --------------------------------------------------------------------------- #
 
 anim = AnimateRoots(plant)
-anim.root_name = "age"
+anim.param_name = "age"
 anim.plant = True  # include leaf surface polygons via plot_plant
 if save_frames:
     anim.avi_name = save_frames

@@ -18,14 +18,14 @@ Seed::Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  */
 Seed::Seed(std::shared_ptr<Organism> plant) : Organ(plant, nullptr, Organism::ot_seed, 0, 0., 0) {
     addNode(param()->seedPos, 0.); // realize() is called within the Organ constructor
+    Vector3d heading = getInitialHeading();
+    initialFrame_ = Matrix3d::ons(heading);
 }
 
 /**
  * @brief Returns the absolute coordinate of node @p i.
  */
-Vector3d Seed::getNode(int i) const {
-    return nodes.at(i);
-}
+Vector3d Seed::getNode(int i) const { return nodes.at(i); }
 
 /**
  * @brief Returns the absolute coordinates of all nodes.
@@ -38,6 +38,13 @@ std::vector<Vector3d> Seed::getNodes() const {
     return v;
 }
 
+/**
+ * @brief Returns the initial frame of the seed.
+ */
+Matrix3d Seed::getInitialFrame() const {
+    Vector3d heading = getInitialHeading();
+    return Matrix3d::ons(heading);
+}
 
 /**
  * Deep copies the organ into the new plant @param rs.
@@ -289,17 +296,13 @@ std::string Seed::toString() const {
  * Creates a root of the given subtype and delay, attached to this seed at node 0.
  * The organism's factory method selects the concrete root class.
  */
-std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, double delay) {
-    return plant->createRoot(type, delay, shared_from_this(), 0);
-}
+std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, double delay) { return plant->createRoot(type, delay, shared_from_this(), 0); }
 
 /**
  * Creates a stem of the given subtype and delay, attached to this seed at node 0.
  * The organism's factory method selects the concrete stem class.
  */
-std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, double delay) {
-    return plant->createStem(type, delay, shared_from_this(), 0);
-}
+std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, double delay) { return plant->createStem(type, delay, shared_from_this(), 0); }
 
 OrganState Seed::getState() const {
     OrganState s = Organ::getState();

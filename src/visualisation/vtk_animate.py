@@ -368,5 +368,5 @@ class AnimatePlant(AnimateRoots):
     """just rename the class to AnimatePlant for clarity
     (and keep the old name for backward compatibility)"""
 
-    def __init__(self, plant, add_params=None):
+    def __init__(self, plant, add_params={}):
         super().__init__(plant, add_params=add_params)

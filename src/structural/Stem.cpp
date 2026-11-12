@@ -106,9 +106,6 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p) {
 void Stem::simulate(double dt, bool verbose) {
     const StemSpecificParameter &p = *param(); // rename
     firstCall = true;
-    oldNumberOfNodes = nodes.size();
-    auto p_all = plant.lock();
-    auto p_stem = p_all->getOrganRandomParameter(Organism::ot_stem);
 
     if (alive) { // dead roots wont grow
 
@@ -157,22 +154,24 @@ void Stem::simulate(double dt, bool verbose) {
                     /* basal zone */
                     if ((dl > 0) && (length < p.lb)) { // length is the current length of the root
                         if (length + dl <= p.lb) {
+                            std::cout << "Basal zone growth: dl = " << dl << std::endl << std::flush;
                             createSegments(dl, dt_);
                             length += dl;
                             dl = 0;
                         } else {
                             double ddx = p.lb - length;
+                            std::cout << "Basal zone growth: ddx = " << ddx << std::endl << std::flush;
                             createSegments(ddx, dt_);
                             dl -= ddx; // ddx already has been created
                             length = p.lb;
                         }
                     }
                     /* branching zone */
-                    // go into branching zone if organ has laterals and has reached the end of the basal zone
                     if (((created_linking_node) < (p.ln.size() + 1)) && (length >= p.lb)) {
                         for (size_t i = 0; (i < p.ln.size()); i++) {
                             createLateral(dt_, verbose);
                             if (p.ln.at(created_linking_node - 1) > 0) {
+                                std::cout << "Phytomer zone growth: " << this->dxMin() << std::endl << std::flush;
                                 createSegments(this->dxMin(), dt_);
                                 dl -= this->dxMin();
                                 length += this->dxMin();
@@ -186,13 +185,14 @@ void Stem::simulate(double dt, bool verbose) {
                         errMsg << "Stem::simulate(): higher number of realized linking nodes (" << created_linking_node << ") than of max laterals (" << p.ln.size() + 1 << ")";
                         throw std::runtime_error(errMsg.str().c_str());
                     }
-                    // internodal elongation, if the basal zone of the stem is created and still has to grow
+                    // internode elongation
                     double maxInternodeDistance = p.getK() - p.la - p.lb; // maximum length of branching zone
                     if ((dl > 0) && (length >= p.lb) && (maxInternodeDistance > 0)) {
                         int nn = localId_linking_nodes.back();                                      // node carrying the last lateral == end of branching zone
                         double currentInternodeDistance = getLength(nn) - p.lb;                     // actual length of branching zone
                         double ddx = std::min(maxInternodeDistance - currentInternodeDistance, dl); // length to add to branching zone
                         if (ddx > 0) {
+                            std::cout << "Phytomer elongation: " << ddx << std::endl << std::flush;
                             internodalGrowth(ddx, dt_);
                             dl -= ddx;
                             length += ddx;
@@ -201,11 +201,13 @@ void Stem::simulate(double dt, bool verbose) {
                     /* apical zone */
                     // only grows once the basal and branching nodes are developped (TODO)
                     if ((dl > 0) && (length - (maxInternodeDistance + p.lb) > -1e-9)) {
+                        std::cout << "Apical zone growth: dl = " << dl << std::endl << std::flush;
                         createSegments(dl, dt_);
                         length += dl;
                     }
                 } else { // no laterals
                     if (dl > 0) {
+                        std::cout << "No laterals: " << dl << std::endl << std::flush;
                         createSegments(dl, dt_);
                         length += dl;
                     }
@@ -448,10 +450,12 @@ void Stem::internodalGrowth(double dl, double dt) {
     double dl_;
     const int ln_0 = std::count(p.ln.cbegin(), p.ln.cend(), 0); // number of laterals which grow from the same branching point as the one before
     if (p.nodalGrowth == 0) {                                   // sequentiall growth
+        std::cout << "Sequential growth: dl = " << dl << std::endl << std::flush;
         toGrow[0] = dl;
         std::fill(toGrow.begin() + 1, toGrow.end(), 0);
     }
     if (p.nodalGrowth == 1) { // equal growth
+        std::cout << "Equal growth: dl = " << dl << std::endl << std::flush;
         std::fill(toGrow.begin(), toGrow.end(), dl / (p.ln.size() - ln_0));
     }
     int loopId = 0;
@@ -471,7 +475,7 @@ void Stem::internodalGrowth(double dl, double dt) {
         }
         dl_ = std::max(0., std::min(std::min(toGrow[phytomerId], availableForGrowth), dl));
         if (dl_ > 0) {
-            createSegments(dl_, dt, nn2);
+            createSegments(dl_, dt, nn1 + 1);
             dl -= dl_;
         }
         if ((phytomerId + 1) < p.ln.size()) {

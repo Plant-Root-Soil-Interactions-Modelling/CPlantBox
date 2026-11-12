@@ -32,6 +32,7 @@ class Seed : public Organ {
     /** use absolute coordinates for root nodes, ignore getLength, heading because seed has only 1 point */
     Vector3d getNode(int i) const override;          ///< returns the absolute coordinate of node @p i
     std::vector<Vector3d> getNodes() const override; ///< returns the absolute coordinates of all nodes
+    Matrix3d getInitialFrame() const;                ///< returns the initial frame of the seed
 
     virtual std::string toString() const override; ///< Returns organ information and the seed's maximum numbers of basal roots, shootborne roots, and tillers.
 
@@ -73,6 +74,8 @@ class Seed : public Organ {
 
   protected:
     int rootCrowns_ = 0;
+    Matrix3d initialFrame_; ///< initial frame of the seed
+
     int getParamSubType(int organtype, std::string str);
 };
 

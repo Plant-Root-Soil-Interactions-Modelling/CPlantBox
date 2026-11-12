@@ -86,7 +86,10 @@ class Organ : public std::enable_shared_from_this<Organ> {
     double getLength(bool realized = true) const;                                  ///< Returns organ length [cm]; realized=true subtracts unresolved residual growth epsilonDx
     virtual double getLength(int i) const;                                         ///< Returns length from the first node up to node index @p i [cm]
     double getEpsilon() const { return epsilonDx; }                                ///< Returns residual growth not yet converted to a new segment [cm]
+    double dx() const;                                                             ///< Returns the maximal axial segment length from the organ random parameter [cm]
+    double dxMin() const;                                                          ///< Returns the minimal axial segment length from the organ random parameter [cm]
 
+    /* from analytical equations */
     virtual double calcAge(double length) const { throw std::runtime_error("calcAge() not implemented"); } ///< Analytic function length -> age; override
     virtual double calcLength(double age) { throw std::runtime_error("calcLength() not implemented"); }    ///< Analytic function age -> length; must be overridden
     double calcCreationTime(double length, double dt);                                                     ///< Returns the analytical creation time of a node at @p length along the organ [days]
@@ -107,8 +110,6 @@ class Organ : public std::enable_shared_from_this<Organ> {
     std::vector<Vector2i> getSegments() const;                             ///< Returns all polyline segments as pairs of global node indices
     virtual Vector3d heading(int n) const;                                 ///< Returns the absolute heading at node @p n (direction of segment [n-1, n], or initial heading if n==0)
     Vector3d getInitialHeading() const;                                    ///< Returns the absolute initial heading when the organ was created
-    double dx() const;                                                     ///< Returns the maximal axial segment length from the organ random parameter [cm]
-    double dxMin() const;                                                  ///< Returns the minimal axial segment length from the organ random parameter [cm]
 
     /* last time step */
     virtual bool hasMoved() const { return moved; };             ///< Returns true if any node moved during the last simulate() call
@@ -153,14 +154,14 @@ class Organ : public std::enable_shared_from_this<Organ> {
     std::shared_ptr<const OrganSpecificParameter> param_; ///< Realised parameter set for this organ instance
 
     /* Parameters changing over time */
-    bool alive = true;                ///< true while the organ is alive
-    bool active = true;               ///< true while the organ is growing
-    double age = 0;                   ///< Current age [days]
-    double length = 0;                ///< Theoretical organ length [cm] (may exceed realised length by epsilonDx)
-    double epsilonDx = 0;             ///< Residual growth too small for a new segment; carried forward to the next time step [cm]
-    size_t created_linking_node = 0;  ///< Number of linking nodes (lateral attachment points) created so far
-    int parentNI;                     ///< Local node index in the parent organ where this organ is attached
-    mutable Vector3d partialIHeading; ///< Initial relative heading used to compute getInitialHeading(); mutable to allow derived-class caching
+    bool alive = true;               ///< true while the organ is alive
+    bool active = true;              ///< true while the organ is growing
+    double age = 0;                  ///< Current age [days]
+    double length = 0;               ///< Theoretical organ length [cm] (may exceed realised length by epsilonDx)
+    double epsilonDx = 0;            ///< Residual growth too small for a new segment; carried forward to the next time step [cm]
+    size_t created_linking_node = 0; ///< Number of linking nodes (lateral attachment points) created so far
+    int parentNI;                    ///< Local node index in the parent organ where this organ is attached
+    Vector3d partialIHeading;        ///< Initial relative heading used to compute getInitialHeading();
 
     /* Node data */
     std::vector<Vector3d> nodes; ///< Node coordinates [cm]; relative to the origin (Root: absolute, unless carried by a Stem or Leaf)
