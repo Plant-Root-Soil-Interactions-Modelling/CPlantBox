@@ -328,7 +328,8 @@ void Stem::createSegments(double l, double dt, int phytoIdx) {
         Vector3d newnode = getIncrement(p, h, sdx);                            // relative coordinate
         double et = this->calcCreationTime(getLength(true) + shiftl + sl, dt); // here length or getLength? it's the same because epsilonDx was set back to 0 at beginning of simulate?
         if (elongation) {
-            insertNode(newnode, et, size_t(nn + i));
+            insertNode(newnode, et, nn);
+            // std::cout << "Inserted node at index " << phytoIdx << ", " << nn << ", " << et << ", " << sl << std::flush << std::endl;
         } else {
             addNode(newnode, et);
         }

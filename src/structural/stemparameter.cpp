@@ -5,8 +5,6 @@
 #include "Seed.h"
 #include "tropism.h"
 
-#include <assert.h>
-#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <numeric>
