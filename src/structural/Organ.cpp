@@ -299,7 +299,7 @@ void Organ::insertNode(Vector3d n, double t, size_t index) {
     nodeIds.push_back(plant.lock()->getNodeIndex());
     nodeCTs.insert(nodeCTs.begin() + index, t);
     for (auto kid : children) { // if carries children after the added node, update their "parent node index"
-        if ((kid->getParentNI() >= index - 1) && (kid->getParentNI() > 0)) {
+        if ((kid->getParentNI() >= index) && (kid->getParentNI() > 0)) {
             kid->incParentNI();
             kid->nodeIds.at(0) = kid->getParent()->getNodeId(kid->getParentNI());
         }

@@ -106,6 +106,7 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p) {
 void Stem::simulate(double dt, bool verbose) {
     const StemSpecificParameter &p = *param(); // rename
     firstCall = true;
+    oldNumberOfNodes = nodes.size();
 
     if (alive) { // dead roots wont grow
 
@@ -208,7 +209,7 @@ void Stem::simulate(double dt, bool verbose) {
                 } else { // no laterals
                     if (dl > 0) {
                         std::cout << "No laterals: " << dl << std::endl << std::flush;
-                        createSegments(dl, dt_);
+                        createSegments(dl, dt_, 0);
                         length += dl;
                     }
                 }
@@ -475,7 +476,7 @@ void Stem::internodalGrowth(double dl, double dt) {
         }
         dl_ = std::max(0., std::min(std::min(toGrow[phytomerId], availableForGrowth), dl));
         if (dl_ > 0) {
-            createSegments(dl_, dt, nn1 + 1);
+            createSegments(dl_, dt, nn1);
             dl -= dl_;
         }
         if ((phytomerId + 1) < p.ln.size()) {
@@ -613,9 +614,9 @@ void Stem::storeLinkingNodeLocalId(int numCreatedLN) {
  */
 void Stem::insertNode(Vector3d n, double t, size_t index) {
     Organ::insertNode(n, t, index);
-    for (int numnode = 0; numnode < localId_linking_nodes.size(); numnode++) { // update the local ids of the linking nodes
-        if ((localId_linking_nodes.at(numnode) >= index - 1) && (localId_linking_nodes.at(numnode) > 0)) {
-            localId_linking_nodes.at(numnode) += 1;
+    for (int i = 0; i < localId_linking_nodes.size(); i++) { // update the local ids of the linking nodes
+        if ((localId_linking_nodes.at(i) >= index) && (localId_linking_nodes.at(i) > 0)) {
+            localId_linking_nodes.at(i) += 1;
         }
     }
 }
