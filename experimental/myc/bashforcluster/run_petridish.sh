@@ -16,7 +16,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=cpu256
-#SBATCH --time=5:00:00
+#SBATCH --time=3:00:00
 #SBATCH --mem=3G
 #SBATCH --mail-type=BEGIN,TIME_LIMIT_80,END
 #SBATCH --mail-user=an.heck@fz-juelich.de

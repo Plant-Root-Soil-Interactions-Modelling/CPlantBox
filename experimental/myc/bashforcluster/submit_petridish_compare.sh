@@ -20,9 +20,9 @@
 set -e
 build=0
 compare=1
-first=10
-last=109
-throttle=50
+first=1
+last=100
+throttle=25
 sets=()
 for a in "$@"; do
     case "$a" in
