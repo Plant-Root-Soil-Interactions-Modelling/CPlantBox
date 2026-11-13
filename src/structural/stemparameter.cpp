@@ -28,6 +28,9 @@ std::string StemSpecificParameter::toString() const {
     str << "lb\t" << lb << std::endl << "la\t" << la << std::endl;
     str << "nob\t" << nob() << std::endl << "r\t" << r << std::endl << "a\t" << a << std::endl;
     str << "theta\t" << theta << std::endl << "rlt\t" << rlt << std::endl;
+    str << "ldelay\t" << ldelay << std::endl;
+    str << "laterals\t" << laterals << std::endl;
+    str << "delayNGStart\t" << delayNGStart << std::endl << "delayNGEnd\t" << delayNGEnd << std::endl;
     str << "ln\t";
     for (int i = 0; i < ln.size(); i++) {
         str << ln[i] << " ";
@@ -309,9 +312,8 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize() {
     p->laterals = hasLaterals;
     p->ln = ln_;
     p->r = std::max(r + pl->randn() * rs, 0.); // initial elongation
-    p->ldelay = std::max(ldelay + pl->randn() * ldelays, 0.);
-    p->theta = std::max(theta + pl->randn() * thetas, 0.); // initial elongation
-    p->rlt = std::max(rlt + pl->randn() * rlts, 0.);       // stem life time
+    p->theta = std::max(theta + pl->randn() * thetas, 0.);
+    p->rlt = std::max(rlt + pl->randn() * rlts, 0.); // stem life time
     p->delayNGStart = std::max(delayNGStart + pl->randn() * delayNGStarts, 0.);
     p->delayNGEnd = std::max(delayNGEnd + pl->randn() * delayNGEnds, 0.);
     if (p->delayNGEnd < p->delayNGStart) {
