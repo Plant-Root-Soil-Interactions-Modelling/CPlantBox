@@ -88,15 +88,15 @@
         <!--Growth function number [1]-->
         <parameter name="lnf" value="0"/>
         <!--Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)-->
-        <parameter name="internodeGrowth" value="1"/>
+        <parameter name="nodalGrowth" value="1"/>
         <!--nodal growth function (sequential = 0, equal = 0)-->
         <parameter name="tropismT" value="1"/>
         <!--Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="betaDev" value="10"/>
+        <parameter name="BetaDev" value="10"/>
         <!--RevRotation deviation-->
-        <parameter name="initBeta" value="0"/>
+        <parameter name="InitBeta" value="0"/>
         <!--Initial RevRotation-->
-        <parameter name="rotBeta" value="0"/>
+        <parameter name="RotBeta" value="0"/>
         <!--RevRotation of the stem-->
         <parameter name="a" value="0.02"/>
         <!--Stem radius [cm]-->
@@ -148,15 +148,15 @@
         <!--leaf shape type for definition of area and volume (cylinder = 0, cuboid = 1, user-defined 2D shape= 2)-->
         <parameter name="tropismT" value="1"/>
         <!--Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="betaDev" value="1"/>
+        <parameter name="BetaDev" value="1"/>
         <!--RevRotation deviation-->
-        <parameter name="initBeta" value="0.117647"/>
+        <parameter name="InitBeta" value="0.117647"/>
         <!--Initial RevRotation-->
-        <parameter name="rotBeta" value="0.627451"/>
+        <parameter name="RotBeta" value="0.627451"/>
         <!--RevRotation of the leaf-->
-        <parameter name="width_blade" value="0"/>
+        <parameter name="Width_blade" value="0"/>
         <!--width blade [cm]-->
-        <parameter name="width_petiole" value="0"/>
+        <parameter name="Width_petiole" value="0"/>
         <!--width petiole [cm]-->
         <parameter name="a" value="0.050000001"/>
         <!--radius [cm]-->

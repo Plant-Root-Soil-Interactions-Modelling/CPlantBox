@@ -109,7 +109,7 @@
     <!--delayNG = 33.4 - lb/r;-->
 	<!--parameter name="delayNG" value="29.4" dev="6.3" /-->
 	<parameter name="ldelay" value="10" dev="0" />
-	<parameter name="internodeGrowth" value="0" />
+	<parameter name="nodalGrowth" value="0" />
 	<parameter name="delayNGStart" value="4"  />
 	<parameter name="delayNGEnd" value="24"  />
     <parameter name="a" value="0.15" dev="0" />
@@ -121,8 +121,8 @@
     <!--parameter name="dxMin" value="2"/-->
     <parameter name="dxMin" value="0.1"/>
     <parameter name="theta" value="0.1" dev="0"/>
-    <!--parameter name="betaDev" value="1" dev="0"/-->
-    <!--parameter name="rotBeta" value="1" dev="0"/-->
+    <!--parameter name="BetaDev" value="1" dev="0"/-->
+    <!--parameter name="RotBeta" value="1" dev="0"/-->
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
     <parameter name="successor" number="0" subType="1" organType ="4" percentage="1"/>
@@ -138,8 +138,8 @@
     <parameter name="lmax" value="43" dev="0"/>
     <parameter name="r" value="4" dev="0"/>
     <parameter name="a" value="0.03" dev="0"/>
-    <parameter name="width_petiole" value="0.35" />
-    <parameter name="width_blade" value="0.9" />
+    <parameter name="Width_petiole" value="0.35" />
+    <parameter name="Width_blade" value="0.9" />
     <parameter name="shapeType" value="1" />
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="18"/>

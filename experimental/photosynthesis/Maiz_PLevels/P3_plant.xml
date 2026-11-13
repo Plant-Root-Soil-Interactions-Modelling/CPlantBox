@@ -224,7 +224,7 @@
 		<!--growth delay of laterals (incremental => init age = -delayLat * numLat-->
 		<parameter name="delayLat" value="3" dev="0" />
 		<!--Inter-lateral distance [cm];-->
-		<parameter name="internodeGrowth" value="0" />
+		<parameter name="nodalGrowth" value="0" />
 		<parameter name="a" value="0.130868444" dev="0.0" />
 		<parameter name="tropismT" value="1"/>
 		<parameter name="tropismN" value="1"/>
@@ -253,14 +253,14 @@
 		<parameter name="theta" value="0.739136061" dev="0.261949409"/>
 		<parameter name="rlt" value="1000000000" dev="0"/>
 		<parameter name="gf" value="1"/>
-		<parameter name="rotBeta" value="1"/>
+		<parameter name="RotBeta" value="1"/>
 		<!--says which parameters to use when evaluating area and volume-->
 		<parameter name="shapeType" value="1" />
 		<!--only used if shapeType == 0-->
 		<parameter name="a" value="0.0638117391" dev="0.0"/>
 		<!--width parameter only used if shapeType == 1-->
-		<parameter name="width_petiole" value="0.35" />
-		<parameter name="width_blade" value="1.563152174" />
+		<parameter name="Width_petiole" value="0.35" />
+		<parameter name="Width_blade" value="1.563152174" />
 		<!--only used if shapeType == 2-->
 		<parameter name="areaMax" value="71.95670914"/>
 		<parameter name="geometryN" value="100"/>
