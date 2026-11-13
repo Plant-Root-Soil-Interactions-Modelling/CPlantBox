@@ -39,7 +39,7 @@ SeedRandomParameter::SeedRandomParameter(std::shared_ptr<Organism> plant) : Orga
 }
 
 /**
- * @copydoc OrganTypeParameter::copy()
+ * @copydoc OrganRandomParameter::copy()
  */
 std::shared_ptr<OrganRandomParameter> SeedRandomParameter::copy(std::shared_ptr<Organism> plant) {
     // std::cout << "SeedRandomParameter::copy\n"<< std::flush;
@@ -50,7 +50,7 @@ std::shared_ptr<OrganRandomParameter> SeedRandomParameter::copy(std::shared_ptr<
 }
 
 /**
- * @copydoc OrganTypeParameter::realize()
+ * @copydoc OrganRandomParameter::realize()
  *
  * Creates a specific plant from the plant random parameters.
  * @return Specific plant parameters derived from the root random parameters

@@ -1,21 +1,21 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "Organism.h"
 
-#include "Organ.h"
-#include "Seed.h"
-#include "organparameter.h"
-#include "Root.h"
-#include "Stem.h"
 #include "Leaf.h"
+#include "Organ.h"
+#include "Root.h"
+#include "Seed.h"
+#include "Stem.h"
+#include "organparameter.h"
 
 #include <chrono>
+#include <cmath>
 #include <ctime>
 #include <fstream>
-#include <cmath>
 #include <iostream>
 #include <limits>
-#include <sstream>
 #include <numeric>
+#include <sstream>
 #include <stdexcept>
 
 namespace CPlantBox {
@@ -119,7 +119,7 @@ std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, 
         //          std::cout << "\n" << std::flush;
         return organParam.at(ot).at(subType);
     } catch (...) { // const std::out_of_range& oor
-        throw std::invalid_argument("Organism::getOrganTypeParameter: OrganRandomParameter for " + Organism::organTypeName(ot) + ", of sub type " + std::to_string(subType) + " was not set");
+        throw std::invalid_argument("Organism::getOrganRandomParameter: OrganRandomParameter for " + Organism::organTypeName(ot) + ", of sub type " + std::to_string(subType) + " was not set");
     }
 }
 
@@ -128,7 +128,7 @@ std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, 
  * @param p Parameter object; organType and subType are taken from p.
  */
 void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p) {
-    assert(p->plant.lock().get() == this && "OrganTypeParameter::plant should be this organism");
+    assert(p->plant.lock().get() == this && "OrganRandomParameter::plant should be this organism");
     organParam[p->organType][p->subType] = p;
     // std::cout << "setting organ type " << p->organType << ", sub type " << p->subType << ", name "<< p->name << " " << organParam[p->organType].size() << "\n";
 }
@@ -286,7 +286,7 @@ std::vector<Vector3d> Organism::getNodes() const {
     for (const auto &o : baseOrgans) {                                    // copy initial nodes (even if organs have not developed)
         nv.at(o->getNodeId(0)) = o->getNode(0);
     }
-    for (const auto &o : organs) {                           // copy all organ nodes
+    for (const auto &o : organs) { // copy all organ nodes
         auto on = o->getNodes();
         for (size_t i = 1; i < o->getNumberOfNodes(); i++) { // since all base nodes are stored twice as base and along root
             nv.at(o->getNodeId(i)) = on.at(i);
@@ -333,7 +333,7 @@ std::vector<Vector2i> Organism::getSegments(int ot) const {
     segs.reserve(this->getNumberOfSegments(ot)); // for speed up
     for (const auto &o : organs) {
         auto s = o->getSegments();
-        segs.insert(segs.end(), s.begin(), s.end()); 
+        segs.insert(segs.end(), s.begin(), s.end());
     }
     return segs;
 }
@@ -681,9 +681,9 @@ std::string Organism::write(std::string name, bool intoFile) const {
             fos.close();
             return "";
         } else {
-            std::ostringstream oss; 
+            std::ostringstream oss;
             writeVTP(-1, oss);
-            return oss.str();        
+            return oss.str();
         }
     } else if (ext.compare(".py") == 0) {
         std::cout << "Organism::write(): writing Geometry ... " << name.c_str() << "\n";
@@ -694,9 +694,9 @@ std::string Organism::write(std::string name, bool intoFile) const {
             fos.close();
             return "";
         } else {
-            std::ostringstream oss; 
+            std::ostringstream oss;
             writeGeometry(oss);
-            return oss.str();               
+            return oss.str();
         }
     } else {
         throw std::invalid_argument("Organism::write(): Unknown file type");
@@ -935,9 +935,7 @@ std::shared_ptr<Organ> Organism::createSeed() {
  * @param pni parent node index where this root emerges
  * @return shared pointer to the newly created Root
  */
-std::shared_ptr<Organ> Organism::createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
-    return std::make_shared<Root>(shared_from_this(), subType, delay, parent, pni);
-}
+std::shared_ptr<Organ> Organism::createRoot(int subType, double delay, std::shared_ptr<Organ> parent, int pni) { return std::make_shared<Root>(shared_from_this(), subType, delay, parent, pni); }
 
 /**
  * @brief Creates a new Stem organ.
@@ -947,9 +945,7 @@ std::shared_ptr<Organ> Organism::createRoot(int subType, double delay, std::shar
  * @param pni parent node index where this stem emerges
  * @return shared pointer to the newly created Stem
  */
-std::shared_ptr<Organ> Organism::createStem(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
-    return std::make_shared<Stem>(shared_from_this(), subType, delay, parent, pni);
-}
+std::shared_ptr<Organ> Organism::createStem(int subType, double delay, std::shared_ptr<Organ> parent, int pni) { return std::make_shared<Stem>(shared_from_this(), subType, delay, parent, pni); }
 
 /**
  * @brief Creates a new Leaf organ.
@@ -959,9 +955,7 @@ std::shared_ptr<Organ> Organism::createStem(int subType, double delay, std::shar
  * @param pni parent node index where this leaf emerges
  * @return shared pointer to the newly created Leaf
  */
-std::shared_ptr<Organ> Organism::createLeaf(int subType, double delay, std::shared_ptr<Organ> parent, int pni) {
-    return std::make_shared<Leaf>(shared_from_this(), subType, delay, parent, pni);
-}
+std::shared_ptr<Organ> Organism::createLeaf(int subType, double delay, std::shared_ptr<Organ> parent, int pni) { return std::make_shared<Leaf>(shared_from_this(), subType, delay, parent, pni); }
 
 namespace {
 template <class T> std::vector<double> streamToNumbers(const T &obj) {
@@ -1035,17 +1029,28 @@ void Organism::setState(const OrganismState &state, const std::map<int, std::sha
         return true;
     };
     double d;
-    if (get("plantId", d)) plantId = static_cast<int>(std::lround(d));
-    if (get("simtime", d)) simtime = d;
-    if (get("dt", d)) dt = d;
-    if (get("organId", d)) organId = static_cast<int>(std::lround(d));
-    if (get("nodeId", d)) nodeId = static_cast<int>(std::lround(d));
-    if (get("oldNumberOfNodes", d)) oldNumberOfNodes = static_cast<int>(std::lround(d));
-    if (get("oldNumberOfOrgans", d)) oldNumberOfOrgans = static_cast<int>(std::lround(d));
-    if (get("rsmlSkip", d)) rsmlSkip = static_cast<int>(std::lround(d));
-    if (get("minDx", d)) minDx = d;
-    if (get("seed_val", d)) seed_val = static_cast<unsigned int>(std::llround(d));
-    if (get("stochastic", d)) stochastic = (d != 0.);
+    if (get("plantId", d))
+        plantId = static_cast<int>(std::lround(d));
+    if (get("simtime", d))
+        simtime = d;
+    if (get("dt", d))
+        dt = d;
+    if (get("organId", d))
+        organId = static_cast<int>(std::lround(d));
+    if (get("nodeId", d))
+        nodeId = static_cast<int>(std::lround(d));
+    if (get("oldNumberOfNodes", d))
+        oldNumberOfNodes = static_cast<int>(std::lround(d));
+    if (get("oldNumberOfOrgans", d))
+        oldNumberOfOrgans = static_cast<int>(std::lround(d));
+    if (get("rsmlSkip", d))
+        rsmlSkip = static_cast<int>(std::lround(d));
+    if (get("minDx", d))
+        minDx = d;
+    if (get("seed_val", d))
+        seed_val = static_cast<unsigned int>(std::llround(d));
+    if (get("stochastic", d))
+        stochastic = (d != 0.);
     auto it = state.find("gen");
     if (it != state.end()) {
         numbersToStream(it->second, gen);

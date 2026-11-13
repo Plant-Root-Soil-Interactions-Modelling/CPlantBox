@@ -54,7 +54,7 @@ LeafRandomParameter::LeafRandomParameter(std::shared_ptr<Organism> plant) : Orga
 }
 
 /**
- * @copydoc OrganTypeParameter::copy()
+ * @copydoc OrganRandomParameter::copy()
  */
 std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<Organism> plant) {
     // std::cout << "LeafRandomParameter::copy\n"<< std::flush;
@@ -70,7 +70,7 @@ std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<
 }
 
 /**
- * @copydoc OrganTypeParameter::realize()
+ * @copydoc OrganRandomParameter::realize()
  *
  * Creates a specific leaf from the leaf type parameters.
  * @return Specific leaf parameters derived from the leaf type parameters
@@ -337,7 +337,7 @@ double LeafRandomParameter::nobs() const {
 }
 
 /**
- * @copydoc OrganTypeParameter::toString()
+ * @copydoc OrganRandomParameter::toString()
  *
  * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
  */
@@ -378,7 +378,7 @@ void LeafRandomParameter::createGeometry() {
 }
 
 /**
- * @copydoc OrganTypeParameter::readXML()
+ * @copydoc OrganRandomParameter::readXML()
  *
  * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
  *
@@ -410,7 +410,7 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement *element, bool verbose) {
 }
 
 /**
- * @copydoc OrganTypeParameter::writeXML()
+ * @copydoc OrganRandomParameter::writeXML()
  *
  * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
  */

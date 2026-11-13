@@ -31,7 +31,7 @@ OrganRandomParameter::OrganRandomParameter(std::shared_ptr<Organism> p) : plant(
 }
 
 /**
- * Copies the OrganTypeParameter and into another plant.
+ * Copies the OrganRandomParameter and into another plant.
  *
  * @param plant     target organism managing this organ type parameter
  *
@@ -47,10 +47,10 @@ std::shared_ptr<OrganRandomParameter> OrganRandomParameter::copy(std::shared_ptr
 }
 
 /**
- * An organ specific parameter set (OrganParameter) is created from the general parameter set (OrganTypeParameter).
+ * An organ specific parameter set (OrganParameter) is created from the general parameter set (OrganRandomParameter).
  * In the specializations of this class, random variables are drawn from their distributions.
  *
- * Normally, both OrganParameter, and OrganTypeParameter are constant over the organ life time.
+ * Normally, both OrganParameter, and OrganRandomParameter are constant over the organ life time.
  *
  * @return The organ specific parameter set (each organ has exactly one set), ownership is passed to caller
  */
@@ -525,8 +525,8 @@ void OrganRandomParameter::bindParameters() {
 
 /**
  *  Binds a parameter name to its int member variable,
- *  the values can then be accessed with OrganTypeParameter::getParameter,
- *  and are used in OrganTypeParameter::toString, and OrganTypeParameter::writeXML.
+ *  the values can then be accessed with OrganRandomParameter::getParameter,
+ *  and are used in OrganRandomParameter::toString, and OrganRandomParameter::writeXML.
  *
  *  @param name   Parameter name used in XML, toString(), and getParameter().
  *  @param i      Pointer to the integer member variable.
@@ -545,8 +545,8 @@ void OrganRandomParameter::bindParameter(std::string name, int *i, std::string d
 
 /**
  *  Binds a parameter name to its double member variable,
- *  the values can then be accessed with OrganTypeParameter::getParameter,
- *  and are used in OrganTypeParameter::toString, and  OrganTypeParameter::writeXML.
+ *  the values can then be accessed with OrganRandomParameter::getParameter,
+ *  and are used in OrganRandomParameter::toString, and  OrganRandomParameter::writeXML.
  *
  *  @param name   Parameter name used in XML, toString(), and getParameter().
  *  @param d      Pointer to the double member variable.

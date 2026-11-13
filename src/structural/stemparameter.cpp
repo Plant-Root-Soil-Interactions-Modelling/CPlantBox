@@ -52,7 +52,7 @@ StemRandomParameter::StemRandomParameter(std::shared_ptr<Organism> plant) : Orga
 }
 
 /**
- * @copydoc OrganTypeParameter::copy()
+ * @copydoc OrganRandomParameter::copy()
  */
 std::shared_ptr<OrganRandomParameter> StemRandomParameter::copy(std::shared_ptr<Organism> plant) {
     auto r = std::make_shared<StemRandomParameter>(*this); // copy constructor breaks class introspection
@@ -67,7 +67,7 @@ std::shared_ptr<OrganRandomParameter> StemRandomParameter::copy(std::shared_ptr<
 }
 
 /**
- * @copydoc OrganTypeParameter::realize()
+ * @copydoc OrganRandomParameter::realize()
  *
  * Creates a specific stem from the stem type parameters.
  * @return Specific stem parameters derived from the stem type parameters

@@ -49,7 +49,7 @@ RootRandomParameter::RootRandomParameter(std::shared_ptr<Organism> plant) : Orga
 }
 
 /**
- * @copydoc OrganTypeParameter::copy()
+ * @copydoc OrganRandomParameter::copy()
  */
 std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<Organism> pl) {
     // std::cout << "RootRandomParameter::copy() into plant "<< (p->plantId) <<  "\n"<< std::flush;
@@ -66,7 +66,7 @@ std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<
 }
 
 /**
- * @copydoc OrganTypeParameter::realize()
+ * @copydoc OrganRandomParameter::realize()
  *
  * Creates a specific root from the root type parameters.
  * @return Specific root parameters derived from the root type parameters
@@ -177,7 +177,7 @@ double RootRandomParameter::nobs() const {
 }
 
 /**
- * @copydoc OrganTypeParameter::toString()
+ * @copydoc OrganRandomParameter::toString()
  *
  * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
  */
@@ -191,7 +191,7 @@ std::string RootRandomParameter::toString(bool verbose) const {
 }
 
 /**
- * @copydoc OrganTypeParameter::readXML()
+ * @copydoc OrganRandomParameter::readXML()
  *
  * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
  *
