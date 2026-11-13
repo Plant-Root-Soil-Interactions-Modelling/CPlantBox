@@ -757,18 +757,24 @@ void Organ::createLateral(double dt, bool verbose) {
                     switch (ot) {
                     case Organism::ot_root: {
                         auto lateral = plant.lock()->createRoot(st, delay, shared_from_this(), nodes.size() - 1);
+                        // if (organType() == Organism::ot_stem)
+                        //     lateral->nodeCTs.at(0) = getNodeCT(0) + age - growth_dt + delay; // why minus growth_dt (?)
                         children.push_back(lateral);
                         lateral->simulate(growth_dt, verbose);
                         break;
                     }
                     case Organism::ot_stem: {
                         auto lateral = plant.lock()->createStem(st, delay, shared_from_this(), nodes.size() - 1);
+                        // if (organType() == Organism::ot_stem)
+                        //     lateral->nodeCTs.at(0) = getNodeCT(0) + age - growth_dt + delay;
                         children.push_back(lateral);
                         lateral->simulate(growth_dt, verbose);
                         break;
                     }
                     case Organism::ot_leaf: {
                         auto lateral = plant.lock()->createLeaf(st, delay, shared_from_this(), nodes.size() - 1);
+                        // if (organType() == Organism::ot_stem)
+                        //     lateral->nodeCTs.at(0) = getNodeCT(0) + age - growth_dt + delay;
                         children.push_back(lateral);
                         lateral->simulate(growth_dt, verbose); // age-ageLN,verbose);
                         break;
