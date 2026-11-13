@@ -375,8 +375,6 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     double forDelay;                     // store necessary variables to define lateral growth delay
     int delayDefinition = getOrganism()->getDelayDefinition(ot_lat);
 
-    assert(delayDefinition >= 0);
-
     if (verbose) {
         std::cout << "create lat, delay def " << delayDefinition << " " << getId() << " " << (nodes.size() - 1) << " " << age << " " << getNodeId(nodes.size() - 1) << " " << getNodeId(0) << std::endl;
     }
