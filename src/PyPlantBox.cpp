@@ -353,7 +353,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("plant", &OrganRandomParameter::plant)
         .def_readwrite("f_gf", &OrganRandomParameter::f_gf)
         .def_readwrite("f_tf", &OrganRandomParameter::f_tf)
-        .def_readwrite("sequentialDelay", &OrganRandomParameter::sequentialDelay);
+        .def_readwrite("multDelay", &OrganRandomParameter::multDelay);
     /**
      * Organ.h
      */
@@ -781,12 +781,10 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp)
         .def_readwrite("tropismAge", &LeafRandomParameter::tropismAge)
         .def_readwrite("tropismAges", &LeafRandomParameter::tropismAges)
-        .def_readwrite("Width_blade", &LeafRandomParameter::width_blade)
-        .def_readwrite("Width_petiole", &LeafRandomParameter::width_petiole)
-        .def_readwrite("width_blade", &LeafRandomParameter::width_blade)
-        .def_readwrite("width_blades", &LeafRandomParameter::width_blades)
-        .def_readwrite("width_petiole", &LeafRandomParameter::width_petiole)
-        .def_readwrite("width_petioles", &LeafRandomParameter::width_petioles)
+        .def_readwrite("Width_blade", &LeafRandomParameter::Width_blade)
+        .def_readwrite("Width_blades", &LeafRandomParameter::Width_blades)
+        .def_readwrite("Width_petiole", &LeafRandomParameter::Width_petiole)
+        .def_readwrite("Width_petioles", &LeafRandomParameter::Width_petioles)
         .def_readwrite("geometryN", &LeafRandomParameter::geometryN)
         .def_readwrite("parametrisationType", &LeafRandomParameter::parametrisationType)
         .def_readwrite("leafGeometry", &LeafRandomParameter::leafGeometry)
@@ -846,8 +844,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("f_se", &StemRandomParameter::f_se)
         .def_readwrite("f_sa", &StemRandomParameter::f_sa)
         .def_readwrite("f_sbp", &StemRandomParameter::f_sbp)
-        .def_readwrite("internodeGrowth", &StemRandomParameter::internodeGrowth)
-        .def_readwrite("nodalGrowth", &StemRandomParameter::internodeGrowth) // old name
+        .def_readwrite("nodalGrowth", &StemRandomParameter::nodalGrowth)
         .def_readwrite("delayNGStart", &StemRandomParameter::delayNGStart)
         .def_readwrite("delayNGStarts", &StemRandomParameter::delayNGStarts)
         .def_readwrite("delayNGEnd", &StemRandomParameter::delayNGEnd)
