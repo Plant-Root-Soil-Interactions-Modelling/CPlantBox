@@ -30,20 +30,6 @@ class TestGrassLeafSpecificParameter(unittest.TestCase):
         self.assertAlmostEqual(p.leafGrowthDuration, 0.0)
         self.assertAlmostEqual(p.bladeBending, 0.05)  # C++ in-class default
 
-    def test_value_constructor(self):
-        """Full constructor (subType, a, bladeAngle, bladeWidth, bladeLength,
-        sheathLength, leafGrowthDuration, bladeBending) sets all fields.
-        """
-        p = pb.GrassLeafSpecificParameter(2, 0.03, 0.4, 0.9, 11.0, 5.5, 18.0, 0.08)
-        self.assertEqual(p.subType, 2)
-        self.assertAlmostEqual(p.a, 0.03)
-        self.assertAlmostEqual(p.bladeAngle, 0.4)
-        self.assertAlmostEqual(p.bladeWidth, 0.9)
-        self.assertAlmostEqual(p.bladeLength, 11.0)
-        self.assertAlmostEqual(p.sheathLength, 5.5)
-        self.assertAlmostEqual(p.leafGrowthDuration, 18.0)
-        self.assertAlmostEqual(p.bladeBending, 0.08)
-
     def test_fields_are_readwrite(self):
         """All exposed fields can be written and read back."""
         p = pb.GrassLeafSpecificParameter()
@@ -62,7 +48,7 @@ class TestGrassLeafSpecificParameter(unittest.TestCase):
 
     def test_toString_contains_key_fields(self):
         """toString() output mentions all important parameter names."""
-        p = pb.GrassLeafSpecificParameter(1, 0.02, 0.5, 0.8, 12.0, 6.0, 20.0, 0.1)
+        p = pb.GrassLeafSpecificParameter()
         s = str(p)
         for field in ("GrassLeaf", "bladeAngle", "bladeWidth", "bladeLength", "sheathLength", "leafGrowthDuration", "bladeBending"):
             self.assertIn(field, s, f"toString: field '{field}' not found in:\n{s}")

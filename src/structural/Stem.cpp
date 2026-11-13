@@ -453,12 +453,12 @@ void Stem::internodalGrowth(double dl, double dt) {
     std::vector<double> toGrow(p.ln.size());
     double dl_;
     const int ln_0 = std::count(p.ln.cbegin(), p.ln.cend(), 0); // number of laterals which grow from the same branching point as the one before
-    if (p.nodalGrowth == 0) {                                   // sequentiall growth
+    if (getStemRandomParameter()->nodalGrowth == 0) {           // sequentiall growth
         // std::cout << "Sequential growth: dl = " << dl << std::endl << std::flush;
         toGrow[0] = dl;
         std::fill(toGrow.begin() + 1, toGrow.end(), 0);
     }
-    if (p.nodalGrowth == 1) { // equal growth
+    if (getStemRandomParameter()->nodalGrowth == 1) { // equal growth
         // std::cout << "Equal growth: dl = " << dl << std::endl << std::flush;
         std::fill(toGrow.begin(), toGrow.end(), dl / (p.ln.size() - ln_0));
     }
@@ -658,7 +658,6 @@ OrganState Stem::getState() const {
         stateSet(s, "param.theta", p->theta);
         stateSet(s, "param.rlt", p->rlt);
         stateSet(s, "param.laterals", p->laterals);
-        stateSet(s, "param.nodalGrowth", p->nodalGrowth);
         stateSet(s, "param.delayNGStart", p->delayNGStart);
         stateSet(s, "param.delayNGEnd", p->delayNGEnd);
     }
@@ -678,7 +677,6 @@ void Stem::setState(const OrganState &state, const std::map<int, std::shared_ptr
         stateGet(state, "param.theta", p->theta);
         stateGet(state, "param.rlt", p->rlt);
         stateGet(state, "param.laterals", p->laterals);
-        stateGet(state, "param.nodalGrowth", p->nodalGrowth);
         stateGet(state, "param.delayNGStart", p->delayNGStart);
         stateGet(state, "param.delayNGEnd", p->delayNGEnd);
         param_ = p;

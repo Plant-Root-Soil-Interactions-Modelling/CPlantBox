@@ -80,13 +80,9 @@ class PyGrowthFunction : public GrowthFunction {
   public:
     using GrowthFunction::GrowthFunction; /* Inherit the constructors */
 
-    double getLength(double t, double r, double k, std::shared_ptr<Organ> organ) const override {
-        PYBIND11_OVERLOAD(double, GrowthFunction, getLength, t, r, k, organ);
-    }
+    double getLength(double t, double r, double k, std::shared_ptr<Organ> organ) const override { PYBIND11_OVERLOAD(double, GrowthFunction, getLength, t, r, k, organ); }
 
-    double getAge(double l, double r, double k, std::shared_ptr<const Organ> organ) const override {
-        PYBIND11_OVERLOAD(double, GrowthFunction, getAge, l, r, k, organ);
-    }
+    double getAge(double l, double r, double k, std::shared_ptr<const Organ> organ) const override { PYBIND11_OVERLOAD(double, GrowthFunction, getAge, l, r, k, organ); }
 
     std::shared_ptr<GrowthFunction> copy() const override { PYBIND11_OVERLOAD(std::shared_ptr<GrowthFunction>, GrowthFunction, copy); }
 };
@@ -97,9 +93,7 @@ class PySoilLookUp : public SoilLookUp {
 
     std::shared_ptr<SoilLookUp> copy() override { PYBIND11_OVERLOAD(std::shared_ptr<SoilLookUp>, SoilLookUp, copy); }
 
-    double getValue(const Vector3d &pos, const std::shared_ptr<Organ> organ = nullptr) const override {
-        PYBIND11_OVERLOAD(double, SoilLookUp, getValue, pos, organ);
-    }
+    double getValue(const Vector3d &pos, const std::shared_ptr<Organ> organ = nullptr) const override { PYBIND11_OVERLOAD(double, SoilLookUp, getValue, pos, organ); }
 
     std::string toString() const override { PYBIND11_OVERLOAD(std::string, SoilLookUp, toString); }
 };
@@ -119,14 +113,13 @@ PYBIND11_MODULE(plantbox, m) {
         .def("__str__", &Vector2i::toString)
         .def_readwrite("x", &Vector2i::x)
         .def_readwrite("y", &Vector2i::y)
-        .def_buffer([](Vector2i &v) -> py::buffer_info { /* enables numpy conversion with np.array(vector2i_instance, copy = False) */
-                                                         return py::buffer_info(
-                                                             &v.x,                                 /* Pointer to buffer */
-                                                             sizeof(int),                          /* Size of one scalar */
-                                                             py::format_descriptor<int>::format(), /* Python struct-style format descriptor */
-                                                             1,                                    /* Number of dimensions */
-                                                             {2},                                  /* Buffer dimensions */
-                                                             {sizeof(int)}                         /* Strides (in bytes) for each index */
+        .def_buffer([](Vector2i &v) -> py::buffer_info {                                                              /* enables numpy conversion with np.array(vector2i_instance, copy = False) */
+                                                         return py::buffer_info(&v.x,                                 /* Pointer to buffer */
+                                                                                sizeof(int),                          /* Size of one scalar */
+                                                                                py::format_descriptor<int>::format(), /* Python struct-style format descriptor */
+                                                                                1,                                    /* Number of dimensions */
+                                                                                {2},                                  /* Buffer dimensions */
+                                                                                {sizeof(int)}                         /* Strides (in bytes) for each index */
                                                          );
         });
     py::class_<Vector2d>(m, "Vector2d", py::buffer_protocol())
@@ -137,14 +130,13 @@ PYBIND11_MODULE(plantbox, m) {
         .def("__str__", &Vector2d::toString)
         .def_readwrite("x", &Vector2d::x)
         .def_readwrite("y", &Vector2d::y)
-        .def_buffer([](Vector2d &v) -> py::buffer_info { /* enables numpy conversion with np.array(vector2d_instance, copy = False) */
-                                                         return py::buffer_info(
-                                                             &v.x,                                    /* Pointer to buffer */
-                                                             sizeof(double),                          /* Size of one scalar */
-                                                             py::format_descriptor<double>::format(), /* Python struct-style format descriptor */
-                                                             1,                                       /* Number of dimensions */
-                                                             {2},                                     /* Buffer dimensions */
-                                                             {sizeof(double)}                         /* Strides (in bytes) for each index */
+        .def_buffer([](Vector2d &v) -> py::buffer_info {                                                                 /* enables numpy conversion with np.array(vector2d_instance, copy = False) */
+                                                         return py::buffer_info(&v.x,                                    /* Pointer to buffer */
+                                                                                sizeof(double),                          /* Size of one scalar */
+                                                                                py::format_descriptor<double>::format(), /* Python struct-style format descriptor */
+                                                                                1,                                       /* Number of dimensions */
+                                                                                {2},                                     /* Buffer dimensions */
+                                                                                {sizeof(double)}                         /* Strides (in bytes) for each index */
                                                          );
         });
     py::class_<Vector3d>(m, "Vector3d", py::buffer_protocol())
@@ -164,14 +156,13 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("x", &Vector3d::x)
         .def_readwrite("y", &Vector3d::y)
         .def_readwrite("z", &Vector3d::z)
-        .def_buffer([](Vector3d &v) -> py::buffer_info { /* enables numpy conversion with np.array(vector3d_instance, copy = False) */
-                                                         return py::buffer_info(
-                                                             &v.x,                                    /* Pointer to buffer */
-                                                             sizeof(double),                          /* Size of one scalar */
-                                                             py::format_descriptor<double>::format(), /* Python struct-style format descriptor */
-                                                             1,                                       /* Number of dimensions */
-                                                             {3},                                     /* Buffer dimensions */
-                                                             {sizeof(double)}                         /* Strides (in bytes) for each index */
+        .def_buffer([](Vector3d &v) -> py::buffer_info {                                                                 /* enables numpy conversion with np.array(vector3d_instance, copy = False) */
+                                                         return py::buffer_info(&v.x,                                    /* Pointer to buffer */
+                                                                                sizeof(double),                          /* Size of one scalar */
+                                                                                py::format_descriptor<double>::format(), /* Python struct-style format descriptor */
+                                                                                1,                                       /* Number of dimensions */
+                                                                                {3},                                     /* Buffer dimensions */
+                                                                                {sizeof(double)}                         /* Strides (in bytes) for each index */
                                                          );
         });
     py::class_<Matrix3d>(m, "Matrix3d", py::buffer_protocol())
@@ -194,14 +185,13 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("r0", &Matrix3d::r0)
         .def_readwrite("r1", &Matrix3d::r1)
         .def_readwrite("r2", &Matrix3d::r2)
-        .def_buffer([](Matrix3d &m_) -> py::buffer_info { /* enables numpy conversion with np.array(matrix3d_instance, copy = False) */
-                                                          return py::buffer_info(
-                                                              &m_.r0.x,                                /* Pointer to buffer */
-                                                              sizeof(double),                          /* Size of one scalar */
-                                                              py::format_descriptor<double>::format(), /* Python struct-style format descriptor */
-                                                              2,                                       /* Number of dimensions */
-                                                              {3, 3},                                  /* Buffer dimensions */
-                                                              {sizeof(double) * 3, sizeof(double)}     /* Strides (in bytes) for each index */
+        .def_buffer([](Matrix3d &m_) -> py::buffer_info {                                                                 /* enables numpy conversion with np.array(matrix3d_instance, copy = False) */
+                                                          return py::buffer_info(&m_.r0.x,                                /* Pointer to buffer */
+                                                                                 sizeof(double),                          /* Size of one scalar */
+                                                                                 py::format_descriptor<double>::format(), /* Python struct-style format descriptor */
+                                                                                 2,                                       /* Number of dimensions */
+                                                                                 {3, 3},                                  /* Buffer dimensions */
+                                                                                 {sizeof(double) * 3, sizeof(double)}     /* Strides (in bytes) for each index */
                                                           );
         });
 
@@ -234,8 +224,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_static("geodesicRotation", &Quaternion::geodesicRotation)
         .def_buffer([](Quaternion &q) -> py::buffer_info { /* enables numpy conversion with np.array(quaternion_instance, copy = False) */
                                                            // this only really works if the variables are stored in a contiguous block of memory
-                                                           return py::buffer_info(&q.w, sizeof(double), py::format_descriptor<double>::format(), 1, {4},
-                                                                                  {sizeof(double)});
+                                                           return py::buffer_info(&q.w, sizeof(double), py::format_descriptor<double>::format(), 1, {4}, {sizeof(double)});
         });
     /*
      * Turtle3D
@@ -297,13 +286,9 @@ PYBIND11_MODULE(plantbox, m) {
         .def("writePVPScript", (std::string (SignedDistanceFunction::*)() const) & SignedDistanceFunction::writePVPScript) // overloads
         .def("getGradient", &SignedDistanceFunction::getGradient, py::arg("p"), py::arg("eps") = 5.e-4)                    // defaults
         .def("__str__", &SignedDistanceFunction::toString);
-    py::class_<SDF_PlantBox, SignedDistanceFunction, std::shared_ptr<SDF_PlantBox>>(m, "SDF_PlantBox")
-        .def_readwrite("eps", &SDF_PlantBox::eps)
-        .def(py::init<double, double, double>());
+    py::class_<SDF_PlantBox, SignedDistanceFunction, std::shared_ptr<SDF_PlantBox>>(m, "SDF_PlantBox").def_readwrite("eps", &SDF_PlantBox::eps).def(py::init<double, double, double>());
     py::class_<SDF_Cuboid, SignedDistanceFunction, std::shared_ptr<SDF_Cuboid>>(m, "SDF_Cuboid").def(py::init<Vector3d, Vector3d>());
-    py::class_<SDF_PlantContainer, SignedDistanceFunction, std::shared_ptr<SDF_PlantContainer>>(m, "SDF_PlantContainer")
-        .def(py::init<>())
-        .def(py::init<double, double, double, double>());
+    py::class_<SDF_PlantContainer, SignedDistanceFunction, std::shared_ptr<SDF_PlantContainer>>(m, "SDF_PlantContainer").def(py::init<>()).def(py::init<double, double, double, double>());
     py::class_<SDF_RotateTranslate, SignedDistanceFunction, std::shared_ptr<SDF_RotateTranslate>>(m, "SDF_RotateTranslate")
         .def(py::init<std::shared_ptr<SignedDistanceFunction>, double, int, Vector3d &>())
         .def(py::init<std::shared_ptr<SignedDistanceFunction>, Vector3d &>());
@@ -321,8 +306,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<SDF_Difference, SDF_Intersection, std::shared_ptr<SDF_Difference>>(m, "SDF_Difference")
         .def(py::init<std::vector<std::shared_ptr<SignedDistanceFunction>>>())
         .def(py::init<std::shared_ptr<SignedDistanceFunction>, std::shared_ptr<SignedDistanceFunction>>());
-    py::class_<SDF_Complement, SignedDistanceFunction, std::shared_ptr<SDF_Complement>>(m, "SDF_Complement")
-        .def(py::init<std::shared_ptr<SignedDistanceFunction>>());
+    py::class_<SDF_Complement, SignedDistanceFunction, std::shared_ptr<SDF_Complement>>(m, "SDF_Complement").def(py::init<std::shared_ptr<SignedDistanceFunction>>());
     py::class_<SDF_HalfPlane, SignedDistanceFunction, std::shared_ptr<SDF_HalfPlane>>(m, "SDF_HalfPlane")
         .def(py::init<Vector3d &, Vector3d &>())
         .def(py::init<Vector3d &, Vector3d &, Vector3d &>())
@@ -334,7 +318,6 @@ PYBIND11_MODULE(plantbox, m) {
      * organparameter.h
      */
     py::class_<OrganSpecificParameter, std::shared_ptr<OrganSpecificParameter>>(m, "OrganSpecificParameter")
-        .def(py::init<int, double>())
         .def_readwrite("subType", &OrganSpecificParameter::subType)
         .def_readwrite("a", &OrganSpecificParameter::a)
         .def("__str__", &OrganSpecificParameter::toString);
@@ -348,10 +331,10 @@ PYBIND11_MODULE(plantbox, m) {
         .def("readXML", (void (OrganRandomParameter::*)(std::string name, bool verbose))&OrganRandomParameter::readXML, py::arg("name"),
              py::arg("verbose") = false) // overloads
         .def("bindParameters", &OrganRandomParameter::bindParameters)
-        .def("bindIntParameter", (void (OrganRandomParameter::*)(std::string, int *, std::string, double *))&OrganRandomParameter::bindParameter,
-             py::arg("name"), py::arg("i"), py::arg("descr") = "", py::arg("dev") = (double *)nullptr) // overloads, defaults
-        .def("bindDoubleParameter", (void (OrganRandomParameter::*)(std::string, double *, std::string, double *))&OrganRandomParameter::bindParameter,
-             py::arg("name"), py::arg("i"), py::arg("descr") = "", py::arg("dev") = (double *)nullptr) // overloads, defaults
+        .def("bindIntParameter", (void (OrganRandomParameter::*)(std::string, int *, std::string, double *))&OrganRandomParameter::bindParameter, py::arg("name"), py::arg("i"), py::arg("descr") = "",
+             py::arg("dev") = (double *)nullptr) // overloads, defaults
+        .def("bindDoubleParameter", (void (OrganRandomParameter::*)(std::string, double *, std::string, double *))&OrganRandomParameter::bindParameter, py::arg("name"), py::arg("i"),
+             py::arg("descr") = "", py::arg("dev") = (double *)nullptr) // overloads, defaults
         .def_readwrite("name", &OrganRandomParameter::name)
         .def_readwrite("organType", &OrganRandomParameter::organType)
         .def_readwrite("subType", &OrganRandomParameter::subType)
@@ -532,9 +515,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("fmax", &SoilLookUpSDF::fmax)
         .def_readwrite("fmin", &SoilLookUpSDF::fmin)
         .def_readwrite("slope", &SoilLookUpSDF::slope);
-    py::class_<MultiplySoilLookUps, SoilLookUp, std::shared_ptr<MultiplySoilLookUps>>(m, "MultiplySoilLookUps")
-        .def(py::init<SoilLookUp *, SoilLookUp *>())
-        .def(py::init<std::vector<SoilLookUp *>>());
+    py::class_<MultiplySoilLookUps, SoilLookUp, std::shared_ptr<MultiplySoilLookUps>>(m, "MultiplySoilLookUps").def(py::init<SoilLookUp *, SoilLookUp *>()).def(py::init<std::vector<SoilLookUp *>>());
     py::class_<ProportionalElongation, SoilLookUp, std::shared_ptr<ProportionalElongation>>(m, "ProportionalElongation")
         .def(py::init<>())
         .def("setScale", &ProportionalElongation::setScale)
@@ -594,8 +575,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<Gravitropism, Tropism, std::shared_ptr<Gravitropism>>(m, "Gravitropism").def(py::init<std::shared_ptr<Organism>, double, double>());
     py::class_<Plagiotropism, Tropism, std::shared_ptr<Plagiotropism>>(m, "Plagiotropism").def(py::init<std::shared_ptr<Organism>, double, double>());
     py::class_<Exotropism, Tropism, std::shared_ptr<Exotropism>>(m, "Exotropism").def(py::init<std::shared_ptr<Organism>, double, double>());
-    py::class_<Hydrotropism, Tropism, std::shared_ptr<Hydrotropism>>(m, "Hydrotropism")
-        .def(py::init<std::shared_ptr<Organism>, double, double, std::shared_ptr<SoilLookUp>>());
+    py::class_<Hydrotropism, Tropism, std::shared_ptr<Hydrotropism>>(m, "Hydrotropism").def(py::init<std::shared_ptr<Organism>, double, double, std::shared_ptr<SoilLookUp>>());
     /*
      * growth.h
      */
@@ -633,8 +613,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("addSegments", (void (SegmentAnalyser::*)(const SegmentAnalyser &))&SegmentAnalyser::addSegments) // overloads
         .def("addSegment", &SegmentAnalyser::addSegment, py::arg("seg"), py::arg("ct"), py::arg("radius"), py::arg("insert") = false)
         .def("addAge", &SegmentAnalyser::addAge)
-        .def("addHydraulicConductivities", &SegmentAnalyser::addHydraulicConductivities, py::arg("rs"), py::arg("simTime"), py::arg("kr_max") = 1.e6,
-             py::arg("kx_max") = 1.e6)
+        .def("addHydraulicConductivities", &SegmentAnalyser::addHydraulicConductivities, py::arg("rs"), py::arg("simTime"), py::arg("kr_max") = 1.e6, py::arg("kx_max") = 1.e6)
         .def("addFluxes", &SegmentAnalyser::addFluxes)
         .def("addCellIds", &SegmentAnalyser::addCellIds)
         .def("crop", &SegmentAnalyser::crop)
@@ -644,18 +623,14 @@ PYBIND11_MODULE(plantbox, m) {
         .def("pack", &SegmentAnalyser::pack)
         .def("getMinBounds", &SegmentAnalyser::getMinBounds)
         .def("getMaxBounds", &SegmentAnalyser::getMaxBounds)
-        .def("getParameter", &SegmentAnalyser::getParameter, py::arg("name"), py::arg("def") = std::numeric_limits<double>::quiet_NaN(),
-             py::arg("addParams") = std::map<std::string, double>())
+        .def("getParameter", &SegmentAnalyser::getParameter, py::arg("name"), py::arg("def") = std::numeric_limits<double>::quiet_NaN(), py::arg("addParams") = std::map<std::string, double>())
         .def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
-        .def("getSummed", (double (SegmentAnalyser::*)(std::string) const) & SegmentAnalyser::getSummed)                                          // overloads
-        .def("getSummed", (double (SegmentAnalyser::*)(std::string, std::shared_ptr<SignedDistanceFunction>) const) & SegmentAnalyser::getSummed) // overloads
-        .def("distribution",
-             (std::vector<double> (SegmentAnalyser::*)(std::string, double, double, int, bool) const) & SegmentAnalyser::distribution)       // overloads
-        .def("distribution", (std::vector<SegmentAnalyser> (SegmentAnalyser::*)(double, double, int) const) & SegmentAnalyser::distribution) // overloads
-        .def("distribution2", (std::vector<std::vector<double>> (SegmentAnalyser::*)(std::string, double, double, double, double, int, int, bool) const) &
-                                  SegmentAnalyser::distribution2) // overloads
-        .def("distribution2", (std::vector<std::vector<SegmentAnalyser>> (SegmentAnalyser::*)(double, double, double, double, int, int) const) &
-                                  SegmentAnalyser::distribution2) // overloads
+        .def("getSummed", (double (SegmentAnalyser::*)(std::string) const) & SegmentAnalyser::getSummed)                                                                                   // overloads
+        .def("getSummed", (double (SegmentAnalyser::*)(std::string, std::shared_ptr<SignedDistanceFunction>) const) & SegmentAnalyser::getSummed)                                          // overloads
+        .def("distribution", (std::vector<double> (SegmentAnalyser::*)(std::string, double, double, int, bool) const) & SegmentAnalyser::distribution)                                     // overloads
+        .def("distribution", (std::vector<SegmentAnalyser> (SegmentAnalyser::*)(double, double, int) const) & SegmentAnalyser::distribution)                                               // overloads
+        .def("distribution2", (std::vector<std::vector<double>> (SegmentAnalyser::*)(std::string, double, double, double, double, int, int, bool) const) & SegmentAnalyser::distribution2) // overloads
+        .def("distribution2", (std::vector<std::vector<SegmentAnalyser>> (SegmentAnalyser::*)(double, double, double, double, int, int) const) & SegmentAnalyser::distribution2)           // overloads
         .def("mapPeriodic", &SegmentAnalyser::mapPeriodic)
         .def("map2D", &SegmentAnalyser::map2D)
         .def("getOrgans", &SegmentAnalyser::getOrgans, py::arg("ot") = -1)
@@ -703,8 +678,6 @@ PYBIND11_MODULE(plantbox, m) {
 
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
         .def(py::init<>())
-        .def(py::init<int, double, double, const std::vector<double> &, double, double, double, double,
-                      bool>()) // <---------------------------------------------------
         .def_readwrite("lb", &RootSpecificParameter::lb)
         .def_readwrite("la", &RootSpecificParameter::la)
         .def_readwrite("ln", &RootSpecificParameter::ln)
@@ -748,7 +721,6 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("simtimes", &SeedRandomParameter::simtimes);
     py::class_<SeedSpecificParameter, OrganSpecificParameter, std::shared_ptr<SeedSpecificParameter>>(m, "SeedSpecificParameter")
         .def(py::init<>())
-        .def(py::init<int, Vector3d, double, int, int, int, double, double, double, double, int, double>())
         .def_readwrite("seedPos", &SeedSpecificParameter::seedPos)
         .def_readwrite("firstB", &SeedSpecificParameter::firstB)
         .def_readwrite("delayB", &SeedSpecificParameter::delayB)
@@ -820,7 +792,6 @@ PYBIND11_MODULE(plantbox, m) {
 
     py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
         .def(py::init<>())
-        .def(py::init<int, double, double, const std::vector<double> &, double, double, double, double, double, bool, double, double>())
         .def_readwrite("lb", &LeafSpecificParameter::lb)
         .def_readwrite("la", &LeafSpecificParameter::la)
         .def_readwrite("ln", &LeafSpecificParameter::ln)
@@ -880,7 +851,6 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("tropismAges", &StemRandomParameter::tropismAges);
     py::class_<StemSpecificParameter, OrganSpecificParameter, std::shared_ptr<StemSpecificParameter>>(m, "StemSpecificParameter")
         .def(py::init<>())
-        .def(py::init<int, double, double, const std::vector<double> &, double, double, double, double, double>())
         .def_readwrite("lb", &StemSpecificParameter::lb)
         .def_readwrite("la", &StemSpecificParameter::la)
         .def_readwrite("ln", &StemSpecificParameter::ln)
@@ -890,7 +860,6 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("rlt", &StemSpecificParameter::rlt)
         .def("getK", &StemSpecificParameter::getK)
         .def("nob", &StemSpecificParameter::nob)
-        .def_readwrite("nodalGrowth", &StemSpecificParameter::nodalGrowth)
         .def_readwrite("delayNGStart", &StemSpecificParameter::delayNGStart)
         .def_readwrite("delayNGEnd", &StemSpecificParameter::delayNGEnd);
     /**
@@ -898,9 +867,7 @@ PYBIND11_MODULE(plantbox, m) {
      */
     struct PyRoot : Root {
         using Root::Root;
-        double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override {
-            PYBIND11_OVERRIDE(double, Root, getParameter, name, addParams);
-        }
+        double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override { PYBIND11_OVERRIDE(double, Root, getParameter, name, addParams); }
     };
     py::class_<Root, Organ, PyRoot, std::shared_ptr<Root>>(m, "Root")
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
@@ -944,7 +911,6 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<GrassLeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<GrassLeafSpecificParameter>>(m, "GrassLeafSpecificParameter")
         .def(py::init<>())
-        .def(py::init<int, double, double, double, double, double, double, double>())
         .def_readwrite("a", &GrassLeafSpecificParameter::a)
         .def_readwrite("bladeAngle", &GrassLeafSpecificParameter::bladeAngle)
         .def_readwrite("bladeWidth", &GrassLeafSpecificParameter::bladeWidth)
@@ -1024,10 +990,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setSoil", &RootSystem::setSoil)
         .def("reset", &RootSystem::reset)
         .def("initialize", (void (RootSystem::*)(bool))&RootSystem::initialize, py::arg("verbose") = true)
-        .def("initializeLB", (void (RootSystem::*)(int, int, bool))&RootSystem::initializeLB, py::arg("basal"), py::arg("shootborne"),
-             py::arg("verbose") = true)
-        .def("initializeDB", (void (RootSystem::*)(int, int, bool))&RootSystem::initializeDB, py::arg("basal"), py::arg("shootborne"),
-             py::arg("verbose") = true)
+        .def("initializeLB", (void (RootSystem::*)(int, int, bool))&RootSystem::initializeLB, py::arg("basal"), py::arg("shootborne"), py::arg("verbose") = true)
+        .def("initializeDB", (void (RootSystem::*)(int, int, bool))&RootSystem::initializeDB, py::arg("basal"), py::arg("shootborne"), py::arg("verbose") = true)
         .def("setTropism", &RootSystem::setTropism)
         .def("simulate", (void (RootSystem::*)(double, bool))&RootSystem::simulate, py::arg("dt"), py::arg("verbose") = false)
         .def("simulate", (void (RootSystem::*)())&RootSystem::simulate)
@@ -1052,14 +1016,10 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setRadius", &MappedSegments::setRadius)
         .def("setTypes", &MappedSegments::setSubTypes) // kept for backward compatibility
         .def("setSubTypes", &MappedSegments::setSubTypes)
-        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double, double, double)> &, bool))&MappedSegments::setSoilGrid, py::arg("s"),
-             py::arg("noChanges") = false)
-        .def("setSoilGrid",
-             (void (MappedSegments::*)(const std::function<int(double, double, double)> &, Vector3d, Vector3d, Vector3d, bool,
-                                       bool))&MappedSegments::setSoilGrid,
-             py::arg("s"), py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
-        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true,
-             py::arg("noChanges") = false)
+        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double, double, double)> &, bool))&MappedSegments::setSoilGrid, py::arg("s"), py::arg("noChanges") = false)
+        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double, double, double)> &, Vector3d, Vector3d, Vector3d, bool, bool))&MappedSegments::setSoilGrid, py::arg("s"),
+             py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
+        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
         .def("mapSegments", &MappedSegments::mapSegments)
         .def("cutSegments", &MappedSegments::cutSegments)
         .def_readwrite("soil_index", &MappedSegments::soil_index)
@@ -1156,13 +1116,12 @@ PYBIND11_MODULE(plantbox, m) {
         .def(py::init<>())
         .def(py::init<std::shared_ptr<MappedSegments>>())
         .def("segOuterRadii", &Perirhizal::segOuterRadii, py::arg("type"), py::arg("vols") = std::vector<double>(0))
-        .def("adapt_values", &Perirhizal::adapt_values, py::arg("val_new_"), py::arg("minVal_"), py::arg("maxVal_") = -1., py::arg("volumes_"),
-             py::arg("divideEqually_"), py::arg("verbose_"))
+        .def("adapt_values", &Perirhizal::adapt_values, py::arg("val_new_"), py::arg("minVal_"), py::arg("maxVal_") = -1., py::arg("volumes_"), py::arg("divideEqually_"), py::arg("verbose_"))
         .def("distributeValSolute_", &Perirhizal::distributeValSolute_, py::arg("seg_values_content"), py::arg("volumes"), py::arg("source"), py::arg("dt"))
-        .def("distributeValWater_", &Perirhizal::distributeValWater_, py::arg("seg_values_perVol"), py::arg("volumes"), py::arg("source"), py::arg("dt"),
-             py::arg("theta_S"), py::arg("theta_wilting_point"))
-        .def("splitSoilVals_", &Perirhizal::splitSoilVals, py::arg("soilVals"), py::arg("cellIds"), py::arg("isWater"), py::arg("seg_values"),
-             py::arg("seg_volume"), py::arg("dt"), py::arg("theta_S"), py::arg("theta_wilting_point"))
+        .def("distributeValWater_", &Perirhizal::distributeValWater_, py::arg("seg_values_perVol"), py::arg("volumes"), py::arg("source"), py::arg("dt"), py::arg("theta_S"),
+             py::arg("theta_wilting_point"))
+        .def("splitSoilVals_", &Perirhizal::splitSoilVals, py::arg("soilVals"), py::arg("cellIds"), py::arg("isWater"), py::arg("seg_values"), py::arg("seg_volume"), py::arg("dt"), py::arg("theta_S"),
+             py::arg("theta_wilting_point"))
         .def("sumSegFluxes", &Perirhizal::sumSegFluxes)
         .def("splitSoilFluxes", &Perirhizal::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
         .def_readwrite("ms", &Perirhizal::ms);
@@ -1176,17 +1135,12 @@ PYBIND11_MODULE(plantbox, m) {
         .def(py::init<>())
         .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
         .def("setMode", &PlantHydraulicParameters::setMode)
-        .def("setKrConst", &PlantHydraulicParameters::setKrConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root,
-             py::arg("kr_length") = -1.)
+        .def("setKrConst", &PlantHydraulicParameters::setKrConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root, py::arg("kr_length") = -1.)
         .def("setKxConst", &PlantHydraulicParameters::setKxConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root)
-        .def("setKrAgeDependent", &PlantHydraulicParameters::setKrAgeDependent, py::arg("age"), py::arg("values"), py::arg("subType"),
-             py::arg("organType") = Organism::ot_root)
-        .def("setKxAgeDependent", &PlantHydraulicParameters::setKxAgeDependent, py::arg("age"), py::arg("values"), py::arg("subType"),
-             py::arg("organType") = Organism::ot_root)
-        .def("setKrDistanceDependent", &PlantHydraulicParameters::setKrDistanceDependent, py::arg("distance"), py::arg("values"), py::arg("subType"),
-             py::arg("organType") = Organism::ot_root)
-        .def("setKxDistanceDependent", &PlantHydraulicParameters::setKxDistanceDependent, py::arg("distance"), py::arg("values"), py::arg("subType"),
-             py::arg("organType") = Organism::ot_root)
+        .def("setKrAgeDependent", &PlantHydraulicParameters::setKrAgeDependent, py::arg("age"), py::arg("values"), py::arg("subType"), py::arg("organType") = Organism::ot_root)
+        .def("setKxAgeDependent", &PlantHydraulicParameters::setKxAgeDependent, py::arg("age"), py::arg("values"), py::arg("subType"), py::arg("organType") = Organism::ot_root)
+        .def("setKrDistanceDependent", &PlantHydraulicParameters::setKrDistanceDependent, py::arg("distance"), py::arg("values"), py::arg("subType"), py::arg("organType") = Organism::ot_root)
+        .def("setKxDistanceDependent", &PlantHydraulicParameters::setKxDistanceDependent, py::arg("distance"), py::arg("values"), py::arg("subType"), py::arg("organType") = Organism::ot_root)
         .def("setKrValues", &PlantHydraulicParameters::setKrValues)
         .def("setKxValues", &PlantHydraulicParameters::setKxValues)
         .def("getKr", &PlantHydraulicParameters::getKr)
@@ -1211,8 +1165,7 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<PlantHydraulicModel, std::shared_ptr<PlantHydraulicModel>>(m, "PlantHydraulicModel")
         .def(py::init<std::shared_ptr<MappedSegments>, std::shared_ptr<PlantHydraulicParameters>>())
-        .def("linearSystemMeunier", &PlantHydraulicModel::linearSystemMeunier, py::arg("simTime"), py::arg("sx"), py::arg("cells") = true,
-             py::arg("soil_k") = std::vector<double>())
+        .def("linearSystemMeunier", &PlantHydraulicModel::linearSystemMeunier, py::arg("simTime"), py::arg("sx"), py::arg("cells") = true, py::arg("soil_k") = std::vector<double>())
         .def("getRadialFluxes", &PlantHydraulicModel::getRadialFluxes)
         .def("sumSegFluxes", &PlantHydraulicModel::sumSegFluxes)
         .def_readwrite("ms", &PlantHydraulicModel::ms)
@@ -1226,11 +1179,10 @@ PYBIND11_MODULE(plantbox, m) {
      * Photosynthesis.h
      */
     py::class_<Photosynthesis, PlantHydraulicModel, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
-        .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, std::shared_ptr<PlantHydraulicParameters>, double, double>(), py::arg("plant"),
-             py::arg("params"), py::arg("psiXylInit") = -500.0, py::arg("ciInit") = 350e-6)
-        .def("solve_photosynthesis", &Photosynthesis::solve_photosynthesis, py::arg("sim_time"), py::arg("sxx"), py::arg("ea"), py::arg("es"),
-             py::arg("TleafK"), py::arg("cells") = true, py::arg("soil_k") = std::vector<double>(), py::arg("doLog") = false, py::arg("verbose") = true,
-             py::arg("outputDir") = "")
+        .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, std::shared_ptr<PlantHydraulicParameters>, double, double>(), py::arg("plant"), py::arg("params"), py::arg("psiXylInit") = -500.0,
+             py::arg("ciInit") = 350e-6)
+        .def("solve_photosynthesis", &Photosynthesis::solve_photosynthesis, py::arg("sim_time"), py::arg("sxx"), py::arg("ea"), py::arg("es"), py::arg("TleafK"), py::arg("cells") = true,
+             py::arg("soil_k") = std::vector<double>(), py::arg("doLog") = false, py::arg("verbose") = true, py::arg("outputDir") = "")
         .def_readwrite("PhotoType", &Photosynthesis::PhotoType)
         .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
         .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
@@ -1303,18 +1255,15 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readonly("R_ph", &Photosynthesis::R_ph)
         .def_readonly("Mh2o", &Photosynthesis::Mh2o);
 
-    py::enum_<Photosynthesis::PhotoTypes>(m, "PhotoTypes")
-        .value("C3", Photosynthesis::PhotoTypes::C3)
-        .value("C4", Photosynthesis::PhotoTypes::C4)
-        .export_values();
+    py::enum_<Photosynthesis::PhotoTypes>(m, "PhotoTypes").value("C3", Photosynthesis::PhotoTypes::C3).value("C4", Photosynthesis::PhotoTypes::C4).export_values();
 
 #ifdef ENABLE_PIAFMUNCH
     /*
      * runPM.h
      */
     py::class_<PhloemFlux, Photosynthesis, std::shared_ptr<PhloemFlux>>(m, "PhloemFlux")
-        .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, std::shared_ptr<PlantHydraulicParameters>, double, double>(), py::arg("plant"),
-             py::arg("params"), py::arg("psiXylInit"), py::arg("ciInit"))
+        .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, std::shared_ptr<PlantHydraulicParameters>, double, double>(), py::arg("plant"), py::arg("params"), py::arg("psiXylInit"),
+             py::arg("ciInit"))
         .def("waterLimitedGrowth", &PhloemFlux::waterLimitedGrowth)
         .def("setKr_st", &PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length") = -1.0, py::arg("verbose") = false)
         .def("setKx_st", &PhloemFlux::setKx_st, py::arg("values"), py::arg("verbose") = false)
