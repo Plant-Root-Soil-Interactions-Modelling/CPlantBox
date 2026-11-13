@@ -296,12 +296,18 @@ void Organ::addNode(Vector3d n, double t) { addNode(n, plant.lock()->getNodeInde
  */
 void Organ::insertNode(Vector3d n, double t, size_t index) {
     nodes.insert(nodes.begin() + index, n);
-    nodeIds.push_back(plant.lock()->getNodeIndex());
+    nodeIds.push_back(
+        plant.lock()->getNodeIndex()); // The organism-level node bookkeeping assumes that the global IDs of new nodes sit at the tail of an organ's nodeIds, after the oldNumberOfNodes old one
+    /*
+    nodeIds.insert(nodeIds.begin() + index, plant.lock()->getNodeIndex());
+    would be conceptually cleaner but needs the four functions in Organism.cpp (getUpdatedNodeIndices, getUpdatedNodes, getUpdatedNodeCTs, getNewNodes/getNewNodeCTs) reworked.
+    They'd have to track which local nodes are new by ID, not by position.
+    */
     nodeCTs.insert(nodeCTs.begin() + index, t);
     for (auto kid : children) { // if carries children after the added node, update their "parent node index"
-        if ((kid->getParentNI() >= index - 1) && (kid->getParentNI() > 0)) {
+        if ((kid->getParentNI() >= index) && (kid->getParentNI() > 0)) {
             kid->incParentNI();
-            kid->nodeIds.at(0) = kid->getParent()->getNodeId(kid->getParentNI());
+            kid->nodeIds.at(0) = this->getNodeId(kid->getParentNI());
         }
     }
 }

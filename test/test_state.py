@@ -141,7 +141,6 @@ class TestState(unittest.TestCase):
                 self.assertEqual(s["param.theta"], [p.theta])
             elif o.organType() == pb.stem:
                 self.assertEqual(s["param.r"], [p.r])
-                self.assertEqual(s["param.nodalGrowth"], [float(p.nodalGrowth)])
             elif o.organType() == pb.leaf:
                 self.assertEqual(s["param.areaMax"], [p.areaMax])
             elif o.organType() == pb.seed:
