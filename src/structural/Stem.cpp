@@ -328,14 +328,15 @@ void Stem::createSegments(double l, double dt, int phytoIdx) {
         Vector3d newnode = getIncrement(p, h, sdx);                            // relative coordinate
         double et = this->calcCreationTime(getLength(true) + shiftl + sl, dt); // here length or getLength? it's the same because epsilonDx was set back to 0 at beginning of simulate?
         if (elongation) {
-            insertNode(newnode, et, nn);
             // std::cout << "Inserted node at index " << phytoIdx << ", " << nn << ", " << et << ", " << sl << std::flush << std::endl;
+            insertNode(newnode, et, nn);
+            // insertion point p and heading h remain unchanged
         } else {
             addNode(newnode, et);
+            Vector3d s = Matrix3d::ons(h).times(newnode); // absolute segment vector
+            p = p.plus(s);                                // update position and heading
+            h = s.normalized();
         }
-        Vector3d s = Matrix3d::ons(h).times(newnode); // absolute segment vector
-        p = p.plus(s);
-        h = s.normalized();
     }
 }
 
