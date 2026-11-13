@@ -366,9 +366,9 @@ void StemRandomParameter::bindParameters() {
     bindParameter("lmax", &lmax, "Maximal stem length [cm]", &lmaxs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
     bindParameter("a", &a, "Stem radius [cm]", &as);
-    bindParameter("rotBeta", &rotBeta, "RevRotation of the stem");
-    bindParameter("betaDev", &betaDev, "RevRotation deviation");
-    bindParameter("initBeta", &initBeta, "Initial RevRotation");
+    bindParameter("RotBeta", &rotBeta, "RevRotation of the stem");
+    bindParameter("BetaDev", &betaDev, "RevRotation deviation");
+    bindParameter("InitBeta", &initBeta, "Initial RevRotation");
     bindParameter("tropismT", &tropismT, "Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of stem tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of stem tropism [1/cm]");
@@ -376,7 +376,7 @@ void StemRandomParameter::bindParameters() {
     bindParameter("theta", &theta, "Angle between stem and parent stem [rad]", &thetas);
     bindParameter("rlt", &rlt, "Stem life time [day]", &rlts);
     bindParameter("gf", &gf, "Growth function number [1]", &rlts);
-    bindParameter("internodeGrowth", &internodeGrowth, "nodal growth function (sequential = 0, equal = 0)");
+    bindParameter("nodalGrowth", &nodalGrowth, "nodal growth function (sequential = 0, equal = 0)");
     bindParameter("delayNGStart", &delayNGStart, "delay between stem creation and start of nodal growth", &delayNGStarts);
     bindParameter("delayNGEnd", &delayNGEnd, "delay between stem creation and start of nodal growth", &delayNGEnds);
 }

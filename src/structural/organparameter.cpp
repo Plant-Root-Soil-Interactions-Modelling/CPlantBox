@@ -215,16 +215,6 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement *element, bool verbose) 
         const char *str = p->Attribute("name");
         if (str != nullptr) {
             std::string key = std::string(str);
-            static const std::map<std::string, std::string> legacyNames = {{"RotBeta", "rotBeta"},     {"BetaDev", "betaDev"},           {"InitBeta", "initBeta"},
-                                                                           {"nodalGrowth", "internodeGrowth"}, {"Width_blade", "width_blade"}, {"Width_petiole", "width_petiole"},
-                                                                           {"multDelay", "sequentialDelay"}};
-            auto legacy = legacyNames.find(key);
-            if ((legacy != legacyNames.end()) && (iparam.count(key) == 0) && (dparam.count(key) == 0)) { // backward compatibility with old parameter files
-                if (verbose) {
-                    std::cout << "OrganRandomParameter::readXML: parameter " << key << " was renamed to " << legacy->second << "\n" << std::flush;
-                }
-                key = legacy->second;
-            }
             int i = 0;
             if (iparam.count(key) > 0) {
                 *iparam[key] = p->IntAttribute("value", *iparam[key]); // if not found, leave default
@@ -522,7 +512,7 @@ void OrganRandomParameter::bindParameters() {
     bindParameter("dx", &dx, "Axial resolution [cm] (maximal segment size)");
     bindParameter("dxMin", &dxMin, "Axial resolution [cm] (minimal segment size)");
     bindParameter("ldelay", &ldelay, "Lateral emergence delay [day]", &ldelays);
-    bindParameter("sequentialDelay", &sequentialDelay, "Delay multiplier between each consecutive lateral (0 all at once, 1 sequential)");
+    bindParameter("multDelay", &multDelay, "Delay multiplier between each consecutive lateral (0 all at once, 1 sequential)");
     // other parameters (descriptions only)
     description["name"] = "Name of the sub type of the organ, e.g. small lateral";
     // other parameters (descriptions only)

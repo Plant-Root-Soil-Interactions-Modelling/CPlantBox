@@ -309,8 +309,8 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize() {
     p->laterals = hasLaterals;
     p->ln = ln_;
     p->r = std::max(r + pl->randn() * rs, 0.);
-    p->width_blade = std::max(width_blade + pl->randn() * width_blades, 0.);
-    p->width_petiole = std::max(width_petiole + pl->randn() * width_petioles, 0.);
+    p->width_blade = std::max(Width_blade + pl->randn() * Width_blades, 0.);
+    p->width_petiole = std::max(Width_petiole + pl->randn() * Width_petioles, 0.);
     p->theta = std::max(theta + pl->randn() * thetas, 0.);
     p->rlt = std::max(rlt + pl->randn() * rlts, 0.);
     p->areaMax = std::max(areaMax + pl->randn() * areaMaxs, 0.);
@@ -438,17 +438,17 @@ tinyxml2::XMLElement *LeafRandomParameter::writeXML(tinyxml2::XMLDocument &doc, 
 void LeafRandomParameter::bindParameters() {
     OrganRandomParameter::bindParameters();
     bindParameter("shapeType", &shapeType, "Leaf shape type for definition of area and volume (cylinder = 0, cuboid = 1, user-defined 2D shape= 2)");
-    bindParameter("width_petiole", &width_petiole, "Width of petiole [cm]", &width_petioles); // when leaf defined as a cuboid
-    bindParameter("width_blade", &width_blade, "Width of blade [cm]", &width_blades);         // when leaf defined as a cuboid
+    bindParameter("Width_petiole", &Width_petiole, "Width of petiole [cm]", &Width_petioles); // when leaf defined as a cuboid
+    bindParameter("Width_blade", &Width_blade, "Width of blade [cm]", &Width_blades);         // when leaf defined as a cuboid
     bindParameter("lb", &lb, "Petiole length [cm]", &lbs);
     bindParameter("la", &la, "Leaf blade length [cm]", &las);
     bindParameter("ln", &ln, "Distance between sub leaves[cm]", &lns);
     bindParameter("lmax", &lmax, "Maximal leaf length [cm]", &lmaxs);
     bindParameter("areaMax", &areaMax, "Maximal leaf area [cm2]", &areaMaxs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
-    bindParameter("rotBeta", &rotBeta, "RevRotation of the leaf");
-    bindParameter("betaDev", &betaDev, "RevRotation deviation");
-    bindParameter("initBeta", &initBeta, "Initial RevRotation");
+    bindParameter("RotBeta", &rotBeta, "RevRotation of the leaf");
+    bindParameter("BetaDev", &betaDev, "RevRotation deviation");
+    bindParameter("InitBeta", &initBeta, "Initial RevRotation");
     bindParameter("tropismT", &tropismT, "Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of leaf tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of leaf tropism [1/cm]");

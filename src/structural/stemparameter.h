@@ -83,7 +83,7 @@ class StemRandomParameter : public OrganRandomParameter {
     double rlt = 1e9;           ///< Stem life time (days)
     double rlts = 0.;           ///< Standard deviation stem life time (days)
     int gf = 1;                 ///< Growth function (1=negative exponential, 2=linear)
-    double internodeGrowth = 1; ///< whether to implement the internodal growth (see @stem::simulate)
+    double nodalGrowth = 1; ///< whether to implement the internodal growth (see @stem::simulate)
     double delayNGStart = 0.;   ///< delay between stem creation and start of nodal growth [day]
     double delayNGStarts = 0.;  ///< delay between stem creation and start of nodal growth, deviation [day]
     double delayNGEnd = 0.;     ///< delay between stem creation and start of nodal growth [day]

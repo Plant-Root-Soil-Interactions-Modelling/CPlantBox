@@ -49,9 +49,9 @@ class TestStem(unittest.TestCase):
         p0.successorP = [[1.0]]
 
         if phytomereGrowth == "sequential":
-            p0.internodeGrowth = 0
+            p0.nodalGrowth = 0
         if phytomereGrowth == "equal":
-            p0.internodeGrowth = 1
+            p0.nodalGrowth = 1
 
         p1 = pb.StemRandomParameter(self.plant)
         p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.dxMin = "lateral", 5, 5.0, 2.0, 1, 0.5
@@ -360,9 +360,9 @@ class TestStem(unittest.TestCase):
         p0.successor = [[5]]
         p0.successorP = [[1.0]]
         if phytomereGrowth == "sequential":
-            p0.internodeGrowth = 0
+            p0.nodalGrowth = 0
         if phytomereGrowth == "equal":
-            p0.internodeGrowth = 1
+            p0.nodalGrowth = 1
 
         p1 = pb.StemRandomParameter(self.plant)
         p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.dxMin = "lateral", 5, 5.0, 2.0, 1, 0.5

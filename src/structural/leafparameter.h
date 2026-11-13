@@ -96,10 +96,10 @@ class LeafRandomParameter : public OrganRandomParameter {
     double thetas = 0.;         ///< Standard deviation angle between leafvein and parent leafvein (rad)
     double rlt = 1.e9;          ///< Leaf life time (days)
     double rlts = 0.;           ///< Standard deviation of leaf life time (days)
-    double width_blade = 0.;    ///< width of leafe blade (cm) = length - lb zone. define later a width growth rate?
-    double width_blades = 0.;   ///< Standard deviation of leaf blade width (cm)
-    double width_petiole = 0.;  ///< width of leafe petiole (cm) = lb zone. define later a width growth rate?
-    double width_petioles = 0.; ///< Standard deviation of leaf petiole width (cm)
+    double Width_blade = 0.;    ///< width of leafe blade (cm) = length - lb zone. define later a width growth rate?
+    double Width_blades = 0.;   ///< Standard deviation of leaf blade width (cm)
+    double Width_petiole = 0.;  ///< width of leafe petiole (cm) = lb zone. define later a width growth rate?
+    double Width_petioles = 0.; ///< Standard deviation of leaf petiole width (cm)
     int gf = 1;                 ///< Growth function (1=negative exponential, 2=linear)
     int isPseudostem = 0;       ///< do the leaf sheaths make a pseudostem? (0 false, 1 true)
 
