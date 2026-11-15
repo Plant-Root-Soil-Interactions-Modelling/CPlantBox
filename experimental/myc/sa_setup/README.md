@@ -10,7 +10,7 @@ Petrischalen-Setup von `petridishsimauto.py` (Oyarte Galvez et al. 2025) mit
 | Datei | Was |
 |---|---|
 | `config.py` | **Faktorbereiche** (außer v und CV(v) noch ±25 % Platzhalter), ggf. `HOURS_HYPHAE`, `SNAPSHOT_HOURS` |
-| `slurm/*.sbatch` | Umgebung laden (module/venv mit plantbox, SALib, scikit-learn, networkx), ggf. Partition/Account, Speicher |
+| `slurm/*.sbatch` | aktivieren `~/cpbenv` (braucht zusätzlich SALib, scikit-learn, networkx), Partition `cpu256`; ggf. Zeit/Speicher |
 
 `model_hook.py` ruft `AMFSimulationSetup.makeSimulation` mit dem Parameterfile des Laufs auf
 und speichert die Größen je Ring und Stunde wie `petridishsimauto.py` (`raw.npz`).
@@ -18,23 +18,43 @@ und speichert die Größen je Ring und Stunde wie `petridishsimauto.py` (`raw.np
 
 ## Ablauf
 
+Die Jobs werden wie die Petrischalen-Läufe aus dem **Home-Verzeichnis** eingereicht. Einmalig:
+
 ```bash
+cd ~
+cp CPlantBox/experimental/myc/sa_setup/slurm/{smoke,sim,eval,collect}.sbatch .
+cp CPlantBox/experimental/myc/sa_setup/slurm/submit.sh submit_sa.sh
+source cpbenv/bin/activate && pip install SALib scikit-learn networkx
+mkdir -p slurmOut slurmErr
+```
+
+Die Python-Schritte laufen in `sa_setup`, das Einreichen im Home-Verzeichnis
+(Ausgaben der Jobs in `slurmOut/`, `slurmErr/`):
+
+```bash
+cd ~/CPlantBox/experimental/myc/sa_setup
 python3 check_config.py                      # Bereiche, Nominalwerte, Laufanzahl, CPU-Stunden
 
 # ---- Smoke-Test: 3 echte Läufe (nominal, alle Faktoren unten, alle oben) ----
-mkdir -p logs && sbatch slurm/smoke.sbatch   # oder lokal: python3 smoke_test.py nominal --quick
+cd ~ && sbatch smoke.sbatch                  # oder lokal: python3 smoke_test.py nominal --quick
+cd ~/CPlantBox/experimental/myc/sa_setup
 python3 smoke_test.py --report               # alles OK? Laufzeit und Speicher -> sim.sbatch
 
 # ---- Phase 0: Rauschen, dx-Konvergenz, Stichprobe des Faktorraums (100 Läufe) ----
 python3 design.py phase0
-bash slurm/submit.sh results/design_phase0.csv
+cd ~ && bash submit_sa.sh results/design_phase0.csv   # Designpfad relativ zu sa_setup
+cd ~/CPlantBox/experimental/myc/sa_setup
 python3 analyze_phase0.py                    # nach Abschluss
 
 # ---- Phase 1: Morris (r × (k+1) × R Läufe) ----
 python3 design.py morris
-bash slurm/submit.sh results/design_morris.csv
+cd ~ && bash submit_sa.sh results/design_morris.csv
+cd ~/CPlantBox/experimental/myc/sa_setup
 python3 analyze_morris.py
 ```
+
+Liegt CPlantBox woanders, `SA_DIR=/pfad/zu/sa_setup` vor `sbatch` bzw. `bash submit_sa.sh` setzen.
+Nach Änderungen an den sbatch-Dateien im Repo die Kopien im Home-Verzeichnis erneuern.
 
 Lokal testen ohne Cluster und ohne echtes Modell:
 
@@ -45,12 +65,12 @@ python3 run_one.py results/design_phase0.csv 0-4
 python3 evaluate.py results/design_phase0.csv 0-4
 ```
 
-**Abgebrochene Läufe** (Timeout, Knotenausfall): `submit.sh` einfach erneut aufrufen,
+**Abgebrochene Läufe** (Timeout, Knotenausfall): `submit_sa.sh` einfach erneut aufrufen,
 fertige Läufe werden übersprungen. `results/status_*.csv` zeigt, was fehlt. Läufe ohne t*
 nach `MAX_WAIT_DAYS` zählen als fehlgeschlagen (Fehlermeldung in `runs/<id>/meta.json`).
 
 **Neue Outputs / andere Zeitpunkte:** `evaluate.py` bzw. `config.SNAPSHOT_HOURS` ändern, dann
-`bash slurm/submit.sh <design> --eval-only`. Keine Neusimulation nötig, `raw.npz` enthält
+`cd ~ && bash submit_sa.sh <design> --eval-only`. Keine Neusimulation nötig, `raw.npz` enthält
 alle Größen je Ring und Stunde. Für Netzwerkgrößen (`AMFNetwork.py`) braucht es die
 Geometrie: dafür `SAVE_VTP = True` setzen.
 

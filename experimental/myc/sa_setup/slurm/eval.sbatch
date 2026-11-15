@@ -1,12 +1,20 @@
 #!/bin/bash
+#
+# Auswertung eines Laufs je Array-Task, eingereicht von submit_sa.sh aus dem Home-Verzeichnis.
+#
 #SBATCH --job-name=sa_eval
-#SBATCH --time=00:30:00
-#SBATCH --mem=4G
+#SBATCH --ntasks=1
+#SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
-#SBATCH --output=logs/%x_%A_%a.out
+#SBATCH --partition=cpu256
+#SBATCH --time=0:30:00
+#SBATCH --mem=4G
+#SBATCH --output=./slurmOut/sa_eval-%A_%a.out
+#SBATCH --error=./slurmErr/sa_eval-%A_%a.err
 
 set -euo pipefail
-cd "$SLURM_SUBMIT_DIR"
-# TODO: gleiche Umgebung wie in sim.sbatch laden
+source "$HOME/cpbenv/bin/activate"
+cd "${SA_DIR:-$HOME/CPlantBox/experimental/myc/sa_setup}"
+export MPLBACKEND=Agg
 
-python evaluate.py "$DESIGN" "$SLURM_ARRAY_TASK_ID" ${FORCE:-}
+python3 evaluate.py "$DESIGN" "$SLURM_ARRAY_TASK_ID" ${FORCE:-}
