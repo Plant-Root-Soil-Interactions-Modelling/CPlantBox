@@ -31,9 +31,8 @@ def _set_value(p, new_value):
         p.set("dev", repr(float(p.get("dev")) * new_value / old))
 
 
-def _set_successor_p(hy, p_first):
-    succ = next(q for q in hy.iter("parameter") if q.get("name") == "successor")
-    succ.set("percentage", f"{p_first:.6g}, {1 - p_first:.6g}")
+def _set_cv(p, cv):
+    p.set("dev", repr(float(cv) * float(p.get("value"))))
 
 
 def write_xml(values: dict, out_path: Path, dx: float | None = None, template=None):
@@ -41,13 +40,15 @@ def write_xml(values: dict, out_path: Path, dx: float | None = None, template=No
     tree = _parse(template or config.TEMPLATE_XML)
     root = tree.getroot()
     fmap = {f.name: f for f in config.FACTORS}
-    for name, val in values.items():
-        f = fmap[name]
-        hy = _hyphae(root, f.subtype)
-        if f.param == "percentage":
-            _set_successor_p(hy, val)
-        else:
-            _set_value(_param(hy, f.param), val)
+    # erst alle Werte, dann v_cv: dev von v bezieht sich auf das bereits gesetzte v
+    for name in sorted(values, key=lambda n: fmap[n].param == "v_cv"):
+        f, val = fmap[name], values[name]
+        for st in f.subtypes:
+            hy = _hyphae(root, st)
+            if f.param == "v_cv":
+                _set_cv(_param(hy, "v"), val)
+            else:
+                _set_value(_param(hy, f.param), val)
     if dx is not None:                       # nur Phase 0 (Konvergenztest)
         for hy in root.iter("hyphae"):
             _param(hy, "dx").set("value", repr(float(dx)))
@@ -57,14 +58,14 @@ def write_xml(values: dict, out_path: Path, dx: float | None = None, template=No
 
 
 def nominal_values(template=None):
-    """Liest die Nominalwerte aller Faktoren aus der Template-XML."""
+    """Liest die Nominalwerte aller Faktoren aus der Template-XML (gemeinsame Faktoren: erster subType)."""
     root = _parse(template or config.TEMPLATE_XML).getroot()
     out = {}
     for f in config.FACTORS:
-        hy = _hyphae(root, f.subtype)
-        if f.param == "percentage":
-            succ = next(q for q in hy.iter("parameter") if q.get("name") == "successor")
-            out[f.name] = float(succ.get("percentage").split(",")[0])
+        hy = _hyphae(root, f.subtypes[0])
+        if f.param == "v_cv":
+            p = _param(hy, "v")
+            out[f.name] = float(p.get("dev") or 0) / float(p.get("value"))
         else:
             out[f.name] = float(_param(hy, f.param).get("value"))
     return out

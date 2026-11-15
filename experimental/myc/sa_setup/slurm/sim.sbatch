@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=sa_sim
-#SBATCH --time=00:30:00          # max. Laufzeit EINES Laufs (+ Puffer)
+#SBATCH --time=04:00:00          # max. Laufzeit EINES Laufs (+ Puffer), Seeds brauchen bis zu 3 h; Phase 0 mit kleinem dx länger
 #SBATCH --mem=4G                 # TODO: nach Phase 0 an echten Bedarf anpassen
 #SBATCH --cpus-per-task=1
 #SBATCH --output=logs/%x_%A_%a.out

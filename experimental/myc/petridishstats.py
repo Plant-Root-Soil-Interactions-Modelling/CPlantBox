@@ -22,7 +22,7 @@ R2_min_length = 0.9   # minimal coefficient of determination of the sigmoid fit 
 R2_min_tips = 0.5     # minimal coefficient of determination of the sigmoid derivative fit of the tip density
 saturation_min = 0.8  # for K1: the length density at the end has to reach this fraction of the fitted saturation (else K1 is extrapolated)
 min_rings = 3         # minimal number of rings per seed for a slope
-v_tip = 0.64 * 1.e4 / 24  # tip elongation rate [um/h], mean of PullerHyphae (0.68 cm/day) and RunnerHyphae (0.60 cm/day), TwoHyphaePlusBAS.xml
+v_tip = 0.576 * 1.e4 / 24  # tip elongation rate [um/h] = 240 um/h (Oyarte Galvez et al. 2025), v of RunnerHyphae and BAS in TwoHyphaePlusBAS.xml
 n_boot = 10000
 rng = np.random.default_rng(1)
 paper = {"K1": 1400.}  # saturation of the filament density [um mm^-2], read from Fig. 2b (dashed line); tip peak there about 0.1-0.2 mm^-2

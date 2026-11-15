@@ -1,7 +1,7 @@
 """
 Erzeugt die Designtabellen (eine Zeile = ein Simulationslauf).
 
-    python design.py phase0     -> results/design_phase0.csv
+    python design.py phase0     -> results/design_phase0.csv (Rauschen, dx, Stichprobe des Faktorraums)
     python design.py morris     -> results/design_morris.csv (+ morris_X.npy)
 
 Danach: `python run_one.py <design.csv> <zeile>` bzw. per SLURM-Array.
@@ -45,6 +45,12 @@ def phase0():
             # gleiche Seeds über alle dx -> Unterschiede sind nicht nur Seed-Rauschen
             rows.append({"run_id": f"p0_dx{dx:g}_{i:03d}", "group": f"dx={dx:g}",
                          "seed": config.BASE_SEED + i, "dx": dx, **nom})
+    # zufällige Punkte im ganzen Faktorraum: wie oft erreicht ein Lauf t* nicht, wie lange dauert er am Rand
+    names = [f.name for f in config.FACTORS]
+    U = np.random.default_rng(config.BASE_SEED).random((config.PHASE0_RANGE_POINTS, len(names)))
+    for i, phys in enumerate(to_physical(U)):
+        rows.append({"run_id": f"p0_range_{i:03d}", "group": "range",
+                     "seed": config.BASE_SEED + 200_000 + i, "dx": np.nan, **dict(zip(names, phys))})
     df = pd.DataFrame(rows)
     path = config.RESULTS_DIR / "design_phase0.csv"
     df.to_csv(path, index=False)

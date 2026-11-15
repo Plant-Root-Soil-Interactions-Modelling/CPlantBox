@@ -1,11 +1,11 @@
 """
-Phase 1: Morris-Auswertung für alle Outputs, Teilbereiche und Zeitpunkte.
+Phase 1: Morris-Auswertung für alle Outputs und Zeitpunkte (h nach t*).
 
     python analyze_morris.py
       -> results/morris_indices.csv     mu*, KI, mu, sigma je (time, region, output, factor)
-      -> results/plots/morris_ranking_t<T>.png    mu* mit 95%-KI, gesamter Zielbereich
+      -> results/plots/morris_ranking_t<T>.png    mu* mit 95%-KI je Output
       -> results/plots/morris_musigma_t<T>.png    mu* vs. sigma (Nichtlinearität/Interaktion)
-      -> results/plots/morris_regions_t<T>.png    mu* je Teilbereich (zeilenweise normiert)
+      -> results/plots/morris_overview.png        mu*_rel für alle Outputs und Zeitpunkte
 
 mu* ist in Output-Einheiten pro Durchlaufen des gesamten Faktorbereichs angegeben
 (normierte Faktoren) und damit zwischen Faktoren, nicht aber zwischen Outputs vergleichbar.
@@ -26,10 +26,14 @@ from design import morris_problem
 KEY = ["time", "region", "output"]
 NAMES = [f.name for f in config.FACTORS]
 ROLE = {f.name: f.role for f in config.FACTORS}
-SUBTYPE = {f.name: f.subtype for f in config.FACTORS}
+GROUP = {f.name: "control" if f.role == "control" else ("shared" if len(f.subtypes) > 1 else
+         config.SUBTYPE_NAMES[f.subtypes[0]].lower()) for f in config.FACTORS}
+SA_OUTPUTS = config.SNAPSHOT_OUTPUTS + config.WAVE_OUTPUTS
 
-# Farben (validiert: Kategorien Puller/Runner, Sequenz für Heatmap)
-C_PULLER, C_RUNNER, C_CTRL = "#2a78d6", "#eb6834", "#8a8a85"
+# Farben (Kategorien Runner/BAS/gemeinsam/Kontrolle, Sequenz für Heatmap)
+COLORS = {"runner": "#2a78d6", "bas": "#eb6834", "shared": "#1b8a6b", "control": "#8a8a85"}
+LABELS = {"runner": "Runner", "bas": "BAS", "shared": "gemeinsam", "control": "Kontrolle"}
+MARKERS = {"runner": "o", "bas": "s", "shared": "D", "control": "X"}
 INK, INK2, GRID = "#1f1f1e", "#5f5e5a", "#e4e3df"
 SEQ = ["#fcfcfb", "#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
 
@@ -45,9 +49,16 @@ def _style(ax):
 
 
 def _color(name):
-    if ROLE[name] == "control":
-        return C_CTRL
-    return C_PULLER if SUBTYPE[name] == 1 else C_RUNNER
+    return COLORS[GROUP[name]]
+
+
+def _grid(n):
+    ncols = min(n, 3)
+    nrows = int(np.ceil(n / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(4.4 * ncols, 4.2 * nrows + 0.6), squeeze=False)
+    for ax in axes.flat[n:]:
+        ax.set_visible(False)
+    return fig, axes.flat
 
 
 def _elementary_effects(X, Y):
@@ -70,6 +81,7 @@ def compute():
     X = np.load(config.RESULTS_DIR / "morris_X.npy").reshape(-1, k + 1, k)   # (r, k+1, k)
     out = pd.read_csv(config.RESULTS_DIR / "outputs_morris.csv").merge(
         design[["run_id", "traj", "step", "rep"]], on="run_id")
+    out = out[out.output.isin(SA_OUTPUTS)]       # Diagnosen ("n_*", wait_days) gehen nicht in die SA
     r, kp1, _ = X.shape
     R = int(design["rep"].max()) + 1
     vals = out.set_index(KEY + ["rep", "traj", "step"])["value"]
@@ -120,11 +132,27 @@ def compute():
     return ind
 
 
+def _outputs_at(ind, t):
+    present = set(ind[ind.time == t].output)
+    return [o for o in SA_OUTPUTS if o in present]
+
+
+def _legend_handles(kind):
+    from matplotlib.patches import Patch
+    from matplotlib.lines import Line2D
+    groups = [g for g in LABELS if g in GROUP.values()]
+    if kind == "bar":
+        return [Patch(color=COLORS[g], label=LABELS[g]) for g in groups] + [
+            Line2D([], [], marker="|", ls="", ms=10, mew=1.5, color=INK, label="2 × Rauschniveau (aus Replikaten)")]
+    return [Line2D([], [], marker=MARKERS[g], ls="", color=COLORS[g], label=LABELS[g]) for g in groups] + [
+        Line2D([], [], color=GRID, label="σ = μ*")]
+
+
 def plot_ranking(ind, t):
-    outs = list(ind.output.unique())
+    outs = _outputs_at(ind, t)
     sub = ind[(ind.time == t) & (ind.region == "all")]
-    fig, axes = plt.subplots(2, 3, figsize=(13, 9), sharey=False)
-    for ax, o in zip(axes.flat, outs):
+    fig, axes = _grid(len(outs))
+    for ax, o in zip(axes, outs):
         d = sub[sub.output == o].sort_values("mu_star")
         y = np.arange(len(d))
         ax.barh(y, d.mu_star, color=[_color(n) for n in d.factor], height=0.6, edgecolor="white", lw=1)
@@ -136,31 +164,23 @@ def plot_ranking(ind, t):
         ax.set_title(o, fontsize=10, color=INK, loc="left")
         ax.set_xlabel("μ*", fontsize=8, color=INK2)
         _style(ax)
-    from matplotlib.patches import Patch
-    from matplotlib.lines import Line2D
-    fig.legend(handles=[Patch(color=C_PULLER, label="Puller"), Patch(color=C_RUNNER, label="Runner"),
-                        Patch(color=C_CTRL, label="Kontrolle"),
-                        Line2D([], [], marker="|", ls="", ms=10, mew=1.5, color=INK,
-                               label="2 × Rauschniveau (aus Replikaten)")],
-               loc="lower center", ncol=4, frameon=False, fontsize=9)
-    fig.suptitle(f"Morris μ* mit 95%-Bootstrap-KI — gesamter Zielbereich, t = {t:g} d",
-                 x=0.01, ha="left", fontsize=12, color=INK)
-    fig.tight_layout(rect=(0, 0.04, 1, 0.97))
+    fig.legend(handles=_legend_handles("bar"), loc="lower center", ncol=5, frameon=False, fontsize=9)
+    fig.suptitle(f"Morris μ* mit 95%-Bootstrap-KI — t = {t:g} h nach t*", x=0.01, ha="left", fontsize=12, color=INK)
+    fig.tight_layout(rect=(0, 0.05, 1, 0.97))
     fig.savefig(config.RESULTS_DIR / "plots" / f"morris_ranking_t{t:g}.png", dpi=150)
     plt.close(fig)
 
 
 def plot_musigma(ind, t, n_label=6):
-    outs = list(ind.output.unique())
+    outs = _outputs_at(ind, t)
     sub = ind[(ind.time == t) & (ind.region == "all")]
-    fig, axes = plt.subplots(2, 3, figsize=(13, 8.5))
-    for ax, o in zip(axes.flat, outs):
+    fig, axes = _grid(len(outs))
+    for ax, o in zip(axes, outs):
         d = sub[sub.output == o]
         for n, row in d.set_index("factor").iterrows():
-            mk = "X" if ROLE[n] == "control" else ("o" if SUBTYPE[n] == 1 else "s")
-            ax.scatter(row.mu_star, row.sigma, s=40, marker=mk, color=_color(n),
+            ax.scatter(row.mu_star, row.sigma, s=40, marker=MARKERS[GROUP[n]], color=_color(n),
                        edgecolor="white", lw=1, zorder=3)
-        lim = max(d.mu_star.max(), d.sigma.max()) * 1.1
+        lim = np.nanmax([d.mu_star.max(), d.sigma.max(), 1e-12]) * 1.1
         ax.plot([0, lim], [0, lim], color=GRID, lw=1, zorder=1)        # σ = μ*
         for _, row in d.nlargest(n_label, "mu_star").iterrows():
             ax.annotate(row.factor, (row.mu_star, row.sigma), xytext=(4, 3),
@@ -169,57 +189,50 @@ def plot_musigma(ind, t, n_label=6):
         ax.set_title(o, fontsize=10, color=INK, loc="left")
         ax.set_xlabel("μ*", fontsize=8, color=INK2); ax.set_ylabel("σ", fontsize=8, color=INK2)
         _style(ax); ax.grid(axis="y", color=GRID, lw=0.6)
-    from matplotlib.lines import Line2D
-    fig.legend(handles=[Line2D([], [], marker="o", ls="", color=C_PULLER, label="Puller"),
-                        Line2D([], [], marker="s", ls="", color=C_RUNNER, label="Runner"),
-                        Line2D([], [], marker="X", ls="", color=C_CTRL, label="Kontrolle"),
-                        Line2D([], [], color=GRID, label="σ = μ*")],
-               loc="lower center", ncol=4, frameon=False, fontsize=9)
-    fig.suptitle(f"Morris μ* vs. σ (σ groß: nichtlinear oder Interaktionen) — t = {t:g} d",
+    fig.legend(handles=_legend_handles("scatter"), loc="lower center", ncol=5, frameon=False, fontsize=9)
+    fig.suptitle(f"Morris μ* vs. σ (σ groß: nichtlinear oder Interaktionen) — t = {t:g} h nach t*",
                  x=0.01, ha="left", fontsize=12, color=INK)
-    fig.tight_layout(rect=(0, 0.04, 1, 0.97))
+    fig.tight_layout(rect=(0, 0.05, 1, 0.97))
     fig.savefig(config.RESULTS_DIR / "plots" / f"morris_musigma_t{t:g}.png", dpi=150)
     plt.close(fig)
 
 
-def plot_regions(ind, t):
+def plot_overview(ind):
+    # alle Outputs und Zeitpunkte in einer Heatmap: Spalte = Output @ Zeitpunkt, Zeile = Faktor
     from matplotlib.colors import LinearSegmentedColormap
     cmap = LinearSegmentedColormap.from_list("seq", SEQ)
-    outs = list(ind.output.unique())
-    regions = list(config.REGIONS)
-    sub = ind[(ind.time == t) & (ind.region.isin(regions))]
-    order = (ind[(ind.time == t) & (ind.region == "all")]
-             .groupby("factor").mu_star_rel.mean().sort_values(ascending=False).index)
-    fig, axes = plt.subplots(1, len(outs), figsize=(2.1 * len(outs) + 1.5, 7), sharey=True)
-    for ax, o in zip(np.atleast_1d(axes), outs):
-        M = (sub[sub.output == o].pivot(index="factor", columns="region", values="mu_star_rel")
-             .reindex(index=order, columns=regions))
-        im = ax.imshow(M.values, cmap=cmap, vmin=0, vmax=1, aspect="auto")
-        ax.set_xticks(range(len(regions)), regions, fontsize=8, color=INK2)
-        ax.set_yticks(range(len(order)), order, fontsize=8, color=INK)
-        ax.set_title(o, fontsize=9, color=INK, loc="left")
-        for s in ax.spines.values():
-            s.set_visible(False)
-        ax.tick_params(length=0)
-    cb = fig.colorbar(im, ax=axes, fraction=0.02, pad=0.02)
-    cb.set_label("μ* / max μ* (je Output und Teilbereich)", fontsize=8, color=INK2)
+    sub = ind[ind.region == "all"].copy()
+    cols = [(o, t) for o in SA_OUTPUTS for t in sorted(sub.time.unique()) if ((sub.output == o) & (sub.time == t)).any()]
+    sub["col"] = list(zip(sub.output, sub.time))
+    order = sub.groupby("factor").mu_star_rel.mean().sort_values(ascending=False).index
+    M = sub.pivot_table(index="factor", columns="col", values="mu_star_rel").reindex(index=order, columns=cols)
+    fig, ax = plt.subplots(figsize=(0.55 * len(cols) + 2.5, 0.38 * len(order) + 2))
+    im = ax.imshow(M.values, cmap=cmap, vmin=0, vmax=1, aspect="auto")
+    ax.set_xticks(range(len(cols)), [f"{o} @ {t:g} h" for o, t in cols], rotation=60, ha="right", fontsize=8, color=INK2)
+    ax.set_yticks(range(len(order)), order, fontsize=8, color=INK)
+    for lbl in ax.get_yticklabels():
+        lbl.set_color(_color(lbl.get_text()))
+    for s in ax.spines.values():
+        s.set_visible(False)
+    ax.tick_params(length=0)
+    cb = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
+    cb.set_label("μ* / max μ* (je Output und Zeitpunkt)", fontsize=8, color=INK2)
     cb.outline.set_visible(False)
-    fig.suptitle(f"Relative Sensitivität je Teilbereich — t = {t:g} d", x=0.01, ha="left",
-                 fontsize=12, color=INK)
-    fig.savefig(config.RESULTS_DIR / "plots" / f"morris_regions_t{t:g}.png", dpi=150, bbox_inches="tight")
+    ax.set_title("Relative Sensitivität aller Outputs (Wellengrößen über das ganze Fenster)", loc="left", fontsize=11, color=INK)
+    fig.savefig(config.RESULTS_DIR / "plots" / "morris_overview.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 
 def main():
     (config.RESULTS_DIR / "plots").mkdir(parents=True, exist_ok=True)
     ind = compute()
-    for t in config.SNAPSHOT_TIMES:
-        plot_ranking(ind, t); plot_musigma(ind, t); plot_regions(ind, t)
-    t = max(config.SNAPSHOT_TIMES)
-    sub = ind[(ind.time == t) & (ind.region == "all")]
+    for t in sorted(ind.time.unique()):
+        plot_ranking(ind, t); plot_musigma(ind, t)
+    plot_overview(ind)
+    sub = ind[ind.region == "all"]
     top = (sub[~sub.in_noise].groupby("factor").mu_star_rel.max().sort_values(ascending=False))
-    print(f"\nFaktoren über dem Rauschniveau in mind. einem Output (t = {t:g}, gesamter Bereich),"
-          f"\nWert = größtes relatives μ* über die Outputs:")
+    print("\nFaktoren über dem Rauschniveau in mind. einem Output und Zeitpunkt,"
+          "\nWert = größtes relatives μ* über Outputs und Zeitpunkte:")
     print(top.round(2).to_string())
     rest = sorted(set(NAMES) - set(top.index))
     print(f"\nIn keinem Output über dem Rauschniveau: {', '.join(rest) or '-'}")

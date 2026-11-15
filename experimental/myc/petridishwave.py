@@ -24,7 +24,7 @@ R2_min_length = 0.9  # as in petridishstats.py
 R2_min_tips = 0.5
 R2_min_space = 0.5   # minimal R2 of the bell fit of n(r) at one time
 min_points = 3       # minimal number of rings (or times) per seed for a velocity or trend
-v_tip = 0.64 * 10    # tip elongation rate [mm/day], mean of PullerHyphae and RunnerHyphae, TwoHyphaePlusBAS.xml
+v_tip = 0.576 * 10    # tip elongation rate [mm/day] = 240 um/h (Oyarte Galvez et al. 2025), v of RunnerHyphae and BAS in TwoHyphaePlusBAS.xml
 
 simulations = amfio.load_petridish_results(out["densities"] + "seed_*.npz")
 if not simulations:

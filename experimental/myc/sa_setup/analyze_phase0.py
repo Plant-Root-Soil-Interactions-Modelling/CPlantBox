@@ -5,6 +5,7 @@ Phase 0: Seed-Rauschen und dx-Konvergenz am Nominalpunkt.
       -> results/phase0_noise.csv   Mittel, SD, CV, Anteil Nullen je Output
                                     + Rauschniveau der Elementary Effects für R = 1..5
       -> results/phase0_dx.csv      relative Abweichung je dx gegenüber feinstem dx
+      -> results/phase0_status.csv  Anteil Läufe mit t* und Laufzeit je Gruppe (range: Stichprobe des Faktorraums)
 """
 import numpy as np
 import pandas as pd
@@ -57,9 +58,19 @@ def main():
     dxt = pd.DataFrame(rows)
     dxt.to_csv(config.RESULTS_DIR / "phase0_dx.csv", index=False)
 
+    # ---------- Stichprobe des Faktorraums: Abbrüche und Laufzeit ----------
+    status = pd.read_csv(config.RESULTS_DIR / "status_phase0.csv").merge(design[["run_id", "group"]], on="run_id")
+    status["group"] = status["group"].where(~status["group"].str.startswith("dx="), "dx")
+    rng_tab = status.groupby("group").agg(n=("status", "size"), ok=("status", lambda s: int((s == "ok").sum())),
+                                          sim_h_median=("sim_seconds", lambda s: s.median() / 3600),
+                                          sim_h_max=("sim_seconds", lambda s: s.max() / 3600))
+    rng_tab.to_csv(config.RESULTS_DIR / "phase0_status.csv")
+
     # ---------- Kurzbericht ----------
-    t_end = max(config.SNAPSHOT_TIMES)
-    print(f"\nSeed-Rauschen am Nominalpunkt (t = {t_end}, gesamter Zielbereich):")
+    t_end = max(config.SNAPSHOT_HOURS)
+    print("\nLäufe je Gruppe (ok = t* erreicht und ausgewertet), Laufzeit der Simulation [h]:")
+    print(rng_tab.round(2).to_string())
+    print(f"\nSeed-Rauschen am Nominalpunkt (t = {t_end} h nach t*):")
     print(tab.loc[(t_end, "all")][["mean", "sd", "cv", "frac_zero"]].round(3).to_string())
     nom_dx = max(config.PHASE0_DX_VALUES)
     d = dxt[(dxt.time == t_end) & (dxt.region == "all") & (dxt.dx == nom_dx)]

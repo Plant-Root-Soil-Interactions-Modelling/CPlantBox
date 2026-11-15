@@ -1,113 +1,85 @@
 """
 Spielzeugmodell NUR zum Testen der Pipeline. Biologisch bedeutungslos.
 
-Liest dieselbe XML wie die echte Simulation, zieht pro Hyphe Parameter aus
-N(value, dev), lässt Spitzen als zufällige Wege wachsen (Puller: laterale
-Verzweigung alle ln; Runner: Tip-Splitting mit Rate b) und zählt grob Anastomosen.
-`b` der Puller wird bewusst NICHT verwendet (b_prob = 0) -> Kontrollfaktor.
+Liest dieselbe XML wie die echte Simulation und erzeugt eine laufende Welle über die Ringe der
+Petrischale im Format von model_hook.simulate (raw.npz): Filamentdichte als Sigmoid, Spitzen als
+Glocke um die Ankunftszeit, Anastomosen ~ C rho tips, mit Poisson-Rauschen. Frontgeschwindigkeit,
+Amplitude, Breite und BAS-Anteil hängen willkürlich von den Faktoren ab.
+`b` der Runner wird bewusst NICHT verwendet (b_prob = 0) -> Kontrollfaktor.
 """
 import xml.etree.ElementTree as ET
 
 import numpy as np
-from scipy.spatial import cKDTree
 
 import config
 
-DT = 0.5
-MAX_TIPS = 300
+FWHM_BELL = 2 * np.log(3 + 2 * np.sqrt(2))
 
 
 def _read(xml_path):
     root = ET.parse(xml_path).getroot()
     out = {}
     for hy in root.iter("hyphae"):
-        st = int(hy.get("subType"))
-        d = {}
-        for p in hy.iter("parameter"):
-            if p.get("name") == "successor":
-                d["succ_p"] = float(p.get("percentage").split(",")[0])
-            elif p.get("value") is not None:
-                d[p.get("name")] = (float(p.get("value")), float(p.get("dev") or 0))
-        out[st] = d
+        out[int(hy.get("subType"))] = {p.get("name"): (float(p.get("value")), float(p.get("dev") or 0))
+                                       for p in hy.iter("parameter") if p.get("value") is not None}
     return out
 
 
-def _draw(rng, prm, name, lo=1e-9):
-    m, s = prm[name]
-    return max(lo, rng.normal(m, s)) if s > 0 else m
-
-
-def _unit(v):
-    return v / np.linalg.norm(v)
-
-
-def _rotate_away(rng, d, angle):
-    perp = _unit(np.cross(d, rng.normal(size=3)))
-    return _unit(np.cos(angle) * d + np.sin(angle) * perp)
+def ring_geometry():
+    """Äußere Ringradien [cm] und Ringflächen [mm²] wie amfs.ringLocations / amfs.ringVolume (ohne plantbox)."""
+    radius, barrier_thickness = 9.4 / 2, 0.16
+    outer = np.array([radius * np.sqrt(i / config.N_RINGS) for i in range(1, config.N_RINGS + 1)])
+    c = barrier_thickness / 2
+    R = np.concatenate(([0.], outer))
+    c_ = np.minimum(c, R)
+    area = np.pi / 2 * R * R + c_ * np.sqrt(R * R - c_ * c_) + R * R * np.arcsin(np.divide(c_, R, out=np.zeros_like(R), where=R > 0))
+    return outer, np.diff(area) * 100
 
 
 def simulate(xml_path, seed, outdir):
     rng = np.random.default_rng(seed)
     P = _read(xml_path)
+    R, B = P[config.RUNNER], P[config.BAS]
+    val = lambda prm, k: prm[k][0]
+    cv = R["v"][1] / R["v"][0]
+    dx = R["dx"][0]
+    noise = lambda s: np.exp(s * rng.normal())
 
-    def new_hypha(st, pos, d, t0):
-        prm = P[st]
-        return dict(st=st, pos=np.array(pos, float), d=_unit(d), t0=t0, L=0.0,
-                    v=_draw(rng, prm, "v"), lmax=_draw(rng, prm, "lmax"),
-                    hlt=_draw(rng, prm, "hlt"), a=_draw(rng, prm, "a"),
-                    ln=_draw(rng, prm, "ln", 1e-3), lb=_draw(rng, prm, "lb"),
-                    theta=_draw(rng, prm, "theta"), b=_draw(rng, prm, "b"),
-                    next_lat=None, alive=True)
+    # Frontgeschwindigkeit [mm/h], Amplitude der Spitzenwelle [mm^-2], Breite [h], Sättigung [mm mm^-2]
+    vf = 0.6 * (val(R, "v") / 0.576) ** 0.7 * (val(B, "v") / 0.576) ** 0.2 * (val(R, "hlt") / 8) ** 0.3 \
+        * (val(R, "lmax") / 3) ** 0.1 * np.cos(val(R, "theta") - 1.047) * noise(0.05)
+    if vf < 0.42:
+        raise RuntimeError("status not_crossed (Spielzeugmodell: Front zu langsam)")
+    K2 = 0.15 * (val(B, "b") / 0.96) ** 0.5 * (0.1 / val(R, "ln")) ** 0.4 * noise(0.05)
+    width = 10 * (1 + cv) * (val(B, "hlt") / 2) ** 0.2 * noise(0.05)
+    K1 = 1.4 * (val(B, "hlt") / 2) ** 0.5 * (val(R, "lmax") / 3) ** 0.3 * noise(0.05)
+    frac_bas = np.clip(0.3 * (val(B, "hlt") / 2) ** 0.4 * (val(B, "b") / 0.96) ** 0.3
+                       * (val(B, "v") / val(R, "v")) ** 0.2 * (1 + 0.3 * np.sin(val(B, "theta"))) * noise(0.05), 0, 1)
+    C = 2e-5 * (val(R, "distTH") / 0.01) ** 2 * val(R, "ana") * (1 + 20 * (dx - 0.01))
 
-    hy = [new_hypha(1, (0, 0, 0), (0, 0, -1), 0.0)]
-    segs, rad, sub, born = [], [], [], []
-    paths, t = [], 0.0
-    for t_snap in config.SNAPSHOT_TIMES:
-        while t < t_snap - 1e-9:
-            t += DT
-            new = []
-            for h in hy:
-                if not h["alive"]:
-                    continue
-                if t - h["t0"] > h["hlt"] or h["L"] >= h["lmax"]:
-                    h["alive"] = False
-                    continue
-                step = min(h["v"] * DT, h["lmax"] - h["L"])
-                h["d"] = _unit(h["d"] + 0.3 * rng.normal(size=3))
-                p0 = h["pos"].copy()
-                h["pos"] = p0 + step * h["d"]
-                h["L"] += step
-                segs.append((p0, h["pos"].copy())); rad.append(h["a"]); sub.append(h["st"]); born.append(t)
-                n_active = sum(x["alive"] for x in hy) + len(new)
-                if n_active >= MAX_TIPS:
-                    continue
-                if h["st"] == 1:          # laterale Verzweigung
-                    if h["next_lat"] is None:
-                        h["next_lat"] = h["lb"]
-                    while h["L"] >= h["next_lat"] and n_active < MAX_TIPS:
-                        st = 2 if rng.random() < P[1]["succ_p"] else 1
-                        new.append(new_hypha(st, h["pos"], _rotate_away(rng, h["d"], h["theta"]), t))
-                        h["next_lat"] += h["ln"]; n_active += 1
-                else:                     # Tip-Splitting
-                    if rng.random() < 1 - np.exp(-h["b"] / 24 * DT):
-                        new.append(new_hypha(2, h["pos"], _rotate_away(rng, h["d"], h["theta"] / 2), t))
-                        h["d"] = _rotate_away(rng, h["d"], -h["theta"] / 2)
-            hy.extend(new)
-
-        S = np.array(segs)
-        tips = np.array([h["pos"] for h in hy if h["alive"]]).reshape(-1, 3)
-        # grobe Anastomosen: Spitze trifft Segment-Mitte einer anderen Hyphe
-        anas = np.empty((0, 3))
-        if len(tips) and len(S):
-            mids = S.mean(1)
-            dist, _ = cKDTree(mids).query(tips, k=3)
-            prm_ana = {1: P[1]["ana"][0], 2: P[2]["ana"][0]}
-            dth = np.array([P[h["st"]]["distTH"][0] for h in hy if h["alive"]])
-            pana = np.array([prm_ana[h["st"]] for h in hy if h["alive"]])
-            hit = (dist[:, -1] < dth * 5) & (rng.random(len(tips)) < pana)
-            anas = tips[hit]
-        p = outdir / f"snapshot_t{t_snap:g}.npz"
-        np.savez_compressed(p, seg_start=S[:, 0], seg_end=S[:, 1], radius=np.array(rad),
-                            subtype=np.array(sub), tips=tips, anastomoses=anas)
-        paths.append(p)
-    return paths
+    outer, area = ring_geometry()
+    inner = np.concatenate(([0.], outer[:-1]))
+    r = np.sqrt((inner * inner + outer * outer) / 2) * 10           # Ringmitten [mm]
+    wait_days = 2 / val(R, "v") * noise(0.1)
+    time_star = config.ROOT_DAYS + wait_days
+    t_h = np.arange(0, config.HOURS_HYPHAE + 1)[1:].astype(float)   # Spalten wie getParasPerRing: times[1:]
+    t_arr = (r[:, None] - r[0]) / vf                                 # Ankunft je Ring [h]
+    lam = FWHM_BELL / width
+    e = np.exp(-np.abs(lam * (t_h[None, :] - t_arr)))
+    tip_dens = 4 * K2 * e / (1 + e) ** 2
+    rho = K1 / (1 + np.exp(np.minimum(lam * (t_arr - t_h[None, :]), 700.)))
+    tips = rng.poisson(tip_dens * area[:, None]).astype(float)
+    tips_bas = rng.binomial(tips.astype(int), frac_bas).astype(float)
+    rho = rho * noise(0.02)
+    ana_rate = C * rho * 1000 * tips                                 # pro Stunde
+    ana_bas = rng.poisson(ana_rate * frac_bas).astype(float)
+    ana_runner = rng.poisson(ana_rate * (1 - frac_bas)).astype(float)
+    raw = {"seed": seed, "time_star": time_star, "location": outer, "area": area,
+           "times": time_star + t_h / 24, "tip_dens": tips / area[:, None], "active_tips": tips,
+           "ana_new": ana_bas + ana_runner, "length_densities": rho, "wait_days": wait_days,
+           "length_runner": rho * (1 - frac_bas), "length_bas": rho * frac_bas,
+           "active_tips_runner": tips - tips_bas, "active_tips_bas": tips_bas,
+           "ana_new_runner": ana_runner, "ana_new_bas": ana_bas}
+    path = outdir / "raw.npz"
+    np.savez_compressed(path, **raw)
+    return [path]

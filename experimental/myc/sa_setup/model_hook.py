@@ -1,30 +1,20 @@
 """
-SCHNITTSTELLE ZU DEINER SIMULATION — die einzige Datei, die du anpassen musst.
-
-Zwei Funktionen:
+Schnittstelle zur Simulation: Petrischale wie petridishsimauto.py, mit dem Parameterfile des Laufs.
 
 1. simulate(xml_path, seed, outdir) -> list[Path]
-   Startet die Simulation über eure Python-Bindings mit dem gegebenen Parameterfile
-   und Seed und speichert zu jedem Zeitpunkt in config.SNAPSHOT_TIMES die ROHAUSGABE
-   (so vollständig wie möglich, damit spätere Auswertungen ohne Neusimulation gehen).
+   Wurzelphase, Warten auf t* und HOURS_HYPHAE Stunden Hyphen (AMFSimulationSetup.makeSimulation),
+   danach die Größen je Ring und Stunde wie in petridishsimauto.py. Gespeichert in outdir/raw.npz,
+   daraus berechnet evaluate.py alle Outputs (neue Outputs ohne Neusimulation).
+   Ohne t* nach MAX_WAIT_DAYS wird ein Fehler ausgelöst: der Lauf zählt als fehlgeschlagen.
 
-2. load_snapshot(path) -> dict
-   Liest eine gespeicherte Rohausgabe und gibt sie in einem einheitlichen Format zurück:
-       "seg_start": (N, 3)  Startpunkte der Segmente [cm]
-       "seg_end":   (N, 3)  Endpunkte [cm]
-       "radius":    (N,)    Radius [cm]
-       "subtype":   (N,)    subType der zugehörigen Hyphe
-       "tips":      (M, 3)  Positionen der aktiven Spitzen
-       "anastomoses": (A, 3) Positionen der Anastomosen
-   Wenn eure bestehende Auswertung andere Größen braucht, einfach Einträge ergänzen
-   und in evaluate.py verwenden.
-
-3. carbon_cost(snap) -> float  (pro Region aufgerufen, s. evaluate.py)
+2. load_raw(path) -> dict
+   Liest raw.npz, "times" in Tagen seit t* (wie AMFIO.load_petridish_results).
 
 Solange die Umgebungsvariable SA_DUMMY=1 gesetzt ist, wird ein Spielzeugmodell
 verwendet (dummy_model.py), damit die Pipeline ohne die echte Simulation testbar ist.
 """
 import os
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -34,40 +24,58 @@ import config
 USE_DUMMY = os.environ.get("SA_DUMMY") == "1"
 
 
+def import_amf():
+    """plantbox und die AMF*-Module aus experimental/myc importierbar machen."""
+    for p in (config.MYC_DIR, config.CPLANTBOX_DIR / "src", config.CPLANTBOX_DIR):
+        if str(p) not in sys.path:
+            sys.path.insert(0, str(p))
+
+
 def simulate(xml_path: Path, seed: int, outdir: Path) -> list[Path]:
     if USE_DUMMY:
         import dummy_model
         return dummy_model.simulate(xml_path, seed, outdir)
 
-    # ------------------------------------------------------------------
-    # TODO: an eure Bindings anschließen. Skizze (CPlantBox-artig):
-    #
-    #   import plantbox as pb
-    #   plant = pb.MycorrhizalPlant()          # bzw. eure Klasse
-    #   plant.readParameters(str(xml_path))
-    #   plant.setSeed(seed)                    # WICHTIG: Seed wirklich setzen
-    #   plant.initialize()
-    #   paths, t = [], 0.0
-    #   for t_snap in config.SNAPSHOT_TIMES:
-    #       plant.simulate(t_snap - t)
-    #       t = t_snap
-    #       p = outdir / f"snapshot_t{t_snap:g}.npz"
-    #       np.savez_compressed(p, seg_start=..., seg_end=..., radius=...,
-    #                           subtype=..., tips=..., anastomoses=...)
-    #       paths.append(p)
-    #   return paths
-    # ------------------------------------------------------------------
-    raise NotImplementedError("model_hook.simulate an die Simulation anschließen")
+    import_amf()
+    import AMFAnalysis as amf
+    import AMFDensities as amfd
+    import AMFSimulationSetup as amfs
+
+    dish = amfs.defaultPetridish(nRings=config.N_RINGS, hyphae_layer=config.HYPHAE_LAYER, verbose=False)
+    location = amfs.ringLocations(dish["radius"], config.N_RINGS)
+    area = amfs.ringVolume(dish["radius"], config.N_RINGS, 1.0, dish["barrier_thickness"])[:, None] * 100  # [mm^2]
+    dt, nSteps = amfs.setUpSimulationTime(config.ROOT_DAYS, config.STEPS_PER_DAY)
+    stats = {}
+    mycp, time_star, times = amfs.makeSimulation(
+        seed, str(xml_path.parent) + "/", xml_path.stem, dish["height"], dish["petri_dish"], dish["small_hyphae_dish"],
+        dish["half_dish"], dt, nSteps, config.HOURS_HYPHAE, "sim", max_wait_days=config.MAX_WAIT_DAYS, stats=stats,
+        min_growing_tips=config.MIN_GROWING_TIPS, stall_fraction=config.STALL_FRACTION, turn_off_root_growth=True)
+    if time_star is None:
+        raise RuntimeError(f"status {stats['status']} (wait_days {stats.get('wait_days', np.nan):.1f})")
+    if config.SAVE_VTP:
+        amf.getMycSegmentAnalyser(mycp, stdwrite=True, filename=str(outdir / "final"), step="", timestamp=False)
+
+    # wie petridishsimauto.py: Ringe -> Zeile, Zeitabschnitt -> Spalte
+    rings = dish["rings"]
+    mats = amfd.getParasPerRing(["nodeTips", "anastomosis", "length"], times, mycp, rings,
+                                subTypes=list(amfd.HYPHAL_SUBTYPES), increments=["anastomosis"])
+    active_tips = amfd.getActiveTipsPerRingPerSubtype(times, mycp, rings)
+    zeros = np.zeros((len(rings), len(times) - 1))
+    raw = {"seed": seed, "time_star": time_star, "location": location, "area": area[:, 0], "times": times[1:],
+           "tip_dens": sum(active_tips.values()) / area, "active_tips": sum(active_tips.values()),
+           "ana_new": mats["anastomosis_new"], "length_densities": mats["length"] * 10 / area,
+           "wait_days": stats["wait_days"]}
+    for st, key in amfd.HYPHAL_SUBTYPES.items():
+        raw["length_" + key] = mats[f"length_st{st}"] * 10 / area
+        raw["active_tips_" + key] = active_tips.get(st, zeros)
+        raw["ana_new_" + key] = mats[f"anastomosis_st{st}_new"]
+    path = outdir / "raw.npz"
+    np.savez_compressed(path, **raw)
+    return [path]
 
 
-def load_snapshot(path: Path) -> dict:
+def load_raw(path: Path) -> dict:
     with np.load(path) as d:
-        return {k: d[k] for k in d.files}
-
-
-# Kohlenstoffkosten — PLATZHALTER: Volumen × Konstante. Durch eure Definition ersetzen.
-CARBON_PER_CM3 = 1.0   # TODO: echte Umrechnung (z. B. g C pro cm³ Hyphenvolumen)
-
-
-def carbon_cost(seg_len, radius, subtype) -> float:
-    return float(CARBON_PER_CM3 * np.sum(np.pi * radius**2 * seg_len))
+        raw = {k: d[k] for k in d.files}
+    raw["times"] = raw["times"] - raw["time_star"]
+    return raw

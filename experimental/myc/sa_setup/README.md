@@ -1,28 +1,27 @@
 # Sensitivitätsanalyse Hyphenmodell — Phase 0 + Morris
 
-Gerüst für Rauschtest, `dx`-Konvergenz und Morris-Screening auf SLURM.
-Mit einem Spielzeugmodell (`dummy_model.py`) komplett durchgetestet; für die echte
-Simulation muss nur `model_hook.py` angeschlossen werden.
+Gerüst für Rauschtest, `dx`-Konvergenz und Morris-Screening auf SLURM, für das
+Petrischalen-Setup von `petridishsimauto.py` (Oyarte Galvez et al. 2025) mit
+`tomatoparameters/TwoHyphaePlusBAS.xml` als Nominalmodell. Mit einem Spielzeugmodell
+(`dummy_model.py`) komplett durchgetestet.
 
 ## Was du anpassen musst
 
 | Datei | Was |
 |---|---|
-| `template/hyphae_template.xml` | durch dein vollständiges Nominal-Parameterfile ersetzen |
-| `model_hook.py` | `simulate()` an eure Python-Bindings anschließen (Seed setzen, Snapshots speichern), `carbon_cost()` mit eurer Definition |
-| `config.py` | **Faktorbereiche** (aktuell alle ±25 % Platzhalter), `SIM_TIME`, `SNAPSHOT_TIMES`, `DOMAIN`, `REGIONS` |
-| `slurm/*.sbatch` | Umgebung laden (module/venv, mit `SALib`), ggf. Partition/Account, Speicher |
+| `config.py` | **Faktorbereiche** (außer v und CV(v) noch ±25 % Platzhalter), ggf. `HOURS_HYPHAE`, `SNAPSHOT_HOURS` |
+| `slurm/*.sbatch` | Umgebung laden (module/venv mit plantbox, SALib, scikit-learn, networkx), ggf. Partition/Account, Speicher |
 
-Falls eure bestehende Auswertung die Outputs schon berechnet: in `evaluate.py`
-`region_outputs()` durch Aufrufe eurer Funktionen ersetzen. Wichtig ist nur das
-Ausgabeformat (eine Zeile pro `time, region, output, value`).
+`model_hook.py` ruft `AMFSimulationSetup.makeSimulation` mit dem Parameterfile des Laufs auf
+und speichert die Größen je Ring und Stunde wie `petridishsimauto.py` (`raw.npz`).
+Änderungen am Nominalmodell gehören in `TwoHyphaePlusBAS.xml`, nicht hierher.
 
 ## Ablauf
 
 ```bash
 python3 check_config.py                      # Bereiche, Nominalwerte, Laufanzahl, CPU-Stunden
 
-# ---- Phase 0: Rauschen + dx-Konvergenz (80 Läufe) ----
+# ---- Phase 0: Rauschen, dx-Konvergenz, Stichprobe des Faktorraums (100 Läufe) ----
 python3 design.py phase0
 bash slurm/submit.sh results/design_phase0.csv
 python3 analyze_phase0.py                    # nach Abschluss
@@ -37,26 +36,54 @@ Lokal testen ohne Cluster und ohne echtes Modell:
 
 ```bash
 export SA_DUMMY=1
+python3 design.py phase0
 python3 run_one.py results/design_phase0.csv 0-4
 python3 evaluate.py results/design_phase0.csv 0-4
 ```
 
 **Abgebrochene Läufe** (Timeout, Knotenausfall): `submit.sh` einfach erneut aufrufen,
-fertige Läufe werden übersprungen. `results/status_*.csv` zeigt, was fehlt.
+fertige Läufe werden übersprungen. `results/status_*.csv` zeigt, was fehlt. Läufe ohne t*
+nach `MAX_WAIT_DAYS` zählen als fehlgeschlagen (Fehlermeldung in `runs/<id>/meta.json`).
 
-**Neue Outputs / andere Teilbereiche / andere Zeitpunkte:** `evaluate.py` bzw.
-`config.REGIONS` ändern, dann `bash slurm/submit.sh <design> --eval-only`.
-Keine Neusimulation nötig, solange die Snapshots die Rohdaten enthalten.
+**Neue Outputs / andere Zeitpunkte:** `evaluate.py` bzw. `config.SNAPSHOT_HOURS` ändern, dann
+`bash slurm/submit.sh <design> --eval-only`. Keine Neusimulation nötig, `raw.npz` enthält
+alle Größen je Ring und Stunde. Für Netzwerkgrößen (`AMFNetwork.py`) braucht es die
+Geometrie: dafür `SAVE_VTP = True` setzen.
+
+## Faktoren (13)
+
+| Gruppe | Faktoren | Bereich |
+|---|---|---|
+| Runner (subType 1) | `R_v`, `R_hlt`, `R_lmax`, `R_ln`, `R_theta` | v: 0,432–0,72 cm/d (180–300 µm/h), sonst ±25 % |
+| BAS (subType 2) | `B_v`, `B_b`, `B_hlt`, `B_theta` | v wie Runner, sonst ±25 % |
+| gemeinsam | `distTH`, `ana`, `v_cv` | ±25 %, 0,5–1, CV 0,15–0,40 |
+| Kontrolle | `R_b_ctrl` | b der Runner, wirkungslos bei b_prob = 0 |
+
+Fest: Successor-Aufteilung (0,75 BAS / 0,25 Runner), la, lb, BAS-lmax (≈ 3 × dx),
+Radius a, Tropismus, dx, b_prob.
+
+## Outputs
+
+| Art | Outputs | Zeit |
+|---|---|---|
+| Mengen | `total_length` [cm], `active_tips`, `bas_share`, `anastomoses` (seit t*), `front_position` (spitzengewichteter Radius, mm) | 10, 30, 60 h nach t* |
+| Welle | `front_velocity` [mm/d], `K1` [µm mm⁻²], `K2` [mm⁻²], `wave_width` [h], `encounter_C` | Fits über 0–60 h, stehen bei 60 h |
+
+Die Wellengrößen kommen aus den Fits von `AMFDensities` mit den Gütekriterien von
+`petridishstats.py` (R², Sättigung, mind. 3 Ringe). Scheitern die Fits, fehlt der Wert,
+und der Lauf zählt für diesen Output wie ein fehlgeschlagener. Die Anzahl Ringe hinter
+den Fits steht als Diagnose (`n_wave_rings`, `n_K1_rings`, `n_tip_rings`) in `outputs.csv`,
+ebenso `wait_days` (Zeit bis t*). Diagnosen gehen nicht in die SA ein.
 
 ## Designentscheidungen
 
-- **Variiert werden die `value`s**, nicht die `dev`s. Mit `DEV_MODE = "relative"`
-  wird `dev` proportional mitskaliert (konstanter CV), sonst entstehen bei kleinen
-  Mittelwerten massenhaft negative Ziehungen.
-- **b_prob als Struktur, nicht als Faktor:** Puller ohne `b`, Runner ohne `ln/la/lb`.
-- **Kontrollfaktor `P_b_ctrl`** (b der Puller, wirkungslos bei b_prob = 0): muss μ* = 0
-  liefern. Sonst greift der Schalter nicht so wie gedacht.
-- **Successor-Aufteilung** als ein Faktor p, geschrieben als `"p, 1-p"`.
+- **Variiert werden die `value`s.** Mit `DEV_MODE = "relative"` wird `dev` proportional
+  mitskaliert (konstanter CV). Ausnahme `v_cv`: setzt dev von v auf CV × v, für beide Subtypen.
+- **Gemeinsame Faktoren** (`distTH`, `ana`, `v_cv`) werden auf Runner und BAS geschrieben.
+- **b_prob als Struktur, nicht als Faktor.** b wird nur beim Tip-Splitting gelesen
+  (`Hyphae.cpp`), daher ist `R_b_ctrl` ein **Kontrollfaktor**: muss μ* = 0 liefern.
+- **Kein Abbruch bei stagnierender Front** (`MIN_GROWING_TIPS = None`): in der SA ist eine
+  langsame Front ein Ergebnis, kein Fehler. Nur ohne t* wird abgebrochen.
 - **`dx` nur in Phase 0** (Konvergenztest), nie in der Sensitivitätsanalyse.
 - **Gemeinsame Seeds entlang einer Trajektorie** (Common Random Numbers): Elementary
   Effects sind Differenzen, gleiche Seeds nehmen einen Großteil des Rauschens raus.
@@ -77,23 +104,26 @@ Keine Neusimulation nötig, solange die Snapshots die Rohdaten enthalten.
 ## Was Phase 0 entscheidet
 
 - `phase0_noise.csv`: CV je Output. Bei hohem CV (> ~0.3) eher `MORRIS_REPLICATES` erhöhen.
-  Spalte `frac_zero` zeigt spärlich besetzte Teilbereiche, dort sind varianzbasierte
-  Maße später mit Vorsicht zu lesen.
+  Spalte `frac_zero` zeigt spärlich besetzte Outputs.
 - `phase0_dx.csv`: Weicht nominales `dx` signifikant (> 2 %) vom feinsten ab, ist
-  `dx` zu grob. Erst klären, dann Morris starten.
-- Laufzeit und Speicher aus `status_phase0.csv` bzw. SLURM-Logs: `--time`/`--mem` anpassen.
+  `dx` zu grob. Besonders für Anastomosen (distTH = dx) und BAS (lmax ≈ 3 × dx) prüfen.
+  Kleines dx kostet viel Laufzeit: `--time` in `sim.sbatch` dafür erhöhen.
+- `phase0_status.csv`: Wie viele der 20 zufälligen Punkte im Faktorraum t* erreichen, und wie
+  lange sie laufen. Viele Abbrüche: Bereiche zu breit, sonst fehlen bei Morris ganze Trajektorien.
+- Laufzeit und Speicher: `--time`/`--mem` in den sbatch-Dateien anpassen.
 
 ## Ergebnisse
 
 - `results/morris_indices.csv`: μ*, KI, μ, σ, Rauschniveau je `time × region × output × factor`
-- `results/plots/morris_ranking_t*.png`: μ* mit Bootstrap-KI (SALib: μ* ± Halbbreite), gesamter Zielbereich
+- `results/plots/morris_ranking_t*.png`: μ* mit Bootstrap-KI (SALib: μ* ± Halbbreite) je Output
 - `results/plots/morris_musigma_t*.png`: μ* vs. σ (σ ≳ μ*: nichtlinear/Interaktionen)
-- `results/plots/morris_regions_t*.png`: relative Sensitivität je Teilbereich
+- `results/plots/morris_overview.png`: relative Sensitivität aller Outputs und Zeitpunkte
 
-`beispiel_dummy/` enthält diese Plots aus dem Testlauf mit dem Spielzeugmodell.
+`beispiel_dummy/` enthält Plots aus einem Testlauf mit dem Spielzeugmodell.
 Sie zeigen nur das Format, inhaltlich bedeuten sie nichts.
 
 ## Literatur
 
 - Morris (1991), *Technometrics* 33:161–174
 - Campolongo, Cariboni, Saltelli (2007), *Environ. Model. Softw.* 22:1509–1518 (μ*, Trajektorienauswahl)
+- Oyarte Galvez et al. (2025): Versuchsaufbau, Spitzengeschwindigkeit 240 µm/h
