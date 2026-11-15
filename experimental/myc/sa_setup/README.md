@@ -21,6 +21,10 @@ und speichert die Größen je Ring und Stunde wie `petridishsimauto.py` (`raw.np
 ```bash
 python3 check_config.py                      # Bereiche, Nominalwerte, Laufanzahl, CPU-Stunden
 
+# ---- Smoke-Test: 3 echte Läufe (nominal, alle Faktoren unten, alle oben) ----
+mkdir -p logs && sbatch slurm/smoke.sbatch   # oder lokal: python3 smoke_test.py nominal --quick
+python3 smoke_test.py --report               # alles OK? Laufzeit und Speicher -> sim.sbatch
+
 # ---- Phase 0: Rauschen, dx-Konvergenz, Stichprobe des Faktorraums (100 Läufe) ----
 python3 design.py phase0
 bash slurm/submit.sh results/design_phase0.csv
