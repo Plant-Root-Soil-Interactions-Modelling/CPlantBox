@@ -242,7 +242,7 @@
         <!--Inter-lateral distance [cm]-->
         <parameter name="theta" value="1.0471976" dev="0.10471976"/>
         <!--Branching angle [rad]-->
-        <parameter name="tropismN" value="5"/>
+        <parameter name="tropismN" value="4"/>
         <!--Number of trials of root tropism-->
         <parameter name="tropismS" value="1.0"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
