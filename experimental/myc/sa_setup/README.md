@@ -9,7 +9,7 @@ Petrischalen-Setup von `petridishsimauto.py` (Oyarte Galvez et al. 2025) mit
 
 | Datei | Was |
 |---|---|
-| `config.py` | **Faktorbereiche** (außer v, CV(v), B_b und ana noch ±25 % Platzhalter), ggf. `HOURS_HYPHAE`, `SNAPSHOT_HOURS` |
+| `config.py` | **Faktorbereiche** (`distTH` noch ±25 % Platzhalter), ggf. `HOURS_HYPHAE`, `SNAPSHOT_HOURS` |
 | `slurm/*.sbatch` | aktivieren `~/cpbenv` (braucht zusätzlich SALib, scikit-learn, networkx), Partition `cpu256`; ggf. Zeit/Speicher |
 
 `model_hook.py` ruft `AMFSimulationSetup.makeSimulation` mit dem Parameterfile des Laufs auf
@@ -79,9 +79,11 @@ Geometrie: dafür `SAVE_VTP = True` setzen.
 
 | Gruppe | Faktoren | Bereich |
 |---|---|---|
-| Runner (subType 1) | `R_v`, `R_hlt`, `R_lmax`, `R_ln`, `R_theta` | v: 0,432–0,72 cm/d (180–300 µm/h), sonst ±25 % |
-| BAS (subType 2) | `B_v`, `B_b`, `B_hlt`, `B_theta` | v wie Runner, b: 0,55–1,35 /d (Verzweigungsrate / Spitzendichte aus dem Paper), sonst ±25 % |
+| Runner (subType 1) | `R_v`, `R_hlt`, `R_lmax`, `R_ln`, `R_theta` | v 0,432–0,72 cm/d (180–300 µm/h), hlt 4–10 d, lmax 1,5–5 cm, ln 0,1–0,6 cm (log), θ 50–80° |
+| BAS (subType 2) | `B_v`, `B_b`, `B_hlt`, `B_theta` | v wie Runner, b 0,55–1,35 /d, hlt 5–9 d (nominal 7 d), θ 50–80° |
 | gemeinsam | `distTH`, `ana`, `v_cv` | ±25 %, 0,5–1, CV 0,15–0,40 |
+
+Die Quellen der Bereiche stehen je Faktor in `config.py` (`source`).
 | Kontrolle | `R_b_ctrl` | b der Runner, wirkungslos bei b_prob = 0 |
 
 Fest: Successor-Aufteilung (0,75 BAS / 0,25 Runner), la, lb, BAS-lmax (≈ 3 × dx),

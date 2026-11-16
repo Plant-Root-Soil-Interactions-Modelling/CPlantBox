@@ -268,7 +268,7 @@
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1e-06"/>
         <!--Axial resolution [cm] (minimal segment size)-->
-        <parameter name="hlt" value="2.0" dev="0.7"/>
+        <parameter name="hlt" value="7.0" dev="2.45"/>
         <!--Hyphal lifetime  [day]-->
         <parameter name="la" value="0.01" dev="0"/>
         <!--Apical zone [cm]-->
