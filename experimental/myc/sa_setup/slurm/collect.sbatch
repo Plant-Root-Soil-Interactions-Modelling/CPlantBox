@@ -21,5 +21,6 @@ export MPLBACKEND=Agg
 python3 collect.py "$DESIGN"
 case "$(basename "$DESIGN")" in
     design_phase0.csv) python3 analyze_phase0.py ;;
+    design_long.csv)   python3 analyze_long.py ;;
     design_morris.csv) python3 analyze_morris.py ;;
 esac

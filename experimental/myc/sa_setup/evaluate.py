@@ -52,9 +52,9 @@ def snapshot_outputs(raw, hour):
     }
 
 
-def wave_outputs(raw):
-    # Fenster bis zum letzten Auswertezeitpunkt
-    keep = np.concatenate(([True], raw["times"][1:] * 24 <= max(config.SNAPSHOT_HOURS) + 1e-6))
+def wave_outputs(raw, hour):
+    # Fenster bis hour [h nach t*]
+    keep = np.concatenate(([True], raw["times"][1:] * 24 <= hour + 1e-6))
     sim = {k: (v[:, keep] if isinstance(v, np.ndarray) and v.ndim == 2 else v) for k, v in raw.items()}
     sim["times"] = raw["times"][keep]
     r = ring_centers_mm(raw["location"])
@@ -112,11 +112,14 @@ def evaluate_run(run_id, force=False):
         print(f"{run_id}: bereits ausgewertet"); return
     raw = model_hook.load_raw(rdir / meta["snapshots"][0])
     rows = []
-    for h in config.SNAPSHOT_HOURS:
+    simulated = raw["times"][-1] * 24 + 1                              # [h nach t*], +1 h Toleranz
+    extra = [h for h in config.EXTRA_HOURS if max(config.SNAPSHOT_HOURS) < h <= simulated]   # nur lange Läufe
+    for h in config.SNAPSHOT_HOURS + extra:
         for k, v in snapshot_outputs(raw, h).items():
             rows.append({"run_id": run_id, "time": h, "region": "all", "output": k, "value": v})
-    for k, v in wave_outputs(raw).items():
-        rows.append({"run_id": run_id, "time": max(config.SNAPSHOT_HOURS), "region": "all", "output": k, "value": v})
+    for h in [max(config.SNAPSHOT_HOURS)] + extra:                     # Wellen-Fits über das Fenster 0..h
+        for k, v in wave_outputs(raw, h).items():
+            rows.append({"run_id": run_id, "time": h, "region": "all", "output": k, "value": v})
     rows.append({"run_id": run_id, "time": 0, "region": "all", "output": "wait_days", "value": float(raw["wait_days"])})
     pd.DataFrame(rows).to_csv(out_path, index=False)
     print(f"{run_id}: {len(rows)} Werte")

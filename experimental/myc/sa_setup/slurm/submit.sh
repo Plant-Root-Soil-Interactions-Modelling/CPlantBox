@@ -6,6 +6,7 @@
 #   bash submit_sa.sh results/design_phase0.csv
 #   bash submit_sa.sh results/design_morris.csv
 #   bash submit_sa.sh results/design_morris.csv --eval-only   # nur neu auswerten (z. B. neue Outputs)
+#   SIMTIME=12:00:00 bash submit_sa.sh results/design_long.csv  # Test mit 120 h, längeres Zeitlimit
 #
 # Abgebrochene Läufe einfach durch erneutes Einreichen nachholen: fertige werden übersprungen.
 # sa_setup liegt standardmäßig in ~/CPlantBox/experimental/myc/sa_setup, sonst SA_DIR=... davor setzen.
@@ -24,7 +25,8 @@ echo "Design: $SA_DIR/$DESIGN  ($N Läufe)"
 if [[ "$MODE" == "--eval-only" ]]; then
   EVAL=$(sbatch --parsable --array=0-$LAST%$MAXPAR --export=ALL,DESIGN="$DESIGN",FORCE=--force "$JOBS/eval.sbatch")
 else
-  SIM=$(sbatch --parsable --array=0-$LAST%$MAXPAR --export=ALL,DESIGN="$DESIGN" "$JOBS/sim.sbatch")
+  # SIMTIME=12:00:00 bash submit_sa.sh ... überschreibt --time von sim.sbatch (z. B. für den Test mit 120 h)
+  SIM=$(sbatch --parsable --array=0-$LAST%$MAXPAR ${SIMTIME:+--time=$SIMTIME} --export=ALL,DESIGN="$DESIGN" "$JOBS/sim.sbatch")
   echo "Simulation: Job $SIM"
   # afterany: Auswertung startet, wenn alle Simulationen beendet sind (auch bei Timeouts einzelner
   # Läufe — die werden in evaluate.py übersprungen und in status_*.csv als fehlend gemeldet).

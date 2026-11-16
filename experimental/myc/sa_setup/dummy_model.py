@@ -36,7 +36,8 @@ def ring_geometry():
     return outer, np.diff(area) * 100
 
 
-def simulate(xml_path, seed, outdir):
+def simulate(xml_path, seed, outdir, hours=None):
+    hours = hours or config.HOURS_HYPHAE
     rng = np.random.default_rng(seed)
     P = _read(xml_path)
     R, B = P[config.RUNNER], P[config.BAS]
@@ -62,7 +63,7 @@ def simulate(xml_path, seed, outdir):
     r = np.sqrt((inner * inner + outer * outer) / 2) * 10           # Ringmitten [mm]
     wait_days = 2 / val(R, "v") * noise(0.1)
     time_star = config.ROOT_DAYS + wait_days
-    t_h = np.arange(0, config.HOURS_HYPHAE + 1)[1:].astype(float)   # Spalten wie getParasPerRing: times[1:]
+    t_h = np.arange(0, hours + 1)[1:].astype(float)   # Spalten wie getParasPerRing: times[1:]
     t_arr = (r[:, None] - r[0]) / vf                                 # Ankunft je Ring [h]
     lam = FWHM_BELL / width
     e = np.exp(-np.abs(lam * (t_h[None, :] - t_arr)))

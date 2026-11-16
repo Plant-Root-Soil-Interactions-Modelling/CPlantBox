@@ -2,6 +2,7 @@
 Erzeugt die Designtabellen (eine Zeile = ein Simulationslauf).
 
     python design.py phase0     -> results/design_phase0.csv (Rauschen, dx, Stichprobe des Faktorraums)
+    python design.py long       -> results/design_long.csv (Nominalpunkt über 120 h, Test der Wellen-Fits)
     python design.py morris     -> results/design_morris.csv (+ morris_X.npy)
 
 Danach: `python run_one.py <design.csv> <zeile>` bzw. per SLURM-Array.
@@ -57,6 +58,17 @@ def phase0():
     print(f"{len(df)} Läufe -> {path}")
 
 
+def long_test():
+    """Nominalpunkt über LONG_HOURS h: bildet sich die Welle mit mehr Zeit aus (Wellen-Fits oft genug definiert)?"""
+    nom = nominal_values()
+    rows = [{"run_id": f"p0_long_{i:03d}", "group": "long", "seed": config.BASE_SEED + i, "dx": np.nan,
+             "hours": config.LONG_HOURS, **nom} for i in range(config.LONG_SEEDS)]
+    df = pd.DataFrame(rows)
+    path = config.RESULTS_DIR / "design_long.csv"
+    df.to_csv(path, index=False)
+    print(f"{len(df)} Läufe über {config.LONG_HOURS} h -> {path}")
+
+
 def phase1_morris():
     problem = morris_problem()
     k, names = problem["num_vars"], problem["names"]
@@ -88,4 +100,4 @@ def phase1_morris():
 
 if __name__ == "__main__":
     config.RESULTS_DIR.mkdir(exist_ok=True)
-    {"phase0": phase0, "morris": phase1_morris}[sys.argv[1]]()
+    {"phase0": phase0, "long": long_test, "morris": phase1_morris}[sys.argv[1]]()

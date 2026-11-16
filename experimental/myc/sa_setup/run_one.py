@@ -12,6 +12,7 @@ import sys
 import time
 import traceback
 
+import numpy as np
 import pandas as pd
 
 import config
@@ -31,11 +32,12 @@ def run_row(row):
     dx = None if pd.isna(row.get("dx")) else float(row["dx"])
     xml_path = write_xml(values, rdir / "params.xml", dx=dx)
 
-    meta = {"run_id": row["run_id"], "seed": int(row["seed"]), "dx": dx,
+    hours = None if pd.isna(row.get("hours", np.nan)) else float(row["hours"])   # nur im Test mit 120 h gesetzt
+    meta = {"run_id": row["run_id"], "seed": int(row["seed"]), "dx": dx, "hours": hours,
             "values": values, "dev_mode": config.DEV_MODE}
     t0 = time.time()
     try:
-        snaps = model_hook.simulate(xml_path, int(row["seed"]), rdir)
+        snaps = model_hook.simulate(xml_path, int(row["seed"]), rdir, hours=hours)
         meta.update(sim_status="ok", snapshots=[p.name for p in snaps])
     except Exception:
         meta.update(sim_status="failed", error=traceback.format_exc())

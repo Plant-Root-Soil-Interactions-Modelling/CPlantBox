@@ -112,6 +112,11 @@ SAVE_VTP = False            # finale Geometrie als .vtp speichern (für Netzwerk
 # Outputs (evaluate.py)
 # --------------------------------------------------------------------------
 SNAPSHOT_HOURS = [10, 30, 60]   # Auswertung von Mengen nach t* [h], wie im Paper (0, 10, 30, 60 h)
+# Test mit längerer Simulation (python design.py long): LONG_SEEDS Läufe am Nominalpunkt über LONG_HOURS h,
+# Seeds wie p0_noise_000.. Zusätzlich ausgewertet bei EXTRA_HOURS, aber nur in Läufen, die so lange simuliert sind
+LONG_HOURS = 120
+LONG_SEEDS = 10
+EXTRA_HOURS = [90, 120]
 # Mengen zu jedem Zeitpunkt in SNAPSHOT_HOURS
 SNAPSHOT_OUTPUTS = ["total_length", "active_tips", "bas_share", "anastomoses", "front_position"]
 # Wellengrößen über das ganze Fenster bis max(SNAPSHOT_HOURS), stehen beim letzten Zeitpunkt

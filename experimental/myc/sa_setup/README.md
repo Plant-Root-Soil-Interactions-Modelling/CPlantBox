@@ -45,6 +45,11 @@ sbatch sa_run.sbatch design.py phase0        # warten, bis der Job fertig ist
 bash submit_sa.sh results/design_phase0.csv  # Designpfad relativ zu sa_setup
 # Sammeln und analyze_phase0.py laufen am Ende automatisch: slurmOut/sa_collect-<job>.out
 
+# ---- Test: Nominalpunkt über 120 h (10 Läufe), sind die Wellen-Fits dann oft genug definiert? ----
+sbatch sa_run.sbatch design.py long          # warten, bis der Job fertig ist
+SIMTIME=12:00:00 bash submit_sa.sh results/design_long.csv
+# Ergebnis: slurmOut/sa_collect-<job>.out (analyze_long.py), Fenster 60, 90 und 120 h
+
 # ---- Phase 1: Morris (r × (k+1) × R Läufe) ----
 sbatch sa_run.sbatch design.py morris        # warten, bis der Job fertig ist
 bash submit_sa.sh results/design_morris.csv

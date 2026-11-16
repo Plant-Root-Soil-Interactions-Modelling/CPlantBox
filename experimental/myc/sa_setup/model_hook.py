@@ -31,10 +31,12 @@ def import_amf():
             sys.path.insert(0, str(p))
 
 
-def simulate(xml_path: Path, seed: int, outdir: Path) -> list[Path]:
+def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None) -> list[Path]:
+    """hours: Simulationsdauer nach t* [h], Standard config.HOURS_HYPHAE (für den Test mit 120 h)."""
+    hours = int(hours) if hours else config.HOURS_HYPHAE
     if USE_DUMMY:
         import dummy_model
-        return dummy_model.simulate(xml_path, seed, outdir)
+        return dummy_model.simulate(xml_path, seed, outdir, hours)
 
     import_amf()
     import AMFAnalysis as amf
@@ -48,7 +50,7 @@ def simulate(xml_path: Path, seed: int, outdir: Path) -> list[Path]:
     stats = {}
     mycp, time_star, times = amfs.makeSimulation(
         seed, str(xml_path.parent) + "/", xml_path.stem, dish["height"], dish["petri_dish"], dish["small_hyphae_dish"],
-        dish["half_dish"], dt, nSteps, config.HOURS_HYPHAE, "sim", max_wait_days=config.MAX_WAIT_DAYS, stats=stats,
+        dish["half_dish"], dt, nSteps, hours, "sim", max_wait_days=config.MAX_WAIT_DAYS, stats=stats,
         min_growing_tips=config.MIN_GROWING_TIPS, stall_fraction=config.STALL_FRACTION, turn_off_root_growth=True)
     if time_star is None:
         raise RuntimeError(f"status {stats['status']} (wait_days {stats.get('wait_days', np.nan):.1f})")
