@@ -49,7 +49,35 @@ def snapshot_outputs(raw, hour):
         "bas_share": L["bas"] / (L["bas"] + L["runner"]) if L["bas"] + L["runner"] > 0 else np.nan,
         "anastomoses": float(raw["ana_new"][:, :j + 1].sum()),                       # seit t*
         "front_position": float((r * tips).sum() / tips.sum()) if tips.sum() > 0 else np.nan,   # spitzengewichteter Radius [mm]
+        # ohne Fit, in jedem Lauf definiert:
+        "spread_r90": spread_radius(raw, j, 0.9),                                    # 90 % der Länge innerhalb [mm]
+        "max_tip_density": float(np.max(raw["tip_dens"][:, j])),                     # dichtester Ring [mm^-2]
     }
+
+
+def spread_radius(raw, j, q):
+    # Radius, innerhalb dessen der Anteil q der Hyphenlänge liegt (linear innerhalb eines Rings) [mm]
+    L = raw["length_densities"][:, j] * raw["area"].ravel()
+    if L.sum() <= 0:
+        return np.nan
+    edges = np.concatenate(([0.], raw["location"])) * 10
+    cum = np.concatenate(([0.], np.cumsum(L))) / L.sum()
+    return float(np.interp(q, cum, edges))
+
+
+def front_speed(raw, hour, start=10):
+    # ohne Fit: Steigung des spitzengewichteten Radius über die Zeit (Theil-Sen) zwischen start und hour [mm/d].
+    # Auch negativ (Front zieht sich zurück), NaN nur ohne wachsende Spitzen
+    r = ring_centers_mm(raw["location"])
+    t = raw["times"] * 24
+    cols = np.where((t >= start - 1e-6) & (t <= hour + 1e-6))[0]
+    tips = raw["active_tips"][:, cols]
+    n = tips.sum(0)
+    ok = n > 0
+    if ok.sum() < 3:
+        return np.nan
+    fp = (r[:, None] * tips[:, ok]).sum(0) / n[ok]
+    return float(amfd.theilSlope(t[cols][ok], fp)[0] * 24)
 
 
 def wave_outputs(raw, hour):
@@ -87,6 +115,7 @@ def wave_outputs(raw, hour):
 
     med = lambda d, x: float(np.median(x)) if len(d) >= config.MIN_RINGS else np.nan
     return {
+        "front_speed": front_speed(raw, hour),                          # [mm/d] ohne Fit, aus front_position(t)
         "front_velocity": velocity(good_tips.t_tip, good_tips.r),      # [mm/d] aus dem Spitzenpeak je Ring (v_tips)
         # Vergleichsvarianten (keine SA-Outputs): Ankunft der Längendichte t_n in allen guten bzw. gesättigten Ringen
         "v_length": velocity(good.t_n, good.r),

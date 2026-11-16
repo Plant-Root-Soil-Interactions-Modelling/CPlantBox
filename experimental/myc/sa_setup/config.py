@@ -118,9 +118,12 @@ LONG_HOURS = 120
 LONG_SEEDS = 10
 EXTRA_HOURS = [90, 120]
 # Mengen zu jedem Zeitpunkt in SNAPSHOT_HOURS
-SNAPSHOT_OUTPUTS = ["total_length", "active_tips", "bas_share", "anastomoses", "front_position"]
-# Wellengrößen über das ganze Fenster bis max(SNAPSHOT_HOURS), stehen beim letzten Zeitpunkt
-WAVE_OUTPUTS = ["front_velocity", "K1", "K2", "wave_width", "encounter_C"]
+SNAPSHOT_OUTPUTS = ["total_length", "active_tips", "bas_share", "anastomoses", "front_position",
+                    "spread_r90", "max_tip_density"]
+# Größen über das ganze Fenster bis max(SNAPSHOT_HOURS), stehen beim letzten Zeitpunkt.
+# Nur Größen ohne Fit: Die Wellen-Fits (front_velocity, K1, K2, wave_width) sind in Phase 0 bei 60 h nur in 12–33 von
+# 47 Läufen definiert, für Morris (alle 14 Punkte einer Trajektorie) zu selten. Sie werden weiter berechnet (Diagnose).
+WAVE_OUTPUTS = ["front_speed", "encounter_C"]
 # Gütekriterien der Wellen-Fits wie petridishstats.py
 R2_MIN_LENGTH = 0.9
 R2_MIN_TIPS = 0.5
