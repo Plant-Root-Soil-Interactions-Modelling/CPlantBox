@@ -7,8 +7,8 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=cpu256
-#SBATCH --time=4:00:00           # max. Laufzeit EINES Laufs (+ Puffer), Seeds brauchen bis zu 3 h; Phase 0 mit kleinem dx länger
-#SBATCH --mem=4G                 # nach dem Smoke-Test an den echten Bedarf anpassen
+#SBATCH --time=4:00:00           # Smoke-Test: max. 0,75 h je Lauf; Puffer für Seeds, Faktorraum und feines dx in Phase 0
+#SBATCH --mem=4G                 # Smoke-Test: max. 0,85 GB; Puffer für dx = 0,0025 in Phase 0. Für Morris nach Phase 0 ggf. 2G
 #SBATCH --output=./slurmOut/sa_sim-%A_%a.out
 #SBATCH --error=./slurmErr/sa_sim-%A_%a.err
 
