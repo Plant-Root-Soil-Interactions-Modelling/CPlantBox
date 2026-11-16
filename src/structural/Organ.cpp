@@ -825,6 +825,7 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // over
         return double((org->getOrganRandomParameter()->organType == ot_lat) && (org->param_->subType == st_lat));
     }; // return 1. if organ of correct type and subtype, 0. otherwise
     double numberOfLaterals = double(std::count_if(children.begin(), children.end(), correctST)); // count how may children of the correct type and subtype exists (they do not have to be emerged)
+    double growthDelay = 0.;
 
     switch (delayDefinition) {
     case Organism::dd_distance: {                                           // lateral has to wait for a apical zone to develop
@@ -832,22 +833,23 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // over
         double effectiveLa = std::max(getParameter("la") - meanLn / 2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
         double ageLN = std::max(this->calcAge(getLength(true)), age - dt);  // theoretical age of root when lateral node is created
         double ageLG = this->calcAge(getLength(true) + effectiveLa);        // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
-        double growthDelay = ageLG - ageLN;                                 // time the lateral has to wait
-        return growthDelay + numberOfLaterals * rp->multDelay;
+        growthDelay = ageLG - ageLN;                                        // time the lateral has to wait
+        break;
     }
     case Organism::dd_time_lat: { // lateral has to wait for a fixed time (defined by parent organ)
-        double growthDelay = std::max(rp->ldelay + plant.lock()->randn() * rp->ldelays, 0.);
-        return growthDelay + numberOfLaterals * rp->multDelay;
+        growthDelay = std::max(rp->ldelay + plant.lock()->randn() * rp->ldelays, 0.);
+        break;
     }
     case Organism::dd_time_self: {                                          // lateral has to wait for a fixed time (defined by lateral organ itself)
         auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
-        double growthDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
-        return growthDelay + numberOfLaterals * rp->multDelay;
+        growthDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
+        break;
     }
     default: {
         throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
     }
     }
+    return growthDelay + numberOfLaterals * rp->multDelay;
 }
 
 /**
