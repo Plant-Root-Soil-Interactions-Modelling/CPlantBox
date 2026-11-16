@@ -14,7 +14,7 @@ def nominal_values_of(param, subtype):
     hy = next(h for h in root.iter("hyphae") if h.get("subType", "").strip() == str(subtype))
     return float(next(p for p in hy.iter("parameter") if p.get("name") == param).get("value"))
 
-MIN_PER_RUN = 120  # Simulation + Auswertung [min], für die Abschätzung (Seeds brauchen bis zu 3 h, s. petridishtiming.py)
+MIN_PER_RUN = 15   # Simulation + Auswertung [min] bei dx = 0,01, für die Abschätzung (Phase 0: Faktorraum Median 4 min, nominal 44 min)
 
 
 def main():

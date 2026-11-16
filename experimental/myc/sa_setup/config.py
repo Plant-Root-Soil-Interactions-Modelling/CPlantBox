@@ -135,7 +135,7 @@ PHASE0_RANGE_POINTS = 20    # zufällige Punkte im Faktorraum, je ein Lauf: Abbr
 # Phase 1 (Morris)
 # --------------------------------------------------------------------------
 MORRIS_LEVELS = 4            # p
-MORRIS_TRAJECTORIES = 12     # r (aus MORRIS_CANDIDATES nach Spreizung ausgewählt)
+MORRIS_TRAJECTORIES = 20     # r (aus MORRIS_CANDIDATES nach Spreizung ausgewählt)
 MORRIS_CANDIDATES = 300
-MORRIS_REPLICATES = 3        # nach Phase 0 anpassen
+MORRIS_REPLICATES = 5        # Phase 0: Seed-CV 0,3–0,97 je Output -> 5 statt 3
 BASE_SEED = 20261021

@@ -74,8 +74,10 @@ def wave_outputs(raw):
     good_tips = good[good.R2_tips >= config.R2_MIN_TIPS]
     v = np.nan
     if len(good) >= config.MIN_RINGS and good.r.nunique() >= 2:
-        slope = stats.theilslopes(good.t_n, good.r)[0]      # [h/mm]
-        v = 24 / slope if slope > 0 else np.nan             # [mm/d]
+        slope, _, lo, _ = stats.theilslopes(good.t_n, good.r)      # [h/mm], 95%-KI
+        # Nur eine Welle, wenn die Ankunftszeit signifikant mit dem Radius steigt. Sonst (Ringe fast gleichzeitig
+        # erreicht) explodiert 24/slope: in Phase 0 einzelne Läufe mit > 10^4 mm/d.
+        v = 24 / slope if lo > 0 else np.nan                       # [mm/d]
     med = lambda d, x: float(np.median(x)) if len(d) >= config.MIN_RINGS else np.nan
     return {
         "front_velocity": v,                                            # [mm/d]
