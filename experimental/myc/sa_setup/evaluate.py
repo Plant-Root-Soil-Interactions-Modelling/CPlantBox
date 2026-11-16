@@ -65,22 +65,32 @@ def wave_outputs(raw):
     rows = []
     for f in fits:
         K1, lam_len, t_n = f["length"]
-        K2, lam_tip = (f["tips"][0], f["tips"][1]) if f["tips"] is not None else (np.nan, np.nan)
+        K2, lam_tip, t_tip = f["tips"] if f["tips"] is not None else (np.nan, np.nan, np.nan)
         rows.append({"r": r[f["ring"]], "t_n": t_n, "K1": K1, "R2_length": f["R2_length"],
-                     "saturation": f["rho_data"][-1] / K1, "K2": K2, "lam_tip": lam_tip, "R2_tips": f["R2_tips"]})
-    df = pd.DataFrame(rows, columns=["r", "t_n", "K1", "R2_length", "saturation", "K2", "lam_tip", "R2_tips"])
+                     "saturation": f["rho_data"][-1] / K1, "K2": K2, "lam_tip": lam_tip, "t_tip": t_tip,
+                     "R2_tips": f["R2_tips"], "t_first": f["t"][0], "t_last": f["t"][-1]})
+    df = pd.DataFrame(rows, columns=["r", "t_n", "K1", "R2_length", "saturation", "K2", "lam_tip", "t_tip",
+                                     "R2_tips", "t_first", "t_last"])
     good = df[df.R2_length >= config.R2_MIN_LENGTH]
     good_K1 = good[good.saturation >= config.SATURATION_MIN]
-    good_tips = good[good.R2_tips >= config.R2_MIN_TIPS]
-    v = np.nan
-    if len(good) >= config.MIN_RINGS and good.r.nunique() >= 2:
-        slope, _, lo, _ = stats.theilslopes(good.t_n, good.r)      # [h/mm], 95%-KI
-        # Nur eine Welle, wenn die Ankunftszeit signifikant mit dem Radius steigt. Sonst (Ringe fast gleichzeitig
-        # erreicht) explodiert 24/slope: in Phase 0 einzelne Läufe mit > 10^4 mm/d.
-        v = 24 / slope if lo > 0 else np.nan                       # [mm/d]
+    # wie petridishwave.py: Spitzenpeak und beide Halbwertspunkte im simulierten Fenster, sonst extrapoliert
+    half = FWHM_BELL / good.lam_tip / 2
+    inside = (good.t_tip - half >= good.t_first) & (good.t_tip + half <= good.t_last)
+    good_tips = good[(good.R2_tips >= config.R2_MIN_TIPS) & inside]
+
+    def velocity(t, rr):
+        # wie petridishwave.py: Radius gegen Ankunftszeit (Theil-Sen) [mm/h] -> [mm/d]; nur steigende Fronten
+        if len(t) < config.MIN_RINGS:
+            return np.nan
+        s = amfd.theilSlope(t, rr)[0]
+        return 24 * s if np.isfinite(s) and s > 0 else np.nan
+
     med = lambda d, x: float(np.median(x)) if len(d) >= config.MIN_RINGS else np.nan
     return {
-        "front_velocity": v,                                            # [mm/d]
+        "front_velocity": velocity(good_tips.t_tip, good_tips.r),      # [mm/d] aus dem Spitzenpeak je Ring (v_tips)
+        # Vergleichsvarianten (keine SA-Outputs): Ankunft der Längendichte t_n in allen guten bzw. gesättigten Ringen
+        "v_length": velocity(good.t_n, good.r),
+        "v_length_sat": velocity(good_K1.t_n, good_K1.r),
         "K1": med(good_K1, good_K1.K1),                                 # [µm mm^-2]
         "K2": med(good_tips, good_tips.K2),                             # [mm^-2]
         "wave_width": med(good_tips, FWHM_BELL / good_tips.lam_tip),    # Dauer der Spitzenwelle im Ring [h]

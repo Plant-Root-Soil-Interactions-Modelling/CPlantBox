@@ -24,7 +24,7 @@ def main():
     # ---------- Rauschen ----------
     noise = out[out.group == "noise"]
     g = noise.groupby(KEY)["value"]
-    tab = pd.DataFrame({"n": g.size(), "mean": g.mean(), "sd": g.std(),
+    tab = pd.DataFrame({"n": g.size(), "n_valid": g.count(), "mean": g.mean(), "median": g.median(), "sd": g.std(),
                         "frac_zero": g.apply(lambda v: np.mean(v == 0))})
     tab["cv"] = tab["sd"] / tab["mean"].replace(0, np.nan)
     # Rauschniveau eines Elementary Effects (normierte Einheiten), gemittelt über R Replikate,
@@ -48,12 +48,12 @@ def main():
             v = s.set_index("seed")["value"]
             diff = (v - ref).dropna()
             m = ref.mean()
-            rel = diff.mean() / m if m else np.nan
-            if len(diff) > 1 and diff.std() > 0:
-                hw = stats.t.ppf(0.975, len(diff) - 1) * diff.std() / np.sqrt(len(diff)) / abs(m) if m else np.nan
+            if len(diff) >= 3 and m:      # weniger Paare (z. B. Output oft NaN): kein belastbarer Vergleich
+                rel = diff.mean() / m
+                hw = stats.t.ppf(0.975, len(diff) - 1) * diff.std() / np.sqrt(len(diff)) / abs(m)
             else:
-                hw = 0.0
-            rows.append(dict(zip(KEY, key), dx=dx, ref_dx=finest, rel_diff=rel,
+                rel = hw = np.nan
+            rows.append(dict(zip(KEY, key), dx=dx, ref_dx=finest, n_pairs=len(diff), rel_diff=rel,
                              rel_ci_lo=rel - hw, rel_ci_hi=rel + hw))
     dxt = pd.DataFrame(rows)
     dxt.to_csv(config.RESULTS_DIR / "phase0_dx.csv", index=False)
@@ -71,13 +71,16 @@ def main():
     print("\nLäufe je Gruppe (ok = t* erreicht und ausgewertet), Laufzeit der Simulation [h]:")
     print(rng_tab.round(2).to_string())
     print(f"\nSeed-Rauschen am Nominalpunkt (t = {t_end} h nach t*):")
-    print(tab.loc[(t_end, "all")][["mean", "sd", "cv", "frac_zero"]].round(3).to_string())
+    print(tab.loc[(t_end, "all")][["n_valid", "mean", "median", "sd", "cv", "frac_zero"]].round(3).to_string())
     nom_dx = max(config.PHASE0_DX_VALUES)
     d = dxt[(dxt.time == t_end) & (dxt.region == "all") & (dxt.dx == nom_dx)]
     print(f"\ndx-Konvergenz: dx = {nom_dx:g} gegenüber dx = {finest:g} (rel. Abweichung, 95%-KI):")
     for _, r in d.iterrows():
+        if np.isnan(r.rel_diff):
+            print(f"  {r.output:16s} zu wenige Paare ({r.n_pairs})")
+            continue
         flag = "  <-- prüfen" if (r.rel_ci_lo > 0.02 or r.rel_ci_hi < -0.02) else ""
-        print(f"  {r.output:16s} {r.rel_diff:+.3f} [{r.rel_ci_lo:+.3f}, {r.rel_ci_hi:+.3f}]{flag}")
+        print(f"  {r.output:16s} {r.rel_diff:+.3f} [{r.rel_ci_lo:+.3f}, {r.rel_ci_hi:+.3f}]  n={r.n_pairs}{flag}")
     sparse = tab[tab.frac_zero > 0.2].reset_index()
     if len(sparse):
         print(f"\n{len(sparse)} Output/Region/Zeit-Kombinationen mit >20 % Nullen "
