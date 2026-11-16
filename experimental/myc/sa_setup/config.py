@@ -69,12 +69,14 @@ FACTORS: list[Factor] = [
 
     # ---- BAS (subType 2, Tip-Splitting, b_prob = 1) ----
     Factor("B_v",      (BAS,), "v",     0.432, 0.72, source=V_SOURCE),
-    Factor("B_b",      (BAS,), "b",     *_pm(PH, 0.96)),
+    Factor("B_b",      (BAS,), "b",     0.55, 1.35,
+           source="Verzweigungsrate / Spitzendichte (Oyarte Galvez et al. 2025, Fig. b): ≈ 0,044 h⁻¹ ≈ 1,05 /d am Maximum, "
+                  "≈ 0,65 /d an der Flanke; Band 2 SEM ≈ ±40 %. Zählt dort alle Verzweigungen (auch Runner-Laterale)"),
     Factor("B_hlt",    (BAS,), "hlt",   *_pm(PH, 2.0)),
     Factor("B_theta",  (BAS,), "theta", *_pm(PH, 1.0471976)),
 
     # ---- gemeinsam für Runner und BAS ----
-    Factor("distTH", (RUNNER, BAS), "distTH", *_pm(PH, 0.01)),
+    Factor("distTH", (RUNNER, BAS), "distTH", *_pm(PH, 0.25)),
     Factor("ana",    (RUNNER, BAS), "ana",    0.5, 1.0),        # Wahrscheinlichkeit, nominal 1 = Rand
     Factor("v_cv",   (RUNNER, BAS), "v_cv",   0.15, 0.40,
            source="Streuung der gemessenen Spitzengeschwindigkeiten (Oyarte Galvez et al. 2025), nominal CV ≈ 0,29"),
