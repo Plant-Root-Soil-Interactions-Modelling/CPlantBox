@@ -17,4 +17,4 @@ source "$HOME/cpbenv/bin/activate"
 cd "${SA_DIR:-$HOME/CPlantBox/experimental/myc/sa_setup}"
 export MPLBACKEND=Agg
 
-python3 run_one.py "$DESIGN" "$SLURM_ARRAY_TASK_ID"
+python3 run_one.py "$DESIGN" "$(( ${OFFSET:-0} + SLURM_ARRAY_TASK_ID ))"   # OFFSET: Teil-Arrays bei > 1000 Läufen

@@ -15,25 +15,37 @@ set -euo pipefail
 JOBS="$(cd "$(dirname "$0")" && pwd)"   # hier liegen sim.sbatch, eval.sbatch, collect.sbatch
 export SA_DIR="${SA_DIR:-$HOME/CPlantBox/experimental/myc/sa_setup}"
 DESIGN="$1"; MODE="${2:-}"
-MAXPAR="${MAXPAR:-100}"            # max. gleichzeitig laufende Tasks
+MAXPAR="${MAXPAR:-100}"            # max. gleichzeitig laufende Tasks (insgesamt)
+CHUNK="${CHUNK:-1000}"             # max. Tasks je Array: SLURM begrenzt Array-Indizes (MaxArraySize, oft 1001)
 
 N=$(( $(wc -l < "$SA_DIR/$DESIGN") - 1 ))
-LAST=$(( N - 1 ))
+NCH=$(( (N + CHUNK - 1) / CHUNK ))
+PAR=$(( (MAXPAR + NCH - 1) / NCH ))   # je Teil-Array, damit insgesamt höchstens ~MAXPAR laufen
 mkdir -p slurmOut slurmErr         # Ausgaben der Jobs im Verzeichnis, aus dem eingereicht wird
-echo "Design: $SA_DIR/$DESIGN  ($N Läufe)"
+echo "Design: $SA_DIR/$DESIGN  ($N Läufe, $NCH Teil-Array(s))"
+
+# reicht $1 (sbatch-Datei) in Teil-Arrays ein, Zeile = OFFSET + Array-Index; gibt die Job-IDs als a:b:c aus
+submit_arrays() {
+  local script="$1"; shift
+  local ids=() off n
+  for (( off = 0; off < N; off += CHUNK )); do
+    n=$(( N - off < CHUNK ? N - off : CHUNK ))
+    ids+=( "$(sbatch --parsable --array=0-$(( n - 1 ))%$PAR "$@" --export=ALL,DESIGN="$DESIGN",OFFSET=$off${FORCE_EXPORT:-} "$JOBS/$script")" )
+  done
+  local IFS=:; echo "${ids[*]}"
+}
 
 if [[ "$MODE" == "--eval-only" ]]; then
-  EVAL=$(sbatch --parsable --array=0-$LAST%$MAXPAR --export=ALL,DESIGN="$DESIGN",FORCE=--force "$JOBS/eval.sbatch")
+  EVAL=$(FORCE_EXPORT=",FORCE=--force" submit_arrays eval.sbatch)
 else
   # SIMTIME=12:00:00 bash submit_sa.sh ... überschreibt --time von sim.sbatch (z. B. für den Test mit 120 h)
-  SIM=$(sbatch --parsable --array=0-$LAST%$MAXPAR ${SIMTIME:+--time=$SIMTIME} --export=ALL,DESIGN="$DESIGN" "$JOBS/sim.sbatch")
-  echo "Simulation: Job $SIM"
+  SIM=$(submit_arrays sim.sbatch ${SIMTIME:+--time=$SIMTIME})
+  echo "Simulation: Job(s) $SIM"
   # afterany: Auswertung startet, wenn alle Simulationen beendet sind (auch bei Timeouts einzelner
   # Läufe — die werden in evaluate.py übersprungen und in status_*.csv als fehlend gemeldet).
-  EVAL=$(sbatch --parsable --array=0-$LAST%$MAXPAR --dependency=afterany:$SIM \
-         --export=ALL,DESIGN="$DESIGN" "$JOBS/eval.sbatch")
+  EVAL=$(submit_arrays eval.sbatch --dependency=afterany:$SIM)
 fi
-echo "Auswertung: Job $EVAL"
+echo "Auswertung: Job(s) $EVAL"
 COL=$(sbatch --parsable --dependency=afterany:$EVAL --export=ALL,DESIGN="$DESIGN" "$JOBS/collect.sbatch")
 echo "Sammeln + Analyse: Job $COL  ->  slurmOut/sa_collect-$COL.out"
 echo "Status:     squeue -u \$USER   |   danach: $SA_DIR/results/ (status_*.csv, Analysen, plots/)"
