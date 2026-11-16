@@ -67,14 +67,10 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, double delay, std::shared_
     this->partialIHeading = Vector3d::rotAB(theta, beta);
     if (parent->organType() != Organism::ot_seed) { // initial node
         // if lateral of stem, initial creation time:
-        // time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
-        //  @see stem::createLateral
-        double creationTime;
-        if (parent->getNumberOfChildren() == 0) {
-            creationTime = parent->getNodeCT(pni) + delay;
-        } else {
-            creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
-        }
+        // time when stem reached end of basal zone (==CT of the node where the first lateral is attached) + delay
+        //  @see Organ::getLatGrowthDelay, the delay already includes the offset between consecutive laterals
+        int basePni = (parent->getNumberOfChildren() == 0) ? pni : parent->getChild(0)->getParentNI();
+        double creationTime = parent->getNodeCT(basePni) + delay;
         addNode(Vector3d(0., 0., 0.), parent->getNodeId(pni), creationTime);
     }
 }
