@@ -33,5 +33,5 @@ else
 fi
 echo "Auswertung: Job $EVAL"
 COL=$(sbatch --parsable --dependency=afterany:$EVAL --export=ALL,DESIGN="$DESIGN" "$JOBS/collect.sbatch")
-echo "Sammeln:    Job $COL"
-echo "Status:     squeue -u \$USER   |   danach: $SA_DIR/results/status_*.csv"
+echo "Sammeln + Analyse: Job $COL  ->  slurmOut/sa_collect-$COL.out"
+echo "Status:     squeue -u \$USER   |   danach: $SA_DIR/results/ (status_*.csv, Analysen, plots/)"

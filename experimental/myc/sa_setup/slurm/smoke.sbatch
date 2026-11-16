@@ -1,11 +1,7 @@
 #!/bin/bash
 #
 # Smoke-Test der Sensitivitätsanalyse: 0 = nominal, 1 = low (alle Faktoren unten), 2 = high (alle oben), parallel.
-# Einreichen aus dem Home-Verzeichnis (wie run_petridish.sh), die Datei dorthin kopieren:
-#   mkdir -p slurmOut slurmErr
-#   sbatch smoke.sbatch                                  # volle Läufe (HOURS_HYPHAE nach t*)
-#   sbatch --export=ALL,QUICK=--quick smoke.sbatch       # nur 12 h nach t*
-# danach: cd CPlantBox/experimental/myc/sa_setup && python3 smoke_test.py --report
+# Eingereicht von submit_smoke.sh aus dem Home-Verzeichnis (wie run_petridish.sh), zusammen mit dem Bericht-Job.
 #
 #SBATCH --job-name=sa_smoke
 #SBATCH --array=0-2

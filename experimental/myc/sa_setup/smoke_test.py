@@ -6,8 +6,8 @@ Prüft nicht, ob die Ergebnisse stimmen, sondern ob alles zusammenspielt.
     python smoke_test.py nominal --quick    # nur 12 h nach t*: prüft die Verkabelung schnell, Wellen-Fits meist leer
     python smoke_test.py --report           # Zusammenfassung aller Smoke-Läufe -> results/smoke_report.csv
 
-Auf dem Cluster: slurm/smoke.sbatch ins Home-Verzeichnis kopieren, dort sbatch smoke.sbatch
-(alle drei Punkte parallel), danach hier --report.
+Auf dem Cluster aus dem Home-Verzeichnis: bash submit_smoke.sh (alle drei Punkte parallel,
+danach der Bericht als eigener Job).
 
 Geprüft wird je Punkt: Parameterfile wird geschrieben, makeSimulation läuft damit und erreicht t*,
 raw.npz hat alle Größen in passender Form, evaluate.py liefert alle Outputs (welche NaN sind),

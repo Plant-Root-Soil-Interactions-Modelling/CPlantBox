@@ -18,40 +18,41 @@ und speichert die Größen je Ring und Stunde wie `petridishsimauto.py` (`raw.np
 
 ## Ablauf
 
-Die Jobs werden wie die Petrischalen-Läufe aus dem **Home-Verzeichnis** eingereicht. Einmalig:
+Die Jobs werden wie die Petrischalen-Läufe aus dem **Home-Verzeichnis** eingereicht, und
+**jedes Python-Skript läuft als Job** (nicht auf dem Login-Knoten). Einmalig:
 
 ```bash
 cd ~
-cp CPlantBox/experimental/myc/sa_setup/slurm/{smoke,sim,eval,collect}.sbatch .
+cp CPlantBox/experimental/myc/sa_setup/slurm/*.sbatch CPlantBox/experimental/myc/sa_setup/slurm/submit_smoke.sh .
 cp CPlantBox/experimental/myc/sa_setup/slurm/submit.sh submit_sa.sh
 source cpbenv/bin/activate && pip install SALib scikit-learn networkx
 mkdir -p slurmOut slurmErr
 ```
 
-Die Python-Schritte laufen in `sa_setup`, das Einreichen im Home-Verzeichnis
-(Ausgaben der Jobs in `slurmOut/`, `slurmErr/`):
+Alles aus `~`. Einzelne Python-Schritte mit `sbatch sa_run.sbatch <skript> [argumente]`,
+ihre Ausgabe steht in `slurmOut/sa_run-<job>.out`:
 
 ```bash
-cd ~/CPlantBox/experimental/myc/sa_setup
-python3 check_config.py                      # Bereiche, Nominalwerte, Laufanzahl, CPU-Stunden
+cd ~
+sbatch sa_run.sbatch check_config.py         # Bereiche, Nominalwerte, Laufanzahl, CPU-Stunden
 
-# ---- Smoke-Test: 3 echte Läufe (nominal, alle Faktoren unten, alle oben) ----
-cd ~ && sbatch smoke.sbatch                  # oder lokal: python3 smoke_test.py nominal --quick
-cd ~/CPlantBox/experimental/myc/sa_setup
-python3 smoke_test.py --report               # alles OK? Laufzeit und Speicher -> sim.sbatch
+# ---- Smoke-Test: 3 echte Läufe (nominal, alle Faktoren unten, alle oben), danach Bericht ----
+bash submit_smoke.sh                         # oder: bash submit_smoke.sh --quick (12 h nach t*)
+# Bericht: slurmOut/sa_run-<job>.out -> alles OK? Laufzeit und Speicher -> sim.sbatch
 
 # ---- Phase 0: Rauschen, dx-Konvergenz, Stichprobe des Faktorraums (100 Läufe) ----
-python3 design.py phase0
-cd ~ && bash submit_sa.sh results/design_phase0.csv   # Designpfad relativ zu sa_setup
-cd ~/CPlantBox/experimental/myc/sa_setup
-python3 analyze_phase0.py                    # nach Abschluss
+sbatch sa_run.sbatch design.py phase0        # warten, bis der Job fertig ist
+bash submit_sa.sh results/design_phase0.csv  # Designpfad relativ zu sa_setup
+# Sammeln und analyze_phase0.py laufen am Ende automatisch: slurmOut/sa_collect-<job>.out
 
 # ---- Phase 1: Morris (r × (k+1) × R Läufe) ----
-python3 design.py morris
-cd ~ && bash submit_sa.sh results/design_morris.csv
-cd ~/CPlantBox/experimental/myc/sa_setup
-python3 analyze_morris.py
+sbatch sa_run.sbatch design.py morris        # warten, bis der Job fertig ist
+bash submit_sa.sh results/design_morris.csv
+# analyze_morris.py läuft am Ende automatisch, Plots in sa_setup/results/plots/
 ```
+
+Ein Schritt noch einmal von Hand, z. B. nach Änderungen an der Analyse:
+`sbatch sa_run.sbatch analyze_morris.py`.
 
 Liegt CPlantBox woanders, `SA_DIR=/pfad/zu/sa_setup` vor `sbatch` bzw. `bash submit_sa.sh` setzen.
 Nach Änderungen an den sbatch-Dateien im Repo die Kopien im Home-Verzeichnis erneuern.
