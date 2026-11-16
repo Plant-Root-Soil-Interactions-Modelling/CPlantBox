@@ -751,7 +751,7 @@ void Organ::createLateral(double dt, bool verbose) {
 
                     int st = rp->successorST.at(i).at(p_id);
 
-                    double delay = getLatGrowthDelay(ot, st, dt); // forDelay*multiplyDelay
+                    double delay = getLatGrowthDelay(ot, st, dt);
                     double growth_dt = getLatInitialGrowth(dt);
 
                     switch (ot) {
@@ -798,7 +798,7 @@ void Organ::createLateral(double dt, bool verbose) {
  */
 double Organ::getLatInitialGrowth(double dt) {
     double ageLN = this->calcAge(getLength(true)); // MINIMUM age of root when lateral node is created
-    ageLN = std::max(ageLN, age - dt);
+    ageLN = std::max(ageLN, age - dt);             // age-dt is the minimum possible age of the lateral node
     return age - ageLN;
 }
 
@@ -818,39 +818,36 @@ double Organ::getLatInitialGrowth(double dt) {
 double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // override for stems
 {
     auto rp = getOrganRandomParameter(); // rename
-    double growthDelay;                  // store necessary variables to define lateral growth delay
     int delayDefinition = getOrganism()->getDelayDefinition(ot_lat);
 
-    assert(delayDefinition >= 0);
+    // count the number of laterals of subtype st already created on this organ
+    auto correctST = [ot_lat, st_lat](std::shared_ptr<Organ> org) -> double {
+        return double((org->getOrganRandomParameter()->organType == ot_lat) && (org->param_->subType == st_lat));
+    }; // return 1. if organ of correct type and subtype, 0. otherwise
+    double numberOfLaterals = double(std::count_if(children.begin(), children.end(), correctST)); // count how may children of the correct type and subtype exists (they do not have to be emerged)
 
     switch (delayDefinition) {
     case Organism::dd_distance: {                                           // lateral has to wait for a apical zone to develop
         double meanLn = getParameter("lnMean");                             // mean inter-lateral distance
         double effectiveLa = std::max(getParameter("la") - meanLn / 2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
-        double ageLN = this->calcAge(getLength(true));                      // theoretical age of root when lateral node is created
-        ageLN = std::max(ageLN, age - dt);
-        double ageLG = this->calcAge(getLength(true) + effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
-        growthDelay = ageLG - ageLN;                                 // time the lateral has to wait
-        break;
+        double ageLN = std::max(this->calcAge(getLength(true)), age - dt);  // theoretical age of root when lateral node is created
+        double ageLG = this->calcAge(getLength(true) + effectiveLa);        // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
+        double growthDelay = ageLG - ageLN;                                 // time the lateral has to wait
+        return growthDelay + numberOfLaterals * rp->multDelay;
     }
     case Organism::dd_time_lat: { // lateral has to wait for a fixed time (defined by parent organ)
-        growthDelay = std::max(rp->ldelay + plant.lock()->randn() * rp->ldelays, 0.);
-        break;
+        double growthDelay = std::max(rp->ldelay + plant.lock()->randn() * rp->ldelays, 0.);
+        return growthDelay + numberOfLaterals * rp->multDelay;
     }
     case Organism::dd_time_self: {                                          // lateral has to wait for a fixed time (defined by lateral organ itself)
         auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
-        growthDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
-        break;
+        double growthDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
+        return growthDelay + numberOfLaterals * rp->multDelay;
     }
     default: {
-        std::cout << "delayDefinition " << delayDefinition << " " << Organism::dd_distance << " ";
-        std::cout << Organism::dd_time_lat << " " << Organism::dd_time_self << std::endl << std::flush;
-        std::cout << "				" << (delayDefinition == Organism::dd_distance) << " ";
-        std::cout << (delayDefinition == Organism::dd_time_lat) << " " << (delayDefinition == Organism::dd_time_self) << std::endl << std::flush;
         throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
     }
     }
-    return growthDelay;
 }
 
 /**

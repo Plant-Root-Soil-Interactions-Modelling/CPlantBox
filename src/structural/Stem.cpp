@@ -360,84 +360,6 @@ double Stem::getLatInitialGrowth(double dt) {
 }
 
 /**
- * Overwritten to support different delay times for laterals along the organ,
- * even though all laterals are created at once when the stem emerges.
- *
- *  @see Organ::createLateral
- *  @param ot_lat       organType of lateral to create
- *  @param st_lat       subType of lateral to create
- *  @param dt       time step recieved by parent organ [day]
- *  @return emergence delay to send to lateral after creation
- */
-double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // override for stems
-    bool verbose = false;
-    auto rp = getOrganRandomParameter(); // rename
-    double forDelay;                     // store necessary variables to define lateral growth delay
-    int delayDefinition = getOrganism()->getDelayDefinition(ot_lat);
-
-    if (verbose) {
-        std::cout << "create lat, delay def " << delayDefinition << " " << getId() << " " << (nodes.size() - 1) << " " << age << " " << getNodeId(nodes.size() - 1) << " " << getNodeId(0) << std::endl;
-    }
-
-    // count the number of laterals of subtype st already created on this organ std::function<double(int, int, std::shared_ptr<Organ>)>
-    auto correctST = [ot_lat, st_lat](std::shared_ptr<Organ> org) -> double {
-        return double((org->getParameter("organType") == ot_lat) && (org->getParameter("subType") == st_lat));
-    }; // return 1. if organ of correct type and subtype, 0. otherwise
-    double multiplyDelay = double(std::count_if(children.begin(), children.end(),
-                                                correctST)); // coun how may children of the correct type and subtype exists (they do not have to be emerged)
-
-    switch (delayDefinition) {
-    case Organism::dd_distance: {
-        double meanLn = getParameter("lnMean");                             // mean inter-lateral distance
-        double effectiveLa = std::max(getParameter("la") - meanLn / 2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
-        if (param()->lb + effectiveLa == param()->getK()) {
-            effectiveLa /= 2;
-        } // otherwise the growth delay == parent root life time.
-        if (verbose) {
-            std::cout << "case Organism::dd_distance " << organType() << " " << getParameter("subType") << " " << getLength(true) << " " << effectiveLa << " " << getParameter("la") << " " << meanLn
-                      << std::endl;
-        }
-        double ageLN = this->calcAge(param()->lb); // age of root when lateral node is created
-        ageLN = std::max(ageLN, age - dt);
-        double ageLG = this->calcAge(param()->lb + effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
-        forDelay = ageLG - ageLN;                                // time the lateral has to wait
-        multiplyDelay = 1;                                       // in this case, even for stems, it does not matter how many laterals there were before.
-        break;
-    }
-    case Organism::dd_time_lat: { // lateral has to wait for a fixed time (defined by parent organ)
-        // time the lateral has to wait
-        forDelay = std::max(rp->ldelay + plant.lock()->randn() * rp->ldelays, 0.);
-        multiplyDelay *= rp->multDelay;
-        if (verbose) {
-            std::cout << "Organism::dd_time_lat " << rp->ldelay << " " << rp->ldelays << " " << forDelay << std::endl;
-        }
-        break;
-    }
-    case Organism::dd_time_self: {                                          // lateral has to wait for a fixed time (defined by lateral organ itself)
-        auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
-        forDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
-        multiplyDelay *= latRp->multDelay;
-        if (verbose) {
-            std::cout << "create lat, delay output " << forDelay << std::endl;
-            std::cout << "						 " << ot_lat << ", " << st_lat << " " << latRp->ldelay << " " << latRp->ldelays << " " << forDelay << " " << nodes.size()
-                      << std::endl;
-        }
-        break;
-    }
-    default: {
-        std::cout << "delayDefinition " << delayDefinition << " " << Organism::dd_distance << " ";
-        std::cout << Organism::dd_time_lat << " " << Organism::dd_time_self << std::endl << std::flush;
-        std::cout << "				" << (delayDefinition == Organism::dd_distance) << " ";
-        std::cout << (delayDefinition == Organism::dd_time_lat) << " " << (delayDefinition == Organism::dd_time_self) << std::endl << std::flush;
-        throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
-    }
-    }
-    if (verbose) {
-        std::cout << "create lat, delay defEND " << forDelay << " " << multiplyDelay << std::endl;
-    }
-    return forDelay * multiplyDelay;
-}
-/**
  * Simulates internodal growth of dl for this stem
  * divid total stem growth between the phytomeres
  * currently two option:
@@ -521,12 +443,6 @@ double Stem::getParameter(std::string name, std::map<std::string, double> addPar
     if (name == "r") {
         return param()->r;
     } // initial growth rate [cm day-1]
-    if (name == "radius") {
-        return param()->a;
-    } // root radius [cm]
-    if (name == "a") {
-        return param()->a;
-    } // root radius [cm]
     if (name == "theta") {
         return param()->theta;
     } // angle between root and parent root [rad]
@@ -556,12 +472,6 @@ double Stem::getParameter(std::string name, std::map<std::string, double> addPar
     if (name == "surface") {
         return 2 * param()->a * M_PI * getLength(true);
     }
-    if (name == "type") {
-        return this->param_->subType;
-    } // delete to avoid confusion?
-    if (name == "subType") {
-        return this->param_->subType;
-    } // organ sub-type [-]
     if (name == "parentNI") {
         return parentNI;
     } // local parent node index where the lateral emerges

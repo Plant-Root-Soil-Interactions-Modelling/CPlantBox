@@ -59,7 +59,6 @@ class Stem : public Organ {
 
     void createLateral(double dt, bool verbose) override; ///< creates the laterals and stores the local id of the new linking node
     double getLatInitialGrowth(double dt) override;
-    double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const override;
     void storeLinkingNodeLocalId(int numCreatedLN); ///< stores the local id of the newly created linking node
     std::vector<int> localId_linking_nodes;
 
