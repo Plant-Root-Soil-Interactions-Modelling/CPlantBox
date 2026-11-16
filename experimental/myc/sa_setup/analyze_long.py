@@ -10,7 +10,7 @@ import pandas as pd
 
 import config
 
-SHOW = ["front_speed", "spread_r90", "max_tip_density", "front_velocity", "v_length", "v_length_sat", "K1", "K2", "wave_width", "encounter_C",
+SHOW = ["front_speed", "spread_r90", "max_tip_density", "front_velocity", "v_length", "v_length_sat", "K1", "K2", "wave_width", "encounter_C", "beta",
         "n_wave_rings", "n_K1_rings", "n_tip_rings", "front_position", "total_length", "active_tips"]
 
 

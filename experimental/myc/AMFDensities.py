@@ -231,6 +231,27 @@ def encounterC(simulations, min_tips = 5):
         result[key] = proportionalFit(d["rho"][ok], d["ana"][ok], d["tips"][ok]) if ok.any() else np.nan
     return result
 
+def anastomosisBeta(simulations, min_tips = 5):
+    # beta [um h^-1] of a = beta rho n (Oyarte Galvez et al. 2025): a = new anastomoses per area and hour [mm^-2 h^-1],
+    # rho = filament density of all hyphae [mm mm^-2], n = growing tip density [mm^-2], per ring and interval (first column left out,
+    # see getParasPerRing), only points with at least min_tips growing tips. beta = sum a / sum rho n over all points and simulations,
+    # i.e. the scale between the two curves a(t) and rho n(t) of the paper. Per sub type: a and n of the tips of that sub type, rho of all
+    # hyphae. The fraction of the growing tips that fuse per hour is f = a / n = beta rho (beta 23 um/h, rho 0.87 mm mm^-2: f = 2 %/h).
+    # Same as C of encounterC (beta = 1e6 C) up to the weighting of the points. Returns {"total", "runner", "bas": beta}, nan without points
+    suffix = {"total": "", "runner": "_runner", "bas": "_bas"}
+    a_sum = dict.fromkeys(suffix, 0.)
+    rn_sum = dict.fromkeys(suffix, 0.)
+    for sim in simulations:
+        dt_h = np.diff(np.concatenate([[0.], sim["times"]]))[1:] * 24 # interval lengths [h]
+        area = np.asarray(sim["area"]).reshape(-1, 1)                 # ring areas [mm^2]
+        rho = sim["length_densities"][:, 1:]                           # [mm mm^-2]
+        for key, s in suffix.items():
+            ana, tips = sim["ana_new" + s][:, 1:], sim["active_tips" + s][:, 1:]
+            ok = tips >= min_tips
+            a_sum[key] += np.sum((ana / dt_h / area)[ok])
+            rn_sum[key] += np.sum((rho * tips / area)[ok])
+    return {key: 1000 * a_sum[key] / rn_sum[key] if rn_sum[key] > 0 else np.nan for key in suffix}
+
 def theoryC(R, layer, dim = 3):
     # C [mm^2 um^-1] of a random network of straight hyphae (Poisson line process, any orientation): the expected number of hyphae closer
     # than R to a point is pi R^2 rho_V in 3D (rho_V = rho / layer, length per volume) and 2 R rho in 2D (rho length per area),

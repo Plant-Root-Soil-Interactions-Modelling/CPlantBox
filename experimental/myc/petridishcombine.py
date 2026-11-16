@@ -2,6 +2,7 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import numpy as np
 import AMFAnalysis as amf
+import AMFDensities as amfd
 import AMFIO as amfio
 import AMFPlots as amfp
 import AMFSimulationSetup as amfs
@@ -33,6 +34,12 @@ amfp.plot_anastomosis_frequency(simulations, filename=amfio.plotFile(out, "Anast
 C = amfp.plot_encounter_fraction(simulations, filename=amfio.plotFile(out, "EncounterFraction.png"), min_tips=5)
 if C:
     print("encounter fraction f = C rho: " + ", ".join(f"{k} C = {v:.3e} mm^2 um^-1 h^-1" for k, v in C.items()))
+# anastomosis constant of a = beta rho n (Oyarte Galvez et al. 2025: beta about 23 um/h), calibration target of the anastomosis parameters
+sims_ana = [sim for sim in simulations if all(k in sim for k in ("ana_new_runner", "ana_new_bas", "active_tips_runner", "active_tips_bas"))]
+if sims_ana:
+    beta = amfd.anastomosisBeta(sims_ana, min_tips=5)
+    amfio.updatePlotInfo(out, "anastomosis_beta", {"beta_um_per_h": beta})
+    print("a = beta rho n: " + ", ".join(f"{k} beta = {v:.1f} um/h" for k, v in beta.items()) + " (experiment about 23 um/h)")
 # encounter fraction for any R from the stored distances of the growing tips to other hyphal trees (as hyphal_network.py for random hyphae)
 R_max = min((float(sim["tipdist_R_max"]) for sim in simulations if "tipdist_R_max" in sim), default=None)
 if R_max is not None:

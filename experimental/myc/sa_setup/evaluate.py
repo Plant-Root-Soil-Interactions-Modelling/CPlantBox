@@ -90,6 +90,7 @@ def wave_outputs(raw, hour):
         warnings.simplefilter("ignore")
         fits = amfd.collectArrivalFits([sim])
         C = amfd.encounterC([sim], min_tips=config.ENCOUNTER_MIN_TIPS)["total"]
+        beta = amfd.anastomosisBeta([sim], min_tips=config.ENCOUNTER_MIN_TIPS)["total"]
     rows = []
     for f in fits:
         K1, lam_len, t_n = f["length"]
@@ -124,6 +125,7 @@ def wave_outputs(raw, hour):
         "K2": med(good_tips, good_tips.K2),                             # [mm^-2]
         "wave_width": med(good_tips, FWHM_BELL / good_tips.lam_tip),    # Dauer der Spitzenwelle im Ring [h]
         "encounter_C": float(C),                                        # f = C rho [mm^2 µm^-1 h^-1]
+        "beta": float(beta),                                            # a = beta rho n [µm h^-1], Ziel ≈ 23 (Oyarte Galvez 2025)
         "n_wave_rings": len(good), "n_K1_rings": len(good_K1), "n_tip_rings": len(good_tips),
     }
 

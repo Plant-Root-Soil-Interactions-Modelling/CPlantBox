@@ -99,7 +99,7 @@ Radius a, Tropismus, dx, b_prob.
 | Art | Outputs | Zeit |
 |---|---|---|
 | Mengen | `total_length` [cm], `active_tips`, `bas_share`, `anastomoses` (seit t*), `front_position` (spitzengewichteter Radius, mm) | 10, 30, 60 h nach t* |
-| Welle | `front_velocity` [mm/d], `K1` [µm mm⁻²], `K2` [mm⁻²], `wave_width` [h], `encounter_C` | Fits über 0–60 h, stehen bei 60 h |
+| Welle | `front_velocity` [mm/d], `K1` [µm mm⁻²], `K2` [mm⁻²], `wave_width` [h], `encounter_C`, `beta` [µm/h] (a = β ρ n, Ziel ≈ 23) | Fits über 0–60 h, stehen bei 60 h |
 
 Die Wellengrößen kommen aus den Fits von `AMFDensities` mit den Gütekriterien von
 `petridishstats.py` (R², Sättigung, mind. 3 Ringe). Scheitern die Fits, fehlt der Wert,
