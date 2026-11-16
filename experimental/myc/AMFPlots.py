@@ -286,6 +286,107 @@ def plot_encounter_fraction(simulations, filename = "EncounterFraction.png", min
     plt.close(fig)
     return result
 
+def plot_anastomosis_beta(simulations, filename = "AnastomosisBeta.png", beta_exp = 23., rho_sat_exp = 3.5, min_tips = 5, bin_h = 3, n_bins = 12):
+    # anastomosis rate a = beta rho n as in Oyarte Galvez et al. 2025 (beta_exp [um/h] from their figure, rho_sat_exp: saturation density
+    # of the filaments in the experiment [mm mm^-2]). a = new anastomoses per area and hour [mm^-2 h^-1], rho = filament density [mm mm^-2],
+    # n = growing tip density [mm^-2]; beta of the model from amfd.anastomosisBeta (all rings and intervals with at least min_tips tips)
+    # a: as the figure of the paper: a and rho n against the time relative to the arrival of the network in the ring (t_n, sigmoid fit of the
+    #    length density, amfd.collectArrivalFits), mean +- standard error over the rings of all simulations in bins of bin_h hours.
+    #    The right axis is scaled with the beta of the model (both curves lie on top of each other if a = beta rho n),
+    #    dashed: a the model would need for beta_exp
+    # b: fraction of the growing tips that fuse per hour f = a / n against rho, binned (equal number of points per bin), with f = beta rho
+    #    for the model and the experiment (needs "ana_new*", "active_tips*", "area" of petridishsimauto.py). Returns the beta of the model
+    sims = _with_keys(simulations, ["ana_new", "ana_new_runner", "ana_new_bas", "active_tips", "active_tips_runner", "active_tips_bas", "area"],
+                      "plot_anastomosis_beta")
+    if not sims:
+        return
+    beta = amfd.anastomosisBeta(sims, min_tips)
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    # a) a and rho n against t - t_n
+    edges = np.arange(-30, 30 + 1.e-9, bin_h)
+    shift, a_all, rn_all = [], [], []
+    for sim in sims:
+        t_h = sim["times"][1:] * 24
+        dt_h = np.diff(np.concatenate([[0.], sim["times"]]))[1:] * 24
+        area = np.asarray(sim["area"]).reshape(-1, 1)
+        a = sim["ana_new"][:, 1:] / dt_h / area
+        rn = sim["length_densities"][:, 1:] * sim["tip_dens"][:, 1:]
+        for f in amfd.fitArrivalTimes(t_h, sim["length_densities"][:, 1:] * 1000, sim["tip_dens"][:, 1:]):
+            k = f["ring"]
+            shift.append(t_h - f["t_n"]), a_all.append(a[k]), rn_all.append(rn[k])
+    ax = axes[0]
+    if shift:
+        shift, a_all, rn_all = np.concatenate(shift), np.concatenate(a_all), np.concatenate(rn_all)
+        idx = np.searchsorted(edges, shift, side="right") - 1
+        ok = (idx >= 0) & (idx < len(edges) - 1)
+        centers = 0.5 * (edges[1:] + edges[:-1])
+        def stats(y):
+            n = np.bincount(idx[ok], minlength=len(centers)).astype(float)
+            s = np.bincount(idx[ok], weights=y[ok], minlength=len(centers))
+            s2 = np.bincount(idx[ok], weights=y[ok] ** 2, minlength=len(centers))
+            with np.errstate(invalid="ignore", divide="ignore"):
+                m = s / n
+                se = np.sqrt(np.maximum(s2 / n - m ** 2, 0) / np.maximum(n - 1, 1))
+            return m, se
+        a_m, a_se = stats(a_all)
+        rn_m, rn_se = stats(rn_all)
+        ax2 = ax.twinx()
+        ax2.plot(centers, rn_m, color="tab:purple", lw=2.5, label=r"$\rho n$ (right axis)")
+        ax2.fill_between(centers, rn_m - rn_se, rn_m + rn_se, color="tab:purple", alpha=0.3, lw=0)
+        ax.plot(centers, a_m, color="tab:green", lw=2.5, label="anastomosis rate $a$ (model)")
+        ax.fill_between(centers, a_m - a_se, a_m + a_se, color="tab:green", alpha=0.3, lw=0)
+        ax.plot(centers, beta_exp / 1000 * rn_m, color="0.3", ls="--", lw=1.5, label=f"$a$ needed for $\\beta$ = {beta_exp:g} $\\mu$m/h (experiment)")
+        top = 1.1 * np.nanmax(np.concatenate([a_m + a_se, beta_exp / 1000 * rn_m]))
+        ax.set_ylim(0, top)
+        ax2.set_ylim(0, top / (beta["total"] / 1000) if beta["total"] > 0 else None) # right axis scaled with the beta of the model
+        ax2.set_ylabel(r"$\rho n$ (mm$^{-3}$)", color="tab:purple")
+        ax2.spines[["top"]].set_visible(False)
+        lines = ax.get_legend_handles_labels()[0] + ax2.get_legend_handles_labels()[0]
+        ax.legend(lines, [l.get_label() for l in lines], fontsize=8, loc="upper left")
+    ax.set_xlabel(r"$t - t_n$ (h)")
+    ax.set_ylabel(r"Anastomosis rate $a$ (mm$^{-2}$ h$^{-1}$)", color="tab:green")
+    ax.set_title(f"a) $a = \\beta \\rho n$: model $\\beta$ = {beta['total']:.1f} $\\mu$m/h, experiment {beta_exp:g} $\\mu$m/h\n"
+                 f"right axis scaled with the model $\\beta$, mean $\\pm$ s.e. over the rings with arrival fit", fontsize=9)
+    ax.set_xlim(edges[0], edges[-1])
+    ax.spines[["top"]].set_visible(False)
+    # b) f = a / n against rho
+    ax = axes[1]
+    data = amfd.encounterData(sims) # rho [um mm^-2], ana per hour, tips
+    rho_max = 0.
+    for key in ["total", "runner", "bas"]:
+        d = data[key]
+        ok = d["tips"] >= min_tips
+        if not ok.any():
+            continue
+        rho = d["rho"][ok] / 1000 # [mm mm^-2]
+        e = np.unique(np.quantile(rho, np.linspace(0, 1, n_bins + 1)))
+        if len(e) < 2:
+            continue
+        x, f = _binned_fraction(rho, d["ana"][ok], d["tips"][ok], e)
+        color, name = SUBTYPE_STYLE[key]
+        ax.plot(x, 100 * f, color=color, marker="o", lw=3.5 if key == "total" else 2, label=f"{name} ($\\beta$ = {beta[key]:.1f} $\\mu$m/h)")
+        rho_max = max(rho_max, x.max())
+    rho_max = max(rho_max, rho_sat_exp) * 1.05
+    r = np.linspace(0, rho_max, 50)
+    ax.plot(r, 100 * beta["total"] / 1000 * r, color="k", ls="--", lw=1, label=f"$f = \\beta \\rho$, model $\\beta$ = {beta['total']:.1f} $\\mu$m/h")
+    ax.plot(r, 100 * beta_exp / 1000 * r, color="tab:red", ls="--", lw=1.5, label=f"$f = \\beta \\rho$, experiment $\\beta$ = {beta_exp:g} $\\mu$m/h")
+    rho_2 = 0.02 / (beta_exp / 1000)
+    ax.plot([rho_2], [2], color="tab:red", marker="*", ms=12, ls="none", label=f"2 %/h at $\\rho$ = {rho_2:.2f} mm mm$^{{-2}}$")
+    ax.axvline(rho_sat_exp, color="0.5", ls=":", lw=1)
+    ax.text(rho_sat_exp, 0.6, f" saturation density\n experiment {rho_sat_exp:g}", fontsize=8, color="0.4", va="top", transform=ax.get_xaxis_transform())
+    ax.set_xlim(0, rho_max)
+    ax.set_ylim(bottom=0)
+    ax.set_xlabel(r"Local filament density $\rho$ (mm mm$^{-2}$)")
+    ax.set_ylabel(r"Growing tips that fuse $f = a / n$ (% per hour)")
+    ax.set_title(f"b) Fusion per tip against density (ring, hour, simulation with $\\geq${min_tips} tips, binned)", fontsize=9)
+    ax.legend(fontsize=8)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.suptitle(f"Anastomosis constant $\\beta$ of $a = \\beta \\rho n$ (Oyarte Galvez et al. 2025), {len(sims)} simulations", fontsize=10)
+    fig.tight_layout()
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    return beta
+
 TIPDIST_KEYS = ["tipdist_col", "tipdist_ring", "tipdist_d"]
 
 def _binned_fraction(rho, events, tips, edges):
