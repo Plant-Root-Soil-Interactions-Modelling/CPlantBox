@@ -36,7 +36,7 @@ class OrganSpecificParameter {
   public:
     int subType = -1;                     ///< Sub-type index of the organ; matches OrganRandomParameter::subType
     double a = 0.;                        ///< Radius of the organ [cm]
-    double ldelay = 0.;                   ///< Lateral organ delay [cm]
+    double ldelay = 0.;                   ///< Lateral organ delay [day]
     virtual std::string toString() const; ///< Returns a short human-readable summary for debugging
 };
 

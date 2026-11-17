@@ -818,7 +818,9 @@ double Organ::getLatInitialGrowth(double dt) {
 double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // override for stems
 {
     auto rp = getOrganRandomParameter(); // rename
-    int delayDefinition = getOrganism()->getDelayDefinition(ot_lat);
+
+    int ot = this->organType();
+    int delayDefinition = getOrganism()->getDelayDefinition(ot != Organism::ot_seed ? ot : ot_lat); // take ot_lat only in case of seed
 
     // count the number of laterals of subtype st already created on this organ
     auto correctST = [ot_lat, st_lat](std::shared_ptr<Organ> org) -> double {
@@ -826,6 +828,7 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // over
     }; // return 1. if organ of correct type and subtype, 0. otherwise
     double numberOfLaterals = double(std::count_if(children.begin(), children.end(), correctST)); // count how may children of the correct type and subtype exists (they do not have to be emerged)
     double growthDelay = 0.;
+    double multDelay = rp->multDelay;
 
     switch (delayDefinition) {
     case Organism::dd_distance: {                                           // lateral has to wait for a apical zone to develop
@@ -843,13 +846,17 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // over
     case Organism::dd_time_self: {                                          // lateral has to wait for a fixed time (defined by lateral organ itself)
         auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
         growthDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
+        multDelay = latRp->multDelay;
+        // if (latRp->subType == 5) {
+        //     std::cout << "Shoot borne lateral detected, multDelay: " << multDelay << ", growthDelay: " << growthDelay << " and numberOfLaterals " << numberOfLaterals << std::endl << std::flush;
+        // }
         break;
     }
     default: {
         throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
     }
     }
-    return growthDelay + numberOfLaterals * rp->multDelay;
+    return growthDelay + numberOfLaterals * multDelay;
 }
 
 /**
