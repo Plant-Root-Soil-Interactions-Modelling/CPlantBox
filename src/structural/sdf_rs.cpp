@@ -123,6 +123,10 @@ void SDF_RootSystem::updateTree(const Organism& plant) {
 
 double SDF_RootSystem::getDist(const Vector3d& p) const {
 
+    return getDistFiltered(p,nullptr);
+}
+
+double SDF_RootSystem::getDistFiltered(const Vector3d& p, const std::function<bool(int)> &exclude) const {
     std::vector<double> a = { p.x-dx_, p.y-dx_, p.z-dx_ };
     std::vector<double> b = { p.x+dx_, p.y+dx_, p.z+dx_ };
     aabb::AABB box = aabb::AABB(a,b);
@@ -131,6 +135,9 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
     // std::cout << indices.size() << " segments in range\n";
     distIndex = -1;
     for (int i : indices) {
+        if (exclude && exclude(i)) {
+            continue;
+        }
         
         Vector3d x1 = nodes_[segments_[i].x];
         Vector3d x2 = nodes_[segments_[i].y];
@@ -178,8 +185,7 @@ double SDF_RootSystem::getDist(const Vector3d& p) const {
         }
     }
     return -mdist;
-}
-
+    }
 } // namespace
 
 

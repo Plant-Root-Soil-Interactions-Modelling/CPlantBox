@@ -769,6 +769,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("lmaxs", &HyphaeRandomParameter::lmaxs)
         .def_readwrite("ln", &HyphaeRandomParameter::ln)
         .def_readwrite("lns", &HyphaeRandomParameter::lns)
+        .def_readwrite("anaMinDist", &HyphaeRandomParameter::anaMinDist)
         .def_readwrite("ana", &HyphaeRandomParameter::ana);
     py::class_<HyphaeSpecificParameter, OrganSpecificParameter, std::shared_ptr<HyphaeSpecificParameter>>(m, "HyphaeSpecificParameter")
         .def(py::init<>())

@@ -5,6 +5,9 @@
 #include "MycorrhizalRoot.h"
 #include "mycorrhizalrootparameter.h"
 #include "hyphaeparameter.h"
+#include <cmath>
+#include <algorithm>
+#include <vector>
 // #include "aabbcc/AABB.h"
 // #include "sdf.h"
 #include "sdf_rs.h"
@@ -12,7 +15,57 @@
 
 #include <functional>
 
-namespace CPlantBox {
+namespace CPlantBox { 
+    namespace {
+        int localIndex(const std::shared_ptr<Organ> &o, int globalNode) {
+            for (int i = 0; i < o->getNumberOfNodes(); i++) {
+                if (o->getNodeId(i) == globalNode) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        struct ChainLink { 
+            const Organ* organ;
+            double s;
+            double d;
+        };
+
+        std::vector<ChainLink> chain(const std::shared_ptr<Organ>& o, int k, double maxLen) {
+            std::vector<ChainLink> c;
+            std::shared_ptr<Organ> current = o;
+            double s = current ->getLength(k), d = 0;
+
+            while (current) {
+                c.push_back({current.get(),s,d});
+                d += s;
+                if (d > maxLen) {
+                    break;
+                }
+                auto parent = current->getParent();
+                if (!parent) {
+                    break;
+                }
+                s = parent->getLength(current->getParentNI());
+                current = parent;
+            }
+            return c;
+        }
+
+        double pathDist(const std::shared_ptr<Organ>& a, int ka, const std::shared_ptr<Organ>& b, int kb, double maxLen) {
+            auto chainA = chain(a,ka,maxLen);
+            auto chainB = chain(b,kb,maxLen);
+            double shortest = 1e100;
+            for (const auto& linkA : chainA) {
+                for (const auto& linkB : chainB) {
+                    if (linkA.organ == linkB.organ) {
+                        shortest = std::min(shortest, linkA.d + linkB.d + std::fabs(linkA.s - linkB.s));
+                    }
+                }
+            }
+            return shortest;
+        }
+    }
 MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum): Plant(seednum) {}
 
 void MycorrhizalPlant::initializeReader()
@@ -245,26 +298,38 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
     for (const auto & h1 : hyphae) {
 		auto h = std::dynamic_pointer_cast<Hyphae>(h1);
 		
-        sdf->excludeTreeId = h->getHyphalTreeIndex();//getParameter("hyphalTreeIndex");
+        sdf->excludeTreeId = -1; //h->getHyphalTreeIndex();//getParameter("hyphalTreeIndex");
 
         if (h->isActive()&& h->getHyphaeRandomParameter()->distTH > 0) { // only check for anastomosis for active hyphae tips
-            auto tip = h->getNode(h->getNumberOfNodes()-1);
-            dist = sdf->getDist(tip);
+            const int kTip = h ->getNumberOfNodes()-1;
+            const int tipId = h-> getNodeId(kTip);
+            auto tip = h->getNode(kTip);
+            auto thisL = h->getHyphaeRandomParameter()->anaMinDist;
+            auto thisTheta = h->getHyphaeRandomParameter()->theta;
+            auto thisDistTH = h->getHyphaeRandomParameter()->distTH;
+            const double L = thisL > 0 ? thisL : thisDistTH / std::max(std::sin(thisTheta), 1e-6) + 2 * h->getHyphaeRandomParameter()->dx; // minimal path length along mycelium for anastomosis, if <0: derived from distTH, theta, dx
+
+            dist = sdf->getDistFiltered(tip, [&](int i) {
+                if (sdf->segments_[i].y == tipId) { // exclude the tip itself
+                    return true;
+                }
+                auto o = sdf->segO[i].lock(); //get current organ
+                if (!o) {                      // check that organ is still alive if not should exclude in dist calc
+                    return true;
+                }
+                int k = localIndex(o, sdf->segments_[i].y);
+                if (k < 0) { //potential edge case, should also be excluded
+                    std::cout << "Warning: could not find local index for node " << sdf->segments_[i].y << " in organ " << o->getId() << std::endl;
+                    return true;
+                }
+                return pathDist(h, kTip, o, k, L) < L;
+            });
             if (fabs(dist) < h->getHyphaeRandomParameter()->distTH && rand() < h->getHyphaeRandomParameter()->ana) 
             {
                 auto lastIndex = sdf->distIndex; 
                 auto connected_to_hyphae = std::dynamic_pointer_cast<Hyphae>(sdf->lastOrgan.lock());
-                int locallastIndex = -1;
+                int locallastIndex = localIndex(connected_to_hyphae, lastIndex);
 
-                for (size_t i = 0; i < connected_to_hyphae->getNumberOfNodes(); i++)
-                {
-                    if (connected_to_hyphae->getNodeId(i) == lastIndex)
-                    {
-                        locallastIndex = i;
-                        break;
-                    }
-                }
-                
                 if (verbose) {
                     std::cout <<"Anastomosis at tip: " << tip.toString() <<" to node: " << connected_to_hyphae->getNode(locallastIndex).toString() << std::endl;
                     std::cout << "Anastomosis occurred at distance: " << dist << " cm.\n";

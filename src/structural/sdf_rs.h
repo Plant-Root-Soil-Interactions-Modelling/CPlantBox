@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept>
+#include <functional>
 
 #include "mymath.h"
 #include "Organism.h"
@@ -36,6 +37,8 @@ public:
     SDF_RootSystem(std::vector<Vector3d> nodes, const std::vector<Vector2i> segments, std::vector<double> radii, double dx = 0.5);
 
     virtual double getDist(const Vector3d& p) const override;
+
+    double getDistFiltered(const Vector3d& p, const std::function<bool(int)> &exclude) const;
 
     virtual std::string toString() const override { return "SDF_RootSystem"; }
 

@@ -69,6 +69,7 @@ public:
     double thetas=0./180.*M_PI;         ///< standard deviation of branching angle  [rad]
     double distTH = 0.; ///< distance for tip hyphae anastomosis [cm]
     double ana= 1.0; ///< Probability of anastomosis occuring if tip is close enough
+    double anaMinDist = 0.1; ///< Minimal distance for anastomosis to occur [cm]  <0: distTH/sin(theta) + 2*dx
 
     double lnk = 0.;    //TODO rausschmeissen
     double lb = 0.001;         ///< Basal zone [cm]
