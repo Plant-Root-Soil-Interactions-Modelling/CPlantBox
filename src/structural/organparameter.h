@@ -36,7 +36,7 @@ class OrganSpecificParameter {
   public:
     int subType = -1;                     ///< Sub-type index of the organ; matches OrganRandomParameter::subType
     double a = 0.;                        ///< Radius of the organ [cm]
-    double ldelay = 0.;                   ///< Lateral organ delay [cm]
+    double ldelay = 0.;                   ///< Lateral organ delay [day]
     virtual std::string toString() const; ///< Returns a short human-readable summary for debugging
 };
 
@@ -96,7 +96,7 @@ class OrganRandomParameter {
     double ldelay = -1.;        ///< Mean lateral emergence delay [day]; used by RootDelay and Organism::delayDefinition != Organism::dd_distance
                                 ///< @see RootDelay, RootSystem::initializeDB
     double ldelays = 0.;        ///< Standard deviation of the lateral emergence delay [day]
-    double multDelay = 1; ///< by how much multiply the delay between each consecutive lateral, see @Stem::getLatGrowthDelay
+    double multDelay = 0;       ///< by how much multiply the delay between each consecutive lateral, see @Stem::getLatGrowthDelay
 
     /// @brief Position-based activation flag for each successor rule.
     ///

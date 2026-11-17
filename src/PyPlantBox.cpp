@@ -320,6 +320,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<OrganSpecificParameter, std::shared_ptr<OrganSpecificParameter>>(m, "OrganSpecificParameter")
         .def_readwrite("subType", &OrganSpecificParameter::subType)
         .def_readwrite("a", &OrganSpecificParameter::a)
+        .def_readwrite("ldelay", &OrganSpecificParameter::ldelay)
         .def("__str__", &OrganSpecificParameter::toString);
     py::class_<OrganRandomParameter, std::shared_ptr<OrganRandomParameter>>(m, "OrganRandomParameter")
         .def(py::init<std::shared_ptr<Organism>>())
