@@ -64,6 +64,13 @@ class MaizeStem(pb.Stem):
         # seed = plant.getSeed()
         # print(seed)
 
+        print("Successor rules:")
+        print("srp.successorWhere", srp.successorWhere)
+        print("srp.successorOT", srp.successorOT)
+        print("srp.successorST", srp.successorST)
+        print("srp.successorP", srp.successorP)
+        print("srp.successorNo", srp.successorNo)
+
 
 class MaizeRoot(pb.Root):
     """Maize root subclass - add brace root behavior"""
@@ -71,9 +78,8 @@ class MaizeRoot(pb.Root):
     def __init__(self, plant, subType, delay, parent, pni):
         super().__init__(plant, subType, delay, parent, pni)
         p = self.param()  # specific stem parameters
-        print(p.subType)
-        if p.subType == 1:
-            print(self.getParent())
+        if p.subType == 5:
+            print("crown roots")
 
 
 class Maize(pb.Plant):
@@ -134,13 +140,72 @@ path = "../../modelparameter/structural/plant/"
 name = "2020-maize"
 plant.readParameters(path + name + ".xml")
 
-srpm = plant.getOrganRandomParameter(pb.seed)
-srpm[0].seedPos.x = 0
-srpm[0].seedPos.y = 0
-print(srpm[0])
-srpm[0].delayDefinitionRoot = pb.dd_distance
-srpm[0].delayDefinitionShoot = pb.dd_time_lat
+#
+# Seed
+#
+srp = plant.getOrganRandomParameter(pb.seed)
+srp[0].seedPos.x = 0
+srp[0].seedPos.y = 0
 
+# Delay timing type
+srp[0].delayDefinitionRoot = pb.dd_distance
+srp[0].delayDefinitionShoot = pb.dd_time_lat
+
+# Shoot borne definition
+srp[0].nC = 7
+srp[0].firstSB = 0
+srp[0].delaySB = 3
+
+#
+# Main stem
+#
+# we want to add (for now)
+# <parameter name="successor" ruleId="1" numLat="nC" subType="5" organType ="2"  where="0" percentage="1"/>
+strp = plant.getOrganRandomParameter(pb.stem)
+
+print("srp.successorWhere", strp[1].successorWhere)
+print("srp.successorOT", strp[1].successorOT)
+print("srp.successorST", strp[1].successorST)
+print("srp.successorP", strp[1].successorP)
+print("srp.successorNo", strp[1].successorNo)
+
+print("***")
+successorWhere = strp[1].successorWhere
+successorOT = strp[1].successorOT
+successorST = strp[1].successorST
+successorP = strp[1].successorP
+successorNo = strp[1].successorNo
+
+successorWhere.append([0])
+successorOT.append([pb.root])
+successorST.append([5])
+successorP.append([1])
+successorNo.append(int(srp[0].nC))
+
+strp[1].successorWhere = successorWhere
+strp[1].successorOT = successorOT
+strp[1].successorST = successorST
+strp[1].successorP = successorP
+strp[1].successorNo = successorNo
+
+
+print("srp.successorWhere", strp[1].successorWhere)
+print("srp.successorOT", strp[1].successorOT)
+print("srp.successorST", strp[1].successorST)
+print("srp.successorP", strp[1].successorP)
+print("srp.successorNo", strp[1].successorNo)
+
+#
+# Crown root
+#
+rrp = plant.getOrganRandomParameter(pb.root)
+rrp[5].ldelays = srp[0].firstSB
+rrp[5].ldelays = 0.0
+rrp[5].multDelay = srp[0].delaySB
+
+
+#  double ldelays = 0.;        ///< Standard deviation of the lateral emergence delay [day]
+#     double multDelay = 0;
 
 plant.initialize()
 plant.writeParameters(name + "_modified" + ".xml")
@@ -159,7 +224,7 @@ N = sim_time / dt
 
 # Animate growth in an interactive vtk window (close window, or press 'e', to continue)
 anim = AnimatePlant(plant)
-anim.param_name = "creationTime"
+anim.param_name = "subType"  # "creationTime"
 anim.start(axis="v")
 anim.plant = True
 anim.avi_name = "maize_"
