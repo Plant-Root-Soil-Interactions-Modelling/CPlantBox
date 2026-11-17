@@ -90,7 +90,7 @@ public:
     double tropismN = 1.;   ///< Hypha tropism parameter (number of trials)
     double tropismS = 0.3;  ///< Hypha tropism parameter (mean value of expected changeg [1/cm]
     double nob() const { if(ln>0){ return std::max((lmax-la-lb)/ln+1, 0.);}else{return 0.;} }  ///< returns the mean maximal number of branching nodes [1]
-    double nobs() const; ///< returns the standard deviation of number of branching nodes [1
+    double nobs() const; ///< returns the standard deviation of number of branching nodes [1]
 
     std::shared_ptr<SoilLookUp> v_scale = std::make_shared<SoilLookUp>(); ///< elongation rate scale
     std::shared_ptr<SoilLookUp> b_scale = std::make_shared<SoilLookUp>(); ///< scale branching rate

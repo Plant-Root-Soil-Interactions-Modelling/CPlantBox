@@ -307,7 +307,7 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
             auto thisL = h->getHyphaeRandomParameter()->anaMinDist;
             auto thisTheta = h->getHyphaeRandomParameter()->theta;
             auto thisDistTH = h->getHyphaeRandomParameter()->distTH;
-            const double L = thisL > 0 ? thisL : thisDistTH / std::max(std::sin(thisTheta), 1e-6) + 2 * h->getHyphaeRandomParameter()->dx; // minimal path length along mycelium for anastomosis, if <0: derived from distTH, theta, dx
+            const double L = thisL >= 0 ? thisL : thisDistTH / std::max(std::sin(thisTheta), 1e-6) + 2 * h->getHyphaeRandomParameter()->dx; // minimal path length along mycelium for anastomosis, if <0: derived from distTH, theta, dx
 
             dist = sdf->getDistFiltered(tip, [&](int i) {
                 if (sdf->segments_[i].y == tipId) { // exclude the tip itself

@@ -197,7 +197,7 @@ void HyphaeRandomParameter::bindParameters()
     bindParameter("theta", &theta, "Branching angle [rad]", &thetas);
     bindParameter("distTH", &distTH, "Distance for tip-hyphae anastomosis [cm]");
     bindParameter("ana", &ana, "Probability of anastomosis occuring if distance is long enough");
-    bindParameter("anaMinPath", &anaMinDist, "Minimal path length along mycelium for anastomosis [cm], <0: derived from distTH, theta, dx");
+    bindParameter("anaMinDist", &anaMinDist, "Minimal path length along mycelium for anastomosis [cm], <0: derived from distTH, theta, dx");
     bindParameter("la", &la, "Apical zone [cm]", &las);
     bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);

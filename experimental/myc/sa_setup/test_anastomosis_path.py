@@ -65,8 +65,7 @@ def main():
     mycp, time_star, times = amfs.makeSimulation(
         args.seed, str(xml.parent) + "/", xml.stem, dish["height"], dish["petri_dish"], dish["small_hyphae_dish"],
         dish["half_dish"], dt, nSteps, args.hours, "sim", max_wait_days=config.MAX_WAIT_DAYS, stats=stats,
-        turn_off_root_growth=True, hyphae_parameters={"anaMinPath": args.L})
-    wall = time.perf_counter() - t0
+        turn_off_root_growth=True, hyphae_parameters={"anaMinDist": args.L})    wall = time.perf_counter() - t0
     if time_star is None:
         raise RuntimeError(f"status {stats['status']}")
 
@@ -82,7 +81,7 @@ def main():
 
     length = sum(h.getLength() for h in hyphae)
     result = {"L": args.L, "seed": args.seed, "hours": args.hours, "wall_s": round(wall),
-              "anaMinPath_used": stats.get("hyphae_anaMinPath"), "n_hyphae": len(hyphae),
+              "anaMinDist_used": stats.get("hyphae_anaMinDist"), "n_hyphae": len(hyphae),
               "length_cm": length, "fusions": sum(counts.values()), "relation": dict(counts),
               "relation_by_subtype": dict(sorted(by_subtype.items()))}
     print(json.dumps(result, indent=2))
