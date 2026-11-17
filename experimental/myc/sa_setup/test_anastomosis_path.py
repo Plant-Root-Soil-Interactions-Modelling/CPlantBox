@@ -85,11 +85,16 @@ def main():
               "anaMinDist_used": stats.get("hyphae_anaMinDist"), "n_hyphae": len(hyphae),
               "length_cm": length, "fusions": sum(counts.values()), "relation": dict(counts),
               "relation_by_subtype": dict(sorted(by_subtype.items()))}
-    print(json.dumps(result, indent=2))
+    print(result, flush=True)  # zuerst roh ausgeben, damit nichts verloren geht
 
+    def to_json(o):  # numpy-Arrays und -Zahlen (z. B. aus stats) in Python-Typen umwandeln
+        return o.tolist() if hasattr(o, "tolist") else str(o)
+
+    text = json.dumps(result, indent=2, default=to_json)
+    print(text)
     out = config.ROOT / "test_ana"
     out.mkdir(exist_ok=True)
-    (out / f"L{args.L:g}_seed{args.seed}.json").write_text(json.dumps(result, indent=2))
+    (out / f"L{args.L:g}_seed{args.seed}.json").write_text(text)
 
 
 if __name__ == "__main__":
