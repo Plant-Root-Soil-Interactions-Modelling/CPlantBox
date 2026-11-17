@@ -155,8 +155,8 @@ srp[0].delayDefinitionRoot = pb.dd_distance
 srp[0].delayDefinitionShoot = pb.dd_time_self  # needed for shootborne definition, each lateral defines it's own delay
 
 # Shoot borne definition
-srp[0].nC = 7
-srp[0].firstSB = 3
+srp[0].nC = 5
+srp[0].firstSB = 7
 srp[0].delaySB = 7
 
 #
@@ -179,11 +179,12 @@ successorST = strp[1].successorST
 successorP = strp[1].successorP
 successorNo = strp[1].successorNo
 
-successorWhere.append([1])
-successorOT.append([pb.root])
-successorST.append([5])
-successorP.append([1])
-successorNo.append(int(srp[0].nC))
+for i in range(0, 6):
+    successorWhere.append([int(i + 1)])  # whorl index; check at which node teh coleoptilar node is; that's the starting node
+    successorOT.append([pb.root])
+    successorST.append([5])
+    successorP.append([1])
+    successorNo.append(int(srp[0].nC + 2 * i))  # inceasing per root whorl
 
 strp[1].successorWhere = successorWhere
 strp[1].successorOT = successorOT
@@ -204,7 +205,7 @@ print("srp.successorNo", strp[1].successorNo)
 rrp = plant.getOrganRandomParameter(pb.root)
 rrp[5].ldelay = srp[0].firstSB
 rrp[5].ldelays = 0.0
-rrp[5].multDelay = srp[0].delaySB
+rrp[5].multDelay = 0  # srp[0].delaySB
 
 
 srp[0].firstSB = 1e9
@@ -213,7 +214,7 @@ plant.initialize()
 plant.writeParameters(name + "_modified" + ".xml")
 
 
-sim_time = 60
+sim_time = 20
 dt = 1  # simulation step [day], animation shows one frame per step
 N = sim_time / dt
 
