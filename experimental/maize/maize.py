@@ -19,10 +19,12 @@ from plantbox.visualisation.vtk_animate import AnimatePlant, AnimateRoots
 
 
 class MaizeStem(pb.Stem):
-    """Maize stem subclss"""
+    """Maize stem"""
 
     def __init__(self, plant, subType, delay, parent, pni):
         super().__init__(plant, subType, delay, parent, pni)
+
+        self.number_of_roots = {}  # at each stem node index
 
         self.partialIHeading = pb.Vector3d(-0.5, -0.5, 1)
 
@@ -79,10 +81,28 @@ class MaizeRoot(pb.Root):
         super().__init__(plant, subType, delay, parent, pni)
         rrp = self.getRootRandomParameter()
         p = self.param()  # specific stem parameters
+        parent = self.getParent()
+
         if p.subType == 5:
-            print("crown roots")
+            if pni not in parent.number_of_roots:
+                parent.number_of_roots[pni] = 0
+            parent.number_of_roots[pni] += 1
+            print("Crown root", parent.number_of_roots[pni])
             print("p.ldelay", p.ldelay)
             print("rrp.multDelay", rrp.multDelay)
+            print(self.getInitialHeading())
+            print(parent.getInitialHeading())
+            print("parent", type(parent))
+
+            heading = self.getInitialHeading()
+
+            # now adjust the initial heading based on theta and self.number_of_roots
+            # theta = p.theta
+            # num_roots = self.number_of_roots[p.pni]
+            #
+            # # adjust heading based on theta and number of roots
+            # new_heading = heading + theta * (num_roots - 1)
+            # self.setInitialHeading(new_heading)
 
 
 class Maize(pb.Plant):
@@ -108,6 +128,7 @@ class Maize(pb.Plant):
         leaf = pb.GrassLeaf(self, subType, delay, parent, pni)
         lrp = leaf.getGrassLeafRandomParameter()
         lp = leaf.param()
+        print("Leaf", lp.subType)
         # hack to set parameters
         # print("Leaf specific parameters")
         # print(leaf.param())
@@ -158,6 +179,7 @@ srp[0].delayDefinitionShoot = pb.dd_time_self  # needed for shootborne definitio
 srp[0].nC = 5
 srp[0].firstSB = 7
 srp[0].delaySB = 7
+srp[0].firstSB = 1e9
 
 #
 # Main stem
@@ -179,12 +201,12 @@ successorST = strp[1].successorST
 successorP = strp[1].successorP
 successorNo = strp[1].successorNo
 
-for i in range(0, 6):
-    successorWhere.append([int(i + 1)])  # whorl index; check at which node teh coleoptilar node is; that's the starting node
-    successorOT.append([pb.root])
-    successorST.append([5])
-    successorP.append([1])
-    successorNo.append(int(srp[0].nC + 2 * i))  # inceasing per root whorl
+# for i in range(0, 6):
+#     successorWhere.append([int(i + 1)])  # whorl index; check at which node teh coleoptilar node is; that's the starting node
+#     successorOT.append([pb.root])
+#     successorST.append([5])
+#     successorP.append([1])
+#     successorNo.append(int(srp[0].nC + 2 * i))  # inceasing per root whorl
 
 strp[1].successorWhere = successorWhere
 strp[1].successorOT = successorOT
@@ -207,8 +229,14 @@ rrp[5].ldelay = srp[0].firstSB
 rrp[5].ldelays = 0.0
 rrp[5].multDelay = 0  # srp[0].delaySB
 
-
-srp[0].firstSB = 1e9
+#
+# Leaf
+#
+lrp = plant.getOrganRandomParameter(pb.leaf)
+print("Leaf", lrp[1].subType)
+print("Leaf delay", lrp[1].ldelay)
+print("Leaf multDelay", lrp[1].multDelay)
+dd
 
 plant.initialize()
 plant.writeParameters(name + "_modified" + ".xml")
@@ -218,23 +246,23 @@ sim_time = 20
 dt = 1  # simulation step [day], animation shows one frame per step
 N = sim_time / dt
 
-for i in range(int(N)):
-    plant.simulate(dt)
-ana = pb.SegmentAnalyser(plant)
-ana.addAge(sim_time)
-vp.plot_roots(ana, "age")  # Interactive plot, using vtk "age"
-
-
-# # Animate growth in an interactive vtk window (close window, or press 'e', to continue)
-# anim = AnimatePlant(plant)
-# anim.param_name = "subType"  # "creationTime"
-# anim.start(axis="v")
-# anim.plant = True
-# anim.avi_name = "maize_"
-# for i in range(int(sim_time / dt)):
-#     print(i)
+# for i in range(int(N)):
 #     plant.simulate(dt)
-#     anim.simtime = (i + 1) * dt
-#     anim.update()
-# anim.run()
-# anim.make_video(output_file="maize.mp4", fps=20, codec="libx264")
+# ana = pb.SegmentAnalyser(plant)
+# ana.addAge(sim_time)
+# vp.plot_roots(ana, "age")  # Interactive plot, using vtk "age"
+
+
+# Animate growth in an interactive vtk window (close window, or press 'e', to continue)
+anim = AnimatePlant(plant)
+anim.param_name = "subType"  # "creationTime"
+anim.start(axis="v")
+anim.plant = True
+anim.avi_name = "maize_"
+for i in range(int(sim_time / dt)):
+    print(i)
+    plant.simulate(dt)
+    anim.simtime = (i + 1) * dt
+    anim.update()
+anim.run()
+anim.make_video(output_file="maize.mp4", fps=20, codec="libx264")
