@@ -49,8 +49,7 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
  * @param pni     Local node index in the parent where this organ attaches.
  */
 Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int ot, int st, double delay, int pni)
-    : parentNI(pni), plant(plant), parent(parent), id(plant->getOrganIndex()),
-      param_(plant->getOrganRandomParameter(ot, st)->realize()), /* root parameters are diced in the getOrganRandomParameter class */
+    : parentNI(pni), plant(plant), parent(parent), id(plant->getOrganIndex()), param_(plant->getOrganRandomParameter(ot, st)->realize()), /* root parameters are diced in the getOrganRandomParameter class */
       age(-delay) {}
 
 /**
@@ -271,6 +270,19 @@ void Organ::addNode(Vector3d n, int id, double t) {
 }
 
 /**
+ * @brief Returns the number of direct child organs matching the specified organ type and subtype.
+ */
+int Organ::getNumberOfChildren(int orgType, int subType) const {
+    int count = 0;
+    for (auto &c : children) {
+        if (c->organType() == orgType && c->param_->subType == subType) {
+            count++;
+        }
+    }
+    return count;
+}
+
+/**
  * @brief Appends a node using the next global index from the organism.
  *
  * Convenience wrapper around addNode(n, id, t) that fetches
@@ -296,8 +308,7 @@ void Organ::addNode(Vector3d n, double t) { addNode(n, plant.lock()->getNodeInde
  */
 void Organ::insertNode(Vector3d n, double t, size_t index) {
     nodes.insert(nodes.begin() + index, n);
-    nodeIds.push_back(
-        plant.lock()->getNodeIndex()); // The organism-level node bookkeeping assumes that the global IDs of new nodes sit at the tail of an organ's nodeIds, after the oldNumberOfNodes old one
+    nodeIds.push_back(plant.lock()->getNodeIndex()); // The organism-level node bookkeeping assumes that the global IDs of new nodes sit at the tail of an organ's nodeIds, after the oldNumberOfNodes old one
     /*
     nodeIds.insert(nodeIds.begin() + index, plant.lock()->getNodeIndex());
     would be conceptually cleaner but needs the four functions in Organism.cpp (getUpdatedNodeIndices, getUpdatedNodes, getUpdatedNodeCTs, getNewNodes/getNewNodeCTs) reworked.
@@ -586,9 +597,8 @@ void Organ::writeRSML(tinyxml2::XMLDocument &doc, tinyxml2::XMLElement *parent) 
  */
 std::string Organ::toString() const {
     std::stringstream str;
-    str << Organism::organTypeNames.at(this->organType()) << " #" << getId() << ": sub type " << param_->subType << ", realized length " << getLength(true) << " cm , theoretic length "
-        << getLength(false) << " cm , age " << getAge() << " days, alive " << isAlive() << ", active " << isActive() << ", number of nodes " << this->getNumberOfNodes() << ", with " << children.size()
-        << " children";
+    str << Organism::organTypeNames.at(this->organType()) << " #" << getId() << ": sub type " << param_->subType << ", realized length " << getLength(true) << " cm , theoretic length " << getLength(false) << " cm , age " << getAge()
+        << " days, alive " << isAlive() << ", active " << isActive() << ", number of nodes " << this->getNumberOfNodes() << ", with " << children.size() << " children";
     return str.str();
 }
 
@@ -602,7 +612,7 @@ Vector3d Organ::getInitialHeading() const {
     Vector3d parentHeading; // heading of the parent at the attachment point
     auto parent = getParent();
     bool isRoot = parent ? (organType() == Organism::ot_root) : (organType() <= Organism::ot_root); // without parent, unrecognized organs (0) are treated as roots
-    bool isBaseOrgan = (parent == nullptr) || (parent->organType() == Organism::ot_seed); // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created wwithout parent
+    bool isBaseOrgan = (parent == nullptr) || (parent->organType() == Organism::ot_seed);           // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created wwithout parent
     bool isShootBornRoot = (parent != nullptr) && (parent->organType() == Organism::ot_stem) && (organType() == Organism::ot_root);
     bool isRootBornShoot = (parent != nullptr) && (parent->organType() == Organism::ot_root) && ((organType() == Organism::ot_stem) || (organType() == Organism::ot_leaf));
     if (isBaseOrgan || isShootBornRoot || isRootBornShoot) {
@@ -823,10 +833,9 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const // over
     int delayDefinition = getOrganism()->getDelayDefinition(ot != Organism::ot_seed ? ot : ot_lat); // take ot_lat only in case of seed
 
     // count the number of laterals of subtype st already created on this organ
-    auto correctST = [ot_lat, st_lat](std::shared_ptr<Organ> org) -> double {
-        return double((org->getOrganRandomParameter()->organType == ot_lat) && (org->param_->subType == st_lat));
-    }; // return 1. if organ of correct type and subtype, 0. otherwise
-    double numberOfLaterals = double(std::count_if(children.begin(), children.end(), correctST)); // count how may children of the correct type and subtype exists (they do not have to be emerged)
+    // auto correctST = [ot_lat, st_lat](std::shared_ptr<Organ> org) -> double { return double((org->getOrganRandomParameter()->organType == ot_lat) && (org->param_->subType == st_lat)); }; // return 1. if organ of correct type and subtype, 0.
+    // otherwise double numberOfLaterals = double(std::count_if(children.begin(), children.end(), correctST)); // count how may children of the correct type and subtype exists (they do not have to be emerged)
+    int numberOfLaterals = this->getNumberOfChildren(ot_lat, st_lat);
     double growthDelay = 0.;
     double multDelay = rp->multDelay;
 
@@ -872,9 +881,9 @@ bool Organ::getApplyHere(int i) const {
     auto rp = getOrganRandomParameter(); // rename
     if ((rp->successorWhere.size() > i) && (rp->successorWhere.at(i).size() > 0)) {
         if (!std::signbit(rp->successorWhere.at(i).at(0))) // true if number is signed
-        {                                                  // gave which linking nodes to include
+        {                                                  // which linking nodes to include
             applyHere = (std::find(rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), created_linking_node) != rp->successorWhere.at(i).end());
-        } else { // gave which linking nodes to ignore
+        } else { // which linking nodes to ignore
             applyHere = !(std::find(rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), -double(created_linking_node)) != rp->successorWhere.at(i).end());
         }
 

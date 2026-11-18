@@ -93,6 +93,7 @@ void GrassLeafRandomParameter::bindParameters() {
     bindParameter("sheathLength", &sheathLength, "Length of the sheath [cm]", &sheathLengths);
     bindParameter("bladeBending", &bladeBending, "Blade curvature: pitch per cm segment length [rad/cm]", &bladeBendings);
     bindParameter("leafGrowthDuration", &leafGrowthDuration, "Total duration of leaf growth [day]", &leafGrowthDurations);
+    bindParameter("rotDev", &rotDev, "Rotational deviation of the leaf [rad]");
 }
 
 } // end namespace CPlantBox

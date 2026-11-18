@@ -6,10 +6,11 @@ Vidal et al. (2021), He et al. (2021)
 import numpy as np
 
 
+#
+# Leaf geometery
+#
 def get_leaf_sheath_length():
-    leaf_sheath_length = np.array(
-        [0.0, 0.03, 0.04, 0.05, 0.07, 0.09, 0.12, 0.15, 0.18, 0.22, 0.25, 0.28, 0.30, 0.28, 0.25, 0.22, 0.18, 0.14, 0.10, 0.06]
-    )  # [m]
+    leaf_sheath_length = np.array([0.0, 0.03, 0.04, 0.05, 0.07, 0.09, 0.12, 0.15, 0.18, 0.22, 0.25, 0.28, 0.30, 0.28, 0.25, 0.22, 0.18, 0.14, 0.10, 0.06])  # [m]
     return leaf_sheath_length * 100  # [m] -> [cm]
 
 
@@ -69,6 +70,9 @@ def get_leaf_width():
     return leaf_width * 100  # [m] -> [cm]
 
 
+#
+# Stem geometry
+#
 def get_internode_lenght():
     internode_length = np.array(
         [
@@ -94,3 +98,16 @@ def get_internode_lenght():
         ]
     )  # [m]
     return internode_length * 100  # [m] -> [cm]
+
+
+#
+# Crown root parameters
+#
+def get_crown_root_emergence():
+    crown_root_emergence = np.array([12, 22, 29, 37, 45, 52])  # days after germination
+    return crown_root_emergence
+
+
+def get_crown_root_number():
+    crown_root_number = np.array([5, 6, 8, 10, 12, 14])  # number of roots per whorl
+    return crown_root_number

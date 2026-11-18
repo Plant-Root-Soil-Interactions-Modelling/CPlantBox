@@ -10,8 +10,7 @@ namespace CPlantBox {
 /**
  * Creates a seed from scratch by given parameters
  */
-Seed::Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, bool moved, int oldNON)
-    : Organ(id, param, alive, active, age, length, Vector3d(0, 0, 1), 0, moved, oldNON) {}
+Seed::Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, bool moved, int oldNON) : Organ(id, param, alive, active, age, length, Vector3d(0, 0, 1), 0, moved, oldNON) {}
 
 /**
  * Creates a seed from a Organism using its parameter set
@@ -127,6 +126,8 @@ void Seed::initialize(bool verbose) {
         for (int i = 0; i < maxB; i++) {
             std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType, delay);
             basalroot->addNode(getNode(0), getNodeId(0), delay);
+            std::cout << "Seed::initialize: Created basal root #" << i + 1 << " with delay " << delay << "and initial node " << getNode(0).toString() << "\n" << std::flush;
+
             this->addChild(basalroot);
             delay += sp->delayB;
         }

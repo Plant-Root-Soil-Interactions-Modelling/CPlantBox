@@ -64,6 +64,7 @@ class GrassLeafRandomParameter : public OrganRandomParameter {
     double bladeBendings = 0.;       ///< Standard deviation of blade bending [rad/cm]
     double leafGrowthDuration = 20.; ///< Mean total duration of leaf growth [day]
     double leafGrowthDurations = 0.; ///< Standard deviation of leaf growth duration [day]
+    double rotDev = 0.;              ///< Mean rotational deviation of the leaf [rad]
 
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
 

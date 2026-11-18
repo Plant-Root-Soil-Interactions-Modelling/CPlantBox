@@ -45,26 +45,51 @@ Root::Root(std::shared_ptr<Organism> plant_, int subType, double delay, std::sha
     : Organ(plant_, parent, Organism::ot_root, subType, delay, pni) // <- OrganRandomParameter::realize() is called here
 {
     assert(parent != nullptr && "Root::Root parent must be set");
-    double beta = 2 * M_PI * plant.lock()->rand(); // initial rotation
+    int ot = parent->organType();
+
+    double beta;
+    if (ot == Organism::ot_stem) {                                           // shootborne root emerging from stem
+        int n = parent->getNumberOfChildren(Organism::ot_root, subType) + 1; // this is the n-th child
+        auto stem = std::static_pointer_cast<Stem>(parent);
+        auto rp = stem->getOrganRandomParameter();
+        int num_roots = 1;                                 // per crown root whorl
+        for (int i = 0; i < rp->successorST.size(); i++) { // go through each successor rule
+            if (parent->getApplyHere(i)) {                 // relies on created_linking_node
+                if (rp->successorNo.size() > i) {          // TODO check OT and ST
+                    num_roots = rp->successorNo.at(i);
+                }
+            }
+        } // a getter would be nice, move applyHere(i, linkingNode) logic into OrganRandomParameter?
+        // std::cout << "n: " << n << ", num_roots: " << num_roots << std::endl;
+        beta = double(n - 1) / num_roots * 2. * M_PI; // initial rotation for shoot-borne root
+    } else {
+        beta = 2 * M_PI * plant.lock()->rand(); // initial rotation
+    }
     double theta = param()->theta;
     if (parent->organType() != Organism::ot_seed) { // scale if not a baseRoot
         double scale = getRootRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
         theta *= scale;
     }
-    insertionAngle = theta;
-    this->partialIHeading = Vector3d::rotAB(theta, beta);
+    setPartialInitialHeading(theta, beta);
 
-    int ot = parent->organType();
+    shootborne = (ot == Organism::ot_stem) || (ot == Organism::ot_leaf) || std::static_pointer_cast<Root>(parent)->shootborne; // for a stem or leaf parent, || short-circuits, so the static cast is never evaluated
     if (!(ot == Organism::ot_seed)) {
         double creationTime = parent->getNodeCT(pni) + delay; // default
         // shoot-borne if attached to a stem or leaf, or to shoot-borne root
-        shootborne = (ot != Organism::ot_root) || std::static_pointer_cast<Root>(parent)->shootborne; // for a stem or leaf parent, || short-circuits, so the static cast is never evaluated
         if (!shootborne) {
             addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
         } else {
             addNode(Vector3d(0., 0., 0.), parent->getNodeId(pni), creationTime); // relative coordinate = (0,0,0)
         }
     }
+}
+
+/**
+ * @brief Sets the partial initial heading of the root using the angles @p theta and @p beta.
+ */
+void Root::setPartialInitialHeading(double theta, double beta) {
+    insertionAngle = theta;
+    partialIHeading = Vector3d::rotAB(theta, beta);
 }
 
 /**
@@ -396,9 +421,7 @@ void Root::createSegments(double l, double dt, bool verbose) {
 /**
  * @return The RootTypeParameter from the plant
  */
-std::shared_ptr<RootRandomParameter> Root::getRootRandomParameter() const {
-    return std::static_pointer_cast<RootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
-}
+std::shared_ptr<RootRandomParameter> Root::getRootRandomParameter() const { return std::static_pointer_cast<RootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType)); }
 
 /**
  * @return Parameters of the specific root

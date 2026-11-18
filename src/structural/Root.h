@@ -32,11 +32,12 @@ class Root : public Organ {
     int organType() const override { return Organism::ot_root; }; ///< returns the organs type
 
     /* use absolute coordinates for root nodes, translate for shootborne roots */
-    Vector3d getNode(int i) const override;          ///< returns the absolute coordinate of node @p i
-    std::vector<Vector3d> getNodes() const override; ///< returns the absolute coordinates of all nodes
-    Vector3d heading(int n) const override;          ///< returns the heading of node @p n
-    double getLength(int i) const override;          ///< length from the first node up to node @p i (absolute nodes, or relative if shootborne)
-    using Organ::getLength;                          ///< bring all other overloads of getLength from Organ into scope
+    Vector3d getNode(int i) const override;                   ///< returns the absolute coordinate of node @p i
+    std::vector<Vector3d> getNodes() const override;          ///< returns the absolute coordinates of all nodes
+    Vector3d heading(int n) const override;                   ///< returns the heading of node @p n
+    double getLength(int i) const override;                   ///< length from the first node up to node @p i (absolute nodes, or relative if shootborne)
+    using Organ::getLength;                                   ///< bring all other overloads of getLength from Organ into scope
+    void setPartialInitialHeading(double theta, double beta); ///< sets the initial heading of the root
 
     /* development */
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt

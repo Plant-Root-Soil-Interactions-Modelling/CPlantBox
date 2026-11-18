@@ -286,8 +286,7 @@ void Stem::createSegments(double l, double dt, int phytoIdx) {
                 shiftl = std::min(dx() - olddx, l);
                 h.normalize();
                 nodes.at(shiftIdx) = h.times(olddx + shiftl);
-                nodeCTs.at(shiftIdx) =
-                    this->calcCreationTime(getLength(true) + shiftl, dt); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+                nodeCTs.at(shiftIdx) = this->calcCreationTime(getLength(true) + shiftl, dt); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
                 if (l <= 0) {
@@ -500,7 +499,7 @@ double Stem::calcAge(double length) const {
 }
 
 /**
- * stores the local id of the linking node. used by @see Stem::internodalGrowth()
+ * Stores the local node id of the linking node. used by @see Stem::internodalGrowth()
  */
 void Stem::storeLinkingNodeLocalId(int numCreatedLN) {
     localId_linking_nodes.push_back(nodes.size() - 1);
@@ -531,9 +530,7 @@ void Stem::insertNode(Vector3d n, double t, size_t index) {
 /**
  * @return The StemTypeParameter from the plant
  */
-std::shared_ptr<StemRandomParameter> Stem::getStemRandomParameter() const {
-    return std::static_pointer_cast<StemRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_stem, param_->subType));
-}
+std::shared_ptr<StemRandomParameter> Stem::getStemRandomParameter() const { return std::static_pointer_cast<StemRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_stem, param_->subType)); }
 
 /**
  * @return Parameters of the specific root

@@ -71,7 +71,8 @@ class Organ : public std::enable_shared_from_this<Organ> {
     std::shared_ptr<Plant> getPlant() const;                               ///< Returns the owning organism downcast to Plant (nullptr if not a Plant)
     std::shared_ptr<Organ> getParent() const { return parent.lock(); }     ///< Returns the parent organ (nullptr if none)
     void addChild(std::shared_ptr<Organ> c);                               ///< Appends @p c as a child and sets its parent pointer
-    int getNumberOfChildren() { return children.size(); }                  ///< Returns the number of direct child organs
+    int getNumberOfChildren() const { return children.size(); }            ///< Returns the number of direct child organs
+    int getNumberOfChildren(int orgType, int subType) const;               ///< Returns the number of direct child organs matching the specified organ type and subtype
     std::shared_ptr<Organ> getChild(int i) { return children.at(i); }      ///< Returns the child at local index @p i
     int getParentNI() const { return parentNI; }                           ///< Returns the local node index in the parent organ where this organ is attached
     void incParentNI() { parentNI++; }                                     ///< Increments the local node index in the parent organ (e.g. if parent inserts a node before pni)
@@ -88,6 +89,7 @@ class Organ : public std::enable_shared_from_this<Organ> {
     double getEpsilon() const { return epsilonDx; }                                ///< Returns residual growth not yet converted to a new segment [cm]
     double dx() const;                                                             ///< Returns the maximal axial segment length from the organ random parameter [cm]
     double dxMin() const;                                                          ///< Returns the minimal axial segment length from the organ random parameter [cm]
+    int getCreatedLinkingNode() const { return created_linking_node; }             ///< Returns the number of linking nodes (potential lateral attachment points) created so far
 
     /* from analytical equations */
     virtual double calcAge(double length) const { throw std::runtime_error("calcAge() not implemented"); } ///< Analytic function length -> age; override
@@ -117,11 +119,9 @@ class Organ : public std::enable_shared_from_this<Organ> {
 
     /* for post processing */
     std::vector<std::shared_ptr<Organ>> getOrgans(int ot = -1,
-                                                  bool all = false);                     ///< Returns this organ and all descendants with >1 node; ot=-1 means all types
-    void getOrgans(int otype, std::vector<std::shared_ptr<Organ>> &v, bool all = false); ///< Appends this organ and descendants to @p v (in-place variant)
-    virtual double
-    getParameter(std::string name,
-                 std::map<std::string, double> addParams = {}) const; ///< Returns a named scalar parameter; addParams entries take priority; delegates to OrganRandomParameter if not found locally
+                                                  bool all = false);                                   ///< Returns this organ and all descendants with >1 node; ot=-1 means all types
+    void getOrgans(int otype, std::vector<std::shared_ptr<Organ>> &v, bool all = false);               ///< Appends this organ and descendants to @p v (in-place variant)
+    virtual double getParameter(std::string name, std::map<std::string, double> addParams = {}) const; ///< Returns a named scalar parameter; addParams entries take priority; delegates to OrganRandomParameter if not found locally
 
     /* IO */
     virtual std::string toString() const; ///< Returns a compact human-readable summary for debugging
@@ -129,7 +129,7 @@ class Organ : public std::enable_shared_from_this<Organ> {
                    tinyxml2::XMLElement *parent) const; ///< Appends an RSML @c <root> element for this organ to @p parent; not exposed to Python
 
     /* state (de)serialisation */
-    virtual OrganState getState() const; ///< Returns all member variables by name; parent/child links as organ ids (-1 = none), the owning organism is omitted
+    virtual OrganState getState() const;                                                                      ///< Returns all member variables by name; parent/child links as organ ids (-1 = none), the owning organism is omitted
     virtual void setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}); ///< Restores member variables from @p state (the const id is not changed);
                                                                                                               ///< if @p organs (id -> organ) is non-empty, parent and children are re-linked
 
@@ -138,11 +138,12 @@ class Organ : public std::enable_shared_from_this<Organ> {
                              bool realized = false) const; ///< Returns organ volume [cm³] for the current or a specified length; cylinder approximation by default
     virtual double orgVolume2Length(double volume_);       ///< Inverse of orgVolume(): returns the organ length [cm] that corresponds to @p volume_
 
+    bool getApplyHere(int i) const; ///< Returns true if successor rule @p i applies at the current linking node
+
   protected:
     virtual void createLateral(double ageLN, bool silence);                    ///< Creates a new lateral organ at the current tip; called from simulate(); override in RootDelay
     virtual double getLatInitialGrowth(double dt);                             ///< Returns the initial growth period passed to a newly created lateral [days]
     virtual double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const; ///< Returns the emergence delay for a new lateral of type (@p ot_lat, @p st_lat) [days]
-    bool getApplyHere(int i) const;                                            ///< Returns true if successor rule @p i applies at the current linking node
 
     /* Up and down the organ tree */
     std::weak_ptr<Organism> plant;                ///< Owning organism (weak to avoid reference cycles)
@@ -159,7 +160,7 @@ class Organ : public std::enable_shared_from_this<Organ> {
     double age = 0;                  ///< Current age [days]
     double length = 0;               ///< Theoretical organ length [cm] (may exceed realised length by epsilonDx)
     double epsilonDx = 0;            ///< Residual growth too small for a new segment; carried forward to the next time step [cm]
-    size_t created_linking_node = 0; ///< Number of linking nodes (lateral attachment points) created so far
+    size_t created_linking_node = 0; ///< Number of linking nodes (potential lateral attachment points, counts createLateral calls)
     int parentNI;                    ///< Local node index in the parent organ where this organ is attached
     Vector3d partialIHeading;        ///< Initial relative heading used to compute getInitialHeading();
 

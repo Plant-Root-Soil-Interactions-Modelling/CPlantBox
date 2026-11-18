@@ -27,7 +27,7 @@ GrassLeaf::GrassLeaf(std::shared_ptr<Organism> plant, int subtype, double delay,
     assert(parent != nullptr && "GrassLeaf: parent must not be null");
 
     getPlant()->leafphytomerID.at(subtype)++; // we keep track of the number of leaves per leaf type
-    initialBeta = getPlant()->leafphytomerID.at(subtype) * M_PI;
+    initialBeta = getPlant()->leafphytomerID.at(subtype) * M_PI + this->getGrassLeafRandomParameter()->rotDev * getPlant()->randn();
 
     turtle.setAnchor(Vector3d(0., 0., 0.));
     turtle.setAnchorFrame(getInitialAnchorFrame());
@@ -220,17 +220,14 @@ double GrassLeaf::getParameter(std::string name, std::map<std::string, double> a
  */
 std::string GrassLeaf::toString() const {
     std::ostringstream s;
-    s << "GrassLeaf id=" << getId() << " age=" << age << " sheath=" << sheathLength << "/" << param()->sheathLength << " blade=" << bladeLength << "/" << param()->bladeLength
-      << " nodes=" << turtle.size() << "\n";
+    s << "GrassLeaf id=" << getId() << " age=" << age << " sheath=" << sheathLength << "/" << param()->sheathLength << " blade=" << bladeLength << "/" << param()->bladeLength << " nodes=" << turtle.size() << "\n";
     return s.str();
 }
 
 /**
  * @brief Returns the stochastic parameter set for this leaf's sub-type.
  */
-std::shared_ptr<GrassLeafRandomParameter> GrassLeaf::getGrassLeafRandomParameter() const {
-    return std::dynamic_pointer_cast<GrassLeafRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_leaf, param()->subType));
-}
+std::shared_ptr<GrassLeafRandomParameter> GrassLeaf::getGrassLeafRandomParameter() const { return std::dynamic_pointer_cast<GrassLeafRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_leaf, param()->subType)); }
 
 /**
  * @brief Returns the realised (instance-level) parameters cast to GrassLeafSpecificParameter.

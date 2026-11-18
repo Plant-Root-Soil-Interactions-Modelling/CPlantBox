@@ -1,7 +1,6 @@
-"""Playing around with Maize parameter"""
-
+import maize_params
 import numpy as np
-from maize_params import get_internode_lenght, get_leaf_blade_lenght, get_leaf_sheath_length, get_leaf_width
+from maize_params import get_crown_root_emergence, get_crown_root_number, get_internode_lenght, get_leaf_blade_lenght, get_leaf_sheath_length, get_leaf_width
 
 import plantbox as pb
 import plantbox.visualisation.vtk_plot as vp
@@ -37,11 +36,10 @@ class MaizeStem(pb.Stem):
         # print("Stem random parameters")
         # print(srp)
         # print()
-        # print("Stem specific parameters")
-        # print(p)
-
+        print("Stem specific parameters")
+        print(p)
         p.theta = 0  # straight up
-        p.lb = 0  # mesocotyl [cm]
+        p.lb = 0.0  # mesocotyl [cm]
         p.la = 0
         ln_ = get_internode_lenght()  # fixed to 19 internodes for now
         sum_ln_ = np.sum(ln_)
@@ -49,9 +47,11 @@ class MaizeStem(pb.Stem):
         p.ln = scaled_ln
         p.r = r
 
-        srp.nodalGrowth = 0
-        srp.multDelay = 1
-        srp.ldelay = 5
+        srp.nodalGrowth = 0  # 0=sequentiall growth, 1=simultaneous growth
+
+        srp.multDelay = 0  # unused, since srp[0].delayDefinitionShoot = pb.dd_time_self  # each lateral defines it's own delay
+        p.ldelay = 0  # delays are set for the leafs and shoot borne roots
+
         srp.dx = 0.5
         srp.dxMin = 1.0e-3
 
@@ -72,6 +72,7 @@ class MaizeStem(pb.Stem):
         print("srp.successorST", srp.successorST)
         print("srp.successorP", srp.successorP)
         print("srp.successorNo", srp.successorNo)
+        print("*")
 
 
 class MaizeRoot(pb.Root):
@@ -79,30 +80,20 @@ class MaizeRoot(pb.Root):
 
     def __init__(self, plant, subType, delay, parent, pni):
         super().__init__(plant, subType, delay, parent, pni)
-        rrp = self.getRootRandomParameter()
         p = self.param()  # specific stem parameters
-        parent = self.getParent()
-
         if p.subType == 5:
+            rrp = self.getRootRandomParameter()
+            parent = self.getParent()
             if pni not in parent.number_of_roots:
                 parent.number_of_roots[pni] = 0
             parent.number_of_roots[pni] += 1
-            print("Crown root", parent.number_of_roots[pni])
-            print("p.ldelay", p.ldelay)
-            print("rrp.multDelay", rrp.multDelay)
-            print(self.getInitialHeading())
-            print(parent.getInitialHeading())
-            print("parent", type(parent))
 
-            heading = self.getInitialHeading()
+            rrp.multDelay = 0.0  # dont' use it
 
-            # now adjust the initial heading based on theta and self.number_of_roots
-            # theta = p.theta
-            # num_roots = self.number_of_roots[p.pni]
-            #
-            # # adjust heading based on theta and number of roots
-            # new_heading = heading + theta * (num_roots - 1)
-            # self.setInitialHeading(new_heading)
+            lni = parent.getCreatedLinkingNode()  # current linking node index = whorl number
+            print("Crown root", parent.number_of_roots[pni], "linking node number", lni)
+
+            # fix beta and theta based on whorl number
 
 
 class Maize(pb.Plant):
@@ -116,45 +107,43 @@ class Maize(pb.Plant):
         self.lw_ = get_leaf_width()
         self._organs = []
 
-    def initializeReader(self):
-        print("Maize Python initializeReader is called", flush=True)
-        super().initializeReader()
-        glp = pb.GrassLeafRandomParameter(self)
-        glp.subType = 0
-        self.setOrganRandomParameter(glp)
+    # def initializeReader(self):
+    #     print("Maize Python initializeReader is called", flush=True)
+    #     super().initializeReader()
+    #     glp = pb.GrassLeafRandomParameter(self)
+    #     glp.subType = 0
+    #     self.setOrganRandomParameter(glp)
 
-    def createLeaf(self, subType, delay, parent, pni):
-        """grass leaf instead of the default leaf, hard coded parameter values"""
-        leaf = pb.GrassLeaf(self, subType, delay, parent, pni)
-        lrp = leaf.getGrassLeafRandomParameter()
-        lp = leaf.param()
-        print("Leaf", lp.subType)
-        # hack to set parameters
-        # print("Leaf specific parameters")
-        # print(leaf.param())
-        # a	0.0297928
-        # bladeAngle	0.3
-        # sheathLength	5
-        # leafGrowthDuration	20
-        lp.bladeLength = self.ll_[self.number_of_leafs]  # * 0.0
-        lp.sheathLength = self.sl_[self.number_of_leafs] * 0.0
-        lp.bladeWidth = self.lw_[self.number_of_leafs]
-        lp.bladeBending = 0.01
-        self.number_of_leafs += 1
-        self._organs.append(leaf)
-        return leaf
+    # def createLeaf(self, subType, delay, parent, pni):
+    #     """grass leaf instead of the default leaf, hard coded parameter values"""
+    #     leaf = pb.GrassLeaf(self, subType, delay, parent, pni)
+    #     lrp = leaf.getGrassLeafRandomParameter()
+    #     lrp.rotDev = 0.2  # add randomness to the initial leaf rotation
+    #     lp = leaf.param()
+    #     lp.bladeLength = self.ll_[self.number_of_leafs]  # * 0.0
+    #     lp.sheathLength = self.sl_[self.number_of_leafs]  # * 0.0
+    #     lp.bladeWidth = self.lw_[self.number_of_leafs]
+    #     lp.bladeBending = 0.01
 
-    def createStem(self, subType, delay, parent, pni):
-        """simplified stem with hard coded internode distances"""
-        r = MaizeStem(self, subType, delay, parent, pni)
-        self._organs.append(r)
-        return r
+    #     self.number_of_leafs += 1
+    #     self._organs.append(leaf)
+    #     return leaf
 
-    def createRoot(self, subType, delay, parent, pni):
-        """prototyping brace root behaviour"""
-        r = MaizeRoot(self, subType, delay, parent, pni)
-        self._organs.append(r)
-        return r
+    # def createStem(self, subType, delay, parent, pni):
+    #     """simplified stem with hard coded internode distances"""
+    #     r = MaizeStem(self, subType, delay, parent, pni)
+    #     self._organs.append(r)
+    #     return r
+
+    # def createRoot(self, subType, delay, parent, pni):
+    #     """prototyping brace root behaviour"""
+    #     if subType == 5:  # in case of brace root fix delay time based on data per whorl number
+    #         lni = parent.getCreatedLinkingNode()  # current linking node index = whorl number
+    #         cre = get_crown_root_emergence()
+    #         delay = cre[lni]
+    #     r = MaizeRoot(self, subType, delay, parent, pni)
+    #     self._organs.append(r)
+    #     return r
 
 
 plant = Maize()
@@ -170,13 +159,14 @@ plant.readParameters(path + name + ".xml")
 srp = plant.getOrganRandomParameter(pb.seed)
 srp[0].seedPos.x = 0
 srp[0].seedPos.y = 0
+srp[0].seedPos.z = -3
 
 # Delay timing type
 srp[0].delayDefinitionRoot = pb.dd_distance
-srp[0].delayDefinitionShoot = pb.dd_time_self  # needed for shootborne definition, each lateral defines it's own delay
+srp[0].delayDefinitionShoot = pb.dd_time_self  # each lateral defines it's own delay
 
 # Shoot borne definition
-srp[0].nC = 5
+srp[0].nC = 0
 srp[0].firstSB = 7
 srp[0].delaySB = 7
 srp[0].firstSB = 1e9
@@ -188,46 +178,41 @@ srp[0].firstSB = 1e9
 # <parameter name="successor" ruleId="1" numLat="nC" subType="5" organType ="2"  where="0" percentage="1"/>
 strp = plant.getOrganRandomParameter(pb.stem)
 
-print("srp.successorWhere", strp[1].successorWhere)
-print("srp.successorOT", strp[1].successorOT)
-print("srp.successorST", strp[1].successorST)
-print("srp.successorP", strp[1].successorP)
-print("srp.successorNo", strp[1].successorNo)
+# successorWhere = strp[1].successorWhere
+# successorOT = strp[1].successorOT
+# successorST = strp[1].successorST
+# successorP = strp[1].successorP
+# successorNo = strp[1].successorNo
 
-print("***")
-successorWhere = strp[1].successorWhere
-successorOT = strp[1].successorOT
-successorST = strp[1].successorST
-successorP = strp[1].successorP
-successorNo = strp[1].successorNo
-
+# nC = get_crown_root_number()
 # for i in range(0, 6):
-#     successorWhere.append([int(i + 1)])  # whorl index; check at which node teh coleoptilar node is; that's the starting node
+#     successorWhere.append([int(i)])  # whorl index; check at which node the coleoptilar node is; that's the starting node
 #     successorOT.append([pb.root])
 #     successorST.append([5])
 #     successorP.append([1])
-#     successorNo.append(int(srp[0].nC + 2 * i))  # inceasing per root whorl
+#     successorNo.append(nC[i])  # inceasing per root whorle (approx int(srp[0].nC + 2 * i) for nC = 5)
 
-strp[1].successorWhere = successorWhere
-strp[1].successorOT = successorOT
-strp[1].successorST = successorST
-strp[1].successorP = successorP
-strp[1].successorNo = successorNo
+# strp[1].successorWhere = successorWhere
+# strp[1].successorOT = successorOT
+# strp[1].successorST = successorST
+# strp[1].successorP = successorP
+# strp[1].successorNo = successorNo
 
 
-print("srp.successorWhere", strp[1].successorWhere)
-print("srp.successorOT", strp[1].successorOT)
-print("srp.successorST", strp[1].successorST)
-print("srp.successorP", strp[1].successorP)
-print("srp.successorNo", strp[1].successorNo)
+# print("srp.successorWhere", strp[1].successorWhere)
+# print("srp.successorOT", strp[1].successorOT)
+# print("srp.successorST", strp[1].successorST)
+# print("srp.successorP", strp[1].successorP)
+# print("srp.successorNo", strp[1].successorNo)
+# print()
 
 #
 # Crown root
 #
 rrp = plant.getOrganRandomParameter(pb.root)
-rrp[5].ldelay = srp[0].firstSB
+rrp[5].ldelay = 0.0
 rrp[5].ldelays = 0.0
-rrp[5].multDelay = 0  # srp[0].delaySB
+rrp[5].multDelay = 0  # roots emerge simultaneously foreach root whorl
 
 #
 # Leaf
@@ -236,21 +221,21 @@ lrp = plant.getOrganRandomParameter(pb.leaf)
 print("Leaf", lrp[1].subType)
 print("Leaf delay", lrp[1].ldelay)
 print("Leaf multDelay", lrp[1].multDelay)
-dd
+
 
 plant.initialize()
 plant.writeParameters(name + "_modified" + ".xml")
 
 
-sim_time = 20
-dt = 1  # simulation step [day], animation shows one frame per step
+sim_time = 0.1
+dt = 0.001  # simulation step [day], animation shows one frame per step
 N = sim_time / dt
 
 # for i in range(int(N)):
 #     plant.simulate(dt)
 # ana = pb.SegmentAnalyser(plant)
 # ana.addAge(sim_time)
-# vp.plot_roots(ana, "age")  # Interactive plot, using vtk "age"
+# vp.plot_plant(ana, "subType")  # Interactive plot, using vtk "age"
 
 
 # Animate growth in an interactive vtk window (close window, or press 'e', to continue)
