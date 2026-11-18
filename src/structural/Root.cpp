@@ -72,7 +72,8 @@ Root::Root(std::shared_ptr<Organism> plant_, int subType, double delay, std::sha
     }
     setPartialInitialHeading(theta, beta);
 
-    shootborne = (ot == Organism::ot_stem) || (ot == Organism::ot_leaf) || std::static_pointer_cast<Root>(parent)->shootborne; // for a stem or leaf parent, || short-circuits, so the static cast is never evaluated
+    // the cast to Root is only valid (and evaluated) for a root parent; a seed parent (basal root) is never shoot-borne
+    shootborne = (ot == Organism::ot_stem) || (ot == Organism::ot_leaf) || (ot == Organism::ot_root && std::static_pointer_cast<Root>(parent)->shootborne);
     if (!(ot == Organism::ot_seed)) {
         double creationTime = parent->getNodeCT(pni) + delay; // default
         // shoot-borne if attached to a stem or leaf, or to shoot-borne root
