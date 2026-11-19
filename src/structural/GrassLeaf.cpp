@@ -153,7 +153,7 @@ void GrassLeaf::simulate(double dt, bool verbose) {
     age += dt;
     double dt_ = (age < dt) ? age : dt; // time step; age < dt means the organ emerged in this time step
     if (age <= 0.) {
-        return; // still in delay TODO check where it is set...
+        return;
     }
 
     // GrassLeaf has no children
@@ -290,13 +290,12 @@ void GrassLeaf::fixPitch() {
     double p = length / (param()->sheathLength + param()->bladeLength);
     int bladeStart = turtle.getNodeIndexAtLength(sheathLength);
     auto &nodes = const_cast<std::deque<TurtlePolyline::TurtleNode> &>(turtle.getTurtleNodes());
-    for (int i = 0; i < nodes.size(); i++) {
+    for (int i = 0; i < nodes.size(); i++) { // turn on general leaf bending for blade nodes (gradually from ibaps to ibape)
         double p_ = (p - ibaps) / (ibape - ibaps);
         p_ = std::min(std::max(p_, 0.), 1.);
         nodes[i].pitch = (i < bladeStart) ? 0. : param()->bladeBending * nodes[i].dist * p_;
     }
-
-    double p_ = (p - ibaps) / (ibape - ibaps);
+    double p_ = (p - ibaps) / (ibape - ibaps); // increase blade angle in a single node at blade start (gradually from ibaps to ibape)
     p_ = std::min(std::max(p_, 0.), 1.);
     nodes[bladeStart].pitch = param()->bladeAngle * p_;
 }

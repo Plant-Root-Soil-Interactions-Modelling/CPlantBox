@@ -234,8 +234,7 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement *element, bool verbose) 
             if (i == 0) {
                 if ((key.compare("leafGeometry") != 0) || (organType != Organism::ot_leaf)) {
                     if (verbose) {
-                        std::cout << "OrganRandomParameter::readXML: warning! parameter " << key << " is defined in the xml, but not available in organ " << Organism::organTypeName(organType) << "\n"
-                                  << std::flush;
+                        std::cout << "OrganRandomParameter::readXML: warning! parameter " << key << " is defined in the xml, but not available in organ " << Organism::organTypeName(organType) << "\n" << std::flush;
                     }
                 }
             }
@@ -290,8 +289,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement *p, bool verbose) 
             success = p->QueryIntAttribute("number", &ruleId);
             if (success != tinyxml2::XML_SUCCESS) {
                 if (verbose) {
-                    std::cout << "OrganRandomParameter::readSuccessor: for parameter of organ " + std::to_string(organType) + ", subType " + std::to_string(subType) +
-                                     ", 'ruleId' (and 'number') not found in successor definition. ";
+                    std::cout << "OrganRandomParameter::readSuccessor: for parameter of organ " + std::to_string(organType) + ", subType " + std::to_string(subType) + ", 'ruleId' (and 'number') not found in successor definition. ";
                     std::cout << "Use defeault ruleId instead: " + std::to_string(ruleId) + "\n";
                 }
             }
@@ -337,8 +335,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement *p, bool verbose) 
                 std::cout << successorST.at(ruleId).at(k) << " ";
             }
             std::cout << std::endl;
-            throw std::runtime_error("OrganRandomParameter::readSuccessor !std::isfinite(default growth probability) " + std::to_string(defaultVald) +
-                                     " , successorST.at(ruleId).size() == " + std::to_string(successorST.at(ruleId).size()));
+            throw std::runtime_error("OrganRandomParameter::readSuccessor !std::isfinite(default growth probability) " + std::to_string(defaultVald) + " , successorST.at(ruleId).size() == " + std::to_string(successorST.at(ruleId).size()));
         }
         cpb_queryStringAttribute(lookfor, defaultVald, defaultSize, replaceByDefaultValue, successorP.at(ruleId), p);
 
@@ -378,9 +375,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement *p, bool verbose) 
  * @param vToFill           Output vector; values are appended.
  * @param key               XML element to query.
  */
-template <class IntOrDouble>
-void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> keyNames, IntOrDouble defaultVal, int sizeVector, bool replaceByDefault, std::vector<IntOrDouble> &vToFill,
-                                                    tinyxml2::XMLElement *key) {
+template <class IntOrDouble> void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> keyNames, IntOrDouble defaultVal, int sizeVector, bool replaceByDefault, std::vector<IntOrDouble> &vToFill, tinyxml2::XMLElement *key) {
     int success = -1;
     std::vector<IntOrDouble> dummy;
     for (int i = 0; (i < keyNames.size()) && (tinyxml2::XML_SUCCESS != success); i++) {
@@ -467,7 +462,7 @@ tinyxml2::XMLElement *OrganRandomParameter::writeXML(tinyxml2::XMLDocument &doc,
             p->SetAttribute("numLat", successorNo.at(j));
         }
         if (successorWhere.size() > j) {
-            p->SetAttribute("Where", vector2string(successorWhere.at(j)).c_str());
+            p->SetAttribute("where", vector2string(successorWhere.at(j)).c_str());
         }
         p->SetAttribute("subType", vector2string(successorST.at(j)).c_str());
         if (successorOT.size() > j) {
