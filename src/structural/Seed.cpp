@@ -126,8 +126,6 @@ void Seed::initialize(bool verbose) {
         for (int i = 0; i < maxB; i++) {
             std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType, delay);
             basalroot->addNode(getNode(0), getNodeId(0), delay);
-            std::cout << "Seed::initialize: Created basal root #" << i + 1 << " with delay " << delay << "and initial node " << getNode(0).toString() << "\n" << std::flush;
-
             this->addChild(basalroot);
             delay += sp->delayB;
         }
