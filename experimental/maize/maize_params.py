@@ -1,6 +1,6 @@
 """maize parameters quickly dervied form chatgpt
 values from
-Vidal et al. (2021), He et al. (2021)
+Vidal et al. (2021), He et al. (2021), Fournier & Andrieu (2000, 2010, 2014), dos Santos et al. (2022)
 """
 
 import numpy as np
@@ -71,6 +71,19 @@ def get_leaf_width():
 
 
 #
+# Leaf emergence
+#
+def get_leaf_collar_emergence_gdd():
+    leaf_collar_emergence_gdd = np.array([50, 108, 166, 224, 282, 340, 398, 456, 514, 572, 603, 634, 665, 696, 727, 758, 789, 820, 851])  # [°C day], base temperature 8°C
+    return leaf_collar_emergence_gdd
+
+
+def get_leaf_collar_emergence_days():
+    leaf_collar_emergence_days = np.array([0, 5, 11, 17, 22, 28, 34, 40, 46, 51, 57, 60, 63, 67, 70, 73, 76, 79, 82, 85])  # [days after VE]
+    return leaf_collar_emergence_days - 4 * np.ones(leaf_collar_emergence_days.shape)
+
+
+#
 # Stem geometry
 #
 def get_internode_lenght():
@@ -100,6 +113,13 @@ def get_internode_lenght():
     return internode_length * 100  # [m] -> [cm]
 
 
+def get_internode_lenght2():
+    internode_length2 = np.array(
+        [0.005, 0.005, 0.005, 0.010, 0.020, 0.040, 0.060, 0.080, 0.100, 0.140, 0.160, 0.180, 0.180, 0.160, 0.140, 0.120, 0.100, 0.070, 0.040]  # 1–5: basal  # 6–9: lower-middle  # 10–13: middle  # 14–17: upper  # 18–19: below tassel
+    )  # [m]
+    return internode_length2 * 100  # [m] -> [cm]
+
+
 #
 # Crown root parameters
 #
@@ -111,3 +131,8 @@ def get_crown_root_emergence():
 def get_crown_root_number():
     crown_root_number = np.array([5, 6, 8, 10, 12, 14])  # number of roots per whorl
     return crown_root_number
+
+
+def get_crown_root_angles():
+    crown_root_angles = np.array([25, 25, 30, 30, 35, 40])  # degrees below horizontal
+    return crown_root_angles
