@@ -121,6 +121,69 @@ class AnimateRoots:
         self.avi_name = None
         self._frame_count = 0
 
+        # Optional captions shown at bottom center, list of (start time, title, description)
+        self.captions = []
+        self.caption_title_size = 24
+        self.caption_text_size = 18
+
+        # Optional simulation time label at the top left
+        self.show_time = False
+        self.time_label = "Day"
+        self.time_size = 20
+
+    def set_captions(self, times, titles, descriptions=None):
+        """Show a caption (title and description) at the bottom center of the window.
+
+        Each caption is shown from its start time until the start time of the next one
+        (the last caption stays until the end). Nothing is shown before the first start time.
+        The caption is selected by :attr:`simtime`, which must be set before each :meth:`update`.
+
+        @param times          caption start times [days], ascending
+        @param titles         one title per start time
+        @param descriptions   optional, one description per start time
+        """
+        if descriptions is None:
+            descriptions = [""] * len(times)
+        if not (len(times) == len(titles) == len(descriptions)):
+            raise ValueError("times, titles and descriptions must have the same length.")
+        self.captions = sorted(zip(times, titles, descriptions), key=lambda c: c[0])
+
+    def _caption_actors(self):
+        """Create the 2D text actors of the caption active at :attr:`simtime`, and the time label if :attr:`show_time`."""
+        actors = []
+        if self.show_time:
+            actor = vtk.vtkTextActor()
+            actor.SetInput(f"{self.time_label} {self.simtime:g}")
+            prop = actor.GetTextProperty()
+            prop.SetFontSize(self.time_size)
+            prop.SetColor(0.0, 0.0, 0.0)
+            prop.SetJustificationToLeft()
+            prop.SetVerticalJustificationToTop()
+            actor.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+            actor.SetPosition(0.02, 0.97)
+            actors.append(actor)
+        active = None
+        for c in self.captions:
+            if self.simtime >= c[0]:
+                active = c
+        if active is None:
+            return actors
+        for text, size, y, bold in ((active[2], self.caption_text_size, 0.03, False), (active[1], self.caption_title_size, 0.03 + 1.6 * self.caption_text_size / 800.0, True)):
+            if not text:
+                continue
+            actor = vtk.vtkTextActor()
+            actor.SetInput(text)
+            prop = actor.GetTextProperty()
+            prop.SetFontSize(size)
+            prop.SetBold(bold)
+            prop.SetColor(0.0, 0.0, 0.0)
+            prop.SetJustificationToCentered()
+            prop.SetVerticalJustificationToBottom()
+            actor.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+            actor.SetPosition(0.5, y)
+            actors.append(actor)
+        return actors
+
     # ------------------------------------------------------------------
     # Public interface
     # ------------------------------------------------------------------
@@ -202,6 +265,8 @@ class AnimateRoots:
             ren.RemoveViewProp(a)
         if self.color_bar:
             ren.AddViewProp(self.color_bar)
+        for a in self._caption_actors():
+            ren.AddViewProp(a)
 
         self.actors = []
         self.create_root_actors()

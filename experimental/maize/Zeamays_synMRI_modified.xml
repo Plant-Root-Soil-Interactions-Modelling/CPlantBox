@@ -1,0 +1,187 @@
+<plant>
+    <seed name="undefined" subType="0">
+        <parameter name="delayDefinitionRoot" value="0"/>
+        <parameter name="delayDefinitionShoot" value="2"/>
+        <parameter name="maxTil" value="0"/>
+        <parameter name="a" value="0.1"/>
+        <parameter name="delayB" value="0.1"/>
+        <parameter name="delayRC" value="15"/>
+        <parameter name="delaySB" value="7"/>
+        <parameter name="delayTil" value="1e+09"/>
+        <parameter name="dx" value="0.25"/>
+        <parameter name="dxMin" value="1e-06"/>
+        <parameter name="firstB" value="0.5"/>
+        <parameter name="firstSB" value="1e+09"/>
+        <parameter name="firstTil" value="1e+09"/>
+        <parameter name="ldelay" value="-1"/>
+        <parameter name="maxB" value="6"/>
+        <parameter name="multDelay" value="0"/>
+        <parameter name="nC" value="0"/>
+        <parameter name="nz" value="0.1"/>
+        <parameter name="seedPos.x" value="0"/>
+        <parameter name="seedPos.y" value="0"/>
+        <parameter name="seedPos.z" value="-3"/>
+        <parameter name="simulationTime" value="30"/>
+    </seed>
+    <root name="taproot" subType="1">
+        <parameter name="gf" value="2"/>
+        <parameter name="tropismT" value="1"/>
+        <parameter name="a" value="0.0436"/>
+        <parameter name="dx" value="0.5"/>
+        <parameter name="dxMin" value="0.0049999999"/>
+        <parameter name="hairsElongation" value="0"/>
+        <parameter name="hairsLength" value="0"/>
+        <parameter name="hairsZone" value="0"/>
+        <parameter name="la" value="0.56920499"/>
+        <parameter name="lb" value="1.37664"/>
+        <parameter name="ldelay" value="6.1541929"/>
+        <parameter name="lmax" value="150"/>
+        <parameter name="ln" value="0.56920499"/>
+        <parameter name="lnk" value="0"/>
+        <parameter name="multDelay" value="0"/>
+        <parameter name="r" value="1.6"/>
+        <parameter name="rlt" value="1e+09"/>
+        <parameter name="theta" value="0"/>
+        <parameter name="tropismN" value="2"/>
+        <parameter name="tropismS" value="1"/>
+        <parameter name="successor" ruleId="0" numLat="1" where="" subType="2" organType="2" percentage="1"/>
+    </root>
+    <root name="lateral" subType="2">
+        <parameter name="gf" value="2"/>
+        <parameter name="tropismT" value="2"/>
+        <parameter name="a" value="0.02"/>
+        <parameter name="dx" value="0.5"/>
+        <parameter name="dxMin" value="0.0049999999"/>
+        <parameter name="hairsElongation" value="0"/>
+        <parameter name="hairsLength" value="0"/>
+        <parameter name="hairsZone" value="0"/>
+        <parameter name="la" value="0.65249199"/>
+        <parameter name="lb" value="1.4"/>
+        <parameter name="ldelay" value="1"/>
+        <parameter name="lmax" value="2.29054"/>
+        <parameter name="ln" value="0.65249199"/>
+        <parameter name="lnk" value="0"/>
+        <parameter name="multDelay" value="0"/>
+        <parameter name="r" value="1.8791695"/>
+        <parameter name="rlt" value="1e+09"/>
+        <parameter name="theta" value="1.46672"/>
+        <parameter name="tropismN" value="2"/>
+        <parameter name="tropismS" value="0.68568301"/>
+        <parameter name="successor" ruleId="0" numLat="1" where="" subType="3" organType="2" percentage="1"/>
+    </root>
+    <root name="tertiaryroots" subType="3">
+        <parameter name="gf" value="2"/>
+        <parameter name="tropismT" value="2"/>
+        <parameter name="a" value="0.0099999998"/>
+        <parameter name="dx" value="0.5"/>
+        <parameter name="dxMin" value="0.0049999999"/>
+        <parameter name="hairsElongation" value="0"/>
+        <parameter name="hairsLength" value="0"/>
+        <parameter name="hairsZone" value="0"/>
+        <parameter name="la" value="1.2"/>
+        <parameter name="lb" value="0"/>
+        <parameter name="ldelay" value="-1"/>
+        <parameter name="lmax" value="0.94"/>
+        <parameter name="ln" value="1.2"/>
+        <parameter name="lnk" value="0"/>
+        <parameter name="multDelay" value="0"/>
+        <parameter name="r" value="2.3499999"/>
+        <parameter name="rlt" value="1e+09"/>
+        <parameter name="theta" value="1.50098"/>
+        <parameter name="tropismN" value="0.5"/>
+        <parameter name="tropismS" value="0.1"/>
+    </root>
+    <root name="basal" subType="4">
+        <parameter name="gf" value="2"/>
+        <parameter name="tropismT" value="1"/>
+        <parameter name="a" value="0.0436"/>
+        <parameter name="dx" value="0.5"/>
+        <parameter name="dxMin" value="0.0049999999"/>
+        <parameter name="hairsElongation" value="0"/>
+        <parameter name="hairsLength" value="0"/>
+        <parameter name="hairsZone" value="0"/>
+        <parameter name="la" value="0.56920499"/>
+        <parameter name="lb" value="1.37664"/>
+        <parameter name="ldelay" value="6.1541929"/>
+        <parameter name="lmax" value="150"/>
+        <parameter name="ln" value="0.56920499"/>
+        <parameter name="lnk" value="0"/>
+        <parameter name="multDelay" value="0"/>
+        <parameter name="r" value="1.6"/>
+        <parameter name="rlt" value="1e+09"/>
+        <parameter name="theta" value="1.4835298"/>
+        <parameter name="tropismN" value="0.75"/>
+        <parameter name="tropismS" value="0.2"/>
+        <parameter name="successor" ruleId="0" numLat="1" where="" subType="2" organType="2" percentage="1"/>
+    </root>
+    <root name="shootborne" subType="5">
+        <parameter name="gf" value="2"/>
+        <parameter name="tropismT" value="2"/>
+        <parameter name="a" value="0.0436"/>
+        <parameter name="dx" value="0.5"/>
+        <parameter name="dxMin" value="0.0049999999"/>
+        <parameter name="hairsElongation" value="0"/>
+        <parameter name="hairsLength" value="0"/>
+        <parameter name="hairsZone" value="0"/>
+        <parameter name="la" value="2.2290001"/>
+        <parameter name="lb" value="1.37664"/>
+        <parameter name="ldelay" value="0"/>
+        <parameter name="lmax" value="150"/>
+        <parameter name="ln" value="0.56920499"/>
+        <parameter name="lnk" value="0"/>
+        <parameter name="multDelay" value="0"/>
+        <parameter name="r" value="1.6" dev="0.16"/>
+        <parameter name="rlt" value="1e+09"/>
+        <parameter name="theta" value="1.12"/>
+        <parameter name="tropismN" value="1"/>
+        <parameter name="tropismS" value="0.1"/>
+        <parameter name="successor" ruleId="0" numLat="1" where="" subType="2" organType="2" percentage="1"/>
+    </root>
+    <stem name="mainstem" subType="1">
+        <parameter name="gf" value="1"/>
+        <parameter name="lnf" value="0"/>
+        <parameter name="tropismT" value="1"/>
+        <parameter name="BetaDev" value="0"/>
+        <parameter name="InitBeta" value="0"/>
+        <parameter name="RotBeta" value="0"/>
+        <parameter name="a" value="0.2" dev="0.02"/>
+        <parameter name="delayNGEnd" value="0"/>
+        <parameter name="delayNGStart" value="0"/>
+        <parameter name="dx" value="0.5"/>
+        <parameter name="dxMin" value="0.001"/>
+        <parameter name="la" value="3"/>
+        <parameter name="lb" value="1"/>
+        <parameter name="ldelay" value="-1"/>
+        <parameter name="lmax" value="90"/>
+        <parameter name="ln" value="1"/>
+        <parameter name="multDelay" value="0"/>
+        <parameter name="nodalGrowth" value="0"/>
+        <parameter name="r" value="20" dev="0.44999999"/>
+        <parameter name="rlt" value="1e+09"/>
+        <parameter name="theta" value="0"/>
+        <parameter name="tropismAge" value="0"/>
+        <parameter name="tropismN" value="1"/>
+        <parameter name="tropismS" value="0"/>
+        <parameter name="successor" ruleId="0" numLat="1" where="" subType="2" organType="4" percentage="1"/>
+        <parameter name="successor" ruleId="1" numLat="5" where="0" subType="5" organType="2" percentage="1"/>
+        <parameter name="successor" ruleId="2" numLat="6" where="1" subType="5" organType="2" percentage="1"/>
+        <parameter name="successor" ruleId="3" numLat="8" where="2" subType="5" organType="2" percentage="1"/>
+        <parameter name="successor" ruleId="4" numLat="10" where="3" subType="5" organType="2" percentage="1"/>
+        <parameter name="successor" ruleId="5" numLat="12" where="4" subType="5" organType="2" percentage="1"/>
+        <parameter name="successor" ruleId="6" numLat="14" where="5" subType="5" organType="2" percentage="1"/>
+    </stem>
+    <leaf name="maize1eaf" subType="2">
+        <parameter name="a" value="0.029999999" dev="0.0020000001"/>
+        <parameter name="bladeAngle" value="0.30000001"/>
+        <parameter name="bladeBending" value="0.050000001"/>
+        <parameter name="bladeLength" value="10"/>
+        <parameter name="bladeWidth" value="0.5"/>
+        <parameter name="dx" value="0.25"/>
+        <parameter name="dxMin" value="1e-06"/>
+        <parameter name="ldelay" value="-1"/>
+        <parameter name="leafGrowthDuration" value="15"/>
+        <parameter name="multDelay" value="0"/>
+        <parameter name="rotDev" value="0"/>
+        <parameter name="sheathLength" value="5"/>
+    </leaf>
+</plant>

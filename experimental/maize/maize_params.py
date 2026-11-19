@@ -5,6 +5,26 @@ Vidal et al. (2021), He et al. (2021), Fournier & Andrieu (2000, 2010, 2014), do
 
 import numpy as np
 
+import plantbox as pb
+
+
+class ExoGraviTropism(pb.Tropism):
+    """User defined tropism depending on root age use either exotropism or gravitropism"""
+
+    def __init__(self, plant, n, sigma, age):
+        super(ExoGraviTropism, self).__init__(plant)
+        self.exo = pb.Exotropism(plant, 0.0, 0.0)
+        self.gravi = pb.Gravitropism(plant, 0.0, 0.0)
+        self.setTropismParameter(n, sigma)
+        self.age = age
+
+    def tropismObjective(self, pos, old, a, b, dx, root):
+        age = root.getAge()
+        if age < self.age:
+            return self.exo.tropismObjective(pos, old, a, b, dx, root)
+        else:
+            return self.gravi.tropismObjective(pos, old, a, b, dx, root)
+
 
 #
 # Leaf geometery
@@ -18,8 +38,8 @@ def get_leaf_blade_lenght():
     leaf_length = np.array(
         [
             0.0,  # one leaf more than internodes at the base
-            0.35,
-            0.35,
+            0.5 * 0.35,
+            0.5 * 0.35,
             0.35,  # 1–3: basal
             0.55,
             0.55,
@@ -73,14 +93,18 @@ def get_leaf_width():
 #
 # Leaf emergence
 #
-def get_leaf_collar_emergence_gdd():
-    leaf_collar_emergence_gdd = np.array([50, 108, 166, 224, 282, 340, 398, 456, 514, 572, 603, 634, 665, 696, 727, 758, 789, 820, 851])  # [°C day], base temperature 8°C
-    return leaf_collar_emergence_gdd
+def get_leaf_emergence_gdd():
+    leaf_emergence_gdd = np.array([50, 108, 166, 224, 282, 340, 398, 456, 514, 572, 603, 634, 665, 696, 727, 758, 789, 820, 851])  # [°C day], base temperature 8°C
+    return leaf_emergence_gdd
 
 
-def get_leaf_collar_emergence_days():
-    leaf_collar_emergence_days = np.array([0, 5, 11, 17, 22, 28, 34, 40, 46, 51, 57, 60, 63, 67, 70, 73, 76, 79, 82, 85])  # [days after VE]
-    return leaf_collar_emergence_days - 4 * np.ones(leaf_collar_emergence_days.shape)
+def get_leaf_emergence_days():
+    leaf_emergence_days = np.array([0, 5, 11, 17, 22, 28, 34, 40, 46, 51, 57, 60, 63, 67, 70, 73, 76, 79, 82, 85])  # [days after VE]
+    internode_final_time_days = np.array(
+        [0, 4.78481013, 6.17721519, 7.56962025, 8.96202532, 14.87974684, 20.79746835, 26.71518987, 32.63291139, 43.7721519, 54.91139241, 66.05063291, 77.18987342, 85.19620253, 93.20253165, 101.20886076, 109.21518987, 110.60759494, 112.0, 200]
+    )  # quickfix
+    return np.minimum(leaf_emergence_days - 2 * np.ones(leaf_emergence_days.shape), internode_final_time_days)
+    # return leaf_emergence_days
 
 
 #

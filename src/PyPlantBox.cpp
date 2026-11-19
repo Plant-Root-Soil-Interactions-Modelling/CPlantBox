@@ -854,15 +854,17 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("delayNGStart", &StemSpecificParameter::delayNGStart)
         .def_readwrite("delayNGEnd", &StemSpecificParameter::delayNGEnd);
     /**
-     * Root.h – trampoline to allow Python subclasses to override getParameter().
+     * Root.h – trampoline to allow Python subclasses to override simulate() and getParameter().
      */
     struct PyRoot : Root {
         using Root::Root;
+        void simulate(double dt, bool verbose = false) override { PYBIND11_OVERRIDE(void, Root, simulate, dt, verbose); }
         double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override { PYBIND11_OVERRIDE(double, Root, getParameter, name, addParams); }
     };
     py::class_<Root, Organ, PyRoot, std::shared_ptr<Root>>(m, "Root")
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
+        .def("simulate", [](Root &self, double dt, bool verbose) { self.Root::simulate(dt, verbose); }, py::arg("dt"), py::arg("verbose") = false) // non-virtual call, so super().simulate() works in Python subclasses
         .def("calcLength", &Root::calcLength)
         .def("calcAge", &Root::calcAge)
         .def("getRootRandomParameter", &Root::getRootRandomParameter)
@@ -931,9 +933,14 @@ PYBIND11_MODULE(plantbox, m) {
     /**
      * Leaf.h
      */
-    py::class_<Leaf, Organ, std::shared_ptr<Leaf>>(m, "Leaf")
+    struct PyLeaf : Leaf {
+        using Leaf::Leaf;
+        void simulate(double dt, bool verbose = false) override { PYBIND11_OVERRIDE(void, Leaf, simulate, dt, verbose); }
+    };
+    py::class_<Leaf, Organ, PyLeaf, std::shared_ptr<Leaf>>(m, "Leaf")
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
+        .def("simulate", [](Leaf &self, double dt, bool verbose) { self.Leaf::simulate(dt, verbose); }, py::arg("dt"), py::arg("verbose") = false)
         .def("getLeafVis", &Leaf::getLeafVis)
         .def("getLeafVisX", &Leaf::getLeafVisX)
         .def("calcLength", &Leaf::calcLength)
@@ -948,10 +955,14 @@ PYBIND11_MODULE(plantbox, m) {
     /**
      * GrassLeaf.h
      */
-    py::class_<GrassLeaf, Organ, std::shared_ptr<GrassLeaf>>(m, "GrassLeaf")
+    struct PyGrassLeaf : GrassLeaf {
+        using GrassLeaf::GrassLeaf;
+        void simulate(double dt, bool verbose = false) override { PYBIND11_OVERRIDE(void, GrassLeaf, simulate, dt, verbose); }
+    };
+    py::class_<GrassLeaf, Organ, PyGrassLeaf, std::shared_ptr<GrassLeaf>>(m, "GrassLeaf")
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
-        .def("simulate", &GrassLeaf::simulate, py::arg("dt"), py::arg("verbose") = false)
+        .def("simulate", [](GrassLeaf &self, double dt, bool verbose) { self.GrassLeaf::simulate(dt, verbose); }, py::arg("dt"), py::arg("verbose") = false)
         .def("calcLength", &GrassLeaf::calcLength)
         .def("calcAge", &GrassLeaf::calcAge)
         .def("getGrassLeafRandomParameter", &GrassLeaf::getGrassLeafRandomParameter)
@@ -963,9 +974,14 @@ PYBIND11_MODULE(plantbox, m) {
     /**
      * Stem.h
      */
-    py::class_<Stem, Organ, std::shared_ptr<Stem>>(m, "Stem")
+    struct PyStem : Stem {
+        using Stem::Stem;
+        void simulate(double dt, bool verbose = false) override { PYBIND11_OVERRIDE(void, Stem, simulate, dt, verbose); }
+    };
+    py::class_<Stem, Organ, PyStem, std::shared_ptr<Stem>>(m, "Stem")
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
+        .def("simulate", [](Stem &self, double dt, bool verbose) { self.Stem::simulate(dt, verbose); }, py::arg("dt"), py::arg("verbose") = false)
         .def("calcLength", &Stem::calcLength)
         .def("calcAge", &Stem::calcAge)
         .def("getStemRandomParameter", &Stem::getStemRandomParameter)
