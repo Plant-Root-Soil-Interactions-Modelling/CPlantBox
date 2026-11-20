@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from plantbox.visualisation import figure_style
 from rosi.richards import RichardsWrapper  # Python part |\label{l61:paths_a}|
-from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding) |\label{paths_e}|
+from rosi.rosi_richards import RichardsSP  # C++ part (Dumux binding) |\label{l61:paths_e}|
 
 # Define Van Genuchten and other parameters
 soils = {
