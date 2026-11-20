@@ -439,6 +439,8 @@ def handle_simulation(create_clicks, time_slider, plant_value, seed_data, root_d
     # ---- Run simulation (common part) ----
     vtk_data, result_data = simulate_plant.simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, settings_data["random_seed"], xml_data)
     run_id = cache_simulation_run(vtk_data, result_data)
+    if settings_data["reset"] or "camera_props" not in settings_data:  # keep the camera of the last reset on time slider changes
+        settings_data["camera_props"] = get_cached_simulation_run(run_id)["vtk_render_data"]["camera_props"]
 
     content = render_result_content(result_value, run_id, typename_data, settings_data)
 
@@ -992,15 +994,17 @@ def render_result_content(tab, run_id, typename_data, settings_data):
     result_data = cached["result_data"]
     vtk_render_data = cached["vtk_render_data"]
 
+    camera_props = settings_data.get("camera_props", vtk_render_data["camera_props"])
+
     print("render_result_tab()", tab, "vtk data size:", asizeof.asizeof(vtk_data) / 1e6, "MB", "result data size:", asizeof.asizeof(result_data) / 1e6, "MB")
 
     if tab == "VTK3D":
         buttons = create_geometry_buttons()
-        graph = plots.vtk3D_plot(vtk_render_data, "Type", settings_data["token"], settings_data["reset"], buttons)
+        graph = plots.vtk3D_plot(vtk_render_data, "Type", settings_data["token"], camera_props, buttons)
         return graph
     elif tab == "VTK3DAge":
         buttons = create_geometry_buttons()
-        graph = plots.vtk3D_plot(vtk_render_data, "Age", settings_data["token"], settings_data["reset"], buttons)
+        graph = plots.vtk3D_plot(vtk_render_data, "Age", settings_data["token"], camera_props, buttons)
         return graph
     elif tab == "Profile1D":
         button = small_button("xls", "xls-profile-download-button", "Download 1D profile data as XLS")

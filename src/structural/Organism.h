@@ -10,6 +10,9 @@
 #include <map>
 #include <memory>
 #include <random>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace tinyxml2 {
 class XMLDocument;
@@ -28,6 +31,8 @@ class Seed;
  * Manages organ parameter prototypes, simulation time stepping, geometry extraction,
  * and export utilities (RSML, VTP, geometry script).
  */
+using OrganismState = std::unordered_map<std::string, std::vector<double>>; ///< variable name -> values, same format as OrganState
+
 class Organism : public std::enable_shared_from_this<Organism> {
   public:
   
@@ -120,6 +125,10 @@ class Organism : public std::enable_shared_from_this<Organism> {
     void setMinDx(double dx) { minDx = dx; } ///< minimum segment size, smaller segments will be skipped
     double getMinDx() { return minDx; }      ///< minimum segment size, smaller segments will be skipped
 
+    /* state (de)serialisation */
+    virtual OrganismState getState() const; ///< Returns counters, time, rng state and the ids of the base organs by name; organs, parameters, geometry and soil are not stored
+    virtual void setState(const OrganismState &state, const std::map<int, std::shared_ptr<Organ>> &organs = {}); ///< Restores state; if @p organs (id -> organ) is non-empty, baseOrgans are re-linked
+
     /* random numbers */
     void setSeed(unsigned int seed); ///< Sets RNG seed.
     void setRandomSeed(unsigned int seed) { setSeed(seed); } ///< renamed setSeed to avoid confusion with plant seed, but keep setSeed for backward compatibility
@@ -131,7 +140,6 @@ class Organism : public std::enable_shared_from_this<Organism> {
 
     std::vector<std::shared_ptr<Organ>> baseOrgans; ///< base organs of the organism (e.g. seed, or initial plant)
 
-    virtual bool hasRelCoord() { return false; } ///< Overridden by derived classes with relative coordinates.
     int getDelayDefinition(int ot_lat);          ///< Returns delay-definition mode for a lateral organ type.
 
     int plantId; ///< Unique organism id (mainly for debugging/copy tracing).

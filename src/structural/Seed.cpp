@@ -18,6 +18,32 @@ Seed::Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  */
 Seed::Seed(std::shared_ptr<Organism> plant) : Organ(plant, nullptr, Organism::ot_seed, 0, 0., 0) {
     addNode(param()->seedPos, 0.); // realize() is called within the Organ constructor
+    Vector3d heading = getInitialHeading();
+    initialFrame_ = Matrix3d::ons(heading);
+}
+
+/**
+ * @brief Returns the absolute coordinate of node @p i.
+ */
+Vector3d Seed::getNode(int i) const { return nodes.at(i); }
+
+/**
+ * @brief Returns the absolute coordinates of all nodes.
+ */
+std::vector<Vector3d> Seed::getNodes() const {
+    std::vector<Vector3d> v;
+    for (int i = 0; i < getNumberOfNodes(); i++) {
+        v.push_back(getNode(i));
+    }
+    return v;
+}
+
+/**
+ * @brief Returns the initial frame of the seed.
+ */
+Matrix3d Seed::getInitialFrame() const {
+    Vector3d heading = getInitialHeading();
+    return Matrix3d::ons(heading);
 }
 
 /**
@@ -267,17 +293,70 @@ std::string Seed::toString() const {
 }
 
 /**
- * todo doc
+ * Creates a root of the given subtype and delay, attached to this seed at node 0.
+ * The organism's factory method selects the concrete root class.
  */
-std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, double delay) {
-    return plant->createRoot(type, delay, shared_from_this(), 0);
-}
+std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, double delay) { return plant->createRoot(type, delay, shared_from_this(), 0); }
 
 /**
- * todo doc// overwrite if you want to change the types
+ * Creates a stem of the given subtype and delay, attached to this seed at node 0.
+ * The organism's factory method selects the concrete stem class.
  */
-std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, double delay) {
-    return plant->createStem(type, delay, shared_from_this(), 0);
+std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, double delay) { return plant->createStem(type, delay, shared_from_this(), 0); }
+
+OrganState Seed::getState() const {
+    OrganState s = Organ::getState();
+    stateSet(s, "tapType", tapType);
+    stateSet(s, "basalType", basalType);
+    stateSet(s, "shootborneType", shootborneType);
+    stateSet(s, "mainStemType", mainStemType);
+    stateSet(s, "tillerType", tillerType);
+    stateSet(s, "rootCrowns", rootCrowns_);
+    if (auto p = param()) {
+        stateSet(s, "param.seedPos", p->seedPos);
+        stateSet(s, "param.firstB", p->firstB);
+        stateSet(s, "param.delayB", p->delayB);
+        stateSet(s, "param.maxB", p->maxB);
+        stateSet(s, "param.nC", p->nC);
+        stateSet(s, "param.firstSB", p->firstSB);
+        stateSet(s, "param.delaySB", p->delaySB);
+        stateSet(s, "param.delayRC", p->delayRC);
+        stateSet(s, "param.nz", p->nz);
+        stateSet(s, "param.maxTil", p->maxTil);
+        stateSet(s, "param.firstTil", p->firstTil);
+        stateSet(s, "param.delayTil", p->delayTil);
+        stateSet(s, "param.simtime", p->simtime);
+    }
+    return s;
+}
+
+void Seed::setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    Organ::setState(state, organs);
+    if (param_) {
+        auto p = std::make_shared<SeedSpecificParameter>(*param());
+        stateGet(state, "subType", p->subType);
+        stateGet(state, "param.a", p->a);
+        stateGet(state, "param.seedPos", p->seedPos);
+        stateGet(state, "param.firstB", p->firstB);
+        stateGet(state, "param.delayB", p->delayB);
+        stateGet(state, "param.maxB", p->maxB);
+        stateGet(state, "param.nC", p->nC);
+        stateGet(state, "param.firstSB", p->firstSB);
+        stateGet(state, "param.delaySB", p->delaySB);
+        stateGet(state, "param.delayRC", p->delayRC);
+        stateGet(state, "param.nz", p->nz);
+        stateGet(state, "param.maxTil", p->maxTil);
+        stateGet(state, "param.firstTil", p->firstTil);
+        stateGet(state, "param.delayTil", p->delayTil);
+        stateGet(state, "param.simtime", p->simtime);
+        param_ = p;
+    }
+    stateGet(state, "tapType", tapType);
+    stateGet(state, "basalType", basalType);
+    stateGet(state, "shootborneType", shootborneType);
+    stateGet(state, "mainStemType", mainStemType);
+    stateGet(state, "tillerType", tillerType);
+    stateGet(state, "rootCrowns", rootCrowns_);
 }
 
 } // namespace CPlantBox

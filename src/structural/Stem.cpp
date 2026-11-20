@@ -26,8 +26,7 @@ namespace CPlantBox {
  * @deprecated moved		indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    		the number of nodes of the previous time step (default = 0)
  */
-Stem::Stem(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni,
-           bool moved, int oldNON)
+Stem::Stem(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, Vector3d partialIHeading_, int pni, bool moved, int oldNON)
     : Organ(id, param, alive, active, age, length, partialIHeading_, pni, moved, oldNON) {}
 
 /**
@@ -46,8 +45,7 @@ Stem::Stem(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Stem::Stem(std::shared_ptr<Organism> plant, int type, double delay, std::shared_ptr<Organ> parent, int pni)
-    : Organ(plant, parent, Organism::ot_stem, type, delay, pni) {
+Stem::Stem(std::shared_ptr<Organism> plant, int type, double delay, std::shared_ptr<Organ> parent, int pni) : Organ(plant, parent, Organism::ot_stem, type, delay, pni) {
     assert(parent != nullptr && "Stem::Stem parent must be set");
     auto p = this->param();
     int phytomerId = 0;
@@ -77,7 +75,7 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, double delay, std::shared_
         } else {
             creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
         }
-        Organ::addNode(Vector3d(0., 0., 0.), parent->getNodeId(pni), creationTime); // do not know why, but i have to add "Organ::" now
+        addNode(Vector3d(0., 0., 0.), parent->getNodeId(pni), creationTime);
     }
 }
 
@@ -106,14 +104,9 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p) {
  * @param verbose  indicates if status messages are written to the console (cout) (default = false)
  */
 void Stem::simulate(double dt, bool verbose) {
-    if (!hasRelCoord()) {
-        throw std::runtime_error("organism not set in rel coord");
-    }
     const StemSpecificParameter &p = *param(); // rename
     firstCall = true;
     oldNumberOfNodes = nodes.size();
-    auto p_all = plant.lock();
-    auto p_stem = p_all->getOrganRandomParameter(Organism::ot_stem);
 
     if (alive) { // dead roots wont grow
 
@@ -124,17 +117,7 @@ void Stem::simulate(double dt, bool verbose) {
         }
         age += dt;
 
-        // probabilistic branching model (todo test)
-        if ((age > 0) && (age - dt <= 0)) { // the root emerges in this time step
-            // use relative coordinates for this function. Delete as it s not a root?
-            double P = getStemRandomParameter()->f_sbp->getValue(nodes.back(), shared_from_this());
-            if (P < 1.) {                       // P==1 means the lateral emerges with probability 1 (default case)
-                double p = 1. - (1. - P * dt);  // probability of emergence in this time step
-                if (plant.lock()->rand() > p) { // not rand()<p
-                    age -= dt;                  // the root does not emerge in this time step
-                }
-            }
-        }
+        // we currently do not use a probabilistic branching model
 
         if (age > 0) { // unborn  roots have no children
 
@@ -144,15 +127,14 @@ void Stem::simulate(double dt, bool verbose) {
             }
 
             if (active) {
+
                 double dt_;     // time step
                 if (age < dt) { // the root emerged in this time step, adjust time step
                     dt_ = age;
                 } else {
                     dt_ = dt;
                 }
-
-                // length increment
-                double age__ = age;
+                double age__ = age;         // length increment
                 if (age > p.delayNGStart) { // simulation ends after start of growth pause
                     if (age < p.delayNGEnd) {
                         age__ = p.delayNGStart; // during growth pause
@@ -160,38 +142,38 @@ void Stem::simulate(double dt, bool verbose) {
                         age__ = age - (p.delayNGEnd - p.delayNGStart); // simulation ends after end of growth pause
                     }
                 } // delay to apply
-                /*as we currently do not implement impeded growth for stem and leaves
-                 *we can use directly the organ's age to cumpute the target length
-                 */
+
+                // we currently do not implement impeded growth for stem and leaves
                 double targetlength = calcLength(age__) + this->epsilonDx;
                 double e = targetlength - length; // store value of elongation to add
-                // can be negative
-                double dl = e; // length increment = calculated length + increment from last time step too small to be added
+                double dl = e;                    // length increment = calculated length + increment from last time step too small to be added
                 length = getLength(true);
                 this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
+
                 // create geometry
                 if (p.laterals) { // stem has laterals
                     /* basal zone */
                     if ((dl > 0) && (length < p.lb)) { // length is the current length of the root
                         if (length + dl <= p.lb) {
-                            createSegments(dl, dt_, verbose);
+                            // std::cout << "Basal zone growth: dl = " << dl << std::endl << std::flush;
+                            createSegments(dl, dt_);
                             length += dl;
                             dl = 0;
                         } else {
                             double ddx = p.lb - length;
-                            createSegments(ddx, dt_, verbose);
+                            // std::cout << "Basal zone growth: ddx = " << ddx << std::endl << std::flush;
+                            createSegments(ddx, dt_);
                             dl -= ddx; // ddx already has been created
                             length = p.lb;
                         }
                     }
                     /* branching zone */
-                    // go into branching zone if organ has laterals and has reached
-                    // the end of the basal zone
                     if (((created_linking_node) < (p.ln.size() + 1)) && (length >= p.lb)) {
                         for (size_t i = 0; (i < p.ln.size()); i++) {
                             createLateral(dt_, verbose);
                             if (p.ln.at(created_linking_node - 1) > 0) {
-                                createSegments(this->dxMin(), dt_, verbose);
+                                // std::cout << "Phytomer zone growth: " << this->dxMin() << std::endl << std::flush;
+                                createSegments(this->dxMin(), dt_);
                                 dl -= this->dxMin();
                                 length += this->dxMin();
                             }
@@ -201,46 +183,169 @@ void Stem::simulate(double dt, bool verbose) {
                     // we can have (p.ln.size()+1)>(created_linking_node) if one ln == 0cm
                     if ((length >= p.lb) && ((p.ln.size() + 1) < (created_linking_node))) {
                         std::stringstream errMsg;
-                        errMsg << "Stem::simulate(): higher number of realized linking nodes (" << created_linking_node << ") than of max laterals ("
-                               << p.ln.size() + 1 << ")";
+                        errMsg << "Stem::simulate(): higher number of realized linking nodes (" << created_linking_node << ") than of max laterals (" << p.ln.size() + 1 << ")";
                         throw std::runtime_error(errMsg.str().c_str());
                     }
-                    // internodal elongation, if the basal zone of the stem is created and still has to grow
+                    // internode elongation
                     double maxInternodeDistance = p.getK() - p.la - p.lb; // maximum length of branching zone
                     if ((dl > 0) && (length >= p.lb) && (maxInternodeDistance > 0)) {
                         int nn = localId_linking_nodes.back();                                      // node carrying the last lateral == end of branching zone
                         double currentInternodeDistance = getLength(nn) - p.lb;                     // actual length of branching zone
                         double ddx = std::min(maxInternodeDistance - currentInternodeDistance, dl); // length to add to branching zone
                         if (ddx > 0) {
-                            internodalGrowth(ddx, dt_, verbose);
+                            // std::cout << "Phytomer elongation: " << ddx << std::endl << std::flush;
+                            internodalGrowth(ddx, dt_);
                             dl -= ddx;
                             length += ddx;
                         }
                     }
                     /* apical zone */
-                    // only grows once the basal and branching nodes are developped
+                    // only grows once the basal and branching nodes are developped (TODO)
                     if ((dl > 0) && (length - (maxInternodeDistance + p.lb) > -1e-9)) {
-                        createSegments(dl, dt_, verbose);
+                        // std::cout << "Apical zone growth: dl = " << dl << std::endl << std::flush;
+                        createSegments(dl, dt_);
                         length += dl;
                     }
                 } else { // no laterals
                     if (dl > 0) {
-                        createSegments(dl, dt_, verbose);
+                        // std::cout << "No laterals: " << dl << std::endl << std::flush;
+                        createSegments(dl, dt_);
                         length += dl;
                     }
-                } // if lateralgetLengths
-                if (dl < 0) { // to keep in memory that realised length is too long, as created nodes to carry children
-
+                }
+                if (dl < 0) {                  // to keep in memory that realised length is too long, as created nodes to carry children
                     this->epsilonDx = dl;      // targetlength + e - length;
                     length += this->epsilonDx; // go back to having length = theoratical length
                 }
             } // if active
             // set limit below 1e-10, as the test files see if correct length
             // once rounded at the 10th decimal
-            //@see test/test_stem_ng.py
             active = getLength(false) <= (p.getK() * (1 - 1e-11)); // become inactive, if final length is nearly reached
         }
     } // if alive
+}
+
+/**
+ * @brief Returns the growth increment vector for the next segment.
+ *
+ * Queries the tropism function (f_tf) to obtain heading angles alpha/beta,
+ * then rotates the heading frame accordingly.
+ *
+ * @param p    Coordinates of the previous node.
+ * @param sdx  Length of the next segment [cm].
+ * @param n    Node index used to determine the current heading (-1 = last node).
+ * @return     Increment vector of length @p sdx in the growth direction, relative to the heading frame (Matrix3d::ons of the heading).
+ */
+Vector3d Stem::getIncrement(const Vector3d &p, Vector3d &h, double sdx) {
+    Matrix3d ons = Matrix3d::ons(h);
+    Vector2d ab = getOrganRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this());
+    return Vector3d::rotAB(ab.x, ab.y).times(sdx); // relative to the heading frame (ons)
+}
+
+/**
+ * @brief Creates polyline segments totalling length @p l.
+ *
+ * Tip growth (phytoIdx < 0) appends nodes at the end of the stem. Internodal elongation (phytoIdx >= 0)
+ * inserts nodes directly above node phytoIdx, i.e. at the base of the phytomere.
+ * If the segment that is to be extended is shorter than dx() (first call of Stem::simulate for tip growth,
+ * always for elongation), it is lengthened first, before new nodes are created at intervals of dx().
+ * Residual growth smaller than dxMin() is stored in epsilonDx.
+ *
+ * @param l         Total length of new segments to create [cm].
+ * @param dt        Current time step [days] (used for creation-time calculation).
+ * @param phytoIdx  Node index below which the phytomere grows (internodal elongation); -1 for tip growth.
+ */
+void Stem::createSegments(double l, double dt, int phytoIdx) {
+    if (l == 0) {
+        std::cout << "Stem::createSegments: zero length encountered \n";
+        return;
+    }
+    if (l < 0) {
+        std::cout << "Stem::createSegments: negative length encountered \n";
+        return;
+    }
+    const bool elongation = (phytoIdx >= 0);
+    const int nn = elongation ? phytoIdx + 1 : nodes.size(); // index of the first new node
+
+    // lengthen an existing segment up to dx() instead of creating a new node
+    double shiftl = 0; // length produced by shift
+    if (elongation || firstCall) {
+        if (!elongation) {
+            firstCall = false;
+        }
+        int shiftIdx; // node (relative coordinate) whose segment is lengthened
+        bool canShift;
+        if (elongation) { // first segment inside the phytomere (the segment below belongs to the previous phytomere)
+            shiftIdx = nn;
+            canShift = (shiftIdx < static_cast<int>(nodes.size()));
+        } else { // last segment, unless it ends in the base node of a lateral
+            shiftIdx = nn - 1;
+            canShift = (nn > 1) && (children.empty() || (shiftIdx != children.back()->getParentNI()));
+        }
+        moved = false;
+        if (canShift) {
+            Vector3d h = nodes.at(shiftIdx);
+            double olddx = h.length();
+            if (olddx < dx() * (1 - 1e-10)) {
+                shiftl = std::min(dx() - olddx, l);
+                h.normalize();
+                nodes.at(shiftIdx) = h.times(olddx + shiftl);
+                nodeCTs.at(shiftIdx) =
+                    this->calcCreationTime(getLength(true) + shiftl, dt); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+                moved = true;
+                l -= shiftl;
+                if (l <= 0) {
+                    return;
+                }
+            }
+        }
+    }
+
+    // create n+1 new nodes
+    double sl = 0; // summed length of created segment
+    int n = floor(l / dx());
+    Vector3d h = heading(nn - 1); // heading and position of the node preceding the new one, updated incrementally
+    Vector3d p = getNode(nn - 1);
+    for (int i = 0; i < n + 1; i++) {
+
+        double sdx;  // segment length (<=dx)
+        if (i < n) { // normal case
+            sdx = dx();
+        } else { // last segment
+            sdx = l - n * dx();
+            if (sdx < dxMin() * (1 - 1e-10)) { // quit if l is too small
+                if (elongation) {
+                    this->epsilonDx += sdx;
+                } else {
+                    this->epsilonDx = sdx;
+                }
+                return;
+            }
+            this->epsilonDx = 0; // no residual
+        }
+        sl += sdx;
+        // the new node is inserted at index nn+i, its predecessor is the node nn+i-1
+        Vector3d newnode = getIncrement(p, h, sdx);                            // relative coordinate
+        double et = this->calcCreationTime(getLength(true) + shiftl + sl, dt); // here length or getLength? it's the same because epsilonDx was set back to 0 at beginning of simulate?
+        if (elongation) {
+            // std::cout << "Inserted node at index " << phytoIdx << ", " << nn << ", " << et << ", " << sl << std::flush << std::endl;
+            insertNode(newnode, et, nn);
+            // insertion point p and heading h remain unchanged
+        } else {
+            addNode(newnode, et);
+            Vector3d s = Matrix3d::ons(h).times(newnode); // absolute segment vector
+            p = p.plus(s);                                // update position and heading
+            h = s.normalized();
+        }
+    }
+}
+
+/**
+ * Creates the laterals of a new linking node (@see Organ::createLateral) and stores the local id of the node
+ */
+void Stem::createLateral(double dt, bool verbose) {
+    Organ::createLateral(dt, verbose);
+    storeLinkingNodeLocalId(created_linking_node);
 }
 
 /**
@@ -257,7 +362,7 @@ double Stem::getLatInitialGrowth(double dt) {
 /**
  * Overwritten to support different delay times for laterals along the organ,
  * even though all laterals are created at once when the stem emerges.
- * 
+ *
  *  @see Organ::createLateral
  *  @param ot_lat       organType of lateral to create
  *  @param st_lat       subType of lateral to create
@@ -270,11 +375,8 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
     double forDelay;                     // store necessary variables to define lateral growth delay
     int delayDefinition = getOrganism()->getDelayDefinition(ot_lat);
 
-    assert(delayDefinition >= 0);
-
     if (verbose) {
-        std::cout << "create lat, delay def " << delayDefinition << " " << getId() << " " << (nodes.size() - 1) << " " << age << " "
-                  << getNodeId(nodes.size() - 1) << " " << getNodeId(0) << std::endl;
+        std::cout << "create lat, delay def " << delayDefinition << " " << getId() << " " << (nodes.size() - 1) << " " << age << " " << getNodeId(nodes.size() - 1) << " " << getNodeId(0) << std::endl;
     }
 
     // count the number of laterals of subtype st already created on this organ std::function<double(int, int, std::shared_ptr<Organ>)>
@@ -292,8 +394,8 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
             effectiveLa /= 2;
         } // otherwise the growth delay == parent root life time.
         if (verbose) {
-            std::cout << "case Organism::dd_distance " << organType() << " " << getParameter("subType") << " " << getLength(true) << " " << effectiveLa << " "
-                      << getParameter("la") << " " << meanLn << std::endl;
+            std::cout << "case Organism::dd_distance " << organType() << " " << getParameter("subType") << " " << getLength(true) << " " << effectiveLa << " " << getParameter("la") << " " << meanLn
+                      << std::endl;
         }
         double ageLN = this->calcAge(param()->lb); // age of root when lateral node is created
         ageLN = std::max(ageLN, age - dt);
@@ -306,7 +408,7 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
         // time the lateral has to wait
         forDelay = std::max(rp->ldelay + plant.lock()->randn() * rp->ldelays, 0.);
         multiplyDelay *= rp->multDelay;
-		if (verbose) {
+        if (verbose) {
             std::cout << "Organism::dd_time_lat " << rp->ldelay << " " << rp->ldelays << " " << forDelay << std::endl;
         }
         break;
@@ -315,10 +417,10 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
         auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
         forDelay = std::max(latRp->ldelay + plant.lock()->randn() * latRp->ldelays, 0.);
         multiplyDelay *= latRp->multDelay;
-		if (verbose) {
+        if (verbose) {
             std::cout << "create lat, delay output " << forDelay << std::endl;
-            std::cout << "						 " << ot_lat << ", " << st_lat << " " << latRp->ldelay << " " << latRp->ldelays << " "
-                      << forDelay << " " << nodes.size() << std::endl;
+            std::cout << "						 " << ot_lat << ", " << st_lat << " " << latRp->ldelay << " " << latRp->ldelays << " " << forDelay << " " << nodes.size()
+                      << std::endl;
         }
         break;
     }
@@ -339,22 +441,23 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const { // ove
  * Simulates internodal growth of dl for this stem
  * divid total stem growth between the phytomeres
  * currently two option:
- * (p.nodalGrowth == 1) growth devided equally between the phytomeres or
  * (p.nodalGrowth == 0) the phytomere grow sequentially
+ * (p.nodalGrowth == 1) growth devided equally between the phytomeres or
  *
  * @param 	dl			total length of the segments that are created [cm]
- * @param	verbose		print information
  */
-void Stem::internodalGrowth(double dl, double dt, bool verbose) {
+void Stem::internodalGrowth(double dl, double dt) {
     const StemSpecificParameter &p = *param(); // rename
     std::vector<double> toGrow(p.ln.size());
     double dl_;
-    const int ln_0 = std::count(p.ln.cbegin(), p.ln.cend(), 0); // number of laterals wich grow on smae branching point as the one before
-    if (p.nodalGrowth == 0) {                                   // sequentiall growth
+    const int ln_0 = std::count(p.ln.cbegin(), p.ln.cend(), 0); // number of laterals which grow from the same branching point as the one before
+    if (getStemRandomParameter()->nodalGrowth == 0) {           // sequentiall growth
+        // std::cout << "Sequential growth: dl = " << dl << std::endl << std::flush;
         toGrow[0] = dl;
         std::fill(toGrow.begin() + 1, toGrow.end(), 0);
     }
-    if (p.nodalGrowth == 1) { // equal growth
+    if (getStemRandomParameter()->nodalGrowth == 1) { // equal growth
+        // std::cout << "Equal growth: dl = " << dl << std::endl << std::flush;
         std::fill(toGrow.begin(), toGrow.end(), dl / (p.ln.size() - ln_0));
     }
     int loopId = 0;
@@ -369,13 +472,12 @@ void Stem::internodalGrowth(double dl, double dt, bool verbose) {
         double availableForGrowth = p.ln.at(phytomerId) - (getLength(nn2) - length1); // difference between maximum and current length of the phytomer
         if (availableForGrowth < -1e-3) {
             std::stringstream errMsg;
-            errMsg << "Stem::internodalGrowth phytomere " << phytomerId << " is too long: " << availableForGrowth << " " << p.ln.at(phytomerId) << " "
-                   << getLength(nn2) << " " << length1 << std::endl;
+            errMsg << "Stem::internodalGrowth phytomere " << phytomerId << " is too long: " << availableForGrowth << " " << p.ln.at(phytomerId) << " " << getLength(nn2) << " " << length1 << std::endl;
             throw std::runtime_error(errMsg.str().c_str());
         }
         dl_ = std::max(0., std::min(std::min(toGrow[phytomerId], availableForGrowth), dl));
         if (dl_ > 0) {
-            createSegments(dl_, dt, verbose, nn2);
+            createSegments(dl_, dt, nn1);
             dl -= dl_;
         }
         if ((phytomerId + 1) < p.ln.size()) {
@@ -385,15 +487,15 @@ void Stem::internodalGrowth(double dl, double dt, bool verbose) {
             toGrow.at(0) += toGrow.at(phytomerId) - dl_;
             loopId++;
             phytomerId = 0;
-        } // loop twice other the children
+        } // loop twice
     }
-
     if (std::abs(dl) > 1e-6) { // this sould not happen as computed dl to be <= sum(availableForGrowth)
         std::stringstream errMsg;
         errMsg << "Stem::internodalGrowth length left to grow: " << dl;
         throw std::runtime_error(errMsg.str().c_str());
     }
 }
+
 /**
  * Returns a parameter per organ
  *
@@ -473,7 +575,7 @@ double Stem::getParameter(std::string name, std::map<std::string, double> addPar
  */
 double Stem::calcLength(double age) {
     assert(age >= 0 && "Stem::calcLength() negative root age");
-    return getStemRandomParameter()->f_gf->getLength(age, getStemRandomParameter()->r, param()->getK(), shared_from_this());
+    return getStemRandomParameter()->f_gf->getLength(age, param()->r, param()->getK(), shared_from_this());
 }
 
 /**
@@ -484,7 +586,7 @@ double Stem::calcLength(double age) {
  */
 double Stem::calcAge(double length) const {
     assert(length >= 0 && "Stem::calcAge() negative root age");
-    double age__ = getStemRandomParameter()->f_gf->getAge(length, getStemRandomParameter()->r, param()->getK(), shared_from_this());
+    double age__ = getStemRandomParameter()->f_gf->getAge(length, param()->r, param()->getK(), shared_from_this());
     if (age__ > param()->delayNGStart) {
         age__ += (param()->delayNGEnd - param()->delayNGStart);
     }
@@ -492,64 +594,30 @@ double Stem::calcAge(double length) const {
 }
 
 /**
- * Creates the laterals of a new linking node (@see Organ::createLateral) and stores the local id of the node
- */
-void Stem::createLateral(double dt, bool verbose) {
-    Organ::createLateral(dt, verbose);
-    storeLinkingNodeLocalId(created_linking_node, verbose);
-}
-
-/**
  * stores the local id of the linking node. used by @see Stem::internodalGrowth()
  */
-void Stem::storeLinkingNodeLocalId(int numCreatedLN, bool verbose) {
+void Stem::storeLinkingNodeLocalId(int numCreatedLN) {
     localId_linking_nodes.push_back(nodes.size() - 1);
     if (numCreatedLN != localId_linking_nodes.size()) {
-        throw std::runtime_error("wrong number of linking nodes in stem: " + std::to_string(numCreatedLN) + " against " +
-                                 std::to_string(localId_linking_nodes.size()));
+        throw std::runtime_error("wrong number of linking nodes in stem: " + std::to_string(numCreatedLN) + " against " + std::to_string(localId_linking_nodes.size()));
     }
 }
 
 /**
- * Adds a node to the organ.
+ * Inserts a node between existing nodes because of internodal growth, and updates the linking nodes.
  *
- * For simplicity nodes can not be deleted, organs can only become deactivated or die
+ * @see Organ::insertNode
  *
  * @param n        new node
  * @param id       global node index
  * @param t        exact creation time of the node
  * @param index	   position were new node is to be added
- * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
  */
-void Stem::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
-    bool verbose = false;
-    if (verbose) {
-        std::cout << "Organ::addNode " << id << " " << getId() << " " << organType() << " " << getParameter("subType") << std::endl;
-        std::cout << "Organ::addNode " << n.toString() << " " << t << " " << index << " " << shift << std::endl;
-    }
-    if (!shift) {                               // node added at the end of organ
-        nodes.push_back(n);                     // node
-        nodeIds.push_back(id);                  // unique id
-        nodeCTs.push_back(t);                   // exact creation time
-    } else {                                    // could be quite slow  to insert, but we won t have that many (node-)tillers (?)
-        nodes.insert(nodes.begin() + index, n); // add the node at index
-        // add a global index.
-        // no need for the nodes to keep the same global index and makes the update of the nodes position for MappedPlant object more simple)
-        // if(verbose){
-        //			std::cout<<"Organ::addNode "<<organType()<<" "<<id<<" "<<index<<std::endl<<std::flush;
-        //}
-        nodeIds.push_back(id);
-        nodeCTs.insert(nodeCTs.begin() + index, t);
-        for (auto kid : children) { // if carries children after the added node, update their "parent node index"
-
-            if ((kid->getParentNI() >= index - 1) && (kid->getParentNI() > 0)) {
-                kid->moveOrigin(kid->getParentNI() + 1);
-            }
-        }
-        for (int numnode = 0; numnode < localId_linking_nodes.size(); numnode++) { // update the local ids of the linking nodes
-            if ((localId_linking_nodes.at(numnode) >= index - 1) && (localId_linking_nodes.at(numnode) > 0)) {
-                localId_linking_nodes.at(numnode) += 1;
-            }
+void Stem::insertNode(Vector3d n, double t, size_t index) {
+    Organ::insertNode(n, t, index);
+    for (int i = 0; i < localId_linking_nodes.size(); i++) { // update the local ids of the linking nodes
+        if ((localId_linking_nodes.at(i) >= index) && (localId_linking_nodes.at(i) > 0)) {
+            localId_linking_nodes.at(i) += 1;
         }
     }
 }
@@ -574,6 +642,45 @@ std::string Stem::toString() const {
     std::stringstream newstring;
     newstring << "; initial heading: " << getInitialHeading().toString() << ", parent node index" << parentNI << ".";
     return Organ::toString() + newstring.str();
+}
+
+OrganState Stem::getState() const {
+    OrganState s = Organ::getState();
+    stateSet(s, "stemphytomerId", stemphytomerId);
+    stateSet(s, "localId_linking_nodes", localId_linking_nodes);
+    if (auto p = param()) {
+        stateSet(s, "param.lb", p->lb);
+        stateSet(s, "param.la", p->la);
+        stateSet(s, "param.ln", p->ln);
+        stateSet(s, "param.r", p->r);
+        stateSet(s, "param.theta", p->theta);
+        stateSet(s, "param.rlt", p->rlt);
+        stateSet(s, "param.laterals", p->laterals);
+        stateSet(s, "param.delayNGStart", p->delayNGStart);
+        stateSet(s, "param.delayNGEnd", p->delayNGEnd);
+    }
+    return s;
+}
+
+void Stem::setState(const OrganState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    Organ::setState(state, organs);
+    if (param_) {
+        auto p = std::make_shared<StemSpecificParameter>(*param());
+        stateGet(state, "subType", p->subType);
+        stateGet(state, "param.a", p->a);
+        stateGet(state, "param.lb", p->lb);
+        stateGet(state, "param.la", p->la);
+        stateGet(state, "param.ln", p->ln);
+        stateGet(state, "param.r", p->r);
+        stateGet(state, "param.theta", p->theta);
+        stateGet(state, "param.rlt", p->rlt);
+        stateGet(state, "param.laterals", p->laterals);
+        stateGet(state, "param.delayNGStart", p->delayNGStart);
+        stateGet(state, "param.delayNGEnd", p->delayNGEnd);
+        param_ = p;
+    }
+    stateGet(state, "stemphytomerId", stemphytomerId);
+    stateGet(state, "localId_linking_nodes", localId_linking_nodes);
 }
 
 } // namespace CPlantBox

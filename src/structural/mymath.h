@@ -635,6 +635,13 @@ class TurtlePolyline {
     /// Returns the deque index of the initial node (0 at construction; incremented by addNodeFront()).
     int getInitialNodeIndex() const { return initialNodeIdx; }
 
+    /// Removes all turtle nodes and resets the initial node index (anchor is kept).
+    void clearNodes() {
+        nodes.clear();
+        initialNodeIdx = 0;
+    }
+    void setInitialNodeIndex(int i) { initialNodeIdx = i; } ///< Sets the deque index of the initial node (used when restoring a state)
+
     /// Direct read access to the raw turtle-node deque.
     const std::deque<TurtleNode> &getTurtleNodes() const { return nodes; }
 

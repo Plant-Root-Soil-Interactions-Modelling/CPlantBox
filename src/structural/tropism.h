@@ -45,6 +45,8 @@ public:
 	void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; } ///< sets a confining geometry
 	void setTropismParameter(double n_,double sigma_) { n=n_; sigma=sigma_; } ///< sets the tropism parameters
 	void setSigma(double newSigma) { sigma = newSigma; }
+	std::vector<double> getNDState() const; ///< state of the normal distribution incl. its cached value, needed to reproduce random draws after a restore
+	void setNDState(const std::vector<double>& v); ///< restores the state created by getNDState()
 
 	virtual Vector2d getHeading(const Vector3d& pos, const Matrix3d& old,  double dx, const std::shared_ptr<Organ> o = nullptr, int nodeIdx = -1);
 	///< constrained heading, dices n times and takes the best shot (according to the objective function)

@@ -697,7 +697,7 @@ void PhloemFlux::assertUsedCReserves(std::shared_ptr<CPlantBox::Organ> org)
 					org->isActive()&&useCWGr)
 	{
 		std::cout<<org->getId()<<" "<<org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<<std::endl;
-		std::cout<<org->calcLength(1)<<" "<< org->organType() <<" "<<org->getAge()<<std::endl;
+		std::cout<<org->organType() <<" "<<org->getAge()<<std::endl;
 		throw std::runtime_error("PhloemFlux::waterLimitedGrowth: sucrose for growth has not been used at last time step");
 	}
 }

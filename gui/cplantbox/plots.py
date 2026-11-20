@@ -15,7 +15,7 @@ from vtk_conversions import *
 RESULT_PLOT_HEIGHT = "clamp(560px, 72vh, 980px)"
 
 
-def vtk3D_plot(render_data, type_, reset_camera_token, reset_camera, buttons):
+def vtk3D_plot(render_data, type_, reset_camera_token, camera_props, buttons):
     """3D and 3D age plot"""
     color_pick = np.asarray(render_data["age_colors"] if type_ == "Age" else render_data["sub_type_colors"], dtype=float)
     finite = color_pick[np.isfinite(color_pick)]
@@ -56,10 +56,9 @@ def vtk3D_plot(render_data, type_, reset_camera_token, reset_camera, buttons):
         property={"color": [0, 1, 0], "opacity": 0.85},  # Green
     )
 
-    if reset_camera:
-        content = dash_vtk.View(children=[geom_rep, leaf_rep], triggerResetCamera=reset_camera_token, **render_data["camera_props"])
-    else:
-        content = dash_vtk.View(children=[geom_rep, leaf_rep])
+    # camera props must stay identical between renders, otherwise dash_vtk resets the camera;
+    # the camera is only reset when reset_camera_token changes
+    content = dash_vtk.View(children=[geom_rep, leaf_rep], triggerResetCamera=reset_camera_token, **camera_props)
 
     if type_ == "Age":
         label_ = "Age [day]"

@@ -4,6 +4,7 @@
 #include "grassleafparameter.h"
 #include "RootDelay.h"
 
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -209,11 +210,7 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
  */
-void Plant::simulate(double dt, bool verbose) {
-    abs2rel();
-    Organism::simulate(dt, verbose);
-    rel2abs();
-}
+void Plant::simulate(double dt, bool verbose) { Organism::simulate(dt, verbose); }
 
 /**
  * Simulates plant growth for the time span defined in the root system parameters
@@ -308,32 +305,6 @@ double Plant::weightedSum(std::string paramName, std::vector<double> scales) con
 }
 
 /**
- * go from absolute to relative coordinates for aboveground organs
- */
-void Plant::abs2rel() {
-    auto s = getSeed();
-    for (int i = 0; i < s->getNumberOfChildren(); i++) {
-        auto child = s->getChild(i);
-        // if(child->organType() >2){ //if aboveground-organ
-        child->abs2rel(); // apply to all organs
-        //}
-    }
-}
-
-/**
- * go from relative to absolute coordinates for aboveground organs
- */
-void Plant::rel2abs() {
-    auto s = getSeed();
-    for (int i = 0; i < s->getNumberOfChildren(); i++) {
-        auto child = s->getChild(i);
-        // if(child->organType() >2){ //if aboveground-organ
-        child->rel2abs(); // apply to all organs
-        //}
-    }
-}
-
-/**
  * Creates a specific tropism from the tropism type index.
  * the function must be extended or overwritten to add more tropisms.
  *
@@ -391,5 +362,43 @@ std::shared_ptr<GrowthFunction> Plant::createGrowthFunction(int gft) {
  * todo most important debug informations
  */
 std::string Plant::toString() const { return "Plant " + Organism::toString(); }
+
+OrganismState Plant::getState() const {
+    OrganismState s = Organism::getState();
+    s["leafphytomerID"] = std::vector<double>(leafphytomerID.begin(), leafphytomerID.end());
+    for (int ot : {ot_root, ot_stem, ot_leaf}) { // age switch of the tropisms is drawn randomly in initCallbacks()
+        for (const auto &p : organParam[ot]) {
+            if (p.second && p.second->f_tf) {
+                const std::string key = std::to_string(ot) + "." + std::to_string(p.first);
+                s["tropismAgeSwitch." + key] = {p.second->f_tf->ageSwitch};
+                s["tropismND." + key] = p.second->f_tf->getNDState();
+            }
+        }
+    }
+    return s;
+}
+
+void Plant::setState(const OrganismState &state, const std::map<int, std::shared_ptr<Organ>> &organs) {
+    Organism::setState(state, organs);
+    auto it = state.find("leafphytomerID");
+    if (it != state.end()) {
+        leafphytomerID.clear();
+        for (double d : it->second) {
+            leafphytomerID.push_back(static_cast<int>(std::lround(d)));
+        }
+    }
+    for (int ot : {ot_root, ot_stem, ot_leaf}) {
+        for (const auto &p : organParam[ot]) {
+            auto a = state.find("tropismAgeSwitch." + std::to_string(ot) + "." + std::to_string(p.first));
+            if (a != state.end() && !a->second.empty() && p.second && p.second->f_tf) {
+                p.second->f_tf->ageSwitch = a->second[0];
+            }
+            auto nd = state.find("tropismND." + std::to_string(ot) + "." + std::to_string(p.first));
+            if (nd != state.end() && p.second && p.second->f_tf) {
+                p.second->f_tf->setNDState(nd->second);
+            }
+        }
+    }
+}
 
 } // namespace CPlantBox
