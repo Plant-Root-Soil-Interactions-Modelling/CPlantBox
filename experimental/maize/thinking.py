@@ -5,15 +5,26 @@ from maize_params import *
 #
 # Sheat and internode lengths
 #
+il = get_internode_lenght()
+led = get_leaf_emergence_days()
+sl = get_leaf_sheath_length()
 
-# at least, ensure that sl_i <= il_{i+1}+sl_{i+1}
+print("Internode lengths shape:", il.shape)
+print("Leaf emergence days shape:", led.shape)  # additional zero front
+print("Leaf sheath lengths shape:", sl.shape)  # additional zero front
+print()
 
+# 1. at least, ensure that sl_i <= il_{i+1}+sl_{i+1}
+print("1. Sheath length check: sl_i <= il_{i+1} + sl_{i+1}")
+print("Indices where the sheath length check fails:")
+print(np.argwhere(sl[:-1] >= il[:] + sl[1:]) + 1)
+print()
 
 #
 # Internode elongation timings and leaf emergence
 #
-il = get_internode_lenght()
-led = get_leaf_emergence_days()
+
+
 sum_il = np.sum(il)
 
 lmax = 197  # total stem length [cm] (without mesocotyl lb)
@@ -48,7 +59,11 @@ print(led[1:-1] < fin[1:] + 2 * np.ones(fin[1:].shape))
 print(fin[1:] + 2 * np.ones(fin[1:].shape))
 
 print()
-
+print("Leaf emerge rate", np.diff(led))
+plt.plot(np.diff(led), "*")
+plt.xlabel("Leaf index")
+plt.ylabel("Emergence rate [days]")
+plt.show()
 
 # plt.plot(np.cumsum(scaled_il) / r, np.cumsum(scaled_il), "*")
 # plt.plot(led, "o")

@@ -19,7 +19,8 @@ class ExoGraviTropism(pb.Tropism):
         self.age = age
 
     def tropismObjective(self, pos, old, a, b, dx, root):
-        age = root.getAge()
+        # age = root.getAge()
+        age = root.calcAge(root.getLength())  # works also with large time steps
         if age < self.age:
             return self.exo.tropismObjective(pos, old, a, b, dx, root)
         else:
@@ -30,7 +31,7 @@ class ExoGraviTropism(pb.Tropism):
 # Leaf geometery
 #
 def get_leaf_sheath_length():
-    leaf_sheath_length = np.array([0.0, 0.03, 0.04, 0.05, 0.07, 0.09, 0.12, 0.15, 0.18, 0.22, 0.25, 0.28, 0.30, 0.28, 0.25, 0.22, 0.18, 0.14, 0.10, 0.06])  # [m]
+    leaf_sheath_length = np.array([0.0, 0.03, 0.04, 0.05, 0.07, 0.09, 0.12, 0.15, 0.18, 0.22, 0.25, 0.28, 0.30, 0.28, 0.25, 0.22, 0.18, 0.10, 0.09, 0.07])  # [m] last
     return leaf_sheath_length * 100  # [m] -> [cm]
 
 
@@ -130,8 +131,8 @@ def get_internode_lenght():
             0.115,
             0.115,
             0.115,  # 14–17: upper
-            0.02,
-            0.02,  # 18–19: below tassel
+            0.03,
+            0.03,  # 18–19: below tassel
         ]
     )  # [m]
     return internode_length * 100  # [m] -> [cm]

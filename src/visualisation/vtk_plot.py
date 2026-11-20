@@ -77,14 +77,11 @@ def plot_plant(plant, p_name, render=True, interactiveImage=True):
         data = vtk_data(paramLeaf)
         data.SetName(p_name)
         polyData.GetCellData().AddArray(data)
-    # else:
-    #    colors = vtk.vtkNamedColors()
 
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(polyData)
     mapper.ScalarVisibilityOn()
     mapper.SetScalarModeToUseCellFieldData()  # maybe because radius is active scalar in point data?
-    # mapper.SelectColorArray(p_name)
     mapper.UseLookupTableScalarRangeOn()
 
     actor = vtk.vtkActor()
