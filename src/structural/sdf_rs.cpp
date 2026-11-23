@@ -80,14 +80,21 @@ void SDF_RootSystem::buildTree() {
 
 void SDF_RootSystem::updateTree(const Organism& plant) {
     size_t c = tree.nParticles();
+    // nodes that moved during the last time step (e.g. the old root tip, when its last segment is filled up to dx),
+    // otherwise the first segment of a root borne hypha keeps the old position of its root node
+    // (organs in relative coordinates are skipped, their nodes are not absolute positions)
+    const size_t oldSize = nodes_.size();
+    for (const auto& o : plant.getOrgans()) {
+        if (o->hasMoved() && !o->hasRelCoord()) {
+            for (int i = 0; i < o->getNumberOfNodes(); i++) {
+                const int id = o->getNodeId(i);
+                if (id >= 0 && static_cast<size_t>(id) < oldSize) {
+                    nodes_[id] = o->getNode(i);
+                }
+            }
+        }
+    }
     auto newNodes = plant.getNewNodes();
-    // std::cout
-        // << "BEFORE updateTree: "
-        // << "plant nodes=" << plant.getNumberOfNodes()  <<" "<< plant.getNodes().size()
-		// <<" "<<plant.getNumberOfOldNodes()
-        // << ", plant new=" << plant.getNumberOfNewNodes() <<" "<<newNodes.size()
-        // << ", sdf nodes=" << nodes_.size()
-        // << std::endl;
     nodes_.insert(nodes_.end(), newNodes.begin(),newNodes.end());
     // 
 	if(nodes_.size()!= plant.getNumberOfNodes())

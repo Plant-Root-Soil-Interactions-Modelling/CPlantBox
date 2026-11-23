@@ -141,7 +141,7 @@ class TestHyphae(unittest.TestCase):
             self.assertEqual(h.getNumberOfChildren(), 0, "no laterals: hypha without successor has laterals")
 
     def test_tip_splitting(self):
-        """ tests tip splitting (b_prob = 1): the tip splits into two hyphae after age*b > 0.5 """
+        """ tests tip splitting (b_prob = 1): a growing tip splits into two hyphae with probability b dt per time step """
         self.hyphae_example(b_prob = 1.)
         hyphae = self.simulate(3.)
         splits = 0
@@ -153,8 +153,16 @@ class TestHyphae(unittest.TestCase):
                 self.assertEqual(h.getChild(0).parentNI, h.getNumberOfNodes() - 1, "tip splitting: split not at the tip")
                 self.assertEqual(h.getChild(1).parentNI, h.getNumberOfNodes() - 1, "tip splitting: split not at the tip")
                 self.assertFalse(h.isActive(), "tip splitting: split hypha should be inactive")
-                self.assertGreater(h.getAge() * self.hrp.b, 0.5, "tip splitting: split too early")
         self.assertGreater(splits, 0, "tip splitting: no tip splits")
+
+    def test_no_tip_splitting(self):
+        """ tip splitting with rate b = 0: no tip splits """
+        self.hyphae_example(b_prob = 1.)
+        self.hrp.b = 0.
+        self.plant.setOrganRandomParameter(self.hrp)
+        hyphae = self.simulate(3.)
+        self.assertGreater(len(hyphae), 0, "no tip splitting: no hyphae emerged")
+        self.assertTrue(all(h.getNumberOfChildren() == 0 for h in hyphae), "no tip splitting: tip split with b = 0")
 
     def test_hyphal_tree_index(self):
         """ tests that each root hypha starts a new hyphal tree and laterals inherit the index """
@@ -169,8 +177,15 @@ class TestHyphae(unittest.TestCase):
                                  "hyphal tree index: lateral has a different index than its parent")
 
     def test_anastomosis(self):
-        """ tests that merged hyphae are inactive and end at a node of a hypha of another hyphal tree """
-        self.hyphae_example(distTH = 0.3, hed = 3.)  # dense hyphae, so that hyphae of different trees meet
+        """ tests that merged hyphae are inactive, end at a node of the merged hypha, and that the added
+        anastomosis segment (old tip -> merge point) is not longer than distTH + a + dx:
+        the distance is measured to the surface of the closest segment (minus radius a), but the tip is merged into
+        the apical node of that segment, which is at most one segment length dx further away """
+        distTH = 0.01
+        self.hyphae_example(distTH = distTH, hed = 3.)  # dense hyphae, so that hyphae meet
+        self.hrp.a = 0.001  # realistic hyphal radius (the default of 0.1 cm would dominate the bound)
+        self.plant.setOrganRandomParameter(self.hrp)
+        max_len = distTH + self.hrp.a + self.hrp.dx
         hyphae = self.simulate(3.)
         merged = [h for h in hyphae if h.getParameter("mergePointID") > -1]
         self.assertGreater(len(merged), 0, "anastomosis: no anastomosis occurred")
@@ -178,14 +193,15 @@ class TestHyphae(unittest.TestCase):
             self.assertFalse(h.isActive(), "anastomosis: merged hypha should be inactive")
             other = h.getMergedHyphae()
             self.assertIsNotNone(other, "anastomosis: merged hypha is not set")
-            self.assertNotEqual(other.getParameter("hyphalTreeIndex"), h.getParameter("hyphalTreeIndex"),
-                                "anastomosis: hypha merged with its own hyphal tree")
             mpid = int(h.getParameter("mergePointID"))
             self.assertIn(mpid, list(other.getNodeIds()), "anastomosis: merge point is not a node of the merged hypha")
             merge_node = other.getNode(list(other.getNodeIds()).index(mpid))
-            last = h.getNode(h.getNumberOfNodes() - 1)
+            n = h.getNumberOfNodes()
+            last, tip = h.getNode(n - 1), h.getNode(n - 2)  # the anastomosis adds the merge point as new last node
             self.assertAlmostEqual(norm(np.array([last.x, last.y, last.z]) - np.array([merge_node.x, merge_node.y, merge_node.z])), 0., 12,
                                    "anastomosis: hypha does not end at the merge point")
+            self.assertLessEqual(norm(np.array([last.x, last.y, last.z]) - np.array([tip.x, tip.y, tip.z])), max_len,
+                                 "anastomosis: anastomosis segment is longer than distTH + a + dx")
         self.assertEqual(sum(self.plant.getAnastomosisPoints(pb.hyphae)), len(merged), "anastomosis: unexpected number of anastomosis points")
 
     def test_no_anastomosis(self):

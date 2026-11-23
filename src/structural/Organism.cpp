@@ -469,7 +469,7 @@ std::vector<Vector3d> Organism::getNewNodes() const {
     for (const auto &o : organs) {
         int onon = o->getOldNumberOfNodes();
         for (size_t i = onon; i < o->getNumberOfNodes(); i++) { // loop over all new nodes
-            if (o->getNodeId(i) - this->oldNumberOfNodes > 0) {
+            if (o->getNodeId(i) - this->oldNumberOfNodes >= 0) { // skip old parent nodes (node 0 of laterals), but not the first new node
                 nv.at(o->getNodeId(i) - this->oldNumberOfNodes) = o->getNode(i);
             }
         }
