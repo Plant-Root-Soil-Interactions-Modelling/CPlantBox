@@ -116,15 +116,14 @@ class TestMycorrhizalPlant(unittest.TestCase):
         self.assertEqual(set(np.where(ap == 1)[0]), merged, "getAnastomosisPoints: unexpected anastomosis points")
 
     def test_node_tips(self):
-        """ tests getNodeTips(): 1 at the last node of each organ of the given type (and of the base organs, i.e. the seed) """
+        """ tests getNodeTips(): 1 at the last node of each organ of the given type,
+        base organs (the seed) only if they are of that type, so the seed node is no tip of roots or hyphae """
         self.myc_plant()
         self.simulate(3.)
         for ot in [pb.root, pb.hyphae]:
             tips = np.array(self.plant.getNodeTips(ot))
             self.assertEqual(len(tips), self.plant.getNumberOfNodes(), "getNodeTips: unexpected length")
             expected = {o.getNodeId(o.getNumberOfNodes() - 1) for o in self.plant.getOrgans(ot)}
-            seed = self.plant.getSeed()
-            expected.add(seed.getNodeId(seed.getNumberOfNodes() - 1))
             self.assertEqual(set(np.where(tips == 1)[0]), expected, "getNodeTips: unexpected tips")
 
     def test_hyphal_tree_index(self):
@@ -197,6 +196,37 @@ class TestMycorrhizalPlant(unittest.TestCase):
         length = [h.getLength() for h in hyphae]
         self.simulate(0.5)
         self.assertEqual([h.getLength() for h in hyphae], length, "turnOffSidePetriDish: deactivated hyphae grew")
+
+    def state(self):
+        """ root length, number of roots, colonized root nodes, number of hyphae emerged from roots, hyphal length """
+        colonized = sum(1 for c in self.plant.getNodeColonizations(pb.root) if c > 0)
+        root_hyphae = sum(1 for h in self.plant.getOrgans(pb.hyphae, True) if h.getParent().organType() == pb.root)
+        return (self.plant.getSummed("length", pb.root), len(self.plant.getOrgans(pb.root)), colonized,
+                root_hyphae, self.plant.getSummed("length", pb.hyphae))
+
+    def test_turn_off_roots(self):
+        """ tests turnOffRoots(growth, colonization): growth stops root growth, colonization stops colonization and hyphal emergence,
+            the existing hyphae keep growing, turnOffRoots(False, False) turns everything on again """
+        self.myc_plant(lmbd = 1.)  # slow colonization, so that colonization goes on after turning off root growth
+        self.simulate(2.)
+        self.plant.turnOffRoots(True, False)  # only root growth
+        self.assertTrue(self.plant.rootGrowthOff and not self.plant.rootColonizationOff, "turnOffRoots: flags not set")
+        L, n, col, nh, Lh = self.state()
+        self.simulate(1.)
+        L1, n1, col1, nh1, Lh1 = self.state()
+        self.assertEqual((L1, n1), (L, n), "turnOffRoots(growth): roots grew or emerged")
+        self.assertTrue(all(not r.isActive() for r in self.plant.getOrgans(pb.root)), "turnOffRoots(growth): active root")
+        self.assertGreater(col1, col, "turnOffRoots(growth): colonization stopped")
+        self.plant.turnOffRoots()  # all root functions
+        self.simulate(0.5)
+        L2, n2, col2, nh2, Lh2 = self.state()
+        self.assertEqual((L2, n2, col2, nh2), (L1, n1, col1, nh1), "turnOffRoots(): roots grew, were colonized or hyphae emerged")
+        self.assertGreater(Lh2, Lh1, "turnOffRoots(): hyphae did not grow")
+        self.plant.turnOffRoots(False, False)
+        self.simulate(0.5)
+        L3, n3, col3, nh3, Lh3 = self.state()
+        self.assertGreater(L3, L2, "turnOffRoots(False, False): roots did not grow again")
+        self.assertGreater(col3, col2, "turnOffRoots(False, False): colonization did not start again")
 
     def test_colonization_rate_laterals(self):
         """ tests that the primary colonization rate of laterals equals that of the tap root (laterals are colonized once per time step) """

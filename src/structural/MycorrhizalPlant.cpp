@@ -310,13 +310,10 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
             const double L = thisL >= 0 ? thisL : thisDistTH / std::max(std::sin(thisTheta), 1e-6) + 2 * h->getHyphaeRandomParameter()->dx; // minimal path length along mycelium for anastomosis, if <0: derived from distTH, theta, dx
 
             dist = sdf->getDistFiltered(tip, [&](int i) {
-                if (sdf->segments_[i].y == tipId) { // exclude the tip itself
-                    return true;
-                }
+                if (sdf->segments_[i].y == tipId) { return true;} //exclude tip itself
+                
                 auto o = sdf->segO[i].lock(); //get current organ
-                if (!o) {                      // check that organ is still alive if not should exclude in dist calc
-                    return true;
-                }
+                if (!o) {  return true;  }              // check that organ is still alive if not should exclude in dist calc
                 int k = localIndex(o, sdf->segments_[i].y);
                 if (k < 0) { //potential edge case, should also be excluded
                     std::cout << "Warning: could not find local index for node " << sdf->segments_[i].y << " in organ " << o->getId() << std::endl;
@@ -324,9 +321,9 @@ void MycorrhizalPlant::simulateAnastomosis(double dt, bool verbose) {
                 }
                 return pathDist(h, kTip, o, k, L) < L;
             });
-            if (fabs(dist) < h->getHyphaeRandomParameter()->distTH && rand() < h->getHyphaeRandomParameter()->ana) 
+            if (fabs(dist) < h->getHyphaeRandomParameter()->distTH && rand() < h->getHyphaeRandomParameter()->ana)
             {
-                auto lastIndex = sdf->distIndex; 
+                auto lastIndex = sdf->distIndex;
                 auto connected_to_hyphae = std::dynamic_pointer_cast<Hyphae>(sdf->lastOrgan.lock());
                 int locallastIndex = localIndex(connected_to_hyphae, lastIndex);
 

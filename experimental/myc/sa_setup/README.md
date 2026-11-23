@@ -154,6 +154,27 @@ ebenso `wait_days` (Zeit bis t*). Diagnosen gehen nicht in die SA ein.
 `beispiel_dummy/` enthält Plots aus einem Testlauf mit dem Spielzeugmodell.
 Sie zeigen nur das Format, inhaltlich bedeuten sie nichts.
 
+## Kalibrierung (`calibrate.py`)
+
+Nullstellensuche `F(x) = 0` mit `F_i = log(y_i / y*_i) / log(1 + tol_i)` über die Zielwerte
+β ≈ 23 µm/h, K1 ≈ 1400 µm mm⁻², BAS-Anteil 0,3 und K2 ≈ 0,15 mm⁻². Ein Ziel gilt als
+erreicht, wenn |F_i| ≤ 1 ist. Das Verfahren ist Broyden (mehrdimensionale Sekante) im normierten
+Parameterraum. Die Start-Jacobimatrix kommt aus großen Vorwärtsdifferenzen. Alle
+Auswertungen verwenden dieselben Seeds (CRN), die Outputs sind über die Seeds gepoolt, der
+Standardfehler kommt aus einem Bootstrap. Parameter, Suchbereiche, Ziele und Toleranzen
+stehen oben in `calibrate.py` (`PARAMS`, `TARGETS`).
+
+```bash
+cd ~ && cp CPlantBox/experimental/myc/sa_setup/slurm/calibrate.sbatch .
+sbatch sa_run.sbatch calibrate.py --check    # Bereiche, Startpunkt, Anzahl Auswertungen
+sbatch calibrate.sbatch                      # 16 Kerne, 16 Seeds je Auswertung
+```
+
+Ergebnisse in `calibration/`: `evals.csv` (jede Auswertung mit Werten, SE, F),
+`jacobian.csv` (geschätzte Sensitivitäten dF/du, zeigt, welcher Parameter welches Ziel treibt),
+`best_params.xml`. Neustartfähig: denselben Befehl erneut einreichen.
+Lokal testen: `SA_DUMMY=1 python3 calibrate.py --seeds 8`.
+
 ## Literatur
 
 - Morris (1991), *Technometrics* 33:161–174

@@ -80,17 +80,20 @@ def front_speed(raw, hour, start=10):
     return float(amfd.theilSlope(t[cols][ok], fp)[0] * 24)
 
 
-def wave_outputs(raw, hour):
+def truncate(raw, hour):
     # Fenster bis hour [h nach t*]
     keep = np.concatenate(([True], raw["times"][1:] * 24 <= hour + 1e-6))
     sim = {k: (v[:, keep] if isinstance(v, np.ndarray) and v.ndim == 2 else v) for k, v in raw.items()}
     sim["times"] = raw["times"][keep]
-    r = ring_centers_mm(raw["location"])
+    return sim
+
+
+def fit_table(sim):
+    # Wellen-Fits je Ring (AMFDensities.collectArrivalFits) als Tabelle, sim aus truncate
+    r = ring_centers_mm(sim["location"])
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         fits = amfd.collectArrivalFits([sim])
-        C = amfd.encounterC([sim], min_tips=config.ENCOUNTER_MIN_TIPS)["total"]
-        beta = amfd.anastomosisBeta([sim], min_tips=config.ENCOUNTER_MIN_TIPS)["total"]
     rows = []
     for f in fits:
         K1, lam_len, t_n = f["length"]
@@ -98,14 +101,28 @@ def wave_outputs(raw, hour):
         rows.append({"r": r[f["ring"]], "t_n": t_n, "K1": K1, "R2_length": f["R2_length"],
                      "saturation": f["rho_data"][-1] / K1, "K2": K2, "lam_tip": lam_tip, "t_tip": t_tip,
                      "R2_tips": f["R2_tips"], "t_first": f["t"][0], "t_last": f["t"][-1]})
-    df = pd.DataFrame(rows, columns=["r", "t_n", "K1", "R2_length", "saturation", "K2", "lam_tip", "t_tip",
-                                     "R2_tips", "t_first", "t_last"])
+    return pd.DataFrame(rows, columns=["r", "t_n", "K1", "R2_length", "saturation", "K2", "lam_tip", "t_tip",
+                                       "R2_tips", "t_first", "t_last"])
+
+
+def good_rings(df):
+    # Gütekriterien wie petridishstats.py -> (alle guten, gesättigte für K1, Spitzenpeak im Fenster für K2)
     good = df[df.R2_length >= config.R2_MIN_LENGTH]
     good_K1 = good[good.saturation >= config.SATURATION_MIN]
     # wie petridishwave.py: Spitzenpeak und beide Halbwertspunkte im simulierten Fenster, sonst extrapoliert
     half = FWHM_BELL / good.lam_tip / 2
     inside = (good.t_tip - half >= good.t_first) & (good.t_tip + half <= good.t_last)
     good_tips = good[(good.R2_tips >= config.R2_MIN_TIPS) & inside]
+    return good, good_K1, good_tips
+
+
+def wave_outputs(raw, hour):
+    sim = truncate(raw, hour)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        C = amfd.encounterC([sim], min_tips=config.ENCOUNTER_MIN_TIPS)["total"]
+        beta = amfd.anastomosisBeta([sim], min_tips=config.ENCOUNTER_MIN_TIPS)["total"]
+    good, good_K1, good_tips = good_rings(fit_table(sim))
 
     def velocity(t, rr):
         # wie petridishwave.py: Radius gegen Ankunftszeit (Theil-Sen) [mm/h] -> [mm/d]; nur steigende Fronten
