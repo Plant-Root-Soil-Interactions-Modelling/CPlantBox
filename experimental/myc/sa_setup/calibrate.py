@@ -79,16 +79,16 @@ class CalParam:
 # Bereiche wie in der SA, wo vorhanden; R_ln, B_b, B_hlt, distTH weiter, tropismN, a, successor geschätzt.
 # Priors aus den Quellen in config.FACTORS. B_b ohne Literaturprior: die Messung (Oyarte Galvez 2025) ist schon
 # das Ziel branching_rate, sie zählte sonst doppelt.
-V_SRC = "180–300 µm/h um 240 µm/h (Oyarte Galvez et al. 2025)"
-THETA_SRC = "60° (Schnepf 2016) bis ≈ 70° (Oyarte Galvez 2025), auf 55–75° erweitert (Winkeldefinitionen verschieden)"
+V_SRC = "180–300 µm/h around 240 µm/h (Oyarte Galvez et al. 2025)"
+THETA_SRC = "60° (Schnepf 2016) to ≈ 70° (Oyarte Galvez 2025), widened to 55–75° (different angle definitions)"
 PARAMS = [
     # ---- RunnerHyphae (subType 1) ----
     CalParam("R_v", (RUNNER,), "v", 0.432, 0.72, prior=(0.432, 0.72), source=V_SRC),
     CalParam("R_hlt", (RUNNER,), "hlt", 4.0, 10.0, prior=(4.0, 12.5),
-             source="SA-Bereich Schnepf 2016 4–10 d, Sterberaten Schnepf 2008 4–12,5 d"),
+             source="SA range Schnepf 2016 4–10 d, death rates Schnepf 2008 4–12.5 d"),
     CalParam("R_lmax", (RUNNER,), "lmax", 1.5, 5.0),
     CalParam("R_ln", (RUNNER,), "ln", 0.05, 0.6, log=True, also=("lb",), prior=(0.1, 0.6),
-             source="~1 mm (Giovannetti, in Schnepf 2008) bis ~6 mm (Oyarte Galvez 2025)"),
+             source="~1 mm (Giovannetti, in Schnepf 2008) to ~6 mm (Oyarte Galvez 2025)"),
     CalParam("R_theta", (RUNNER,), "theta", deg(50), deg(80), prior=(deg(55), deg(75)), source=THETA_SRC),
     CalParam("R_tropismN", (RUNNER,), "tropismN", 1.0, 8.0),
     CalParam("R_succ_BAS", (RUNNER,), "successor", 0.5, 0.95),   # Anteil BAS an den Lateralen der Runner
@@ -97,11 +97,11 @@ PARAMS = [
     # ---- BAS (subType 2) ----
     CalParam("B_v", (BAS,), "v", 0.432, 0.72, prior=(0.432, 0.72), source=V_SRC),
     CalParam("B_b", (BAS,), "b", 0.3, 2.0, log=True),
-    CalParam("B_hlt", (BAS,), "hlt", 3.0, 12.0, prior=(5.0, 9.0), source="BAS degenerieren nach ~7 d (Bago 1998; Kokkoris 2026)"),
+    CalParam("B_hlt", (BAS,), "hlt", 3.0, 12.0, prior=(5.0, 9.0), source="BAS degenerate after ~7 d (Bago 1998; Kokkoris 2026)"),
     CalParam("B_theta", (BAS,), "theta", deg(50), deg(80), prior=(deg(55), deg(75)), source=THETA_SRC),
     CalParam("B_tropismN", (BAS,), "tropismN", 0.5, 4.0),
     CalParam("B_a", (BAS,), "a", 0.00005, 0.005, log=True, prior=(0.0001, 0.0005),   # Radius [cm], nominal 0,0025
-             source="Durchmesser 2–10 µm = Radius 1–5 µm (Bago et al. 1998, Mycologia, doi 10.1080/00275514.1998.12026878)"),
+             source="diameter 2–10 µm = radius 1–5 µm (Bago et al. 1998, Mycologia, doi 10.1080/00275514.1998.12026878)"),
     # ---- gemeinsam ----
     CalParam("ana", (RUNNER, BAS), "ana", 0.5, 1.0),
     CalParam("distTH", (RUNNER, BAS), "distTH", 0.005, 0.03, log=True),
@@ -134,15 +134,15 @@ class Target:
 
 # Verfügbare Outputs. Wellengrößen über das Fenster 0..HOURS, über alle Seeds gepoolt:
 WAVE_OUTPUTS = {
-    "beta": "[µm/h] a = beta rho n mit a, n der Runner-Spitzen (Summenverhältnis)",
-    "branching_rate": "[h^-1] neue Runner-Spitzen je wachsender Runner-Spitze und Stunde",
+    "beta": "[µm/h] a = beta rho n with a, n of the runner tips (ratio of sums)",
+    "branching_rate": "[h^-1] new runner tips per growing runner tip and hour",
     "encounter_C": "[mm^2 µm^-1 h^-1] f = C rho",
-    "K1": "[µm mm^-2] Sättigung der Filamentdichte (Median der gesättigten Ringe)",
-    "K2": "[mm^-2] Peak der Runner-Spitzendichte (Median der Ringe mit Peak im Fenster)",
-    "wave_width": "[h] Dauer der Runner-Spitzenwelle im Ring (Median)",
-    "front_velocity": "[mm/d] Ringradius gegen Ankunft t_n der Filamentdichte (Sigmoid-Fit, Theil-Sen, alle Seeds)",
-    "front_speed": "[mm/d] Steigung des spitzengewichteten Radius ab 10 h (Mittel der Seeds)",
-    "root_efficiency_rel": "(E_r - E_r,MST) / (E_r,DT - E_r,MST), 2D, am Ende der Simulation (Mittel der Seeds)",
+    "K1": "[µm mm^-2] saturation of the filament density (median of saturated rings)",
+    "K2": "[mm^-2] peak of the runner tip density (median of rings with the peak in the window)",
+    "wave_width": "[h] duration of the runner tip wave in a ring (median)",
+    "front_velocity": "[mm/d] ring radius vs. arrival t_n of the filament density (sigmoid fit, Theil-Sen, all seeds)",
+    "front_speed": "[mm/d] slope of the tip-weighted radius from 10 h (mean over seeds)",
+    "root_efficiency_rel": "(E_r - E_r,MST) / (E_r,DT - E_r,MST), 2D, at the end of the simulation (mean over seeds)",
 }
 # Snapshot-Outputs (Mittel der Seeds) zum Zeitpunkt Target.hour: config.SNAPSHOT_OUTPUTS
 # total_length [cm], active_tips, bas_share, anastomoses (seit t*), front_position [mm], spread_r90 [mm],
@@ -190,9 +190,9 @@ def prior_spec(p):
     g = np.log if p.log else (lambda v: v)
     if p.prior is not None:
         lo, hi = p.prior
-        return (g(lo) + g(hi)) / 2, (g(hi) - g(lo)) / 4, "Literatur"
+        return (g(lo) + g(hi)) / 2, (g(hi) - g(lo)) / 4, "literature"
     if WEAK_PRIOR_SIGMA:
-        return g(spec_nominal(p)), WEAK_PRIOR_SIGMA * (g(p.high) - g(p.low)), "schwach"
+        return g(spec_nominal(p)), WEAK_PRIOR_SIGMA * (g(p.high) - g(p.low)), "weak"
     return None
 
 
@@ -319,7 +319,7 @@ class Residual:
         self.records, self.cache = [], {}
         self.best = None    # (|F|, u, F)
         self.errors, self.eff_errors = Counter(), Counter()   # Fehlermeldungen der Läufe bzw. der Root Efficiency
-        self.n_runs, self.J, self.status, self.t_start = 0, None, "läuft", time.time()
+        self.n_runs, self.J, self.status, self.t_start = 0, None, "running", time.time()
 
     def key(self, u):
         return hashlib.md5(json.dumps([round(v, 10) for v in to_phys(u)] + [self.hours, RAW_VERSION]).encode()).hexdigest()[:10]
@@ -375,8 +375,8 @@ class Residual:
         F = self.evaluate([u], "point")[0]
         if not np.all(np.isfinite(F)):
             if len(self.records) == 1:
-                raise SystemExit("Am Startpunkt sind nicht alle Outputs definiert (Fits gescheitert oder zu viele Läufe "
-                                 "ohne t*). Mehr Seeds (--seeds) oder längere Simulation (--hours) versuchen.")
+                raise SystemExit("Not all outputs are defined at the start point (fits failed or too many runs "
+                                 "without t*). Try more seeds (--seeds) or a longer simulation (--hours).")
             return np.where(np.isfinite(F), F, NAN_PENALTY)
         if np.all(np.abs(F) <= 1):
             self.best = (0., np.array(u), F)   # Ergebnis ist dieser Punkt, auch wenn ein anderer kleinere Kosten hatte
@@ -402,21 +402,21 @@ class Residual:
 
 def report(rec):
     pars = ", ".join(f"{p.name}={rec[p.name]:.3g}" for p in PARAMS)
-    print(f"\n[{rec['eval']} {rec['kind']}] {pars}  ({rec['n_ok']}/{N_SEEDS} Seeds ok)")
+    print(f"\n[{rec['eval']} {rec['kind']}] {pars}  ({rec['n_ok']}/{N_SEEDS} seeds ok)")
     for t in TARGETS:
         n = t.label
-        flag = "ok" if abs(rec[f"F_{n}"]) <= 1 else ("im Rauschen" if abs(rec[n] - t.value) <= 2 * rec[f"se_{n}"] else "")
-        print(f"   {n:>18}: {rec[n]:10.4g} ± {rec[f'se_{n}']:.2g}  (Ziel {t.value:g} ± {t.tol_rel:.0%})  "
+        flag = "ok" if abs(rec[f"F_{n}"]) <= 1 else ("within noise" if abs(rec[n] - t.value) <= 2 * rec[f"se_{n}"] else "")
+        print(f"   {n:>18}: {rec[n]:10.4g} ± {rec[f'se_{n}']:.2g}  (target {t.value:g} ± {t.tol_rel:.0%})  "
               f"F = {rec[f'F_{n}']:+.2f}  {flag}")
     print(f"   |F| = {rec['norm_F']:.3f}, |Prior| = {rec['norm_prior']:.3f}", flush=True)
 
 
 HINTS = {
-    "K1": "zu wenige gesättigte Ringe mit guten Fits -> längere Simulation (--hours 120) oder mehr Seeds",
-    "K2": "zu wenige Ringe mit vollständigem Spitzenpeak -> längere Simulation (--hours 120) oder mehr Seeds",
-    "wave_width": "wie K2", "front_velocity": "wie K2",
-    "root_efficiency_rel": "Root Efficiency nicht berechnet -> Abschnitt Root-Efficiency-Fehler",
-    "beta": "zu wenige Ringe mit >= ENCOUNTER_MIN_TIPS Spitzen", "branching_rate": "wie beta",
+    "K1": "too few saturated rings with good fits -> longer simulation (--hours 120) or more seeds",
+    "K2": "too few rings with a complete tip peak -> longer simulation (--hours 120) or more seeds",
+    "wave_width": "as K2", "front_velocity": "as K2",
+    "root_efficiency_rel": "root efficiency not computed -> see root efficiency errors",
+    "beta": "too few rings with >= ENCOUNTER_MIN_TIPS tips", "branching_rate": "as beta",
 }
 
 
@@ -426,81 +426,81 @@ def write_report(r, status=None):
         r.status = status
     labels = [t.label for t in TARGETS]
     recs = pd.DataFrame(r.records)
-    L = [f"Kalibrierung, Stand {time.strftime('%Y-%m-%d %H:%M')}, Laufzeit {(time.time() - r.t_start) / 3600:.1f} h",
+    L = [f"Calibration, as of {time.strftime('%Y-%m-%d %H:%M')}, runtime {(time.time() - r.t_start) / 3600:.1f} h",
          f"Status: {r.status}"]
-    if r.status == "läuft":
-        L.append("  (Ist der Job beendet und steht hier noch 'läuft', wurde er hart abgebrochen: Zeitlimit oder Knoten. "
-                 "Einfach erneut einreichen, fertige Läufe werden übernommen.)")
+    if r.status == "running":
+        L.append("  (If the job has ended and this still says 'running', it was killed: time limit or node failure. "
+                 "Just resubmit, finished runs are reused.)")
     n_pts = int((recs["kind"] == "point").sum()) if len(recs) else 0
     n_prior = sum(1 for p in PARAMS if prior_spec(p))
     n_lit = sum(1 for p in PARAMS if p.prior is not None)
-    L += [f"{len(PARAMS)} Parameter, {len(TARGETS)} Ziele, {n_prior} Priors ({n_lit} Literatur)"
-          f"{' (UNTERBESTIMMT)' if len(TARGETS) + n_prior < len(PARAMS) else ''}, {len(r.seeds)} Seeds, {r.hours} h nach t*",
-          f"Auswertungen {len(recs)} ({n_pts} Iterationspunkte, {len(recs) - n_pts} Differenzenpunkte), Läufe {r.n_runs}", ""]
+    L += [f"{len(PARAMS)} parameters, {len(TARGETS)} targets, {n_prior} priors ({n_lit} literature)"
+          f"{' (UNDERDETERMINED)' if len(TARGETS) + n_prior < len(PARAMS) else ''}, {len(r.seeds)} seeds, {r.hours} h after t*",
+          f"Evaluations {len(recs)} ({n_pts} iteration points, {len(recs) - n_pts} difference points), runs {r.n_runs}", ""]
 
     if r.best is not None:
         _, u, F = r.best
         b = recs.loc[(recs[[f"u_{p.name}" for p in PARAMS]] - u).abs().max(axis=1).idxmin()]
-        L.append(f"Bester Punkt (Auswertung {b['eval']}, |F| Ziele = {b['norm_F']:.2f}, |z| Priors = {b['norm_prior']:.2f}):")
+        L.append(f"Best point (evaluation {b['eval']}, |F| targets = {b['norm_F']:.2f}, |z| priors = {b['norm_prior']:.2f}):")
         z = iter(prior_residuals(u))
         for p, uj in zip(PARAMS, u):
-            edge = "  <- AM RAND" if uj <= 1e-6 or uj >= 1 - 1e-6 else ""
+            edge = "  <- AT BOUND" if uj <= 1e-6 or uj >= 1 - 1e-6 else ""
             s = prior_spec(p)
-            pz = f"Prior {s[2]:<9} z = {next(z):+5.2f}" if s else "kein Prior"
+            pz = f"prior {s[2]:<10} z = {next(z):+5.2f}" if s else "no prior"
             L.append(f"  {p.name:>11} = {b[p.name]:<10.4g} [{p.low:.4g}, {p.high:.4g}], nominal {spec_nominal(p):<8.4g} {pz}{edge}")
-        L.append("Ziele am besten Punkt:")
+        L.append("Targets at the best point:")
         for t, Fi in zip(TARGETS, F):
             y, se = b[t.label], b[f"se_{t.label}"]
-            flag = "ok" if abs(Fi) <= 1 else ("im Rauschen" if abs(y - t.value) <= 2 * se else "daneben")
-            L.append(f"  {t.label:>20}: {y:10.4g} ± {se:<8.2g} Ziel {t.value:g} ± {t.tol_rel:.0%}   F = {Fi:+6.2f}  {flag}")
-        L.append("Verlauf der Iterationspunkte (Kosten |F|² + |z|²): " + ", ".join(f"{v:.1f}" for v in recs.loc[recs.kind == "point", "cost"]))
+            flag = "ok" if abs(Fi) <= 1 else ("within noise" if abs(y - t.value) <= 2 * se else "off")
+            L.append(f"  {t.label:>20}: {y:10.4g} ± {se:<8.2g} target {t.value:g} ± {t.tol_rel:.0%}   F = {Fi:+6.2f}  {flag}")
+        L.append("History of iteration points (cost |F|² + |z|²): " + ", ".join(f"{v:.1f}" for v in recs.loc[recs.kind == "point", "cost"]))
         L.append(f"-> best_params.xml" if (CAL_DIR / "best_params.xml").exists() else "")
     else:
-        L.append("Noch kein Punkt mit allen Outputs definiert.")
+        L.append("No point with all outputs defined yet.")
 
-    L += ["", "PRÜFUNGEN"]
+    L += ["", "CHECKS"]
     n_fail = sum(r.errors.values())
-    L.append(f"Fehlgeschlagene Läufe: {n_fail} von {r.n_runs}" + (" -> häufigste Fehler:" if n_fail else ""))
+    L.append(f"Failed runs: {n_fail} of {r.n_runs}" + (" -> most frequent errors:" if n_fail else ""))
     L += [f"  {c:4d} x {msg}" for msg, c in r.errors.most_common(5)]
     if len(recs):
         low = recs[recs.n_ok < MIN_OK * len(r.seeds)]
         if len(low):
-            L.append(f"  {len(low)} Auswertungen mit weniger als {MIN_OK:.0%} erfolgreichen Seeds (zählen als ungültig)")
+            L.append(f"  {len(low)} evaluations with fewer than {MIN_OK:.0%} successful seeds (count as invalid)")
         for t in TARGETS:
             nan = int(recs[t.label].isna().sum())
             if nan:
-                L.append(f"Undefiniert: {t.label} in {nan} von {len(recs)} Auswertungen ({HINTS.get(t.output, '')})")
+                L.append(f"Undefined: {t.label} in {nan} of {len(recs)} evaluations ({HINTS.get(t.output, '')})")
         for t in TARGETS:
             se = recs[f"se_{t.label}"].median()
             if np.isfinite(se) and 2 * se > t.tol_rel * abs(t.value):
-                L.append(f"Rauschen: {t.label} SE {se:.3g} > halbe Toleranz -> mehr Seeds oder größere Toleranz")
+                L.append(f"Noise: {t.label} SE {se:.3g} > half the tolerance -> more seeds or a larger tolerance")
     if r.best is not None:
         zs = iter(prior_residuals(r.best[1]))
         for p in PARAMS:
             s = prior_spec(p)
             zj = next(zs) if s else 0.
-            if s and s[2] == "Literatur" and abs(zj) > 2:
-                L.append(f"Widerspruch zu Literatur: {p.name} liegt {zj:+.1f} σ vom Prior ({p.source}) -> die Ziele verlangen "
-                         f"einen anderen Wert; Ziel, Modellstruktur oder Prior prüfen")
+            if s and s[2] == "literature" and abs(zj) > 2:
+                L.append(f"Conflict with literature: {p.name} is {zj:+.1f} σ from its prior ({p.source}) -> the targets "
+                         f"require a different value; check target, model structure or prior")
     if r.eff_errors:
-        L.append(f"Root-Efficiency-Fehler in {sum(r.eff_errors.values())} Läufen:")
+        L.append(f"Root efficiency errors in {sum(r.eff_errors.values())} runs:")
         L += [f"  {c:4d} x {msg}" for msg, c in r.eff_errors.most_common(3)]
     if r.J is not None:
         J = r.J
         col = np.abs(J).max(axis=0)
         dead = [p.name for p, c in zip(PARAMS, col) if c < 0.3]
         if dead:
-            L.append("Ohne deutlichen Einfluss auf die Ziele (max |dF/du| < 0,3), nur durch ihren Prior bestimmt: " + ", ".join(dead))
+            L.append("No clear influence on the targets (max |dF/du| < 0.3), determined only by their prior: " + ", ".join(dead))
         for t, row in zip(TARGETS, J):
             top = np.argsort(-np.abs(row))[:3]
-            weak = "  <- KEIN Parameter wirkt deutlich" if np.abs(row).max() < 0.3 else ""
-            L.append(f"  {t.label:>20} wird getrieben von " + ", ".join(f"{PARAMS[k].name} ({row[k]:+.2f})" for k in top) + weak)
+            weak = "  <- NO parameter has a clear effect" if np.abs(row).max() < 0.3 else ""
+            L.append(f"  {t.label:>20} is driven by " + ", ".join(f"{PARAMS[k].name} ({row[k]:+.2f})" for k in top) + weak)
         sv = np.linalg.svd(J, compute_uv=False)
-        L.append(f"Jacobi der Ziele: Rang {int((sv > 0.05 * sv[0]).sum())} von {min(J.shape)} "
-                 f"(Singulärwerte {', '.join(f'{s:.2g}' for s in sv)}); die Priors ergänzen den Rest")
-    if not any(l.startswith(("Fehl", "Undef", "Rausch", "Root", "Ohne", "Widerspruch")) and not l.startswith("Fehlgeschlagene Läufe: 0")
-               for l in L[L.index("PRÜFUNGEN"):]):
-        L.append("Keine Auffälligkeiten.")
+        L.append(f"Target Jacobian: rank {int((sv > 0.05 * sv[0]).sum())} of {min(J.shape)} "
+                 f"(singular values {', '.join(f'{s:.2g}' for s in sv)}); the priors supply the rest")
+    if not any(l.startswith(("Failed", "Undef", "Noise", "Root", "No clear", "Conflict")) and not l.startswith("Failed runs: 0")
+               for l in L[L.index("CHECKS"):]):
+        L.append("No issues found.")
     (CAL_DIR / "report.txt").write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
@@ -518,54 +518,54 @@ def calibrate(residual):
         res = least_squares(residual, u0, jac=residual.jac, bounds=(0., 1.), method="trf",
                             x_scale=1.0, max_nfev=MAX_NFEV, verbose=1)
         F_end = res.fun[:len(TARGETS)]
-        status = (f"beendet: Minimum aus Zielen und Priors gefunden, {int(np.sum(np.abs(F_end) <= 1))} von {len(TARGETS)} "
-                  f"Zielen in der Toleranz (least_squares: {res.message})")
+        status = (f"finished: minimum of targets and priors found, {int(np.sum(np.abs(F_end) <= 1))} of {len(TARGETS)} "
+                  f"targets within tolerance (least_squares: {res.message})")
         print(f"\nleast_squares: {res.message}")
-        print("Nicht alle Ziele innerhalb der Toleranz: Rauschen zu groß, Ziel am Rand des Suchbereichs oder mit "
-              "diesen Parametern nicht erreichbar -> report.txt, jacobian.csv und evals.csv ansehen.")
+        print("Not all targets within tolerance: noise too large, target at the bound of the search range or not "
+              "reachable with these parameters -> see report.txt, jacobian.csv and evals.csv.")
     except Converged:
-        status = "KONVERGIERT: alle Ziele innerhalb der Toleranz"
-        print("\nKonvergiert: alle Ziele innerhalb der Toleranz.")
+        status = "CONVERGED: all targets within tolerance"
+        print("\nConverged: all targets within tolerance.")
 
     if residual.best is None:
-        raise SystemExit("Kein Punkt mit allen Outputs definiert, siehe PRÜFUNGEN.")
+        raise SystemExit("No point with all outputs defined, see CHECKS.")
     _, u, F = residual.best
     x = to_phys(u)
     write_hyphae_xml(xml_updates(x), CAL_DIR / "best_params.xml")
-    print("\nBester Punkt:", ", ".join(f"{p.name} = {xj:.4g}" for p, xj in zip(PARAMS, x)))
+    print("\nBest point:", ", ".join(f"{p.name} = {xj:.4g}" for p, xj in zip(PARAMS, x)))
     print("  F =", ", ".join(f"{t.label} {Fi:+.2f}" for t, Fi in zip(TARGETS, F)))
     at_edge = [p.name for p, uj in zip(PARAMS, u) if uj <= 1e-6 or uj >= 1 - 1e-6]
     if at_edge:
-        print("  Am Rand des Suchbereichs:", ", ".join(at_edge), "-> Bereich erweitern?")
+        print("  At the bound of the search range:", ", ".join(at_edge), "-> widen the range?")
     print(f"  -> {CAL_DIR / 'best_params.xml'}")
     write_report(residual, status)
     return x
 
 
 def check(procs):
-    print(f"{len(PARAMS)} Parameter, {len(TARGETS)} Ziele, {N_SEEDS} Seeds, {HOURS} h nach t*, Template {config.TEMPLATE_XML.name}")
+    print(f"{len(PARAMS)} parameters, {len(TARGETS)} targets, {N_SEEDS} seeds, {HOURS} h after t*, template {config.TEMPLATE_XML.name}")
     for p in PARAMS:
         nom = spec_nominal(p)
         u0 = to_unit([spec_nominal(q) for q in PARAMS])[PARAMS.index(p)]
         sts = "+".join(config.SUBTYPE_NAMES[s] for s in p.subtypes)
         s = prior_spec(p)
         if s is None:
-            pr = "kein Prior"
+            pr = "no prior"
         else:
             c, w = (np.exp(s[0]), f"×/÷ {np.exp(s[1]):.3g}") if p.log else (s[0], f"± {s[1]:.3g}")
-            pr = f"Prior {s[2]}: {c:.4g} {w}" + (f" ({p.source})" if p.source else "")
+            pr = f"prior {s[2]}: {c:.4g} {w}" + (f" ({p.source})" if p.source else "")
         print(f"  {p.name:>11} ({sts:>10} {'='.join((p.param,) + p.also)}): [{p.low:.4g}, {p.high:.4g}]"
               f"{' log' if p.log else ''}, nominal {nom:.4g} (u = {u0:.2f}) | {pr}")
     for t in TARGETS:
-        print(f"  Ziel {t.label:>18} = {t.value:g} ± {t.tol_rel:.0%}")
+        print(f"  target {t.label:>18} = {t.value:g} ± {t.tol_rel:.0%}")
     rounds = math.ceil(len(PARAMS) * N_SEEDS / procs)
-    print(f"Je Iteration: 1 Punkt + {len(PARAMS)} Differenzenpunkte = {(len(PARAMS) + 1) * N_SEEDS} Läufe, "
-          f"mit {procs} Kernen 1 + {rounds} Runden à ~0,75 h")
+    print(f"Per iteration: 1 point + {len(PARAMS)} difference points = {(len(PARAMS) + 1) * N_SEEDS} runs, "
+          f"with {procs} cores 1 + {rounds} rounds of ~0.75 h")
     n_prior = sum(1 for p in PARAMS if prior_spec(p))
-    print(f"Gleichungen: {len(TARGETS)} Ziele + {n_prior} Priors für {len(PARAMS)} Parameter")
+    print(f"Equations: {len(TARGETS)} targets + {n_prior} priors for {len(PARAMS)} parameters")
     if len(TARGETS) + n_prior < len(PARAMS):
-        print(f"\nUNTERBESTIMMT: die Lösung ist nicht eindeutig. Ziele oder Priors ergänzen "
-              f"(WEAK_PRIOR_SIGMA) oder --allow-underdetermined.")
+        print(f"\nUNDERDETERMINED: the solution is not unique. Add targets or priors "
+              f"(WEAK_PRIOR_SIGMA) or use --allow-underdetermined.")
         return False
     return True
 
@@ -588,11 +588,11 @@ if __name__ == "__main__":
         with Pool(a.procs) as pool:
             r = Residual(pool, N_SEEDS, HOURS)
             def on_term(*_):   # SLURM schickt bei Zeitlimit SIGTERM
-                raise SystemExit("SIGTERM erhalten, vermutlich Zeitlimit des Jobs. Erneut einreichen, fertige Läufe werden übernommen.")
+                raise SystemExit("SIGTERM received, probably the job's time limit. Resubmit, finished runs are reused.")
             signal.signal(signal.SIGTERM, on_term)
             try:
                 calibrate(r)
             except BaseException as e:
                 msg = str(e) if isinstance(e, SystemExit) else traceback.format_exc()
-                write_report(r, f"ABGEBROCHEN: {msg}")
+                write_report(r, f"ABORTED: {msg}")
                 raise

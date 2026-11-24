@@ -20,6 +20,6 @@ cd "${SA_DIR:-$HOME/CPlantBox/experimental/myc/sa_setup}"
 export MPLBACKEND=Agg
 
 POINTS=(nominal low high)
-echo "Smoke-Test ${POINTS[$SLURM_ARRAY_TASK_ID]} ${QUICK:-} auf $(hostname), Start $(date)"
+echo "Smoke test ${POINTS[$SLURM_ARRAY_TASK_ID]} ${QUICK:-} on $(hostname), start $(date)"
 python3 smoke_test.py "${POINTS[$SLURM_ARRAY_TASK_ID]}" ${QUICK:-}
-echo "Ende $(date)"
+echo "End $(date)"

@@ -136,9 +136,9 @@ def summarize(records):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--L", type=float, required=True, help="anaMinDist [cm], <0: abgeleitet")
+    ap.add_argument("--L", type=float, required=True, help="anaMinDist [cm], <0: derived")
     ap.add_argument("--seed", type=int, default=1)
-    ap.add_argument("--hours", type=int, default=24, help="Simulationsdauer nach t* [h]")
+    ap.add_argument("--hours", type=int, default=24, help="simulation time after t* [h]")
     args = ap.parse_args()
 
     model_hook.import_amf()
@@ -174,7 +174,7 @@ def main():
         except Exception as e:  # Diagnose darf das Ergebnis nicht kosten
             failed += 1
             if failed <= 5:
-                print(f"fusion_record fehlgeschlagen für Hyphe {h.getId()}: {e!r}", flush=True)
+                print(f"fusion_record failed for hypha {h.getId()}: {e!r}", flush=True)
 
     length = sum(h.getLength() for h in hyphae)
     result = {"L": args.L, "seed": args.seed, "hours": args.hours, "wall_s": round(wall),
@@ -196,7 +196,7 @@ def main():
         result["path_failed"] = failed
         result["match_max"] = max((r["match"] for r in records), default=None)
     except Exception as e:
-        print(f"summarize fehlgeschlagen: {e!r}", flush=True)
+        print(f"summarize failed: {e!r}", flush=True)
 
     def to_json(o):  # numpy-Arrays und -Zahlen (z. B. aus stats) in Python-Typen umwandeln
         return o.tolist() if hasattr(o, "tolist") else str(o)

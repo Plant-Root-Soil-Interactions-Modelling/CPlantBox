@@ -19,7 +19,7 @@ set -euo pipefail
 source "$HOME/cpbenv/bin/activate"
 export MPLBACKEND=Agg
 SUBMIT_DIR="${SLURM_SUBMIT_DIR:-$PWD}"   # dort liegen slurmOut/ und slurmErr/
-echo "Stufe $STAGE auf $(hostname), $(date)"
+echo "Stage $STAGE on $(hostname), $(date)"
 
 (cd "$SA_DIR" && python3 design.py "$STAGE")
 
@@ -27,7 +27,7 @@ case "$STAGE" in
     phase0) DESIGN=results/design_phase0.csv ;;
     long)   DESIGN=results/design_long.csv; export SIMTIME="${SIMTIME_LONG:-12:00:00}" ;;
     morris) DESIGN=results/design_morris.csv ;;
-    *) echo "unbekannte Stufe $STAGE" >&2; exit 1 ;;
+    *) echo "unknown stage $STAGE" >&2; exit 1 ;;
 esac
 
 cd "$SUBMIT_DIR"
@@ -39,5 +39,5 @@ if [[ -n "${NEXT:-}" ]]; then
     # nächste Stufe erst, wenn Sammeln und Analyse dieser Stufe erfolgreich waren
     NXT=$(sbatch --parsable --dependency=afterok:$COL --kill-on-invalid-dep=yes \
           --export=ALL,STAGE="$NEXT",NEXT=,JOBS="$JOBS",SA_DIR="$SA_DIR" "$JOBS/stage.sbatch")
-    echo "Nächste Stufe $NEXT: Job $NXT (nach Sammel-Job $COL)"
+    echo "Next stage $NEXT: job $NXT (after collect job $COL)"
 fi

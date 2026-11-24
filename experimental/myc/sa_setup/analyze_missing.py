@@ -26,7 +26,7 @@ OK = "ok"
 def load_status(folder):
     path = config.ROOT / folder / "status_morris.csv"
     if not path.exists():
-        print(f"(kein {path})")
+        print(f"(no {path})")
         return None
     return pd.read_csv(path)
 
@@ -41,7 +41,7 @@ def main():
     if old is not None:
         d = d.merge(old.rename(columns={"status": "st_old", "sim_seconds": "t_old"}), on="run_id", how="left")
 
-    print("\n=== 1. Status neu (Zeilen) gegen alt (Spalten) ===")
+    print("\n=== 1. Status new (rows) vs. old (columns) ===")
     if old is not None:
         print(pd.crosstab(d["st_new"], d["st_old"], margins=True).to_string())
     else:
@@ -51,49 +51,49 @@ def main():
         if 0 < len(ids) <= 10:
             print(f"{st}: {', '.join(ids)}")
 
-    print("\n=== 2. Laufzeit Simulation [h] ===")
+    print("\n=== 2. Simulation runtime [h] ===")
     t_new = d.loc[d["st_new"] == OK, "t_new"] / 3600
-    print(f"neu: n={len(t_new)}  Median {t_new.median():.2f}  90% {t_new.quantile(.9):.2f}  Max {t_new.max():.2f}")
+    print(f"new: n={len(t_new)}  median {t_new.median():.2f}  90% {t_new.quantile(.9):.2f}  max {t_new.max():.2f}")
     if old is not None:
         t_old = d.loc[d["st_old"] == OK, "t_old"] / 3600
-        print(f"alt: n={len(t_old)}  Median {t_old.median():.2f}  90% {t_old.quantile(.9):.2f}  Max {t_old.max():.2f}")
+        print(f"old: n={len(t_old)}  median {t_old.median():.2f}  90% {t_old.quantile(.9):.2f}  max {t_old.max():.2f}")
         both = d[(d["st_new"] == OK) & (d["st_old"] == OK)]
         r = both["t_new"] / both["t_old"]
-        print(f"Verhältnis neu/alt (gleiche Läufe, n={len(both)}): Median {r.median():.2f}  "
+        print(f"Ratio new/old (same runs, n={len(both)}): median {r.median():.2f}  "
               f"10% {r.quantile(.1):.2f}  90% {r.quantile(.9):.2f}")
-        print("Hinweis: Laufzeit enthält die Wurzelphase bis t*, die in beiden Modellen etwa gleich ist")
+        print("Note: the runtime includes the root phase up to t*, which is about the same in both models")
 
-    print("\n=== 3. Mittlere Faktorstufe u: fehlend/fehlgeschlagen gegen fertig ===")
+    print("\n=== 3. Mean factor level u: missing/failed vs. finished ===")
     bad = d["st_new"] != OK
     rows = []
     for n in names:
         u = d[f"u_{n}"]
-        rows.append({"factor": n, "u_ok": u[~bad].mean(), "u_fehlend": u[bad].mean(),
+        rows.append({"factor": n, "u_ok": u[~bad].mean(), "u_missing": u[bad].mean(),
                      "diff": u[bad].mean() - u[~bad].mean(),
-                     "fehlend_bei_u>=0.67": (bad & (u >= 2 / 3)).sum(), "fehlend_bei_u<=0.33": (bad & (u <= 1 / 3)).sum()})
+                     "missing_at_u>=0.67": (bad & (u >= 2 / 3)).sum(), "missing_at_u<=0.33": (bad & (u <= 1 / 3)).sum()})
     t3 = pd.DataFrame(rows).set_index("factor").sort_values("diff", key=np.abs, ascending=False)
     print(t3.round(2).to_string())
-    print(f"(fehlend: {bad.sum()} Läufe; |diff| > 0.15 deutet auf Häufung an einem Ende des Bereichs)")
+    print(f"(missing: {bad.sum()} runs; |diff| > 0.15 indicates clustering at one end of the range)")
 
-    print("\n=== 4. Laufzeittreiber: Spearman(u, log Laufzeit) der fertigen Läufe ===")
+    print("\n=== 4. Runtime drivers: Spearman(u, log runtime) of the finished runs ===")
     ok = d[~bad]
     lt = np.log(ok["t_new"])
     rho = {n: ok[f"u_{n}"].rank().corr(lt.rank()) for n in names}
     print(pd.Series(rho).sort_values(key=np.abs, ascending=False).round(2).to_string())
 
-    print("\n=== 5. Vollständige Trajektorien (alle Punkte ok) je Replikat ===")
+    print("\n=== 5. Complete trajectories (all points ok) per replicate ===")
     k1 = d.groupby("traj")["step"].nunique().max()
     def complete(ok_mask):
         g = d.assign(ok=ok_mask).groupby(["traj", "rep"])["ok"].sum()
         return (g == k1).groupby("rep").sum()
     now = complete(~bad)
     if_rerun = complete(d["st_new"] != "failed")   # Timeouts/nicht ausgewertet nachgerechnet, failed bleibt
-    print(pd.DataFrame({"jetzt": now, "nach Nachrechnen": if_rerun}).to_string())
+    print(pd.DataFrame({"now": now, "after rerunning": if_rerun}).to_string())
     lost = d[d["st_new"] == "failed"].groupby(["traj", "rep"]).size()
     if len(lost):
-        print(f"durch failed (not_crossed) dauerhaft unvollständig: {len(lost)} (Trajektorie, Replikat)-Paare")
+        print(f"permanently incomplete because of failed (not_crossed): {len(lost)} (trajectory, replicate) pairs")
     by_traj = d.assign(bad=bad).groupby("traj")["bad"].sum()
-    print("fehlende Läufe je Trajektorie:", by_traj[by_traj > 0].to_dict())
+    print("missing runs per trajectory:", by_traj[by_traj > 0].to_dict())
 
 
 if __name__ == "__main__":

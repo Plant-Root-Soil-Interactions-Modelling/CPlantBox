@@ -43,19 +43,19 @@ def point_values(point):
 def check_raw(raw, problems):
     n_rings, n_cols = np.shape(raw["length_densities"])
     if n_rings != config.N_RINGS:
-        problems.append(f"{n_rings} Ringe statt {config.N_RINGS}")
+        problems.append(f"{n_rings} rings instead of {config.N_RINGS}")
     for k in RAW_2D:
         if k not in raw:
-            problems.append(f"raw.npz: {k} fehlt")
+            problems.append(f"raw.npz: {k} missing")
         elif np.shape(raw[k]) != (n_rings, n_cols):
-            problems.append(f"raw.npz: {k} hat Form {np.shape(raw[k])} statt {(n_rings, n_cols)}")
+            problems.append(f"raw.npz: {k} has shape {np.shape(raw[k])} instead of {(n_rings, n_cols)}")
     if len(raw["times"]) != n_cols or np.any(np.diff(raw["times"]) <= 0):
-        problems.append("raw.npz: times passt nicht zu den Spalten oder ist nicht aufsteigend")
+        problems.append("raw.npz: times does not match the columns or is not increasing")
     hours = raw["times"][-1] * 24
     if hours < max(config.SNAPSHOT_HOURS) - 1:
-        problems.append(f"nur {hours:.1f} h nach t* simuliert, letzter Auswertezeitpunkt {max(config.SNAPSHOT_HOURS)} h")
+        problems.append(f"only {hours:.1f} h after t* simulated, last evaluation time {max(config.SNAPSHOT_HOURS)} h")
     if raw["length_densities"][:, -1].sum() <= 0:
-        problems.append("keine Hyphenlänge hinter der Barriere")
+        problems.append("no hyphal length behind the barrier")
     return n_cols, hours
 
 
@@ -63,11 +63,11 @@ def check_extras(raw, warnings):
     """Outputs für die Kalibrierung: Fehler hier sind Warnungen, kein Abbruch (die SA braucht sie nicht)."""
     if config.ROOT_EFFICIENCY:
         if "root_eff_error" in raw:
-            warnings.append("Root Efficiency fehlgeschlagen: " + str(raw["root_eff_error"]).strip().splitlines()[-1])
+            warnings.append("root efficiency failed: " + str(raw["root_eff_error"]).strip().splitlines()[-1])
         elif not np.isfinite(float(raw.get("root_eff_E_rel", np.nan))):
-            warnings.append("Root Efficiency NaN (keine Spitzen oder Wurzelknoten)")
+            warnings.append("root efficiency NaN (no tips or root nodes)")
     if "branch_new" in raw and raw["branch_new"].sum() <= 0:
-        warnings.append("keine Verzweigungsereignisse hinter der Barriere")
+        warnings.append("no branching events behind the barrier")
 
 
 def run_point(point, quick):
@@ -84,7 +84,7 @@ def run_point(point, quick):
     report = {"run_id": run_id, "point": point, "quick": quick, "sim_status": meta["sim_status"],
               "sim_h": meta["sim_seconds"] / 3600, "problems": [], "warnings": []}
     if meta["sim_status"] != "ok":
-        report["problems"].append("Simulation fehlgeschlagen: " + meta.get("error", "").strip().splitlines()[-1])
+        report["problems"].append("simulation failed: " + meta.get("error", "").strip().splitlines()[-1])
         print(meta.get("error", ""))
     else:
         raw = model_hook.load_raw(rdir / meta["snapshots"][0])
@@ -99,7 +99,7 @@ def run_point(point, quick):
             | {(o, max(config.SNAPSHOT_HOURS)) for o in config.WAVE_OUTPUTS}
         missing = expected - set(zip(sa.output, sa.time))
         if missing:
-            report["problems"].append(f"Outputs fehlen: {sorted(missing)}")
+            report["problems"].append(f"outputs missing: {sorted(missing)}")
         nan = sa[sa.value.isna()]
         report["nan_outputs"] = ", ".join(f"{o}@{t:g}h" for o, t in zip(nan.output, nan.time))
         print("\nOutputs:")
@@ -109,18 +109,18 @@ def run_point(point, quick):
     report["problems"] = "; ".join(report["problems"])
     report["warnings"] = "; ".join(report["warnings"])
     (rdir / "smoke.json").write_text(json.dumps(report, indent=1))
-    print("\nSmoke-Test " + run_id + ": " + ("OK" if not report["problems"] else "PROBLEME: " + report["problems"]))
+    print("\nSmoke test " + run_id + ": " + ("OK" if not report["problems"] else "PROBLEMS: " + report["problems"]))
     if report["warnings"]:
-        print("WARNUNG: " + report["warnings"])
+        print("WARNING: " + report["warnings"])
     if report.get("nan_outputs"):
-        print("NaN (Fit gescheitert oder zu wenige Ringe): " + report["nan_outputs"])
-    print(f"Simulation {report['sim_h']:.2f} h, insgesamt {report['total_h']:.2f} h, Speicher max. {report['peak_mem_gb']:.2f} GB")
+        print("NaN (fit failed or too few rings): " + report["nan_outputs"])
+    print(f"Simulation {report['sim_h']:.2f} h, total {report['total_h']:.2f} h, peak memory {report['peak_mem_gb']:.2f} GB")
 
 
 def summary(gate=False, quick=False):
     rows = [json.loads(p.read_text()) for p in sorted(config.RUNS_DIR.glob("smoke_*/smoke.json"))]
     if not rows:
-        print("noch keine Smoke-Läufe" + ("\nGATE FEHLGESCHLAGEN: keine Smoke-Läufe (abgebrochen?) -> slurmOut/sa_smoke-*.out" if gate else ""))
+        print("no smoke runs yet" + ("\nGATE FAILED: no smoke runs (aborted?) -> slurmOut/sa_smoke-*.out" if gate else ""))
         return 1 if gate else 0
     df = pd.DataFrame(rows)
     config.RESULTS_DIR.mkdir(exist_ok=True)
@@ -130,7 +130,7 @@ def summary(gate=False, quick=False):
     with pd.option_context("display.max_colwidth", 80, "display.width", 200):
         print(df[cols].round(2).to_string(index=False))
     print(f"\n-> {config.RESULTS_DIR / 'smoke_report.csv'}")
-    print("Für sim.sbatch: --time über der längsten Simulation (mit Puffer), --mem über dem größten Speicher.")
+    print("For sim.sbatch: --time above the longest simulation (with margin), --mem above the largest memory.")
     if not gate:
         return 0
     # Gate: der Nominal-Lauf dieses Smoke-Tests muss sauber sein. low/high dürfen scheitern (Rand des Faktorraums,
@@ -138,29 +138,29 @@ def summary(gate=False, quick=False):
     rid = "smoke_nominal" + ("_quick" if quick else "")
     nom = df[df.run_id == rid]
     if nom.empty:
-        print(f"\nGATE FEHLGESCHLAGEN: {rid} fehlt (Lauf abgebrochen, Zeitlimit?) -> slurmOut/sa_smoke-*_0.out")
+        print(f"\nGATE FAILED: {rid} missing (run aborted, time limit?) -> slurmOut/sa_smoke-*_0.out")
         return 1
     r = nom.iloc[0]
     if r.sim_status != "ok" or r.problems:
-        print(f"\nGATE FEHLGESCHLAGEN: {rid}: {r.problems or r.sim_status}. Folgende Jobs werden abgebrochen.")
+        print(f"\nGATE FAILED: {rid}: {r.problems or r.sim_status}. The following jobs are cancelled.")
         return 1
     edge = df[df.run_id.isin([p + ("_quick" if quick else "") for p in ("smoke_low", "smoke_high")]) & (df.problems != "")]
     for _, e in edge.iterrows():
-        print(f"Hinweis: {e.run_id}: {e.problems} (Rand des Faktorraums, prüfen; kein Abbruch)")
-    print(f"\nGATE OK: {rid} sauber, die folgenden Jobs starten.")
+        print(f"Note: {e.run_id}: {e.problems} (edge of the factor space, check; not aborting)")
+    print(f"\nGATE OK: {rid} clean, the following jobs start.")
     return 0
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap = argparse.ArgumentParser(description="Smoke test: a few real runs end to end before Phase 0 goes to the cluster.")
     ap.add_argument("point", nargs="?", choices=POINTS)
-    ap.add_argument("--quick", action="store_true", help="nur 12 h nach t* (Verkabelung prüfen)")
-    ap.add_argument("--report", action="store_true", help="Zusammenfassung aller Smoke-Läufe")
-    ap.add_argument("--gate", action="store_true", help="mit --report: Exit-Code 1, wenn der Nominal-Lauf nicht sauber ist")
+    ap.add_argument("--quick", action="store_true", help="only 12 h after t* (check the wiring)")
+    ap.add_argument("--report", action="store_true", help="summary of all smoke runs")
+    ap.add_argument("--gate", action="store_true", help="with --report: exit code 1 if the nominal run is not clean")
     args = ap.parse_args()
     if args.report:
         raise SystemExit(summary(args.gate, args.quick))
     elif args.point:
         run_point(args.point, args.quick)
     else:
-        ap.error("Punkt (nominal, low, high) oder --report angeben")
+        ap.error("give a point (nominal, low, high) or --report")

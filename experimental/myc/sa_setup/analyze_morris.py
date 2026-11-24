@@ -32,7 +32,7 @@ SA_OUTPUTS = config.SNAPSHOT_OUTPUTS + config.WAVE_OUTPUTS
 
 # Farben (Kategorien Runner/BAS/gemeinsam/Kontrolle, Sequenz für Heatmap)
 COLORS = {"runner": "#2a78d6", "bas": "#eb6834", "shared": "#1b8a6b", "control": "#8a8a85"}
-LABELS = {"runner": "Runner", "bas": "BAS", "shared": "gemeinsam", "control": "Kontrolle"}
+LABELS = {"runner": "Runner", "bas": "BAS", "shared": "shared", "control": "control"}
 MARKERS = {"runner": "o", "bas": "s", "shared": "D", "control": "X"}
 INK, INK2, GRID = "#1f1f1e", "#5f5e5a", "#e4e3df"
 SEQ = ["#fcfcfb", "#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
@@ -143,7 +143,7 @@ def _legend_handles(kind):
     groups = [g for g in LABELS if g in GROUP.values()]
     if kind == "bar":
         return [Patch(color=COLORS[g], label=LABELS[g]) for g in groups] + [
-            Line2D([], [], marker="|", ls="", ms=10, mew=1.5, color=INK, label="2 × Rauschniveau (aus Replikaten)")]
+            Line2D([], [], marker="|", ls="", ms=10, mew=1.5, color=INK, label="2 × noise level (from replicates)")]
     return [Line2D([], [], marker=MARKERS[g], ls="", color=COLORS[g], label=LABELS[g]) for g in groups] + [
         Line2D([], [], color=GRID, label="σ = μ*")]
 
@@ -165,7 +165,7 @@ def plot_ranking(ind, t):
         ax.set_xlabel("μ*", fontsize=8, color=INK2)
         _style(ax)
     fig.legend(handles=_legend_handles("bar"), loc="lower center", ncol=5, frameon=False, fontsize=9)
-    fig.suptitle(f"Morris μ* mit 95%-Bootstrap-KI — t = {t:g} h nach t*", x=0.01, ha="left", fontsize=12, color=INK)
+    fig.suptitle(f"Morris μ* with 95% bootstrap CI — t = {t:g} h after t*", x=0.01, ha="left", fontsize=12, color=INK)
     fig.tight_layout(rect=(0, 0.05, 1, 0.97))
     fig.savefig(config.RESULTS_DIR / "plots" / f"morris_ranking_t{t:g}.png", dpi=150)
     plt.close(fig)
@@ -190,7 +190,7 @@ def plot_musigma(ind, t, n_label=6):
         ax.set_xlabel("μ*", fontsize=8, color=INK2); ax.set_ylabel("σ", fontsize=8, color=INK2)
         _style(ax); ax.grid(axis="y", color=GRID, lw=0.6)
     fig.legend(handles=_legend_handles("scatter"), loc="lower center", ncol=5, frameon=False, fontsize=9)
-    fig.suptitle(f"Morris μ* vs. σ (σ groß: nichtlinear oder Interaktionen) — t = {t:g} h nach t*",
+    fig.suptitle(f"Morris μ* vs. σ (large σ: nonlinear or interactions) — t = {t:g} h after t*",
                  x=0.01, ha="left", fontsize=12, color=INK)
     fig.tight_layout(rect=(0, 0.05, 1, 0.97))
     fig.savefig(config.RESULTS_DIR / "plots" / f"morris_musigma_t{t:g}.png", dpi=150)
@@ -216,9 +216,9 @@ def plot_overview(ind):
         s.set_visible(False)
     ax.tick_params(length=0)
     cb = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
-    cb.set_label("μ* / max μ* (je Output und Zeitpunkt)", fontsize=8, color=INK2)
+    cb.set_label("μ* / max μ* (per output and time)", fontsize=8, color=INK2)
     cb.outline.set_visible(False)
-    ax.set_title("Relative Sensitivität aller Outputs (Wellengrößen über das ganze Fenster)", loc="left", fontsize=11, color=INK)
+    ax.set_title("Relative sensitivity of all outputs (wave quantities over the whole window)", loc="left", fontsize=11, color=INK)
     fig.savefig(config.RESULTS_DIR / "plots" / "morris_overview.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
@@ -231,17 +231,17 @@ def main():
     plot_overview(ind)
     sub = ind[ind.region == "all"]
     top = (sub[~sub.in_noise].groupby("factor").mu_star_rel.max().sort_values(ascending=False))
-    print("\nFaktoren über dem Rauschniveau in mind. einem Output und Zeitpunkt,"
-          "\nWert = größtes relatives μ* über Outputs und Zeitpunkte:")
+    print("\nFactors above the noise level in at least one output and time,"
+          "\nvalue = largest relative μ* over outputs and times:")
     print(top.round(2).to_string())
     rest = sorted(set(NAMES) - set(top.index))
-    print(f"\nIn keinem Output über dem Rauschniveau: {', '.join(rest) or '-'}")
+    print(f"\nAbove the noise level in no output: {', '.join(rest) or '-'}")
     ctrl = sub[sub.role == "control"]
     if len(ctrl) and ctrl.mu_star.max() > 0:
-        print("\nAchtung: Kontrollfaktor hat μ* > 0 -> wirkt der b_prob-Schalter wie erwartet?")
+        print("\nWarning: the control factor has μ* > 0 -> does the b_prob switch work as expected?")
     nv = ind.n_valid.min()
     if nv < config.MORRIS_TRAJECTORIES:
-        print(f"\nAchtung: wegen fehlgeschlagener Läufe teils nur {nv} gültige Trajektorien.")
+        print(f"\nWarning: because of failed runs, some outputs have only {nv} valid trajectories.")
 
 
 if __name__ == "__main__":

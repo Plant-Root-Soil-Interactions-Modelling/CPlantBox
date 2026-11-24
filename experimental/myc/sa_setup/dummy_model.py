@@ -50,7 +50,7 @@ def simulate(xml_path, seed, outdir, hours=None):
     vf = 0.6 * (val(R, "v") / 0.576) ** 0.7 * (val(B, "v") / 0.576) ** 0.2 * (val(R, "hlt") / 8) ** 0.3 \
         * (val(R, "lmax") / 3) ** 0.1 * np.cos(val(R, "theta") - 1.047) * noise(0.05)
     if vf < 0.42:
-        raise RuntimeError("status not_crossed (Spielzeugmodell: Front zu langsam)")
+        raise RuntimeError("status not_crossed (toy model: front too slow)")
     K2 = 0.15 * (val(B, "b") / 0.96) ** 0.5 * (0.1 / val(R, "ln")) ** 0.4 * noise(0.05)
     width = 10 * (1 + cv) * (val(B, "hlt") / 2) ** 0.2 * noise(0.05)
     K1 = 1.4 * (val(B, "hlt") / 2) ** 0.5 * (val(R, "lmax") / 3) ** 0.3 * noise(0.05)

@@ -22,5 +22,5 @@ source "$HOME/cpbenv/bin/activate"
 cd "${SA_DIR:-$HOME/CPlantBox/experimental/myc/sa_setup}"
 export MPLBACKEND=Agg
 
-echo "python3 calibrate.py $* in $PWD auf $(hostname), $(date)"
+echo "python3 calibrate.py $* in $PWD on $(hostname), $(date)"
 python3 calibrate.py "$@"

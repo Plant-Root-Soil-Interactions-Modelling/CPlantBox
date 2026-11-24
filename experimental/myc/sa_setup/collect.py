@@ -33,10 +33,10 @@ def collect(design_path):
         out = pd.concat(frames, ignore_index=True)
         path = config.RESULTS_DIR / f"outputs_{tag}.csv"
         out.to_csv(path, index=False)
-        print(f"-> {path} ({len(out)} Zeilen)")
+        print(f"-> {path} ({len(out)} rows)")
     t = status["sim_seconds"].dropna()
     if len(t):
-        print(f"Laufzeit Simulation: Median {t.median():.0f} s, Max {t.max():.0f} s")
+        print(f"Simulation runtime: median {t.median():.0f} s, max {t.max():.0f} s")
 
 
 if __name__ == "__main__":

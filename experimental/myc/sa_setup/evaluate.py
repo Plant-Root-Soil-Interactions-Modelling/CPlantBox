@@ -151,13 +151,13 @@ def evaluate_run(run_id, force=False):
     rdir = config.RUNS_DIR / run_id
     meta_path = rdir / "meta.json"
     if not meta_path.exists():
-        print(f"{run_id}: noch nicht simuliert"); return
+        print(f"{run_id}: not simulated yet"); return
     meta = json.loads(meta_path.read_text())
     out_path = rdir / "outputs.csv"
     if meta.get("sim_status") != "ok":
-        print(f"{run_id}: Simulation fehlgeschlagen, keine Auswertung"); return
+        print(f"{run_id}: simulation failed, no evaluation"); return
     if out_path.exists() and not force:
-        print(f"{run_id}: bereits ausgewertet"); return
+        print(f"{run_id}: already evaluated"); return
     raw = model_hook.load_raw(rdir / meta["snapshots"][0])
     rows = []
     simulated = raw["times"][-1] * 24 + 1                              # [h nach t*], +1 h Toleranz
@@ -170,7 +170,7 @@ def evaluate_run(run_id, force=False):
             rows.append({"run_id": run_id, "time": h, "region": "all", "output": k, "value": v})
     rows.append({"run_id": run_id, "time": 0, "region": "all", "output": "wait_days", "value": float(raw["wait_days"])})
     pd.DataFrame(rows).to_csv(out_path, index=False)
-    print(f"{run_id}: {len(rows)} Werte")
+    print(f"{run_id}: {len(rows)} values")
 
 
 if __name__ == "__main__":

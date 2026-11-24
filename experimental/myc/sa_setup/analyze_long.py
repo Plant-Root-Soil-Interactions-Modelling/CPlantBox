@@ -20,7 +20,7 @@ def main():
     n = len(status)
     ok = int((status.status == "ok").sum())
     t = status.sim_seconds.dropna() / 3600
-    print(f"Läufe: {ok} von {n} ok, Simulation Median {t.median():.2f} h, Max {t.max():.2f} h")
+    print(f"Runs: {ok} of {n} ok, simulation median {t.median():.2f} h, max {t.max():.2f} h")
 
     k1 = len(config.FACTORS) + 1
     rows = []
@@ -36,10 +36,10 @@ def main():
     wide = tab.pivot(index="output", columns="time", values=["valid", "median", "cv", "p_traj"])
     wide = wide.reindex([o for o in SHOW if o in wide.index])
     with pd.option_context("display.width", 220, "display.max_columns", 50):
-        print("\nJe Output und Zeitfenster (h nach t*): gültige Läufe, Median, CV, "
-              f"p_traj = Anteil vollständiger Trajektorien ({k1} Punkte):")
+        print("\nPer output and time window (h after t*): valid runs, median, CV, "
+              f"p_traj = share of complete trajectories ({k1} points):")
         print(wide.round(3).to_string())
-    print(f"\nRichtwert: Tipgeschwindigkeit {0.576 * 10:.1f} mm/d. Für Morris taugt ein Output mit p_traj nahe 1.")
+    print(f"\nReference: tip speed {0.576 * 10:.1f} mm/d. An output is usable for Morris if p_traj is close to 1.")
     print(f"-> {config.RESULTS_DIR / 'long_summary.csv'}")
 
 

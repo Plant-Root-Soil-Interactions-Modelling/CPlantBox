@@ -23,7 +23,7 @@ N=$(( $(wc -l < "$SA_DIR/$DESIGN") - 1 ))
 NCH=$(( (N + CHUNK - 1) / CHUNK ))
 PAR=$(( (MAXPAR + NCH - 1) / NCH ))   # je Teil-Array, damit insgesamt höchstens ~MAXPAR laufen
 mkdir -p slurmOut slurmErr         # Ausgaben der Jobs im Verzeichnis, aus dem eingereicht wird
-echo "Design: $SA_DIR/$DESIGN  ($N Läufe, $NCH Teil-Array(s))"
+echo "Design: $SA_DIR/$DESIGN  ($N runs, $NCH sub-array(s))"
 
 # reicht $1 (sbatch-Datei) in Teil-Arrays ein, Zeile = OFFSET + Array-Index; gibt die Job-IDs als a:b:c aus
 submit_arrays() {
@@ -42,13 +42,13 @@ else
   # SIMTIME=12:00:00 bash submit_sa.sh ... überschreibt --time von sim.sbatch (z. B. für den Test mit 120 h)
   # SIMMEM=16G überschreibt --mem (z. B. für feines dx in Phase 0)
   SIM=$(submit_arrays sim.sbatch ${SIMTIME:+--time=$SIMTIME} ${SIMMEM:+--mem=$SIMMEM})
-  echo "Simulation: Job(s) $SIM"
+  echo "Simulation: job(s) $SIM"
   # afterany: Auswertung startet, wenn alle Simulationen beendet sind (auch bei Timeouts einzelner
   # Läufe — die werden in evaluate.py übersprungen und in status_*.csv als fehlend gemeldet).
   EVAL=$(submit_arrays eval.sbatch --dependency=afterany:$SIM)
 fi
-echo "Auswertung: Job(s) $EVAL"
+echo "Evaluation: job(s) $EVAL"
 COL=$(sbatch --parsable --dependency=afterany:$EVAL --export=ALL,DESIGN="$DESIGN" "$JOBS/collect.sbatch")
-echo "Sammeln + Analyse: Job $COL  ->  slurmOut/sa_collect-$COL.out"
+echo "Collect + analysis: job $COL  ->  slurmOut/sa_collect-$COL.out"
 [[ -n "${ID_FILE:-}" ]] && echo "$COL" > "$ID_FILE"   # für submit_all.sh: nächste Stufe hängt am Sammel-Job
-echo "Status:     squeue -u \$USER   |   danach: $SA_DIR/results/ (status_*.csv, Analysen, plots/)"
+echo "Status:     squeue -u \$USER   |   afterwards: $SA_DIR/results/ (status_*.csv, analyses, plots/)"

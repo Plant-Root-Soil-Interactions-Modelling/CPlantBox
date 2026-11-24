@@ -68,23 +68,23 @@ def main():
 
     # ---------- Kurzbericht ----------
     t_end = max(config.SNAPSHOT_HOURS)
-    print("\nLäufe je Gruppe (ok = t* erreicht und ausgewertet), Laufzeit der Simulation [h]:")
+    print("\nRuns per group (ok = t* reached and evaluated), simulation runtime [h]:")
     print(rng_tab.round(2).to_string())
-    print(f"\nSeed-Rauschen am Nominalpunkt (t = {t_end} h nach t*):")
+    print(f"\nSeed noise at the nominal point (t = {t_end} h after t*):")
     print(tab.loc[(t_end, "all")][["n_valid", "mean", "median", "sd", "cv", "frac_zero"]].round(3).to_string())
     nom_dx = max(config.PHASE0_DX_VALUES)
     d = dxt[(dxt.time == t_end) & (dxt.region == "all") & (dxt.dx == nom_dx)]
-    print(f"\ndx-Konvergenz: dx = {nom_dx:g} gegenüber dx = {finest:g} (rel. Abweichung, 95%-KI):")
+    print(f"\ndx convergence: dx = {nom_dx:g} vs. dx = {finest:g} (rel. difference, 95% CI):")
     for _, r in d.iterrows():
         if np.isnan(r.rel_diff):
-            print(f"  {r.output:16s} zu wenige Paare ({r.n_pairs})")
+            print(f"  {r.output:16s} too few pairs ({r.n_pairs})")
             continue
-        flag = "  <-- prüfen" if (r.rel_ci_lo > 0.02 or r.rel_ci_hi < -0.02) else ""
+        flag = "  <-- check" if (r.rel_ci_lo > 0.02 or r.rel_ci_hi < -0.02) else ""
         print(f"  {r.output:16s} {r.rel_diff:+.3f} [{r.rel_ci_lo:+.3f}, {r.rel_ci_hi:+.3f}]  n={r.n_pairs}{flag}")
     sparse = tab[tab.frac_zero > 0.2].reset_index()
     if len(sparse):
-        print(f"\n{len(sparse)} Output/Region/Zeit-Kombinationen mit >20 % Nullen "
-              "(spärlich besetzte Teilbereiche, s. phase0_noise.csv)")
+        print(f"\n{len(sparse)} output/region/time combinations with >20 % zeros "
+              "(sparsely populated subregions, see phase0_noise.csv)")
 
 
 if __name__ == "__main__":

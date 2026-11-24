@@ -55,7 +55,7 @@ def phase0():
     df = pd.DataFrame(rows)
     path = config.RESULTS_DIR / "design_phase0.csv"
     df.to_csv(path, index=False)
-    print(f"{len(df)} Läufe -> {path}")
+    print(f"{len(df)} runs -> {path}")
 
 
 def long_test():
@@ -66,7 +66,7 @@ def long_test():
     df = pd.DataFrame(rows)
     path = config.RESULTS_DIR / "design_long.csv"
     df.to_csv(path, index=False)
-    print(f"{len(df)} Läufe über {config.LONG_HOURS} h -> {path}")
+    print(f"{len(df)} runs over {config.LONG_HOURS} h -> {path}")
 
 
 def phase1_morris():
@@ -95,7 +95,7 @@ def phase1_morris():
     path = config.RESULTS_DIR / "design_morris.csv"
     df.to_csv(path, index=False)
     np.save(config.RESULTS_DIR / "morris_X.npy", X_flat)
-    print(f"{X.shape[0]} Trajektorien × {k + 1} Punkte × {R} Replikate = {len(df)} Läufe -> {path}")
+    print(f"{X.shape[0]} trajectories × {k + 1} points × {R} replicates = {len(df)} runs -> {path}")
 
 
 if __name__ == "__main__":

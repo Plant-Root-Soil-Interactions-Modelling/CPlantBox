@@ -24,7 +24,7 @@ def run_row(row):
     rdir = config.RUNS_DIR / row["run_id"]
     meta_path = rdir / "meta.json"
     if meta_path.exists() and json.loads(meta_path.read_text()).get("sim_status") == "ok":
-        print(f"{row['run_id']}: bereits fertig, übersprungen")
+        print(f"{row['run_id']}: already done, skipped")
         return
     rdir.mkdir(parents=True, exist_ok=True)
     names = [f.name for f in config.FACTORS]

@@ -10,7 +10,7 @@ JOBS="$(cd "$(dirname "$0")" && pwd)"
 QUICK="${1:-}"
 mkdir -p slurmOut slurmErr
 SMOKE=$(sbatch --parsable --export=ALL,QUICK="$QUICK" "$JOBS/smoke.sbatch")
-echo "Smoke-Läufe: Job $SMOKE"
+echo "Smoke runs: job $SMOKE"
 # afterany: der Bericht kommt auch, wenn ein Lauf fehlschlägt oder ins Zeitlimit läuft
 REPORT=$(sbatch --parsable --dependency=afterany:$SMOKE "$JOBS/sa_run.sbatch" smoke_test.py --report)
-echo "Bericht:     Job $REPORT  ->  slurmOut/sa_run-$REPORT.out"
+echo "Report:     job $REPORT  ->  slurmOut/sa_run-$REPORT.out"

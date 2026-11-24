@@ -20,12 +20,12 @@
 
 set -euo pipefail
 if [ $# -eq 0 ]; then
-    echo "Skript angeben, z. B. sbatch sa_run.sbatch check_config.py" >&2
+    echo "give a script, e.g. sbatch sa_run.sbatch check_config.py" >&2
     exit 1
 fi
 source "$HOME/cpbenv/bin/activate"
 cd "${SA_DIR:-$HOME/CPlantBox/experimental/myc/sa_setup}"
 export MPLBACKEND=Agg
 
-echo "python3 $* in $PWD auf $(hostname), $(date)"
+echo "python3 $* in $PWD on $(hostname), $(date)"
 python3 "$@"

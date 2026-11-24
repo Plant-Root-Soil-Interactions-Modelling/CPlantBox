@@ -56,38 +56,38 @@ def _pm(rel, nominal):
 
 
 PH = 0.25  # Platzhalter-Spannweite ±25 %
-V_SOURCE = "240 µm/h (Oyarte Galvez et al. 2025), Bereich 180–300 µm/h um den Schwerpunkt der gemessenen Spitzengeschwindigkeiten"
+V_SOURCE = "240 µm/h (Oyarte Galvez et al. 2025), range 180–300 µm/h around the centre of the measured tip speeds"
 
 FACTORS: list[Factor] = [
     # ---- RunnerHyphae (subType 1, laterale Verzweigung, b_prob = 0) ----
     Factor("R_v",      (RUNNER,), "v",     0.432, 0.72, source=V_SOURCE),
     Factor("R_hlt",    (RUNNER,), "hlt",   4.0, 10.0,
-           source="Sensitivitätsbereich Schnepf 2016; Sterberaten Schnepf 2008 ergeben 4–12,5 d"),
+           source="sensitivity range Schnepf 2016; death rates Schnepf 2008 give 4–12.5 d"),
     Factor("R_lmax",   (RUNNER,), "lmax",  1.5, 5.0,
-           source="nicht in der Literatur; Abschätzung v × Lebensdauer (≈ 1,3–5,4 cm)"),
+           source="not in the literature; estimate v × lifetime (≈ 1.3–5.4 cm)"),
     Factor("R_ln",     (RUNNER,), "ln",    0.1, 0.6, log=True,
-           source="~1 mm alle Äste (Giovannetti, in Schnepf 2008) bis ~6 mm neue wachsende Spitzen "
-                  "(Oyarte Galvez 2025); log-uniform, da Faktor 6 und Lateralrate ∝ 1/ln"),
+           source="~1 mm all branches (Giovannetti, in Schnepf 2008) to ~6 mm new growing tips "
+                  "(Oyarte Galvez 2025); log-uniform, since factor 6 and lateral rate ∝ 1/ln"),
     Factor("R_theta",  (RUNNER,), "theta", math.radians(50), math.radians(80),
-           source="60° (Schnepf 2016) bis ≈ 70° (Oyarte Galvez 2025), Winkeldefinitionen unterscheiden sich"),
+           source="60° (Schnepf 2016) to ≈ 70° (Oyarte Galvez 2025), angle definitions differ"),
     # Kontrollfaktor: b wird nur beim Tip-Splitting gelesen (Hyphae.cpp), bei b_prob = 0 wirkungslos -> mu* = 0
     Factor("R_b_ctrl", (RUNNER,), "b",     *_pm(PH, 0.95), role="control"),
 
     # ---- BAS (subType 2, Tip-Splitting, b_prob = 1) ----
     Factor("B_v",      (BAS,), "v",     0.432, 0.72, source=V_SOURCE),
     Factor("B_b",      (BAS,), "b",     0.55, 1.35,
-           source="Verzweigungsrate / Spitzendichte (Oyarte Galvez et al. 2025, Fig. b): ≈ 0,044 h⁻¹ ≈ 1,05 /d am Maximum, "
-                  "≈ 0,65 /d an der Flanke; Band 2 SEM ≈ ±40 %. Zählt dort alle Verzweigungen (auch Runner-Laterale)"),
+           source="branching rate / tip density (Oyarte Galvez et al. 2025, Fig. b): ≈ 0.044 h⁻¹ ≈ 1.05 /d at the maximum, "
+                  "≈ 0.65 /d at the flank; band 2 SEM ≈ ±40 %. Counts all branchings there (including runner laterals)"),
     Factor("B_hlt",    (BAS,), "hlt",   5.0, 9.0,
-           source="BAS degenerieren nach ~7 d (Bago 1998; Kokkoris 2026)"),
+           source="BAS degenerate after ~7 d (Bago 1998; Kokkoris 2026)"),
     Factor("B_theta",  (BAS,), "theta", math.radians(50), math.radians(80),
-           source="wie R_theta; Messung in Oyarte Galvez 2025 mit 881 BAS-Verzweigungspunkten"),
+           source="as R_theta; measured in Oyarte Galvez 2025 with 881 BAS branching points"),
 
     # ---- gemeinsam für Runner und BAS ----
     Factor("distTH", (RUNNER, BAS), "distTH", *_pm(PH, 0.01)),   # nominal 0,01 cm = dx
     Factor("ana",    (RUNNER, BAS), "ana",    0.5, 1.0),        # Wahrscheinlichkeit, nominal 1 = Rand
     Factor("v_cv",   (RUNNER, BAS), "v_cv",   0.15, 0.40,
-           source="Streuung der gemessenen Spitzengeschwindigkeiten (Oyarte Galvez et al. 2025), nominal CV ≈ 0,29"),
+           source="spread of the measured tip speeds (Oyarte Galvez et al. 2025), nominal CV ≈ 0.29"),
 ]
 
 # Parameter, die NIE variiert werden (nur zur Dokumentation / Prüfung)

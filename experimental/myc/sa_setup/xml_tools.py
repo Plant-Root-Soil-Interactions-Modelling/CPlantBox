@@ -14,14 +14,14 @@ def _hyphae(root, subtype):
     for el in root.iter("hyphae"):
         if el.get("subType", "").strip() == str(subtype):
             return el
-    raise KeyError(f"Kein <hyphae subType='{subtype}'> in der Template-XML")
+    raise KeyError(f"No <hyphae subType='{subtype}'> in the template XML")
 
 
 def _param(hy, name):
     for p in hy.iter("parameter"):
         if p.get("name") == name:
             return p
-    raise KeyError(f"Parameter '{name}' fehlt in subType {hy.get('subType')}")
+    raise KeyError(f"Parameter '{name}' missing in subType {hy.get('subType')}")
 
 
 def _set_value(p, new_value):
@@ -66,7 +66,7 @@ def write_hyphae_xml(updates: dict, out_path: Path, template=None):
         p = _param(_hyphae(root, st), name)
         if name == "successor":
             if len(p.get("percentage").split(",")) != 2:
-                raise ValueError(f"successor von subType {st}: genau zwei Nachfolger erwartet")
+                raise ValueError(f"successor of subType {st}: exactly two successors expected")
             p.set("percentage", f"{float(val)!r}, {1 - float(val)!r}")
         else:
             _set_value(p, val)
