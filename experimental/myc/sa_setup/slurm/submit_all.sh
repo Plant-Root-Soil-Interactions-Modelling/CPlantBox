@@ -80,6 +80,7 @@ Morgen ansehen:
   Kalibrierung:   $SA_DIR/calibration/report.txt
   Phase 0:        slurmOut/sa_collect-*.out, $SA_DIR/results/phase0_*.csv
   Morris:         $SA_DIR/results/morris_indices.csv, results/plots/
-  Übersicht:      sacct -u \$USER -S today --format=JobID,JobName%12,State,Elapsed,ExitCode
-Hängen Jobs mit Reason 'DependencyNeverSatisfied' oder sind 'CANCELLED', ist eine Stufe davor fehlgeschlagen.
+  Übersicht:      squeue -u \$USER (laufend/wartend), $SA_DIR/results/status_*.csv (fehlend = abgebrochen)
+  Abbrüche:       grep -h -i -E 'TIME LIMIT|oom' slurmErr/*.err | sort | uniq -c
+Hängen Jobs mit Reason 'DependencyNeverSatisfied', ist eine Stufe davor fehlgeschlagen.
 EOF
