@@ -2,7 +2,7 @@
 
 This repository contains the analysis and visualization code accompanying:
 
-Hack J., Ullah S., Leitner D., Vanderborght J., Kage H., Schnepf A. XXXX. Simulating soil-temperature-driven seasonal and interannual variation in winter wheat root development under field conditions and comparing perirhizal radius estimates with CPlantBox. XXX
+Hack J., Ullah S., Leitner D., Vanderborght J., Kage H., Schnepf A. XXXX. From field data to perirhizal radii: soil-temperature-dependent 3D root system architecture simulations of three winter wheat seasons with a unified parameter set. XXX
 
 Please cite the above publication when using this code.
 
@@ -18,7 +18,6 @@ ruthe_simulation.py - main simulation loop for temperature dependent growth. Dep
     - soil_core_simulation.py - Simulates virtual soil cores & extracts root length densities.  
     - simulation_utils.py - Temperature-scaling and utility functions used by both simulation scripts.  
     - analysis_and_plotting_utils.py - Handles plotting and calculates model evaluation metrics.  
-Data CSV files and the calculated evalutation metrics are saved in the results folder directly. Depth profiles are saved in their own folder within results.
 
 volume_weighted_voronoi.py - Simulates a single plant in a periodic domain. The three-dimensional structure is used for Voronoi tessellation and to calculate volume-weighted perirhizal radii. The root length density (RLD) per layer and the parameters of the simulated CV-RLD relationship curve are used to estimate perirhizal radii. Finally, both perirhizal radii distributions are plotted into the same graph and the plots saved under results/simulated_perirhizal_radii.
 
@@ -39,7 +38,7 @@ relative_standard_error.ipynb - Calculates the relative standard error (RSE) for
 
 resolution_cv_rld.ipynb - Plot the CV-RLD relationship for different soil core numbers and layer thicknesses.
 
-Furthermore, in results/ there is an additional folder called spatial_resolution_tests which contains depth profiles, perirhizal radii distributions as well as CSV with the simulated mean and standard deviation values for various combinations of soil core numbers and layer thicknesses. The minirhizotron portion of the simulation has been disabled for this analysis.
+Furthermore, results_spatial_resolution/ contains depth profiles, perirhizal radii distributions, figures as well as CSV with the simulated mean and standard deviation values for various combinations of soil core numbers and layer thicknesses. The minirhizotron portion of the simulation has been disabled for this analysis.
 
 
 ## Data structure
@@ -49,10 +48,10 @@ The data/ folder contains the input data used by the simulations and analyses:
 data_raw/ contains:  
     - CSV files of the soil core and minirhizotron data from the field  
     - Excel files of the climate data for 1994-98  
-    - XML files with the root system architectural parameters  
+    - XML file with the root system architectural parameters  
 
 data_processed/ contains:  
-    - pickle files of the soil temperature for the three growing periods  
+    - CSV files of the soil temperature for the three growing periods  
     - CSV versions of the climate data Excel files  
     - cleaned climate data CSVs  
 

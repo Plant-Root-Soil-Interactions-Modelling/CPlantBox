@@ -4,7 +4,7 @@ Script to simulate a single plant in a periodic domain and analyze perirhizal ra
 Features:
 - Analyzes perirhizal space using 3D Voronoi tessellation with periodic boundary conditions (8 neighbors).
 - Computes perirhizal outer radius for each root segment.
-- Plots radii histograms with a fitted lognormal distribution for different depth layers.
+- Plots radii histograms with fitted lognormal distributions for different depth layers.
 """
 
 from pathlib import Path
@@ -32,15 +32,20 @@ from simulation_utils import (
 # Set parameters for the different vegetation periods
 # 1995: RUTHE_1994_95, 227
 # 1996: RUTHE_1995_96, 238
-# 1997: RUTHE_1996_97, 224
-DATASET = RUTHE_1994_95
-SOIL_CORE_DAY = 227
-year = 1997
+# 1997: RUTHE_1996_97, 240
+DATASET = RUTHE_1995_96
+SOIL_CORE_DAY = 238
+year = 1996
 
 SEED = 56789
 
-CV_RLD_A: float = -35.49029721531007
-CV_RLD_B: float = 39.075961056298176
+# Choose how the perirhizal radius PDF is computed from a lognormal RLD model.
+# - True: closed-form mapping (R is lognormal)
+# - False: generic change-of-variables via Jacobian
+USE_ANALYTIC_RLD_TO_RADIUS_PDF = True
+
+CV_RLD_A: float = -57.57103152688008
+CV_RLD_B: float = 43.78908121848554
 
 def cv_from_rld(rld: float) -> float:
     return CV_RLD_A * np.log10(rld) + CV_RLD_B
@@ -156,7 +161,7 @@ class PeriodicDomainAnalyser:
         # Override bottom boundary based on deepest node
         deepest_z = self.nodes_df.z.min()
         z_bottom = (
-            deepest_z - 0.5  # arbitrary value that might need to be changed!!!!!
+            deepest_z - 0.5  # arbitrary value that might need to be changed!!!!! now 5cm at Andreas wish
         )
         print(
             f"Adjusting Voronoi bottom boundary to {z_bottom:.2f} cm (deepest node: {deepest_z:.2f} cm)"
@@ -330,10 +335,7 @@ class PeriodicDomainAnalyser:
 
             print(f"Layer {i} ({zt} to {zb} cm): RLD = {rld:.6f} cm/cm3")
 
-    def plot_layer_histograms_with_lognormal_fit(
-        self,
-        output_prefix: str
-    ):
+    def plot_layer_histograms_with_lognormal_fit(self, output_prefix: str):
         """Histogram of perirhizal radii with fitted lognormal PDF.
 
         The histogram is a *volume-weighted* PDF (units 1/mm):
@@ -353,7 +355,13 @@ class PeriodicDomainAnalyser:
 
         simulation_data = {}
 
-        for idx in sorted_layers:
+        # One panel per layer, filled row by row from the top layer to the bottom layer
+        fig = plt.figure(figsize=(11, 8))
+        panels = fig.add_gridspec(
+            2, 2, left=0.09, right=0.985, bottom=0.1, top=0.945, wspace=0.14, hspace=0.27
+        )
+
+        for panel, idx in enumerate(sorted_layers):
             z_top, z_bot = self.depth_layers[idx]
 
             layer_data = data[data["layer_id"] == idx]
@@ -392,8 +400,7 @@ class PeriodicDomainAnalyser:
             )
 
             # Lognormal fit (to volume-weighted density)
-            lognorm_fit = None  # (x_fit, pdf_fit, median)
-
+            lognorm_fit = None  # (x_fit, pdf_fit, mode)
             try:
                 popt, _ = curve_fit(
                     lambda x, s, scale: lognorm.pdf(x, s=s, scale=scale),
@@ -414,65 +421,49 @@ class PeriodicDomainAnalyser:
                 print(f"Fit failed in layer {idx}: {e}")
 
             # RLD-derived PDF (density)
-            rld_curve = None
+            rld_curve = None  # (r_mm_sorted, pdf_sorted, r_mode, peak_height_at_mode)
             layer_rld = self.layer_rld.get(idx, np.nan)
-
             if np.isfinite(layer_rld) and layer_rld > 0:
-                cv = max(cv_from_rld(layer_rld), 0.0)  # ensure non-negative CV
+                cv = max(cv_from_rld(layer_rld), 0)
                 sigma = cv * layer_rld / 100.0
-                
+
                 if sigma >= 0:
                     sigma_ln = np.sqrt(np.log(1 + (sigma / layer_rld) ** 2))
                     mu_ln = np.log(layer_rld) - 0.5 * sigma_ln**2
 
                     x_rld = np.logspace(-3, 1, 500)
-                    r_mm = np.sqrt(1/(np.pi * x_rld)) * 10.0  # mm
+                    r_mm = np.sqrt(1 / (np.pi * x_rld)) * 10.0
                     pdf_r_vals = pdf_perirhizal_mm_analytic(r_mm, mu_ln, sigma_ln)
 
                     order = np.argsort(r_mm)
                     r_mm_sorted = r_mm[order]
                     pdf_sorted = pdf_r_vals[order]
 
+                    # "mode" here is the maximum of the (possibly non-unimodal) discretized curve
                     mode_idx = int(np.nanargmax(pdf_sorted))
                     r_mode = float(r_mm_sorted[mode_idx])
                     peak_height = float(pdf_sorted[mode_idx])
 
                     if np.isfinite(peak_height) and peak_height > 0:
-                        rld_curve = (
-                            r_mm_sorted,
-                            pdf_sorted,
-                            r_mode,peak_height
-                        )
+                        rld_curve = (r_mm_sorted, pdf_sorted, r_mode, peak_height)
                 else:
                     print(
-                        f"Skipped RLD-derived PDF in layer {idx}: "
-                        f"non-positive sigma ({sigma:.4g}%)."
+                        f"Skipped RLD-derived PDF in layer {idx}: non-positive sigma ({sigma:.4g})."
                     )
-
             else:
                 print(
-                    f"Skipped RLD-derived PDF in layer {idx}: "
-                    f"invalid RLD ({layer_rld})."
+                    f"Skipped RLD-derived PDF in layer {idx}: invalid RLD ({layer_rld})."
                 )
 
             # If the RLD-derived curve peak (at its mode) is above 0.5, use a broken y-axis so we can
             # still keep the main plot limited to (0, 0.5) while showing the peak.
-            use_broken_y = (rld_curve is not None and rld_curve[3] > 0.5)
-
-            # Deterministic layout (avoid tight_layout differences between 1-axes and broken-axes plots)
-            # Use fixed margins so layout stays identical across plot types.
-            fig_left = 0.12
-            fig_right = 0.78
-            fig_bottom = 0.14
-            fig_top = 0.86
+            use_broken_y = bool(rld_curve) and (rld_curve[3] > 0.5)
 
             if use_broken_y:
-                fig, (ax_top, ax_bot) = plt.subplots(
-                    2,
-                    1,
-                    sharex=True,
-                    figsize=(6, 4),
-                    gridspec_kw={"height_ratios": [1, 3], "hspace": 0.05},
+                ax_top, ax_bot = (
+                    panels[panel]
+                    .subgridspec(2, 1, height_ratios=[1, 3], hspace=0.05)
+                    .subplots(sharex=True)
                 )
 
                 # Ensure the top axes (and its legend) draws above the bottom axes.
@@ -489,7 +480,7 @@ class PeriodicDomainAnalyser:
                 ax_top.xaxis.set_ticks_position("none")
 
                 d = 0.015
-                kwargs = {"color": "k", "clip_on": False, "linewidth": 1}
+                kwargs = { "color": "k", "clip_on": False, "linewidth": 1 }
                 ax_top.plot((-d, +d), (-d, +d), transform=ax_top.transAxes, **kwargs)
                 ax_top.plot((1 - d, 1 + d), (-d, +d), transform=ax_top.transAxes, **kwargs)
                 ax_bot.plot((-d, +d), (1 - d, 1 + d), transform=ax_bot.transAxes, **kwargs)
@@ -498,7 +489,7 @@ class PeriodicDomainAnalyser:
                 axes_main = ax_bot
                 axes_peak = ax_top
             else:
-                fig, ax = plt.subplots(figsize=(6, 4))
+                ax = fig.add_subplot(panels[panel])
                 axes_main = ax
                 axes_peak = None
 
@@ -508,12 +499,12 @@ class PeriodicDomainAnalyser:
                 density,
                 width=dx,
                 alpha=0.5,
-                label="Histogram (volume-weighted PDF)",
+                label="Histogram",
             )
 
-            # --- plot lognormal fit and empirical weighted median on main axis ---
+            # --- plot lognormal fit on main axis ---
             if lognorm_fit is not None:
-                x_fit, pdf_fit, _fitted_median = lognorm_fit
+                x_fit, pdf_fit, mode = lognorm_fit
                 axes_main.plot(x_fit, pdf_fit, color="orange", lw=2, label="Lognormal fit")
                 axes_main.axvline(
                     mode,
@@ -522,8 +513,10 @@ class PeriodicDomainAnalyser:
                     lw=2,
                     label=f"Mode {mode:.2f} mm",
                 )
+
             # --- plot RLD-derived curve (main axis always clipped to 0..0.5) ---
             if rld_curve is not None:
+                r_mm_sorted, pdf_sorted, r_mode, peak_height = rld_curve
 
                 axes_main.plot(
                     r_mm_sorted,
@@ -532,13 +525,12 @@ class PeriodicDomainAnalyser:
                     lw=2,
                     label="RLD-derived PDF",
                 )
-
                 axes_main.axvline(
                     r_mode,
                     color="green",
                     linestyle="--",
                     lw=2,
-                    label=f"RLD median {r_mode:.2f} mm",
+                    label=f"RLD-mode {r_mode:.2f} mm",
                 )
 
                 # If peak is above 0.5, show it in the top axis with a truncated/broken y-range.
@@ -550,14 +542,7 @@ class PeriodicDomainAnalyser:
                         y_top_min = 0.55
 
                     axes_peak.plot(r_mm_sorted, pdf_sorted, color="green", lw=2)
-
-                    axes_peak.axvline(
-                        r_mode,
-                        color="green",
-                        linestyle="--",
-                        lw=2,
-                    )
-                    
+                    axes_peak.axvline(r_mode, color="green", linestyle="--", lw=2)
                     axes_peak.set_ylim(y_top_min, y_top_max)
 
                     # Reduce clutter on the peak axis
@@ -569,39 +554,12 @@ class PeriodicDomainAnalyser:
                     )
 
             # --- formatting ---
-            title = f"Depth {max(z_top, z_bot)} to {min(z_top, z_bot)} cm"
-            fig.suptitle(title, y=0.95)
-
-            xlabel = "Perirhizal radius (mm)"
-            ylabel = "Volume-weighted probability density (1/mm)"
-
-            axes_main.set_xlabel(xlabel)
-            if use_broken_y:
-                # Center the y-label across both panels for broken-axis plots
-                axes_main.set_ylabel("")
-                fig.text(0.04, 0.5, ylabel, ha="left", va="center", rotation="vertical")
-            else:
-                axes_main.set_ylabel(ylabel)
+            title_ax = axes_peak if use_broken_y else axes_main
+            title_ax.set_title(f"Depth {max(z_top, z_bot)} to {min(z_top, z_bot)} cm", fontsize=17)
+            title_ax.set_title("abcd"[panel], loc="left", fontweight="bold", fontsize=20)
 
             axes_main.set_xlim(0, 30)
             axes_main.set_ylim(0, 0.5)
-
-            # Fixed margins for consistent title/label spacing across both plot types
-            if use_broken_y:
-                fig.subplots_adjust(
-                    left=fig_left,
-                    right=fig_right,
-                    bottom=fig_bottom,
-                    top=fig_top,
-                    hspace=0.05,
-                )
-            else:
-                fig.subplots_adjust(
-                    left=fig_left,
-                    right=fig_right,
-                    bottom=fig_bottom,
-                    top=fig_top,
-                )
 
             # Legend: place inside the plot, top-right.
             handles, labels = axes_main.get_legend_handles_labels()
@@ -611,17 +569,24 @@ class PeriodicDomainAnalyser:
                     handles,
                     labels,
                     loc="upper right",
-                    fontsize="small",
+                    fontsize=13,
                     frameon=True,
                 )
                 leg.set_zorder(10)
 
-            # --- save per layer ---
-            path = f"{output_prefix}_layer_{idx}_lognormal.png"
-            plt.savefig(path)
-            plt.close()
+        # Axis labels are shared by all panels
+        fig.supxlabel("Perirhizal radius (mm)", y=0.015, fontsize=17)
+        fig.supylabel("Volume-weighted probability density (1/mm)", x=0.015, fontsize=17)
 
-            print(f"Saved {path}")
+        for ax in fig.axes:
+            ax.tick_params(labelsize=15)
+
+        # --- save combined figure ---
+        path = f"{output_prefix}_lognormal_cores_10_layers_24.png"
+        fig.savefig(path, dpi=300)
+        plt.close(fig)
+
+        print(f"Saved {path}")
 
         print("Simulation parameters:", simulation_data)
 
@@ -743,7 +708,8 @@ def run_single_plant_simulation():
         analyser = PeriodicDomainAnalyser(root_sys, domain_size)
         analyser.run_analysis()
 
-        base_name = f"{output_dir}/simulated_perirhizal_radii/volume_weighted_voronoi_with_confidence_{year}"
+        base_name = f"{output_dir}/simulated_perirhizal_radii/volume_weighted_voronoi_{year}"
+        Path(base_name).parent.mkdir(parents=True, exist_ok=True)
         analyser.plot_layer_histograms_with_lognormal_fit(base_name)
 
     analysis_days = [SOIL_CORE_DAY]  # days to analyze (here: day of soil core sampling)

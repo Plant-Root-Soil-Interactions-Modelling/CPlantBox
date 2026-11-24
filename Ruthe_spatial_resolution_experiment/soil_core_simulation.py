@@ -2,7 +2,6 @@
 
 import random
 from pathlib import Path
-from pprint import pprint
 
 import numpy as np
 import pandas as pd
@@ -423,7 +422,5 @@ def analyze_root_length_density(
         )
         root_length_density = np.array(distribution) / soil_layer_volume  # cm/cm3
         root_length_densities.append(root_length_density)
-
-    pprint(root_length_densities)
 
     return root_length_densities

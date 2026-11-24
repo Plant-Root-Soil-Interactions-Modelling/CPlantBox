@@ -38,7 +38,7 @@ relative_standard_error.ipynb - Calculates the relative standard error (RSE) for
 
 resolution_cv_rld.ipynb - Plots the CV-RLD relationship for different soil core numbers and layer thicknesses.
 
-Furthermore, in results/ there is an additional folder called spatial_resolution_tests which contains depth profiles, perirhizal radii distributions as well as CSV files with the simulated mean and standard deviation values for various combinations of soil core numbers and layer thicknesses. The minirhizotron portion of the simulation has been disabled for this analysis.
+Furthermore, results_spatial_resolution/ contains depth profiles, perirhizal radii distributions as well as CSV files with the simulated mean and standard deviation values for various combinations of soil core numbers and layer thicknesses. The minirhizotron portion of the simulation has been disabled for this analysis.
 
 
 ## Data structure
@@ -95,13 +95,6 @@ For full reproducibility, please use the following CPlantBox commit:
 240a0642
 
 Using a different version of CPlantBox may lead to differences in simulation results.
-
-
-## Reproducing the results
-
-All analysis scripts and figure-generation workflows used in the publication are included in this repository.
-
-The recommended workflow is:
 
 ## Contact
 
