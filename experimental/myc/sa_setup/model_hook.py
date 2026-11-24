@@ -67,6 +67,7 @@ def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None
            "tip_dens": sum(active_tips.values()) / area, "active_tips": sum(active_tips.values()),
            "ana_new": mats["anastomosis_new"], "length_densities": mats["length"] * 10 / area,
            "branch_new": amfd.getBranchingPerRing(times, mycp, rings),
+           "branch_new_runner": amfd.getBranchingPerRing(times, mycp, rings, child_subtype=config.RUNNER),
            "wait_days": stats["wait_days"]}
     if config.ROOT_EFFICIENCY:   # Netzwerk am Ende der Simulation, planar wie die Bildgraphen des Experiments (Kreuzungen = Knoten)
         import time

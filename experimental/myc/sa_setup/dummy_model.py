@@ -79,6 +79,7 @@ def simulate(xml_path, seed, outdir, hours=None):
     raw = {"seed": seed, "time_star": time_star, "location": outer, "area": area,
            "times": time_star + t_h / 24, "tip_dens": tips / area[:, None], "active_tips": tips,
            "branch_new": rng.poisson(branch_rate * tips).astype(float),
+           "branch_new_runner": rng.poisson(0.576 / val(R, "ln") * 0.25 / 24 * (tips - tips_bas)).astype(float),
            "root_eff_E_rel": 0.5 * val(R, "ana") * (val(R, "distTH") / 0.01) ** 0.3 * (val(B, "a") / 0.0025) ** 0.2 * noise(0.05),
            "ana_new": ana_bas + ana_runner, "length_densities": rho, "wait_days": wait_days,
            "length_runner": rho * (1 - frac_bas), "length_bas": rho * frac_bas,

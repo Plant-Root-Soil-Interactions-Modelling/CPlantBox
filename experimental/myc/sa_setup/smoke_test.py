@@ -31,7 +31,7 @@ from xml_tools import nominal_values
 
 POINTS = ["nominal", "low", "high"]
 RAW_2D = ["tip_dens", "active_tips", "ana_new", "length_densities", "length_runner", "length_bas",
-          "active_tips_runner", "active_tips_bas", "ana_new_runner", "ana_new_bas", "branch_new"]
+          "active_tips_runner", "active_tips_bas", "ana_new_runner", "ana_new_bas", "branch_new", "branch_new_runner"]
 
 
 def point_values(point):

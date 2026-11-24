@@ -101,17 +101,20 @@ def getActiveTipsPerRingPerSubtype(times, plant, rings, ot = 5):
         mats[0] = np.zeros((len(rings), len(t_eval)))
     return mats
 
-def getBranchingPerRing(times, plant, rings, ot = 5):
+def getBranchingPerRing(times, plant, rings, ot = 5, child_subtype = None):
     # branching events per ring in each interval (times[i], times[i+1]] (rings x len(times)-1, same layout as getParasPerRing), at the
     # branching point (node 0 of the child). A tip split creates two children at the same time and place (Hyphae::simulate, b_prob > 0.5),
     # a lateral branch one: children are grouped by (parent, creation time, position), each group is one event.
-    # Hyphae emerging from roots are no branching events.
+    # Hyphae emerging from roots are no branching events. child_subtype: only events whose children have this sub type
+    # (e.g. 1: new runner tips, as the newborn growing tips of Oyarte Galvez et al. 2025, where BAS tips hardly count as growing)
     times = np.asarray(times)
     mat = np.zeros((len(rings), len(times) - 1))
     events = {}
     for o in plant.getOrgans(ot):
         parent = o.getParent()
         if parent is None or parent.organType() != ot:
+            continue
+        if child_subtype is not None and int(o.getParameter("subType")) != child_subtype:
             continue
         p = o.getNode(0)
         events[(parent.getId(), round(o.getNodeCT(0), 9), round(p.x, 6), round(p.y, 6), round(p.z, 6))] = p
@@ -125,13 +128,16 @@ def getBranchingPerRing(times, plant, rings, ot = 5):
                 break
     return mat
 
-def branchingRate(simulations, min_tips = 5):
+def branchingRate(simulations, min_tips = 5, suffix = ""):
     # branching events per growing tip and hour [h^-1] (Oyarte Galvez et al. 2025: about 4 %/h), as anastomosisBeta: sum of the events
-    # over sum of tips x interval length, over all rings and intervals (first column left out) with at least min_tips growing tips
+    # over sum of tips x interval length, over all rings and intervals (first column left out) with at least min_tips growing tips.
+    # suffix "_runner": new runner tips per growing runner tip ("branch_new_runner", "active_tips_runner"); nan if the data are missing
     ev_sum, tip_h = 0., 0.
     for sim in simulations:
+        if "branch_new" + suffix not in sim:
+            return np.nan
         dt_h = np.diff(np.concatenate([[0.], sim["times"]]))[1:] * 24
-        tips, br = sim["active_tips"][:, 1:], sim["branch_new"][:, 1:]
+        tips, br = sim["active_tips" + suffix][:, 1:], sim["branch_new" + suffix][:, 1:]
         ok = tips >= min_tips
         ev_sum += br[ok].sum()
         tip_h += (tips * dt_h)[ok].sum()

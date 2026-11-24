@@ -134,13 +134,13 @@ class Target:
 
 # Verfügbare Outputs. Wellengrößen über das Fenster 0..HOURS, über alle Seeds gepoolt:
 WAVE_OUTPUTS = {
-    "beta": "[µm/h] a = beta rho n (Summenverhältnis)",
-    "branching_rate": "[h^-1] Verzweigungsereignisse je wachsender Spitze und Stunde (Tip-Split = 1 Ereignis)",
+    "beta": "[µm/h] a = beta rho n mit a, n der Runner-Spitzen (Summenverhältnis)",
+    "branching_rate": "[h^-1] neue Runner-Spitzen je wachsender Runner-Spitze und Stunde",
     "encounter_C": "[mm^2 µm^-1 h^-1] f = C rho",
     "K1": "[µm mm^-2] Sättigung der Filamentdichte (Median der gesättigten Ringe)",
-    "K2": "[mm^-2] Spitzenpeak (Median der Ringe mit Peak im Fenster)",
-    "wave_width": "[h] Dauer der Spitzenwelle im Ring (Median)",
-    "front_velocity": "[mm/d] Ringradius gegen Ankunft des Spitzenpeaks (Theil-Sen, alle Seeds)",
+    "K2": "[mm^-2] Peak der Runner-Spitzendichte (Median der Ringe mit Peak im Fenster)",
+    "wave_width": "[h] Dauer der Runner-Spitzenwelle im Ring (Median)",
+    "front_velocity": "[mm/d] Ringradius gegen Ankunft t_n der Filamentdichte (Sigmoid-Fit, Theil-Sen, alle Seeds)",
     "front_speed": "[mm/d] Steigung des spitzengewichteten Radius ab 10 h (Mittel der Seeds)",
     "root_efficiency_rel": "(E_r - E_r,MST) / (E_r,DT - E_r,MST), 2D, am Ende der Simulation (Mittel der Seeds)",
 }
@@ -173,6 +173,9 @@ MIN_OK = 0.5                  # Anteil der Seeds, die t* erreichen müssen, sons
 NAN_PENALTY = 10.             # F_i für undefinierte Outputs (Fit gescheitert), damit der Löser weiterläuft
 N_BOOT = 200
 CAL_DIR = config.ROOT / "calibration"
+# Version der Rohdaten (raw.npz) im Schlüssel der Läufe: erhöhen, wenn model_hook neue Größen speichert, die die Ziele
+# brauchen; dann werden alte Läufe nicht wiederverwendet. 2: branch_new_runner
+RAW_VERSION = 2
 
 
 # --------------------------------------------------------------------------
@@ -265,9 +268,12 @@ def run_seed(args):
 
 
 def prepare(sim):
-    """Teure Auswertungen je Lauf einmal (Fits, Snapshots), Bootstrap greift darauf zurück."""
+    """Teure Auswertungen je Lauf einmal (Fits, Snapshots), Bootstrap greift darauf zurück.
+    Die Wellen-Fits nehmen die Dichte der Runner-Spitzen: im Experiment (Oyarte Galvez et al. 2025, Methods) zählen nur
+    wachsende Spitzen (> 40 Pixel bewegt), BAS-Spitzen kaum; Fig. 2/3 zeigen die Dichte der wachsenden RH-Spitzen."""
     hours = sorted({t.hour for t in TARGETS if t.hour is not None})
-    return {"sim": sim, "table": ev.fit_table(sim), "front_speed": ev.front_speed(sim, HOURS),
+    sim_rh = dict(sim, tip_dens=sim["active_tips_runner"] / np.asarray(sim["area"]).reshape(-1, 1))
+    return {"sim": sim, "table": ev.fit_table(sim_rh), "front_speed": ev.front_speed(sim, HOURS),
             "snap": {h: ev.snapshot_outputs(sim, h) for h in hours}}
 
 
@@ -278,13 +284,16 @@ def pooled_outputs(preps):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         wave = {
-            "beta": amfd.anastomosisBeta(sims, min_tips=config.ENCOUNTER_MIN_TIPS)["total"],
-            "branching_rate": amfd.branchingRate(sims, min_tips=config.ENCOUNTER_MIN_TIPS),
+            # a = beta rho n mit a und n der Runner-Spitzen (wachsende Spitzen wie im Experiment), rho aller Hyphen
+            "beta": amfd.anastomosisBeta(sims, min_tips=config.ENCOUNTER_MIN_TIPS)["runner"],
+            # neue Runner-Spitzen je wachsender Runner-Spitze und Stunde (alpha in b(n) = alpha n)
+            "branching_rate": amfd.branchingRate(sims, min_tips=config.ENCOUNTER_MIN_TIPS, suffix="_runner"),
             "encounter_C": amfd.encounterC(sims, min_tips=config.ENCOUNTER_MIN_TIPS)["total"],
             "K1": np.median(good_K1.K1) if len(good_K1) >= n_min else np.nan,
-            "K2": np.median(good_tips.K2) if len(good_tips) >= n_min else np.nan,
+            "K2": np.median(good_tips.K2) if len(good_tips) >= n_min else np.nan,   # Peak der Runner-Spitzendichte
             "wave_width": np.median(ev.FWHM_BELL / good_tips.lam_tip) if len(good_tips) >= n_min else np.nan,
-            "front_velocity": 24 * amfd.theilSlope(good_tips.t_tip, good_tips.r)[0] if len(good_tips) >= n_min else np.nan,
+            # Wellenposition aus dem Sigmoid-Fit der Filamentdichte (Fig. 2d inset): Ringradius gegen Ankunftszeit t_n
+            "front_velocity": 24 * amfd.theilSlope(good.t_n, good.r)[0] if len(good) >= n_min else np.nan,
             "front_speed": np.nanmean([p["front_speed"] for p in preps]),
             "root_efficiency_rel": np.nanmean([float(p["sim"].get("root_eff_E_rel", np.nan)) for p in preps]),
         }
@@ -313,7 +322,7 @@ class Residual:
         self.n_runs, self.J, self.status, self.t_start = 0, None, "läuft", time.time()
 
     def key(self, u):
-        return hashlib.md5(json.dumps([round(v, 10) for v in to_phys(u)] + [self.hours]).encode()).hexdigest()[:10]
+        return hashlib.md5(json.dumps([round(v, 10) for v in to_phys(u)] + [self.hours, RAW_VERSION]).encode()).hexdigest()[:10]
 
     def evaluate(self, us, kind):
         """F für mehrere Punkte; bereits berechnete aus dem Cache."""
