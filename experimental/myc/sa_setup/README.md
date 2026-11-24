@@ -16,7 +16,21 @@ Petrischalen-Setup von `petridishsimauto.py` (Oyarte Galvez et al. 2025) mit
 und speichert die Größen je Ring und Stunde wie `petridishsimauto.py` (`raw.npz`).
 Änderungen am Nominalmodell gehören in `TwoHyphaePlusBAS.xml`, nicht hierher.
 
-## Ablauf
+## Alles auf einmal (`slurm/submit_all.sh`)
+
+```bash
+cd ~ && bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh            # alles
+bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh --no-morris        # Phase 0 erst ansehen
+bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh --help             # alle Optionen
+```
+
+Reihenfolge mit SLURM-Abhängigkeiten: Smoke-Test (3 Läufe), dann das Gate (`smoke_test.py --report --gate`).
+Ist der Nominal-Lauf nicht sauber, bricht SLURM alles Folgende ab. Danach laufen parallel Phase 0 → Morris,
+der 120-h-Test und die Kalibrierung. Die Designs erzeugt jeweils ein kleiner Job (`stage.sbatch`), der danach
+die Läufe einreicht (braucht `sbatch` aus Jobs heraus). Nichts muss kopiert werden, die sbatch-Dateien
+kommen direkt aus dem Repo.
+
+## Ablauf (einzelne Schritte)
 
 Die Jobs werden wie die Petrischalen-Läufe aus dem **Home-Verzeichnis** eingereicht, und
 **jedes Python-Skript läuft als Job** (nicht auf dem Login-Knoten). Einmalig:
