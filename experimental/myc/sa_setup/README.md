@@ -1,39 +1,39 @@
-# Sensitivitätsanalyse Hyphenmodell — Phase 0 + Morris
+# Sensitivity analysis of the hyphal model — Phase 0 + Morris
 
-Gerüst für Rauschtest, `dx`-Konvergenz und Morris-Screening auf SLURM, für das
-Petrischalen-Setup von `petridishsimauto.py` (Oyarte Galvez et al. 2025) mit
-`tomatoparameters/TwoHyphaePlusBAS.xml` als Nominalmodell. Mit einem Spielzeugmodell
-(`dummy_model.py`) komplett durchgetestet.
+Framework for a noise test, `dx` convergence and Morris screening on SLURM, for the
+Petri dish setup of `petridishsimauto.py` (Oyarte Galvez et al. 2025) with
+`tomatoparameters/TwoHyphaePlusBAS.xml` as the nominal model. Fully tested end to end with a toy model
+(`dummy_model.py`).
 
-## Was du anpassen musst
+## What you need to adapt
 
-| Datei | Was |
+| File | What |
 |---|---|
-| `config.py` | **Faktorbereiche** (`distTH` noch ±25 % Platzhalter), ggf. `HOURS_HYPHAE`, `SNAPSHOT_HOURS` |
-| `slurm/*.sbatch` | aktivieren `~/cpbenv` (braucht zusätzlich SALib, scikit-learn, networkx), Partition `cpu256`; ggf. Zeit/Speicher |
+| `config.py` | **factor ranges** (`distTH` still a ±25 % placeholder), possibly `HOURS_HYPHAE`, `SNAPSHOT_HOURS` |
+| `slurm/*.sbatch` | activate `~/cpbenv` (additionally needs SALib, scikit-learn, networkx), partition `cpu256`; possibly time/memory |
 
-`model_hook.py` ruft `AMFSimulationSetup.makeSimulation` mit dem Parameterfile des Laufs auf
-und speichert die Größen je Ring und Stunde wie `petridishsimauto.py` (`raw.npz`).
-Änderungen am Nominalmodell gehören in `TwoHyphaePlusBAS.xml`, nicht hierher.
+`model_hook.py` calls `AMFSimulationSetup.makeSimulation` with the parameter file of the run
+and stores the quantities per ring and hour as `petridishsimauto.py` does (`raw.npz`).
+Changes to the nominal model belong in `TwoHyphaePlusBAS.xml`, not here.
 
-## Alles auf einmal (`slurm/submit_all.sh`)
+## Everything at once (`slurm/submit_all.sh`)
 
 ```bash
-cd ~ && bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh            # alles
-bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh --no-morris        # Phase 0 erst ansehen
-bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh --help             # alle Optionen
+cd ~ && bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh            # everything
+bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh --no-morris        # look at Phase 0 first
+bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh --help             # all options
 ```
 
-Reihenfolge mit SLURM-Abhängigkeiten: Smoke-Test (3 Läufe), dann das Gate (`smoke_test.py --report --gate`).
-Ist der Nominal-Lauf nicht sauber, bricht SLURM alles Folgende ab. Danach laufen parallel Phase 0 → Morris,
-der 120-h-Test und die Kalibrierung. Die Designs erzeugt jeweils ein kleiner Job (`stage.sbatch`), der danach
-die Läufe einreicht (braucht `sbatch` aus Jobs heraus). Nichts muss kopiert werden, die sbatch-Dateien
-kommen direkt aus dem Repo.
+Order with SLURM dependencies: smoke test (3 runs), then the gate (`smoke_test.py --report --gate`).
+If the nominal run is not clean, SLURM cancels everything that follows. After that, Phase 0 → Morris,
+the 120 h test and the calibration run in parallel. The designs are each created by a small job (`stage.sbatch`),
+which then submits the runs (needs `sbatch` from within jobs). Nothing has to be copied, the sbatch files
+come directly from the repo.
 
-## Ablauf (einzelne Schritte)
+## Workflow (individual steps)
 
-Die Jobs werden wie die Petrischalen-Läufe aus dem **Home-Verzeichnis** eingereicht, und
-**jedes Python-Skript läuft als Job** (nicht auf dem Login-Knoten). Einmalig:
+Like the Petri dish runs, the jobs are submitted from the **home directory**, and
+**every Python script runs as a job** (not on the login node). Once:
 
 ```bash
 cd ~
@@ -43,40 +43,40 @@ source cpbenv/bin/activate && pip install SALib scikit-learn networkx
 mkdir -p slurmOut slurmErr
 ```
 
-Alles aus `~`. Einzelne Python-Schritte mit `sbatch sa_run.sbatch <skript> [argumente]`,
-ihre Ausgabe steht in `slurmOut/sa_run-<job>.out`:
+Everything from `~`. Individual Python steps with `sbatch sa_run.sbatch <script> [arguments]`,
+their output is in `slurmOut/sa_run-<job>.out`:
 
 ```bash
 cd ~
-sbatch sa_run.sbatch check_config.py         # Bereiche, Nominalwerte, Laufanzahl, CPU-Stunden
+sbatch sa_run.sbatch check_config.py         # ranges, nominal values, number of runs, CPU hours
 
-# ---- Smoke-Test: 3 echte Läufe (nominal, alle Faktoren unten, alle oben), danach Bericht ----
-bash submit_smoke.sh                         # oder: bash submit_smoke.sh --quick (12 h nach t*)
-# Bericht: slurmOut/sa_run-<job>.out -> alles OK? Laufzeit und Speicher -> sim.sbatch
+# ---- smoke test: 3 real runs (nominal, all factors low, all high), then a report ----
+bash submit_smoke.sh                         # or: bash submit_smoke.sh --quick (12 h after t*)
+# report: slurmOut/sa_run-<job>.out -> all OK? runtime and memory -> sim.sbatch
 
-# ---- Phase 0: Rauschen, dx-Konvergenz, Stichprobe des Faktorraums (100 Läufe) ----
-sbatch sa_run.sbatch design.py phase0        # warten, bis der Job fertig ist
-bash submit_sa.sh results/design_phase0.csv  # Designpfad relativ zu sa_setup
-# Sammeln und analyze_phase0.py laufen am Ende automatisch: slurmOut/sa_collect-<job>.out
+# ---- Phase 0: noise, dx convergence, sample of the factor space (100 runs) ----
+sbatch sa_run.sbatch design.py phase0        # wait until the job has finished
+bash submit_sa.sh results/design_phase0.csv  # design path relative to sa_setup
+# collection and analyze_phase0.py run automatically at the end: slurmOut/sa_collect-<job>.out
 
-# ---- Test: Nominalpunkt über 120 h (10 Läufe), sind die Wellen-Fits dann oft genug definiert? ----
-sbatch sa_run.sbatch design.py long          # warten, bis der Job fertig ist
+# ---- test: nominal point over 120 h (10 runs), are the wave fits then defined often enough? ----
+sbatch sa_run.sbatch design.py long          # wait until the job has finished
 SIMTIME=12:00:00 bash submit_sa.sh results/design_long.csv
-# Ergebnis: slurmOut/sa_collect-<job>.out (analyze_long.py), Fenster 60, 90 und 120 h
+# result: slurmOut/sa_collect-<job>.out (analyze_long.py), windows 60, 90 and 120 h
 
-# ---- Phase 1: Morris (r × (k+1) × R Läufe) ----
-sbatch sa_run.sbatch design.py morris        # warten, bis der Job fertig ist
+# ---- Phase 1: Morris (r × (k+1) × R runs) ----
+sbatch sa_run.sbatch design.py morris        # wait until the job has finished
 bash submit_sa.sh results/design_morris.csv
-# analyze_morris.py läuft am Ende automatisch, Plots in sa_setup/results/plots/
+# analyze_morris.py runs automatically at the end, plots in sa_setup/results/plots/
 ```
 
-Ein Schritt noch einmal von Hand, z. B. nach Änderungen an der Analyse:
+To repeat a step by hand, e.g. after changes to the analysis:
 `sbatch sa_run.sbatch analyze_morris.py`.
 
-Liegt CPlantBox woanders, `SA_DIR=/pfad/zu/sa_setup` vor `sbatch` bzw. `bash submit_sa.sh` setzen.
-Nach Änderungen an den sbatch-Dateien im Repo die Kopien im Home-Verzeichnis erneuern.
+If CPlantBox lives elsewhere, set `SA_DIR=/path/to/sa_setup` before `sbatch` or `bash submit_sa.sh`.
+After changes to the sbatch files in the repo, renew the copies in the home directory.
 
-Lokal testen ohne Cluster und ohne echtes Modell:
+Testing locally without a cluster and without the real model:
 
 ```bash
 export SA_DUMMY=1
@@ -85,133 +85,132 @@ python3 run_one.py results/design_phase0.csv 0-4
 python3 evaluate.py results/design_phase0.csv 0-4
 ```
 
-**Abgebrochene Läufe** (Timeout, Knotenausfall): `submit_sa.sh` einfach erneut aufrufen,
-fertige Läufe werden übersprungen. `results/status_*.csv` zeigt, was fehlt. Läufe ohne t*
-nach `MAX_WAIT_DAYS` zählen als fehlgeschlagen (Fehlermeldung in `runs/<id>/meta.json`).
+**Aborted runs** (timeout, node failure): just call `submit_sa.sh` again,
+finished runs are skipped. `results/status_*.csv` shows what is missing. Runs without t*
+after `MAX_WAIT_DAYS` count as failed (error message in `runs/<id>/meta.json`).
 
-**Neue Outputs / andere Zeitpunkte:** `evaluate.py` bzw. `config.SNAPSHOT_HOURS` ändern, dann
-`cd ~ && bash submit_sa.sh <design> --eval-only`. Keine Neusimulation nötig, `raw.npz` enthält
-alle Größen je Ring und Stunde. Für Netzwerkgrößen (`AMFNetwork.py`) braucht es die
-Geometrie: dafür `SAVE_VTP = True` setzen.
+**New outputs / other times:** change `evaluate.py` or `config.SNAPSHOT_HOURS`, then
+`cd ~ && bash submit_sa.sh <design> --eval-only`. No re-simulation needed, `raw.npz` contains
+all quantities per ring and hour. Network quantities (`AMFNetwork.py`) need the
+geometry: set `SAVE_VTP = True` for that.
 
-## Faktoren (13)
+## Factors (13)
 
-| Gruppe | Faktoren | Bereich |
+| Group | Factors | Range |
 |---|---|---|
-| Runner (subType 1) | `R_v`, `R_hlt`, `R_lmax`, `R_ln`, `R_theta` | v 0,432–0,72 cm/d (180–300 µm/h), hlt 4–10 d, lmax 1,5–5 cm, ln 0,1–0,6 cm (log), θ 50–80° |
-| BAS (subType 2) | `B_v`, `B_b`, `B_hlt`, `B_theta` | v wie Runner, b 0,55–1,35 /d, hlt 5–9 d (nominal 7 d), θ 50–80° |
-| gemeinsam | `distTH`, `ana`, `v_cv` | ±25 %, 0,5–1, CV 0,15–0,40 |
+| Runner (subType 1) | `R_v`, `R_hlt`, `R_lmax`, `R_ln`, `R_theta` | v 0.432–0.72 cm/d (180–300 µm/h), hlt 4–10 d, lmax 1.5–5 cm, ln 0.1–0.6 cm (log), θ 50–80° |
+| BAS (subType 2) | `B_v`, `B_b`, `B_hlt`, `B_theta` | v as runner, b 0.55–1.35 /d, hlt 5–9 d (nominal 7 d), θ 50–80° |
+| shared | `distTH`, `ana`, `v_cv` | ±25 %, 0.5–1, CV 0.15–0.40 |
+| control | `R_b_ctrl` | b of the runners, no effect with b_prob = 0 |
 
-Die Quellen der Bereiche stehen je Faktor in `config.py` (`source`).
-| Kontrolle | `R_b_ctrl` | b der Runner, wirkungslos bei b_prob = 0 |
+The sources of the ranges are given per factor in `config.py` (`source`).
 
-Fest: Successor-Aufteilung (0,75 BAS / 0,25 Runner), la, lb, BAS-lmax (≈ 3 × dx),
-Radius a, Tropismus, dx, b_prob.
+Fixed: successor split (0.75 BAS / 0.25 runner), la, lb, BAS lmax (≈ 3 × dx),
+radius a, tropism, dx, b_prob.
 
 ## Outputs
 
-| Art | Outputs | Zeit |
+| Kind | Outputs | Time |
 |---|---|---|
-| Mengen | `total_length` [cm], `active_tips`, `bas_share`, `anastomoses` (seit t*), `front_position` (spitzengewichteter Radius, mm) | 10, 30, 60 h nach t* |
-| Welle | `front_velocity` [mm/d], `K1` [µm mm⁻²], `K2` [mm⁻²], `wave_width` [h], `encounter_C`, `beta` [µm/h] (a = β ρ n, Ziel ≈ 23) | Fits über 0–60 h, stehen bei 60 h |
+| quantities | `total_length` [cm], `active_tips`, `bas_share`, `anastomoses` (since t*), `front_position` (tip-weighted radius, mm) | 10, 30, 60 h after t* |
+| wave | `front_velocity` [mm/d], `K1` [µm mm⁻²], `K2` [mm⁻²], `wave_width` [h], `encounter_C`, `beta` [µm/h] (a = β ρ n, target ≈ 23) | fits over 0–60 h, stored at 60 h |
 
-Die Wellengrößen kommen aus den Fits von `AMFDensities` mit den Gütekriterien von
-`petridishstats.py` (R², Sättigung, mind. 3 Ringe). Scheitern die Fits, fehlt der Wert,
-und der Lauf zählt für diesen Output wie ein fehlgeschlagener. Die Anzahl Ringe hinter
-den Fits steht als Diagnose (`n_wave_rings`, `n_K1_rings`, `n_tip_rings`) in `outputs.csv`,
-ebenso `wait_days` (Zeit bis t*). Diagnosen gehen nicht in die SA ein.
+The wave quantities come from the fits of `AMFDensities` with the quality criteria of
+`petridishstats.py` (R², saturation, at least 3 rings). If the fits fail, the value is missing,
+and the run counts like a failed one for this output. The number of rings behind
+the fits is stored as diagnostics (`n_wave_rings`, `n_K1_rings`, `n_tip_rings`) in `outputs.csv`,
+as is `wait_days` (time until t*). Diagnostics do not enter the SA.
 
-## Designentscheidungen
+## Design decisions
 
-- **Variiert werden die `value`s.** Mit `DEV_MODE = "relative"` wird `dev` proportional
-  mitskaliert (konstanter CV). Ausnahme `v_cv`: setzt dev von v auf CV × v, für beide Subtypen.
-- **Gemeinsame Faktoren** (`distTH`, `ana`, `v_cv`) werden auf Runner und BAS geschrieben.
-- **b_prob als Struktur, nicht als Faktor.** b wird nur beim Tip-Splitting gelesen
-  (`Hyphae.cpp`), daher ist `R_b_ctrl` ein **Kontrollfaktor**: muss μ* = 0 liefern.
-- **Kein Abbruch bei stagnierender Front** (`MIN_GROWING_TIPS = None`): in der SA ist eine
-  langsame Front ein Ergebnis, kein Fehler. Nur ohne t* wird abgebrochen.
-- **`dx` nur in Phase 0** (Konvergenztest), nie in der Sensitivitätsanalyse.
-- **Gemeinsame Seeds entlang einer Trajektorie** (Common Random Numbers): Elementary
-  Effects sind Differenzen, gleiche Seeds nehmen einen Großteil des Rauschens raus.
-- **Rauschniveau aus den Replikaten:** Jedes Replikat ist eine eigene konsistente
-  Trajektorie. Die Streuung der EEs zwischen Replikaten ergibt pro Faktor das μ*,
-  das reines Seed-Rauschen erzeugen würde. Faktoren mit μ* ≤ 2 × diesem Niveau gelten als
-  „im Rauschen" (Spalte `in_noise`, schwarze Markierung im Ranking-Plot).
-- **μ* in normierten Einheiten:** Output-Änderung pro Durchlaufen des Faktorbereichs,
-  zwischen Faktoren vergleichbar. `mu_star_rel` normiert zusätzlich je Output.
-- **Morris über SALib** (`pip install SALib`): Design mit `SALib.sample.morris`
-  (Trajektorienauswahl nach maximaler Spreizung, `local_optimization`), Auswertung mit
-  `SALib.analyze.morris` auf dem Replikat-Mittel. Faktoren werden auf `[0,1]` gesampelt
-  und in `design.to_physical` umgerechnet (auch log-uniform). Selbst berechnet wird nur
-  das Rauschniveau, weil SALib die einzelnen EEs nicht herausgibt.
-- **Fehlgeschlagene Läufe:** Ein Replikat einer Trajektorie zählt nur, wenn alle k+1
-  Punkte vorliegen; eine Trajektorie zählt, wenn mind. ein Replikat vollständig ist.
+- **The `value`s are varied.** With `DEV_MODE = "relative"`, `dev` is scaled
+  proportionally (constant CV). Exception `v_cv`: sets dev of v to CV × v, for both subtypes.
+- **Shared factors** (`distTH`, `ana`, `v_cv`) are written to runner and BAS.
+- **b_prob as structure, not as a factor.** b is only read during tip splitting
+  (`Hyphae.cpp`), so `R_b_ctrl` is a **control factor**: it must give μ* = 0.
+- **No abort on a stalling front** (`MIN_GROWING_TIPS = None`): in the SA a
+  slow front is a result, not an error. Runs are only aborted without t*.
+- **`dx` only in Phase 0** (convergence test), never in the sensitivity analysis.
+- **Shared seeds along a trajectory** (common random numbers): elementary
+  effects are differences, equal seeds remove a large part of the noise.
+- **Noise level from the replicates:** every replicate is its own consistent
+  trajectory. The spread of the EEs between replicates gives, per factor, the μ*
+  that pure seed noise would produce. Factors with μ* ≤ 2 × this level count as
+  "within noise" (column `in_noise`, black tick in the ranking plot).
+- **μ* in normalised units:** output change per traversal of the factor range,
+  comparable between factors. `mu_star_rel` additionally normalises per output.
+- **Morris via SALib** (`pip install SALib`): design with `SALib.sample.morris`
+  (trajectory selection by maximum spread, `local_optimization`), analysis with
+  `SALib.analyze.morris` on the replicate mean. Factors are sampled on `[0,1]`
+  and converted in `design.to_physical` (also log-uniform). Only the noise level
+  is computed here, because SALib does not return the individual EEs.
+- **Failed runs:** a replicate of a trajectory only counts if all k+1
+  points exist; a trajectory counts if at least one replicate is complete.
 
-## Was Phase 0 entscheidet
+## What Phase 0 decides
 
-- `phase0_noise.csv`: CV je Output. Bei hohem CV (> ~0.3) eher `MORRIS_REPLICATES` erhöhen.
-  Spalte `frac_zero` zeigt spärlich besetzte Outputs.
-- `phase0_dx.csv`: Weicht nominales `dx` signifikant (> 2 %) vom feinsten ab, ist
-  `dx` zu grob. Besonders für Anastomosen (distTH = dx) und BAS (lmax ≈ 3 × dx) prüfen.
-  Kleines dx kostet viel Laufzeit: `--time` in `sim.sbatch` dafür erhöhen.
-- `phase0_status.csv`: Wie viele der 20 zufälligen Punkte im Faktorraum t* erreichen, und wie
-  lange sie laufen. Viele Abbrüche: Bereiche zu breit, sonst fehlen bei Morris ganze Trajektorien.
-- Laufzeit und Speicher: `--time`/`--mem` in den sbatch-Dateien anpassen.
+- `phase0_noise.csv`: CV per output. With a high CV (> ~0.3), rather increase `MORRIS_REPLICATES`.
+  Column `frac_zero` shows sparsely populated outputs.
+- `phase0_dx.csv`: if the nominal `dx` deviates significantly (> 2 %) from the finest, `dx`
+  is too coarse. Check especially for anastomoses (distTH = dx) and BAS (lmax ≈ 3 × dx).
+  A small dx costs a lot of runtime: increase `--time` in `sim.sbatch` for it.
+- `phase0_status.csv`: how many of the 20 random points in the factor space reach t*, and how
+  long they run. Many aborts: ranges too wide, otherwise whole trajectories go missing in Morris.
+- Runtime and memory: adjust `--time`/`--mem` in the sbatch files.
 
-## Ergebnisse
+## Results
 
-- `results/morris_indices.csv`: μ*, KI, μ, σ, Rauschniveau je `time × region × output × factor`
-- `results/plots/morris_ranking_t*.png`: μ* mit Bootstrap-KI (SALib: μ* ± Halbbreite) je Output
-- `results/plots/morris_musigma_t*.png`: μ* vs. σ (σ ≳ μ*: nichtlinear/Interaktionen)
-- `results/plots/morris_overview.png`: relative Sensitivität aller Outputs und Zeitpunkte
+- `results/morris_indices.csv`: μ*, CI, μ, σ, noise level per `time × region × output × factor`
+- `results/plots/morris_ranking_t*.png`: μ* with bootstrap CI (SALib: μ* ± half-width) per output
+- `results/plots/morris_musigma_t*.png`: μ* vs. σ (σ ≳ μ*: nonlinear/interactions)
+- `results/plots/morris_overview.png`: relative sensitivity of all outputs and times
 
-`beispiel_dummy/` enthält Plots aus einem Testlauf mit dem Spielzeugmodell.
-Sie zeigen nur das Format, inhaltlich bedeuten sie nichts.
+`beispiel_dummy/` contains plots from a test run with the toy model.
+They only show the format, their content means nothing.
 
-## Kalibrierung (`calibrate.py`)
+## Calibration (`calibrate.py`)
 
-Nullstellensuche `F(x) = 0` mit `F_i = log(y_i / y*_i) / log(1 + tol_i)`. Ein Ziel gilt als
-erreicht, wenn |F_i| ≤ 1 ist. Gelöst wird mit `scipy.optimize.least_squares` (TRF, Box-Grenzen)
-im normierten Parameterraum. Die Jacobi-Matrix kommt aus großen Vorwärtsdifferenzen (≈ 0,15),
-alle Differenzenpunkte laufen gleichzeitig. Die Suche endet, sobald alle Ziele in der Toleranz liegen.
+Root finding `F(x) = 0` with `F_i = log(y_i / y*_i) / log(1 + tol_i)`. A target counts as
+reached when |F_i| ≤ 1. Solved with `scipy.optimize.least_squares` (TRF, box bounds)
+in the normalised parameter space. The Jacobian comes from large forward differences (≈ 0.15),
+all difference points run at the same time. The search stops as soon as all targets are within tolerance.
 
-16 Parameter: getrennt nach Runner/BAS wie in der SA (v, hlt, theta, b, ln, lmax), dazu getrennt
-tropismN und der Radius a, außerdem der BAS-Anteil der Runner-Nachfolger (`successor percentage`).
-Gemeinsam: ana, distTH. lb der Runner ist an ln gekoppelt, la bleibt fest (Template-XML).
-Zielwerte bisher: β 23 µm/h, K1 1400 µm mm⁻², BAS-Anteil 0,3, K2 0,15 mm⁻², Branching-Rate
-4 %/h (Ereignisse je wachsender Spitze und Stunde, ein Tip-Split zählt einmal, `branch_new` in `raw.npz`),
-Wellengeschwindigkeit 280 µm/h (alle Oyarte Galvez et al. 2025) und relative Root Efficiency
-≈ 0,5: (E_r − E_r,MST)/(E_r,DT − E_r,MST) zwischen Spitzen/BAS-Ansatzstellen und Wurzelknoten (≤ 5 mm
-an der Barriere), am Ende der Simulation (`AMFNetwork.relativeRootEfficiency`, abschaltbar über
-`config.ROOT_EFFICIENCY`). Ausgewertet wird wie im Experiment ein planarer Graph aus der Draufsicht
-(`AMFNetwork.getPlanarNetwork`): alle Hyphensegmente der Pilzseite in die x-y-Ebene projiziert, jede
-Kreuzung zweier Segmente wird ein Knoten (im Bildskelett Grad 4).
-Weil 7 Ziele 16 Parameter nicht eindeutig festlegen, hat jeder Parameter einen **Prior**, ein
-Zusatzresiduum z = (x − Mitte)/σ (log bei log-Parametern). Literaturpriors (`CalParam.prior`, Bereich
-= ±2σ) gibt es für R_v, B_v, R_hlt, R_ln, R_theta, B_theta, B_hlt, B_a (BAS-Durchmesser 2–10 µm, Bago 1998). R_a hat nur eine Untergrenze von 10 µm Radius (Durchmesser > 20 µm,
-Bago 1998) als Grenze des Suchbereichs. Alle übrigen haben einen schwachen
-Prior um den Nominalwert (σ = `WEAK_PRIOR_SIGMA` × Suchbereich). Parameter, auf die kein Ziel wirkt,
-bleiben so beim Nominalwert. Der Bericht meldet Literaturpriors, von denen die Lösung mehr als 2σ
-abweicht. Alle
-Auswertungen verwenden dieselben Seeds (CRN), die Outputs sind über die Seeds gepoolt, der
-Standardfehler kommt aus einem Bootstrap. Parameter, Suchbereiche, Ziele und Toleranzen
-stehen oben in `calibrate.py` (`PARAMS`, `TARGETS`).
+16 parameters: separate for runner/BAS as in the SA (v, hlt, theta, b, ln, lmax), plus separate
+tropismN and the radius a, and the BAS share of the runner successors (`successor percentage`).
+Shared: ana, distTH. lb of the runners is coupled to ln, la stays fixed (template XML).
+Current targets: β 23 µm/h, K1 1400 µm mm⁻², BAS share 0.3, K2 0.15 mm⁻² (runner tips), branching rate
+4 %/h (new runner tips per growing runner tip and hour, `branch_new_runner` in `raw.npz`),
+wave speed 280 µm/h (all Oyarte Galvez et al. 2025) and relative root efficiency
+≈ 0.5: (E_r − E_r,MST)/(E_r,DT − E_r,MST) between tips/BAS attachment sites and root nodes (≤ 5 mm
+from the barrier), at the end of the simulation (`AMFNetwork.relativeRootEfficiency`, can be switched off via
+`config.ROOT_EFFICIENCY`). As in the experiment, a planar graph seen from above is evaluated
+(`AMFNetwork.getPlanarNetwork`): all hyphal segments on the fungal side projected onto the x-y plane, every
+crossing of two segments becomes a node (degree 4 in the image skeleton).
+Because 7 targets do not determine 16 parameters uniquely, every parameter has a **prior**, an
+additional residual z = (x − centre)/σ (log for log parameters). Literature priors (`CalParam.prior`, range
+= ±2σ) exist for R_v, B_v, R_hlt, R_ln, R_theta, B_theta, B_hlt, B_a (BAS diameter 2–10 µm, Bago 1998). R_a only has
+a lower bound of 10 µm radius (diameter > 20 µm, Bago 1998) as the bound of its search range. All others have a weak
+prior around the nominal value (σ = `WEAK_PRIOR_SIGMA` × search range). Parameters that no target acts on
+thus stay at the nominal value. The report flags literature priors from which the solution deviates by more than 2σ.
+All evaluations use the same seeds (CRN), the outputs are pooled over the seeds, the
+standard error comes from a bootstrap. Parameters, search ranges, targets and tolerances
+are at the top of `calibrate.py` (`PARAMS`, `TARGETS`).
 
 ```bash
 cd ~ && cp CPlantBox/experimental/myc/sa_setup/slurm/calibrate.sbatch .
-sbatch sa_run.sbatch calibrate.py --check    # Bereiche, Startpunkt, Anzahl Auswertungen
-sbatch calibrate.sbatch                      # 16 Kerne, 16 Seeds je Auswertung
+sbatch sa_run.sbatch calibrate.py --check    # ranges, start point, number of evaluations
+sbatch calibrate.sbatch                      # 128 cores, 16 seeds per evaluation
 ```
 
-Ergebnisse in `calibration/`: **`report.txt`** (nach jeder Auswertung neu geschrieben, auch nach Abbruch:
-Status, bester Punkt, Ziele, fehlgeschlagene Läufe mit Fehlermeldungen, undefinierte Outputs, Rauschen,
-Parameter ohne Einfluss, Jacobi-Rang), `evals.csv` (jede Auswertung mit Werten, SE, F),
-`jacobian.csv` (Sensitivitäten dF/du, nur wenn least_squares regulär endet),
-`best_params.xml`. Neustartfähig: denselben Befehl erneut einreichen.
-Lokal testen: `SA_DUMMY=1 python3 calibrate.py --seeds 8`.
+Results in `calibration/`: **`report.txt`** (rewritten after every evaluation, also after an abort:
+status, best point, targets, failed runs with error messages, undefined outputs, noise,
+parameters without influence, Jacobian rank), `evals.csv` (every evaluation with values, SE, F),
+`jacobian.csv` (sensitivities dF/du, rewritten after every Jacobian),
+`best_params.xml`. Restartable: submit the same command again.
+Local test: `SA_DUMMY=1 python3 calibrate.py --seeds 8`.
 
-## Literatur
+## Literature
 
 - Morris (1991), *Technometrics* 33:161–174
-- Campolongo, Cariboni, Saltelli (2007), *Environ. Model. Softw.* 22:1509–1518 (μ*, Trajektorienauswahl)
-- Oyarte Galvez et al. (2025): Versuchsaufbau, Spitzengeschwindigkeit 240 µm/h
+- Campolongo, Cariboni, Saltelli (2007), *Environ. Model. Softw.* 22:1509–1518 (μ*, trajectory selection)
+- Oyarte Galvez et al. (2025): experimental setup, tip speed 240 µm/h

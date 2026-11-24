@@ -1,38 +1,38 @@
 """
-Zentrale Konfiguration der Sensitivitätsanalyse (Petrischalen-Setup, TwoHyphaePlusBAS.xml).
+Central configuration of the sensitivity analysis (Petri dish setup, TwoHyphaePlusBAS.xml).
 
-Hier wird festgelegt
-  - welche Parameter (Faktoren) variiert werden und in welchem Bereich,
-  - wie mit den `dev`-Werten umgegangen wird,
-  - Seeds, Replikate, Simulationsdauer nach t*, Auswertezeitpunkte und Outputs.
+Defined here:
+  - which parameters (factors) are varied and over which range,
+  - how the `dev` values are handled,
+  - seeds, replicates, simulation time after t*, evaluation times and outputs.
 
-Bereiche mit `source=None` sind Platzhalter (±25 % um den Nominalwert) und werden in
-`check_config.py` als offen gemeldet.
+Ranges with `source=None` are placeholders (±25 % around the nominal value) and are reported
+as open by `check_config.py`.
 """
 import math
 from dataclasses import dataclass
 from pathlib import Path
 
 # --------------------------------------------------------------------------
-# Pfade
+# Paths
 # --------------------------------------------------------------------------
 ROOT = Path(__file__).resolve().parent
 MYC_DIR = ROOT.parent                              # experimental/myc (AMF*.py)
-CPLANTBOX_DIR = ROOT.parents[2]                    # für `import plantbox`
-TEMPLATE_XML = MYC_DIR / "tomatoparameters" / "TwoHyphaePlusBAS.xml"   # Nominalmodell
-RUNS_DIR = ROOT / "runs"          # pro Lauf ein Ordner mit XML, Rohausgabe, meta.json
-RESULTS_DIR = ROOT / "results"    # Designs, Output-Tabellen, Analysen, Plots
+CPLANTBOX_DIR = ROOT.parents[2]                    # for `import plantbox`
+TEMPLATE_XML = MYC_DIR / "tomatoparameters" / "TwoHyphaePlusBAS.xml"   # nominal model
+RUNS_DIR = ROOT / "runs"          # one folder per run with XML, raw output, meta.json
+RESULTS_DIR = ROOT / "results"    # designs, output tables, analyses, plots
 
 # --------------------------------------------------------------------------
-# Umgang mit `dev`
+# Handling of `dev`
 # --------------------------------------------------------------------------
-# "relative": dev wird mit dem Mittelwert skaliert (CV = dev/value bleibt konstant).
-# "absolute": dev bleibt auf dem Nominalwert aus der Template-XML.
-# Der Faktor `v_cv` setzt dev von v unabhängig davon auf CV × v.
+# "relative": dev is scaled with the mean (CV = dev/value stays constant).
+# "absolute": dev stays at the nominal value from the template XML.
+# The factor `v_cv` sets dev of v to CV × v regardless.
 DEV_MODE = "relative"
 
 # --------------------------------------------------------------------------
-# Faktoren
+# Factors
 # --------------------------------------------------------------------------
 RUNNER, BAS = 1, 2   # subTypes in TwoHyphaePlusBAS.xml
 SUBTYPE_NAMES = {RUNNER: "Runner", BAS: "BAS"}
@@ -40,26 +40,26 @@ SUBTYPE_NAMES = {RUNNER: "Runner", BAS: "BAS"}
 
 @dataclass
 class Factor:
-    name: str               # eindeutiger Name in Design/Analyse, z. B. "R_v"
-    subtypes: tuple         # subTypes der <hyphae>, auf die der Wert geschrieben wird (mehrere = gemeinsamer Faktor)
-    param: str              # name-Attribut des <parameter>-Elements, oder "v_cv" (dev von v = CV × v)
+    name: str               # unique name in design/analysis, e.g. "R_v"
+    subtypes: tuple         # subTypes of the <hyphae> the value is written to (several = shared factor)
+    param: str              # name attribute of the <parameter> element, or "v_cv" (dev of v = CV × v)
     low: float
     high: float
-    log: bool = False       # True -> log-uniform zwischen low und high
-    source: str | None = None   # Begründung für den Bereich (Literatur, Daten, Annahme)
-    role: str = "factor"        # "factor" oder "control" (sollte keinen Einfluss haben)
+    log: bool = False       # True -> log-uniform between low and high
+    source: str | None = None   # justification of the range (literature, data, assumption)
+    role: str = "factor"        # "factor" or "control" (should have no influence)
 
 
 def _pm(rel, nominal):
-    """Platzhalterbereich nominal*(1±rel)."""
+    """Placeholder range nominal*(1±rel)."""
     return nominal * (1 - rel), nominal * (1 + rel)
 
 
-PH = 0.25  # Platzhalter-Spannweite ±25 %
+PH = 0.25  # placeholder span ±25 %
 V_SOURCE = "240 µm/h (Oyarte Galvez et al. 2025), range 180–300 µm/h around the centre of the measured tip speeds"
 
 FACTORS: list[Factor] = [
-    # ---- RunnerHyphae (subType 1, laterale Verzweigung, b_prob = 0) ----
+    # ---- RunnerHyphae (subType 1, lateral branching, b_prob = 0) ----
     Factor("R_v",      (RUNNER,), "v",     0.432, 0.72, source=V_SOURCE),
     Factor("R_hlt",    (RUNNER,), "hlt",   4.0, 10.0,
            source="sensitivity range Schnepf 2016; death rates Schnepf 2008 give 4–12.5 d"),
@@ -70,10 +70,10 @@ FACTORS: list[Factor] = [
                   "(Oyarte Galvez 2025); log-uniform, since factor 6 and lateral rate ∝ 1/ln"),
     Factor("R_theta",  (RUNNER,), "theta", math.radians(50), math.radians(80),
            source="60° (Schnepf 2016) to ≈ 70° (Oyarte Galvez 2025), angle definitions differ"),
-    # Kontrollfaktor: b wird nur beim Tip-Splitting gelesen (Hyphae.cpp), bei b_prob = 0 wirkungslos -> mu* = 0
+    # control factor: b is only read during tip splitting (Hyphae.cpp), no effect with b_prob = 0 -> mu* = 0
     Factor("R_b_ctrl", (RUNNER,), "b",     *_pm(PH, 0.95), role="control"),
 
-    # ---- BAS (subType 2, Tip-Splitting, b_prob = 1) ----
+    # ---- BAS (subType 2, tip splitting, b_prob = 1) ----
     Factor("B_v",      (BAS,), "v",     0.432, 0.72, source=V_SOURCE),
     Factor("B_b",      (BAS,), "b",     0.55, 1.35,
            source="branching rate / tip density (Oyarte Galvez et al. 2025, Fig. b): ≈ 0.044 h⁻¹ ≈ 1.05 /d at the maximum, "
@@ -83,50 +83,50 @@ FACTORS: list[Factor] = [
     Factor("B_theta",  (BAS,), "theta", math.radians(50), math.radians(80),
            source="as R_theta; measured in Oyarte Galvez 2025 with 881 BAS branching points"),
 
-    # ---- gemeinsam für Runner und BAS ----
-    Factor("distTH", (RUNNER, BAS), "distTH", *_pm(PH, 0.01)),   # nominal 0,01 cm = dx
-    Factor("ana",    (RUNNER, BAS), "ana",    0.5, 1.0),        # Wahrscheinlichkeit, nominal 1 = Rand
+    # ---- shared by runner and BAS ----
+    Factor("distTH", (RUNNER, BAS), "distTH", *_pm(PH, 0.01)),   # nominal 0.01 cm = dx
+    Factor("ana",    (RUNNER, BAS), "ana",    0.5, 1.0),        # probability, nominal 1 = bound
     Factor("v_cv",   (RUNNER, BAS), "v_cv",   0.15, 0.40,
            source="spread of the measured tip speeds (Oyarte Galvez et al. 2025), nominal CV ≈ 0.29"),
 ]
 
-# Parameter, die NIE variiert werden (nur zur Dokumentation / Prüfung)
+# Parameters that are NEVER varied (documentation / checks only)
 FIXED = ["successor percentage (0.75 BAS, 0.25 Runner)", "la", "lb", "BAS lmax (≈ 3 × dx)", "a",
          "tropismT", "tropismN", "tropismS", "dx", "dxMin", "ldelay", "b_prob"]
 
 # --------------------------------------------------------------------------
-# Simulation (wie petridishsimauto.py)
+# Simulation (as petridishsimauto.py)
 # --------------------------------------------------------------------------
 N_RINGS = 15
-HYPHAE_LAYER = 0.1          # Hyphen wachsen auf dem Cellophan, dünne Schicht oben [cm]
-ROOT_DAYS = 5               # Wurzelphase [d]
+HYPHAE_LAYER = 0.1          # hyphae grow on the cellophane, thin layer on top [cm]
+ROOT_DAYS = 5               # root phase [d]
 STEPS_PER_DAY = 24          # dt = 1 h
-HOURS_HYPHAE = 60           # Simulation nach t* [h], wie die Darstellungen im Paper
-MAX_WAIT_DAYS = 30          # ohne t* nach so vielen Tagen: Lauf zählt als fehlgeschlagen
-# Kein Abbruch bei stagnierender Front: in der SA ist das ein Ergebnis (kleines v), kein Fehler
+HOURS_HYPHAE = 60           # simulation after t* [h], as the figures in the paper
+MAX_WAIT_DAYS = 30          # without t* after this many days: the run counts as failed
+# No abort on a stalling front: in the SA that is a result (small v), not an error
 MIN_GROWING_TIPS = None
 STALL_FRACTION = None
-SAVE_VTP = False            # finale Geometrie als .vtp speichern (für Netzwerkauswertungen, groß)
-ROOT_EFFICIENCY = True      # relative Root Efficiency am Ende (AMFNetwork.relativeRootEfficiency, 2D) in raw.npz
+SAVE_VTP = False            # save the final geometry as .vtp (for network evaluations, large)
+ROOT_EFFICIENCY = True      # relative root efficiency at the end (AMFNetwork.relativeRootEfficiency, 2D) in raw.npz
 
 # --------------------------------------------------------------------------
 # Outputs (evaluate.py)
 # --------------------------------------------------------------------------
-SNAPSHOT_HOURS = [10, 30, 60]   # Auswertung von Mengen nach t* [h], wie im Paper (0, 10, 30, 60 h)
-# Test mit längerer Simulation (python design.py long): LONG_SEEDS Läufe am Nominalpunkt über LONG_HOURS h,
-# Seeds wie p0_noise_000.. Zusätzlich ausgewertet bei EXTRA_HOURS, aber nur in Läufen, die so lange simuliert sind
+SNAPSHOT_HOURS = [10, 30, 60]   # evaluation of quantities after t* [h], as in the paper (0, 10, 30, 60 h)
+# Test with a longer simulation (python design.py long): LONG_SEEDS runs at the nominal point over LONG_HOURS h,
+# seeds as p0_noise_000.. Additionally evaluated at EXTRA_HOURS, but only in runs simulated that long
 LONG_HOURS = 120
 LONG_SEEDS = 10
 EXTRA_HOURS = [90, 120]
-# Mengen zu jedem Zeitpunkt in SNAPSHOT_HOURS
+# Quantities at every time in SNAPSHOT_HOURS
 SNAPSHOT_OUTPUTS = ["total_length", "active_tips", "bas_share", "anastomoses", "front_position",
                     "spread_r90", "max_tip_density"]
-# Größen über das ganze Fenster bis max(SNAPSHOT_HOURS), stehen beim letzten Zeitpunkt.
-# Nur Größen ohne Fit: Die Wellen-Fits (front_velocity, K1, K2, wave_width) sind in Phase 0 bei 60 h nur in 12–33 von
-# 47 Läufen definiert, für Morris (alle 14 Punkte einer Trajektorie) zu selten. Sie werden weiter berechnet (Diagnose).
-# beta: Anastomosekonstante aus a = beta rho n [µm/h], Kalibrierziel ≈ 23 µm/h (Oyarte Galvez et al. 2025)
+# Quantities over the whole window up to max(SNAPSHOT_HOURS), stored at the last time.
+# Only quantities without a fit: the wave fits (front_velocity, K1, K2, wave_width) are defined in Phase 0 at 60 h in only
+# 12–33 of 47 runs, too rarely for Morris (all 14 points of a trajectory). They are still computed (diagnostics).
+# beta: anastomosis constant from a = beta rho n [µm/h], calibration target ≈ 23 µm/h (Oyarte Galvez et al. 2025)
 WAVE_OUTPUTS = ["front_speed", "encounter_C", "beta"]
-# Gütekriterien der Wellen-Fits wie petridishstats.py
+# Quality criteria of the wave fits as petridishstats.py
 R2_MIN_LENGTH = 0.9
 R2_MIN_TIPS = 0.5
 SATURATION_MIN = 0.8
@@ -137,15 +137,15 @@ ENCOUNTER_MIN_TIPS = 5
 # Phase 0
 # --------------------------------------------------------------------------
 PHASE0_NOISE_SEEDS = 50
-PHASE0_DX_VALUES = [0.01, 0.005, 0.0025]   # nominal, halb, viertel (Laufzeit steigt etwa mit 1/dx!)
+PHASE0_DX_VALUES = [0.01, 0.005, 0.0025]   # nominal, half, quarter (runtime grows roughly with 1/dx!)
 PHASE0_DX_SEEDS = 10
-PHASE0_RANGE_POINTS = 20    # zufällige Punkte im Faktorraum, je ein Lauf: Abbruchquote und Laufzeit am Rand
+PHASE0_RANGE_POINTS = 20    # random points in the factor space, one run each: abort rate and runtime at the edges
 
 # --------------------------------------------------------------------------
 # Phase 1 (Morris)
 # --------------------------------------------------------------------------
 MORRIS_LEVELS = 4            # p
-MORRIS_TRAJECTORIES = 20     # r (aus MORRIS_CANDIDATES nach Spreizung ausgewählt)
+MORRIS_TRAJECTORIES = 20     # r (selected from MORRIS_CANDIDATES by spread)
 MORRIS_CANDIDATES = 300
-MORRIS_REPLICATES = 5        # Phase 0: Seed-CV 0,3–0,97 je Output -> 5 statt 3
+MORRIS_REPLICATES = 5        # Phase 0: seed CV 0.3–0.97 per output -> 5 instead of 3
 BASE_SEED = 20261021

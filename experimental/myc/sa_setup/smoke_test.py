@@ -1,18 +1,18 @@
 """
-Smoke-Test: wenige echte Läufe von Anfang bis Ende, bevor Phase 0 auf den Cluster geht.
-Prüft nicht, ob die Ergebnisse stimmen, sondern ob alles zusammenspielt.
+Smoke test: a few real runs end to end before Phase 0 goes to the cluster.
+Does not check whether the results are right, but whether everything works together.
 
-    python smoke_test.py nominal            # ein Punkt: nominal | low (alle Faktoren unten) | high (alle oben)
-    python smoke_test.py nominal --quick    # nur 12 h nach t*: prüft die Verkabelung schnell, Wellen-Fits meist leer
-    python smoke_test.py --report           # Zusammenfassung aller Smoke-Läufe -> results/smoke_report.csv
-    python smoke_test.py --report --gate    # dazu Exit-Code 1, wenn der Nominal-Lauf nicht sauber ist (submit_all.sh)
+    python smoke_test.py nominal            # one point: nominal | low (all factors low) | high (all high)
+    python smoke_test.py nominal --quick    # only 12 h after t*: checks the wiring quickly, wave fits mostly empty
+    python smoke_test.py --report           # summary of all smoke runs -> results/smoke_report.csv
+    python smoke_test.py --report --gate    # plus exit code 1 if the nominal run is not clean (submit_all.sh)
 
-Auf dem Cluster aus dem Home-Verzeichnis: bash submit_smoke.sh (alle drei Punkte parallel,
-danach der Bericht als eigener Job).
+On the cluster from the home directory: bash submit_smoke.sh (all three points in parallel,
+then the report as a separate job).
 
-Geprüft wird je Punkt: Parameterfile wird geschrieben, makeSimulation läuft damit und erreicht t*,
-raw.npz hat alle Größen in passender Form, evaluate.py liefert alle Outputs (welche NaN sind),
-Laufzeit und Speicher. Die Läufe liegen in runs/smoke_<punkt> und werden bei jedem Aufruf neu gerechnet.
+Checked per point: the parameter file is written, makeSimulation runs with it and reaches t*,
+raw.npz has all quantities in the right shape, evaluate.py delivers all outputs (which are NaN),
+runtime and memory. The runs are in runs/smoke_<point> and are recomputed on every call.
 """
 import argparse
 import json
@@ -60,7 +60,7 @@ def check_raw(raw, problems):
 
 
 def check_extras(raw, warnings):
-    """Outputs für die Kalibrierung: Fehler hier sind Warnungen, kein Abbruch (die SA braucht sie nicht)."""
+    """Outputs for the calibration: errors here are warnings, not an abort (the SA does not need them)."""
     if config.ROOT_EFFICIENCY:
         if "root_eff_error" in raw:
             warnings.append("root efficiency failed: " + str(raw["root_eff_error"]).strip().splitlines()[-1])
@@ -133,8 +133,8 @@ def summary(gate=False, quick=False):
     print("For sim.sbatch: --time above the longest simulation (with margin), --mem above the largest memory.")
     if not gate:
         return 0
-    # Gate: der Nominal-Lauf dieses Smoke-Tests muss sauber sein. low/high dürfen scheitern (Rand des Faktorraums,
-    # z. B. t* nicht erreicht): das ist eine Aussage über die Bereiche, kein Verkabelungsfehler -> nur Hinweis
+    # Gate: the nominal run of this smoke test must be clean. low/high may fail (edge of the factor space,
+    # e.g. t* not reached): that is a statement about the ranges, not a wiring error -> note only
     rid = "smoke_nominal" + ("_quick" if quick else "")
     nom = df[df.run_id == rid]
     if nom.empty:

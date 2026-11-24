@@ -1,32 +1,32 @@
 """
-Kalibrierung der Hyphenparameter auf Zielwerte als Nullstellensuche, Petrischalen-Setup wie die SA.
+Calibration of the hyphal parameters to target values as a root-finding problem, Petri dish setup as in the SA.
 
-    python calibrate.py --check            # Parameter, Ziele, Startpunkt, Aufwand ausgeben
-    python calibrate.py                    # Kalibrierung (unter SLURM: sbatch calibrate.sbatch)
+    python calibrate.py --check            # print parameters, targets, start point, cost
+    python calibrate.py                    # calibration (under SLURM: sbatch calibrate.sbatch)
     python calibrate.py --seeds 8 --max-nfev 10
 
-Gesucht ist der Parametervektor x mit F(x) = 0, wobei
+We look for the parameter vector x with F(x) = 0, where
 
     F_i(x) = log(y_i(x) / y*_i) / log(1 + tol_i)
 
-y_i: Output i, gepoolt über N_SEEDS Seeds, y*_i: Zielwert, tol_i: akzeptierte relative Abweichung.
-|F_i| <= 1 heißt "innerhalb der Toleranz". Die Parameter werden im normierten Raum u in [0,1]
-gesucht (log-uniform wie design.to_physical), damit Schritte zwischen Parametern vergleichbar sind.
+y_i: output i, pooled over N_SEEDS seeds, y*_i: target value, tol_i: accepted relative deviation.
+|F_i| <= 1 means "within tolerance". The parameters are searched in the normalised space u in [0,1]
+(log-uniform as in design.to_physical), so that steps are comparable between parameters.
 
-Löser: scipy.optimize.least_squares (Trust Region Reflective, Box-Grenzen [0,1]). Bei mindestens so vielen
-Zielen wie Parametern ist das Minimum von |F|^2 die Nullstelle; scipy.optimize.root kann keine Grenzen.
-Mit weniger Zielen als Parametern ist die Lösung nicht eindeutig: dann bricht das Skript ab
-(--allow-underdetermined erzwingt den Lauf). Die Jacobi-Matrix kommt aus Vorwärtsdifferenzen mit großem
-Schritt DIFF_STEP (das Signal muss deutlich über dem Seed-Rauschen liegen); alle Differenzenpunkte
-werden zusammen auf die Kerne verteilt. Die Suche endet vorzeitig, sobald alle |F_i| <= 1.
+Solver: scipy.optimize.least_squares (Trust Region Reflective, box bounds [0,1]). With at least as many
+targets as parameters, the minimum of |F|^2 is the root; scipy.optimize.root does not support bounds.
+With fewer targets than parameters the solution is not unique: the script then stops
+(--allow-underdetermined forces the run). The Jacobian comes from forward differences with a large
+step DIFF_STEP (the signal must be clearly above the seed noise); all difference points
+are distributed over the cores together. The search stops early as soon as all |F_i| <= 1.
 
-Rauschen: Alle Auswertungen verwenden dieselben Seeds (Common Random Numbers), so sind Differenzen
-zwischen Parameterpunkten weniger verrauscht. Der Standardfehler je Output kommt aus einem Bootstrap
-über die Seeds: Liegt |y - y*| unter ~2 SE, ist die Abweichung im Rauschen.
+Noise: all evaluations use the same seeds (common random numbers), so differences
+between parameter points are less noisy. The standard error of each output comes from a bootstrap
+over the seeds: if |y - y*| is below ~2 SE, the deviation is within the noise.
 
-Ausgabe in calibration/: evals.csv (jede Auswertung), jacobian.csv (Sensitivitäten dF_i/du_j, Spalten
-nahe 0 = Parameter von den Zielen nicht bestimmt), best_params.xml (bester Punkt). Neustartfähig: fertige
-Läufe (runs/<punkt>/seed_<s>/meta.json) werden nicht neu simuliert, der Löser läuft deterministisch nach.
+Output in calibration/: evals.csv (every evaluation), jacobian.csv (sensitivities dF_i/du_j, columns
+close to 0 = parameter not determined by the targets), best_params.xml (best point). Restartable: finished
+runs (runs/<point>/seed_<s>/meta.json) are not simulated again, the solver replays deterministically.
 """
 import argparse
 import hashlib
@@ -57,28 +57,28 @@ deg = math.radians
 
 
 # --------------------------------------------------------------------------
-# Parameter
+# Parameters
 # --------------------------------------------------------------------------
 @dataclass
 class CalParam:
     name: str
-    subtypes: tuple             # subTypes der <hyphae>, auf die der Wert geschrieben wird
-    param: str                  # name des <parameter>; "successor" = Anteil des ersten Nachfolgers (Runner: BAS)
-    low: float                  # Suchbereich
+    subtypes: tuple             # subTypes of the <hyphae> the value is written to
+    param: str                  # name of the <parameter>; "successor" = share of the first successor (runner: BAS)
+    low: float                  # search range
     high: float
     log: bool = False
-    also: tuple = ()            # weitere XML-Parameter derselben subTypes, die denselben Wert bekommen (lb = ln)
-    prior: tuple | None = None  # (lo, hi): Literaturbereich als ±2σ-Intervall (log-Parameter: in log); None = schwacher Prior
-    source: str = ""            # Herkunft des Priors
+    also: tuple = ()            # further XML parameters of the same subTypes that get the same value (lb = ln)
+    prior: tuple | None = None  # (lo, hi): literature range as ±2σ interval (log parameters: in log); None = weak prior
+    source: str = ""            # origin of the prior
 
 
-# Getrennt nach Runner/BAS wie in der SA (config.FACTORS), dazu getrennt tropismN und a (Radius: sehen im
-# Experiment sehr verschieden aus, wirkt auf die Anastomose über den Abstand Spitze–Hyphe); sonst gemeinsam.
-# Nicht dabei: b der Runner (wirkungslos bei b_prob = 0), ln und lmax der BAS (keine Laterale, lmax ≈ 3 dx),
-# la (fest, sehr klein, Template-XML). lb der Runner ist an ln gekoppelt; lb der BAS bleibt fest.
-# Bereiche wie in der SA, wo vorhanden; R_ln, B_b, B_hlt, distTH weiter, tropismN, a, successor geschätzt.
-# Priors aus den Quellen in config.FACTORS. B_b ohne Literaturprior: die Messung (Oyarte Galvez 2025) ist schon
-# das Ziel branching_rate, sie zählte sonst doppelt.
+# Separate for runner/BAS as in the SA (config.FACTORS), additionally separate tropismN and a (radius: they look
+# very different in the experiment, acts on anastomosis via the tip–hypha distance); otherwise shared.
+# Not included: b of the runners (no effect with b_prob = 0), ln and lmax of the BAS (no laterals, lmax ≈ 3 dx),
+# la (fixed, very small, template XML). lb of the runners is coupled to ln; lb of the BAS stays fixed.
+# Ranges as in the SA where available; R_ln, B_b, B_hlt, distTH wider, tropismN, a, successor estimated.
+# Priors from the sources in config.FACTORS. B_b without literature prior: the measurement (Oyarte Galvez 2025) is
+# already the target branching_rate, it would count twice otherwise.
 V_SRC = "180–300 µm/h around 240 µm/h (Oyarte Galvez et al. 2025)"
 THETA_SRC = "60° (Schnepf 2016) to ≈ 70° (Oyarte Galvez 2025), widened to 55–75° (different angle definitions)"
 PARAMS = [
@@ -91,8 +91,8 @@ PARAMS = [
              source="~1 mm (Giovannetti, in Schnepf 2008) to ~6 mm (Oyarte Galvez 2025)"),
     CalParam("R_theta", (RUNNER,), "theta", deg(50), deg(80), prior=(deg(55), deg(75)), source=THETA_SRC),
     CalParam("R_tropismN", (RUNNER,), "tropismN", 1.0, 8.0),
-    CalParam("R_succ_BAS", (RUNNER,), "successor", 0.5, 0.95),   # Anteil BAS an den Lateralen der Runner
-    # Radius [cm], nominal 0,005; Untergrenze 10 µm (Bago et al. 1998: Durchmesser der Runner > 20 µm), nur Grenze, kein Prior
+    CalParam("R_succ_BAS", (RUNNER,), "successor", 0.5, 0.95),   # share of BAS among the runner laterals
+    # radius [cm], nominal 0.005; lower bound 10 µm (Bago et al. 1998: runner diameter > 20 µm), bound only, no prior
     CalParam("R_a", (RUNNER,), "a", 0.001, 0.01, log=True),
     # ---- BAS (subType 2) ----
     CalParam("B_v", (BAS,), "v", 0.432, 0.72, prior=(0.432, 0.72), source=V_SRC),
@@ -100,27 +100,27 @@ PARAMS = [
     CalParam("B_hlt", (BAS,), "hlt", 3.0, 12.0, prior=(5.0, 9.0), source="BAS degenerate after ~7 d (Bago 1998; Kokkoris 2026)"),
     CalParam("B_theta", (BAS,), "theta", deg(50), deg(80), prior=(deg(55), deg(75)), source=THETA_SRC),
     CalParam("B_tropismN", (BAS,), "tropismN", 0.5, 4.0),
-    CalParam("B_a", (BAS,), "a", 0.00005, 0.005, log=True, prior=(0.0001, 0.0005),   # Radius [cm], nominal 0,0025
+    CalParam("B_a", (BAS,), "a", 0.00005, 0.005, log=True, prior=(0.0001, 0.0005),   # radius [cm], nominal 0.0025
              source="diameter 2–10 µm = radius 1–5 µm (Bago et al. 1998, Mycologia, doi 10.1080/00275514.1998.12026878)"),
-    # ---- gemeinsam ----
+    # ---- shared ----
     CalParam("ana", (RUNNER, BAS), "ana", 0.5, 1.0),
     CalParam("distTH", (RUNNER, BAS), "distTH", 0.005, 0.03, log=True),
 ]
-# Schwacher Prior für Parameter ohne Literatur: Mitte = Nominalwert, σ = WEAK_PRIOR_SIGMA × Suchbereich
-# (in log bei log-Parametern). Hält sie beim Nominalwert, solange die Ziele sie nicht brauchen; None = kein Prior.
+# Weak prior for parameters without literature: centre = nominal value, σ = WEAK_PRIOR_SIGMA × search range
+# (in log for log parameters). Keeps them at the nominal value as long as the targets do not need them; None = no prior.
 WEAK_PRIOR_SIGMA = 0.5
 
 
 # --------------------------------------------------------------------------
-# Ziele
+# Targets
 # --------------------------------------------------------------------------
 @dataclass
 class Target:
-    output: str                 # siehe OUTPUTS
+    output: str                 # see OUTPUTS
     value: float
-    tol_rel: float              # akzeptierte relative Abweichung
-    hour: float | None = None   # nur Snapshot-Outputs: Zeitpunkt [h nach t*]
-    log: bool = True            # F = log(y/y*)/log(1+tol); False: F = (y - y*)/(tol y*), für Outputs, die <= 0 werden können
+    tol_rel: float              # accepted relative deviation
+    hour: float | None = None   # snapshot outputs only: time [h after t*]
+    log: bool = True            # F = log(y/y*)/log(1+tol); False: F = (y - y*)/(tol y*), for outputs that can be <= 0
 
     def residual(self, y):
         if not np.isfinite(y) or (self.log and y <= 0):
@@ -132,7 +132,7 @@ class Target:
         return self.output if self.hour is None else f"{self.output}@{self.hour:g}h"
 
 
-# Verfügbare Outputs. Wellengrößen über das Fenster 0..HOURS, über alle Seeds gepoolt:
+# Available outputs. Wave quantities over the window 0..HOURS, pooled over all seeds:
 WAVE_OUTPUTS = {
     "beta": "[µm/h] a = beta rho n with a, n of the runner tips (ratio of sums)",
     "branching_rate": "[h^-1] new runner tips per growing runner tip and hour",
@@ -144,49 +144,49 @@ WAVE_OUTPUTS = {
     "front_speed": "[mm/d] slope of the tip-weighted radius from 10 h (mean over seeds)",
     "root_efficiency_rel": "(E_r - E_r,MST) / (E_r,DT - E_r,MST), 2D, at the end of the simulation (mean over seeds)",
 }
-# Snapshot-Outputs (Mittel der Seeds) zum Zeitpunkt Target.hour: config.SNAPSHOT_OUTPUTS
-# total_length [cm], active_tips, bas_share, anastomoses (seit t*), front_position [mm], spread_r90 [mm],
+# Snapshot outputs (mean over seeds) at time Target.hour: config.SNAPSHOT_OUTPUTS
+# total_length [cm], active_tips, bas_share, anastomoses (since t*), front_position [mm], spread_r90 [mm],
 # max_tip_density [mm^-2]
 
-# Für eine eindeutige Lösung braucht es mindestens so viele Ziele wie Parameter (hier 16), und jeder
-# Parameter muss auf mindestens ein Ziel deutlich wirken. Weitere Messwerte als Target(...) ergänzen.
+# A unique solution needs at least as many targets as parameters (here 16), and every
+# parameter must clearly affect at least one target. Add further measurements as Target(...).
 TARGETS = [
     Target("beta", 23.0, 0.10),                    # Oyarte Galvez et al. 2025
-    Target("K1", 1400.0, 0.10),                    # Sättigungsdichte, Fig. 2b, gestrichelte Linie
-    Target("bas_share", 0.30, 0.10, hour=60),      # BAS-Anteil an der Hyphenlänge
-    Target("K2", 0.15, 0.33),                      # Fig. 2b, Spitzenpeak 0,1–0,2
-    Target("branching_rate", 0.04, 0.20),          # 4 % pro Stunde
-    Target("front_velocity", 280e-3 * 24, 0.10),   # Wellengeschwindigkeit 280 µm/h = 6,72 mm/d
-    Target("root_efficiency_rel", 0.5, 0.20, log=False),   # relative Root Efficiency, Ende (HOURS), kann < 0 sein
+    Target("K1", 1400.0, 0.10),                    # saturation density, Fig. 2b, dashed line
+    Target("bas_share", 0.30, 0.10, hour=60),      # BAS share of the hyphal length
+    Target("K2", 0.15, 0.33),                      # Fig. 2b, tip peak 0.1–0.2
+    Target("branching_rate", 0.04, 0.20),          # 4 % per hour
+    Target("front_velocity", 280e-3 * 24, 0.10),   # wave speed 280 µm/h = 6.72 mm/d
+    Target("root_efficiency_rel", 0.5, 0.20, log=False),   # relative root efficiency, end (HOURS), can be < 0
     # Target("wave_width", ..., 0.20),
     # Target("total_length", ..., 0.15, hour=30),
     # Target("active_tips", ..., 0.15, hour=30),
     # Target("anastomoses", ..., 0.20, hour=60),
 ]
 
-HOURS = config.HOURS_HYPHAE   # Simulationsdauer nach t* [h], Fenster der Wellengrößen
-N_SEEDS = 16                  # Seeds je Parameterpunkt
+HOURS = config.HOURS_HYPHAE   # simulation time after t* [h], window of the wave quantities
+N_SEEDS = 16                  # seeds per parameter point
 SEED0 = config.BASE_SEED + 300_000
-DIFF_STEP = 0.15              # Differenzenschritt im normierten Raum
-MAX_NFEV = 30                 # max. Iterationen des Lösers (least_squares: max_nfev, ohne Differenzen)
-MIN_OK = 0.5                  # Anteil der Seeds, die t* erreichen müssen, sonst gilt der Punkt als ungültig
-NAN_PENALTY = 10.             # F_i für undefinierte Outputs (Fit gescheitert), damit der Löser weiterläuft
+DIFF_STEP = 0.15              # difference step in the normalised space
+MAX_NFEV = 30                 # max. solver iterations (least_squares: max_nfev, without differences)
+MIN_OK = 0.5                  # share of seeds that must reach t*, otherwise the point counts as invalid
+NAN_PENALTY = 10.             # F_i for undefined outputs (fit failed), so that the solver keeps going
 N_BOOT = 200
 CAL_DIR = config.ROOT / "calibration"
-# Version der Rohdaten (raw.npz) im Schlüssel der Läufe: erhöhen, wenn model_hook neue Größen speichert, die die Ziele
-# brauchen; dann werden alte Läufe nicht wiederverwendet. 2: branch_new_runner
+# Version of the raw data (raw.npz) in the key of the runs: increase when model_hook stores new quantities that the
+# targets need; old runs are then not reused. 2: branch_new_runner
 RAW_VERSION = 2
 
 
 # --------------------------------------------------------------------------
-# Parameterraum
+# Parameter space
 # --------------------------------------------------------------------------
 def spec_nominal(p):
     return hyphae_nominal(p.subtypes[0], p.param)
 
 
 def prior_spec(p):
-    """(Mitte, σ, Art) in der Skala des Parameters (log oder linear), oder None."""
+    """(centre, σ, kind) on the scale of the parameter (log or linear), or None."""
     g = np.log if p.log else (lambda v: v)
     if p.prior is not None:
         lo, hi = p.prior
@@ -197,7 +197,7 @@ def prior_spec(p):
 
 
 def prior_residuals(u):
-    """Zusatzresiduen (g(x) - Mitte) / σ, je Parameter mit Prior: |z| = 1 heißt eine Standardabweichung."""
+    """Additional residuals (g(x) - centre) / σ per parameter with a prior: |z| = 1 means one standard deviation."""
     z = []
     for p, xj in zip(PARAMS, to_phys(u)):
         s = prior_spec(p)
@@ -207,7 +207,7 @@ def prior_residuals(u):
 
 
 def prior_jacobian():
-    """dz/du ist konstant: g(x) ist linear in u."""
+    """dz/du is constant: g(x) is linear in u."""
     rows = []
     for j, p in enumerate(PARAMS):
         s = prior_spec(p)
@@ -229,7 +229,7 @@ def to_unit(x):
 
 
 def xml_updates(x):
-    """Physikalische Parameterwerte -> {(subType, name): Wert} für write_hyphae_xml."""
+    """Physical parameter values -> {(subType, name): value} for write_hyphae_xml."""
     upd = {}
     for p, xj in zip(PARAMS, x):
         for st in p.subtypes:
@@ -239,7 +239,7 @@ def xml_updates(x):
 
 
 # --------------------------------------------------------------------------
-# Simulation und Outputs
+# Simulation and outputs
 # --------------------------------------------------------------------------
 def last_line(tb):
     lines = [l for l in str(tb).strip().splitlines() if l.strip()]
@@ -247,7 +247,7 @@ def last_line(tb):
 
 
 def run_seed(args):
-    """Ein Lauf (im Worker-Prozess). Gibt (Pfad zu raw.npz oder None, Fehlermeldung oder None) zurück."""
+    """One run (in the worker process). Returns (path to raw.npz or None, error message or None)."""
     out = lambda meta: ((str(rdir / meta["snapshots"][0]), None) if meta["sim_status"] == "ok"
                         else (None, last_line(meta.get("error", "?"))))
     updates, seed, rdir, hours = args
@@ -268,9 +268,9 @@ def run_seed(args):
 
 
 def prepare(sim):
-    """Teure Auswertungen je Lauf einmal (Fits, Snapshots), Bootstrap greift darauf zurück.
-    Die Wellen-Fits nehmen die Dichte der Runner-Spitzen: im Experiment (Oyarte Galvez et al. 2025, Methods) zählen nur
-    wachsende Spitzen (> 40 Pixel bewegt), BAS-Spitzen kaum; Fig. 2/3 zeigen die Dichte der wachsenden RH-Spitzen."""
+    """Expensive evaluations once per run (fits, snapshots), the bootstrap reuses them.
+    The wave fits use the density of the runner tips: in the experiment (Oyarte Galvez et al. 2025, Methods) only
+    growing tips count (moved > 40 pixels), BAS tips hardly; Fig. 2/3 show the density of the growing RH tips."""
     hours = sorted({t.hour for t in TARGETS if t.hour is not None})
     sim_rh = dict(sim, tip_dens=sim["active_tips_runner"] / np.asarray(sim["area"]).reshape(-1, 1))
     return {"sim": sim, "table": ev.fit_table(sim_rh), "front_speed": ev.front_speed(sim, HOURS),
@@ -284,15 +284,15 @@ def pooled_outputs(preps):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         wave = {
-            # a = beta rho n mit a und n der Runner-Spitzen (wachsende Spitzen wie im Experiment), rho aller Hyphen
+            # a = beta rho n with a and n of the runner tips (growing tips as in the experiment), rho of all hyphae
             "beta": amfd.anastomosisBeta(sims, min_tips=config.ENCOUNTER_MIN_TIPS)["runner"],
-            # neue Runner-Spitzen je wachsender Runner-Spitze und Stunde (alpha in b(n) = alpha n)
+            # new runner tips per growing runner tip and hour (alpha in b(n) = alpha n)
             "branching_rate": amfd.branchingRate(sims, min_tips=config.ENCOUNTER_MIN_TIPS, suffix="_runner"),
             "encounter_C": amfd.encounterC(sims, min_tips=config.ENCOUNTER_MIN_TIPS)["total"],
             "K1": np.median(good_K1.K1) if len(good_K1) >= n_min else np.nan,
-            "K2": np.median(good_tips.K2) if len(good_tips) >= n_min else np.nan,   # Peak der Runner-Spitzendichte
+            "K2": np.median(good_tips.K2) if len(good_tips) >= n_min else np.nan,   # peak of the runner tip density
             "wave_width": np.median(ev.FWHM_BELL / good_tips.lam_tip) if len(good_tips) >= n_min else np.nan,
-            # Wellenposition aus dem Sigmoid-Fit der Filamentdichte (Fig. 2d inset): Ringradius gegen Ankunftszeit t_n
+            # wave position from the sigmoid fit of the filament density (Fig. 2d inset): ring radius vs. arrival time t_n
             "front_velocity": 24 * amfd.theilSlope(good.t_n, good.r)[0] if len(good) >= n_min else np.nan,
             "front_speed": np.nanmean([p["front_speed"] for p in preps]),
             "root_efficiency_rel": np.nanmean([float(p["sim"].get("root_eff_E_rel", np.nan)) for p in preps]),
@@ -311,21 +311,21 @@ class Converged(Exception):
 
 
 class Residual:
-    """F(u) und Jacobi-Matrix für least_squares. Alle Läufe eines Aufrufs (ein Punkt bzw. alle
-    Differenzenpunkte) gehen zusammen auf den Pool."""
+    """F(u) and Jacobian for least_squares. All runs of one call (one point or all
+    difference points) go to the pool together."""
 
     def __init__(self, pool, n_seeds, hours):
         self.pool, self.seeds, self.hours = pool, [SEED0 + i for i in range(n_seeds)], hours
         self.records, self.cache = [], {}
         self.best = None    # (|F|, u, F)
-        self.errors, self.eff_errors = Counter(), Counter()   # Fehlermeldungen der Läufe bzw. der Root Efficiency
+        self.errors, self.eff_errors = Counter(), Counter()   # error messages of the runs and of the root efficiency
         self.n_runs, self.J, self.status, self.t_start = 0, None, "running", time.time()
 
     def key(self, u):
         return hashlib.md5(json.dumps([round(v, 10) for v in to_phys(u)] + [self.hours, RAW_VERSION]).encode()).hexdigest()[:10]
 
     def evaluate(self, us, kind):
-        """F für mehrere Punkte; bereits berechnete aus dem Cache."""
+        """F for several points; already computed ones from the cache."""
         todo = [u for u in us if self.key(u) not in self.cache]
         jobs, owner = [], []
         for i, u in enumerate(todo):
@@ -357,7 +357,7 @@ class Residual:
 
         x = to_phys(u)
         z = prior_residuals(u)
-        cost = float(np.sum(F ** 2) + np.sum(z ** 2))   # was least_squares minimiert (× 2)
+        cost = float(np.sum(F ** 2) + np.sum(z ** 2))   # what least_squares minimises (× 2)
         rec = {"eval": len(self.records), "kind": kind, "point": self.key(u), "n_ok": len(preps), "minutes": minutes,
                **{p.name: xj for p, xj in zip(PARAMS, x)}, **{f"u_{p.name}": uj for p, uj in zip(PARAMS, u)},
                **y, **{f"se_{n}": se[n] for n in labels}, **{f"F_{n}": Fi for n, Fi in zip(labels, F)},
@@ -371,7 +371,7 @@ class Residual:
         return F
 
     def targets(self, u):
-        """Residuen der Ziele (undefinierte -> NAN_PENALTY); Konvergenz, wenn alle Ziele in der Toleranz."""
+        """Residuals of the targets (undefined -> NAN_PENALTY); convergence when all targets are within tolerance."""
         F = self.evaluate([u], "point")[0]
         if not np.all(np.isfinite(F)):
             if len(self.records) == 1:
@@ -379,16 +379,16 @@ class Residual:
                                  "without t*). Try more seeds (--seeds) or a longer simulation (--hours).")
             return np.where(np.isfinite(F), F, NAN_PENALTY)
         if np.all(np.abs(F) <= 1):
-            self.best = (0., np.array(u), F)   # Ergebnis ist dieser Punkt, auch wenn ein anderer kleinere Kosten hatte
+            self.best = (0., np.array(u), F)   # the result is this point, even if another one had a lower cost
             raise Converged
         return F
 
     def __call__(self, u):
-        """Ziele und Priors zusammen: das ist der Residuenvektor für least_squares."""
+        """Targets and priors together: this is the residual vector for least_squares."""
         return np.concatenate([self.targets(u), prior_residuals(u)])
 
     def jac(self, u):
-        """Ziele: Vorwärtsdifferenzen, alle Punkte parallel, am oberen Rand rückwärts. Priors: analytisch."""
+        """Targets: forward differences, all points in parallel, backward at the upper bound. Priors: analytic."""
         F0 = self.targets(u)
         h = np.where(u + DIFF_STEP <= 1, DIFF_STEP, -DIFF_STEP)
         pts = [u + h[j] * np.eye(len(u))[j] for j in range(len(u))]
@@ -421,7 +421,7 @@ HINTS = {
 
 
 def write_report(r, status=None):
-    """calibration/report.txt: Stand, bester Punkt und Fehleranalyse, nach jeder Auswertung neu geschrieben."""
+    """calibration/report.txt: state, best point and error analysis, rewritten after every evaluation."""
     if status:
         r.status = status
     labels = [t.label for t in TARGETS]
@@ -510,7 +510,7 @@ def save_jacobian(J):
 
 
 # --------------------------------------------------------------------------
-# Lösen
+# Solving
 # --------------------------------------------------------------------------
 def calibrate(residual):
     u0 = np.clip(to_unit([spec_nominal(p) for p in PARAMS]), 0.02, 0.98)
@@ -587,7 +587,7 @@ if __name__ == "__main__":
         CAL_DIR.mkdir(exist_ok=True)
         with Pool(a.procs) as pool:
             r = Residual(pool, N_SEEDS, HOURS)
-            def on_term(*_):   # SLURM schickt bei Zeitlimit SIGTERM
+            def on_term(*_):   # SLURM sends SIGTERM at the time limit
                 raise SystemExit("SIGTERM received, probably the job's time limit. Resubmit, finished runs are reused.")
             signal.signal(signal.SIGTERM, on_term)
             try:

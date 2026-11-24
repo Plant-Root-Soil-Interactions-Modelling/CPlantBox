@@ -1,4 +1,4 @@
-"""Erzeugt aus der Template-XML ein Parameterfile für einen Designpunkt."""
+"""Creates a parameter file for a design point from the template XML."""
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -6,7 +6,7 @@ import config
 
 
 def _parse(path):
-    parser = ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))  # Kommentare behalten
+    parser = ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))  # keep comments
     return ET.parse(path, parser)
 
 
@@ -36,11 +36,11 @@ def _set_cv(p, cv):
 
 
 def write_xml(values: dict, out_path: Path, dx: float | None = None, template=None):
-    """values: {factor_name: physical value}. Nicht genannte Faktoren bleiben nominal."""
+    """values: {factor_name: physical value}. Factors not given stay nominal."""
     tree = _parse(template or config.TEMPLATE_XML)
     root = tree.getroot()
     fmap = {f.name: f for f in config.FACTORS}
-    # erst alle Werte, dann v_cv: dev von v bezieht sich auf das bereits gesetzte v
+    # all values first, then v_cv: dev of v refers to the v already set
     for name in sorted(values, key=lambda n: fmap[n].param == "v_cv"):
         f, val = fmap[name], values[name]
         for st in f.subtypes:
@@ -49,7 +49,7 @@ def write_xml(values: dict, out_path: Path, dx: float | None = None, template=No
                 _set_cv(_param(hy, "v"), val)
             else:
                 _set_value(_param(hy, f.param), val)
-    if dx is not None:                       # nur Phase 0 (Konvergenztest)
+    if dx is not None:                       # Phase 0 only (convergence test)
         for hy in root.iter("hyphae"):
             _param(hy, "dx").set("value", repr(float(dx)))
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -58,8 +58,8 @@ def write_xml(values: dict, out_path: Path, dx: float | None = None, template=No
 
 
 def write_hyphae_xml(updates: dict, out_path: Path, template=None):
-    """updates: {(subType, Parametername): Wert}, unabhängig von config.FACTORS (Kalibrierung).
-    "successor" setzt den Anteil des ersten Nachfolgers: percentage = "p, 1 - p"."""
+    """updates: {(subType, parameter name): value}, independent of config.FACTORS (calibration).
+    "successor" sets the share of the first successor: percentage = "p, 1 - p"."""
     tree = _parse(template or config.TEMPLATE_XML)
     root = tree.getroot()
     for (st, name), val in updates.items():
@@ -76,13 +76,13 @@ def write_hyphae_xml(updates: dict, out_path: Path, template=None):
 
 
 def hyphae_nominal(subtype, name, template=None):
-    """Nominalwert eines Hyphenparameters (successor: Anteil des ersten Nachfolgers)."""
+    """Nominal value of a hyphal parameter (successor: share of the first successor)."""
     p = _param(_hyphae(_parse(template or config.TEMPLATE_XML).getroot(), subtype), name)
     return float(p.get("percentage").split(",")[0]) if name == "successor" else float(p.get("value"))
 
 
 def nominal_values(template=None):
-    """Liest die Nominalwerte aller Faktoren aus der Template-XML (gemeinsame Faktoren: erster subType)."""
+    """Reads the nominal values of all factors from the template XML (shared factors: first subType)."""
     root = _parse(template or config.TEMPLATE_XML).getroot()
     out = {}
     for f in config.FACTORS:

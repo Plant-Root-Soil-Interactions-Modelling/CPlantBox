@@ -1,19 +1,19 @@
 #!/bin/bash
 #
-# Kalibrierung (calibrate.py) als EIN Job: die Seeds je Auswertung laufen parallel auf den Kernen des Jobs.
-# Einreichen aus dem Home-Verzeichnis, Argumente werden an calibrate.py weitergereicht:
+# Calibration (calibrate.py) as ONE job: the seeds of each evaluation run in parallel on the cores of the job.
+# Submit from the home directory, arguments are passed on to calibrate.py:
 #   sbatch calibrate.sbatch
 #   sbatch calibrate.sbatch --seeds 16 --max-nfev 10
-# Abgebrochen (Timeout)? Einfach erneut einreichen: fertige Läufe werden übernommen.
-# Ausgabe: slurmOut/sa_cal-<job>.out, Ergebnisse in sa_setup/calibration/
+# Aborted (timeout)? Just resubmit: finished runs are reused.
+# Output: slurmOut/sa_cal-<job>.out, results in sa_setup/calibration/
 #
 #SBATCH --job-name=sa_cal
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=128      # Jacobi: 16 Differenzenpunkte × 16 Seeds = 256 Läufe -> 3 Runden à ~0,75 h
+#SBATCH --cpus-per-task=128      # Jacobian: 16 difference points × 16 seeds = 256 runs -> 3 rounds of ~0.75 h
 #SBATCH --partition=cpu256
-#SBATCH --time=72:00:00          # je Iteration ~4 Runden ≈ 3 h; python calibrate.py --check zeigt den Aufwand
-#SBATCH --mem=200G               # Smoke-Test: max. 0,85 GB je Lauf, 128 gleichzeitig
+#SBATCH --time=72:00:00          # per iteration ~4 rounds ≈ 3 h; python calibrate.py --check shows the cost
+#SBATCH --mem=200G               # smoke test: max. 0.85 GB per run, 128 at once
 #SBATCH --output=./slurmOut/sa_cal-%j.out
 #SBATCH --error=./slurmErr/sa_cal-%j.err
 

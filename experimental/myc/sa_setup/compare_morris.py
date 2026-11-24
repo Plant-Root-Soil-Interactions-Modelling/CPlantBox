@@ -1,19 +1,19 @@
 """
-Vergleich zweier Morris-Auswertungen mit demselben Design, z. B. altes Modell (Baumausschluss)
-gegen neues Modell (Weglänge L = anaMinDist). Liest nur fertige Ergebnisse, rechnet nichts nach.
+Comparison of two Morris analyses with the same design, e.g. old model (tree exclusion)
+vs. new model (path length L = anaMinDist). Only reads finished results, computes nothing.
 
-    sbatch sa_run.sbatch compare_morris.py                               # results_treeexcl gegen results
-    sbatch sa_run.sbatch compare_morris.py results_treeexcl results      # alt, neu explizit
+    sbatch sa_run.sbatch compare_morris.py                               # results_treeexcl vs. results
+    sbatch sa_run.sbatch compare_morris.py results_treeexcl results      # old, new explicitly
 
-Eingaben je Ordner: morris_indices.csv (analyze_morris.py) und outputs_morris.csv (collect.py)
-Ausgaben in results/ (bzw. im Ordner "neu"):
-  compare_morris.csv              mu*, mu*_rel, sigma, Rauschflag alt/neu je (Zeit, Output, Faktor)
-  plots/morris_compare.png        Heatmap mu*_rel alt | neu | neu - alt, Punkt = im Rauschen
-  plots/morris_compare_levels.png Median der Outputs alt gegen neu je Zeitpunkt
-Konsole:
-  1. je Faktor: in wie vielen (Output, Zeitpunkt) über dem Rauschen, alt gegen neu, und größtes mu*_rel
-  2. je Output und Zeitpunkt: die drei wichtigsten Faktoren alt und neu
-  3. Niveau der Outputs: Median über alle Läufe alt, neu und Verhältnis (gleiche Faktoren und Seeds)
+Inputs per folder: morris_indices.csv (analyze_morris.py) and outputs_morris.csv (collect.py)
+Outputs in results/ (or in the "new" folder):
+  compare_morris.csv              mu*, mu*_rel, sigma, noise flag old/new per (time, output, factor)
+  plots/morris_compare.png        heatmap mu*_rel old | new | new - old, dot = within noise
+  plots/morris_compare_levels.png median of the outputs old vs. new per time
+Console:
+  1. per factor: in how many (output, time) above the noise, old vs. new, and largest mu*_rel
+  2. per output and time: the three most important factors old and new
+  3. output levels: median over all runs old, new and ratio (same factors and seeds)
 """
 import sys
 
@@ -29,7 +29,7 @@ import config
 SA_OUTPUTS = config.SNAPSHOT_OUTPUTS + config.WAVE_OUTPUTS
 INK, INK2, GRID = "#1f1f1e", "#5f5e5a", "#e4e3df"
 SEQ = ["#fcfcfb", "#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
-DIV = ["#b5541c", "#eb6834", "#f6b48f", "#fcfcfb", "#9ec5f4", "#3987e5", "#184f95"]  # neu < alt | neu > alt
+DIV = ["#b5541c", "#eb6834", "#f6b48f", "#fcfcfb", "#9ec5f4", "#3987e5", "#184f95"]  # new < old | new > old
 OLD_C, NEW_C = "#8a8a85", "#2a78d6"
 
 
@@ -43,7 +43,7 @@ def load(folder):
 
 
 def columns(df):
-    """(Output, Zeit) in der Reihenfolge von SA_OUTPUTS, nur vorhandene."""
+    """(output, time) in the order of SA_OUTPUTS, existing ones only."""
     times = sorted(df.time.unique())
     have = set(zip(df.output, df.time))
     return [(o, t) for o in SA_OUTPUTS for t in times if (o, t) in have]
@@ -61,7 +61,7 @@ def plot_heatmaps(cmp, path):
     fig, axes = plt.subplots(3, 1, figsize=(0.32 * len(cols) + 3, 3 * h + 2.2), sharex=True)
     for i, (ax, (title, M, N, cmap, lo, hi)) in enumerate(zip(axes, panels)):
         im = ax.imshow(M.values.astype(float), cmap=cmap, vmin=lo, vmax=hi, aspect="auto")
-        if N is not None:   # Punkt: im Rauschen
+        if N is not None:   # dot: within noise
             yy, xx = np.where(N.values.astype(float) > 0.5)
             ax.scatter(xx, yy, s=6, color=INK2, lw=0)
         ax.set_xticks(range(len(cols)), [f"{o} @ {t:g} h" for o, t in cols], rotation=60, ha="right", fontsize=7, color=INK2)
@@ -149,7 +149,7 @@ def main():
     lv["ratio"] = lv.med_new / lv.med_old.replace(0, np.nan)
     lv = lv.set_index(["output", "time"]).loc[[c for c in columns(lv)]].reset_index()
     print(lv[["output", "time", "med_old", "med_new", "ratio"]].round(4).to_string(index=False))
-    # gepaart je Lauf: Verhältnis neu/alt bei gleichen Faktoren und Seed
+    # paired per run: ratio new/old with the same factors and seed
     p = out_old.merge(out_new, on=["run_id", "time", "output"], suffixes=("_old", "_new"))
     p = p[(p.value_old > 0) & (p.value_new > 0)]
     pr = p.assign(r=p.value_new / p.value_old).groupby(["output", "time"])["r"].median().rename("ratio_paired")

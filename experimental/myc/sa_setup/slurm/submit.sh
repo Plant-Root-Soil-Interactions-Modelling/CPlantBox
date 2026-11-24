@@ -1,31 +1,31 @@
 #!/bin/bash
-# Reicht Simulation, Auswertung und Sammeln als verkettete SLURM-Jobs ein.
-# Aus dem Home-Verzeichnis (wie submit_petridish.sh): dieses Skript und die sbatch-Dateien dorthin kopieren
-# (z. B. als submit_sa.sh), der Designpfad ist relativ zu sa_setup.
+# Submits simulation, evaluation and collection as chained SLURM jobs.
+# From the home directory (like submit_petridish.sh): copy this script and the sbatch files there
+# (e.g. as submit_sa.sh), the design path is relative to sa_setup.
 #
 #   bash submit_sa.sh results/design_phase0.csv
 #   bash submit_sa.sh results/design_morris.csv
-#   bash submit_sa.sh results/design_morris.csv --eval-only   # nur neu auswerten (z. B. neue Outputs)
-#   SIMTIME=12:00:00 bash submit_sa.sh results/design_long.csv  # Test mit 120 h, längeres Zeitlimit
-#   SIMTIME=24:00:00 SIMMEM=16G bash submit_sa.sh results/design_phase0.csv   # fehlende Läufe mit mehr Zeit/Speicher
+#   bash submit_sa.sh results/design_morris.csv --eval-only   # only re-evaluate (e.g. new outputs)
+#   SIMTIME=12:00:00 bash submit_sa.sh results/design_long.csv  # 120 h test, longer time limit
+#   SIMTIME=24:00:00 SIMMEM=16G bash submit_sa.sh results/design_phase0.csv   # missing runs with more time/memory
 #
-# Abgebrochene Läufe einfach durch erneutes Einreichen nachholen: fertige werden übersprungen.
-# sa_setup liegt standardmäßig in ~/CPlantBox/experimental/myc/sa_setup, sonst SA_DIR=... davor setzen.
+# Catch up on aborted runs by simply resubmitting: finished ones are skipped.
+# sa_setup is in ~/CPlantBox/experimental/myc/sa_setup by default, otherwise prefix SA_DIR=...
 
 set -euo pipefail
-JOBS="$(cd "$(dirname "$0")" && pwd)"   # hier liegen sim.sbatch, eval.sbatch, collect.sbatch
+JOBS="$(cd "$(dirname "$0")" && pwd)"   # sim.sbatch, eval.sbatch, collect.sbatch are here
 export SA_DIR="${SA_DIR:-$HOME/CPlantBox/experimental/myc/sa_setup}"
 DESIGN="$1"; MODE="${2:-}"
-MAXPAR="${MAXPAR:-100}"            # max. gleichzeitig laufende Tasks (insgesamt)
-CHUNK="${CHUNK:-1000}"             # max. Tasks je Array: SLURM begrenzt Array-Indizes (MaxArraySize, oft 1001)
+MAXPAR="${MAXPAR:-100}"            # max. concurrently running tasks (in total)
+CHUNK="${CHUNK:-1000}"             # max. tasks per array: SLURM limits array indices (MaxArraySize, often 1001)
 
 N=$(( $(wc -l < "$SA_DIR/$DESIGN") - 1 ))
 NCH=$(( (N + CHUNK - 1) / CHUNK ))
-PAR=$(( (MAXPAR + NCH - 1) / NCH ))   # je Teil-Array, damit insgesamt höchstens ~MAXPAR laufen
-mkdir -p slurmOut slurmErr         # Ausgaben der Jobs im Verzeichnis, aus dem eingereicht wird
+PAR=$(( (MAXPAR + NCH - 1) / NCH ))   # per sub-array, so that at most ~MAXPAR run in total
+mkdir -p slurmOut slurmErr         # job output in the directory submitted from
 echo "Design: $SA_DIR/$DESIGN  ($N runs, $NCH sub-array(s))"
 
-# reicht $1 (sbatch-Datei) in Teil-Arrays ein, Zeile = OFFSET + Array-Index; gibt die Job-IDs als a:b:c aus
+# submits $1 (sbatch file) in sub-arrays, row = OFFSET + array index; prints the job IDs as a:b:c
 submit_arrays() {
   local script="$1"; shift
   local ids=() off n
@@ -39,16 +39,16 @@ submit_arrays() {
 if [[ "$MODE" == "--eval-only" ]]; then
   EVAL=$(FORCE_EXPORT=",FORCE=--force" submit_arrays eval.sbatch)
 else
-  # SIMTIME=12:00:00 bash submit_sa.sh ... überschreibt --time von sim.sbatch (z. B. für den Test mit 120 h)
-  # SIMMEM=16G überschreibt --mem (z. B. für feines dx in Phase 0)
+  # SIMTIME=12:00:00 bash submit_sa.sh ... overrides --time of sim.sbatch (e.g. for the 120 h test)
+  # SIMMEM=16G overrides --mem (e.g. for fine dx in Phase 0)
   SIM=$(submit_arrays sim.sbatch ${SIMTIME:+--time=$SIMTIME} ${SIMMEM:+--mem=$SIMMEM})
   echo "Simulation: job(s) $SIM"
-  # afterany: Auswertung startet, wenn alle Simulationen beendet sind (auch bei Timeouts einzelner
-  # Läufe — die werden in evaluate.py übersprungen und in status_*.csv als fehlend gemeldet).
+  # afterany: evaluation starts when all simulations have ended (also on timeouts of single
+  # runs — those are skipped in evaluate.py and reported as missing in status_*.csv).
   EVAL=$(submit_arrays eval.sbatch --dependency=afterany:$SIM)
 fi
 echo "Evaluation: job(s) $EVAL"
 COL=$(sbatch --parsable --dependency=afterany:$EVAL --export=ALL,DESIGN="$DESIGN" "$JOBS/collect.sbatch")
 echo "Collect + analysis: job $COL  ->  slurmOut/sa_collect-$COL.out"
-[[ -n "${ID_FILE:-}" ]] && echo "$COL" > "$ID_FILE"   # für submit_all.sh: nächste Stufe hängt am Sammel-Job
+[[ -n "${ID_FILE:-}" ]] && echo "$COL" > "$ID_FILE"   # for submit_all.sh: the next stage depends on the collect job
 echo "Status:     squeue -u \$USER   |   afterwards: $SA_DIR/results/ (status_*.csv, analyses, plots/)"

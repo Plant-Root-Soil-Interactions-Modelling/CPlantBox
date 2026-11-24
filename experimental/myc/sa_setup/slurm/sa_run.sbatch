@@ -1,12 +1,12 @@
 #!/bin/bash
 #
-# Führt ein Python-Skript aus sa_setup als kurzen Job aus, für alles, was nicht auf dem Login-Knoten laufen darf.
-# Einreichen aus dem Home-Verzeichnis, Skript und Argumente hinter der sbatch-Datei:
+# Runs a Python script from sa_setup as a short job, for everything that must not run on the login node.
+# Submit from the home directory, script and arguments after the sbatch file:
 #   sbatch sa_run.sbatch check_config.py
 #   sbatch sa_run.sbatch design.py phase0
 #   sbatch sa_run.sbatch smoke_test.py --report
 #   sbatch sa_run.sbatch analyze_morris.py
-# Ausgabe: slurmOut/sa_run-<job>.out (z. B. cat slurmOut/sa_run-*.out | tail)
+# Output: slurmOut/sa_run-<job>.out (e.g. cat slurmOut/sa_run-*.out | tail)
 #
 #SBATCH --job-name=sa_run
 #SBATCH --ntasks=1

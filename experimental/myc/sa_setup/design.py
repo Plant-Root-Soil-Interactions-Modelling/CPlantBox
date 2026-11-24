@@ -1,11 +1,11 @@
 """
-Erzeugt die Designtabellen (eine Zeile = ein Simulationslauf).
+Creates the design tables (one row = one simulation run).
 
-    python design.py phase0     -> results/design_phase0.csv (Rauschen, dx, Stichprobe des Faktorraums)
-    python design.py long       -> results/design_long.csv (Nominalpunkt über 120 h, Test der Wellen-Fits)
+    python design.py phase0     -> results/design_phase0.csv (noise, dx, sample of the factor space)
+    python design.py long       -> results/design_long.csv (nominal point over 120 h, test of the wave fits)
     python design.py morris     -> results/design_morris.csv (+ morris_X.npy)
 
-Danach: `python run_one.py <design.csv> <zeile>` bzw. per SLURM-Array.
+Then: `python run_one.py <design.csv> <row>` or via a SLURM array.
 """
 import sys
 
@@ -18,14 +18,14 @@ from xml_tools import nominal_values
 
 
 def morris_problem():
-    """SALib-Problemdefinition auf dem normierten Faktorraum [0,1]^k.
-    Die Umrechnung in physikalische Werte (inkl. log) macht `to_physical`."""
+    """SALib problem definition on the normalised factor space [0,1]^k.
+    The conversion to physical values (incl. log) is done by `to_physical`."""
     k = len(config.FACTORS)
     return {"num_vars": k, "names": [f.name for f in config.FACTORS], "bounds": [[0.0, 1.0]] * k}
 
 
 def to_physical(U):
-    """U: (n, k) in [0,1] -> physikalische Werte gemäß Faktorbereichen."""
+    """U: (n, k) in [0,1] -> physical values according to the factor ranges."""
     out = np.empty_like(U, dtype=float)
     for j, f in enumerate(config.FACTORS):
         if f.log:
@@ -43,10 +43,10 @@ def phase0():
                      "seed": config.BASE_SEED + i, "dx": np.nan, **nom})
     for dx in config.PHASE0_DX_VALUES:
         for i in range(config.PHASE0_DX_SEEDS):
-            # gleiche Seeds über alle dx -> Unterschiede sind nicht nur Seed-Rauschen
+            # same seeds for all dx -> differences are not just seed noise
             rows.append({"run_id": f"p0_dx{dx:g}_{i:03d}", "group": f"dx={dx:g}",
                          "seed": config.BASE_SEED + i, "dx": dx, **nom})
-    # zufällige Punkte im ganzen Faktorraum: wie oft erreicht ein Lauf t* nicht, wie lange dauert er am Rand
+    # random points in the whole factor space: how often does a run not reach t*, how long does it take at the edges
     names = [f.name for f in config.FACTORS]
     U = np.random.default_rng(config.BASE_SEED).random((config.PHASE0_RANGE_POINTS, len(names)))
     for i, phys in enumerate(to_physical(U)):
@@ -59,7 +59,7 @@ def phase0():
 
 
 def long_test():
-    """Nominalpunkt über LONG_HOURS h: bildet sich die Welle mit mehr Zeit aus (Wellen-Fits oft genug definiert)?"""
+    """Nominal point over LONG_HOURS h: does the wave develop with more time (wave fits defined often enough)?"""
     nom = nominal_values()
     rows = [{"run_id": f"p0_long_{i:03d}", "group": "long", "seed": config.BASE_SEED + i, "dx": np.nan,
              "hours": config.LONG_HOURS, **nom} for i in range(config.LONG_SEEDS)]
@@ -72,8 +72,8 @@ def long_test():
 def phase1_morris():
     problem = morris_problem()
     k, names = problem["num_vars"], problem["names"]
-    # Trajektorienauswahl aus MORRIS_CANDIDATES nach maximaler Spreizung (Ruano et al. 2012,
-    # schnelle Variante von Campolongo et al. 2007). Zeilen: Trajektorie für Trajektorie à k+1 Punkte.
+    # trajectory selection from MORRIS_CANDIDATES by maximum spread (Ruano et al. 2012,
+    # fast variant of Campolongo et al. 2007). Rows: trajectory by trajectory, k+1 points each.
     X_flat = morris_sample.sample(problem, config.MORRIS_CANDIDATES, num_levels=config.MORRIS_LEVELS,
                                   optimal_trajectories=config.MORRIS_TRAJECTORIES,
                                   local_optimization=True, seed=config.BASE_SEED)
@@ -84,7 +84,7 @@ def phase1_morris():
         phys = to_physical(X[t])
         for s in range(k + 1):
             for rep in range(R):
-                # Common Random Numbers: gleicher Seed entlang einer Trajektorie
+                # common random numbers: same seed along a trajectory
                 seed = config.BASE_SEED + 100_000 + t * R + rep
                 row = {"run_id": f"m_t{t:02d}_s{s:02d}_r{rep}", "traj": t, "step": s,
                        "rep": rep, "seed": seed, "dx": np.nan}

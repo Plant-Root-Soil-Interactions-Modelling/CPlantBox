@@ -1,9 +1,9 @@
 #!/bin/bash
 #
-# Eine Stufe von submit_all.sh: erzeugt das Design (design.py $STAGE) und reicht dann mit submit.sh Simulation,
-# Auswertung und Sammeln ein. Nach phase0 reicht sie, falls NEXT gesetzt ist, die nächste Stufe ein, die am
-# Sammel-Job von Phase 0 hängt. Als Job, weil Python nicht auf dem Login-Knoten laufen soll und das Design erst
-# danach existiert. Eingereicht von submit_all.sh mit --export=ALL,STAGE=...,JOBS=...,SA_DIR=...[,NEXT=...]
+# One stage of submit_all.sh: creates the design (design.py $STAGE) and then submits simulation,
+# evaluation and collection with submit.sh. After phase0, if NEXT is set, it submits the next stage, which depends
+# on the collect job of Phase 0. As a job because Python should not run on the login node and the design only
+# exists afterwards. Submitted by submit_all.sh with --export=ALL,STAGE=...,JOBS=...,SA_DIR=...[,NEXT=...]
 #
 #SBATCH --job-name=sa_stage
 #SBATCH --ntasks=1
@@ -18,7 +18,7 @@
 set -euo pipefail
 source "$HOME/cpbenv/bin/activate"
 export MPLBACKEND=Agg
-SUBMIT_DIR="${SLURM_SUBMIT_DIR:-$PWD}"   # dort liegen slurmOut/ und slurmErr/
+SUBMIT_DIR="${SLURM_SUBMIT_DIR:-$PWD}"   # slurmOut/ and slurmErr/ are there
 echo "Stage $STAGE on $(hostname), $(date)"
 
 (cd "$SA_DIR" && python3 design.py "$STAGE")
@@ -36,7 +36,7 @@ ID_FILE="$ID_FILE" bash "$JOBS/submit.sh" "$DESIGN"
 COL="$(cat "$ID_FILE")"; rm -f "$ID_FILE"
 
 if [[ -n "${NEXT:-}" ]]; then
-    # nächste Stufe erst, wenn Sammeln und Analyse dieser Stufe erfolgreich waren
+    # next stage only once collection and analysis of this stage succeeded
     NXT=$(sbatch --parsable --dependency=afterok:$COL --kill-on-invalid-dep=yes \
           --export=ALL,STAGE="$NEXT",NEXT=,JOBS="$JOBS",SA_DIR="$SA_DIR" "$JOBS/stage.sbatch")
     echo "Next stage $NEXT: job $NXT (after collect job $COL)"

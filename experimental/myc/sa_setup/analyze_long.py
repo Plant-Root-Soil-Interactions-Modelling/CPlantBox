@@ -1,7 +1,7 @@
 """
-Test mit längerer Simulation (design.py long): Bildet sich die Welle mit 120 h statt 60 h so weit aus, dass die
-Wellen-Fits in fast jedem Lauf definiert sind? Für Morris muss ein Output in allen k+1 Punkten einer Trajektorie
-vorliegen, also in fast allen Läufen.
+Test with a longer simulation (design.py long): does the wave develop far enough with 120 h instead of 60 h that the
+wave fits are defined in almost every run? For Morris an output must exist in all k+1 points of a trajectory,
+i.e. in almost all runs.
 
     python analyze_long.py      -> results/long_summary.csv
 """
@@ -29,7 +29,7 @@ def main():
         p = v.notna().sum() / n
         rows.append({"output": o, "time": h, "valid": f"{v.notna().sum()}/{n}", "median": v.median(),
                      "cv": v.std() / v.mean() if v.mean() else np.nan,
-                     # Anteil vollständiger Morris-Replikate, wenn jeder Punkt mit Wahrscheinlichkeit p einen Wert hat
+                     # share of complete Morris replicates if every point has a value with probability p
                      "p_traj": p ** k1})
     tab = pd.DataFrame(rows)
     tab.to_csv(config.RESULTS_DIR / "long_summary.csv", index=False)

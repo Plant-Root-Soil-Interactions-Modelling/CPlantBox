@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Smoke-Test der Sensitivitätsanalyse: 0 = nominal, 1 = low (alle Faktoren unten), 2 = high (alle oben), parallel.
-# Eingereicht von submit_smoke.sh aus dem Home-Verzeichnis (wie run_petridish.sh), zusammen mit dem Bericht-Job.
+# Smoke test of the sensitivity analysis: 0 = nominal, 1 = low (all factors low), 2 = high (all high), in parallel.
+# Submitted by submit_smoke.sh from the home directory (like run_petridish.sh), together with the report job.
 #
 #SBATCH --job-name=sa_smoke
 #SBATCH --array=0-2
@@ -9,13 +9,13 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=cpu256
-#SBATCH --time=6:00:00           # großzügig: der Smoke-Test soll die echte Laufzeit erst messen
+#SBATCH --time=6:00:00           # generous: the smoke test is what measures the real runtime
 #SBATCH --mem=8G
 #SBATCH --output=./slurmOut/sa_smoke-%A_%a.out
 #SBATCH --error=./slurmErr/sa_smoke-%A_%a.err
 
 set -euo pipefail
-source "$HOME/cpbenv/bin/activate"            # braucht zusätzlich SALib, scikit-learn, networkx
+source "$HOME/cpbenv/bin/activate"            # additionally needs SALib, scikit-learn, networkx
 cd "${SA_DIR:-$HOME/CPlantBox/experimental/myc/sa_setup}"
 export MPLBACKEND=Agg
 

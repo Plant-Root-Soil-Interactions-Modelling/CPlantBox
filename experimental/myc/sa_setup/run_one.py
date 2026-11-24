@@ -1,11 +1,11 @@
 """
-Führt EINEN Simulationslauf aus einer Designtabelle aus.
+Runs ONE simulation from a design table.
 
-    python run_one.py results/design_morris.csv 17        # Zeile 17
-    python run_one.py results/design_morris.csv 0-9       # Zeilen 0..9 (lokal testen)
+    python run_one.py results/design_morris.csv 17        # row 17
+    python run_one.py results/design_morris.csv 0-9       # rows 0..9 (local testing)
 
-Unter SLURM wird die Zeile aus $SLURM_ARRAY_TASK_ID übergeben (s. slurm/).
-Neustartfähig: Läufe mit status "ok" in meta.json werden übersprungen.
+Under SLURM the row is passed from $SLURM_ARRAY_TASK_ID (see slurm/).
+Restartable: runs with status "ok" in meta.json are skipped.
 """
 import json
 import sys
@@ -32,7 +32,7 @@ def run_row(row):
     dx = None if pd.isna(row.get("dx")) else float(row["dx"])
     xml_path = write_xml(values, rdir / "params.xml", dx=dx)
 
-    hours = None if pd.isna(row.get("hours", np.nan)) else float(row["hours"])   # nur im Test mit 120 h gesetzt
+    hours = None if pd.isna(row.get("hours", np.nan)) else float(row["hours"])   # only set in the 120 h test
     meta = {"run_id": row["run_id"], "seed": int(row["seed"]), "dx": dx, "hours": hours,
             "values": values, "dev_mode": config.DEV_MODE}
     t0 = time.time()

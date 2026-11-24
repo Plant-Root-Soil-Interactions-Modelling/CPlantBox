@@ -1,6 +1,6 @@
 """
-Sammelt alle outputs.csv einer Designtabelle in einer Datei und meldet fehlende/
-fehlgeschlagene Läufe.
+Collects all outputs.csv of a design table into one file and reports missing/
+failed runs.
 
     python collect.py results/design_morris.csv   -> results/outputs_morris.csv
 """

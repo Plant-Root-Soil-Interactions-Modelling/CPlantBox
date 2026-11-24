@@ -1,5 +1,5 @@
 """
-Prüft die Konfiguration, bevor irgendetwas auf den Cluster geht.
+Checks the configuration before anything goes to the cluster.
 
     python check_config.py
 """
@@ -14,7 +14,7 @@ def nominal_values_of(param, subtype):
     hy = next(h for h in root.iter("hyphae") if h.get("subType", "").strip() == str(subtype))
     return float(next(p for p in hy.iter("parameter") if p.get("name") == param).get("value"))
 
-MIN_PER_RUN = 15   # Simulation + Auswertung [min] bei dx = 0,01, für die Abschätzung (Phase 0: Faktorraum Median 4 min, nominal 44 min)
+MIN_PER_RUN = 15   # simulation + evaluation [min] at dx = 0.01, for the estimate (Phase 0: factor space median 4 min, nominal 44 min)
 
 
 def main():
@@ -36,14 +36,14 @@ def main():
             problems.append(f"{f.name}: log range needs low > 0")
         if f.param == "ana" and not (0 <= f.low and f.high <= 1):
             problems.append(f"{f.name}: probability must lie in [0, 1]")
-    # gemeinsame Faktoren: alle subTypes sollten denselben Nominalwert haben
+    # shared factors: all subTypes should have the same nominal value
     for f in config.FACTORS:
         if len(f.subtypes) > 1 and f.param != "v_cv":
             vals = {st: nominal_values_of(f.param, st) for st in f.subtypes}
             if len(set(vals.values())) > 1:
                 problems.append(f"{f.name}: shared factor, but different nominal values {vals}")
 
-    # b_prob muss 0/1 sein, damit die Faktorauswahl stimmt
+    # b_prob must be 0/1 for the factor selection to be right
     root = ET.parse(config.TEMPLATE_XML).getroot()
     for hy in root.iter("hyphae"):
         bp = next((p.get("value") for p in hy.iter("parameter") if p.get("name") == "b_prob"), None)

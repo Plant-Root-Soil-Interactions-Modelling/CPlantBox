@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Sammelt alle outputs.csv einer Designtabelle und startet die passende Analyse (analyze_phase0.py
-# bzw. analyze_morris.py), eingereicht von submit_sa.sh aus dem Home-Verzeichnis.
+# Collects all outputs.csv of a design table and starts the matching analysis (analyze_phase0.py
+# or analyze_morris.py), submitted by submit_sa.sh from the home directory.
 #
 #SBATCH --job-name=sa_collect
 #SBATCH --ntasks=1

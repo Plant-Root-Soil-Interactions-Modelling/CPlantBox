@@ -50,7 +50,7 @@ mkdir -p slurmOut slurmErr
 echo "sa_setup: $SA_DIR, sbatch files: $JOBS, output: $PWD/slurmOut"
 echo "Commit: $(git -C "$SA_DIR" log -1 --format='%h %s' 2>/dev/null || echo '?')"
 
-AFTER=()   # Abhängigkeit aller folgenden Jobs
+AFTER=()   # dependency of all following jobs
 if [[ $SMOKE == 1 ]]; then
     S=$(sbatch --parsable --export=ALL,QUICK="$QUICK" "$JOBS/smoke.sbatch")
     G=$(sbatch --parsable --dependency=afterany:$S "$JOBS/sa_run.sbatch" smoke_test.py --report --gate $QUICK)

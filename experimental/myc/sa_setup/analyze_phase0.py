@@ -1,11 +1,11 @@
 """
-Phase 0: Seed-Rauschen und dx-Konvergenz am Nominalpunkt.
+Phase 0: seed noise and dx convergence at the nominal point.
 
     python analyze_phase0.py
-      -> results/phase0_noise.csv   Mittel, SD, CV, Anteil Nullen je Output
-                                    + Rauschniveau der Elementary Effects für R = 1..5
-      -> results/phase0_dx.csv      relative Abweichung je dx gegenüber feinstem dx
-      -> results/phase0_status.csv  Anteil Läufe mit t* und Laufzeit je Gruppe (range: Stichprobe des Faktorraums)
+      -> results/phase0_noise.csv   mean, SD, CV, share of zeros per output
+                                    + noise level of the elementary effects for R = 1..5
+      -> results/phase0_dx.csv      relative difference per dx vs. the finest dx
+      -> results/phase0_status.csv  share of runs with t* and runtime per group (range: sample of the factor space)
 """
 import numpy as np
 import pandas as pd
@@ -21,21 +21,21 @@ def main():
     out = pd.read_csv(config.RESULTS_DIR / "outputs_phase0.csv").merge(
         design[["run_id", "group", "seed"]], on="run_id")
 
-    # ---------- Rauschen ----------
+    # ---------- noise ----------
     noise = out[out.group == "noise"]
     g = noise.groupby(KEY)["value"]
     tab = pd.DataFrame({"n": g.size(), "n_valid": g.count(), "mean": g.mean(), "median": g.median(), "sd": g.std(),
                         "frac_zero": g.apply(lambda v: np.mean(v == 0))})
     tab["cv"] = tab["sd"] / tab["mean"].replace(0, np.nan)
-    # Rauschniveau eines Elementary Effects (normierte Einheiten), gemittelt über R Replikate,
-    # konservativ ohne Gewinn durch gemeinsame Seeds: sqrt(2)*sd / (Δ*sqrt(R)).
+    # noise level of an elementary effect (normalised units), averaged over R replicates,
+    # conservatively without the gain from shared seeds: sqrt(2)*sd / (Δ*sqrt(R)).
     p = config.MORRIS_LEVELS
     delta = p / (2 * (p - 1))
     for R in range(1, 6):
         tab[f"EE_noise_R{R}"] = np.sqrt(2) * tab["sd"] / (delta * np.sqrt(R))
     tab.reset_index().to_csv(config.RESULTS_DIR / "phase0_noise.csv", index=False)
 
-    # ---------- dx-Konvergenz (gepaart über Seeds) ----------
+    # ---------- dx convergence (paired over seeds) ----------
     dxo = out[out.group.str.startswith("dx=")].copy()
     dxo["dx"] = dxo.group.str[3:].astype(float)
     finest = dxo.dx.min()
@@ -48,7 +48,7 @@ def main():
             v = s.set_index("seed")["value"]
             diff = (v - ref).dropna()
             m = ref.mean()
-            if len(diff) >= 3 and m:      # weniger Paare (z. B. Output oft NaN): kein belastbarer Vergleich
+            if len(diff) >= 3 and m:      # fewer pairs (e.g. output often NaN): no reliable comparison
                 rel = diff.mean() / m
                 hw = stats.t.ppf(0.975, len(diff) - 1) * diff.std() / np.sqrt(len(diff)) / abs(m)
             else:
@@ -58,7 +58,7 @@ def main():
     dxt = pd.DataFrame(rows)
     dxt.to_csv(config.RESULTS_DIR / "phase0_dx.csv", index=False)
 
-    # ---------- Stichprobe des Faktorraums: Abbrüche und Laufzeit ----------
+    # ---------- sample of the factor space: aborts and runtime ----------
     status = pd.read_csv(config.RESULTS_DIR / "status_phase0.csv").merge(design[["run_id", "group"]], on="run_id")
     status["group"] = status["group"].where(~status["group"].str.startswith("dx="), "dx")
     rng_tab = status.groupby("group").agg(n=("status", "size"), ok=("status", lambda s: int((s == "ok").sum())),
@@ -66,7 +66,7 @@ def main():
                                           sim_h_max=("sim_seconds", lambda s: s.max() / 3600))
     rng_tab.to_csv(config.RESULTS_DIR / "phase0_status.csv")
 
-    # ---------- Kurzbericht ----------
+    # ---------- short report ----------
     t_end = max(config.SNAPSHOT_HOURS)
     print("\nRuns per group (ok = t* reached and evaluated), simulation runtime [h]:")
     print(rng_tab.round(2).to_string())

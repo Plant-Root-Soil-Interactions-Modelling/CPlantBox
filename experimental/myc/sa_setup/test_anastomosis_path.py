@@ -1,32 +1,32 @@
 """
-Test des Anastomose-Ausschlusses über die Weglänge L (anaMinDist).
+Test of the anastomosis exclusion via the path length L (anaMinDist).
 
-Simuliert die Petrischale wie model_hook.py (Nominal-XML) für ein L und zählt die Fusionen
-nach Verwandtschaft der beiden Hyphen:
-  self        Hyphe mit sich selbst
-  parent      Spitze mit ihrem Elter
-  child       Spitze mit einem eigenen Lateral
-  sibling     Geschwister (gleicher Elter)
-  same_tree   sonst gleicher hyphalTreeIndex (gleicher Infektionspunkt)
-  other_tree  verschiedene Bäume
+Simulates the Petri dish as model_hook.py (nominal XML) for one L and counts the fusions
+by relationship of the two hyphae:
+  self        hypha with itself
+  parent      tip with its parent
+  child       tip with one of its own laterals
+  sibling     siblings (same parent)
+  same_tree   otherwise same hyphalTreeIndex (same infection point)
+  other_tree  different trees
 
-Weglängen-Diagnose: für jede Fusion die Weglänge entlang des Myzels zwischen der Spitze (vor der Fusion)
-und dem Fusionspunkt, wie pathDist in MycorrhizalPlant.cpp (Positionen als Bogenlänge an Knoten),
-dazu die Länge der fusionierten Hyphe und ihr Alter bei der Fusion. Liegen die Weglängen der
-parent/child/sibling-Fusionen knapp über L, sind es weiter Nachbarschaftsartefakte (L zu knapp);
-liegen sie deutlich darüber, hat sich eine Hyphe zurückgebogen (Fusion nach der Regel legitim).
+Path length diagnostics: for every fusion the path length along the mycelium between the tip (before the fusion)
+and the fusion point, as pathDist in MycorrhizalPlant.cpp (positions as arc length at nodes),
+plus the length of the fused hypha and its age at fusion. If the path lengths of the
+parent/child/sibling fusions are just above L, they are still neighbourhood artefacts (L too tight);
+if they are clearly above, a hypha has bent back (fusion legitimate by the rule).
 
-Erwartung:
-  --L 0     nur das eigene Spitzensegment ist ausgeschlossen, viele self/parent-Fusionen
-  --L -1    abgeleitetes L = distTH/sin(theta) + 2*dx (~0.032 cm), self verschwindet
-  --L 100   praktisch alles Verwandte ausgeschlossen, ähnlich wie der alte Baumausschluss
+Expectation:
+  --L 0     only the own tip segment is excluded, many self/parent fusions
+  --L -1    derived L = distTH/sin(theta) + 2*dx (~0.032 cm), self disappears
+  --L 100   practically everything related excluded, similar to the old tree exclusion
 
-Ein Lauf pro L, auf dem Cluster parallel einreichen (aus dem Home-Verzeichnis), z. B.:
+One run per L, submit in parallel on the cluster (from the home directory), e.g.:
   sbatch --time=6:00:00 --job-name=ana_L0   CPlantBox/experimental/myc/sa_setup/slurm/sa_run.sbatch test_anastomosis_path.py --L 0
   sbatch --time=6:00:00 --job-name=ana_Lm1  CPlantBox/experimental/myc/sa_setup/slurm/sa_run.sbatch test_anastomosis_path.py --L -1
   sbatch --time=6:00:00 --job-name=ana_L100 CPlantBox/experimental/myc/sa_setup/slurm/sa_run.sbatch test_anastomosis_path.py --L 100
-Ergebnis: Ausgabe in slurmOut/sa_run-<job>.out, test_ana/L<L>_seed<seed>.json (Zusammenfassung)
-und test_ana/L<L>_seed<seed>_fusions.csv (eine Zeile pro Fusion)
+Result: output in slurmOut/sa_run-<job>.out, test_ana/L<L>_seed<seed>.json (summary)
+and test_ana/L<L>_seed<seed>_fusions.csv (one row per fusion)
 """
 import argparse
 import csv
@@ -39,12 +39,12 @@ import numpy as np
 import config
 import model_hook
 
-MAX_PATH = 5.0  # [cm], Weglängen darüber werden nicht verfolgt (inf)
-THRESHOLDS = (0.032, 0.05, 0.1, 0.2)  # [cm], Anteil der Fusionen mit Weglänge darunter
+MAX_PATH = 5.0  # [cm], path lengths above are not followed (inf)
+THRESHOLDS = (0.032, 0.05, 0.1, 0.2)  # [cm], share of fusions with a path length below
 
 
 def relation(h, m):
-    """Verwandtschaft zwischen fusionierter Hyphe h und Partner m."""
+    """Relationship between the fused hypha h and partner m."""
     if m.getId() == h.getId():
         return "self"
     hp, mp = h.getParent(), m.getParent()
@@ -60,10 +60,10 @@ def relation(h, m):
 
 
 class PathLength:
-    """Weglänge entlang des Myzels, wie chain/pathDist in MycorrhizalPlant.cpp."""
+    """Path length along the mycelium, as chain/pathDist in MycorrhizalPlant.cpp."""
 
     def __init__(self):
-        self.cache = {}  # Organ-Id -> (Knotenkoordinaten, Bogenlänge je Knoten)
+        self.cache = {}  # organ id -> (node coordinates, arc length per node)
 
     def nodes(self, o):
         i = o.getId()
@@ -74,7 +74,7 @@ class PathLength:
         return self.cache[i]
 
     def chain(self, o, k, max_len):
-        c = {}  # Organ-Id -> (Position s, Weg d bis dorthin)
+        c = {}  # organ id -> (position s, path d up to there)
         cur, s, d = o, self.nodes(o)[1][k], 0.
         while cur is not None:
             c[cur.getId()] = (s, d)
@@ -99,14 +99,14 @@ class PathLength:
 
 
 def fusion_record(pl, h, m, rel):
-    """Weglänge, Hyphenlänge und Alter für die Fusion von h in m (letzter Knoten von h = Fusionspunkt)."""
+    """Path length, hyphal length and age for the fusion of h into m (last node of h = fusion point)."""
     n = h.getNumberOfNodes()
-    k_tip = n - 2                       # Spitze vor der Fusion, Knoten n-1 wurde bei der Fusion angehängt
+    k_tip = n - 2                       # tip before the fusion, node n-1 was appended at the fusion
     xh, sh = pl.nodes(h)
     xm, _ = pl.nodes(m)
     dm = np.linalg.norm(xm - xh[n - 1], axis=1)
     if m.getId() == h.getId():
-        dm[n - 1] = np.inf                  # den angehängten Knoten selbst nicht finden
+        dm[n - 1] = np.inf                  # do not find the appended node itself
     k_m = int(np.argmin(dm))
     return {"relation": rel, "st_h": int(h.getParameter("subType")), "st_m": int(m.getParameter("subType")),
             "path": pl.dist(h, k_tip, m, k_m), "len_h": float(sh[k_tip]),
@@ -115,7 +115,7 @@ def fusion_record(pl, h, m, rel):
 
 
 def summarize(records):
-    """Quantile der Weglänge [cm] und Anteile unter THRESHOLDS je Relation und je Subtyp-Paar."""
+    """Quantiles of the path length [cm] and shares below THRESHOLDS per relation and per subtype pair."""
     groups = defaultdict(list)
     for r in records:
         groups[r["relation"]].append(r)
@@ -171,7 +171,7 @@ def main():
         by_subtype[f"{h.getParameter('subType'):.0f}->{m.getParameter('subType'):.0f} {r}"] += 1
         try:
             records.append(fusion_record(pl, h, m, r))
-        except Exception as e:  # Diagnose darf das Ergebnis nicht kosten
+        except Exception as e:  # diagnostics must not cost the result
             failed += 1
             if failed <= 5:
                 print(f"fusion_record failed for hypha {h.getId()}: {e!r}", flush=True)
@@ -181,7 +181,7 @@ def main():
               "anaMinDist_used": stats.get("hyphae_anaMinDist"), "n_hyphae": len(hyphae),
               "length_cm": length, "fusions": sum(counts.values()), "relation": dict(counts),
               "relation_by_subtype": dict(sorted(by_subtype.items()))}
-    print(result, flush=True)  # zuerst roh ausgeben, damit nichts verloren geht
+    print(result, flush=True)  # print raw first so that nothing is lost
 
     out = config.ROOT / "test_ana"
     out.mkdir(exist_ok=True)
@@ -198,7 +198,7 @@ def main():
     except Exception as e:
         print(f"summarize failed: {e!r}", flush=True)
 
-    def to_json(o):  # numpy-Arrays und -Zahlen (z. B. aus stats) in Python-Typen umwandeln
+    def to_json(o):  # convert numpy arrays and numbers (e.g. from stats) to Python types
         return o.tolist() if hasattr(o, "tolist") else str(o)
 
     text = json.dumps(result, indent=2, default=to_json)

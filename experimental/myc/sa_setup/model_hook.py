@@ -1,17 +1,17 @@
 """
-Schnittstelle zur Simulation: Petrischale wie petridishsimauto.py, mit dem Parameterfile des Laufs.
+Interface to the simulation: Petri dish as petridishsimauto.py, with the parameter file of the run.
 
 1. simulate(xml_path, seed, outdir) -> list[Path]
-   Wurzelphase, Warten auf t* und HOURS_HYPHAE Stunden Hyphen (AMFSimulationSetup.makeSimulation),
-   danach die Größen je Ring und Stunde wie in petridishsimauto.py. Gespeichert in outdir/raw.npz,
-   daraus berechnet evaluate.py alle Outputs (neue Outputs ohne Neusimulation).
-   Ohne t* nach MAX_WAIT_DAYS wird ein Fehler ausgelöst: der Lauf zählt als fehlgeschlagen.
+   Root phase, waiting for t* and HOURS_HYPHAE hours of hyphae (AMFSimulationSetup.makeSimulation),
+   then the quantities per ring and hour as in petridishsimauto.py. Stored in outdir/raw.npz,
+   from which evaluate.py computes all outputs (new outputs without re-simulating).
+   Without t* after MAX_WAIT_DAYS an error is raised: the run counts as failed.
 
 2. load_raw(path) -> dict
-   Liest raw.npz, "times" in Tagen seit t* (wie AMFIO.load_petridish_results).
+   Reads raw.npz, "times" in days since t* (as AMFIO.load_petridish_results).
 
-Solange die Umgebungsvariable SA_DUMMY=1 gesetzt ist, wird ein Spielzeugmodell
-verwendet (dummy_model.py), damit die Pipeline ohne die echte Simulation testbar ist.
+While the environment variable SA_DUMMY=1 is set, a toy model is used
+(dummy_model.py), so that the pipeline can be tested without the real simulation.
 """
 import os
 import sys
@@ -25,14 +25,14 @@ USE_DUMMY = os.environ.get("SA_DUMMY") == "1"
 
 
 def import_amf():
-    """plantbox und die AMF*-Module aus experimental/myc importierbar machen."""
+    """Make plantbox and the AMF* modules from experimental/myc importable."""
     for p in (config.MYC_DIR, config.CPLANTBOX_DIR / "src", config.CPLANTBOX_DIR):
         if str(p) not in sys.path:
             sys.path.insert(0, str(p))
 
 
 def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None) -> list[Path]:
-    """hours: Simulationsdauer nach t* [h], Standard config.HOURS_HYPHAE (für den Test mit 120 h)."""
+    """hours: simulation time after t* [h], default config.HOURS_HYPHAE (for the 120 h test)."""
     hours = int(hours) if hours else config.HOURS_HYPHAE
     if USE_DUMMY:
         import dummy_model
@@ -57,7 +57,7 @@ def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None
     if config.SAVE_VTP:
         amf.getMycSegmentAnalyser(mycp, stdwrite=True, filename=str(outdir / "final"), step="", timestamp=False)
 
-    # wie petridishsimauto.py: Ringe -> Zeile, Zeitabschnitt -> Spalte
+    # as petridishsimauto.py: rings -> rows, time steps -> columns
     rings = dish["rings"]
     mats = amfd.getParasPerRing(["nodeTips", "anastomosis", "length"], times, mycp, rings,
                                 subTypes=list(amfd.HYPHAL_SUBTYPES), increments=["anastomosis"])
@@ -69,11 +69,11 @@ def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None
            "branch_new": amfd.getBranchingPerRing(times, mycp, rings),
            "branch_new_runner": amfd.getBranchingPerRing(times, mycp, rings, child_subtype=config.RUNNER),
            "wait_days": stats["wait_days"]}
-    if config.ROOT_EFFICIENCY:   # Netzwerk am Ende der Simulation, planar wie die Bildgraphen des Experiments (Kreuzungen = Knoten)
+    if config.ROOT_EFFICIENCY:   # network at the end of the simulation, planar like the image graphs of the experiment (crossings = nodes)
         import time
         import traceback
         t0 = time.time()
-        try:   # ein Fehler hier (auch fehlendes networkx) soll nur diesen Output kosten, nicht den Lauf
+        try:   # an error here (including missing networkx) should only cost this output, not the run
             import AMFNetwork as amfn
             eff = amfn.relativeRootEfficiency(mycp, dish["small_hyphae_dish"], dish["barrier_thickness"], dim=2)
             raw.update({"root_eff_" + k: v for k, v in eff.items()})

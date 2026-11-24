@@ -1,11 +1,11 @@
 """
-Spielzeugmodell NUR zum Testen der Pipeline. Biologisch bedeutungslos.
+Toy model ONLY for testing the pipeline. Biologically meaningless.
 
-Liest dieselbe XML wie die echte Simulation und erzeugt eine laufende Welle über die Ringe der
-Petrischale im Format von model_hook.simulate (raw.npz): Filamentdichte als Sigmoid, Spitzen als
-Glocke um die Ankunftszeit, Anastomosen ~ C rho tips, mit Poisson-Rauschen. Frontgeschwindigkeit,
-Amplitude, Breite und BAS-Anteil hängen willkürlich von den Faktoren ab.
-`b` der Runner wird bewusst NICHT verwendet (b_prob = 0) -> Kontrollfaktor.
+Reads the same XML as the real simulation and produces a travelling wave over the rings of the
+Petri dish in the format of model_hook.simulate (raw.npz): filament density as a sigmoid, tips as a
+bell around the arrival time, anastomoses ~ C rho tips, with Poisson noise. Front speed,
+amplitude, width and BAS share depend arbitrarily on the factors.
+`b` of the runners is deliberately NOT used (b_prob = 0) -> control factor.
 """
 import xml.etree.ElementTree as ET
 
@@ -26,7 +26,7 @@ def _read(xml_path):
 
 
 def ring_geometry():
-    """Äußere Ringradien [cm] und Ringflächen [mm²] wie amfs.ringLocations / amfs.ringVolume (ohne plantbox)."""
+    """Outer ring radii [cm] and ring areas [mm²] as amfs.ringLocations / amfs.ringVolume (without plantbox)."""
     radius, barrier_thickness = 9.4 / 2, 0.16
     outer = np.array([radius * np.sqrt(i / config.N_RINGS) for i in range(1, config.N_RINGS + 1)])
     c = barrier_thickness / 2
@@ -46,7 +46,7 @@ def simulate(xml_path, seed, outdir, hours=None):
     dx = R["dx"][0]
     noise = lambda s: np.exp(s * rng.normal())
 
-    # Frontgeschwindigkeit [mm/h], Amplitude der Spitzenwelle [mm^-2], Breite [h], Sättigung [mm mm^-2]
+    # front speed [mm/h], amplitude of the tip wave [mm^-2], width [h], saturation [mm mm^-2]
     vf = 0.6 * (val(R, "v") / 0.576) ** 0.7 * (val(B, "v") / 0.576) ** 0.2 * (val(R, "hlt") / 8) ** 0.3 \
         * (val(R, "lmax") / 3) ** 0.1 * np.cos(val(R, "theta") - 1.047) * noise(0.05)
     if vf < 0.42:
@@ -60,11 +60,11 @@ def simulate(xml_path, seed, outdir, hours=None):
 
     outer, area = ring_geometry()
     inner = np.concatenate(([0.], outer[:-1]))
-    r = np.sqrt((inner * inner + outer * outer) / 2) * 10           # Ringmitten [mm]
+    r = np.sqrt((inner * inner + outer * outer) / 2) * 10           # ring centres [mm]
     wait_days = 2 / val(R, "v") * noise(0.1)
     time_star = config.ROOT_DAYS + wait_days
-    t_h = np.arange(0, hours + 1)[1:].astype(float)   # Spalten wie getParasPerRing: times[1:]
-    t_arr = (r[:, None] - r[0]) / vf                                 # Ankunft je Ring [h]
+    t_h = np.arange(0, hours + 1)[1:].astype(float)   # columns as getParasPerRing: times[1:]
+    t_arr = (r[:, None] - r[0]) / vf                                 # arrival per ring [h]
     lam = FWHM_BELL / width
     e = np.exp(-np.abs(lam * (t_h[None, :] - t_arr)))
     tip_dens = 4 * K2 * e / (1 + e) ** 2
@@ -72,10 +72,10 @@ def simulate(xml_path, seed, outdir, hours=None):
     tips = rng.poisson(tip_dens * area[:, None]).astype(float)
     tips_bas = rng.binomial(tips.astype(int), frac_bas).astype(float)
     rho = rho * noise(0.02)
-    ana_rate = C * rho * 1000 * tips                                 # pro Stunde
+    ana_rate = C * rho * 1000 * tips                                 # per hour
     ana_bas = rng.poisson(ana_rate * frac_bas).astype(float)
     ana_runner = rng.poisson(ana_rate * (1 - frac_bas)).astype(float)
-    branch_rate = (val(B, "b") * frac_bas + 0.576 / val(R, "ln") * 0.05 * (1 - frac_bas)) / 24   # pro Spitze und Stunde
+    branch_rate = (val(B, "b") * frac_bas + 0.576 / val(R, "ln") * 0.05 * (1 - frac_bas)) / 24   # per tip and hour
     raw = {"seed": seed, "time_star": time_star, "location": outer, "area": area,
            "times": time_star + t_h / 24, "tip_dens": tips / area[:, None], "active_tips": tips,
            "branch_new": rng.poisson(branch_rate * tips).astype(float),

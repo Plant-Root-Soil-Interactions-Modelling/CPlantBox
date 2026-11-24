@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Auswertung eines Laufs je Array-Task, eingereicht von submit_sa.sh aus dem Home-Verzeichnis.
+# Evaluation of one run per array task, submitted by submit_sa.sh from the home directory.
 #
 #SBATCH --job-name=sa_eval
 #SBATCH --ntasks=1
@@ -17,4 +17,4 @@ source "$HOME/cpbenv/bin/activate"
 cd "${SA_DIR:-$HOME/CPlantBox/experimental/myc/sa_setup}"
 export MPLBACKEND=Agg
 
-python3 evaluate.py "$DESIGN" "$(( ${OFFSET:-0} + SLURM_ARRAY_TASK_ID ))" ${FORCE:-}   # OFFSET: Teil-Arrays bei > 1000 Läufen
+python3 evaluate.py "$DESIGN" "$(( ${OFFSET:-0} + SLURM_ARRAY_TASK_ID ))" ${FORCE:-}   # OFFSET: sub-arrays for > 1000 runs

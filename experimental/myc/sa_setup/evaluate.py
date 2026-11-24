@@ -1,18 +1,18 @@
 """
-Wertet die Rohausgabe EINES Laufs aus -> runs/<run_id>/outputs.csv
+Evaluates the raw output of ONE run -> runs/<run_id>/outputs.csv
 
     python evaluate.py results/design_morris.csv 17
     python evaluate.py results/design_morris.csv 0-9
 
-Getrennt von der Simulation, damit neue Outputs oder Zeitpunkte später ohne
-Neusimulation berechnet werden können (dann mit --force).
+Separate from the simulation, so that new outputs or times can be computed later without
+re-simulating (then with --force).
 
-Ein Output wird über (time, region, output) identifiziert; time in h nach t*, region "all"
-ist die ganze Hyphenseite der Schale. Zwei Arten:
-  - Mengen zu jedem Zeitpunkt in config.SNAPSHOT_HOURS (config.SNAPSHOT_OUTPUTS)
-  - Wellengrößen über das ganze Fenster, beim letzten Zeitpunkt (config.WAVE_OUTPUTS), aus den
-    Fits von AMFDensities wie in petridishstats.py
-Dazu Diagnosen mit "n_" (Anzahl Ringe hinter den Fits), die nicht in die SA eingehen.
+An output is identified by (time, region, output); time in h after t*, region "all"
+is the whole hyphal side of the dish. Two kinds:
+  - quantities at every time in config.SNAPSHOT_HOURS (config.SNAPSHOT_OUTPUTS)
+  - wave quantities over the whole window, at the last time (config.WAVE_OUTPUTS), from the
+    fits of AMFDensities as in petridishstats.py
+Plus diagnostics starting with "n_" (number of rings behind the fits), which do not enter the SA.
 """
 import json
 import sys
@@ -38,7 +38,7 @@ def ring_centers_mm(location):
 
 
 def snapshot_outputs(raw, hour):
-    j = int(np.argmin(np.abs(raw["times"] * 24 - hour)))      # Spalte am nächsten zum Zeitpunkt
+    j = int(np.argmin(np.abs(raw["times"] * 24 - hour)))      # column closest to the time
     area = raw["area"]
     L = {k: float((raw["length_" + k][:, j] * area).sum() / 10) for k in ("runner", "bas")}   # [cm]
     tips = raw["active_tips"][:, j]
@@ -47,16 +47,16 @@ def snapshot_outputs(raw, hour):
         "total_length": float((raw["length_densities"][:, j] * area).sum() / 10),   # [cm]
         "active_tips": float(tips.sum()),
         "bas_share": L["bas"] / (L["bas"] + L["runner"]) if L["bas"] + L["runner"] > 0 else np.nan,
-        "anastomoses": float(raw["ana_new"][:, :j + 1].sum()),                       # seit t*
-        "front_position": float((r * tips).sum() / tips.sum()) if tips.sum() > 0 else np.nan,   # spitzengewichteter Radius [mm]
-        # ohne Fit, in jedem Lauf definiert:
-        "spread_r90": spread_radius(raw, j, 0.9),                                    # 90 % der Länge innerhalb [mm]
-        "max_tip_density": float(np.max(raw["tip_dens"][:, j])),                     # dichtester Ring [mm^-2]
+        "anastomoses": float(raw["ana_new"][:, :j + 1].sum()),                       # since t*
+        "front_position": float((r * tips).sum() / tips.sum()) if tips.sum() > 0 else np.nan,   # tip-weighted radius [mm]
+        # without a fit, defined in every run:
+        "spread_r90": spread_radius(raw, j, 0.9),                                    # 90 % of the length inside [mm]
+        "max_tip_density": float(np.max(raw["tip_dens"][:, j])),                     # densest ring [mm^-2]
     }
 
 
 def spread_radius(raw, j, q):
-    # Radius, innerhalb dessen der Anteil q der Hyphenlänge liegt (linear innerhalb eines Rings) [mm]
+    # radius within which the share q of the hyphal length lies (linear within a ring) [mm]
     L = raw["length_densities"][:, j] * raw["area"].ravel()
     if L.sum() <= 0:
         return np.nan
@@ -66,8 +66,8 @@ def spread_radius(raw, j, q):
 
 
 def front_speed(raw, hour, start=10):
-    # ohne Fit: Steigung des spitzengewichteten Radius über die Zeit (Theil-Sen) zwischen start und hour [mm/d].
-    # Auch negativ (Front zieht sich zurück), NaN nur ohne wachsende Spitzen
+    # without a fit: slope of the tip-weighted radius over time (Theil-Sen) between start and hour [mm/d].
+    # Can be negative (front retreats), NaN only without growing tips
     r = ring_centers_mm(raw["location"])
     t = raw["times"] * 24
     cols = np.where((t >= start - 1e-6) & (t <= hour + 1e-6))[0]
@@ -81,7 +81,7 @@ def front_speed(raw, hour, start=10):
 
 
 def truncate(raw, hour):
-    # Fenster bis hour [h nach t*]
+    # window up to hour [h after t*]
     keep = np.concatenate(([True], raw["times"][1:] * 24 <= hour + 1e-6))
     sim = {k: (v[:, keep] if isinstance(v, np.ndarray) and v.ndim == 2 else v) for k, v in raw.items()}
     sim["times"] = raw["times"][keep]
@@ -89,7 +89,7 @@ def truncate(raw, hour):
 
 
 def fit_table(sim):
-    # Wellen-Fits je Ring (AMFDensities.collectArrivalFits) als Tabelle, sim aus truncate
+    # wave fits per ring (AMFDensities.collectArrivalFits) as a table, sim from truncate
     r = ring_centers_mm(sim["location"])
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -106,10 +106,10 @@ def fit_table(sim):
 
 
 def good_rings(df):
-    # Gütekriterien wie petridishstats.py -> (alle guten, gesättigte für K1, Spitzenpeak im Fenster für K2)
+    # quality criteria as petridishstats.py -> (all good, saturated ones for K1, tip peak in the window for K2)
     good = df[df.R2_length >= config.R2_MIN_LENGTH]
     good_K1 = good[good.saturation >= config.SATURATION_MIN]
-    # wie petridishwave.py: Spitzenpeak und beide Halbwertspunkte im simulierten Fenster, sonst extrapoliert
+    # as petridishwave.py: tip peak and both half-maximum points inside the simulated window, otherwise extrapolated
     half = FWHM_BELL / good.lam_tip / 2
     inside = (good.t_tip - half >= good.t_first) & (good.t_tip + half <= good.t_last)
     good_tips = good[(good.R2_tips >= config.R2_MIN_TIPS) & inside]
@@ -125,7 +125,7 @@ def wave_outputs(raw, hour):
     good, good_K1, good_tips = good_rings(fit_table(sim))
 
     def velocity(t, rr):
-        # wie petridishwave.py: Radius gegen Ankunftszeit (Theil-Sen) [mm/h] -> [mm/d]; nur steigende Fronten
+        # as petridishwave.py: radius vs. arrival time (Theil-Sen) [mm/h] -> [mm/d]; rising fronts only
         if len(t) < config.MIN_RINGS:
             return np.nan
         s = amfd.theilSlope(t, rr)[0]
@@ -133,16 +133,16 @@ def wave_outputs(raw, hour):
 
     med = lambda d, x: float(np.median(x)) if len(d) >= config.MIN_RINGS else np.nan
     return {
-        "front_speed": front_speed(raw, hour),                          # [mm/d] ohne Fit, aus front_position(t)
-        "front_velocity": velocity(good_tips.t_tip, good_tips.r),      # [mm/d] aus dem Spitzenpeak je Ring (v_tips)
-        # Vergleichsvarianten (keine SA-Outputs): Ankunft der Längendichte t_n in allen guten bzw. gesättigten Ringen
+        "front_speed": front_speed(raw, hour),                          # [mm/d] without a fit, from front_position(t)
+        "front_velocity": velocity(good_tips.t_tip, good_tips.r),      # [mm/d] from the tip peak per ring (v_tips)
+        # comparison variants (not SA outputs): arrival t_n of the length density in all good or saturated rings
         "v_length": velocity(good.t_n, good.r),
         "v_length_sat": velocity(good_K1.t_n, good_K1.r),
         "K1": med(good_K1, good_K1.K1),                                 # [µm mm^-2]
         "K2": med(good_tips, good_tips.K2),                             # [mm^-2]
-        "wave_width": med(good_tips, FWHM_BELL / good_tips.lam_tip),    # Dauer der Spitzenwelle im Ring [h]
+        "wave_width": med(good_tips, FWHM_BELL / good_tips.lam_tip),    # duration of the tip wave in a ring [h]
         "encounter_C": float(C),                                        # f = C rho [mm^2 µm^-1 h^-1]
-        "beta": float(beta),                                            # a = beta rho n [µm h^-1], Ziel ≈ 23 (Oyarte Galvez 2025)
+        "beta": float(beta),                                            # a = beta rho n [µm h^-1], target ≈ 23 (Oyarte Galvez 2025)
         "n_wave_rings": len(good), "n_K1_rings": len(good_K1), "n_tip_rings": len(good_tips),
     }
 
@@ -160,12 +160,12 @@ def evaluate_run(run_id, force=False):
         print(f"{run_id}: already evaluated"); return
     raw = model_hook.load_raw(rdir / meta["snapshots"][0])
     rows = []
-    simulated = raw["times"][-1] * 24 + 1                              # [h nach t*], +1 h Toleranz
-    extra = [h for h in config.EXTRA_HOURS if max(config.SNAPSHOT_HOURS) < h <= simulated]   # nur lange Läufe
+    simulated = raw["times"][-1] * 24 + 1                              # [h after t*], +1 h tolerance
+    extra = [h for h in config.EXTRA_HOURS if max(config.SNAPSHOT_HOURS) < h <= simulated]   # long runs only
     for h in config.SNAPSHOT_HOURS + extra:
         for k, v in snapshot_outputs(raw, h).items():
             rows.append({"run_id": run_id, "time": h, "region": "all", "output": k, "value": v})
-    for h in [max(config.SNAPSHOT_HOURS)] + extra:                     # Wellen-Fits über das Fenster 0..h
+    for h in [max(config.SNAPSHOT_HOURS)] + extra:                     # wave fits over the window 0..h
         for k, v in wave_outputs(raw, h).items():
             rows.append({"run_id": run_id, "time": h, "region": "all", "output": k, "value": v})
     rows.append({"run_id": run_id, "time": 0, "region": "all", "output": "wait_days", "value": float(raw["wait_days"])})

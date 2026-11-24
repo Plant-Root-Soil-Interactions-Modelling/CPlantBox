@@ -1,17 +1,17 @@
 """
-Welche Morris-Läufe fehlen, warum, und ist das Fehlen zufällig? Rechnet nichts nach, liest nur
-results/design_morris.csv, results/status_morris.csv und zum Vergleich mit dem alten Modell
-(Baumausschluss) results_treeexcl/status_morris.csv.
+Which Morris runs are missing, why, and is the missingness random? Computes nothing, only reads
+results/design_morris.csv, results/status_morris.csv and, for comparison with the old model
+(tree exclusion), results_treeexcl/status_morris.csv.
 
-    sbatch sa_run.sbatch analyze_missing.py                     # aus dem Home-Verzeichnis
-    sbatch sa_run.sbatch analyze_missing.py results_treeexcl    # anderer Ordner für den alten Lauf
+    sbatch sa_run.sbatch analyze_missing.py                     # from the home directory
+    sbatch sa_run.sbatch analyze_missing.py results_treeexcl    # other folder for the old run
 
-1. Status neu gegen alt: wie viele Läufe fehlen in beiden, wie viele nur im neuen Modell
-2. Laufzeit der Simulation neu gegen alt (gleiche run_id, gleiche Faktoren und Seeds)
-3. Faktorstufen der fehlenden gegen die fertigen Läufe (u in [0, 1]): sind die Timeouts auf
-   bestimmte Faktorwerte konzentriert, fehlen gerade die teuren Ecken -> Morris verzerrt
-4. Welche Faktoren treiben die Laufzeit (Spearman zwischen Stufe und log-Laufzeit der fertigen Läufe)
-5. Vollständige Trajektorien je Replikat jetzt und wenn alle Timeouts nachgerechnet würden
+1. Status new vs. old: how many runs are missing in both, how many only in the new model
+2. Simulation runtime new vs. old (same run_id, same factors and seeds)
+3. Factor levels of the missing vs. the finished runs (u in [0, 1]): if the timeouts are concentrated
+   on certain factor values, exactly the expensive corners are missing -> Morris is biased
+4. Which factors drive the runtime (Spearman between level and log runtime of the finished runs)
+5. Complete trajectories per replicate now and if all timeouts were rerun
 """
 import sys
 
@@ -87,7 +87,7 @@ def main():
         g = d.assign(ok=ok_mask).groupby(["traj", "rep"])["ok"].sum()
         return (g == k1).groupby("rep").sum()
     now = complete(~bad)
-    if_rerun = complete(d["st_new"] != "failed")   # Timeouts/nicht ausgewertet nachgerechnet, failed bleibt
+    if_rerun = complete(d["st_new"] != "failed")   # timeouts/not evaluated rerun, failed stays
     print(pd.DataFrame({"now": now, "after rerunning": if_rerun}).to_string())
     lost = d[d["st_new"] == "failed"].groupby(["traj", "rep"]).size()
     if len(lost):

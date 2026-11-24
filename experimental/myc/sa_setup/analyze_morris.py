@@ -1,17 +1,17 @@
 """
-Phase 1: Morris-Auswertung für alle Outputs und Zeitpunkte (h nach t*).
+Phase 1: Morris analysis for all outputs and times (h after t*).
 
     python analyze_morris.py
-      -> results/morris_indices.csv     mu*, KI, mu, sigma je (time, region, output, factor)
-      -> results/plots/morris_ranking_t<T>.png    mu* mit 95%-KI je Output
-      -> results/plots/morris_musigma_t<T>.png    mu* vs. sigma (Nichtlinearität/Interaktion)
-      -> results/plots/morris_overview.png        mu*_rel für alle Outputs und Zeitpunkte
+      -> results/morris_indices.csv     mu*, CI, mu, sigma per (time, region, output, factor)
+      -> results/plots/morris_ranking_t<T>.png    mu* with 95% CI per output
+      -> results/plots/morris_musigma_t<T>.png    mu* vs. sigma (nonlinearity/interaction)
+      -> results/plots/morris_overview.png        mu*_rel for all outputs and times
 
-mu* ist in Output-Einheiten pro Durchlaufen des gesamten Faktorbereichs angegeben
-(normierte Faktoren) und damit zwischen Faktoren, nicht aber zwischen Outputs vergleichbar.
-Für den Vergleich dient mu*_rel = mu* / max(mu*) innerhalb eines Outputs.
-mu*, mu, sigma und das Bootstrap-KI kommen aus SALib.analyze.morris; das Rauschniveau
-aus den Replikaten wird hier berechnet.
+mu* is given in output units per traversal of the whole factor range
+(normalised factors) and is therefore comparable between factors, but not between outputs.
+For comparison, mu*_rel = mu* / max(mu*) within one output is used.
+mu*, mu, sigma and the bootstrap CI come from SALib.analyze.morris; the noise level
+from the replicates is computed here.
 """
 import numpy as np
 import pandas as pd
@@ -30,7 +30,7 @@ GROUP = {f.name: "control" if f.role == "control" else ("shared" if len(f.subtyp
          config.SUBTYPE_NAMES[f.subtypes[0]].lower()) for f in config.FACTORS}
 SA_OUTPUTS = config.SNAPSHOT_OUTPUTS + config.WAVE_OUTPUTS
 
-# Farben (Kategorien Runner/BAS/gemeinsam/Kontrolle, Sequenz für Heatmap)
+# colours (categories runner/BAS/shared/control, sequence for the heatmap)
 COLORS = {"runner": "#2a78d6", "bas": "#eb6834", "shared": "#1b8a6b", "control": "#8a8a85"}
 LABELS = {"runner": "Runner", "bas": "BAS", "shared": "shared", "control": "control"}
 MARKERS = {"runner": "o", "bas": "s", "shared": "D", "control": "X"}
@@ -62,13 +62,13 @@ def _grid(n):
 
 
 def _elementary_effects(X, Y):
-    """EEs je Trajektorie (nur fürs Rauschniveau, SALib gibt sie nicht heraus).
-    X: (r, k+1, k) normiert, Y: (..., r, k+1). Gibt EE: (..., r, k) zurück, normiert wie
-    SALib: Output-Änderung pro Schritt Δ im normierten Faktorbereich."""
-    dX = np.diff(X, axis=1)                              # (r, k, k): je Schritt ändert sich ein Faktor
-    i = np.abs(dX).argmax(-1)                            # (r, k): welcher Faktor in welchem Schritt
+    """EEs per trajectory (only for the noise level, SALib does not return them).
+    X: (r, k+1, k) normalised, Y: (..., r, k+1). Returns EE: (..., r, k), normalised as
+    SALib: output change per step Δ in the normalised factor range."""
+    dX = np.diff(X, axis=1)                              # (r, k, k): one factor changes per step
+    i = np.abs(dX).argmax(-1)                            # (r, k): which factor in which step
     dx = np.take_along_axis(dX, i[..., None], -1)[..., 0]
-    ee_step = np.diff(Y, axis=-1) / dx                   # (..., r, k) in Schrittreihenfolge
+    ee_step = np.diff(Y, axis=-1) / dx                   # (..., r, k) in step order
     EE = np.empty_like(ee_step)
     np.put_along_axis(EE, np.broadcast_to(i, ee_step.shape), ee_step, -1)
     return EE
@@ -81,7 +81,7 @@ def compute():
     X = np.load(config.RESULTS_DIR / "morris_X.npy").reshape(-1, k + 1, k)   # (r, k+1, k)
     out = pd.read_csv(config.RESULTS_DIR / "outputs_morris.csv").merge(
         design[["run_id", "traj", "step", "rep"]], on="run_id")
-    out = out[out.output.isin(SA_OUTPUTS)]       # Diagnosen ("n_*", wait_days) gehen nicht in die SA
+    out = out[out.output.isin(SA_OUTPUTS)]       # diagnostics ("n_*", wait_days) do not enter the SA
     r, kp1, _ = X.shape
     R = int(design["rep"].max()) + 1
     vals = out.set_index(KEY + ["rep", "traj", "step"])["value"]
@@ -90,8 +90,8 @@ def compute():
         Y = np.full((R, r, kp1), np.nan)
         for (_, _, _, rep, t, st), v in s.items():
             Y[rep, t, st] = v
-        # Jedes Replikat ist eine in sich konsistente Trajektorie (gemeinsamer Seed) -> zählt nur
-        # vollständig. Gültig sind Trajektorien mit mind. einem vollständigen Replikat.
+        # Every replicate is a self-consistent trajectory (shared seed) -> counts only when
+        # complete. Valid are trajectories with at least one complete replicate.
         complete = np.isfinite(Y).all(-1)                  # (R, r)
         Y = np.where(complete[..., None], Y, np.nan)
         valid = complete.any(0)
@@ -100,18 +100,18 @@ def compute():
         res["n_valid"] = np.full(k, n_valid)
         res["mu_star_lo"], res["mu_star_hi"] = np.full(k, np.nan), np.full(k, np.nan)
         if n_valid:
-            # EE ist linear in Y: Replikate vorher mitteln == EEs über Replikate mitteln
+            # EE is linear in Y: averaging replicates first == averaging EEs over replicates
             Y_mean = np.nanmean(Y[:, valid], 0)
             Si = morris_analyze.analyze(problem, X[valid].reshape(-1, k), Y_mean.reshape(-1),
                                         num_resamples=1000, conf_level=0.95,
                                         num_levels=config.MORRIS_LEVELS, seed=config.BASE_SEED)
             for m in ("mu_star", "mu", "sigma"):
                 res[m] = np.asarray(Si[m], dtype=float)
-            # SALib liefert das KI als Halbbreite (Normalapproximation des Bootstraps)
+            # SALib returns the CI as half-width (normal approximation of the bootstrap)
             res["mu_star_lo"] = np.maximum(res["mu_star"] - Si["mu_star_conf"], 0)
             res["mu_star_hi"] = res["mu_star"] + Si["mu_star_conf"]
-        # Rauschniveau je Faktor: mu*, das ein wirkungsloser Faktor allein durch Seed-Rauschen
-        # hätte. SE des Replikat-Mittels je EE, E|N(0,se)| = se*sqrt(2/pi), gemittelt über Trajektorien.
+        # Noise level per factor: the mu* an ineffective factor would have from seed noise alone.
+        # SE of the replicate mean per EE, E|N(0,se)| = se*sqrt(2/pi), averaged over trajectories.
         if R > 1:
             EE_rep = _elementary_effects(X, Y)             # (R, r, k)
             se = np.nanstd(EE_rep, 0, ddof=1) / np.sqrt(R)
@@ -124,9 +124,9 @@ def compute():
     ind = pd.DataFrame(rows)
     mx = ind.groupby(KEY)["mu_star"].transform("max").replace(0, np.nan)
     ind["mu_star_rel"] = ind["mu_star"] / mx
-    # "im Rauschen": mu* nicht deutlich (Faktor 2) über dem, was Seed-Rauschen allein erzeugt.
-    # Hinweis: Der Kontrollfaktor liefert mit gemeinsamen Seeds exakt 0, wenn er wirklich
-    # wirkungslos ist — er prüft den b_prob-Schalter, nicht das Rauschniveau.
+    # "within noise": mu* not clearly (factor 2) above what seed noise alone produces.
+    # Note: with shared seeds the control factor gives exactly 0 if it really has no
+    # effect — it checks the b_prob switch, not the noise level.
     ind["in_noise"] = ind["mu_star"] <= 2 * ind["noise_level"]
     ind.to_csv(config.RESULTS_DIR / "morris_indices.csv", index=False)
     return ind
@@ -158,7 +158,7 @@ def plot_ranking(ind, t):
         ax.barh(y, d.mu_star, color=[_color(n) for n in d.factor], height=0.6, edgecolor="white", lw=1)
         ax.errorbar(d.mu_star, y, xerr=[d.mu_star - d.mu_star_lo, d.mu_star_hi - d.mu_star],
                     fmt="none", ecolor=INK2, elinewidth=0.8, capsize=2)
-        if d.noise_level.notna().any():   # Rauschniveau je Faktor als kurze Markierung
+        if d.noise_level.notna().any():   # noise level per factor as a short tick
             ax.scatter(2 * d.noise_level, y, marker="|", s=90, color=INK, lw=1.5, zorder=4)
         ax.set_yticks(y, d.factor, fontsize=8, color=INK)
         ax.set_title(o, fontsize=10, color=INK, loc="left")
@@ -198,7 +198,7 @@ def plot_musigma(ind, t, n_label=6):
 
 
 def plot_overview(ind):
-    # alle Outputs und Zeitpunkte in einer Heatmap: Spalte = Output @ Zeitpunkt, Zeile = Faktor
+    # all outputs and times in one heatmap: column = output @ time, row = factor
     from matplotlib.colors import LinearSegmentedColormap
     cmap = LinearSegmentedColormap.from_list("seq", SEQ)
     sub = ind[ind.region == "all"].copy()
