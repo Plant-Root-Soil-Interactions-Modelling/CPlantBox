@@ -2,7 +2,7 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import numpy as np
 import plantbox as pb
 import networkx as nx
-from scipy.spatial import Delaunay
+from scipy.spatial import Delaunay, cKDTree
 from scipy.spatial.distance import pdist
 from scipy.spatial.distance import cdist
 
@@ -49,6 +49,71 @@ def getNetworkX(mycp, geometry = None, hyphae_only = True):
     for k, (u, v) in enumerate(segs_merged):
         if u != v: # an anastomosis segment of zero length could become a self loop
             G.add_edge(int(u), int(v), **{key: float(data[key][k]) for key in keys})
+    return G
+
+def getPlanarNetwork(mycp, x_min, eps = 1.e-9):
+    # 2D graph of the hyphal network as extracted from top view images (Oyarte Galvez et al. 2025: planar skeleton, crossings are
+    # degree 4 nodes): all hyphal segments with x >= x_min (fungal side, segments across x = x_min are cut there) projected to the
+    # x-y plane, every crossing of two segments becomes a node of both. Anastomoses as in getNetworkX. Node ids: plant node ids,
+    # new nodes (cuts, crossings) >= graph attribute "n_plant_nodes". Edges: "length" (3D, split proportionally), "length_xy"
+    ana = amf.getMycSegmentAnalyser(mycp)
+    ana.filter("organType", 5)
+    nodes = np.array([[n.x, n.y, n.z] for n in ana.nodes])
+    segs = np.array([[s.x, s.y] for s in ana.segments], dtype=int).reshape(-1, 2)
+    n_plant = max(len(nodes), mycp.getNumberOfNodes())
+    merges = getAnastomosisMerges(mycp)
+    if merges and len(segs) > 0:
+        segs = np.vectorize(lambda i: merges.get(i, i), otypes=[int])(segs)
+    segs = segs[segs[:, 0] != segs[:, 1]]
+    pos = [nodes]
+    # cut at x = x_min
+    xa, xb = nodes[segs[:, 0], 0], nodes[segs[:, 1], 0]
+    keep = (xa >= x_min) & (xb >= x_min)
+    cross = (xa >= x_min) != (xb >= x_min)
+    cut = segs[cross]
+    inside = np.where(nodes[cut[:, 0], 0] >= x_min, cut[:, 0], cut[:, 1])
+    a, b = nodes[cut[:, 0]], nodes[cut[:, 1]]
+    p_cut = a + ((x_min - a[:, 0]) / (b[:, 0] - a[:, 0]))[:, None] * (b - a)
+    cut_ids = n_plant + np.arange(len(cut))
+    pos.append(p_cut)
+    segs = np.vstack([segs[keep], np.column_stack([inside, cut_ids])]) if len(cut) else segs[keep]
+    pos = np.vstack(pos)
+    next_id = n_plant + len(cut)
+    # crossings in 2D: candidate pairs from the midpoints (two segments of length <= L can only cross if their midpoints are closer than L)
+    p, q = pos[segs[:, 0]], pos[segs[:, 1]]
+    seg_len = np.linalg.norm(q - p, axis=1)
+    splits = [[] for _ in range(len(segs))] # (parameter along the segment, node id)
+    if len(segs) > 1:
+        L = np.linalg.norm((q - p)[:, :2], axis=1).max()
+        pairs = cKDTree(0.5 * (p + q)[:, :2]).query_pairs(L, output_type="ndarray")
+        i, j = pairs[:, 0], pairs[:, 1]
+        share = (segs[i, 0] == segs[j, 0]) | (segs[i, 0] == segs[j, 1]) | (segs[i, 1] == segs[j, 0]) | (segs[i, 1] == segs[j, 1])
+        i, j = i[~share], j[~share]
+        r, s = (q - p)[i, :2], (q - p)[j, :2]
+        d = p[j, :2] - p[i, :2]
+        den = r[:, 0] * s[:, 1] - r[:, 1] * s[:, 0]
+        ok = np.abs(den) > eps # parallel segments do not cross
+        t = np.where(ok, (d[:, 0] * s[:, 1] - d[:, 1] * s[:, 0]) / np.where(ok, den, 1.), -1.)
+        u = np.where(ok, (d[:, 0] * r[:, 1] - d[:, 1] * r[:, 0]) / np.where(ok, den, 1.), -1.)
+        hit = ok & (t > eps) & (t < 1 - eps) & (u > eps) & (u < 1 - eps)
+        i, j, t, u = i[hit], j[hit], t[hit], u[hit]
+        new = p[i] + t[:, None] * (q[i] - p[i]) # z of the first segment, only x-y is used in 2D
+        ids = next_id + np.arange(len(i))
+        pos = np.vstack([pos, new])
+        for k in range(len(i)):
+            splits[i[k]].append((t[k], ids[k]))
+            splits[j[k]].append((u[k], ids[k]))
+    G = nx.Graph(n_plant_nodes = n_plant)
+    def add_edge(n1, n2, frac, k):
+        if n1 == n2:
+            return
+        G.add_edge(int(n1), int(n2), length = float(frac * seg_len[k]), length_xy = float(np.linalg.norm(pos[n1, :2] - pos[n2, :2])))
+    for k, (n1, n2) in enumerate(segs):
+        chain = [(0., n1)] + sorted(splits[k]) + [(1., n2)]
+        for (t1, m1), (t2, m2) in zip(chain[:-1], chain[1:]):
+            add_edge(m1, m2, t2 - t1, k)
+    for n in G.nodes:
+        G.nodes[n]["pos"] = tuple(pos[n].tolist())
     return G
 
 def lengthWeight(dim):
@@ -176,6 +241,30 @@ def getEfficiencies(S, T, R, dim = 3):
     # (i) global efficiency: transport between arbitrary pairs of the transport relevant nodes T and R
     # (ii) root efficiency: transport between the terminal nodes T and the root nodes R
     return weightedEfficiencySubset(S, list(T) + list(R), None, dim), weightedEfficiencySubset(S, T, R, dim)
+
+def relativeRootEfficiency(mycp, geometry, barrier_thickness, dim = 2, root_dist = 0.5, planar = True):
+    # relative root efficiency as in Oyarte Galvez et al. (2025): E_r of the network between the terminal nodes T and the root nodes R
+    # (getTerminalRootNodes), normalised between the minimum spanning tree and the Delaunay triangulation on the same nodes:
+    # E_rel = (E_r - E_r,MST) / (E_r,DT - E_r,MST).
+    # planar = True: graph as from the top view images of the experiment (getPlanarNetwork, fungal side x >= -barrier_thickness/2,
+    # crossings are nodes), always 2D; planar = False: 3D graph cropped to geometry (small_hyphae_dish), dim = 2 or 3.
+    # Dijkstra runs from the smaller of the two node sets (the efficiency is symmetric). Returns a dict with all four values and the set sizes
+    if planar:
+        S, dim = simplifyGraph(getPlanarNetwork(mycp, -barrier_thickness / 2)), 2
+    else:
+        S = simplifyGraph(getNetworkX(mycp, geometry))
+    T, R = getTerminalRootNodes(mycp, S, barrier_thickness, root_dist)
+    out = {"n_T": len(T), "n_R": len(R), "E_r": np.nan, "E_r_DT": np.nan, "E_r_MST": np.nan, "E_rel": np.nan}
+    if len(T) == 0 or len(R) == 0 or S.number_of_nodes() < dim + 2:
+        return out
+    a, b = (T, R) if len(T) <= len(R) else (R, T)
+    D, M = getReferenceNetworks(S, dim)
+    out["E_r"] = weightedEfficiencySubset(S, a, b, dim)
+    out["E_r_DT"] = weightedEfficiencySubset(D, a, b, dim)
+    out["E_r_MST"] = weightedEfficiencySubset(M, a, b, dim)
+    span = out["E_r_DT"] - out["E_r_MST"]
+    out["E_rel"] = (out["E_r"] - out["E_r_MST"]) / span if span > 0 else np.nan
+    return out
 
 def betweennessSubset(G, sources, targets, dim = 3, edges = False):
     # fraction of all shortest (source, target) paths running through each node (or edge, if edges = True);

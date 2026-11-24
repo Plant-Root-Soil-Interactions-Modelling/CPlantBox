@@ -75,8 +75,11 @@ def simulate(xml_path, seed, outdir, hours=None):
     ana_rate = C * rho * 1000 * tips                                 # pro Stunde
     ana_bas = rng.poisson(ana_rate * frac_bas).astype(float)
     ana_runner = rng.poisson(ana_rate * (1 - frac_bas)).astype(float)
+    branch_rate = (val(B, "b") * frac_bas + 0.576 / val(R, "ln") * 0.05 * (1 - frac_bas)) / 24   # pro Spitze und Stunde
     raw = {"seed": seed, "time_star": time_star, "location": outer, "area": area,
            "times": time_star + t_h / 24, "tip_dens": tips / area[:, None], "active_tips": tips,
+           "branch_new": rng.poisson(branch_rate * tips).astype(float),
+           "root_eff_E_rel": 0.5 * val(R, "ana") * (val(R, "distTH") / 0.01) ** 0.3 * (val(B, "a") / 0.0025) ** 0.2 * noise(0.05),
            "ana_new": ana_bas + ana_runner, "length_densities": rho, "wait_days": wait_days,
            "length_runner": rho * (1 - frac_bas), "length_bas": rho * frac_bas,
            "active_tips_runner": tips - tips_bas, "active_tips_bas": tips_bas,

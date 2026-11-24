@@ -156,10 +156,29 @@ Sie zeigen nur das Format, inhaltlich bedeuten sie nichts.
 
 ## Kalibrierung (`calibrate.py`)
 
-Nullstellensuche `F(x) = 0` mit `F_i = log(y_i / y*_i) / log(1 + tol_i)` über die Zielwerte
-β ≈ 23 µm/h, K1 ≈ 1400 µm mm⁻², BAS-Anteil 0,3 und K2 ≈ 0,15 mm⁻². Ein Ziel gilt als
-erreicht, wenn |F_i| ≤ 1 ist. Das Verfahren ist Broyden (mehrdimensionale Sekante) im normierten
-Parameterraum. Die Start-Jacobimatrix kommt aus großen Vorwärtsdifferenzen. Alle
+Nullstellensuche `F(x) = 0` mit `F_i = log(y_i / y*_i) / log(1 + tol_i)`. Ein Ziel gilt als
+erreicht, wenn |F_i| ≤ 1 ist. Gelöst wird mit `scipy.optimize.least_squares` (TRF, Box-Grenzen)
+im normierten Parameterraum. Die Jacobi-Matrix kommt aus großen Vorwärtsdifferenzen (≈ 0,15),
+alle Differenzenpunkte laufen gleichzeitig. Die Suche endet, sobald alle Ziele in der Toleranz liegen.
+
+16 Parameter: getrennt nach Runner/BAS wie in der SA (v, hlt, theta, b, ln, lmax), dazu getrennt
+tropismN und der Radius a, außerdem der BAS-Anteil der Runner-Nachfolger (`successor percentage`).
+Gemeinsam: ana, distTH. lb der Runner ist an ln gekoppelt, la bleibt fest (Template-XML).
+Zielwerte bisher: β 23 µm/h, K1 1400 µm mm⁻², BAS-Anteil 0,3, K2 0,15 mm⁻², Branching-Rate
+4 %/h (Ereignisse je wachsender Spitze und Stunde, ein Tip-Split zählt einmal, `branch_new` in `raw.npz`),
+Wellengeschwindigkeit 280 µm/h (alle Oyarte Galvez et al. 2025) und relative Root Efficiency
+≈ 0,5: (E_r − E_r,MST)/(E_r,DT − E_r,MST) zwischen Spitzen/BAS-Ansatzstellen und Wurzelknoten (≤ 5 mm
+an der Barriere), am Ende der Simulation (`AMFNetwork.relativeRootEfficiency`, abschaltbar über
+`config.ROOT_EFFICIENCY`). Ausgewertet wird wie im Experiment ein planarer Graph aus der Draufsicht
+(`AMFNetwork.getPlanarNetwork`): alle Hyphensegmente der Pilzseite in die x-y-Ebene projiziert, jede
+Kreuzung zweier Segmente wird ein Knoten (im Bildskelett Grad 4).
+Weil 7 Ziele 16 Parameter nicht eindeutig festlegen, hat jeder Parameter einen **Prior**, ein
+Zusatzresiduum z = (x − Mitte)/σ (log bei log-Parametern). Literaturpriors (`CalParam.prior`, Bereich
+= ±2σ) gibt es für R_v, B_v, R_hlt, R_ln, R_theta, B_theta, B_hlt, B_a (BAS-Durchmesser 2–10 µm, Bago 1998). R_a hat nur eine Untergrenze von 10 µm Radius (Durchmesser > 20 µm,
+Bago 1998) als Grenze des Suchbereichs. Alle übrigen haben einen schwachen
+Prior um den Nominalwert (σ = `WEAK_PRIOR_SIGMA` × Suchbereich). Parameter, auf die kein Ziel wirkt,
+bleiben so beim Nominalwert. Der Bericht meldet Literaturpriors, von denen die Lösung mehr als 2σ
+abweicht. Alle
 Auswertungen verwenden dieselben Seeds (CRN), die Outputs sind über die Seeds gepoolt, der
 Standardfehler kommt aus einem Bootstrap. Parameter, Suchbereiche, Ziele und Toleranzen
 stehen oben in `calibrate.py` (`PARAMS`, `TARGETS`).
@@ -170,8 +189,10 @@ sbatch sa_run.sbatch calibrate.py --check    # Bereiche, Startpunkt, Anzahl Ausw
 sbatch calibrate.sbatch                      # 16 Kerne, 16 Seeds je Auswertung
 ```
 
-Ergebnisse in `calibration/`: `evals.csv` (jede Auswertung mit Werten, SE, F),
-`jacobian.csv` (geschätzte Sensitivitäten dF/du, zeigt, welcher Parameter welches Ziel treibt),
+Ergebnisse in `calibration/`: **`report.txt`** (nach jeder Auswertung neu geschrieben, auch nach Abbruch:
+Status, bester Punkt, Ziele, fehlgeschlagene Läufe mit Fehlermeldungen, undefinierte Outputs, Rauschen,
+Parameter ohne Einfluss, Jacobi-Rang), `evals.csv` (jede Auswertung mit Werten, SE, F),
+`jacobian.csv` (Sensitivitäten dF/du, nur wenn least_squares regulär endet),
 `best_params.xml`. Neustartfähig: denselben Befehl erneut einreichen.
 Lokal testen: `SA_DUMMY=1 python3 calibrate.py --seeds 8`.
 

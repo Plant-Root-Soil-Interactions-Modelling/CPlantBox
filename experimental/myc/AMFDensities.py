@@ -101,6 +101,42 @@ def getActiveTipsPerRingPerSubtype(times, plant, rings, ot = 5):
         mats[0] = np.zeros((len(rings), len(t_eval)))
     return mats
 
+def getBranchingPerRing(times, plant, rings, ot = 5):
+    # branching events per ring in each interval (times[i], times[i+1]] (rings x len(times)-1, same layout as getParasPerRing), at the
+    # branching point (node 0 of the child). A tip split creates two children at the same time and place (Hyphae::simulate, b_prob > 0.5),
+    # a lateral branch one: children are grouped by (parent, creation time, position), each group is one event.
+    # Hyphae emerging from roots are no branching events.
+    times = np.asarray(times)
+    mat = np.zeros((len(rings), len(times) - 1))
+    events = {}
+    for o in plant.getOrgans(ot):
+        parent = o.getParent()
+        if parent is None or parent.organType() != ot:
+            continue
+        p = o.getNode(0)
+        events[(parent.getId(), round(o.getNodeCT(0), 9), round(p.x, 6), round(p.y, 6), round(p.z, 6))] = p
+    for (_, ct, *_), p in events.items():
+        j = np.searchsorted(times, ct, side="left") # as getParasPerRing: i means times[i-1] < ct <= times[i]
+        if j < 1 or j >= len(times):
+            continue
+        for r, ring in enumerate(rings):
+            if ring.getDist(p) < 0:
+                mat[r, j - 1] += 1
+                break
+    return mat
+
+def branchingRate(simulations, min_tips = 5):
+    # branching events per growing tip and hour [h^-1] (Oyarte Galvez et al. 2025: about 4 %/h), as anastomosisBeta: sum of the events
+    # over sum of tips x interval length, over all rings and intervals (first column left out) with at least min_tips growing tips
+    ev_sum, tip_h = 0., 0.
+    for sim in simulations:
+        dt_h = np.diff(np.concatenate([[0.], sim["times"]]))[1:] * 24
+        tips, br = sim["active_tips"][:, 1:], sim["branch_new"][:, 1:]
+        ok = tips >= min_tips
+        ev_sum += br[ok].sum()
+        tip_h += (tips * dt_h)[ok].sum()
+    return ev_sum / tip_h if tip_h > 0 else np.nan
+
 def _pointSegmentDistance(p, a, b):
     # distance of the points p to the segments [a, b] (all (n, 3), row by row)
     v = b - a

@@ -57,6 +57,30 @@ def write_xml(values: dict, out_path: Path, dx: float | None = None, template=No
     return out_path
 
 
+def write_hyphae_xml(updates: dict, out_path: Path, template=None):
+    """updates: {(subType, Parametername): Wert}, unabhängig von config.FACTORS (Kalibrierung).
+    "successor" setzt den Anteil des ersten Nachfolgers: percentage = "p, 1 - p"."""
+    tree = _parse(template or config.TEMPLATE_XML)
+    root = tree.getroot()
+    for (st, name), val in updates.items():
+        p = _param(_hyphae(root, st), name)
+        if name == "successor":
+            if len(p.get("percentage").split(",")) != 2:
+                raise ValueError(f"successor von subType {st}: genau zwei Nachfolger erwartet")
+            p.set("percentage", f"{float(val)!r}, {1 - float(val)!r}")
+        else:
+            _set_value(p, val)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    tree.write(out_path, encoding="utf-8", xml_declaration=True)
+    return out_path
+
+
+def hyphae_nominal(subtype, name, template=None):
+    """Nominalwert eines Hyphenparameters (successor: Anteil des ersten Nachfolgers)."""
+    p = _param(_hyphae(_parse(template or config.TEMPLATE_XML).getroot(), subtype), name)
+    return float(p.get("percentage").split(",")[0]) if name == "successor" else float(p.get("value"))
+
+
 def nominal_values(template=None):
     """Liest die Nominalwerte aller Faktoren aus der Template-XML (gemeinsame Faktoren: erster subType)."""
     root = _parse(template or config.TEMPLATE_XML).getroot()

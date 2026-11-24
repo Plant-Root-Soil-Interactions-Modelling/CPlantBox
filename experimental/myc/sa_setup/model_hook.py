@@ -66,7 +66,20 @@ def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None
     raw = {"seed": seed, "time_star": time_star, "location": location, "area": area[:, 0], "times": times[1:],
            "tip_dens": sum(active_tips.values()) / area, "active_tips": sum(active_tips.values()),
            "ana_new": mats["anastomosis_new"], "length_densities": mats["length"] * 10 / area,
+           "branch_new": amfd.getBranchingPerRing(times, mycp, rings),
            "wait_days": stats["wait_days"]}
+    if config.ROOT_EFFICIENCY:   # Netzwerk am Ende der Simulation, planar wie die Bildgraphen des Experiments (Kreuzungen = Knoten)
+        import time
+        import traceback
+        t0 = time.time()
+        try:   # ein Fehler hier (auch fehlendes networkx) soll nur diesen Output kosten, nicht den Lauf
+            import AMFNetwork as amfn
+            eff = amfn.relativeRootEfficiency(mycp, dish["small_hyphae_dish"], dish["barrier_thickness"], dim=2)
+            raw.update({"root_eff_" + k: v for k, v in eff.items()})
+        except Exception:
+            raw["root_eff_E_rel"] = np.nan
+            raw["root_eff_error"] = traceback.format_exc()[-2000:]
+        raw["root_eff_seconds"] = time.time() - t0
     for st, key in amfd.HYPHAL_SUBTYPES.items():
         raw["length_" + key] = mats[f"length_st{st}"] * 10 / area
         raw["active_tips_" + key] = active_tips.get(st, zeros)

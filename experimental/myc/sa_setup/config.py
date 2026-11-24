@@ -107,6 +107,7 @@ MAX_WAIT_DAYS = 30          # ohne t* nach so vielen Tagen: Lauf zählt als fehl
 MIN_GROWING_TIPS = None
 STALL_FRACTION = None
 SAVE_VTP = False            # finale Geometrie als .vtp speichern (für Netzwerkauswertungen, groß)
+ROOT_EFFICIENCY = True      # relative Root Efficiency am Ende (AMFNetwork.relativeRootEfficiency, 2D) in raw.npz
 
 # --------------------------------------------------------------------------
 # Outputs (evaluate.py)

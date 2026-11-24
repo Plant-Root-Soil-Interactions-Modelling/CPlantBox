@@ -48,4 +48,5 @@ fi
 echo "Auswertung: Job(s) $EVAL"
 COL=$(sbatch --parsable --dependency=afterany:$EVAL --export=ALL,DESIGN="$DESIGN" "$JOBS/collect.sbatch")
 echo "Sammeln + Analyse: Job $COL  ->  slurmOut/sa_collect-$COL.out"
+[[ -n "${ID_FILE:-}" ]] && echo "$COL" > "$ID_FILE"   # für submit_all.sh: nächste Stufe hängt am Sammel-Job
 echo "Status:     squeue -u \$USER   |   danach: $SA_DIR/results/ (status_*.csv, Analysen, plots/)"
