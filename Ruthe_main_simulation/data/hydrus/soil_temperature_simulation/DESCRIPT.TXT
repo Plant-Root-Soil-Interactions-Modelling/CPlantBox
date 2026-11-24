@@ -1,0 +1,4 @@
+Pcp_File_Version=1
+Copy of redo_simulation, unchanged (as is);
+
+FINAL VERSION (air temperature + precipitation only, for comparison). Copy of run 1 (redo_simulation_as_is), same physics, with: initial soil temperature from a spin-up (first year 01.04.1994-31.03.1995 repeated until the 01.04 profile changes < 0.05 C, profile in initial_temperature_spinup.csv); 20 observation nodes at 10-200 cm; hourly print interval. No METEO.IN, so latitude/altitude are not used.

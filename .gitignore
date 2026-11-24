@@ -26,7 +26,6 @@ Codeblocks
 *.bbl
 *.dvi
 *.idx
-*.out
 *.tdo
 *.toc
 

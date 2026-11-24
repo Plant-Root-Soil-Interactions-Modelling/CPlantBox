@@ -1,15 +1,19 @@
 [project]
 name = "Ruthe"
 version = "0.1.0"
-description = "Code accompanying the study Hack et al. 2026 on temperature-dependent
-               root growth modeling in winter wheat using CPlantBox, including virtual
-               sampling, model evaluation, and perirhizal radius analyses."
+description = """\
+    Code accompanying the study Hack et al. 2026 on temperature-dependent \
+    root growth modeling in winter wheat using CPlantBox, including virtual \
+    sampling, model evaluation, and perirhizal radius analyses."""
 readme = "README.md"
 requires-python = ">=3.12"
+# CPlantBox (imported as plantbox) is not on PyPI and has to be installed separately, see README.md
 dependencies = [
+    "ipykernel==7.2.0",
     "matplotlib==3.8.2",
     "numpy==1.26.4",
     "pandas==3.0.3",
     "scipy==1.17.1",
     "vtk==9.3.0",
+    "xlrd==2.0.2",
 ]
