@@ -139,6 +139,11 @@ ENCOUNTER_MIN_TIPS = 5
 PHASE0_NOISE_SEEDS = 50
 PHASE0_DX_VALUES = [0.01, 0.005, 0.0025]   # nominal, half, quarter (runtime grows roughly with 1/dx!)
 PHASE0_DX_SEEDS = 10
+# dt convergence: time steps per day (24 = 1 h as the image interval of the experiment, which only fixes the evaluation
+# interval). Anastomosis is checked once per step at the tip node, ana and the BAS tip splitting (b dt) are per step,
+# so these outputs may depend on dt. Runtime grows roughly with the number of steps
+PHASE0_DT_STEPS_PER_DAY = [24, 48, 96]   # dt = 1 h, 0.5 h, 0.25 h
+PHASE0_DT_SEEDS = 10
 PHASE0_RANGE_POINTS = 20    # random points in the factor space, one run each: abort rate and runtime at the edges
 
 # --------------------------------------------------------------------------

@@ -51,7 +51,11 @@ def main():
     print()
 
     k = len(config.FACTORS)
-    n0 = config.PHASE0_NOISE_SEEDS + len(config.PHASE0_DX_VALUES) * config.PHASE0_DX_SEEDS + config.PHASE0_RANGE_POINTS
+    n0 = (config.PHASE0_NOISE_SEEDS + len(config.PHASE0_DX_VALUES) * config.PHASE0_DX_SEEDS + config.PHASE0_RANGE_POINTS
+          + len(config.PHASE0_DT_STEPS_PER_DAY) * config.PHASE0_DT_SEEDS)
+    dt_cost = sum(spd / config.STEPS_PER_DAY for spd in config.PHASE0_DT_STEPS_PER_DAY) * config.PHASE0_DT_SEEDS
+    print(f"dt test: {len(config.PHASE0_DT_STEPS_PER_DAY) * config.PHASE0_DT_SEEDS} runs, runtime ≈ {dt_cost:.0f} nominal runs "
+          "(grows with the number of steps -> --time in sim.sbatch)")
     n1 = config.MORRIS_TRAJECTORIES * (k + 1) * config.MORRIS_REPLICATES
     print(f"\nPhase 0: {n0} runs  ≈ {n0 * MIN_PER_RUN / 60:.0f} CPU-h")
     print(f"Morris:  {config.MORRIS_TRAJECTORIES} trajectories × {k + 1} points × "

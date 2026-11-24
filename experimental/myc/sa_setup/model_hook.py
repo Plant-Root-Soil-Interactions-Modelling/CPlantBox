@@ -31,9 +31,13 @@ def import_amf():
             sys.path.insert(0, str(p))
 
 
-def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None) -> list[Path]:
-    """hours: simulation time after t* [h], default config.HOURS_HYPHAE (for the 120 h test)."""
+def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None,
+             steps_per_day: int | None = None) -> list[Path]:
+    """hours: simulation time after t* [h], default config.HOURS_HYPHAE (for the 120 h test).
+    steps_per_day: time steps per day, default config.STEPS_PER_DAY (for the dt convergence test). The evaluation
+    stays hourly (times from makeSimulation), only the numerical step changes."""
     hours = int(hours) if hours else config.HOURS_HYPHAE
+    steps_per_day = int(steps_per_day) if steps_per_day else config.STEPS_PER_DAY
     if USE_DUMMY:
         import dummy_model
         return dummy_model.simulate(xml_path, seed, outdir, hours)
@@ -46,7 +50,7 @@ def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None
     dish = amfs.defaultPetridish(nRings=config.N_RINGS, hyphae_layer=config.HYPHAE_LAYER, verbose=False)
     location = amfs.ringLocations(dish["radius"], config.N_RINGS)
     area = amfs.ringVolume(dish["radius"], config.N_RINGS, 1.0, dish["barrier_thickness"])[:, None] * 100  # [mm^2]
-    dt, nSteps = amfs.setUpSimulationTime(config.ROOT_DAYS, config.STEPS_PER_DAY)
+    dt, nSteps = amfs.setUpSimulationTime(config.ROOT_DAYS, steps_per_day)
     stats = {}
     mycp, time_star, times = amfs.makeSimulation(
         seed, str(xml_path.parent) + "/", xml_path.stem, dish["height"], dish["petri_dish"], dish["small_hyphae_dish"],
@@ -68,7 +72,7 @@ def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None
            "ana_new": mats["anastomosis_new"], "length_densities": mats["length"] * 10 / area,
            "branch_new": amfd.getBranchingPerRing(times, mycp, rings),
            "branch_new_runner": amfd.getBranchingPerRing(times, mycp, rings, child_subtype=config.RUNNER),
-           "wait_days": stats["wait_days"]}
+           "wait_days": stats["wait_days"], "steps_per_day": steps_per_day}
     if config.ROOT_EFFICIENCY:   # network at the end of the simulation, planar like the image graphs of the experiment (crossings = nodes)
         import time
         import traceback

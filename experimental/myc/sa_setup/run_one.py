@@ -33,11 +33,12 @@ def run_row(row):
     xml_path = write_xml(values, rdir / "params.xml", dx=dx)
 
     hours = None if pd.isna(row.get("hours", np.nan)) else float(row["hours"])   # only set in the 120 h test
+    spd = None if pd.isna(row.get("steps_per_day", np.nan)) else int(row["steps_per_day"])   # only in the dt test
     meta = {"run_id": row["run_id"], "seed": int(row["seed"]), "dx": dx, "hours": hours,
-            "values": values, "dev_mode": config.DEV_MODE}
+            "steps_per_day": spd or config.STEPS_PER_DAY, "values": values, "dev_mode": config.DEV_MODE}
     t0 = time.time()
     try:
-        snaps = model_hook.simulate(xml_path, int(row["seed"]), rdir, hours=hours)
+        snaps = model_hook.simulate(xml_path, int(row["seed"]), rdir, hours=hours, steps_per_day=spd)
         meta.update(sim_status="ok", snapshots=[p.name for p in snaps])
     except Exception:
         meta.update(sim_status="failed", error=traceback.format_exc())

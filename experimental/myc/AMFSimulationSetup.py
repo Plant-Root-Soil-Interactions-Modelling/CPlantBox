@@ -166,6 +166,7 @@ def countGrowingTips(plant, geometry, window, ot = 5):
     return n
 
 def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half_dish, dt, nSteps, hours_hyphae, filename, animation = False, verbose = False,
+                   # dt [d], nSteps: time step and number of steps of the root phase; hours_hyphae: duration of the hyphae phase after t* [h]
                    max_wait_days = None, stats = None, min_growing_tips = None, stall_fraction = None, growing_window = 0.25, animation_dir = "animation/",
                    turn_off_root_growth = False, turn_off_colonization = False, progress_every = None,
                    seed_pos_x = -9.4 / 2 + 0.5, hyphal_emergence_density = 4.0, lmbd = 0.15, crossing_length = 10., hyphae_parameters = None):
@@ -180,7 +181,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     # progress_every: print one line with the state of the simulation every progress_every time steps (None = no output), e.g. 24 = once per simulated day
     # seed_pos_x: x position of the seed [cm] (default 5 mm from the edge of the 94 mm dish), it lies at y = 0, z = -height/2
     # hyphal_emergence_density, lmbd: set for all root types after the root phase, when the hyphae start to emerge
-    # crossing_length: hyphal length [cm] behind the barrier that defines t*
+    # crossing_length: hyphal length [cm] behind the barrier that defines t* (Choice of 10cm from Oyarte Galvez et al. 2025 to avoid inaccuracies with manual visual determination of hyphal growth into compartment)
+    #                  Model counts entire complete 3D length inkl BAS, experiment the visual projected length
     # hyphae_parameters: dict {name: value} set for all hyphal sub types after reading the xml, e.g. {"distTH": 0.02} or {"ana": 0.}
     #                    (see setHyphaeParameters), the values used are stored in stats ("hyphae_<name>" for distTH and ana, one per sub type)
     # stats: optional dict, filled with "status" ("ok", "not_crossed" or "stalled"), the wall clock time of each phase [s] ("wall_root", "wall_wait",
@@ -264,7 +266,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     if turn_off_root_growth or turn_off_colonization:
         mycp.turnOffRoots(turn_off_root_growth, turn_off_colonization)
     growing_t, growing_n = [], []
-    for i in range(0, hours_hyphae):
+    # hours_hyphae is a time [h], not a number of steps: with dt < 1 h (e.g. for a dt convergence test) more steps are needed
+    for i in range(round(hours_hyphae / (dt * 24))):
         # if (i % 10 == 0):
         #     print("Step " + str(i) + " of " + str(hours_hyphae))
         mycp.simulate(dt,verbose)

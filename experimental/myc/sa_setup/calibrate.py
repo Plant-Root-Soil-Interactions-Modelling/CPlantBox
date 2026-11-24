@@ -92,8 +92,10 @@ PARAMS = [
     CalParam("R_theta", (RUNNER,), "theta", deg(50), deg(80), prior=(deg(55), deg(75)), source=THETA_SRC),
     CalParam("R_tropismN", (RUNNER,), "tropismN", 1.0, 8.0),
     CalParam("R_succ_BAS", (RUNNER,), "successor", 0.5, 0.95),   # share of BAS among the runner laterals
-    # radius [cm], nominal 0.005; lower bound 10 µm (Bago et al. 1998: runner diameter > 20 µm), bound only, no prior
-    CalParam("R_a", (RUNNER,), "a", 0.001, 0.01, log=True),
+    # radius [cm], nominal 0.005 = 50 µm (Schnepf et al. 2017, radius); lower bound of the search range 10 µm (Bago et al. 1998:
+    # runner diameter > 20 µm). Prior 25–100 µm (factor 2 around 50 µm, log) as ±2σ: Schnepf gives only a point value
+    CalParam("R_a", (RUNNER,), "a", 0.001, 0.01, log=True, prior=(0.0025, 0.01),
+             source="radius 50 µm (Schnepf et al. 2017), ±2σ = factor 2"),
     # ---- BAS (subType 2) ----
     CalParam("B_v", (BAS,), "v", 0.432, 0.72, prior=(0.432, 0.72), source=V_SRC),
     CalParam("B_b", (BAS,), "b", 0.3, 2.0, log=True),

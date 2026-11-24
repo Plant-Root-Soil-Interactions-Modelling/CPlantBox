@@ -215,7 +215,7 @@
         <parameter name="tropismT" value="2"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
         <parameter name="a" value="0.0050" dev="0.002"/>
-        <!--radius [cm]-->
+        <!--radius [cm]: 50 um as in Schnepf et al. 2017 (runner hyphae only, BAS not simulated there); diameter > 20 um (Bago et al. 1998); dev without source-->
         <parameter name="ana" value="1"/>
         <!--Probability of anastomosis occuring if distance is long enough-->
         <parameter name="b" value="0.95" dev="0.05"/>

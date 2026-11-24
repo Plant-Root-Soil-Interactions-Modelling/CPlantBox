@@ -52,6 +52,12 @@ def phase0():
     for i, phys in enumerate(to_physical(U)):
         rows.append({"run_id": f"p0_range_{i:03d}", "group": "range",
                      "seed": config.BASE_SEED + 200_000 + i, "dx": np.nan, **dict(zip(names, phys))})
+    # dt convergence, appended at the end so that the row numbers of an existing Phase 0 design stay the same.
+    # Same seeds for all dt; the nominal dt (24 steps per day) is simulated again under its own run_id
+    for spd in config.PHASE0_DT_STEPS_PER_DAY:
+        for i in range(config.PHASE0_DT_SEEDS):
+            rows.append({"run_id": f"p0_dt{spd}_{i:03d}", "group": f"dt={24 / spd:g}h",
+                         "seed": config.BASE_SEED + i, "dx": np.nan, "steps_per_day": spd, **nom})
     df = pd.DataFrame(rows)
     path = config.RESULTS_DIR / "design_phase0.csv"
     df.to_csv(path, index=False)

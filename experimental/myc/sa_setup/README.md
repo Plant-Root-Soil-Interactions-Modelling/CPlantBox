@@ -154,6 +154,10 @@ as is `wait_days` (time until t*). Diagnostics do not enter the SA.
 - `phase0_dx.csv`: if the nominal `dx` deviates significantly (> 2 %) from the finest, `dx`
   is too coarse. Check especially for anastomoses (distTH = dx) and BAS (lmax ≈ 3 × dx).
   A small dx costs a lot of runtime: increase `--time` in `sim.sbatch` for it.
+- `phase0_dt.csv`: the same for the time step (1 h, 0.5 h, 0.25 h; `config.PHASE0_DT_STEPS_PER_DAY`). The 1 h comes
+  from the image interval of the experiment, which only fixes the evaluation interval (stays hourly). Anastomosis is
+  checked once per step at the tip, `ana` and the BAS tip splitting act per step: check `beta`, `anastomoses`,
+  `encounter_C` and `bas_share`. Small dt costs runtime roughly ∝ steps: increase `--time` in `sim.sbatch`.
 - `phase0_status.csv`: how many of the 20 random points in the factor space reach t*, and how
   long they run. Many aborts: ranges too wide, otherwise whole trajectories go missing in Morris.
 - Runtime and memory: adjust `--time`/`--mem` in the sbatch files.
@@ -188,8 +192,8 @@ from the barrier), at the end of the simulation (`AMFNetwork.relativeRootEfficie
 crossing of two segments becomes a node (degree 4 in the image skeleton).
 Because 7 targets do not determine 16 parameters uniquely, every parameter has a **prior**, an
 additional residual z = (x − centre)/σ (log for log parameters). Literature priors (`CalParam.prior`, range
-= ±2σ) exist for R_v, B_v, R_hlt, R_ln, R_theta, B_theta, B_hlt, B_a (BAS diameter 2–10 µm, Bago 1998). R_a only has
-a lower bound of 10 µm radius (diameter > 20 µm, Bago 1998) as the bound of its search range. All others have a weak
+= ±2σ) exist for R_v, B_v, R_hlt, R_ln, R_theta, B_theta, B_hlt, B_a (BAS diameter 2–10 µm, Bago 1998) and R_a
+(radius 50 µm, Schnepf 2017, prior 25–100 µm; lower bound of the search range 10 µm, Bago 1998). All others have a weak
 prior around the nominal value (σ = `WEAK_PRIOR_SIGMA` × search range). Parameters that no target acts on
 thus stay at the nominal value. The report flags literature priors from which the solution deviates by more than 2σ.
 All evaluations use the same seeds (CRN), the outputs are pooled over the seeds, the
