@@ -129,10 +129,13 @@ WAVE_OUTPUTS = ev.WAVE_QUANTITIES
 # parameter must clearly affect at least one target. Add further measurements as Target(...).
 TS = math.sqrt(len(config.IMAGE_HOURS))   # widening of the tolerances of the time courses (correlated time points)
 TARGETS = [
-    # a(t) and b(t) against t − t_n (figure "b" of branching / anastomosis rate, scaled onto n and ρn): the bands of a are
-    # about ±40–50 % per time point, of b about ±30–40 %; the constant is fitted over all points, so somewhat narrower
-    Target("alpha", 23.0, 0.30, source="anastomosis a = α ρ n, ≈ 23 µm/h (their beta); band of a(t) ≈ ±40–50 % per time point"),
-    Target("beta", 0.04, 0.30, source="branching b = β n, ≈ 4 %/h (their alpha); band of b(t) ≈ ±30–40 % per time point"),
+    # a(t) and b(t) against t − t_n (Fig. 3b, scaled onto n and ρn): the bands of a are about ±40–50 % per time point,
+    # of b about ±30–40 %; the constant is fitted over all points, so somewhat narrower. Fig. 3 shows ONE replicate:
+    # replicates=1, between_cv (spread between plates, from the seeds in Phase 0) is added after Phase 0
+    Target("alpha", 23.0, 0.30, replicates=1, between_cv=0.0,
+           source="Fig. 3b: anastomosis a = α ρ n, ≈ 23 µm/h (their beta); band of a(t) ≈ ±40–50 % per time point (one replicate)"),
+    Target("beta", 0.04, 0.30, replicates=1, between_cv=0.0,
+           source="Fig. 3b: branching b = β n, ≈ 4 %/h (their alpha); band of b(t) ≈ ±30–40 % per time point (one replicate)"),
     # values read off the figures of Oyarte Galvez et al. 2025 (approximate, check against the data): Fig. 2 and the figure
     # with L_RH, L_BAS, ρ_BAS, anastomoses and Ê_g, Ê_r, Ĉ over t − t* (12 replicates, mean ± s.d.)
     # Fig. 2 shows ONE colony; its bands are spatial bootstraps within a ring (10,000 rectangles) or fit intervals, not the
@@ -173,7 +176,7 @@ TARGETS = [
     Target("root_efficiency_rel", 0.69, 0.15, hour=20, widen=TS, replicates=12, log=False, source="Ê_r ≈ 0.69 at 20 h, s.d. ≈ 0.1"),
     Target("root_efficiency_rel", 0.665, 0.12, hour=40, widen=TS, replicates=12, log=False, source="Ê_r ≈ 0.665 at 40 h, s.d. ≈ 0.08"),
     Target("root_efficiency_rel", 0.63, 0.13, hour=60, widen=TS, replicates=12, log=False, source="Ê_r ≈ 0.63 at 60 h, s.d. ≈ 0.08"),
-    # not targets: L_BAS (redundant), anastomosis density ρ_A ≈ 0.53, 0.65, 0.69 (definition in the paper to be checked,
+    # not targets: L_BAS (redundant), anastomosis density ρ_A ≈ 0.53, 0.65, 0.69 (the paper does not define it; besides
     # redundant with anastomoses and L_RH), global efficiency Ê_g ≈ 0.33, 0.44, 0.53
 ]
 

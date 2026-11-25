@@ -95,7 +95,7 @@ sbatch $S/sa_run.sbatch analyze_rings.py            # Ringauflösung 15 vs. 5 au
 |---|---|---|
 | `phase0_warnings.txt` | „ATTENTION …“? Wenige Kreuzungen bis t*, Spitzen jenseits 32 mm | Eintrittspunkt länger mitteln bzw. `RING_RADIUS` vergrößern |
 | `phase0_noise.csv` | CV pro Output | > ~0.3: mehr Replikate (`MORRIS_REPLICATES`) |
-| Ausgabe „Spread between seeds …“ | CV der Ziele aus einer Kolonie | als `between_cv` bei K1, K2, front_velocity, front_tip_speed in `calibrate.py` eintragen |
+| Ausgabe „Spread between seeds …“ | CV der Ziele aus einer Kolonie | als `between_cv` bei K1, K2, front_velocity, front_tip_speed, alpha, beta in `calibrate.py` eintragen |
 | `phase0_dx.csv`, `phase0_dt.csv` | Abweichung zur feinsten Stufe > 2 %? | dx bzw. dt (`STEPS_PER_DAY`) verkleinern |
 | `phase0_layer.csv` | Wie stark reagieren alpha, Anastomosen auf die Schichtdicke? | Annahme halten oder `HYPHAE_LAYER` ändern |
 | `phase0_anaL.csv` | Wirkung der Mindestpfadlänge | `ana_L_scale` in der Kalibrierung lassen oder fixieren |
