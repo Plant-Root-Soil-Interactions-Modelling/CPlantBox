@@ -27,6 +27,7 @@ case "$STAGE" in
     phase0) DESIGN=results/design_phase0.csv ;;
     long)   DESIGN=results/design_long.csv; export SIMTIME="${SIMTIME_LONG:-12:00:00}" ;;
     morris) DESIGN=results/design_morris.csv ;;
+    inoculum) DESIGN=results/design_inoculum.csv ;;
     *) echo "unknown stage $STAGE" >&2; exit 1 ;;
 esac
 

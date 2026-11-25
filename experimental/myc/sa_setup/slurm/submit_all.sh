@@ -8,7 +8,8 @@
 #      SLURM then cancels all following jobs (--kill-on-invalid-dep) instead of computing broken runs.
 #   2. after the gate, in parallel:
 #      - Phase 0 (noise, dx, factor space) -> collect + analyze_phase0 -> Morris -> collect + analyze_morris
-#      - 120 h test at the nominal point -> analyze_long
+#      - 120 h test at the nominal point (roots off and on) -> analyze_long
+#      - inoculum Morris (root phase, roots, placement) -> collect + analyze_morris inoculum
 #      - calibration (calibrate.sbatch, one job with many cores)
 #
 # Options:
@@ -16,6 +17,7 @@
 #   --no-smoke         without smoke test and gate (e.g. if it already passed)
 #   --no-morris        stop after Phase 0 (look at Phase 0 first, Morris later with submit.sh)
 #   --no-long          without the 120 h test
+#   --no-inoculum      without the inoculum Morris
 #   --no-calibration   without calibration
 #   --no-sa            only smoke test and calibration
 #   --cal-args "..."   arguments for calibrate.py, e.g. --cal-args "--seeds 8 --max-nfev 10"
@@ -29,17 +31,18 @@ set -euo pipefail
 JOBS="$(cd "$(dirname "$0")" && pwd)"
 export SA_DIR="${SA_DIR:-$HOME/CPlantBox/experimental/myc/sa_setup}"
 
-SMOKE=1; QUICK=""; MORRIS=1; LONG=1; CAL=1; SA=1; CAL_ARGS=""
+SMOKE=1; QUICK=""; MORRIS=1; LONG=1; INOC=1; CAL=1; SA=1; CAL_ARGS=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --quick-smoke)    QUICK="--quick" ;;
         --no-smoke)       SMOKE=0 ;;
         --no-morris)      MORRIS=0 ;;
         --no-long)        LONG=0 ;;
+        --no-inoculum)    INOC=0 ;;
         --no-calibration) CAL=0 ;;
         --no-sa)          SA=0 ;;
         --cal-args)       CAL_ARGS="$2"; shift ;;
-        -h|--help)        sed -n '2,27p' "$0"; exit 0 ;;
+        -h|--help)        sed -n '2,29p' "$0"; exit 0 ;;
         *) echo "unknown option $1 (--help)" >&2; exit 1 ;;
     esac
     shift
@@ -65,6 +68,10 @@ if [[ $SA == 1 ]]; then
     if [[ $LONG == 1 ]]; then
         L=$(sbatch --parsable "${AFTER[@]}" --export=ALL,STAGE=long,NEXT=,JOBS="$JOBS",SA_DIR="$SA_DIR" "$JOBS/stage.sbatch")
         echo "   120 h test: stage job $L"
+    fi
+    if [[ $INOC == 1 ]]; then
+        I=$(sbatch --parsable "${AFTER[@]}" --export=ALL,STAGE=inoculum,NEXT=,JOBS="$JOBS",SA_DIR="$SA_DIR" "$JOBS/stage.sbatch")
+        echo "   inoculum Morris: stage job $I"
     fi
 fi
 
