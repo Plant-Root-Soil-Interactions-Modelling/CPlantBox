@@ -129,7 +129,8 @@ def getBranchingPerRing(times, plant, rings, ot = 5, child_subtype = None):
     return mat
 
 def branchingRate(simulations, min_tips = 5, suffix = ""):
-    # branching events per growing tip and hour [h^-1] (Oyarte Galvez et al. 2025: about 4 %/h), as anastomosisBeta: sum of the events
+    # beta: branching events per growing tip and hour [h^-1] of b = beta n (Oyarte Galvez et al. 2025: about 4 %/h; they call it alpha,
+    # here beta = branching and alpha = anastomosis, see anastomosisAlpha), as anastomosisAlpha: sum of the events
     # over sum of tips x interval length, over all rings and intervals (first column left out) with at least min_tips growing tips.
     # suffix "_runner": new runner tips per growing runner tip ("branch_new_runner", "active_tips_runner"); nan if the data are missing
     ev_sum, tip_h = 0., 0.
@@ -150,11 +151,45 @@ def _pointSegmentDistance(p, a, b):
     s = np.clip(np.einsum("ij,ij->i", p - a, v) / np.where(vv > 0, vv, 1.), 0., 1.)
     return np.linalg.norm(p - (a + s[:, None] * v), axis=1)
 
-def getTipDistances(times, plant, rings, R_max = 0.1, ot = 5):
-    # smallest distance [cm] of every actively growing tip to a hypha of another hyphal tree, at times[1:] (columns as getParasPerRing),
+def _chain(o, k, maxLen):
+    # path from node k of organ o down to the base and on through the parents, as chain() in MycorrhizalPlant.cpp:
+    # (organ id, position s along that organ [cm], path length d before reaching that organ [cm]), until d > maxLen
+    c, cur, s, d = [], o, o.getLength(int(k)), 0.
+    while cur is not None:
+        c.append((cur.getId(), s, d))
+        d += s
+        if d > maxLen:
+            break
+        par = cur.getParent()
+        if par is None:
+            break
+        s, cur = par.getLength(int(cur.getParentNI())), par
+    return c
+
+def _pathDist(chainA, chainB):
+    # path length along the mycelium between the two points of the chains, as pathDist() in MycorrhizalPlant.cpp (1e100: no common organ)
+    best = 1e100
+    posB = {}
+    for oid, s, d in chainB:
+        posB.setdefault(oid, []).append((s, d))
+    for oid, sA, dA in chainA:
+        for sB, dB in posB.get(oid, ()):
+            best = min(best, dA + dB + abs(sA - sB))
+    return best
+
+def anastomosisMinPath(plant, subtype, ot = 5):
+    # minimal path length along the mycelium L for anastomosis as in MycorrhizalPlant::simulateAnastomosis: anaMinDist if >= 0,
+    # else distTH / sin(theta) + 2 dx (of the random parameter of the sub type)
+    rp = plant.getOrganRandomParameter(ot, int(subtype))
+    return rp.anaMinDist if rp.anaMinDist >= 0 else rp.distTH / max(np.sin(rp.theta), 1.e-6) + 2 * rp.dx
+
+def getTipDistances(times, plant, rings, R_max = 0.1, ot = 5, exclude = "path"):
+    # smallest distance [cm] of every actively growing tip to a hypha it could fuse with, at times[1:] (columns as getParasPerRing),
     # reconstructed from the final plant: the tips are those of getActiveTipsPerRingPerSubtype, and only segments created until t count.
     # The distance is the one of the anastomosis check of the model (MycorrhizalPlant::simulateAnastomosis, SDF_RootSystem::getDist):
-    # distance to the segment minus its radius, segments of the own hyphal tree excluded. inf if there is no such segment within R_max.
+    # distance to the segment minus its radius. inf if there is no such segment within R_max.
+    # exclude = "path" (as the model): segments closer than L along the mycelium are excluded (anastomosisMinPath), fusion within
+    #           the own hyphal tree is possible further away; "tree" (older version): all segments of the own hyphal tree are excluded.
     # With distTH = R a tip with dist < R would fuse at this check, so the fraction of tips with dist < R can be evaluated afterwards for any R <= R_max
     # (the model checks once per time step, against the segments of the step before, this uses the segments until t, the difference is small).
     # returns a dict with one entry per tip in a ring and time: "col" (index into times[1:]), "ring", "subtype" and "dist" [cm]
@@ -173,6 +208,7 @@ def getTipDistances(times, plant, rings, R_max = 0.1, ot = 5):
     reach = R_max + (0.5 * np.linalg.norm(b - a, axis=1).max() + seg_radius.max() if len(segs) else 0.) # segment midpoints that can be within R_max
     # growing tips at each time (as in getActiveTipsPerRingPerSubtype)
     col, ring_, subtype, tree, pos = [], [], [], [], []
+    tip_organ, tip_k = [], []                                       # organ and local node index of each tip (exclude = "path")
     ringOfNode = {}
     for o in plant.getOrgans(ot):
         n = o.getNumberOfNodes()
@@ -194,8 +230,25 @@ def getTipDistances(times, plant, rings, R_max = 0.1, ot = 5):
             if ringOfNode[nodeId] >= 0:
                 p = o.getNode(int(k))
                 col.append(j), ring_.append(ringOfNode[nodeId]), subtype.append(st), tree.append(tr), pos.append([p.x, p.y, p.z])
+                tip_organ.append(o), tip_k.append(int(k))
     col, tree, pos = np.array(col, dtype=int), np.array(tree, dtype=int), np.array(pos).reshape(-1, 3)
     dist = np.full(len(col), np.inf)
+    if exclude == "path":
+        organ_by_id = {o.getId(): o for o in plant.getOrgans(ot)}
+        seg_oid = np.array(ana.getParameter("id")).astype(int)     # organ of each segment
+        L_st = {}                                                   # minimal path length per sub type
+        chains = {}                                                 # (organ id, local node index, L) -> chain
+        local = {}                                                  # organ id -> {global node id: local index}
+        def chain_of(o, k, L):
+            key = (o.getId(), int(k), L)
+            if key not in chains:
+                chains[key] = _chain(o, k, L)
+            return chains[key]
+        def local_index(o, node):
+            oid = o.getId()
+            if oid not in local:
+                local[oid] = {o.getNodeId(i): i for i in range(o.getNumberOfNodes())}
+            return local[oid].get(node, -1)
     for j in np.unique(col):
         tips = np.nonzero(col == j)[0]
         existing = np.nonzero(seg_ct <= t_eval[j] + 1.e-9)[0]
@@ -207,16 +260,44 @@ def getTipDistances(times, plant, rings, R_max = 0.1, ot = 5):
             continue
         ti = np.repeat(tips, lens)
         si = existing[np.concatenate([c for c in cand if c]).astype(int)]
-        other = seg_tree[si] != tree[ti]
-        ti, si = ti[other], si[other]
+        if exclude == "tree":
+            other = seg_tree[si] != tree[ti]
+            ti, si = ti[other], si[other]
+            d = _pointSegmentDistance(pos[ti], a[si], b[si]) - seg_radius[si]
+            np.minimum.at(dist, ti, d)
+            continue
+        # as the model: the nearest segment that is at least L away along the mycelium; candidates in order of distance,
+        # usually only the first few (the own hypha) are excluded
         d = _pointSegmentDistance(pos[ti], a[si], b[si]) - seg_radius[si]
-        np.minimum.at(dist, ti, d)
+        order = np.lexsort((d, ti))
+        ti, si, d = ti[order], si[order], d[order]
+        start = np.searchsorted(ti, tips)
+        stop = np.searchsorted(ti, tips, side="right")
+        for t, i0, i1 in zip(tips, start, stop):
+            o_t, k_t = tip_organ[t], tip_k[t]
+            st = int(subtype[t])
+            if st not in L_st:
+                L_st[st] = anastomosisMinPath(plant, st, ot)
+            L = L_st[st]
+            cA = chain_of(o_t, k_t, L)
+            for i in range(i0, i1):
+                if d[i] > R_max:
+                    break
+                o_s = organ_by_id.get(int(seg_oid[si[i]]))
+                if o_s is None:
+                    continue
+                k_s = local_index(o_s, segs[si[i], 1])
+                if k_s < 0 or (o_s.getId() == o_t.getId() and k_s == k_t):
+                    continue                                        # tip itself
+                if _pathDist(cA, chain_of(o_s, k_s, L)) >= L:
+                    dist[t] = d[i]
+                    break
     dist[dist > R_max] = np.inf
     return {"col": col, "ring": np.array(ring_, dtype=int), "subtype": np.array(subtype, dtype=int), "dist": dist}
 
 def tipDistanceCounts(sim, R_values, subtype = None):
     # from the tip distances of one simulation ("tipdist_*" of petridishsimauto.py): number of growing tips (rings x columns, as "active_tips")
-    # and number of them closer than R to a hypha of another tree (len(R_values) x rings x columns), optionally only tips of one sub type
+    # and number of them closer than R to a hypha they could fuse with (see getTipDistances) (len(R_values) x rings x columns), optionally only tips of one sub type
     shape = np.shape(sim["length_densities"])
     col, ring, d = sim["tipdist_col"], sim["tipdist_ring"], sim["tipdist_d"]
     if subtype is not None:
@@ -236,7 +317,7 @@ def proportionalFit(rho, events, tips):
     return np.sum(events * rho) / den if den > 0 else np.nan
 
 def tipDistanceC(simulations, R_values, min_tips = 5, subtype = None):
-    # C(R) of f = C rho for every R, f = fraction of the growing tips closer than R to a hypha of another tree, rho = filament density
+    # C(R) of f = C rho for every R, f = fraction of the growing tips closer than R to a hypha they could fuse with, rho = filament density
     # of the ring [um mm^-2], over all rings, times (first column left out, see getParasPerRing) and simulations with at least min_tips tips.
     # Returns C (len(R_values)) and the pooled data "rho", "tips", "within" (len(R_values) x points)
     rho_all, tips_all, within_all = [], [], []
@@ -273,13 +354,15 @@ def encounterC(simulations, min_tips = 5):
         result[key] = proportionalFit(d["rho"][ok], d["ana"][ok], d["tips"][ok]) if ok.any() else np.nan
     return result
 
-def anastomosisBeta(simulations, min_tips = 5):
-    # beta [um h^-1] of a = beta rho n (Oyarte Galvez et al. 2025): a = new anastomoses per area and hour [mm^-2 h^-1],
+def anastomosisAlpha(simulations, min_tips = 5):
+    # alpha [um h^-1] of the anastomosis rate a = alpha rho n. Nomenclature here: alpha = anastomosis, beta = branching
+    # (branchingRate); Oyarte Galvez et al. 2025 use the two letters the other way round (their beta is this alpha, about 23 um/h).
+    # a = new anastomoses per area and hour [mm^-2 h^-1],
     # rho = filament density of all hyphae [mm mm^-2], n = growing tip density [mm^-2], per ring and interval (first column left out,
-    # see getParasPerRing), only points with at least min_tips growing tips. beta = sum a / sum rho n over all points and simulations,
+    # see getParasPerRing), only points with at least min_tips growing tips. alpha = sum a / sum rho n over all points and simulations,
     # i.e. the scale between the two curves a(t) and rho n(t) of the paper. Per sub type: a and n of the tips of that sub type, rho of all
-    # hyphae. The fraction of the growing tips that fuse per hour is f = a / n = beta rho (beta 23 um/h, rho 0.87 mm mm^-2: f = 2 %/h).
-    # Same as C of encounterC (beta = 1e6 C) up to the weighting of the points. Returns {"total", "runner", "bas": beta}, nan without points
+    # hyphae. The fraction of the growing tips that fuse per hour is f = a / n = alpha rho (alpha 23 um/h, rho 0.87 mm mm^-2: f = 2 %/h).
+    # Same as C of encounterC (alpha = 1e6 C) up to the weighting of the points. Returns {"total", "runner", "bas": alpha}, nan without points
     suffix = {"total": "", "runner": "_runner", "bas": "_bas"}
     a_sum = dict.fromkeys(suffix, 0.)
     rn_sum = dict.fromkeys(suffix, 0.)
@@ -293,6 +376,8 @@ def anastomosisBeta(simulations, min_tips = 5):
             a_sum[key] += np.sum((ana / dt_h / area)[ok])
             rn_sum[key] += np.sum((rho * tips / area)[ok])
     return {key: 1000 * a_sum[key] / rn_sum[key] if rn_sum[key] > 0 else np.nan for key in suffix}
+
+anastomosisBeta = anastomosisAlpha # old name (letters as in Oyarte Galvez et al. 2025), kept for older scripts
 
 def theoryC(R, layer, dim = 3):
     # C [mm^2 um^-1] of a random network of straight hyphae (Poisson line process, any orientation): the expected number of hyphae closer

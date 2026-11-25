@@ -33,7 +33,7 @@ amfp.plot_anastomosis_frequency(simulations, filename=amfio.plotFile(out, "Anast
 C = amfp.plot_encounter_fraction(simulations, filename=amfio.plotFile(out, "EncounterFraction.png"), min_tips=5)
 if C:
     print("encounter fraction f = C rho: " + ", ".join(f"{k} C = {v:.3e} mm^2 um^-1 h^-1" for k, v in C.items()))
-# anastomosis constant of a = beta rho n (Oyarte Galvez et al. 2025: beta about 23 um/h), calibration target of the anastomosis parameters
+# anastomosis constant alpha of a = alpha rho n (Oyarte Galvez et al. 2025 call it beta, about 23 um/h), calibration target "alpha"
 beta = amfp.plot_anastomosis_beta(simulations, filename=amfio.plotFile(out, "AnastomosisBeta.png"), beta_exp=23., rho_sat_exp=3.5, min_tips=5)
 if beta is not None:
     amfio.updatePlotInfo(out, "anastomosis_beta", {"beta_um_per_h": beta, "beta_experiment_um_per_h": 23.})

@@ -8,7 +8,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=cpu256
-#SBATCH --time=1:00:00
+#SBATCH --time=4:00:00
 #SBATCH --mem=8G
 #SBATCH --output=./slurmOut/sa_collect-%j.out
 #SBATCH --error=./slurmErr/sa_collect-%j.err
@@ -22,5 +22,6 @@ python3 collect.py "$DESIGN"
 case "$(basename "$DESIGN")" in
     design_phase0.csv) python3 analyze_phase0.py ;;
     design_long.csv)   python3 analyze_long.py ;;
-    design_morris.csv) python3 analyze_morris.py ;;
+    design_morris.csv) python3 evaluate_pooled.py "$DESIGN"; python3 analyze_morris.py ;;
+    design_inoculum.csv) python3 evaluate_pooled.py "$DESIGN"; python3 analyze_morris.py inoculum ;;
 esac

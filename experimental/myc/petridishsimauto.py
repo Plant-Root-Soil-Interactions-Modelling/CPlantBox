@@ -31,7 +31,7 @@ if len(sys.argv) < 2 or not all(a.count("=") == 1 for a in sys.argv[2:]):
     sys.exit("Usage: python3 petridishsimauto.py <seed> [name=value ...]")
 seed = int(sys.argv[1])
 hyphae_parameters = {k: float(v) for k, v in (a.split("=") for a in sys.argv[2:])}
-tipdist_R_max = 0.1  # [cm] smallest distance of each growing tip to another hyphal tree is stored up to this distance (amfd.getTipDistances)
+tipdist_R_max = 0.1  # [cm] smallest distance of each growing tip to a hypha it could fuse with is stored up to this distance (amfd.getTipDistances)
 out = amfio.petridishOutputDirs()
 results_dir = out["densities"]
 path = "tomatoparameters/"
@@ -96,7 +96,7 @@ for st, key in subtypes.items():
     per_subtype["length_" + key] = mats[f"length_st{st}"] * 10 / area          # filament density of the sub type [mm mm^-2]
     per_subtype["active_tips_" + key] = active_tips.get(st, zeros)            # growing tips of the sub type (number per ring)
     per_subtype["ana_new_" + key] = mats[f"anastomosis_st{st}_new"]            # new anastomoses in each interval, sub type of the tip that fused
-# smallest distance of each growing tip to a hypha of another tree, for the encounter fraction with any R = distTH afterwards (amfd.tipDistanceC)
+# smallest distance of each growing tip to a hypha it could fuse with (as the model: at least L along the mycelium away), for the encounter fraction with any R = distTH afterwards (amfd.tipDistanceC)
 t_tipdist = time.perf_counter()
 tipdist = amfd.getTipDistances(times, mycp, rings, R_max=tipdist_R_max)
 print(f"tip distances: {len(tipdist['dist'])} tips at {len(times) - 1} times in {time.perf_counter() - t_tipdist:.0f} s", flush=True)
@@ -119,7 +119,7 @@ sim = {
     "tipdist_col": tipdist["col"].astype(np.int32),                     # one entry per growing tip and time: column (as active_tips),
     "tipdist_ring": tipdist["ring"].astype(np.int16),                   # ring,
     "tipdist_subtype": tipdist["subtype"].astype(np.int8),              # sub type and
-    "tipdist_d": tipdist["dist"].astype(np.float32),                    # distance to the nearest hypha of another tree [cm] (inf: > tipdist_R_max)
+    "tipdist_d": tipdist["dist"].astype(np.float32),                    # distance to the nearest hypha it could fuse with [cm] (inf: > tipdist_R_max)
     "tipdist_R_max": tipdist_R_max,
     **stats,
     "wall_analysis": time.perf_counter() - t_analysis,

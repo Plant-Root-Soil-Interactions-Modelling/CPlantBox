@@ -287,7 +287,8 @@ def plot_encounter_fraction(simulations, filename = "EncounterFraction.png", min
     return result
 
 def plot_anastomosis_beta(simulations, filename = "AnastomosisBeta.png", beta_exp = 23., rho_sat_exp = 3.5, min_tips = 5, bin_h = 3, n_bins = 12):
-    # anastomosis rate a = beta rho n as in Oyarte Galvez et al. 2025 (beta_exp [um/h] from their figure, rho_sat_exp: saturation density
+    # anastomosis rate a = alpha rho n (Oyarte Galvez et al. 2025 call it beta; here alpha = anastomosis, beta = branching, see
+    # amfd.anastomosisAlpha; the variable names beta* below are kept). beta_exp [um/h] from their figure, rho_sat_exp: saturation density
     # of the filaments in the experiment [mm mm^-2]). a = new anastomoses per area and hour [mm^-2 h^-1], rho = filament density [mm mm^-2],
     # n = growing tip density [mm^-2]; beta of the model from amfd.anastomosisBeta (all rings and intervals with at least min_tips tips)
     # a: as the figure of the paper: a and rho n against the time relative to the arrival of the network in the ring (t_n, sigmoid fit of the
@@ -335,7 +336,7 @@ def plot_anastomosis_beta(simulations, filename = "AnastomosisBeta.png", beta_ex
         ax2.fill_between(centers, rn_m - rn_se, rn_m + rn_se, color="tab:purple", alpha=0.3, lw=0)
         ax.plot(centers, a_m, color="tab:green", lw=2.5, label="anastomosis rate $a$ (model)")
         ax.fill_between(centers, a_m - a_se, a_m + a_se, color="tab:green", alpha=0.3, lw=0)
-        ax.plot(centers, beta_exp / 1000 * rn_m, color="0.3", ls="--", lw=1.5, label=f"$a$ needed for $\\beta$ = {beta_exp:g} $\\mu$m/h (experiment)")
+        ax.plot(centers, beta_exp / 1000 * rn_m, color="0.3", ls="--", lw=1.5, label=f"$a$ needed for $\\alpha$ = {beta_exp:g} $\\mu$m/h (experiment)")
         top = 1.1 * np.nanmax(np.concatenate([a_m + a_se, beta_exp / 1000 * rn_m]))
         ax.set_ylim(0, top)
         ax2.set_ylim(0, top / (beta["total"] / 1000) if beta["total"] > 0 else None) # right axis scaled with the beta of the model
@@ -345,8 +346,8 @@ def plot_anastomosis_beta(simulations, filename = "AnastomosisBeta.png", beta_ex
         ax.legend(lines, [l.get_label() for l in lines], fontsize=8, loc="upper left")
     ax.set_xlabel(r"$t - t_n$ (h)")
     ax.set_ylabel(r"Anastomosis rate $a$ (mm$^{-2}$ h$^{-1}$)", color="tab:green")
-    ax.set_title(f"a) $a = \\beta \\rho n$: model $\\beta$ = {beta['total']:.1f} $\\mu$m/h, experiment {beta_exp:g} $\\mu$m/h\n"
-                 f"right axis scaled with the model $\\beta$, mean $\\pm$ s.e. over the rings with arrival fit", fontsize=9)
+    ax.set_title(f"a) $a = \\alpha \\rho n$: model $\\alpha$ = {beta['total']:.1f} $\\mu$m/h, experiment {beta_exp:g} $\\mu$m/h\n"
+                 f"right axis scaled with the model $\\alpha$, mean $\\pm$ s.e. over the rings with arrival fit", fontsize=9)
     ax.set_xlim(edges[0], edges[-1])
     ax.spines[["top"]].set_visible(False)
     # b) f = a / n against rho
@@ -364,12 +365,12 @@ def plot_anastomosis_beta(simulations, filename = "AnastomosisBeta.png", beta_ex
             continue
         x, f = _binned_fraction(rho, d["ana"][ok], d["tips"][ok], e)
         color, name = SUBTYPE_STYLE[key]
-        ax.plot(x, 100 * f, color=color, marker="o", lw=3.5 if key == "total" else 2, label=f"{name} ($\\beta$ = {beta[key]:.1f} $\\mu$m/h)")
+        ax.plot(x, 100 * f, color=color, marker="o", lw=3.5 if key == "total" else 2, label=f"{name} ($\\alpha$ = {beta[key]:.1f} $\\mu$m/h)")
         rho_max = max(rho_max, x.max())
     rho_max = max(rho_max, rho_sat_exp) * 1.05
     r = np.linspace(0, rho_max, 50)
-    ax.plot(r, 100 * beta["total"] / 1000 * r, color="k", ls="--", lw=1, label=f"$f = \\beta \\rho$, model $\\beta$ = {beta['total']:.1f} $\\mu$m/h")
-    ax.plot(r, 100 * beta_exp / 1000 * r, color="tab:red", ls="--", lw=1.5, label=f"$f = \\beta \\rho$, experiment $\\beta$ = {beta_exp:g} $\\mu$m/h")
+    ax.plot(r, 100 * beta["total"] / 1000 * r, color="k", ls="--", lw=1, label=f"$f = \\alpha \\rho$, model $\\alpha$ = {beta['total']:.1f} $\\mu$m/h")
+    ax.plot(r, 100 * beta_exp / 1000 * r, color="tab:red", ls="--", lw=1.5, label=f"$f = \\alpha \\rho$, experiment $\\alpha$ = {beta_exp:g} $\\mu$m/h")
     rho_2 = 0.02 / (beta_exp / 1000)
     ax.plot([rho_2], [2], color="tab:red", marker="*", ms=12, ls="none", label=f"2 %/h at $\\rho$ = {rho_2:.2f} mm mm$^{{-2}}$")
     ax.axvline(rho_sat_exp, color="0.5", ls=":", lw=1)
@@ -381,7 +382,7 @@ def plot_anastomosis_beta(simulations, filename = "AnastomosisBeta.png", beta_ex
     ax.set_title(f"b) Fusion per tip against density (ring, hour, simulation with $\\geq${min_tips} tips, binned)", fontsize=9)
     ax.legend(fontsize=8)
     ax.spines[["top", "right"]].set_visible(False)
-    fig.suptitle(f"Anastomosis constant $\\beta$ of $a = \\beta \\rho n$ (Oyarte Galvez et al. 2025), {len(sims)} simulations", fontsize=10)
+    fig.suptitle(f"Anastomosis constant $\\alpha$ of $a = \\alpha \\rho n$ (their $\\beta$ in Oyarte Galvez et al. 2025), {len(sims)} simulations", fontsize=10)
     fig.tight_layout()
     plt.savefig(filename, dpi=300, bbox_inches="tight")
     plt.close(fig)
@@ -400,7 +401,7 @@ def _binned_fraction(rho, events, tips, edges):
 
 def plot_tip_distances(simulations, R_values, filename = "TipDistances.png", min_tips = 5, R_show = (0.005, 0.01, 0.02, 0.05), n_bins = 10):
     # encounter fraction for any distance R from the stored tip distances (amfd.getTipDistances), as hyphal_network.py does for random
-    # straight hyphae: f(R) = fraction of the growing tips closer than R to a hypha of another tree (with distTH = R they would fuse at the check).
+    # straight hyphae: f(R) = fraction of the growing tips closer than R to a hypha they could fuse with (with distTH = R they would fuse at the check).
     # a: f against R for three density classes (tertiles of rho), dashed: random straight hyphae 1 - exp(-pi R^2 rho / layer) (3D)
     # b: f against rho for some R (R_show [cm]), binned, dashed: f = C(R) rho
     # c: C(R) of f = C rho (weighted least squares through the origin) against R, with the random straight hyphae in 3D (pi R^2 / layer)
@@ -428,7 +429,7 @@ def plot_tip_distances(simulations, R_values, filename = "TipDistances.png", min
         axes[0].plot(R_mm, 1 - np.exp(-amfd.theoryC(R_values, layer) * rho_mean), color=color, ls="--", lw=1)
     axes[0].plot([], [], color="k", ls="--", lw=1, label="random straight hyphae (3D, same $\\rho$)")
     axes[0].set_xlabel("R (mm)")
-    axes[0].set_ylabel("Fraction of growing tips closer than R\nto a hypha of another tree")
+    axes[0].set_ylabel("Fraction of growing tips closer than R\nto a hypha it could fuse with")
     axes[0].set_title("a) Fraction against R")
     axes[0].set_ylim(0, 1)
     # b) fraction against rho for some R

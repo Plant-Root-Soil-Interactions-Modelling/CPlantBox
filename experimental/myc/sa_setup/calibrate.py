@@ -49,65 +49,17 @@ from scipy.optimize import least_squares
 import config
 import evaluate as ev
 import model_hook
-from xml_tools import hyphae_nominal, write_hyphae_xml
+from xml_tools import factor_nominal, write_xml
 
 amfd = ev.amfd
-RUNNER, BAS = config.RUNNER, config.BAS
-deg = math.radians
 
 
 # --------------------------------------------------------------------------
-# Parameters
+# Parameters: the shared list config.PARAMETERS (same ranges as the SA, B13). Free are those with calibrate=True,
+# chosen BY HAND after the Morris screening (analyze_morris.py writes a suggestion); the others stay at the nominal value.
 # --------------------------------------------------------------------------
-@dataclass
-class CalParam:
-    name: str
-    subtypes: tuple             # subTypes of the <hyphae> the value is written to
-    param: str                  # name of the <parameter>; "successor" = share of the first successor (runner: BAS)
-    low: float                  # search range
-    high: float
-    log: bool = False
-    also: tuple = ()            # further XML parameters of the same subTypes that get the same value (lb = ln)
-    prior: tuple | None = None  # (lo, hi): literature range as ±2σ interval (log parameters: in log); None = weak prior
-    source: str = ""            # origin of the prior
-
-
-# Separate for runner/BAS as in the SA (config.FACTORS), additionally separate tropismN and a (radius: they look
-# very different in the experiment, acts on anastomosis via the tip–hypha distance); otherwise shared.
-# Not included: b of the runners (no effect with b_prob = 0), ln and lmax of the BAS (no laterals, lmax ≈ 3 dx),
-# la (fixed, very small, template XML). lb of the runners is coupled to ln; lb of the BAS stays fixed.
-# Ranges as in the SA where available; R_ln, B_b, B_hlt, distTH wider, tropismN, a, successor estimated.
-# Priors from the sources in config.FACTORS. B_b without literature prior: the measurement (Oyarte Galvez 2025) is
-# already the target branching_rate, it would count twice otherwise.
-V_SRC = "180–300 µm/h around 240 µm/h (Oyarte Galvez et al. 2025)"
-THETA_SRC = "60° (Schnepf 2016) to ≈ 70° (Oyarte Galvez 2025), widened to 55–75° (different angle definitions)"
-PARAMS = [
-    # ---- RunnerHyphae (subType 1) ----
-    CalParam("R_v", (RUNNER,), "v", 0.432, 0.72, prior=(0.432, 0.72), source=V_SRC),
-    CalParam("R_hlt", (RUNNER,), "hlt", 4.0, 10.0, prior=(4.0, 12.5),
-             source="SA range Schnepf 2016 4–10 d, death rates Schnepf 2008 4–12.5 d"),
-    CalParam("R_lmax", (RUNNER,), "lmax", 1.5, 5.0),
-    CalParam("R_ln", (RUNNER,), "ln", 0.05, 0.6, log=True, also=("lb",), prior=(0.1, 0.6),
-             source="~1 mm (Giovannetti, in Schnepf 2008) to ~6 mm (Oyarte Galvez 2025)"),
-    CalParam("R_theta", (RUNNER,), "theta", deg(50), deg(80), prior=(deg(55), deg(75)), source=THETA_SRC),
-    CalParam("R_tropismN", (RUNNER,), "tropismN", 1.0, 8.0),
-    CalParam("R_succ_BAS", (RUNNER,), "successor", 0.5, 0.95),   # share of BAS among the runner laterals
-    # radius [cm], nominal 0.005 = 50 µm (Schnepf et al. 2017, radius); lower bound of the search range 10 µm (Bago et al. 1998:
-    # runner diameter > 20 µm). Prior 25–100 µm (factor 2 around 50 µm, log) as ±2σ: Schnepf gives only a point value
-    CalParam("R_a", (RUNNER,), "a", 0.001, 0.01, log=True, prior=(0.0025, 0.01),
-             source="radius 50 µm (Schnepf et al. 2017), ±2σ = factor 2"),
-    # ---- BAS (subType 2) ----
-    CalParam("B_v", (BAS,), "v", 0.432, 0.72, prior=(0.432, 0.72), source=V_SRC),
-    CalParam("B_b", (BAS,), "b", 0.3, 2.0, log=True),
-    CalParam("B_hlt", (BAS,), "hlt", 3.0, 12.0, prior=(5.0, 9.0), source="BAS degenerate after ~7 d (Bago 1998; Kokkoris 2026)"),
-    CalParam("B_theta", (BAS,), "theta", deg(50), deg(80), prior=(deg(55), deg(75)), source=THETA_SRC),
-    CalParam("B_tropismN", (BAS,), "tropismN", 0.5, 4.0),
-    CalParam("B_a", (BAS,), "a", 0.00005, 0.005, log=True, prior=(0.0001, 0.0005),   # radius [cm], nominal 0.0025
-             source="diameter 2–10 µm = radius 1–5 µm (Bago et al. 1998, Mycologia, doi 10.1080/00275514.1998.12026878)"),
-    # ---- shared ----
-    CalParam("ana", (RUNNER, BAS), "ana", 0.5, 1.0),
-    CalParam("distTH", (RUNNER, BAS), "distTH", 0.005, 0.03, log=True),
-]
+PARAMS = [p for p in config.PARAMETERS if p.calibrate]
+FIXED_PARAMS = [p for p in config.PARAMETERS if not p.calibrate]
 # Weak prior for parameters without literature: centre = nominal value, σ = WEAK_PRIOR_SIGMA × search range
 # (in log for log parameters). Keeps them at the nominal value as long as the targets do not need them; None = no prior.
 WEAK_PRIOR_SIGMA = 0.5
@@ -123,47 +75,106 @@ class Target:
     tol_rel: float              # accepted relative deviation
     hour: float | None = None   # snapshot outputs only: time [h after t*]
     log: bool = True            # F = log(y/y*)/log(1+tol); False: F = (y - y*)/(tol y*), for outputs that can be <= 0
+    # where the value and the tolerance come from. The tolerance should be the experimental uncertainty of the target
+    # (e.g. spread between plates or 2 SEM, relative): then |F| <= 1 means "within the experimental uncertainty" and the
+    # parameter uncertainty in report.txt (C18) refers to it. "assumption" = set by hand (C16)
+    source: str = "assumption"
+    # tolerance widened by this factor in the residual (F / widen): for the time courses √(number of time points), since
+    # the time points of one replicate are correlated and together should weigh about as much as one target
+    widen: float = 1.0
+    # "lower": the value is a lower bound (F = 0 above it), e.g. the persistence length of the paper
+    bound: str | None = None
+    # number of replicates (plates) behind the value: 1 = a single colony (Fig. 2 of the paper: its bands are spatial bootstraps
+    # within one colony, not the spread between plates); None = unknown
+    replicates: int | None = None
+    # spread between plates (relative), for targets from a single colony, which the experiment does not give: estimated from
+    # the model, CV of the output between the seeds at the nominal point (phase0_noise.csv), set by hand after Phase 0.
+    # Effective tolerance sqrt(tol_rel² + between_cv²)
+    between_cv: float = 0.0
+
+    @property
+    def tol_eff(self):
+        return float(np.hypot(self.tol_rel, self.between_cv))
 
     def residual(self, y):
+        if self.bound == "lower" and y == np.inf:
+            return 0.
         if not np.isfinite(y) or (self.log and y <= 0):
             return np.nan
-        return np.log(y / self.value) / np.log(1 + self.tol_rel) if self.log else (y - self.value) / (self.tol_rel * self.value)
+        if self.bound == "lower" and y >= self.value:
+            return 0.
+        tol = self.tol_eff
+        F = np.log(y / self.value) / np.log(1 + tol) if self.log else (y - self.value) / (tol * self.value)
+        return F / self.widen
+
+    @property
+    def tol_text(self):
+        return f"{self.tol_rel:.0%}" + (f" ⊕ CV {self.between_cv:.0%}" if self.between_cv else "") + \
+            (f" ×{self.widen:.2f}" if self.widen != 1 else "") + (" (lower bound)" if self.bound == "lower" else "") + \
+            (" [1 colony]" if self.replicates == 1 else "")
 
     @property
     def label(self):
         return self.output if self.hour is None else f"{self.output}@{self.hour:g}h"
 
 
-# Available outputs. Wave quantities over the window 0..HOURS, pooled over all seeds:
-WAVE_OUTPUTS = {
-    "beta": "[µm/h] a = beta rho n with a, n of the runner tips (ratio of sums)",
-    "branching_rate": "[h^-1] new runner tips per growing runner tip and hour",
-    "encounter_C": "[mm^2 µm^-1 h^-1] f = C rho",
-    "K1": "[µm mm^-2] saturation of the filament density (median of saturated rings)",
-    "K2": "[mm^-2] peak of the runner tip density (median of rings with the peak in the window)",
-    "wave_width": "[h] duration of the runner tip wave in a ring (median)",
-    "front_velocity": "[mm/d] ring radius vs. arrival t_n of the filament density (sigmoid fit, Theil-Sen, all seeds)",
-    "front_speed": "[mm/d] slope of the tip-weighted radius from 10 h (mean over seeds)",
-    "root_efficiency_rel": "(E_r - E_r,MST) / (E_r,DT - E_r,MST), 2D, at the end of the simulation (mean over seeds)",
-}
+# Available outputs. Wave quantities over the window 0..HOURS, pooled over all seeds, same definitions as in the SA
+# (evaluate.WAVE_QUANTITIES). Nomenclature: alpha = anastomosis, beta = branching (Oyarte Galvez et al. 2025: the other way round)
+WAVE_OUTPUTS = ev.WAVE_QUANTITIES
 # Snapshot outputs (mean over seeds) at time Target.hour: config.SNAPSHOT_OUTPUTS
 # total_length [cm], active_tips, bas_share, anastomoses (since t*), front_position [mm], spread_r90 [mm],
-# max_tip_density [mm^-2]
+# max_tip_density [mm^-2]; at config.IMAGE_HOURS also the image graph quantities (evaluate.IMAGE_QUANTITIES)
 
-# A unique solution needs at least as many targets as parameters (here 16), and every
+# A unique solution needs at least as many targets as parameters (here 18), and every
 # parameter must clearly affect at least one target. Add further measurements as Target(...).
+TS = math.sqrt(len(config.IMAGE_HOURS))   # widening of the tolerances of the time courses (correlated time points)
 TARGETS = [
-    Target("beta", 23.0, 0.10),                    # Oyarte Galvez et al. 2025
-    Target("K1", 1400.0, 0.10),                    # saturation density, Fig. 2b, dashed line
-    Target("bas_share", 0.30, 0.10, hour=60),      # BAS share of the hyphal length
-    Target("K2", 0.15, 0.33),                      # Fig. 2b, tip peak 0.1–0.2
-    Target("branching_rate", 0.04, 0.20),          # 4 % per hour
-    Target("front_velocity", 280e-3 * 24, 0.10),   # wave speed 280 µm/h = 6.72 mm/d
-    Target("root_efficiency_rel", 0.5, 0.20, log=False),   # relative root efficiency, end (HOURS), can be < 0
-    # Target("wave_width", ..., 0.20),
-    # Target("total_length", ..., 0.15, hour=30),
-    # Target("active_tips", ..., 0.15, hour=30),
-    # Target("anastomoses", ..., 0.20, hour=60),
+    # a(t) and b(t) against t − t_n (figure "b" of branching / anastomosis rate, scaled onto n and ρn): the bands of a are
+    # about ±40–50 % per time point, of b about ±30–40 %; the constant is fitted over all points, so somewhat narrower
+    Target("alpha", 23.0, 0.30, source="anastomosis a = α ρ n, ≈ 23 µm/h (their beta); band of a(t) ≈ ±40–50 % per time point"),
+    Target("beta", 0.04, 0.30, source="branching b = β n, ≈ 4 %/h (their alpha); band of b(t) ≈ ±30–40 % per time point"),
+    # values read off the figures of Oyarte Galvez et al. 2025 (approximate, check against the data): Fig. 2 and the figure
+    # with L_RH, L_BAS, ρ_BAS, anastomoses and Ê_g, Ê_r, Ĉ over t − t* (12 replicates, mean ± s.d.)
+    # Fig. 2 shows ONE colony; its bands are spatial bootstraps within a ring (10,000 rectangles) or fit intervals, not the
+    # spread between plates. replicates=1; between_cv (spread between plates, from the model's seeds at the nominal point,
+    # phase0_noise.csv) is set by hand after Phase 0 — until then 0, i.e. these targets are too strict
+    Target("K1", 1400.0, 0.12, replicates=1, between_cv=0.0,
+           source="Fig. 2c: saturation density ≈ 1400 µm mm⁻², points/band ≈ ±150–200 between rings (one colony)"),
+    Target("K2", 0.15, 0.33, replicates=1, between_cv=0.0, source="Fig. 2b: tip peak 0.1–0.2 mm⁻² (one colony)"),
+    Target("front_velocity", 280e-3 * 24, 0.10, replicates=1, between_cv=0.0,
+           source="Fig. 2d inset: wave front r vs. t_n ≈ 280 µm/h = 6.72 mm/d (one fit, one colony); tolerance: assumption"),
+    # growth speed of the tips at the front (outermost 10 % of the growing runner tips, model_hook.tip_speed_diagnostics),
+    # mean from 10 h after t*; together with the prior on v (mean ≈ 240) it determines v_cv
+    Target("front_tip_speed", 300.0, 0.10, replicates=1, between_cv=0.0,
+           source="Fig. 2d: average growth speed at the front ≈ 300 µm/h, constant; points per time step ≈ 250–330 (one colony)"),
+    # Extended Data Fig. 11. Angles: the mean of 881 points is precise, the tolerance covers the unknown way of measuring
+    # (projection, length over which the directions are taken); the priors on theta are weak, so the data count once
+    Target("branch_angle_rh", 73.0, 0.10, source="Ext. Data Fig. 11b: new-born RH branch at 73° from the initial growth direction"),
+    Target("branch_angle_bas", 80.0, 0.10, source="Ext. Data Fig. 11b: new-born BAS at 80° (not significantly different from RH)"),
+    Target("persistence_length", 10.0, 0.5, bound="lower",
+           source="Ext. Data Fig. 11a: median persistence length ≈ 10 cm, a lower bound (decay barely visible up to 1 cm)"),
+    # ---- time courses at 20, 40, 60 h after t* (config.IMAGE_HOURS), mean of 12 replicates, tolerance from the s.d. band ----
+    # the time points of one replicate are correlated: each tolerance is widened by √3 (TS), so that the three points of a
+    # quantity together weigh about as much as one target
+    # runner length as the image analysis classifies it (BAS criteria of the edges, projected length) [mm], log axis
+    Target("L_RH_image", 280.0, 0.30, hour=20, widen=TS, replicates=12, source="L_RH ≈ 280 mm at 20 h, band ≈ ±30 %"),
+    Target("L_RH_image", 500.0, 0.30, hour=40, widen=TS, replicates=12, source="L_RH ≈ 500 mm at 40 h, band ≈ ±30 %"),
+    Target("L_RH_image", 850.0, 0.40, hour=60, widen=TS, replicates=12, source="L_RH ≈ 850 mm at 60 h, band ≈ ±40 %"),
+    # BAS share as classified in the experiment (edge < 400 µm, or < 1000 µm ending in a tip, or width < 7 µm and
+    # width × length < 9000 µm²); L_BAS (≈ 100, 230, 370 mm) follows from L_RH and ρ_BAS and is only an output
+    Target("bas_share_image", 0.37, 0.14, hour=20, widen=TS, replicates=12, source="ρ_BAS ≈ 0.37 at 20 h, s.d. ≈ 0.05"),
+    Target("bas_share_image", 0.385, 0.13, hour=40, widen=TS, replicates=12, source="ρ_BAS ≈ 0.385 at 40 h, s.d. ≈ 0.05"),
+    Target("bas_share_image", 0.40, 0.13, hour=60, widen=TS, replicates=12, source="ρ_BAS ≈ 0.40 at 60 h, s.d. ≈ 0.05"),
+    # cumulative anastomoses on the fungal side; the model counts from t*, the experiment has ≈ 21 at t*, subtracted; log axis
+    Target("anastomoses", 75.0, 0.50, hour=20, widen=TS, replicates=12, source="anastomoses ≈ 95 at 20 h (≈ 21 at t*), band ≈ ±35–50 %"),
+    Target("anastomoses", 240.0, 0.60, hour=40, widen=TS, replicates=12, source="anastomoses ≈ 260 at 40 h (≈ 21 at t*), band ≈ ±60 %"),
+    Target("anastomoses", 445.0, 0.60, hour=60, widen=TS, replicates=12, source="anastomoses ≈ 465 at 60 h (≈ 21 at t*), band ≈ ±55–60 %"),
+    # relative root efficiency (can be < 0: linear residual, tol_rel × value = absolute tolerance)
+    Target("root_efficiency_rel", 0.69, 0.15, hour=20, widen=TS, replicates=12, log=False, source="Ê_r ≈ 0.69 at 20 h, s.d. ≈ 0.1"),
+    Target("root_efficiency_rel", 0.665, 0.12, hour=40, widen=TS, replicates=12, log=False, source="Ê_r ≈ 0.665 at 40 h, s.d. ≈ 0.08"),
+    Target("root_efficiency_rel", 0.63, 0.13, hour=60, widen=TS, replicates=12, log=False, source="Ê_r ≈ 0.63 at 60 h, s.d. ≈ 0.08"),
+    # not targets: L_BAS (redundant), anastomosis density ρ_A ≈ 0.53, 0.65, 0.69 (definition in the paper to be checked,
+    # redundant with anastomoses and L_RH), global efficiency Ê_g ≈ 0.33, 0.44, 0.53
 ]
 
 HOURS = config.HOURS_HYPHAE   # simulation time after t* [h], window of the wave quantities
@@ -173,18 +184,23 @@ DIFF_STEP = 0.15              # difference step in the normalised space
 MAX_NFEV = 30                 # max. solver iterations (least_squares: max_nfev, without differences)
 MIN_OK = 0.5                  # share of seeds that must reach t*, otherwise the point counts as invalid
 NAN_PENALTY = 10.             # F_i for undefined outputs (fit failed), so that the solver keeps going
+# True: stop at the first point with all |F| <= 1 (cheap). False (--full): go on to the minimum of |F|² + |z|², so that
+# the result does not depend on where the search entered the tolerance region and the ±1σ in report.txt refer to the minimum
+STOP_AT_TOLERANCE = True
 N_BOOT = 200
 CAL_DIR = config.ROOT / "calibration"
 # Version of the raw data (raw.npz) in the key of the runs: increase when model_hook stores new quantities that the
-# targets need; old runs are then not reused. 2: branch_new_runner
-RAW_VERSION = 2
+# targets need; old runs are then not reused. 2: branch_new_runner, 3: bas_image_share (BAS share of the image graph),
+# 4: t* from the runner length only (as L_RH = 10^2 mm in Oyarte Galvez et al. 2025), 5: image graph at IMAGE_HOURS, tip speeds,
+# 6: rings around the barrier crossing point up to RING_RADIUS
+RAW_VERSION = 6
 
 
 # --------------------------------------------------------------------------
 # Parameter space
 # --------------------------------------------------------------------------
 def spec_nominal(p):
-    return hyphae_nominal(p.subtypes[0], p.param)
+    return factor_nominal(p)
 
 
 def prior_spec(p):
@@ -231,13 +247,12 @@ def to_unit(x):
 
 
 def xml_updates(x):
-    """Physical parameter values -> {(subType, name): value} for write_hyphae_xml."""
-    upd = {}
-    for p, xj in zip(PARAMS, x):
-        for st in p.subtypes:
-            for name in (p.param,) + p.also:
-                upd[(st, name)] = xj
-    return upd
+    """Physical parameter values -> {parameter name: value} for xml_tools.write_xml (fixed parameters: template value)."""
+    return {p.name: float(xj) for p, xj in zip(PARAMS, x)}
+
+
+def write_params(x, path):
+    return write_xml(xml_updates(x), path, factors=config.PARAMETERS)
 
 
 # --------------------------------------------------------------------------
@@ -256,8 +271,8 @@ def run_seed(args):
     meta_path = rdir / "meta.json"
     if meta_path.exists():
         return out(json.loads(meta_path.read_text()))
-    xml_path = write_hyphae_xml(updates, rdir / "params.xml")
-    meta = {"seed": seed, "hours": hours, "values": {f"{st}:{n}": v for (st, n), v in updates.items()}}
+    xml_path = write_xml(updates, rdir / "params.xml", factors=config.PARAMETERS)
+    meta = {"seed": seed, "hours": hours, "values": updates}
     t0 = time.time()
     try:
         snaps = model_hook.simulate(xml_path, seed, rdir, hours=hours)
@@ -274,38 +289,26 @@ def prepare(sim):
     The wave fits use the density of the runner tips: in the experiment (Oyarte Galvez et al. 2025, Methods) only
     growing tips count (moved > 40 pixels), BAS tips hardly; Fig. 2/3 show the density of the growing RH tips."""
     hours = sorted({t.hour for t in TARGETS if t.hour is not None})
-    sim_rh = dict(sim, tip_dens=sim["active_tips_runner"] / np.asarray(sim["area"]).reshape(-1, 1))
-    return {"sim": sim, "table": ev.fit_table(sim_rh), "front_speed": ev.front_speed(sim, HOURS),
-            "snap": {h: ev.snapshot_outputs(sim, h) for h in hours}}
+    return dict(ev.prepare(sim, HOURS), snap={h: ev.snapshot_outputs(sim, h) for h in hours})
 
 
 def pooled_outputs(preps):
-    sims = [p["sim"] for p in preps]
-    good, good_K1, good_tips = ev.good_rings(pd.concat([p["table"] for p in preps], ignore_index=True))
-    n_min = config.MIN_RINGS
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        wave = {
-            # a = beta rho n with a and n of the runner tips (growing tips as in the experiment), rho of all hyphae
-            "beta": amfd.anastomosisBeta(sims, min_tips=config.ENCOUNTER_MIN_TIPS)["runner"],
-            # new runner tips per growing runner tip and hour (alpha in b(n) = alpha n)
-            "branching_rate": amfd.branchingRate(sims, min_tips=config.ENCOUNTER_MIN_TIPS, suffix="_runner"),
-            "encounter_C": amfd.encounterC(sims, min_tips=config.ENCOUNTER_MIN_TIPS)["total"],
-            "K1": np.median(good_K1.K1) if len(good_K1) >= n_min else np.nan,
-            "K2": np.median(good_tips.K2) if len(good_tips) >= n_min else np.nan,   # peak of the runner tip density
-            "wave_width": np.median(ev.FWHM_BELL / good_tips.lam_tip) if len(good_tips) >= n_min else np.nan,
-            # wave position from the sigmoid fit of the filament density (Fig. 2d inset): ring radius vs. arrival time t_n
-            "front_velocity": 24 * amfd.theilSlope(good.t_n, good.r)[0] if len(good) >= n_min else np.nan,
-            "front_speed": np.nanmean([p["front_speed"] for p in preps]),
-            "root_efficiency_rel": np.nanmean([float(p["sim"].get("root_eff_E_rel", np.nan)) for p in preps]),
-        }
+    wave = ev.wave_quantities(preps)   # same definitions as the SA (evaluate.WAVE_QUANTITIES)
     out = {}
     for t in TARGETS:
         if t.hour is None:
             out[t.label] = float(wave[t.output])
         else:
-            out[t.label] = float(np.nanmean([p["snap"][t.hour][t.output] for p in preps]))
+            out[t.label] = float(np.nanmean([p["snap"][t.hour].get(t.output, np.nan) for p in preps]))
     return out
+
+
+def _outside_at(sim, hour):
+    """Share of the growing runner tips beyond RING_RADIUS at `hour` after t* (model_hook.tip_speed_diagnostics), nan without."""
+    if "diag_frac_tips_outside_rings" not in sim:
+        return np.nan
+    h = np.asarray(sim["diag_speed_hours"])
+    return float(np.asarray(sim["diag_frac_tips_outside_rings"], dtype=float)[int(np.argmin(np.abs(h - hour)))])
 
 
 class Converged(Exception):
@@ -363,7 +366,11 @@ class Residual:
         rec = {"eval": len(self.records), "kind": kind, "point": self.key(u), "n_ok": len(preps), "minutes": minutes,
                **{p.name: xj for p, xj in zip(PARAMS, x)}, **{f"u_{p.name}": uj for p, uj in zip(PARAMS, u)},
                **y, **{f"se_{n}": se[n] for n in labels}, **{f"F_{n}": Fi for n, Fi in zip(labels, F)},
-               "norm_F": float(np.linalg.norm(F)), "norm_prior": float(np.linalg.norm(z)), "cost": cost}
+               "norm_F": float(np.linalg.norm(F)), "norm_prior": float(np.linalg.norm(z)), "cost": cost,
+               # ring diagnostics for the warnings in report.txt (crossings until t*, share of tips beyond RING_RADIUS)
+               "crossings_median": float(np.nanmedian([float(p["sim"].get("n_crossings_tstar", np.nan)) for p in preps]))
+               if preps else np.nan,
+               "outside_rings_median": float(np.nanmedian([_outside_at(p["sim"], self.hours) for p in preps])) if preps else np.nan}
         self.records.append(rec)
         pd.DataFrame(self.records).to_csv(CAL_DIR / "evals.csv", index=False)
         report(rec)
@@ -380,7 +387,7 @@ class Residual:
                 raise SystemExit("Not all outputs are defined at the start point (fits failed or too many runs "
                                  "without t*). Try more seeds (--seeds) or a longer simulation (--hours).")
             return np.where(np.isfinite(F), F, NAN_PENALTY)
-        if np.all(np.abs(F) <= 1):
+        if STOP_AT_TOLERANCE and np.all(np.abs(F) <= 1):
             self.best = (0., np.array(u), F)   # the result is this point, even if another one had a lower cost
             raise Converged
         return F
@@ -408,7 +415,7 @@ def report(rec):
     for t in TARGETS:
         n = t.label
         flag = "ok" if abs(rec[f"F_{n}"]) <= 1 else ("within noise" if abs(rec[n] - t.value) <= 2 * rec[f"se_{n}"] else "")
-        print(f"   {n:>18}: {rec[n]:10.4g} ± {rec[f'se_{n}']:.2g}  (target {t.value:g} ± {t.tol_rel:.0%})  "
+        print(f"   {n:>18}: {rec[n]:10.4g} ± {rec[f'se_{n}']:.2g}  (target {t.value:g} ± {t.tol_text})  "
               f"F = {rec[f'F_{n}']:+.2f}  {flag}")
     print(f"   |F| = {rec['norm_F']:.3f}, |Prior| = {rec['norm_prior']:.3f}", flush=True)
 
@@ -418,7 +425,12 @@ HINTS = {
     "K2": "too few rings with a complete tip peak -> longer simulation (--hours 120) or more seeds",
     "wave_width": "as K2", "front_velocity": "as K2",
     "root_efficiency_rel": "root efficiency not computed -> see root efficiency errors",
-    "beta": "too few rings with >= ENCOUNTER_MIN_TIPS tips", "branching_rate": "as beta",
+    "alpha": "too few rings with >= ENCOUNTER_MIN_TIPS tips", "beta": "as alpha (or raw.npz without branch_new_runner)",
+    "bas_share_image": "image graph not computed -> bas_image_error in raw.npz (needs config.ROOT_EFFICIENCY and networkx)",
+    "L_RH_image": "as bas_share_image",
+    "front_tip_speed": "no growing runner tips on the fungal side, or raw.npz without diag_front_tip_speed (speed_error)",
+    "branch_angle_rh": "no branches on the fungal side or geometry_error in raw.npz", "branch_angle_bas": "as branch_angle_rh",
+    "persistence_length": "no runners longer than PERSISTENCE_MIN_LENGTH on the fungal side or geometry_error",
 }
 
 
@@ -438,7 +450,9 @@ def write_report(r, status=None):
     n_lit = sum(1 for p in PARAMS if p.prior is not None)
     L += [f"{len(PARAMS)} parameters, {len(TARGETS)} targets, {n_prior} priors ({n_lit} literature)"
           f"{' (UNDERDETERMINED)' if len(TARGETS) + n_prior < len(PARAMS) else ''}, {len(r.seeds)} seeds, {r.hours} h after t*",
-          f"Evaluations {len(recs)} ({n_pts} iteration points, {len(recs) - n_pts} difference points), runs {r.n_runs}", ""]
+          f"Evaluations {len(recs)} ({n_pts} iteration points, {len(recs) - n_pts} difference points), runs {r.n_runs}",
+          "Fixed at the nominal value (config.PARAMETERS, calibrate=False): "
+          + (", ".join(f"{p.name}={spec_nominal(p):.4g}" for p in FIXED_PARAMS) or "none"), ""]
 
     if r.best is not None:
         _, u, F = r.best
@@ -454,7 +468,7 @@ def write_report(r, status=None):
         for t, Fi in zip(TARGETS, F):
             y, se = b[t.label], b[f"se_{t.label}"]
             flag = "ok" if abs(Fi) <= 1 else ("within noise" if abs(y - t.value) <= 2 * se else "off")
-            L.append(f"  {t.label:>20}: {y:10.4g} ± {se:<8.2g} target {t.value:g} ± {t.tol_rel:.0%}   F = {Fi:+6.2f}  {flag}")
+            L.append(f"  {t.label:>20}: {y:10.4g} ± {se:<8.2g} target {t.value:g} ± {t.tol_text}   F ={Fi:+6.2f}  {flag}")
         L.append("History of iteration points (cost |F|² + |z|²): " + ", ".join(f"{v:.1f}" for v in recs.loc[recs.kind == "point", "cost"]))
         L.append(f"-> best_params.xml" if (CAL_DIR / "best_params.xml").exists() else "")
     else:
@@ -484,6 +498,10 @@ def write_report(r, status=None):
             if s and s[2] == "literature" and abs(zj) > 2:
                 L.append(f"Conflict with literature: {p.name} is {zj:+.1f} σ from its prior ({p.source}) -> the targets "
                          f"require a different value; check target, model structure or prior")
+    if len(recs) and r.best is not None:   # rings at the best point (medians over its seeds)
+        from analyze_phase0 import ring_warnings
+        b = recs.loc[(recs[[f"u_{p.name}" for p in PARAMS]] - r.best[1]).abs().max(axis=1).idxmin()]
+        L += ring_warnings([b.get("crossings_median", np.nan)], [b.get("outside_rings_median", np.nan)], " (best point)")
     if r.eff_errors:
         L.append(f"Root efficiency errors in {sum(r.eff_errors.values())} runs:")
         L += [f"  {c:4d} x {msg}" for msg, c in r.eff_errors.most_common(3)]
@@ -500,10 +518,36 @@ def write_report(r, status=None):
         sv = np.linalg.svd(J, compute_uv=False)
         L.append(f"Target Jacobian: rank {int((sv > 0.05 * sv[0]).sum())} of {min(J.shape)} "
                  f"(singular values {', '.join(f'{s:.2g}' for s in sv)}); the priors supply the rest")
-    if not any(l.startswith(("Failed", "Undef", "Noise", "Root", "No clear", "Conflict")) and not l.startswith("Failed runs: 0")
+        L += identifiability(J, r.best[1] if r.best is not None else None)
+    if not any(l.startswith(("Failed", "Undef", "Noise", "Root", "No clear", "Conflict", "ATTENTION")) and not l.startswith("Failed runs: 0")
                for l in L[L.index("CHECKS"):]):
         L.append("No issues found.")
     (CAL_DIR / "report.txt").write_text("\n".join(L) + "\n", encoding="utf-8")
+
+
+def identifiability(J, u_best):
+    """C17/C18, from the last target Jacobian J (dF/du) and the priors (linearised, Gauss-Newton):
+    - data share per parameter: information from the targets / (targets + prior) = (JᵀJ)_jj / ((JᵀJ)_jj + (PᵀP)_jj).
+      Near 1: determined by the targets, near 0: only by its prior (the "calibrated" value is the prior).
+    - ±1σ range at the best point from the covariance (JᵀJ + PᵀP)⁻¹ in the normalised space, converted to physical values.
+      F is scaled with the tolerances: σ is the parameter change that moves the targets by about one tolerance, i.e. a
+      parameter uncertainty in the sense of the experimental uncertainty only if the tolerances are that (C16).
+    J comes from the last Jacobian point, which can differ from the best point (linearisation)."""
+    P = prior_jacobian()
+    JtJ, PtP = J.T @ J, P.T @ P
+    data = np.diag(JtJ) / np.maximum(np.diag(JtJ) + np.diag(PtP), 1e-12)
+    try:
+        sd_u = np.sqrt(np.clip(np.diag(np.linalg.inv(JtJ + PtP)), 0, None))
+    except np.linalg.LinAlgError:
+        sd_u = np.full(len(PARAMS), np.nan)
+    L = ["Identifiability (linearised, last Jacobian): data share = targets / (targets + prior), ±1σ at the best point:"]
+    u = u_best if u_best is not None else np.full(len(PARAMS), np.nan)
+    for j, p in enumerate(PARAMS):
+        lo, hi = (to_phys(np.clip(u - sd_u * e, 0, 1))[j] for e in (1, -1)) if np.isfinite(u[j]) else (np.nan, np.nan)
+        hi, lo = max(lo, hi), min(lo, hi)
+        flag = "  <- determined by the prior" if data[j] < 0.5 else ""
+        L.append(f"  {p.name:>11}: data share {data[j]:.2f}, ±1σ [{lo:.4g}, {hi:.4g}] (σ_u = {sd_u[j]:.2f}){flag}")
+    return L
 
 
 def save_jacobian(J):
@@ -533,7 +577,7 @@ def calibrate(residual):
         raise SystemExit("No point with all outputs defined, see CHECKS.")
     _, u, F = residual.best
     x = to_phys(u)
-    write_hyphae_xml(xml_updates(x), CAL_DIR / "best_params.xml")
+    write_params(x, CAL_DIR / "best_params.xml")
     print("\nBest point:", ", ".join(f"{p.name} = {xj:.4g}" for p, xj in zip(PARAMS, x)))
     print("  F =", ", ".join(f"{t.label} {Fi:+.2f}" for t, Fi in zip(TARGETS, F)))
     at_edge = [p.name for p, uj in zip(PARAMS, u) if uj <= 1e-6 or uj >= 1 - 1e-6]
@@ -546,6 +590,8 @@ def calibrate(residual):
 
 def check(procs):
     print(f"{len(PARAMS)} parameters, {len(TARGETS)} targets, {N_SEEDS} seeds, {HOURS} h after t*, template {config.TEMPLATE_XML.name}")
+    print("Fixed at the nominal value (config.PARAMETERS, calibrate=False): "
+          + (", ".join(f"{p.name} = {spec_nominal(p):.4g}" for p in FIXED_PARAMS) or "none"))
     for p in PARAMS:
         nom = spec_nominal(p)
         u0 = to_unit([spec_nominal(q) for q in PARAMS])[PARAMS.index(p)]
@@ -559,7 +605,7 @@ def check(procs):
         print(f"  {p.name:>11} ({sts:>10} {'='.join((p.param,) + p.also)}): [{p.low:.4g}, {p.high:.4g}]"
               f"{' log' if p.log else ''}, nominal {nom:.4g} (u = {u0:.2f}) | {pr}")
     for t in TARGETS:
-        print(f"  target {t.label:>18} = {t.value:g} ± {t.tol_rel:.0%}")
+        print(f"  target {t.label:>18} = {t.value:g} ± {t.tol_text}  ({t.source})")
     rounds = math.ceil(len(PARAMS) * N_SEEDS / procs)
     print(f"Per iteration: 1 point + {len(PARAMS)} difference points = {(len(PARAMS) + 1) * N_SEEDS} runs, "
           f"with {procs} cores 1 + {rounds} rounds of ~0.75 h")
@@ -580,8 +626,10 @@ if __name__ == "__main__":
     ap.add_argument("--hours", type=float, default=HOURS)
     ap.add_argument("--max-nfev", type=int, default=MAX_NFEV)
     ap.add_argument("--procs", type=int, default=int(os.environ.get("SLURM_CPUS_PER_TASK", os.cpu_count())))
+    ap.add_argument("--full", action="store_true", help="do not stop at the first point within tolerance, go on to the minimum")
     a = ap.parse_args()
     N_SEEDS, HOURS, MAX_NFEV = a.seeds, int(a.hours), a.max_nfev
+    STOP_AT_TOLERANCE = not a.full
     determined = check(a.procs)
     if not a.check:
         if not determined and not a.allow_underdetermined:

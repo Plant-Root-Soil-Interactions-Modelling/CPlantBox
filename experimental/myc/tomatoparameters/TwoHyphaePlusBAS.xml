@@ -43,6 +43,8 @@
         <parameter name="simulationTime" value="26"/>
         <!--Recommended final simulation time  [day]-->
     </seed>
+    <!--Root architecture: modified tomato as a stand-in for the root organ culture of D. carota of the experiment (also strongly
+        branched), no data on its geometry; growth rate r and branching distance ln are varied in the inoculum Morris (sa_setup)-->
     <root name="Taproot" subType="1">
         <parameter name="gf" value="1" dev="1000000"/>
         <!--Growth function number [1]-->
@@ -99,7 +101,7 @@
         <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="vi" value="0.13"/>
-        <!--Rate of internal colonization [cm / day]-->
+        <!--Rate of internal colonization [cm / day]; vi, hyphalDelay, maxColonization, minAge, maxAge from Schnepf et al.-->
         <parameter name="successor" ruleId="0" numLat="1" Where="" subType="2" organType="2" percentage="1"/>
         <!--Sub type of lateral -->
     </root>
@@ -159,7 +161,7 @@
         <parameter name="tropismS" value="0.30000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="vi" value="0.13"/>
-        <!--Rate of internal colonization [cm / day]-->
+        <!--Rate of internal colonization [cm / day]; vi, hyphalDelay, maxColonization, minAge, maxAge from Schnepf et al.-->
         <!-- <parameter name="successor" ruleId="0" numLat="1" Where="" subType="3" organType="2" percentage="1"/> -->
         <!--Sub type of lateral -->
     </root>
@@ -216,14 +218,16 @@
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
         <parameter name="a" value="0.0050" dev="0.002"/>
         <!--radius [cm]: 50 um as in Schnepf et al. 2017 (runner hyphae only, BAS not simulated there); diameter > 20 um (Bago et al. 1998); dev without source-->
-        <parameter name="ana" value="1"/>
-        <!--Probability of anastomosis occuring if distance is long enough-->
+        <parameter name="ana" value="0.7"/>
+        <!--Probability of anastomosis occuring if distance is long enough; unknown, fusion does not always happen: nominal 0.7 inside the range 0.3-1 (not at the bound)-->
         <parameter name="b" value="0.95" dev="0.05"/>
         <!--Branching rate [1/day]-->
         <parameter name="b_prob" value="0"/>
         <!--Probability of branching to occur by tip splitting rather than lateral branching [1]-->
         <parameter name="distTH" value="0.01" dev="0.001"/>
-        <!--Distance for tip-hyphae anastomosis [cm]-->
+        <!--Distance for tip-hyphae anastomosis [cm]: larger than the hyphal diameter, tips appear to sense other hyphae; ~100 um plausible, possibly more (Richter et al. 2024)-->
+        <parameter name="anaMinDist" value="-1"/>
+        <!--Minimal path length along the mycelium for anastomosis [cm]; -1: derived, distTH / sin(theta) + 2 dx (about 0.03 cm), instead of the default 0.1 cm-->
         <parameter name="dx" value="0.01"/>
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1e-06"/>
@@ -256,14 +260,17 @@
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
         <parameter name="a" value="0.00025" dev="0.000025"/>
         <!--radius [cm]: 2.5 um, diameter 2-10 um (Bago et al. 1998, Mycologia, doi 10.1080/00275514.1998.12026878)-->
-        <parameter name="ana" value="1"/>
-        <!--Probability of anastomosis occuring if distance is long enough-->
+        <parameter name="ana" value="0.7"/>
+        <!--Probability of anastomosis occuring if distance is long enough; unknown, fusion does not always happen: nominal 0.7 inside the range 0.3-1 (not at the bound)-->
         <parameter name="b" value="0.96" dev="0.1"/>
         <!--Tip splitting rate [1/day]: probability of a split per time step b dt, 0.96/day = 4 % per hour-->
         <parameter name="b_prob" value="1"/>
         <!--Probability of branching to occur by tip splitting rather than lateral branching [1]-->
         <parameter name="distTH" value="0.01" dev="0.001"/>
-        <!--Distance for tip-hyphae anastomosis [cm]-->
+        <!--Distance for tip-hyphae anastomosis [cm]: larger than the hyphal diameter, tips appear to sense other hyphae; ~100 um plausible, possibly more (Richter et al. 2024)-->
+        <parameter name="anaMinDist" value="-1"/>
+        <!--Minimal path length along the mycelium for anastomosis [cm]; -1: derived, distTH / sin(theta) + 2 dx (about 0.03 cm), instead of the default 0.1 cm-->
+
         <parameter name="dx" value="0.01"/>
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1e-06"/>

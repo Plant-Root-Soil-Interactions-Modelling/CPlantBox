@@ -77,7 +77,8 @@ def run_point(point, quick):
     run_id = f"smoke_{point}" + ("_quick" if quick else "")
     rdir = config.RUNS_DIR / run_id
     shutil.rmtree(rdir, ignore_errors=True)
-    row = pd.Series({"run_id": run_id, "seed": config.BASE_SEED, "dx": np.nan, **point_values(point)})
+    row = pd.Series({"run_id": run_id, "seed": config.BASE_SEED, "dx": np.nan, "factor_set": config.FACTOR_SET,
+                     **point_values(point)})
     t0 = time.time()
     run_row(row)
     meta = json.loads((rdir / "meta.json").read_text())

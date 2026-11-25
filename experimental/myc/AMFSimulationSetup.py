@@ -112,6 +112,49 @@ def makeBoxes(radius, height, boxlength, barrier_thickness, small_hyphae_dish, r
                 volumes.append(area*height)
     return boxes, np.array(centres), np.array(volumes)
 
+def crossingPoint(mycp, x0, t_max = None):
+    # point where the hyphae cross the barrier into the fungal side ("barrier crossing point", Oyarte Galvez et al. 2025: the radial
+    # densities are computed around it, per replicate): every hyphal segment that crosses the plane x = x0 inwards (from x < x0 to
+    # x >= x0) until t_max [d] gives a crossing at its intersection with the plane; returns (median y [cm], number of crossings),
+    # (0, 0) without crossings
+    ana = pb.SegmentAnalyser(mycp)
+    ana.filter("organType", 5)
+    nodes = np.array([[n.x, n.y, n.z] for n in ana.nodes]).reshape(-1, 3)
+    segs = np.array([[s.x, s.y] for s in ana.segments], dtype=int).reshape(-1, 2)
+    ct = np.array(ana.getParameter("creationTime"))
+    a, b = nodes[segs[:, 0]], nodes[segs[:, 1]]
+    inward = (a[:, 0] < x0) & (b[:, 0] >= x0)
+    if t_max is not None:
+        inward &= ct <= t_max + 1.e-9
+    if not inward.any():
+        return 0., 0
+    a, b = a[inward], b[inward]
+    f = (x0 - a[:, 0]) / (b[:, 0] - a[:, 0])
+    y = a[:, 1] + f * (b[:, 1] - a[:, 1])
+    return float(np.median(y)), int(len(y))
+
+def ringsAround(center_y, ring_radius, nRings, small_hyphae_dish, h_hyphae, barrier_thickness, dish_radius, resolution = 0.01):
+    # nRings rings of equal area (half annuli, outer radii ring_radius * sqrt(i / nRings)) centred at (0, center_y) on the barrier
+    # (the barrier crossing point, crossingPoint), cut with small_hyphae_dish (fungal side, layer, dish). Returns the ring geometries,
+    # the outer radii [cm] and the area of each ring [mm^2] (numerically on a grid of `resolution` [cm]: off centre the dish edge
+    # cuts the outer rings, the areas are then no longer equal)
+    outer = np.array([ring_radius * np.sqrt(i / nRings) for i in range(1, nRings + 1)])
+    move = lambda g: pb.SDF_RotateTranslate(g, 0, 0, pb.Vector3d(0, center_y, 0))
+    disk = lambda r: move(pb.SDF_PlantContainer(r, r, h_hyphae, False))
+    rings = []
+    for i, r in enumerate(outer):
+        g = disk(r) if i == 0 else pb.SDF_Difference(disk(r), disk(outer[i - 1]))
+        rings.append(pb.SDF_Intersection(g, small_hyphae_dish))
+    # areas: fungal side x > -barrier_thickness/2 inside the dish, binned by the distance from the centre
+    xs = np.arange(-barrier_thickness / 2 + resolution / 2, dish_radius, resolution)
+    ys = np.arange(-dish_radius + resolution / 2, dish_radius, resolution)
+    X, Y = np.meshgrid(xs, ys)
+    inside = X * X + Y * Y < dish_radius * dish_radius
+    d = np.sqrt(X[inside] ** 2 + (Y[inside] - center_y) ** 2)
+    idx = np.searchsorted(outer, d, side = "right")       # ring i: outer[i-1] <= d < outer[i]
+    area = np.bincount(idx[idx < nRings], minlength = nRings).astype(float) * resolution * resolution * 100.   # [mm^2]
+    return rings, outer, area
+
 def ringLocations(radius, nRings):
     # outer radius of each ring, rings have equal area (see makedishes)
     return np.array([radius*np.sqrt(i/nRings) for i in range(1, nRings+1)])
@@ -169,7 +212,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
                    # dt [d], nSteps: time step and number of steps of the root phase; hours_hyphae: duration of the hyphae phase after t* [h]
                    max_wait_days = None, stats = None, min_growing_tips = None, stall_fraction = None, growing_window = 0.25, animation_dir = "animation/",
                    turn_off_root_growth = False, turn_off_colonization = False, progress_every = None,
-                   seed_pos_x = -9.4 / 2 + 0.5, hyphal_emergence_density = 4.0, lmbd = 0.15, crossing_length = 10., hyphae_parameters = None):
+                   seed_pos_x = -9.4 / 2 + 0.5, hyphal_emergence_density = 4.0, lmbd = 0.15, crossing_length = 10., hyphae_parameters = None,
+                   crossing_subtype = 1):
     # set up simulation
     # max_wait_days: stop waiting for t* (crossing_length cm hyphae behind the barrier) after this many simulated days, then returns mycp, None, None
     #                (None = wait without limit, as before). A limit in simulated time is reproducible, a wall clock limit is not.
@@ -180,9 +224,13 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
     #                   or stop colonization and the emergence of new hyphae from the roots (mycp.turnOffRoots), the hyphae keep growing
     # progress_every: print one line with the state of the simulation every progress_every time steps (None = no output), e.g. 24 = once per simulated day
     # seed_pos_x: x position of the seed [cm] (default 5 mm from the edge of the 94 mm dish), it lies at y = 0, z = -height/2
+    #             (assumption without source; in the experiment a root organ culture of D. carota is placed as a root piece, varied in the inoculum Morris of sa_setup)
     # hyphal_emergence_density, lmbd: set for all root types after the root phase, when the hyphae start to emerge
+    #             (values from Schnepf et al., as vi, hyphalDelay, maxColonization, minAge, maxAge in the xml)
     # crossing_length: hyphal length [cm] behind the barrier that defines t* (Choice of 10cm from Oyarte Galvez et al. 2025 to avoid inaccuracies with manual visual determination of hyphal growth into compartment)
-    #                  Model counts entire complete 3D length inkl BAS, experiment the visual projected length
+    #                  As in the paper (t* where L_RH = 10^2 mm) only the length of the runner hyphae counts: crossing_subtype = 1
+    #                  (None = all hyphae incl. BAS, the former definition). Model: 3D length, experiment: projected length of the image
+    # crossing_subtype: hyphal sub type whose length behind the barrier defines t* (1 = RunnerHyphae of TwoHyphaePlusBAS.xml)
     # hyphae_parameters: dict {name: value} set for all hyphal sub types after reading the xml, e.g. {"distTH": 0.02} or {"ana": 0.}
     #                    (see setHyphaeParameters), the values used are stored in stats ("hyphae_<name>" for distTH and ana, one per sub type)
     # stats: optional dict, filled with "status" ("ok", "not_crossed" or "stalled"), the wall clock time of each phase [s] ("wall_root", "wall_wait",
@@ -244,6 +292,8 @@ def makeSimulation(seed, path, name, height, petri_dish, small_hyphae_dish, half
         mycp.simulate(dt,verbose)
         ana = pb.SegmentAnalyser(mycp) # only the length is needed, cheaper than getMycSegmentAnalyser (no colonization, anastomosis, tips)
         ana.filter("organType",5)
+        if crossing_subtype is not None:
+            ana.filter("subType", crossing_subtype) # t* from the runner length only, as L_RH in Oyarte Galvez et al. 2025
         ana.pack()
         crossed_barrier = ana.getSummed("length",small_hyphae_dish)
         crossed_t.append(mycp.getSimTime())

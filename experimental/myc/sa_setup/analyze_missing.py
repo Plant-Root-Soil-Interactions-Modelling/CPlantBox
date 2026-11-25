@@ -36,7 +36,8 @@ def main():
     design = pd.read_csv(config.RESULTS_DIR / "design_morris.csv")
     new = load_status("results")
     old = load_status(old_folder)
-    names = [f.name for f in config.FACTORS]
+    from design import factors_of
+    names = [f.name for f in factors_of("morris")]   # factor list of the design (first round: v1)
     d = design.merge(new.rename(columns={"status": "st_new", "sim_seconds": "t_new"}), on="run_id")
     if old is not None:
         d = d.merge(old.rename(columns={"status": "st_old", "sim_seconds": "t_old"}), on="run_id", how="left")
