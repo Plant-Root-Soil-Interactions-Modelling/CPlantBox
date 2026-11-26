@@ -92,8 +92,9 @@ def phase0():
     # minimal path length for anastomosis as a factor on the derived value (A11)
     for s in config.PHASE0_ANAL_SCALES:
         for i in range(config.PHASE0_ANAL_SEEDS):
-            rows.append({"run_id": f"{P0}_anaL{s:g}_{i:03d}", "group": f"anaL={s:g}",
-                         "seed": config.BASE_SEED + i, "dx": np.nan, "ana_L_scale": s, **nom})
+            # nom also contains the factor ana_L_scale (= 1): it must come first, otherwise it overwrites s
+            rows.append({**nom, "run_id": f"{P0}_anaLs{s:g}_{i:03d}", "group": f"anaL={s:g}",
+                         "seed": config.BASE_SEED + i, "dx": np.nan, "ana_L_scale": s})
     # common random numbers (C19): the point moved in one factor, with the seeds of the noise runs and with independent seeds
     f = next(f for f in config.FACTORS if f.name == config.PHASE0_CRN_PARAM)
     g = np.log if f.log else (lambda v: v)
