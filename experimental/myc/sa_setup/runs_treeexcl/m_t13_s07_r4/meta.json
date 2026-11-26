@@ -1,0 +1,27 @@
+{
+ "run_id": "m_t13_s07_r4",
+ "seed": 20361090,
+ "dx": null,
+ "hours": null,
+ "values": {
+  "R_v": 0.72,
+  "R_hlt": 4.0,
+  "R_lmax": 5.0,
+  "R_ln": 0.3301927248894626,
+  "R_theta": 0.8726646259971648,
+  "R_b_ctrl": 1.1875,
+  "B_v": 0.432,
+  "B_b": 0.8166666666666668,
+  "B_hlt": 5.0,
+  "B_theta": 1.0471975511965976,
+  "distTH": 0.0108333333333333,
+  "ana": 1.0,
+  "v_cv": 0.15
+ },
+ "dev_mode": "relative",
+ "sim_status": "ok",
+ "snapshots": [
+  "raw.npz"
+ ],
+ "sim_seconds": 29.9
+}

@@ -1,0 +1,47 @@
+Kalibrierung, Stand 2026-11-25 12:50, Laufzeit 27.3 h
+Status: läuft
+  (Ist der Job beendet und steht hier noch 'läuft', wurde er hart abgebrochen: Zeitlimit oder Knoten. Einfach erneut einreichen, fertige Läufe werden übernommen.)
+16 Parameter, 7 Ziele, 16 Priors (8 Literatur), 16 Seeds, 60 h nach t*
+Auswertungen 57 (9 Iterationspunkte, 48 Differenzenpunkte), Läufe 912
+
+Bester Punkt (Auswertung 34, |F| Ziele = 13.09, |z| Priors = 3.01):
+          R_v = 0.6051     [0.432, 0.72], nominal 0.576    Prior Literatur z = +0.40
+        R_hlt = 7.447      [4, 10], nominal 8        Prior Literatur z = -0.38
+       R_lmax = 3.119      [1.5, 5], nominal 3        Prior schwach   z = +0.07
+         R_ln = 0.07971    [0.05, 0.6], nominal 0.1      Prior Literatur z = -2.51
+      R_theta = 1.055      [0.8727, 1.396], nominal 1.047    Prior Literatur z = -0.91
+   R_tropismN = 4.024      [1, 8], nominal 4        Prior schwach   z = +0.01
+   R_succ_BAS = 0.7927     [0.5, 0.95], nominal 0.75     Prior schwach   z = +0.19
+          R_a = 0.003246   [0.001, 0.01], nominal 0.005    Prior schwach   z = -0.38
+          B_v = 0.5638     [0.432, 0.72], nominal 0.576    Prior Literatur z = -0.17
+          B_b = 1.996      [0.3, 2], nominal 0.96     Prior schwach   z = +0.77
+        B_hlt = 6.881      [3, 12], nominal 7        Prior Literatur z = -0.12
+      B_theta = 1.158      [0.8727, 1.396], nominal 1.047    Prior Literatur z = +0.27
+   B_tropismN = 2.138      [0.5, 4], nominal 1        Prior schwach   z = +0.65
+          B_a = 0.0002688  [5e-05, 0.005], nominal 0.00025  Prior Literatur z = +0.46
+          ana = 0.9276     [0.5, 1], nominal 1        Prior schwach   z = -0.29
+       distTH = 0.00895    [0.005, 0.03], nominal 0.01     Prior schwach   z = -0.12
+Ziele am besten Punkt:
+                  beta:       37.5 ± 3.4      Ziel 23 ± 10%   F =  +5.13  daneben
+                    K1:      493.1 ± 1e+02    Ziel 1400 ± 10%   F = -10.95  daneben
+         bas_share@60h:     0.2575 ± 0.0014   Ziel 0.3 ± 10%   F =  -1.60  daneben
+                    K2:    0.05222 ± 0.011    Ziel 0.15 ± 33%   F =  -3.70  daneben
+        branching_rate:    0.05814 ± 0.00078  Ziel 0.04 ± 20%   F =  +2.05  daneben
+        front_velocity:      6.531 ± 2.5      Ziel 6.72 ± 10%   F =  -0.30  ok
+   root_efficiency_rel:     0.7132 ± 0.017    Ziel 0.5 ± 20%   F =  +2.13  daneben
+Verlauf der Iterationspunkte (Kosten |F|² + |z|²): 777.4, 363.3, 180.3, 219.1, 386.0, 269.7, 313.4, 301.3, 301.0
+
+
+PRÜFUNGEN
+Fehlgeschlagene Läufe: 0 von 912
+Rauschen: beta SE 3.51 > halbe Toleranz -> mehr Seeds oder größere Toleranz
+Rauschen: front_velocity SE 1.77 > halbe Toleranz -> mehr Seeds oder größere Toleranz
+Widerspruch zu Literatur: R_ln liegt -2.5 σ vom Prior (~1 mm (Giovannetti, in Schnepf 2008) bis ~6 mm (Oyarte Galvez 2025)) -> die Ziele verlangen einen anderen Wert; Ziel, Modellstruktur oder Prior prüfen
+                  beta wird getrieben von R_v (+21.04), R_lmax (+17.17), distTH (+15.21)
+                    K1 wird getrieben von R_ln (-104.99), R_a (-71.40), distTH (-61.59)
+         bas_share@60h wird getrieben von R_ln (-19.57), R_succ_BAS (+5.85), B_b (+3.31)
+                    K2 wird getrieben von R_ln (-34.52), R_succ_BAS (-16.10), B_theta (-15.69)
+        branching_rate wird getrieben von R_ln (-11.81), R_succ_BAS (-9.40), R_v (+2.85)
+        front_velocity wird getrieben von B_hlt (+37.59), B_tropismN (+36.94), R_lmax (+33.83)
+   root_efficiency_rel wird getrieben von R_ln (-13.97), distTH (-11.23), R_succ_BAS (-9.54)
+Jacobi der Ziele: Rang 5 von 7 (Singulärwerte 2.1e+02, 76, 27, 19, 13, 7.3, 5.6); die Priors ergänzen den Rest

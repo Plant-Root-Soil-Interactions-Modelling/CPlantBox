@@ -1,0 +1,14 @@
+{
+ "run_id": "smoke_low_quick",
+ "point": "low",
+ "quick": true,
+ "sim_status": "ok",
+ "sim_h": 0.37502777777777774,
+ "problems": "",
+ "wait_days": 14.333333333333336,
+ "n_cols": 13,
+ "hours_after_tstar": 12.235276772106289,
+ "nan_outputs": "front_velocity@12h, K1@12h, K2@12h, wave_width@12h",
+ "total_h": 0.37504932317468853,
+ "peak_mem_gb": 0.524017333984375
+}

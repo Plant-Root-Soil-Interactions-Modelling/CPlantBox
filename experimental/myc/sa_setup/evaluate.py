@@ -178,8 +178,7 @@ IMAGE_QUANTITIES = {
     "bas_share_subtype_image": "comparison: BAS share by sub type in the same image graph",
     "L_RH_image": "[mm] runner length as classified in the image graph, projected (≈ 280, 500, 850)",
     "L_BAS_image": "[mm] BAS length as classified in the image graph, projected (≈ 100, 230, 370)",
-    # anastomosis density ρ_A of the paper (≈ 0.5–0.7): the paper gives no definition (unit, normalisation), so no target;
-    # both plausible variants as outputs for comparison only
+    # anastomosis density ρ_A of the paper (≈ 0.5–0.7, unit and normalisation to be checked): both candidates
     "ana_per_length_rh": "[mm^-1] anastomoses since t* (fungal side) per L_RH of the image graph",
     "ana_per_length_total": "[mm^-1] anastomoses since t* (fungal side) per total length of the image graph",
     # held back for the validation (config.VALIDATION_OUTPUTS), normalisations assumed

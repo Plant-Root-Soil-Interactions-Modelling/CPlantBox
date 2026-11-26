@@ -1,0 +1,16 @@
+{
+ "run_id": "smoke_nominal",
+ "point": "nominal",
+ "quick": false,
+ "sim_status": "ok",
+ "sim_h": 0.38625,
+ "problems": "",
+ "warnings": "",
+ "wait_days": 6.333333333333306,
+ "n_cols": 61,
+ "hours_after_tstar": 60.234237568957155,
+ "root_eff_E_rel": 0.6702819919609009,
+ "nan_outputs": "",
+ "total_h": 0.3873403512769275,
+ "peak_mem_gb": 0.5807418823242188
+}

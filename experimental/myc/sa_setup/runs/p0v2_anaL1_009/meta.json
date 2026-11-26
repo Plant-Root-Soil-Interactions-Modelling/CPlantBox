@@ -1,0 +1,38 @@
+{
+ "run_id": "p0v2_anaL1_009",
+ "seed": 20261030,
+ "dx": null,
+ "hours": null,
+ "steps_per_day": 24,
+ "roots_on": false,
+ "sim_args": {},
+ "values": {
+  "R_v": 0.576,
+  "R_hlt": 8.0,
+  "R_lmax": 3.0,
+  "R_ln": 0.1,
+  "R_theta": 1.0471976,
+  "R_tropismN": 4.0,
+  "R_succ_BAS": 0.75,
+  "R_a": 0.005,
+  "B_v": 0.576,
+  "B_b": 0.96,
+  "B_hlt": 7.0,
+  "B_theta": 1.0471976,
+  "B_tropismN": 1.0,
+  "B_a": 0.00025,
+  "B_lmax": 0.03,
+  "ana": 0.7,
+  "distTH": 0.01,
+  "ana_L_scale": 1.0,
+  "v_cv": 0.2916666666666667,
+  "cv_scale": 1.0,
+  "R_b_ctrl": 0.95
+ },
+ "dev_mode": "relative",
+ "sim_status": "ok",
+ "snapshots": [
+  "raw.npz"
+ ],
+ "sim_seconds": 2265.0
+}

@@ -1,0 +1,27 @@
+{
+ "run_id": "m_t03_s10_r1",
+ "seed": 20361037,
+ "dx": null,
+ "hours": null,
+ "values": {
+  "R_v": 0.72,
+  "R_hlt": 10.0,
+  "R_lmax": 1.5,
+  "R_ln": 0.3301927248894626,
+  "R_theta": 1.0471975511965976,
+  "R_b_ctrl": 0.7124999999999999,
+  "B_v": 0.432,
+  "B_b": 0.55,
+  "B_hlt": 5.0,
+  "B_theta": 1.0471975511965976,
+  "distTH": 0.0075,
+  "ana": 1.0,
+  "v_cv": 0.15
+ },
+ "dev_mode": "relative",
+ "sim_status": "ok",
+ "snapshots": [
+  "raw.npz"
+ ],
+ "sim_seconds": 220.2
+}

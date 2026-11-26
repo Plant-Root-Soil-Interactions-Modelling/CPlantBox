@@ -1,0 +1,38 @@
+{
+ "run_id": "smoke_high",
+ "seed": 20261021,
+ "dx": null,
+ "hours": null,
+ "steps_per_day": 24,
+ "roots_on": false,
+ "sim_args": {},
+ "values": {
+  "R_v": 0.72,
+  "R_hlt": 12.5,
+  "R_lmax": 5.0,
+  "R_ln": 0.6,
+  "R_theta": 1.7453292519943295,
+  "R_tropismN": 8.0,
+  "R_succ_BAS": 0.95,
+  "R_a": 0.01,
+  "B_v": 0.72,
+  "B_b": 2.0,
+  "B_hlt": 12.0,
+  "B_theta": 1.7453292519943295,
+  "B_tropismN": 4.0,
+  "B_a": 0.005,
+  "B_lmax": 0.1,
+  "ana": 1.0,
+  "distTH": 0.05,
+  "ana_L_scale": 2.0,
+  "v_cv": 0.4,
+  "cv_scale": 2.0,
+  "R_b_ctrl": 1.1875
+ },
+ "dev_mode": "relative",
+ "sim_status": "ok",
+ "snapshots": [
+  "raw.npz"
+ ],
+ "sim_seconds": 44.2
+}

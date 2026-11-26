@@ -1,0 +1,26 @@
+{
+ "run_id": "p0_dx0.005_005",
+ "seed": 20261026,
+ "dx": 0.005,
+ "values": {
+  "R_v": 0.576,
+  "R_hlt": 8.0,
+  "R_lmax": 3.0,
+  "R_ln": 0.1,
+  "R_theta": 1.0471976,
+  "R_b_ctrl": 0.95,
+  "B_v": 0.576,
+  "B_b": 0.96,
+  "B_hlt": 7.0,
+  "B_theta": 1.0471976,
+  "distTH": 0.01,
+  "ana": 1.0,
+  "v_cv": 0.2916666666666667
+ },
+ "dev_mode": "relative",
+ "sim_status": "ok",
+ "snapshots": [
+  "raw.npz"
+ ],
+ "sim_seconds": 5958.2
+}

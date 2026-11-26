@@ -1,0 +1,43 @@
+{
+  "L": 0.0,
+  "seed": 1,
+  "hours": 24,
+  "wall_s": 261,
+  "anaMinDist_used": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "n_hyphae": 13317,
+  "length_cm": 1608.2672569846152,
+  "fusions": 4142,
+  "relation": {
+    "other_tree": 1429,
+    "self": 882,
+    "parent": 1105,
+    "sibling": 43,
+    "same_tree": 654,
+    "child": 29
+  },
+  "relation_by_subtype": {
+    "1->1 child": 22,
+    "1->1 other_tree": 1083,
+    "1->1 parent": 274,
+    "1->1 same_tree": 447,
+    "1->1 self": 740,
+    "1->1 sibling": 31,
+    "1->2 child": 7,
+    "1->2 other_tree": 138,
+    "1->2 same_tree": 66,
+    "1->2 sibling": 2,
+    "2->1 other_tree": 183,
+    "2->1 parent": 788,
+    "2->1 same_tree": 131,
+    "2->1 sibling": 2,
+    "2->2 other_tree": 25,
+    "2->2 parent": 43,
+    "2->2 same_tree": 10,
+    "2->2 self": 142,
+    "2->2 sibling": 8
+  }
+}

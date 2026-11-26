@@ -1,0 +1,27 @@
+{
+ "run_id": "m_t10_s00_r4",
+ "seed": 20361075,
+ "dx": null,
+ "hours": null,
+ "values": {
+  "R_v": 0.528,
+  "R_hlt": 6.0,
+  "R_lmax": 1.5,
+  "R_ln": 0.1,
+  "R_theta": 1.2217304763960306,
+  "R_b_ctrl": 1.1875,
+  "B_v": 0.432,
+  "B_b": 0.55,
+  "B_hlt": 6.333333333333334,
+  "B_theta": 0.8726646259971648,
+  "distTH": 0.0108333333333333,
+  "ana": 0.6666666666666667,
+  "v_cv": 0.2333333333333333
+ },
+ "dev_mode": "relative",
+ "sim_status": "ok",
+ "snapshots": [
+  "raw.npz"
+ ],
+ "sim_seconds": 3253.0
+}
