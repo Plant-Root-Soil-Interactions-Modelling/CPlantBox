@@ -20,7 +20,7 @@ from xml_tools import nominal_values
 
 # Prefix of the run_ids of new designs: the nominal model changed (anaMinDist derived, A11; parameter list v2, B13),
 # runs of the first round (p0_*, m_*) must not be reused under the same run_id
-P0 = "p0v4"   # v4: ana_L_scale nominal 3 (v3: HOURS_HYPHAE = 120, v2: 60 h)
+P0 = "p0v5"   # v5: hyphae_layer nominal 0.02 cm and factor (v4: ana_L_scale nominal 3, v3: HOURS_HYPHAE = 120, v2: 60 h)
 
 
 def factors_of(tag, design_path=None):
@@ -87,8 +87,9 @@ def phase0():
     # thickness of the hyphal layer (A4)
     for layer in config.PHASE0_LAYER_VALUES:
         for i in range(config.PHASE0_LAYER_SEEDS):
-            rows.append({"run_id": f"{P0}_layer{layer:g}_{i:03d}", "group": f"layer={layer:g}",
-                         "seed": config.BASE_SEED + i, "dx": np.nan, "hyphae_layer": layer, **nom})
+            # nom also contains the factor hyphae_layer (nominal): it must come first, otherwise it overwrites layer
+            rows.append({**nom, "run_id": f"{P0}_layer{layer:g}_{i:03d}", "group": f"layer={layer:g}",
+                         "seed": config.BASE_SEED + i, "dx": np.nan, "hyphae_layer": layer})
     # minimal path length for anastomosis as a factor on the derived value (A11)
     for s in config.PHASE0_ANAL_SCALES:
         for i in range(config.PHASE0_ANAL_SEEDS):
@@ -159,14 +160,15 @@ def morris_design(tag, trajectories, R, seed_offset, prefix):
 
 
 def phase1_morris():
-    # parameter list v2: own run_ids and seeds, the first round used "m" and 100_000; "m3": 120 h, ana_L_scale nominal 3
-    morris_design("morris", config.MORRIS_TRAJECTORIES, config.MORRIS_REPLICATES, 500_000, "m3")
+    # parameter list v3: own run_ids and seeds, the first round used "m" and 100_000; "m3": 120 h, ana_L_scale nominal 3;
+    # "m4": hyphae_layer nominal 0.02 cm and factor
+    morris_design("morris", config.MORRIS_TRAJECTORIES, config.MORRIS_REPLICATES, 500_000, "m4")
 
 
 def inoculum_morris():
     """Root phase, root architecture, placement and emergence density, hyphal parameters nominal (config.INOCULUM_FACTORS)."""
-    # "inoc4": ana_L_scale nominal 3 ("inoc3": HOURS_HYPHAE = 120, "inoc": 60 h)
-    morris_design("inoculum", config.INOCULUM_TRAJECTORIES, config.INOCULUM_REPLICATES, 400_000, "inoc4")
+    # "inoc5": hyphae_layer 0.02 cm ("inoc4": ana_L_scale nominal 3, "inoc3": HOURS_HYPHAE = 120, "inoc": 60 h)
+    morris_design("inoculum", config.INOCULUM_TRAJECTORIES, config.INOCULUM_REPLICATES, 400_000, "inoc5")
 
 
 if __name__ == "__main__":

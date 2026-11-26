@@ -33,6 +33,8 @@ TAG, FACTORS, NAMES, ROLE, GROUP, SA_OUTPUTS, PER_RUN, TRAJECTORIES, PREFIX = "m
 
 
 def _group(f):
+    if f.name == "hyphae_layer":
+        return "geometry"
     if f.target != "hyphae":
         return "inoculum"
     return "control" if f.role == "control" else ("shared" if len(f.subtypes) > 1 else
@@ -56,9 +58,11 @@ def setup(tag):
 setup("morris")
 
 # colours (categories runner/BAS/shared/control, sequence for the heatmap); inoculum is never shown together with shared
-COLORS = {"runner": "#2a78d6", "bas": "#eb6834", "shared": "#1b8a6b", "control": "#8a8a85", "inoculum": "#1b8a6b"}
-LABELS = {"runner": "Runner", "bas": "BAS", "shared": "shared", "control": "control", "inoculum": "root / inoculum"}
-MARKERS = {"runner": "o", "bas": "s", "shared": "D", "control": "X", "inoculum": "D"}
+COLORS = {"runner": "#2a78d6", "bas": "#eb6834", "shared": "#1b8a6b", "geometry": "#8a5fbf", "control": "#8a8a85",
+          "inoculum": "#1b8a6b"}
+LABELS = {"runner": "Runner", "bas": "BAS", "shared": "shared", "geometry": "geometry (layer)", "control": "control",
+          "inoculum": "root / inoculum"}
+MARKERS = {"runner": "o", "bas": "s", "shared": "D", "geometry": "P", "control": "X", "inoculum": "D"}
 INK, INK2, GRID = "#1f1f1e", "#5f5e5a", "#e4e3df"
 SEQ = ["#fcfcfb", "#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
 

@@ -44,6 +44,11 @@ def main():
             if len(set(vals.values())) > 1:
                 problems.append(f"{f.name}: shared factor, but different nominal values {vals}")
 
+    # the nominal of the layer factor is the default layer of model_hook.simulate (runs without the factor, calibration)
+    lay = next((f for f in config.FACTORS if f.name == "hyphae_layer"), None)
+    if lay is not None and abs(lay.nominal - config.HYPHAE_LAYER) > 1e-12:
+        problems.append(f"hyphae_layer: nominal {lay.nominal} != config.HYPHAE_LAYER {config.HYPHAE_LAYER}")
+
     # b_prob must be 0/1 for the factor selection to be right
     root = ET.parse(config.TEMPLATE_XML).getroot()
     for hy in root.iter("hyphae"):

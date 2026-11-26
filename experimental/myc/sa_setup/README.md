@@ -126,13 +126,20 @@ geometry: set `SAVE_VTP = True` for that.
 | BAS (subType 2) | `B_v`, `B_b`, `B_hlt`, `B_theta`, `B_tropismN`, `B_a`, `B_lmax` | v as runner, b 0.3–2 /d (log), hlt 3–12 d, θ 50–80°, tropismN 0.5–4, radius 0.5–50 µm (log), lmax 0.01–0.1 cm (log) |
 | shared | `ana`, `distTH`, `ana_L_scale` | 0.5–1, 0.005–0.03 cm (log), anaMinDist factor 1.5–6 on the derived value (log, nominal 3) |
 | SA only | `v_cv`, `cv_scale`, `R_b_ctrl` | CV of v 0.15–0.40, all other dev × 0.5–2 (log), control (b of the runners, no effect with b_prob = 0) |
+| geometry (SA only, `config.SA_GEOMETRY`) | `hyphae_layer` | thickness of the hyphal layer on the fungal side 0.005–0.1 cm (log, nominal 0.02 = `HYPHAE_LAYER`), passed to the simulation (`target="sim"`) |
 
-21 factors: 20 trajectories × 22 points × 5 replicates = 2200 runs. Fixed: la, lb of the BAS, tropismT, tropismS, dx, b_prob.
+22 factors: 20 trajectories × 23 points × 5 replicates = 2300 runs. Fixed: la, lb of the BAS, tropismT, tropismS, dx, b_prob.
+
+**Layer thickness:** the cellophane is quasi 2D. Layer test (nominal model, t* + 48 h, 3–7 seeds): from 0.02 cm down
+anastomoses per tip, branching and network size no longer change systematically; at 0.1 cm (the former nominal) 0.6 ×
+the anastomoses per tip and 1.5 × the network. The barrier opening stays as it is (2 mm deep): in thin layers more tips
+get stuck in it below the layer (x < b/2, outside the rings, not in the ring outputs; counted in `raw.npz` as
+`diag_opening_tips`, `diag_opening_tips_below_layer`).
 
 **First Morris round:** its 13 factors are kept as `config.FACTORS_V1`. Designs without the column `factor_set` (first
 round) are run and evaluated with them, so its runs stay usable (e.g. `--eval-only` for the pooled targets). New designs
-store `factor_set = v2` and have new run_ids (`p0v4_*`, `m3_*`, `inoc4_*`): the nominal model changed (anaMinDist
-3 × derived; 120 h after t*).
+store `factor_set = v3` (v2: without `hyphae_layer`) and have new run_ids (`p0v5_*`, `m4_*`, `inoc5_*`): the nominal
+model changed (anaMinDist 3 × derived; 120 h after t*; layer 0.02 cm).
 
 **Order (B14):** Phase 0 (noise, dx, dt, layer, anaMinDist) and the long test -> fix the numerics; Morris (and the
 inoculum Morris) -> `analyze_morris.py` writes `morris_calibration_suggestion.csv` (parameters with μ* above noise for
@@ -180,7 +187,7 @@ automatically in `collect.sbatch`; noise level from a bootstrap over the replica
 **Simulated time (`HOURS_HYPHAE` = 120 h after t*):** the Phase 0 long test showed that K1 and K2 only reach the
 experimental values at about 120 h (nominal K1 763 -> 1422 µm mm⁻², K2 0.071 -> 0.151 mm⁻² between 60 and 120 h), so the
 wave fits run over 0–120 h. The image graph targets stay at 20/40/60 h (time course of the figures). The long test runs
-`LONG_HOURS` = 180 h (image graph additionally at 150/180 h). Run ids changed to `p0v4_*`, `m3_*` and `inoc4_*` (with anaMinDist 3 × derived); Phase 0 has to
+`LONG_HOURS` = 180 h (image graph additionally at 150/180 h). Run ids changed to `p0v5_*`, `m4_*` and `inoc5_*` (anaMinDist 3 × derived, layer 0.02 cm); Phase 0 has to
 be rerun with 120 h, the runtime per run is about 1.6 h (nominal median of the long test). Per run the wave quantities are still in `outputs.csv` as diagnostics, with the number of rings
 behind the fits (`n_wave_rings`, `n_K1_rings`, `n_tip_rings`) and `wait_days`.
 

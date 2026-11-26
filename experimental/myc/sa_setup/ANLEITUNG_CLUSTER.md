@@ -99,7 +99,7 @@ sbatch $S/sa_run.sbatch analyze_rings.py            # Ringauflösung 15 vs. 5 au
 | Ausgabe „Spread between seeds …“ | CV der Ziele aus einer Kolonie | als `between_cv` bei K1, K2, front_velocity, front_tip_speed, alpha, beta in `calibrate.py` eintragen |
 | `phase0_dx.csv` | Abweichung zur feinsten Stufe > 2 %? | dx verkleinern |
 | `phase0_dt.csv` | Rest-Abhängigkeit von dt (dt = 1 h ist festgelegt) | nur dokumentieren; Anastomosen pro Spitze sollten gleich sein |
-| `phase0_layer.csv` | Wie stark reagieren alpha, Anastomosen auf die Schichtdicke? | Annahme halten oder `HYPHAE_LAYER` ändern |
+| `phase0_layer.csv` | Wie stark reagieren alpha, Anastomosen auf die Schichtdicke (0.02 nominal vs. 0.005 / 0.1 cm)? | Vorschau auf den Morris-Effekt von `hyphae_layer`; Nominalwert halten oder `HYPHAE_LAYER` (und den Nominalwert des Faktors) ändern |
 | `phase0_anaL.csv` | Wirkung der Mindestpfadlänge (×1 / 1.5 / 6 gegen nominal ×3) | `ana_L_scale` in der Kalibrierung lassen oder fixieren |
 | `phase0_crn.csv` | Verhältnis gleiche/unabhängige Seeds deutlich < 1? | sonst mehr Seeds in Kalibrierung und Morris |
 | `phase0_bas_share.csv` | BAS-Anteil Subtyp vs. Bildkriterien | Einordnung C15 |
@@ -122,7 +122,7 @@ Stufen mit dem neuen Stand.
 ```bash
 cd ~
 sbatch $S/sa_run.sbatch design.py morris          # warten, bis der Job fertig ist (squeue)
-bash $S/submit.sh results/design_morris.csv       # 2200 Läufe, ≈ 3700 CPU-h (~1.7 h pro Lauf inkl. Auswertung)
+bash $S/submit.sh results/design_morris.csv       # 2300 Läufe, ≈ 3800 CPU-h (~1.7 h pro Lauf inkl. Auswertung)
 ```
 - `MAXPAR=200 bash $S/submit.sh …` erlaubt mehr gleichzeitige Läufe (Standard 100).
 - Mehr Zeit oder Speicher pro Lauf: `SIMTIME=12:00:00 SIMMEM=8G bash $S/submit.sh results/design_morris.csv`.

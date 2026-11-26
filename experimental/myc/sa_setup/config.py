@@ -133,9 +133,19 @@ SA_ONLY: list[Factor] = [
     # control factor: b is only read during tip splitting (Hyphae.cpp), no effect with b_prob = 0 -> mu* = 0
     Factor("R_b_ctrl", (RUNNER,), "b", 0.7125, 1.1875, role="control"),
 ]
+# geometry (v3): thickness of the hyphal layer on the fungal side (model_hook.simulate -> defaultPetridish). The cellophane
+# is quasi 2D; layer test (2026-11, nominal model, t* + 48 h, 3-7 seeds): from 0.02 cm down anastomoses per tip, branching
+# and network size no longer change systematically, at 0.1 cm 0.6 x the anastomoses per tip and 1.5 x the network.
+# Range: 2D limit (50 µm) to the former 1 mm. Thinner layers: more tips stuck in the 2 mm deep barrier opening below the
+# layer (x < b/2, outside the rings, so not in the ring outputs; the opening is kept as it is)
+SA_GEOMETRY: list[Factor] = [
+    Factor("hyphae_layer", (), "hyphae_layer", 0.005, 0.1, log=True, target="sim", nominal=0.02,
+           source="layer test 2026-11: plateau from 0.02 cm down (quasi 2D, cellophane); range 2D limit to the former 1 mm"),
+]
 
-FACTORS: list[Factor] = PARAMETERS + SA_ONLY
-FACTOR_SET = "v2"   # stored in every new design (column factor_set); designs without it use FACTORS_V1
+FACTORS_V2: list[Factor] = PARAMETERS + SA_ONLY
+FACTORS: list[Factor] = PARAMETERS + SA_ONLY + SA_GEOMETRY
+FACTOR_SET = "v3"   # stored in every new design (column factor_set); designs without it use FACTORS_V1
 
 # --------------------------------------------------------------------------
 # FACTORS_V1: the factors of the first Morris round (13), kept so that its runs can still be evaluated and resubmitted
@@ -198,8 +208,9 @@ STATE_OUTPUTS = ["wait_days", "n_crossings_tstar", "influx_tstar", "frozen_share
 
 
 def factor_set(name):
-    """Factor list of a design: "v2" (FACTORS, default of new designs) or "v1" (first Morris round)."""
-    return {"v1": FACTORS_V1, "v2": FACTORS}[name]
+    """Factor list of a design: "v3" (FACTORS with hyphae_layer, default of new designs), "v2" (without it) or "v1"
+    (first Morris round)."""
+    return {"v1": FACTORS_V1, "v2": FACTORS_V2, "v3": FACTORS}[name]
 
 
 # Parameters that are NEVER varied (documentation / checks only)
@@ -216,7 +227,7 @@ RING_CENTER = "crossing"    # "crossing": median of the barrier crossings until 
 # warnings (analyze_phase0.py -> results/phase0_warnings.txt, calibration/report.txt)
 WARN_MIN_CROSSINGS = 5          # fewer barrier crossings until t* (median over runs): the crossing point is uncertain
 WARN_MAX_OUTSIDE_RINGS = 0.10   # larger share of the growing tips beyond RING_RADIUS at the end: the rings miss the front
-HYPHAE_LAYER = 0.1          # hyphae grow on the cellophane, thin layer on top [cm]
+HYPHAE_LAYER = 0.02         # hyphae grow on the cellophane, thin layer on top [cm]; nominal of the factor hyphae_layer
 ROOT_DAYS = 5               # root phase [d]: assumption without source (the roots should grow a bit before the hyphae), see INOCULUM_FACTORS
 # dt = 1 h (image interval of the experiment) is part of the model definition: the parameters hold for dt = 1 h.
 # Isolated dt tests (2026-11, 8 seeds, ana_L_scale 3): anastomoses per tip independent of dt, but the network after 2 d is
@@ -299,10 +310,10 @@ PHASE0_DX_SEEDS = 10
 # dt dependence at the nominal point. Runtime grows roughly with the number of steps
 PHASE0_DT_STEPS_PER_DAY = [24, 48, 96]   # dt = 1 h, 0.5 h, 0.25 h
 PHASE0_DT_SEEDS = 10
-# Thickness of the hyphal layer on the fungal side: the cellophane of the experiment is quasi 2D, the model uses a 1 mm
-# layer in 3D. With distTH = 100 µm the layer thickness changes the encounter probability (anastomoses, beta, encounter_C).
-# Compared with the thinnest layer (closest to 2D), same seeds. Thin layers: tips hit the boundary more often
-PHASE0_LAYER_VALUES = [0.1, 0.05, 0.02]   # [cm], nominal HYPHAE_LAYER first
+# Thickness of the hyphal layer on the fungal side: the cellophane of the experiment is quasi 2D. With distTH = 100 µm the
+# layer thickness changes the encounter probability (anastomoses, beta, encounter_C). Nominal 0.02 cm (layer test 2026-11,
+# see SA_GEOMETRY), compared with the ends of the Morris range of hyphae_layer, same seeds
+PHASE0_LAYER_VALUES = [HYPHAE_LAYER, 0.005, 0.1]   # [cm], nominal first
 PHASE0_LAYER_SEEDS = 10
 # Minimal path length along the mycelium for anastomosis (anaMinDist) as a factor on the derived value
 # distTH / sin(theta) + 2 dx (≈ 0.032 cm nominal). Nominal ANA_L_SCALE_NOMINAL = 3 (≈ 0.095 cm), compared with it, same

@@ -101,6 +101,25 @@ def frozen_diagnostics(mycp, x0, edges):
     return {"diag_dead_hyphae": cum(dead_t), "diag_frozen_tips": cum(frozen_t), "diag_frozen_tips_fungal": cum(frozen_fungal_t)}
 
 
+def opening_tip_diagnostics(mycp, barrier_thickness, layer):
+    """Active, alive tips at the end inside the barrier opening (-b/2 < x < b/2), in total and below the hyphal layer
+    (z < -layer): the opening is 2 mm deep, the layer behind it only `layer`, tips below it run into the step at x = b/2 and
+    stay there. They lie outside the rings (not in the ring outputs). Also the active tips on the fungal side (x >= b/2)."""
+    import plantbox as pb
+    n_open = n_below = n_fungal = 0
+    for o in mycp.getOrgans(pb.hyphae):
+        if not (o.isActive() and o.isAlive()):
+            continue
+        p = o.getNode(o.getNumberOfNodes() - 1)
+        if abs(p.x) < barrier_thickness / 2:
+            n_open += 1
+            n_below += p.z < -layer
+        elif p.x >= barrier_thickness / 2:
+            n_fungal += 1
+    return {"diag_opening_tips": float(n_open), "diag_opening_tips_below_layer": float(n_below),
+            "diag_fungal_tips_end": float(n_fungal)}
+
+
 def tip_speed_diagnostics(mycp, x0, time_star, hours, subtype=None, front_quantile=None, center_y=0.):
     """Growth speed of the growing runner tips per hour after t* (Oyarte Galvez et al. 2025, Fig. 2d: "average growth speed
     of hyphae at the front of the colony at each timestep", ≈ 300 µm/h), from the final plant. For every runner and hour
@@ -241,14 +260,14 @@ def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None
     stays hourly (times from makeSimulation), only the numerical step changes.
     roots_on: roots keep growing after t* (as in the experiment); default False: root growth is turned off at t*
     (colonization and hyphal emergence stay on in both cases).
-    sim_args: inoculum factors (config.INOCULUM_FACTORS with target "sim"): "root_days" (duration of the root phase [d],
+    sim_args: factors with target "sim" (config.INOCULUM_FACTORS, SA_GEOMETRY): "root_days" (duration of the root phase [d],
     default config.ROOT_DAYS), "hyphae_layer" (thickness of the hyphal layer [cm], default config.HYPHAE_LAYER) and
     keyword arguments of makeSimulation (seed_pos_x, hyphal_emergence_density)."""
     hours = int(hours) if hours else config.HOURS_HYPHAE
     steps_per_day = int(steps_per_day) if steps_per_day else config.STEPS_PER_DAY
     sim_args = dict(sim_args or {})
     root_days = float(sim_args.pop("root_days", config.ROOT_DAYS))
-    layer = float(sim_args.pop("hyphae_layer", config.HYPHAE_LAYER))   # thickness of the hyphal layer [cm] (layer test)
+    layer = float(sim_args.pop("hyphae_layer", config.HYPHAE_LAYER))   # thickness of the hyphal layer [cm] (factor, layer test)
     if USE_DUMMY:
         import dummy_model
         return dummy_model.simulate(xml_path, seed, outdir, hours, roots_on=roots_on, root_days=root_days, sim_args=sim_args,
@@ -303,6 +322,7 @@ def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None
     try:   # diagnostics only: an error here should not cost the run
         raw.update(influx_diagnostics(mycp, -dish["barrier_thickness"] / 2))
         raw.update(frozen_diagnostics(mycp, -dish["barrier_thickness"] / 2, raw["diag_edges"]))
+        raw.update(opening_tip_diagnostics(mycp, dish["barrier_thickness"], layer))
     except Exception:
         import traceback
         raw["diag_error"] = traceback.format_exc()[-2000:]

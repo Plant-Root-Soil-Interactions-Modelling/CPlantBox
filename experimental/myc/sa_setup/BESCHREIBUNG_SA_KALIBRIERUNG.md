@@ -11,7 +11,7 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 > Das Nominalmodell hat sich geändert (abgeleitete Mindestpfadlänge der Anastomose, `ana` = 0.7, t* über die Runner-Länge,
 > Ringe um den Eintrittspunkt bis 32 mm, gemeinsame Parameterliste). Alle bisherigen Läufe sind damit nicht mehr
 > vergleichbar: **Phase 0, Langzeittest, Morris, Inokulum-Morris und Kalibrierung müssen neu laufen.** Neue Designs haben
-> neue Lauf-IDs (`p0v4_*`, `m3_*`, `inoc4_*`) und die Spalte `factor_set = v2`, damit alte Läufe mit gleicher ID nicht
+> neue Lauf-IDs (`p0v5_*`, `m4_*`, `inoc5_*`) und die Spalte `factor_set = v3`, damit alte Läufe mit gleicher ID nicht
 > stillschweigend wiederverwendet werden. Die erste Morris-Runde bleibt mit ihrer alten Faktorliste (`FACTORS_V1`)
 > auswertbar.
 
@@ -22,7 +22,7 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 > 0–120 h gefittet und bei 120 h gespeichert, Snapshots bei 10, 20, 30, 40, 60, 90, 120 h. Die Zeitverläufe des Bildgraphen
 > bleiben bei 20/40/60 h (Zeitpunkte der Abbildungen). Der Langzeittest läuft jetzt 180 h (`LONG_HOURS`, Bildgraph
 > zusätzlich bei 150/180 h) und prüft, ob die Wellengrößen bei 120 h konvergiert sind. Ein Lauf dauert nominal ~1.6 h
-> (vorher ~0.4 h): `sim.sbatch` 8 h, Langzeittest 24 h. **Phase 0 muss mit 120 h neu laufen** (Lauf-IDs `p0v4_*`, seit `ana_L_scale` = 3, siehe A5/A11).
+> (vorher ~0.4 h): `sim.sbatch` 8 h, Langzeittest 24 h. **Phase 0 muss mit 120 h neu laufen** (Lauf-IDs `p0v5_*`, seit `ana_L_scale` = 3 und Schichtdicke 0.02 cm, siehe A4/A5/A11).
 
 ---
 
@@ -122,11 +122,37 @@ visuellen Bestimmung des Übertritts zu vermeiden). Im Paper ist t* erreicht, we
 zu früh kam). Bleibender Unterschied: Modell 3D-Länge, Experiment projizierte Länge im Bild.
 
 ### A4 Dicke der Hyphenschicht
-**Problem:** Die Hyphen wachsen im Modell in einer 1 mm dicken Schicht (3D), auf dem Cellophan quasi in 2D. Bei
+**Problem:** Die Hyphen wuchsen im Modell in einer 1 mm dicken Schicht (3D), auf dem Cellophan quasi in 2D. Bei
 `distTH` ~100 µm bestimmt die Schichtdicke die Begegnungswahrscheinlichkeit und damit Anastomosen, `alpha`, `encounter_C`.
 
-**Lösung:** Phase-0-Gruppe mit 0.1 / 0.05 / 0.02 cm (10 Seeds, gleiche Seeds), Vergleich mit der dünnsten Schicht
-(`phase0_layer.csv`). Abbrüche dünner Schichten erscheinen in `phase0_status.csv`.
+**Befunde:**
+- Phase 0 (p0v2, L×1, 60 h): 0.1 → 0.02 cm gibt `alpha` −65 %, `encounter_C` −63 %, Gesamtlänge +64 % (dickere Schicht:
+  weniger Begegnungen, größeres Netz).
+- Lokaler Schichttest (2026-11, Nominalmodell mit `ana_L_scale` = 3, bis t* + 48 h, 3–7 Seeds je Schicht, gepaart; nach
+  23 von 32 Läufen abgebrochen). Verhältnis zu 0.005 cm:
+  - 0.02 cm: Anastomosen pro Spitze 1.00 [0.83, 1.20], Verzweigung 0.99, Netzlänge 0.94
+  - 0.01 cm: Anastomosen pro Spitze 0.81, Netzlänge 0.80
+  - 0.1 cm: Anastomosen pro Spitze 0.61 [0.53, 0.70], Netzlänge 1.51 [1.27, 1.80]
+
+  Ab 0.02 cm abwärts ändert sich also nichts Systematisches mehr (quasi-2D-Grenze), 0.1 cm liegt deutlich daneben. Die
+  Laufzeit hängt nicht an der Schichtdicke.
+- Die Schicht hält: Auf der Pilzseite (x > b/2) liegen keine Spitzen oder Knoten unterhalb der Schicht oder außerhalb der
+  Geometrie.
+- Die Öffnung in der Barriere ist im Modell 2 mm tief, die Schicht dahinter nur h. Spitzen, die tief in die Öffnung
+  wachsen, laufen bei x = b/2 gegen die Stufe und bleiben dort (bei 0.02 cm etwa ein Drittel der aktiven Spitzen nahe
+  der Barriere, davon 71 % unterhalb der Schicht). Sie liegen außerhalb der Ringe und zählen damit nicht in den
+  Ring-Outputs.
+
+**Entscheidung:**
+- Nominal `HYPHAE_LAYER` = 0.02 cm.
+- Die Schichtdicke ist ein Faktor der SA: `hyphae_layer` in `config.SA_GEOMETRY`, 0.005–0.1 cm, log, nur in der SA,
+  nicht kalibriert. Er geht als Argument an die Simulation (`target="sim"`).
+- Die Öffnung bleibt, wie sie ist. Eine Rampe oder eine flachere Öffnung entspräche nicht dem Versuchsaufbau.
+- Die steckengebliebenen Spitzen werden nur beobachtet: `raw.npz` enthält `diag_opening_tips`,
+  `diag_opening_tips_below_layer` und `diag_fungal_tips_end`. Ein Effekt der Schichtdicke über die Wartezeit bis t* und
+  den Zustrom bleibt Teil ihres Morris-Effekts.
+- Phase-0-Gruppe: 0.02 (nominal) / 0.005 / 0.1 cm, also Nominalwert und die Enden des Morris-Bereichs
+  (`phase0_layer.csv`).
 
 ### A5 Zeitschritt dt = 1 h
 **Problem:** 1 h ist das Bildintervall des Experiments, also das Auswerteintervall, nicht zwingend der numerische Schritt.
@@ -409,7 +435,7 @@ unabhängigen Seeds; `phase0_crn.csv` gibt sd(Differenz, gleiche Seeds) / sd(Dif
 - CPlantBox mit Hyphenerweiterung: Runner mit Seitenästen, BAS mit Tip-Splitting; Anastomose, wenn eine Spitze näher als
   distTH an einer Hyphe ist (mit Wahrscheinlichkeit ana), nur ab einer Mindestpfadlänge entlang des Myzels.
 - Geteilte Petrischale wie Oyarte Galvez et al. 2025 (94 mm, Barriere 1.6 mm, Öffnung 50 × 2 mm); Hyphen auf der Pilzseite in
-  einer 1 mm dicken Schicht an der Oberfläche.
+  einer 0.2 mm dicken Schicht an der Oberfläche (quasi 2D, Cellophan; in der SA 0.05–1 mm).
 - Wurzelorgankultur von *D. carota* durch eine modifizierte Tomatenarchitektur ersetzt; Wurzelphase 5 d, danach Kolonisierung
   und Hyphenentstehung nach Schnepf et al.; Wurzelwachstum ab t* aus.
 - t*: 10 cm Runner-Länge hinter der Barriere (wie L_RH = 10² mm); danach 120 h, dt = 1 h (Wellenfits über 0–120 h, Zeitverläufe bei 20/40/60 h).
@@ -422,7 +448,7 @@ unabhängigen Seeds; `phase0_crn.csv` gibt sd(Differenz, gleiche Seeds) / sd(Dif
 ### Vorprüfungen (Phase 0)
 - Seed-Rauschen: 50 Seeds am Nominalpunkt (CV pro Output, Streuung zwischen Seeds als Ersatz für die Streuung zwischen Platten)
 - Numerische Konvergenz: dx 0.01/0.005/0.0025 cm, dt 1/0.5/0.25 h (je 10 gepaarte Seeds)
-- Strukturannahmen: Schichtdicke 0.1/0.05/0.02 cm, Mindestpfadlänge der Anastomose ×3/1/1.5/6
+- Strukturannahmen: Schichtdicke 0.02/0.005/0.1 cm, Mindestpfadlänge der Anastomose ×3/1/1.5/6
 - Common Random Numbers: gepaarte Differenzen mit gleichen vs. unabhängigen Seeds
 - 20 Zufallspunkte im Faktorraum: Abbruchrate und Laufzeit
 - Langzeittest 180 h mit Wurzeln an vs. aus (Konvergenz bei 120 h): Zufluss neuer Hyphen, Einfluss auf die Outputs
@@ -430,11 +456,11 @@ unabhängigen Seeds; `phase0_crn.csv` gibt sd(Differenz, gleiche Seeds) / sd(Dif
 
 ### Sensitivitätsanalyse
 - Elementareffekte nach Morris (1991), μ* nach Campolongo et al. (2007), Umsetzung mit SALib
-- 21 Faktoren: alle kalibrierbaren Hyphenparameter, Variationskoeffizient der Spitzengeschwindigkeit, ein gemeinsamer Faktor
-  auf alle übrigen Streuungen, ein Kontrollfaktor ohne Wirkung
+- 22 Faktoren: alle kalibrierbaren Hyphenparameter, Variationskoeffizient der Spitzengeschwindigkeit, ein gemeinsamer Faktor
+  auf alle übrigen Streuungen, die Dicke der Hyphenschicht, ein Kontrollfaktor ohne Wirkung
 - Bereiche = Suchbereiche der Kalibrierung; log-gleichverteilt für Parameter über Größenordnungen
 - 4 Stufen, 20 Trajektorien (aus 300 Kandidaten nach maximaler Streuung), 5 Replikate mit gemeinsamen Seeds entlang einer
-  Trajektorie → 2200 Läufe
+  Trajektorie → 2300 Läufe
 - Outputs:
   - pro Lauf, gemittelt über die Replikate: Längen, Spitzen, Frontposition und -geschwindigkeit, BAS-Anteil, Anastomosen,
     Wurzeleffizienz, Spitzengeschwindigkeiten, Winkel, Persistenzlänge, Zustand bei t*

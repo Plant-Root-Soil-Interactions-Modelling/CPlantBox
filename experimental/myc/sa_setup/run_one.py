@@ -35,7 +35,9 @@ def run_row(row):
     inoc = [(f, float(row[f.name])) for f in config.INOCULUM_FACTORS if f.name in row and not pd.isna(row[f.name])]
     values.update({f.name: v for f, v in inoc if f.target == "root_scale"})
     sim_args = {f.param: v for f, v in inoc if f.target == "sim"}
-    if not pd.isna(row.get("hyphae_layer", np.nan)):                     # only in the layer test of Phase 0
+    # factors of the design with target "sim" (v3: hyphae_layer, also the layer test of Phase 0) go to the simulation
+    sim_args.update({f.param: values[f.name] for f in factors if f.target == "sim"})
+    if "hyphae_layer" not in sim_args and not pd.isna(row.get("hyphae_layer", np.nan)):   # older designs (v2): layer test
         sim_args["hyphae_layer"] = float(row["hyphae_layer"])
     dx = None if pd.isna(row.get("dx")) else float(row["dx"])
     als = row.get("ana_L_scale", np.nan)                                  # only in the anaMinDist test of Phase 0
