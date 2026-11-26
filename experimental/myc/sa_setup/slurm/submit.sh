@@ -6,7 +6,7 @@
 #   bash submit_sa.sh results/design_phase0.csv
 #   bash submit_sa.sh results/design_morris.csv
 #   bash submit_sa.sh results/design_morris.csv --eval-only   # only re-evaluate (e.g. new outputs)
-#   SIMTIME=24:00:00 bash submit_sa.sh results/design_long.csv  # long test (180 h), longer time limit
+#   SIMTIME=16:00:00 bash submit_sa.sh results/design_long.csv  # long test (150 h), longer time limit
 #   SIMTIME=24:00:00 SIMMEM=16G bash submit_sa.sh results/design_phase0.csv   # missing runs with more time/memory
 #
 # Catch up on aborted runs by simply resubmitting: finished ones are skipped.

@@ -19,16 +19,26 @@ Changes to the nominal model belong in `TwoHyphaePlusBAS.xml`, not here.
 ## Everything at once (`slurm/submit_all.sh`)
 
 ```bash
-cd ~ && bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh            # everything
-bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh --no-morris        # look at Phase 0 first
+cd ~ && bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh --mail <address>   # everything
+bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh --no-morris --no-calibration  # Phase 0 + gate report only
 bash CPlantBox/experimental/myc/sa_setup/slurm/submit_all.sh --help             # all options
 ```
 
-Order with SLURM dependencies: smoke test (3 runs), then the gate (`smoke_test.py --report --gate`).
-If the nominal run is not clean, SLURM cancels everything that follows. After that, Phase 0 → Morris,
-the 120 h test and the calibration run in parallel. The designs are each created by a small job (`stage.sbatch`),
-which then submits the runs (needs `sbatch` from within jobs). Nothing has to be copied, the sbatch files
-come directly from the repo.
+The order is set with SLURM dependencies:
+1. Smoke test (3 runs), then the smoke gate (`smoke_test.py --report --gate`). If the nominal run is not clean, SLURM
+   cancels everything that follows.
+2. Phase 0 and the long test (150 h) in parallel.
+3. Once both are collected, the **Phase 0 gate** (`slurm/gate.sbatch` -> `phase0_gate.py` -> `results/gate_report.txt`).
+   - GO: it starts Morris and the calibration. The calibration uses all parameters with `calibrate=True` and
+     `between_cv` from Phase 0 (`results/between_cv.json`, read by `calibrate.py`).
+   - STOP: nothing more.
+   - In both cases an e-mail to `--mail` / `SA_MAIL` with the report.
+   - STOP only when something is badly wrong (thresholds `GATE_*` in `phase0_gate.py`, table in
+     `ANLEITUNG_CLUSTER.md`, section 1a).
+
+The designs are each created by a small job (`stage.sbatch`), which then submits the runs (needs `sbatch` from within
+jobs). Nothing has to be copied, the sbatch files come directly from the repo. For tests of the chain, `SA_RESULTS_DIR`
+and `SA_RUNS_DIR` redirect results and runs (`config.py`).
 
 ## Workflow (individual steps)
 
@@ -59,10 +69,10 @@ sbatch sa_run.sbatch design.py phase0        # wait until the job has finished
 bash submit_sa.sh results/design_phase0.csv  # design path relative to sa_setup
 # collection and analyze_phase0.py run automatically at the end: slurmOut/sa_collect-<job>.out
 
-# ---- test: nominal point over 180 h (LONG_HOURS), roots turned off at t* and roots growing on (10 seeds each) ----
+# ---- test: nominal point over 150 h (LONG_HOURS), roots turned off at t* and roots growing on (10 seeds each) ----
 # are the wave fits defined often enough, when do new hyphae stop coming without root growth, from when on do the outputs differ?
 sbatch sa_run.sbatch design.py long          # wait until the job has finished
-SIMTIME=24:00:00 bash submit_sa.sh results/design_long.csv   # roots on is probably slower: possibly more time
+SIMTIME=16:00:00 bash submit_sa.sh results/design_long.csv   # roots on is probably slower: possibly more time
 # result: slurmOut/sa_collect-<job>.out (analyze_long.py), windows 60, 90 and 120 h, results/long_roots_compare.csv,
 # long_influx.csv and plots/long_influx.png (supply of hyphae per hour). Long runs from before the supply diagnostics
 # (raw.npz without diag_*) are reported; delete runs/p0_long_*/ and resubmit to include them
@@ -187,7 +197,8 @@ automatically in `collect.sbatch`; noise level from a bootstrap over the replica
 **Simulated time (`HOURS_HYPHAE` = 120 h after t*):** the Phase 0 long test showed that K1 and K2 only reach the
 experimental values at about 120 h (nominal K1 763 -> 1422 µm mm⁻², K2 0.071 -> 0.151 mm⁻² between 60 and 120 h), so the
 wave fits run over 0–120 h. The image graph targets stay at 20/40/60 h (time course of the figures). The long test runs
-`LONG_HOURS` = 180 h (image graph additionally at 150/180 h). Run ids changed to `p0v5_*`, `m4_*` and `inoc5_*` (anaMinDist 3 × derived, layer 0.02 cm); Phase 0 has to
+`LONG_HOURS` = 150 h (image graph additionally at 150 h; 150 instead of 180 h because the runtime grows about with the
+square of the simulated time). Run ids changed to `p0v5_*`, `m4_*` and `inoc5_*` (anaMinDist 3 × derived, layer 0.02 cm); Phase 0 has to
 be rerun with 120 h, the runtime per run is about 1.6 h (nominal median of the long test). Per run the wave quantities are still in `outputs.csv` as diagnostics, with the number of rings
 behind the fits (`n_wave_rings`, `n_K1_rings`, `n_tip_rings`) and `wait_days`.
 

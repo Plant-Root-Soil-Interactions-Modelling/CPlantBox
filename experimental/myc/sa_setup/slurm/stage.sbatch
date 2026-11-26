@@ -25,7 +25,7 @@ echo "Stage $STAGE on $(hostname), $(date)"
 
 case "$STAGE" in
     phase0) DESIGN=results/design_phase0.csv ;;
-    long)   DESIGN=results/design_long.csv; export SIMTIME="${SIMTIME_LONG:-24:00:00}" ;;
+    long)   DESIGN=results/design_long.csv; export SIMTIME="${SIMTIME_LONG:-16:00:00}" ;;
     morris) DESIGN=results/design_morris.csv ;;
     *) echo "unknown stage $STAGE" >&2; exit 1 ;;
 esac
@@ -34,6 +34,7 @@ cd "$SUBMIT_DIR"
 ID_FILE="$(mktemp)"
 ID_FILE="$ID_FILE" bash "$JOBS/submit.sh" "$DESIGN"
 COL="$(cat "$ID_FILE")"; rm -f "$ID_FILE"
+echo "$COL" > "slurmOut/collect_${SLURM_JOB_ID:-local}.id"   # for gate.sbatch: the gate waits for this collect job
 
 if [[ -n "${NEXT:-}" ]]; then
     # next stage only once collection and analysis of this stage succeeded

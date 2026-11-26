@@ -2,7 +2,7 @@
 Creates the design tables (one row = one simulation run).
 
     python design.py phase0     -> results/design_phase0.csv (noise, dx, sample of the factor space)
-    python design.py long       -> results/design_long.csv (nominal point over LONG_HOURS = 180 h, convergence of the wave fits)
+    python design.py long       -> results/design_long.csv (nominal point over LONG_HOURS = 150 h, convergence of the wave fits)
     python design.py morris     -> results/design_morris.csv (+ morris_X.npy)
     python design.py inoculum   -> results/design_inoculum.csv (+ inoculum_X.npy), root/inoculum factors
 

@@ -3,8 +3,16 @@
 #amf #cluster #sensitivitaetsanalyse #kalibrierung
 
 Reihenfolge nach B14: **Phase 0 + Langzeittest + Inokulum-Morris → auswerten → Morris → auswerten, Parameter wählen →
-Kalibrierung → Validierung**. Zwischen den Stufen wird von Hand ausgewertet und entschieden; deshalb nicht alles auf einmal
-einreichen.
+Kalibrierung → Validierung**.
+
+**Automatischer Ablauf (Standard):** `submit_all.sh` reicht Smoke-Test, Phase 0 und Langzeittest ein. Danach prüft ein
+Gate (`phase0_gate.py`) die Ergebnisse automatisch:
+- **GO:** Morris und die Kalibrierung starten von selbst. Die Kalibrierung läuft mit allen Parametern mit `calibrate=True`
+  und mit `between_cv` aus Phase 0.
+- **STOP:** Es wird nichts weiter gestartet.
+
+In beiden Fällen kommt eine E-Mail mit dem Bericht (siehe Abschnitt 1a). Die Auswahl der Parameter nach Morris (Abschnitt 4)
+bleibt Handarbeit; mit ihr kann die Kalibrierung danach noch einmal laufen.
 
 Alle Befehle aus dem **Home-Verzeichnis** (`cd ~`). Ausgaben der Jobs landen in `~/slurmOut`, Fehler in `~/slurmErr`,
 Ergebnisse in `~/CPlantBox/experimental/myc/sa_setup/results/` bzw. `.../calibration/`. Python nie auf dem Login-Knoten
@@ -51,7 +59,57 @@ Ausgabe in `~/slurmOut/sa_run-<job>.out`. Keine Zeile mit `ERROR`.
 
 ---
 
-## 1. Stufe 1: Smoke-Test, Phase 0, Langzeittest, Inokulum-Morris
+## 1a. Alles automatisch mit Gate und E-Mail
+
+```bash
+cd ~ && bash $S/submit_all.sh --mail <adresse>        # oder: export SA_MAIL=<adresse>
+```
+
+Ablauf:
+1. Smoke-Test und Smoke-Gate.
+2. Parallel: Phase 0 (210 Läufe) und Langzeittest (20 Läufe, 150 h).
+3. Sind beide gesammelt und ausgewertet, läuft das **Phase-0-Gate** (`slurm/gate.sbatch` → `phase0_gate.py`):
+   - **GO:** Es startet die Morris-Stufe und die Kalibrierung (`--cal-args "..."` wird weitergegeben).
+   - **STOP:** Nichts weiter.
+   - Bericht in `results/gate_report.txt`, E-Mail mit dem Bericht als Text.
+   - Fallback ohne `mail`/`sendmail` auf dem Knoten: SLURM-Mail mit dem Ergebnis im Betreff; der Bericht liegt dann nur in
+     der Datei.
+   - Bricht eine Stufe ab (z. B. das Smoke-Gate scheitert), kommt ebenfalls eine STOP-Mail.
+
+Optionen:
+- `--no-long`: Das Gate prüft nur Phase 0.
+- `--no-morris` / `--no-calibration`: Das Gate startet das jeweilige nicht.
+
+**STOP** (die folgenden Stufen würden kaputte oder unbrauchbare Läufe rechnen). Schwellen in `phase0_gate.py` (`GATE_*`):
+
+| Prüfung | STOP, wenn |
+|---|---|
+| Rausch-Läufe (Nominalpunkt) mit Ergebnis | < 80 % |
+| Zufallspunkte im Faktorraum mit Ergebnis | < 50 % (WARN < 80 %) |
+| Laufzeit der Zufallspunkte, 90 %-Quantil | > 75 % des Zeitlimits von `sim.sbatch` (8 h) |
+| Wellenziele (alpha, beta, K1, K2, front_velocity, front_tip_speed) pro Rausch-Lauf definiert | < 30 % (WARN < 60 %) |
+| dx 0.01 gegen 0.005 cm, jedes Kalibrierziel | \|Abweichung\| > 10 % und CI ohne 0 (WARN: CI außerhalb ±2 %) |
+| Ringdiagnostik | fehlt ganz (andere Ring-Hinweise: WARN) |
+| Langzeittest (Wurzeln aus) mit Ergebnis | < 70 % |
+| Wellenziele 120 → 150 h, Median der gepaarten Änderung | > ±25 % (WARN > ±10 %): Fenster `HOURS_HYPHAE` zu kurz |
+| Datei fehlt (Sammeln oder Analyse gescheitert) | immer |
+
+Nur Information im Bericht: dt, Schichtdicke, CRN, Laufzeiten, `between_cv`.
+
+`results/between_cv.json`:
+- Robuste Streuung zwischen den Seeds (1.4826 · MAD / |Median|) der Ziele aus einer Kolonie.
+- `calibrate.py` liest die Datei bei jedem Start. Ein von Hand in `calibrate.TARGETS` gesetzter Wert (≠ 0) hat Vorrang.
+
+**Nach einem STOP:**
+1. Ursache beheben (Konfiguration, Zeitlimit).
+2. Neu einreichen mit `bash $S/submit_all.sh --no-smoke --mail <adresse>`. Fertige Läufe werden übersprungen, also wird
+   nur Fehlendes gerechnet.
+
+Soll es trotz WARN oder STOP weitergehen, startet man von Hand: Morris mit Abschnitt 3, die Kalibrierung mit Abschnitt 5.
+
+---
+
+## 1. Stufe 1 von Hand: Smoke-Test, Phase 0, Langzeittest, Inokulum-Morris
 
 ```bash
 cd ~ && bash $S/submit_all.sh --no-morris --no-calibration
@@ -61,16 +119,17 @@ Das reicht ein (mit SLURM-Abhängigkeiten):
    durch, bricht SLURM alles Folgende ab. Ausgabe: `slurmOut/sa_run-<gate>.out` (OK / PROBLEMS pro Punkt, Laufzeit, Speicher).
 2. danach parallel:
    - **Phase 0**: 210 Läufe (Rauschen 50, dx 20, Zufallspunkte 20, dt 30, Schichtdicke 30, anaMinDist 40, CRN 20)
-   - **Langzeittest**: 20 Läufe über 180 h (Wurzeln aus / an)
+   - **Langzeittest**: 20 Läufe über 150 h (Wurzeln aus / an)
    - **Inokulum-Morris**: 180 Läufe
 
 **Zeitlimits:**
 - Simuliert werden 120 h nach t* (`HOURS_HYPHAE`), ein Nominallauf dauert ~1.6 h. `sim.sbatch` hat 8 h pro Lauf.
   Die dt-Läufe mit 0.25 h brauchen etwa die 4-fache Zeit eines Nominallaufs, also eventuell mehr: Zeigt der Smoke-Test
   mehr als ~2 h für den Nominallauf, Phase 0 mit mehr Zeit nachreichen (siehe Abschnitt 7).
-- Langzeittest (180 h): Standard 24 h (`SIMTIME_LONG`). Mit weiterwachsenden Wurzeln entstehen mehr Hyphen, also eher großzügig:
+- Langzeittest (150 h, nominal ~2.5 h pro Lauf; die Laufzeit wächst etwa quadratisch mit der simulierten Zeit): Standard
+  16 h (`SIMTIME_LONG`). Mit weiterwachsenden Wurzeln entstehen mehr Hyphen; bei Zeitüberschreitungen großzügiger:
   ```bash
-  SIMTIME_LONG=36:00:00 bash $S/submit_all.sh --no-morris --no-calibration
+  SIMTIME_LONG=24:00:00 bash $S/submit_all.sh --no-morris --no-calibration
   ```
 
 **Beobachten:**
@@ -96,7 +155,7 @@ sbatch $S/sa_run.sbatch analyze_rings.py            # Ringauflösung 15 vs. 5 au
 |---|---|---|
 | `phase0_warnings.txt` | „ATTENTION …“? Wenige Kreuzungen bis t*, Spitzen jenseits 32 mm | Eintrittspunkt länger mitteln bzw. `RING_RADIUS` vergrößern |
 | `phase0_noise.csv` | CV pro Output | > ~0.3: mehr Replikate (`MORRIS_REPLICATES`) |
-| Ausgabe „Spread between seeds …“ | CV der Ziele aus einer Kolonie | als `between_cv` bei K1, K2, front_velocity, front_tip_speed, alpha, beta in `calibrate.py` eintragen |
+| Ausgabe „Spread between seeds …“, `between_cv.json` | CV der Ziele aus einer Kolonie | schreibt das Gate automatisch (`between_cv.json`, robust); nur bei Bedarf von Hand in `calibrate.TARGETS` überschreiben |
 | `phase0_dx.csv` | Abweichung 0.01 gegen 0.005 cm > 2 % (und größer als das Seed-Rauschen)? | gezielter Zusatztest bei 0.0025 cm mit wenigen Seeds, ggf. dx verkleinern |
 | `phase0_dt.csv` | Rest-Abhängigkeit von dt (dt = 1 h ist festgelegt) | nur dokumentieren; Anastomosen pro Spitze sollten gleich sein |
 | `phase0_layer.csv` | Wie stark reagieren alpha, Anastomosen auf die Schichtdicke (0.02 nominal vs. 0.005 / 0.1 cm)? | Vorschau auf den Morris-Effekt von `hyphae_layer`; Nominalwert halten oder `HYPHAE_LAYER` (und den Nominalwert des Faktors) ändern |
@@ -107,7 +166,7 @@ sbatch $S/sa_run.sbatch analyze_rings.py            # Ringauflösung 15 vs. 5 au
 | `phase0_noise.csv`: `root_efficiency_rel`, `global_efficiency_rel`, `cost_rel` | zwischen 0 und 1, Ĉ > 0? | sonst Netz nicht zusammenhängend |
 | `phase0_noise.csv`: `branch_angle_*`, `persistence_length`, `front_tip_speed`, `wave_width` | Abstand zum Experiment, Rauschen | `SPEED_FROM`; `wave_width` als Ziel aufnehmen? |
 | `long_roots_compare.csv`, `plots/long_influx.png` | Unterschied Wurzeln an/aus innerhalb 120 h? | ja: Wurzeln weiterwachsen lassen (`turn_off_root_growth`) |
-| `long_summary.csv` | K1/K2 bei 120 h definiert und gegenüber 150/180 h konvergiert? | sonst `HOURS_HYPHAE` erhöhen |
+| `long_summary.csv` | K1/K2 bei 120 h definiert und gegenüber 150 h konvergiert? | sonst `HOURS_HYPHAE` erhöhen |
 | `inoculum_vs_hyphae.csv` | Verhältnis ≪ 1? | Normierung auf t* nimmt die Wurzelphase heraus |
 | `rings_compare_phase0.csv` | Hängen K1, K2, Wellenfits an der Ringbreite? | Einordnung |
 

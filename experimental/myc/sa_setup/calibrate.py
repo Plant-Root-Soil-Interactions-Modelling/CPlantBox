@@ -180,6 +180,28 @@ TARGETS = [
     # redundant with anastomoses and L_RH), global efficiency Ê_g ≈ 0.33, 0.44, 0.53
 ]
 
+# between_cv of the targets from a single colony, written by phase0_gate.py after Phase 0 (robust CV between the seeds of
+# the noise runs, 1.4826 MAD / |median|). Only targets with replicates=1 whose between_cv is still 0 get the value: a value
+# set by hand in TARGETS wins
+BETWEEN_CV_FILE = config.RESULTS_DIR / "between_cv.json"
+
+
+def apply_between_cv(path=None):
+    path = Path(path or BETWEEN_CV_FILE)
+    if not path.exists():
+        return {}
+    cvs = json.loads(path.read_text())
+    used = {}
+    for t in TARGETS:
+        v = cvs.get(t.output)
+        if t.replicates == 1 and t.between_cv == 0 and v is not None and np.isfinite(v):
+            t.between_cv = float(v)
+            used[t.label] = t.between_cv
+    return used
+
+
+BETWEEN_CV_USED = apply_between_cv()
+
 HOURS = config.HOURS_HYPHAE   # simulation time after t* [h], window of the wave quantities
 N_SEEDS = 16                  # seeds per parameter point
 SEED0 = config.BASE_SEED + 300_000
@@ -195,8 +217,9 @@ CAL_DIR = config.ROOT / "calibration"
 # Version of the raw data (raw.npz) in the key of the runs: increase when model_hook stores new quantities that the
 # targets need; old runs are then not reused. 2: branch_new_runner, 3: bas_image_share (BAS share of the image graph),
 # 4: t* from the runner length only (as L_RH = 10^2 mm in Oyarte Galvez et al. 2025), 5: image graph at IMAGE_HOURS, tip speeds,
-# 6: rings around the barrier crossing point up to RING_RADIUS
-RAW_VERSION = 6
+# 6: rings around the barrier crossing point up to RING_RADIUS, 7: hyphal layer 0.02 cm (HYPHAE_LAYER is not in the key,
+# the runs with 0.1 cm must not be reused)
+RAW_VERSION = 7
 
 
 # --------------------------------------------------------------------------
@@ -424,8 +447,8 @@ def report(rec):
 
 
 HINTS = {
-    "K1": "too few saturated rings with good fits -> longer simulation (--hours 180) or more seeds",
-    "K2": "too few rings with a complete tip peak -> longer simulation (--hours 180) or more seeds",
+    "K1": "too few saturated rings with good fits -> longer simulation (--hours 150) or more seeds",
+    "K2": "too few rings with a complete tip peak -> longer simulation (--hours 150) or more seeds",
     "wave_width": "as K2", "front_velocity": "as K2",
     "root_efficiency_rel": "root efficiency not computed -> see root efficiency errors",
     "alpha": "too few rings with >= ENCOUNTER_MIN_TIPS tips", "beta": "as alpha (or raw.npz without branch_new_runner)",
@@ -445,6 +468,9 @@ def write_report(r, status=None):
     recs = pd.DataFrame(r.records)
     L = [f"Calibration, as of {time.strftime('%Y-%m-%d %H:%M')}, runtime {(time.time() - r.t_start) / 3600:.1f} h",
          f"Status: {r.status}"]
+    if BETWEEN_CV_USED:
+        L.append(f"between_cv from {BETWEEN_CV_FILE.name} (Phase 0 gate): "
+                 + ", ".join(f"{k} {v:.3f}" for k, v in BETWEEN_CV_USED.items()))
     if r.status == "running":
         L.append("  (If the job has ended and this still says 'running', it was killed: time limit or node failure. "
                  "Just resubmit, finished runs are reused.)")
@@ -609,6 +635,8 @@ def check(procs):
               f"{' log' if p.log else ''}, nominal {nom:.4g} (u = {u0:.2f}) | {pr}")
     for t in TARGETS:
         print(f"  target {t.label:>18} = {t.value:g} ± {t.tol_text}  ({t.source})")
+    print(f"between_cv from {BETWEEN_CV_FILE}: " + (", ".join(f"{k} {v:.3f}" for k, v in BETWEEN_CV_USED.items())
+                                                    if BETWEEN_CV_USED else "none (file missing or all set by hand)"))
     rounds = math.ceil(len(PARAMS) * N_SEEDS / procs)
     print(f"Per iteration: 1 point + {len(PARAMS)} difference points = {(len(PARAMS) + 1) * N_SEEDS} runs, "
           f"with {procs} cores 1 + {rounds} rounds of ~0.75 h")

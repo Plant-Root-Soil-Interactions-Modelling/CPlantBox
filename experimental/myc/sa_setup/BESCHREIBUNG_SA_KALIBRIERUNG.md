@@ -15,14 +15,26 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 > stillschweigend wiederverwendet werden. Die erste Morris-Runde bleibt mit ihrer alten Faktorliste (`FACTORS_V1`)
 > auswertbar.
 
+> [!important] Automatischer Ablauf mit Gate
+> `submit_all.sh` reicht Smoke-Test, Phase 0 und Langzeittest (150 h) ein. Danach prüft `phase0_gate.py` die Ergebnisse:
+> - **GO:** Morris und die Kalibrierung starten automatisch, mit allen Parametern mit `calibrate=True` und mit
+>   `between_cv` aus Phase 0.
+> - **STOP:** Es wird nichts gestartet.
+>
+> In beiden Fällen kommt eine E-Mail mit dem Bericht. STOP nur bei grob Auffälligem: zu viele Ausfälle, Laufzeit nahe am
+> Limit, Ziele undefiniert, dx-Abweichung > 10 %, Wellengrößen zwischen 120 und 150 h um > 25 % verändert, fehlende
+> Dateien. Schwellen und Ablauf: `ANLEITUNG_CLUSTER.md`, Abschnitt 1a. Die Parameterauswahl nach Morris bleibt Handarbeit;
+> mit ihr kann die Kalibrierung danach noch einmal laufen.
+
 > [!important] Simulierte Zeit 120 h nach t*
 > Der Langzeittest aus Phase 0 hat gezeigt, dass K1 und K2 erst nach etwa 120 h die Werte des Experiments erreichen
 > (nominal K1 763 → 1422 µm mm⁻², K2 0.071 → 0.151 mm⁻² zwischen 60 und 120 h; Ziele 1400 bzw. 0.15). Deshalb gilt
 > jetzt `HOURS_HYPHAE = 120`: Die Wellengrößen (alpha, beta, K1, K2, Wellen- und Spitzengeschwindigkeit) werden über
 > 0–120 h gefittet und bei 120 h gespeichert, Snapshots bei 10, 20, 30, 40, 60, 90, 120 h. Die Zeitverläufe des Bildgraphen
-> bleiben bei 20/40/60 h (Zeitpunkte der Abbildungen). Der Langzeittest läuft jetzt 180 h (`LONG_HOURS`, Bildgraph
-> zusätzlich bei 150/180 h) und prüft, ob die Wellengrößen bei 120 h konvergiert sind. Ein Lauf dauert nominal ~1.6 h
-> (vorher ~0.4 h): `sim.sbatch` 8 h, Langzeittest 24 h. **Phase 0 muss mit 120 h neu laufen** (Lauf-IDs `p0v5_*`, seit `ana_L_scale` = 3 und Schichtdicke 0.02 cm, siehe A4/A5/A11).
+> bleiben bei 20/40/60 h (Zeitpunkte der Abbildungen). Der Langzeittest läuft jetzt 150 h (`LONG_HOURS`, Bildgraph
+> zusätzlich bei 150 h) und prüft, ob die Wellengrößen bei 120 h konvergiert sind. Ein Lauf dauert nominal ~1.6 h
+> (vorher ~0.4 h; die Laufzeit wächst etwa quadratisch mit der simulierten Zeit, weil das Netz und damit die
+> Anastomose-Prüfung pro Schritt wächst): `sim.sbatch` 8 h, Langzeittest 16 h (nominal ~2.5 h; 180 h wären ~3.6 h). **Phase 0 muss mit 120 h neu laufen** (Lauf-IDs `p0v5_*`, seit `ana_L_scale` = 3 und Schichtdicke 0.02 cm, siehe A4/A5/A11).
 
 ---
 
@@ -36,7 +48,10 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 - [ ] dt (`phase0_dt.csv`): dt = 1 h ist festgelegt (A5). Rest-Abhängigkeit am Nominalpunkt mit `ana_L_scale` = 3 dokumentieren (erwartet: Netz bei 0.25 h ~25 % kleiner, Anastomosen pro Spitze gleich).
 - [ ] Schichtdicke (`phase0_layer.csv`) und Mindestpfadlänge der Anastomose (`phase0_anaL.csv`): Wie stark reagieren `alpha`, Anastomosen, `encounter_C`? Entscheidung, ob die Annahmen tragbar sind.
 - [ ] Common Random Numbers (`phase0_crn.csv`): Verhältnis deutlich unter 1? Sonst brauchen Kalibrierung und Morris mehr Seeds.
-- [ ] Streuung zwischen Seeds für die Ziele aus einer Kolonie (Ausgabe „Spread between seeds …“) als `between_cv` bei K1, K2, `front_velocity`, `front_tip_speed`, `alpha`, `beta` in `calibrate.TARGETS` eintragen.
+- [ ] Streuung zwischen Seeds für die Ziele aus einer Kolonie: schreibt das Phase-0-Gate automatisch nach
+  `results/between_cv.json` (robust, 1.4826 · MAD / |Median|), `calibrate.py` liest sie. Werte plausibel? Bei Bedarf von
+  Hand in `calibrate.TARGETS` überschreiben.
+- [ ] Phase-0-Gate (`results/gate_report.txt`, E-Mail): GO → Morris und Kalibrierung laufen schon. WARN-Zeilen lesen.
 - [ ] Netzgrößen plausibel? Ê_r (`root_efficiency_rel`), Ê_g (`global_efficiency_rel`) zwischen 0 und 1, Ĉ (`cost_rel`) > 0. Sonst ist das Netz auf der Pilzseite nicht zusammenhängend → nur die größte Komponente auswerten.
 - [ ] BAS-Anteil: Vergleich Subtyp vs. Bildkriterien (`phase0_bas_share.csv`).
 - [ ] Spitzengeschwindigkeit an der Front: verrauscht? Dann `SPEED_FROM` erhöhen.
@@ -45,7 +60,7 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 
 ### Nach dem Langzeittest
 - [ ] Zufluss neuer Hyphen mit Wurzeln an vs. aus (`long_influx.png`, `long_roots_compare.csv`): Unterscheiden sich die Outputs innerhalb der 120 h? Wenn ja: Wurzeln weiterwachsen lassen.
-- [ ] Wellengrößen bei 120 h vs. 150/180 h (`long_summary.csv`): konvergiert? Sonst `HOURS_HYPHAE` weiter erhöhen.
+- [ ] Wellengrößen bei 120 h vs. 150 h (`long_summary.csv`): konvergiert? Sonst `HOURS_HYPHAE` weiter erhöhen.
 
 ### Nach der Morris-Runde
 - [ ] Vorschlagstabelle (`morris_calibration_suggestion.csv`) lesen und in `config.PARAMETERS` von Hand `calibrate=True/False` setzen.
@@ -79,7 +94,7 @@ neuen Hyphen mehr über die Barriere. Ob das innerhalb der ausgewerteten Zeit ei
   neue Hyphen aus Wurzeln, Segmente, die die Barriere nach innen bzw. außen überqueren (gesamt, Runner, BAS), neue Wurzellänge.
 - Outputs `influx_tstar` (Kreuzungen pro Stunde in den 6 h vor t*), `influx_window` (Mittel 0–120 h), `influx_decay`
   (letzte 10 h / bei t*: 1 = gleichbleibender Zufluss, 0 = versiegt).
-- Langzeittest (`design.py long`): 180 h nach t* (`LONG_HOURS`), 10 Seeds mit Wurzeln aus und dieselben Seeds mit weiterwachsenden Wurzeln
+- Langzeittest (`design.py long`): 150 h nach t* (`LONG_HOURS`), 10 Seeds mit Wurzeln aus und dieselben Seeds mit weiterwachsenden Wurzeln
   (`roots_on`). `analyze_long.py` vergleicht die Outputs gepaart über die Seeds bei 60/90/120 h und plottet den Zufluss
   (`plots/long_influx.png`); es gibt aus, ab wann der Zufluss unter 10 % seines Maximums fällt.
 
@@ -87,7 +102,7 @@ neuen Hyphen mehr über die Barriere. Ob das innerhalb der ausgewerteten Zeit ei
 Kalibrierung unkritisch, unabhängig davon, was danach passiert.
 
 **Ergebnis (Phase 0, Lauf über 120 h):** Wurzeln an vs. aus ohne signifikanten Unterschied – Annahme bleibt. Dabei hat
-sich gezeigt, dass K1 und K2 erst nach ~120 h die Zielwerte erreichen → `HOURS_HYPHAE = 120`, Langzeittest 180 h.
+sich gezeigt, dass K1 und K2 erst nach ~120 h die Zielwerte erreichen → `HOURS_HYPHAE = 120`, Langzeittest 180 h, später 150 h (Laufzeit).
 
 ### A2 Wurzelphase, Inokulum, Wurzelarchitektur
 **Problem:** Dauer der Wurzelphase, Lage des Samens und die Wurzelarchitektur sind nicht belegt. Die Wurzelarchitektur ist
@@ -453,7 +468,7 @@ unabhängigen Seeds; `phase0_crn.csv` gibt sd(Differenz, gleiche Seeds) / sd(Dif
 - Strukturannahmen: Schichtdicke 0.02/0.005/0.1 cm, Mindestpfadlänge der Anastomose ×3/1/1.5/6
 - Common Random Numbers: gepaarte Differenzen mit gleichen vs. unabhängigen Seeds
 - 20 Zufallspunkte im Faktorraum: Abbruchrate und Laufzeit
-- Langzeittest 180 h mit Wurzeln an vs. aus (Konvergenz bei 120 h): Zufluss neuer Hyphen, Einfluss auf die Outputs
+- Langzeittest 150 h mit Wurzeln an vs. aus (Konvergenz bei 120 h): Zufluss neuer Hyphen, Einfluss auf die Outputs
 - Ringauflösung 15 vs. 5 Ringe
 
 ### Sensitivitätsanalyse

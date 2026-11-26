@@ -10,6 +10,7 @@ Ranges with `source=None` are placeholders (±25 % around the nominal value) and
 as open by `check_config.py`.
 """
 import math
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -20,8 +21,9 @@ ROOT = Path(__file__).resolve().parent
 MYC_DIR = ROOT.parent                              # experimental/myc (AMF*.py)
 CPLANTBOX_DIR = ROOT.parents[2]                    # for `import plantbox`
 TEMPLATE_XML = MYC_DIR / "tomatoparameters" / "TwoHyphaePlusBAS.xml"   # nominal model
-RUNS_DIR = ROOT / "runs"          # one folder per run with XML, raw output, meta.json
-RESULTS_DIR = ROOT / "results"    # designs, output tables, analyses, plots
+# SA_RUNS_DIR / SA_RESULTS_DIR: other folders, e.g. for tests of the chain without touching the real results
+RUNS_DIR = Path(os.environ.get("SA_RUNS_DIR", ROOT / "runs"))          # one folder per run with XML, raw output, meta.json
+RESULTS_DIR = Path(os.environ.get("SA_RESULTS_DIR", ROOT / "results"))  # designs, output tables, analyses, plots
 
 # --------------------------------------------------------------------------
 # Handling of `dev`
@@ -268,9 +270,11 @@ PERSISTENCE_MAX_LAG = 1.0   # [cm]
 PERSISTENCE_MIN_LENGTH = 0.3   # [cm] runners shorter than this are left out
 # Test with a longer simulation (python design.py long): LONG_SEEDS runs at the nominal point over LONG_HOURS h,
 # seeds as p0_noise_000.. Additionally evaluated at EXTRA_HOURS, but only in runs simulated that long
-LONG_HOURS = 180           # beyond HOURS_HYPHAE: are the wave quantities converged at 120 h?
+# beyond HOURS_HYPHAE: are the wave quantities converged at 120 h? 150 instead of 180 h: the runtime grows about with the
+# square of the simulated time (60 -> 120 h: 0.4 -> 1.6 h nominal), 150 h ≈ 2.5 h nominal instead of ≈ 3.6 h
+LONG_HOURS = 150
 LONG_SEEDS = 10
-EXTRA_HOURS = [150, 180]
+EXTRA_HOURS = [150]
 # Quantities at every time in SNAPSHOT_HOURS
 SNAPSHOT_OUTPUTS = ["total_length", "active_tips", "bas_share", "anastomoses", "front_position",
                     "spread_r90", "max_tip_density"]
