@@ -54,7 +54,7 @@ sbatch sa_run.sbatch check_config.py         # ranges, nominal values, number of
 bash submit_smoke.sh                         # or: bash submit_smoke.sh --quick (12 h after t*)
 # report: slurmOut/sa_run-<job>.out -> all OK? runtime and memory -> sim.sbatch
 
-# ---- Phase 0: noise, dx convergence, sample of the factor space (100 runs) ----
+# ---- Phase 0: noise, dx (0.01/0.005), dt, layer, anaMinDist, CRN, sample of the factor space (210 runs) ----
 sbatch sa_run.sbatch design.py phase0        # wait until the job has finished
 bash submit_sa.sh results/design_phase0.csv  # design path relative to sa_setup
 # collection and analyze_phase0.py run automatically at the end: slurmOut/sa_collect-<job>.out

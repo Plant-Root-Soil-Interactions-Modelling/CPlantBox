@@ -30,7 +30,9 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 
 ### Nach Phase 0
 - [ ] `results/phase0_warnings.txt` lesen: Zeilen „ATTENTION …“ zu wenigen Barriere-Kreuzungen bis t* (unsicherer Eintrittspunkt) und zu wachsenden Spitzen jenseits von 32 mm (Ringe zu klein).
-- [ ] Konvergenz dx (`phase0_dx.csv`): Weichen die Ziele bei 0.01 cm um mehr als ~2 % von der feinsten Stufe ab? Dann dx verkleinern.
+- [ ] Konvergenz dx (`phase0_dx.csv`, 0.01 gegen 0.005 cm; 0.0025 cm weggelassen, ≈ 4 × Laufzeit): Weichen die Ziele bei
+  0.01 cm um mehr als ~2 % (und mehr als das Seed-Rauschen) von 0.005 cm ab? Dann gezielter Zusatztest bei 0.0025 cm mit
+  wenigen Seeds, ggf. dx verkleinern.
 - [ ] dt (`phase0_dt.csv`): dt = 1 h ist festgelegt (A5). Rest-Abhängigkeit am Nominalpunkt mit `ana_L_scale` = 3 dokumentieren (erwartet: Netz bei 0.25 h ~25 % kleiner, Anastomosen pro Spitze gleich).
 - [ ] Schichtdicke (`phase0_layer.csv`) und Mindestpfadlänge der Anastomose (`phase0_anaL.csv`): Wie stark reagieren `alpha`, Anastomosen, `encounter_C`? Entscheidung, ob die Annahmen tragbar sind.
 - [ ] Common Random Numbers (`phase0_crn.csv`): Verhältnis deutlich unter 1? Sonst brauchen Kalibrierung und Morris mehr Seeds.
@@ -447,7 +449,7 @@ unabhängigen Seeds; `phase0_crn.csv` gibt sd(Differenz, gleiche Seeds) / sd(Dif
 
 ### Vorprüfungen (Phase 0)
 - Seed-Rauschen: 50 Seeds am Nominalpunkt (CV pro Output, Streuung zwischen Seeds als Ersatz für die Streuung zwischen Platten)
-- Numerische Konvergenz: dx 0.01/0.005/0.0025 cm, dt 1/0.5/0.25 h (je 10 gepaarte Seeds)
+- Numerische Konvergenz: dx 0.01/0.005 cm, dt 1/0.5/0.25 h (je 10 gepaarte Seeds)
 - Strukturannahmen: Schichtdicke 0.02/0.005/0.1 cm, Mindestpfadlänge der Anastomose ×3/1/1.5/6
 - Common Random Numbers: gepaarte Differenzen mit gleichen vs. unabhängigen Seeds
 - 20 Zufallspunkte im Faktorraum: Abbruchrate und Laufzeit

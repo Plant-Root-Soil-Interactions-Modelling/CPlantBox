@@ -304,7 +304,10 @@ ENCOUNTER_MIN_TIPS = 5
 # Phase 0
 # --------------------------------------------------------------------------
 PHASE0_NOISE_SEEDS = 50
-PHASE0_DX_VALUES = [0.01, 0.005, 0.0025]   # nominal, half, quarter (runtime grows roughly with 1/dx!)
+# dx convergence: nominal against half (paired seeds). Is dx = 0.01 cm fine enough? A shift small against the seed noise
+# is enough; 0.0025 cm left out (≈ 4 × runtime, at 120 h ~6-7 h per run). Only if 0.005 differs clearly: a targeted
+# test at 0.0025 cm with a few seeds. Scales near dx: distTH ~1 dx, B_lmax 3 dx (lower bound 1 dx), R_ln ≥ 5 dx
+PHASE0_DX_VALUES = [0.01, 0.005]   # nominal, half (runtime grows roughly with 1/dx!)
 PHASE0_DX_SEEDS = 10
 # dt convergence: time steps per day (24 = 1 h, fixed as part of the model, see STEPS_PER_DAY). Documents the remaining
 # dt dependence at the nominal point. Runtime grows roughly with the number of steps

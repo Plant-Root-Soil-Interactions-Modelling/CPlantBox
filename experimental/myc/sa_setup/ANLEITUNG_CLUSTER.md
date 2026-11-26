@@ -60,7 +60,7 @@ Das reicht ein (mit SLURM-Abhängigkeiten):
 1. **Smoke-Test** (3 Läufe: nominal, alle Faktoren unten, alle oben) und das **Gate**: Läuft der Nominalpunkt nicht sauber
    durch, bricht SLURM alles Folgende ab. Ausgabe: `slurmOut/sa_run-<gate>.out` (OK / PROBLEMS pro Punkt, Laufzeit, Speicher).
 2. danach parallel:
-   - **Phase 0**: 220 Läufe (Rauschen 50, dx 30, Zufallspunkte 20, dt 30, Schichtdicke 30, anaMinDist 40, CRN 20)
+   - **Phase 0**: 210 Läufe (Rauschen 50, dx 20, Zufallspunkte 20, dt 30, Schichtdicke 30, anaMinDist 40, CRN 20)
    - **Langzeittest**: 20 Läufe über 180 h (Wurzeln aus / an)
    - **Inokulum-Morris**: 180 Läufe
 
@@ -97,7 +97,7 @@ sbatch $S/sa_run.sbatch analyze_rings.py            # Ringauflösung 15 vs. 5 au
 | `phase0_warnings.txt` | „ATTENTION …“? Wenige Kreuzungen bis t*, Spitzen jenseits 32 mm | Eintrittspunkt länger mitteln bzw. `RING_RADIUS` vergrößern |
 | `phase0_noise.csv` | CV pro Output | > ~0.3: mehr Replikate (`MORRIS_REPLICATES`) |
 | Ausgabe „Spread between seeds …“ | CV der Ziele aus einer Kolonie | als `between_cv` bei K1, K2, front_velocity, front_tip_speed, alpha, beta in `calibrate.py` eintragen |
-| `phase0_dx.csv` | Abweichung zur feinsten Stufe > 2 %? | dx verkleinern |
+| `phase0_dx.csv` | Abweichung 0.01 gegen 0.005 cm > 2 % (und größer als das Seed-Rauschen)? | gezielter Zusatztest bei 0.0025 cm mit wenigen Seeds, ggf. dx verkleinern |
 | `phase0_dt.csv` | Rest-Abhängigkeit von dt (dt = 1 h ist festgelegt) | nur dokumentieren; Anastomosen pro Spitze sollten gleich sein |
 | `phase0_layer.csv` | Wie stark reagieren alpha, Anastomosen auf die Schichtdicke (0.02 nominal vs. 0.005 / 0.1 cm)? | Vorschau auf den Morris-Effekt von `hyphae_layer`; Nominalwert halten oder `HYPHAE_LAYER` (und den Nominalwert des Faktors) ändern |
 | `phase0_anaL.csv` | Wirkung der Mindestpfadlänge (×1 / 1.5 / 6 gegen nominal ×3) | `ana_L_scale` in der Kalibrierung lassen oder fixieren |
