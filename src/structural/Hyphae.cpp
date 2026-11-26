@@ -105,6 +105,9 @@ void Hyphae::simulate(double dt, bool verbose)
 
     const HyphaeSpecificParameter& p = *param(); // rename
 
+    // dead hyphae wont grow, and their children are not simulated either (frozen, as in Root::simulate): children of a dead
+    // hypha are no longer supplied. They keep alive = active = true and are still checked for anastomosis (isActive()).
+    // Possible extension: on death set active = false and propagate alive = active = false to all descendants (optionally delayed)
     if (alive) { // dead roots wont grow
 
         // increase age

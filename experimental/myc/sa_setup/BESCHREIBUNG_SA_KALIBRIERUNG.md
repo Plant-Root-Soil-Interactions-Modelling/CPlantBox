@@ -166,6 +166,19 @@ Wartezeit vor t* betrifft das schon die Kolonie bei t*.
 eingefrorene Spitzen (gesamt und auf der Pilzseite); Output `frozen_share` (Anteil eingefrorener an allen Spitzen auf der
 Pilzseite am Ende). Am echten Modell geprüft: Die Diagnose findet genau die Spitzen, die eine unabhängige Zählung findet.
 
+**Entscheidung (November 2026, `frozen_share` nominal 0.41):** bleibt so. Biologisch wachsen Kinder einer toten Hyphe nicht
+weiter, weil sie nicht mehr versorgt werden. Wie viel davon betroffen ist, ist eine Frage der Definition von `hlt` und
+`lmax` (Lebensdauer und Endlänge), nicht der Numerik. Root macht es genauso (`Root.cpp:105`, Kinder nur innerhalb von
+`if (alive)`), dort wirkt es nur nicht, weil `rlt` ≈ 1e11 d ist.
+
+**Mögliche Erweiterung (nicht umgesetzt):** ein echtes Absterben durch die Elternhyphe statt Einfrieren. In
+`Hyphae::simulate` bei `alive = false` (Lebensdauer erreicht) rekursiv alle Nachfahren auf `alive = false` und
+`active = false` setzen, eventuell mit einer Verzögerung (Restversorgung) als Parameter. Dazu beim eigenen Tod `active =
+false` setzen: Heute behält eine tote oder eingefrorene Spitze `active = true` und wird in
+`MycorrhizalPlant::simulateAnastomosis` (`h->isActive()`) weiter auf Anastomose geprüft, obwohl sie nicht mehr wächst.
+Die Auswertung zählt wachsende Spitzen schon über die Knotenzeiten (`AMFDensities.getActiveTipsPerRingPerSubtype`), nicht
+über `isActive()`.
+
 ### A7 Radius der Runner
 **Entscheidung:** 50 µm **Radius** (Schnepf et al. 2017, dort nur Runner). Literatur-Prior 25–100 µm (Faktor 2, ±2σ);
 Untergrenze des Suchbereichs 10 µm (Bago et al. 1998: Durchmesser > 20 µm). Hinweis: Im Modell wirkt `a` über
