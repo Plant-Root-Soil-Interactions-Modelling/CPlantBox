@@ -261,9 +261,11 @@ BAS share of the runner successors, b and lmax of the BAS: a BAS segment splits 
 sets the size of the BAS), shared: ana, distTH, `ana_L_scale`. lb of the runners is coupled to ln, la stays fixed.
 Targets and tolerances are read off the figures of Oyarte Galvez et al. 2025 (`Target.source`; approximate). t* is, as
 in the paper, the time at which the runner length behind the barrier reaches 10 cm (`crossing_subtype = 1` in
-`makeSimulation`). Additional targets: `L_RH_image` ≈ 800 mm and `L_BAS_image` ≈ 450 mm at 60 h after t* (lengths as
-the image analysis classifies them). The anastomosis density ρ_A is computed in two variants (`ana_per_length_rh`,
-`ana_per_length_total`) until its definition in the paper is checked.
+`makeSimulation`). Time courses at 20/40/60 h after t* (runner length and BAS share as the image analysis classifies
+them, anastomoses, root efficiency) are targets, L_BAS only an output. The anastomosis density ρ_A is not defined in the
+paper: computed in two variants (`ana_per_length_rh`, `ana_per_length_total`) for comparison only, no target.
+Fig. 2 and Fig. 3 show one replicate each: K1, K2, front_velocity, front_tip_speed, alpha and beta have `replicates=1`
+and get `between_cv` from Phase 0.
 Current targets: `alpha` (anastomosis) 23 µm/h, K1 1400 µm mm⁻², BAS share 0.38 (`bas_share_image`: classified as in
 the experiment from the edges of the planar image graph, edge < 400 µm, or < 1000 µm ending in a tip, or width < 7 µm
 and width × length < 9000 µm², `AMFNetwork.basShareImage`), K2 0.15 mm⁻² (runner tips), `beta`

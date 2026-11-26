@@ -33,7 +33,7 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 - [ ] Konvergenz dx und dt (`phase0_dx.csv`, `phase0_dt.csv`): Weichen die Ziele bei 1 h bzw. 0.01 cm um mehr als ~2 % von der feinsten Stufe ab? Dann dt bzw. dx verkleinern.
 - [ ] Schichtdicke (`phase0_layer.csv`) und Mindestpfadlänge der Anastomose (`phase0_anaL.csv`): Wie stark reagieren `alpha`, Anastomosen, `encounter_C`? Entscheidung, ob die Annahmen tragbar sind.
 - [ ] Common Random Numbers (`phase0_crn.csv`): Verhältnis deutlich unter 1? Sonst brauchen Kalibrierung und Morris mehr Seeds.
-- [ ] Streuung zwischen Seeds für die Ziele aus einer Kolonie (Ausgabe „Spread between seeds …“) als `between_cv` bei K1, K2, `front_velocity`, `front_tip_speed` in `calibrate.TARGETS` eintragen.
+- [ ] Streuung zwischen Seeds für die Ziele aus einer Kolonie (Ausgabe „Spread between seeds …“) als `between_cv` bei K1, K2, `front_velocity`, `front_tip_speed`, `alpha`, `beta` in `calibrate.TARGETS` eintragen.
 - [ ] Netzgrößen plausibel? Ê_r (`root_efficiency_rel`), Ê_g (`global_efficiency_rel`) zwischen 0 und 1, Ĉ (`cost_rel`) > 0. Sonst ist das Netz auf der Pilzseite nicht zusammenhängend → nur die größte Komponente auswerten.
 - [ ] BAS-Anteil: Vergleich Subtyp vs. Bildkriterien (`phase0_bas_share.csv`).
 - [ ] Spitzengeschwindigkeit an der Front: verrauscht? Dann `SPEED_FROM` erhöhen.
@@ -59,7 +59,7 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 - [ ] Varianzbasierte SA (Sobol über Ersatzmodell) auf den Parametern, die Morris als wirksam zeigt.
 
 ### Unabhängig davon
-- [ ] Definition der Anastomosendichte ρ_A im Paper klären (dann evtl. als Ziel).
+- [x] Definition der Anastomosendichte ρ_A im Paper: **keine Angabe** (Einheit, Normierung) → kein Ziel; ohnehin redundant zu Anastomosen und L_RH.
 - [ ] Absterben: Kinder toter Hyphen werden im C++ nicht weiter simuliert (A6) – Korrektur bewusst zurückgestellt.
 
 ---
@@ -268,8 +268,8 @@ pro Ziel im Feld `source`.
 
 | Ziel | Wert | Toleranz | Quelle / Bemerkung |
 |---|---|---|---|
-| alpha | 23 µm/h | ±30 % | Band von a(t) ±40–50 % pro Zeitpunkt |
-| beta | 0.04 /h | ±30 % | Band von b(t) ±30–40 % |
+| alpha | 23 µm/h | ±30 % ⊕ between_cv | Fig. 3b, ein Replikat; Band von a(t) ±40–50 % pro Zeitpunkt |
+| beta | 0.04 /h | ±30 % ⊕ between_cv | Fig. 3b, ein Replikat; Band von b(t) ±30–40 % |
 | K1 | 1400 µm mm⁻² | ±12 % ⊕ between_cv | Fig. 2c, eine Kolonie |
 | K2 | 0.15 mm⁻² | ±33 % ⊕ between_cv | Fig. 2b, eine Kolonie |
 | front_velocity | 280 µm/h | ±10 % ⊕ between_cv | Fig. 2d Inset, ein Fit |
@@ -284,11 +284,13 @@ pro Ziel im Feld `source`.
 
 - **Zeitreihen ×√3** (`widen`): Die drei Zeitpunkte eines Replikats sind korreliert; zusammen sollen sie wie ein Ziel zählen.
   Umgesetzt als F / √3 (gleichwertig für logarithmische und lineare Residuen).
-- **Eine Kolonie** (`replicates = 1`): Fig. 2 zeigt eine einzige Kolonie; ihre Bänder sind räumliche Bootstraps innerhalb
+- **Eine Kolonie** (`replicates = 1`): Fig. 2 und Fig. 3 zeigen je ein einziges Replikat (betrifft K1, K2,
+  front_velocity, front_tip_speed, alpha, beta); die Bänder in Fig. 2 sind räumliche Bootstraps innerhalb
   eines Rings (10 000 Rechtecke), nicht die Streuung zwischen Platten. Wirksame Toleranz √(tol² + between_cv²), between_cv aus
   Phase 0 (CV zwischen Seeds am Nominalpunkt). Bis dahin 0, diese Ziele sind also noch zu streng.
 - **Untergrenze** (`bound = "lower"`): Oberhalb von 10 cm ist F = 0.
-- **Nicht als Ziel:** L_BAS (folgt aus L_RH und ρ_BAS), ρ_A (Definition offen), Ê_g und Ĉ (zur Validierung zurückgehalten).
+- **Nicht als Ziel:** L_BAS (folgt aus L_RH und ρ_BAS), ρ_A (im Paper nicht definiert; beide plausiblen Varianten nur als
+  Output), Ê_g und Ĉ (zur Validierung zurückgehalten).
 
 ### C17 Identifizierbarkeit
 `report.txt` zeigt pro Parameter den **Datenanteil** = (JᵀJ)_jj / ((JᵀJ)_jj + (PᵀP)_jj): wie viel Information von den Zielen
