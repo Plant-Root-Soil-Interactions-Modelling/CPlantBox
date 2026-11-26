@@ -236,7 +236,7 @@ def persistence_diagnostics(mycp, x0, max_lag=None, min_length=None):
 
 def simulate(xml_path: Path, seed: int, outdir: Path, hours: float | None = None,
              steps_per_day: int | None = None, roots_on: bool = False, sim_args: dict | None = None) -> list[Path]:
-    """hours: simulation time after t* [h], default config.HOURS_HYPHAE (for the 120 h test).
+    """hours: simulation time after t* [h], default config.HOURS_HYPHAE (for the long test).
     steps_per_day: time steps per day, default config.STEPS_PER_DAY (for the dt convergence test). The evaluation
     stays hourly (times from makeSimulation), only the numerical step changes.
     roots_on: roots keep growing after t* (as in the experiment); default False: root growth is turned off at t*

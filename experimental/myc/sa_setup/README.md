@@ -59,10 +59,10 @@ sbatch sa_run.sbatch design.py phase0        # wait until the job has finished
 bash submit_sa.sh results/design_phase0.csv  # design path relative to sa_setup
 # collection and analyze_phase0.py run automatically at the end: slurmOut/sa_collect-<job>.out
 
-# ---- test: nominal point over 120 h, roots turned off at t* and roots growing on (10 seeds each) ----
+# ---- test: nominal point over 180 h (LONG_HOURS), roots turned off at t* and roots growing on (10 seeds each) ----
 # are the wave fits defined often enough, when do new hyphae stop coming without root growth, from when on do the outputs differ?
 sbatch sa_run.sbatch design.py long          # wait until the job has finished
-SIMTIME=12:00:00 bash submit_sa.sh results/design_long.csv   # roots on is probably slower: possibly more time
+SIMTIME=24:00:00 bash submit_sa.sh results/design_long.csv   # roots on is probably slower: possibly more time
 # result: slurmOut/sa_collect-<job>.out (analyze_long.py), windows 60, 90 and 120 h, results/long_roots_compare.csv,
 # long_influx.csv and plots/long_influx.png (supply of hyphae per hour). Long runs from before the supply diagnostics
 # (raw.npz without diag_*) are reported; delete runs/p0_long_*/ and resubmit to include them
@@ -131,7 +131,8 @@ geometry: set `SAVE_VTP = True` for that.
 
 **First Morris round:** its 13 factors are kept as `config.FACTORS_V1`. Designs without the column `factor_set` (first
 round) are run and evaluated with them, so its runs stay usable (e.g. `--eval-only` for the pooled targets). New designs
-store `factor_set = v2` and have new run_ids (`p0v2_*`, `m2_*`): the nominal model changed (anaMinDist derived).
+store `factor_set = v2` and have new run_ids (`p0v3_*`, `m2_*`, `inoc3_*`): the nominal model changed (anaMinDist
+derived; 120 h after t*).
 
 **Order (B14):** Phase 0 (noise, dx, dt, layer, anaMinDist) and the long test -> fix the numerics; Morris (and the
 inoculum Morris) -> `analyze_morris.py` writes `morris_calibration_suggestion.csv` (parameters with μ* above noise for
@@ -156,9 +157,9 @@ Phase 0: effective tolerance √(tol² + between_cv²).
 
 | Kind | Outputs | Time |
 |---|---|---|
-| quantities, per run | `total_length` [cm], `active_tips`, `bas_share`, `anastomoses` (since t*), `front_position` (tip-weighted radius, mm), `spread_r90`, `max_tip_density` | 10, 30, 60 h after t* |
-| wave, per run | `front_speed` [mm/d], `encounter_C` | 0–60 h, stored at 60 h |
-| calibration targets, pooled per design point | `alpha` [µm/h], `beta` [h⁻¹], `K1` [µm mm⁻²], `K2` [mm⁻²], `front_velocity` [mm/d], `wave_width` [h] | 0–60 h, stored at 60 h |
+| quantities, per run | `total_length` [cm], `active_tips`, `bas_share`, `anastomoses` (since t*), `front_position` (tip-weighted radius, mm), `spread_r90`, `max_tip_density` | 10, 20, 30, 40, 60, 90, 120 h after t* (`SNAPSHOT_HOURS`) |
+| wave, per run | `front_speed` [mm/d], `encounter_C` | 0–120 h, stored at 120 h |
+| calibration targets, pooled per design point | `alpha` [µm/h], `beta` [h⁻¹], `K1` [µm mm⁻²], `K2` [mm⁻²], `front_velocity` [mm/d], `wave_width` [h] | 0–120 h, stored at 120 h |
 | image graph, per run | `root_efficiency_rel`, `bas_share_image`, `L_RH_image`, `L_BAS_image` [mm], `bas_share_subtype_image`, `ana_per_length_rh`, `ana_per_length_total` | 20, 40, 60 h after t* (`IMAGE_HOURS`) |
 
 The image graph quantities are computed in `model_hook` from the final plant with the segments created until 20, 40 and
@@ -174,7 +175,13 @@ The wave fits come from `AMFDensities` with the quality criteria of `petridishst
 3 rings). Per run they fail too often for Morris, so the calibration targets are **pooled per design point** over its
 replicates, as the calibration pools over its seeds (`evaluate_pooled.py` -> `results/pooled_<design>.csv`, runs
 automatically in `collect.sbatch`; noise level from a bootstrap over the replicates). `bas_share` is a target too
-(snapshot at 60 h, per run). Per run the wave quantities are still in `outputs.csv` as diagnostics, with the number of rings
+(snapshot at 120 h, per run).
+
+**Simulated time (`HOURS_HYPHAE` = 120 h after t*):** the Phase 0 long test showed that K1 and K2 only reach the
+experimental values at about 120 h (nominal K1 763 -> 1422 µm mm⁻², K2 0.071 -> 0.151 mm⁻² between 60 and 120 h), so the
+wave fits run over 0–120 h. The image graph targets stay at 20/40/60 h (time course of the figures). The long test runs
+`LONG_HOURS` = 180 h (image graph additionally at 150/180 h). Run ids changed to `p0v3_*` and `inoc3_*`; Phase 0 has to
+be rerun with 120 h, the runtime per run is about 1.6 h (nominal median of the long test). Per run the wave quantities are still in `outputs.csv` as diagnostics, with the number of rings
 behind the fits (`n_wave_rings`, `n_K1_rings`, `n_tip_rings`) and `wait_days`.
 
 ## Design decisions

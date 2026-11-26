@@ -216,7 +216,9 @@ WARN_MAX_OUTSIDE_RINGS = 0.10   # larger share of the growing tips beyond RING_R
 HYPHAE_LAYER = 0.1          # hyphae grow on the cellophane, thin layer on top [cm]
 ROOT_DAYS = 5               # root phase [d]: assumption without source (the roots should grow a bit before the hyphae), see INOCULUM_FACTORS
 STEPS_PER_DAY = 24          # dt = 1 h
-HOURS_HYPHAE = 60           # simulation after t* [h], as the figures in the paper
+# simulation after t* [h]: the wave fits need the longer window. Long test (Phase 0): at 60 h K1 763 / K2 0.071, at 120 h
+# K1 1422 / K2 0.151 (targets 1400 / 0.15); Fig. 2 of the paper spans about 3 days. Wave quantities over 0..120 h
+HOURS_HYPHAE = 120
 MAX_WAIT_DAYS = 30          # without t* after this many days: the run counts as failed
 # as the experiment: plates with no more than 1 cm hyphal length in the hyphal compartment were excluded (unhealthy AMF).
 # Runs without t* with at most this length on the fungal side get the status "excluded", the others "failed" (slow)
@@ -230,7 +232,9 @@ ROOT_EFFICIENCY = True      # relative root efficiency at the end (AMFNetwork.re
 # --------------------------------------------------------------------------
 # Outputs (evaluate.py)
 # --------------------------------------------------------------------------
-SNAPSHOT_HOURS = [10, 20, 30, 40, 60]   # evaluation of quantities after t* [h] (paper: 0, 10, 30, 60 h; 20, 40 for the time courses)
+# evaluation of quantities after t* [h] (paper: 0, 10, 30, 60 h; 20, 40 for the time courses; up to HOURS_HYPHAE).
+# The LAST one is the window of the wave quantities and of the pooled targets (= HOURS_HYPHAE)
+SNAPSHOT_HOURS = [10, 20, 30, 40, 60, 90, 120]
 # times after t* [h] at which the quantities of the image graph (lengths, BAS share, root efficiency) are computed (model_hook)
 # and available as snapshot outputs (IMAGE_OUTPUTS); the calibration uses their time courses (figure with L_RH, ρ_BAS, Ê_r)
 IMAGE_HOURS = [20, 40, 60]
@@ -247,9 +251,9 @@ PERSISTENCE_MAX_LAG = 1.0   # [cm]
 PERSISTENCE_MIN_LENGTH = 0.3   # [cm] runners shorter than this are left out
 # Test with a longer simulation (python design.py long): LONG_SEEDS runs at the nominal point over LONG_HOURS h,
 # seeds as p0_noise_000.. Additionally evaluated at EXTRA_HOURS, but only in runs simulated that long
-LONG_HOURS = 120
+LONG_HOURS = 180           # beyond HOURS_HYPHAE: are the wave quantities converged at 120 h?
 LONG_SEEDS = 10
-EXTRA_HOURS = [90, 120]
+EXTRA_HOURS = [150, 180]
 # Quantities at every time in SNAPSHOT_HOURS
 SNAPSHOT_OUTPUTS = ["total_length", "active_tips", "bas_share", "anastomoses", "front_position",
                     "spread_r90", "max_tip_density"]

@@ -1,7 +1,7 @@
 """
 Test with a longer simulation (design.py long), at the nominal point over LONG_HOURS h:
 
-1. Does the wave develop far enough with 120 h instead of 60 h that the wave fits are defined in almost every run?
+1. Are the wave quantities converged at HOURS_HYPHAE = 120 h (compare 150, 180 h), are the wave fits defined in almost every run?
    For Morris an output must exist in all k+1 points of a trajectory, i.e. in almost all runs.
 2. Roots turned off at t* (group "long", as in SA and calibration) vs. roots growing on (group "long_roots_on"),
    same seeds: when do new hyphae stop coming with the roots turned off, and from when on do the outputs differ?
@@ -141,7 +141,7 @@ def influx(design):
         d = d.set_index("hour").sort_index()
         c = d["diag_cross_in"].rolling(6, min_periods=1).mean()
         after = c[c.index >= 0]
-        windows = [(0, 10), (50, 60), (110, 120)]
+        windows = [(0, 10), (50, 60), (110, 120), (170, 180)]
         txt = ", ".join(f"{a}-{b} h: {d.loc[(d.index >= a) & (d.index < b), 'diag_cross_in'].mean():.1f}"
                         for a, b in windows if (d.index >= a).any() and (d.index < b).any())
         peak = c.max()

@@ -421,8 +421,8 @@ def report(rec):
 
 
 HINTS = {
-    "K1": "too few saturated rings with good fits -> longer simulation (--hours 120) or more seeds",
-    "K2": "too few rings with a complete tip peak -> longer simulation (--hours 120) or more seeds",
+    "K1": "too few saturated rings with good fits -> longer simulation (--hours 180) or more seeds",
+    "K2": "too few rings with a complete tip peak -> longer simulation (--hours 180) or more seeds",
     "wave_width": "as K2", "front_velocity": "as K2",
     "root_efficiency_rel": "root efficiency not computed -> see root efficiency errors",
     "alpha": "too few rings with >= ENCOUNTER_MIN_TIPS tips", "beta": "as alpha (or raw.npz without branch_new_runner)",

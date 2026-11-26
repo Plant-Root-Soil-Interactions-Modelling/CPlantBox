@@ -42,7 +42,7 @@ def run_row(row):
     xml_path = write_xml(values, rdir / "params.xml", dx=dx, ana_L_scale=None if pd.isna(als) else float(als),
                          factors=factors)
 
-    hours = None if pd.isna(row.get("hours", np.nan)) else float(row["hours"])   # only set in the 120 h test
+    hours = None if pd.isna(row.get("hours", np.nan)) else float(row["hours"])   # only set in the long test
     spd = None if pd.isna(row.get("steps_per_day", np.nan)) else int(row["steps_per_day"])   # only in the dt test
     ro = row.get("roots_on", np.nan)                                       # only in the long test
     roots_on = False if pd.isna(ro) else str(ro).strip().lower() in ("true", "1", "1.0")

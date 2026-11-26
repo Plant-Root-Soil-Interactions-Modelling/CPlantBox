@@ -3,8 +3,8 @@ Ring resolution: do the outputs depend on the 15 rings of equal area? Every GROU
 (15 -> 5 with GROUP = 3; the merged rings again have equal area) and all outputs are computed again from raw.npz.
 No re-simulation needed.
 
-    python analyze_rings.py                                  # Phase 0 noise runs (nominal point), window 60 h
-    python analyze_rings.py results/design_long.csv long 120 # design, group, window [h after t*]
+    python analyze_rings.py                                  # Phase 0 noise runs (nominal point), window max(SNAPSHOT_HOURS) = 120 h
+    python analyze_rings.py results/design_long.csv long 180 # design, group, window [h after t*]
 
     -> results/rings_compare_<design>.csv   per output: medians and paired relative difference 5 vs. 15 rings
     Per run (as the SA) and pooled over all runs (as the calibration: runner tips in the wave fits).

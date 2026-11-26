@@ -7,8 +7,8 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=cpu256
-#SBATCH --time=4:00:00           # smoke test: max. 0.75 h per run; margin for seeds, factor space and fine dx in Phase 0
-#SBATCH --mem=4G                 # smoke test: max. 0.85 GB; margin for dx = 0.0025 in Phase 0. For Morris after Phase 0 maybe 2G
+#SBATCH --time=8:00:00           # 120 h after t*: nominal median 1.6 h; margin for slow seeds, the factor space, dx = 0.0025 and dt = 0.25 h
+#SBATCH --mem=6G                 # 60 h: max. 0.85 GB; more hyphae over 120 h and fine dx in Phase 0
 #SBATCH --output=./slurmOut/sa_sim-%A_%a.out
 #SBATCH --error=./slurmErr/sa_sim-%A_%a.err
 

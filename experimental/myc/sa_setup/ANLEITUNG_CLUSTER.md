@@ -61,15 +61,16 @@ Das reicht ein (mit SLURM-Abhängigkeiten):
    durch, bricht SLURM alles Folgende ab. Ausgabe: `slurmOut/sa_run-<gate>.out` (OK / PROBLEMS pro Punkt, Laufzeit, Speicher).
 2. danach parallel:
    - **Phase 0**: 220 Läufe (Rauschen 50, dx 30, Zufallspunkte 20, dt 30, Schichtdicke 30, anaMinDist 40, CRN 20)
-   - **Langzeittest**: 20 Läufe über 120 h (Wurzeln aus / an)
+   - **Langzeittest**: 20 Läufe über 180 h (Wurzeln aus / an)
    - **Inokulum-Morris**: 180 Läufe
 
 **Zeitlimits:**
-- `sim.sbatch` hat 4 h pro Lauf. Die dt-Läufe mit 0.25 h brauchen etwa die 4-fache Zeit eines Nominallaufs. Zeigt der
-  Smoke-Test mehr als ~0.9 h für den Nominallauf, Phase 0 mit mehr Zeit nachreichen (siehe Abschnitt 7).
-- Langzeittest: Standard 12 h (`SIMTIME_LONG`). Mit weiterwachsenden Wurzeln entstehen mehr Hyphen, also eher großzügig:
+- Simuliert werden 120 h nach t* (`HOURS_HYPHAE`), ein Nominallauf dauert ~1.6 h. `sim.sbatch` hat 8 h pro Lauf.
+  Die dt-Läufe mit 0.25 h brauchen etwa die 4-fache Zeit eines Nominallaufs, also eventuell mehr: Zeigt der Smoke-Test
+  mehr als ~2 h für den Nominallauf, Phase 0 mit mehr Zeit nachreichen (siehe Abschnitt 7).
+- Langzeittest (180 h): Standard 24 h (`SIMTIME_LONG`). Mit weiterwachsenden Wurzeln entstehen mehr Hyphen, also eher großzügig:
   ```bash
-  SIMTIME_LONG=24:00:00 bash $S/submit_all.sh --no-morris --no-calibration
+  SIMTIME_LONG=36:00:00 bash $S/submit_all.sh --no-morris --no-calibration
   ```
 
 **Beobachten:**
@@ -104,8 +105,8 @@ sbatch $S/sa_run.sbatch analyze_rings.py            # Ringauflösung 15 vs. 5 au
 | `phase0_status.csv` | Abbrüche an den Rändern des Faktorraums (Gruppe range) | viele: Bereiche prüfen, `MAX_WAIT_DAYS` |
 | `phase0_noise.csv`: `root_efficiency_rel`, `global_efficiency_rel`, `cost_rel` | zwischen 0 und 1, Ĉ > 0? | sonst Netz nicht zusammenhängend |
 | `phase0_noise.csv`: `branch_angle_*`, `persistence_length`, `front_tip_speed`, `wave_width` | Abstand zum Experiment, Rauschen | `SPEED_FROM`; `wave_width` als Ziel aufnehmen? |
-| `long_roots_compare.csv`, `plots/long_influx.png` | Unterschied Wurzeln an/aus innerhalb 60 h? | ja: Wurzeln weiterwachsen lassen (`turn_off_root_growth`) |
-| `long_summary.csv` | K1/K2 nach 60 h definiert? | sonst `HOURS_HYPHAE` erhöhen |
+| `long_roots_compare.csv`, `plots/long_influx.png` | Unterschied Wurzeln an/aus innerhalb 120 h? | ja: Wurzeln weiterwachsen lassen (`turn_off_root_growth`) |
+| `long_summary.csv` | K1/K2 bei 120 h definiert und gegenüber 150/180 h konvergiert? | sonst `HOURS_HYPHAE` erhöhen |
 | `inoculum_vs_hyphae.csv` | Verhältnis ≪ 1? | Normierung auf t* nimmt die Wurzelphase heraus |
 | `rings_compare_phase0.csv` | Hängen K1, K2, Wellenfits an der Ringbreite? | Einordnung |
 
@@ -120,10 +121,10 @@ Stufen mit dem neuen Stand.
 ```bash
 cd ~
 sbatch $S/sa_run.sbatch design.py morris          # warten, bis der Job fertig ist (squeue)
-bash $S/submit.sh results/design_morris.csv       # 2200 Läufe, ≈ 550 CPU-h
+bash $S/submit.sh results/design_morris.csv       # 2200 Läufe, ≈ 3700 CPU-h (~1.7 h pro Lauf inkl. Auswertung)
 ```
 - `MAXPAR=200 bash $S/submit.sh …` erlaubt mehr gleichzeitige Läufe (Standard 100).
-- Mehr Zeit oder Speicher pro Lauf: `SIMTIME=6:00:00 SIMMEM=8G bash $S/submit.sh results/design_morris.csv`.
+- Mehr Zeit oder Speicher pro Lauf: `SIMTIME=12:00:00 SIMMEM=8G bash $S/submit.sh results/design_morris.csv`.
 - Danach laufen automatisch: Sammeln, `evaluate_pooled.py` (gepoolte Ziele pro Design-Punkt), `analyze_morris.py`.
 
 ---
@@ -164,7 +165,8 @@ sbatch $S/sa_run.sbatch calibrate.py --check      # "Fixed at the nominal value:
 cd ~ && sbatch $S/calibrate.sbatch --full
 ```
 - Ein Job mit 128 Kernen, 16 Seeds pro Punkt, Zeitlimit 72 h. Pro Iteration 1 Punkt + (Anzahl freier Parameter)
-  Differenzpunkte. `--full` läuft bis zum Minimum statt am ersten Punkt innerhalb der Toleranz zu stoppen.
+  Differenzpunkte; bei ~1.6 h pro Lauf (120 h nach t*) etwa 5 h pro Iteration, also ~14 Iterationen pro Job.
+  `--full` läuft bis zum Minimum statt am ersten Punkt innerhalb der Toleranz zu stoppen.
 - Abgebrochen (Zeitlimit, Knotenausfall)? **Einfach dasselbe noch einmal einreichen** – fertige Läufe werden wiederverwendet,
   der Löser spielt deterministisch nach.
 - Andere Seeds/Iterationen: `sbatch $S/calibrate.sbatch --full --seeds 24 --max-nfev 40`.
@@ -195,7 +197,7 @@ Ziele bestimmen ihn nicht; „Conflict with literature“ → Ziel, Modellstrukt
 
 **Nachreichen:** Einfach denselben Befehl noch einmal; fertige Läufe (ok, excluded) werden übersprungen.
 ```bash
-SIMTIME=8:00:00 SIMMEM=8G bash $S/submit.sh results/design_phase0.csv   # fehlende Läufe mit mehr Zeit/Speicher
+SIMTIME=16:00:00 SIMMEM=8G bash $S/submit.sh results/design_phase0.csv   # fehlende Läufe mit mehr Zeit/Speicher
 bash $S/submit_all.sh --no-smoke --no-morris --no-calibration           # ganze Stufe 1 ohne Smoke-Test nachreichen
 ```
 

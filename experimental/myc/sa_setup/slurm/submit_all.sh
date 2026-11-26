@@ -8,19 +8,19 @@
 #      SLURM then cancels all following jobs (--kill-on-invalid-dep) instead of computing broken runs.
 #   2. after the gate, in parallel:
 #      - Phase 0 (noise, dx, factor space) -> collect + analyze_phase0 -> Morris -> collect + analyze_morris
-#      - 120 h test at the nominal point -> analyze_long
+#      - long test (180 h) at the nominal point -> analyze_long
 #      - calibration (calibrate.sbatch, one job with many cores)
 #
 # Options:
 #   --quick-smoke      smoke runs only 12 h after t* (faster, checks the wiring)
 #   --no-smoke         without smoke test and gate (e.g. if it already passed)
 #   --no-morris        stop after Phase 0 (look at Phase 0 first, Morris later with submit.sh)
-#   --no-long          without the 120 h test
+#   --no-long          without the long test (180 h)
 #   --no-calibration   without calibration
 #   --no-sa            only smoke test and calibration
 #   --cal-args "..."   arguments for calibrate.py, e.g. --cal-args "--seeds 8 --max-nfev 10"
 # Environment: SA_DIR (default ~/CPlantBox/experimental/myc/sa_setup), MAXPAR (concurrent SA runs, 100),
-#              SIMTIME_LONG (time limit of the 120 h runs, 12:00:00)
+#              SIMTIME_LONG (time limit of the long runs over LONG_HOURS = 180 h, 24:00:00)
 #
 # Output in ./slurmOut, overview: squeue -u $USER. Just resubmit anything aborted: finished runs
 # are skipped (resubmit with --no-smoke if the smoke test already passed).
@@ -64,7 +64,7 @@ if [[ $SA == 1 ]]; then
     echo "2. Phase 0$([[ -n $NEXT ]] && echo ' -> Morris'): stage job $P  ->  slurmOut/sa_stage-$P.out (submits the runs)"
     if [[ $LONG == 1 ]]; then
         L=$(sbatch --parsable "${AFTER[@]}" --export=ALL,STAGE=long,NEXT=,JOBS="$JOBS",SA_DIR="$SA_DIR" "$JOBS/stage.sbatch")
-        echo "   120 h test: stage job $L"
+        echo "   long test (180 h): stage job $L"
     fi
 fi
 

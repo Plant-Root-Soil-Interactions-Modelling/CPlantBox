@@ -14,7 +14,7 @@ def nominal_values_of(param, subtype):
     hy = next(h for h in root.iter("hyphae") if h.get("subType", "").strip() == str(subtype))
     return float(next(p for p in hy.iter("parameter") if p.get("name") == param).get("value"))
 
-MIN_PER_RUN = 15   # simulation + evaluation [min] at dx = 0.01, for the estimate (Phase 0: factor space median 4 min, nominal 44 min)
+MIN_PER_RUN = 100  # simulation + evaluation [min], 120 h after t* (Phase 0 long test: nominal median 1.6 h), for the estimate
 
 
 def main():

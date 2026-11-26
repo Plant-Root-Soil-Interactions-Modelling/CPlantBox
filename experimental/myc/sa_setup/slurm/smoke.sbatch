@@ -9,7 +9,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=cpu256
-#SBATCH --time=6:00:00           # generous: the smoke test is what measures the real runtime
+#SBATCH --time=12:00:00          # generous: the smoke test is what measures the real runtime (120 h after t*)
 #SBATCH --mem=8G
 #SBATCH --output=./slurmOut/sa_smoke-%A_%a.out
 #SBATCH --error=./slurmErr/sa_smoke-%A_%a.err

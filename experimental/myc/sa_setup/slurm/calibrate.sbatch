@@ -12,7 +12,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=128      # Jacobian: 16 difference points × 16 seeds = 256 runs -> 3 rounds of ~0.75 h
 #SBATCH --partition=cpu256
-#SBATCH --time=72:00:00          # per iteration ~4 rounds ≈ 3 h; python calibrate.py --check shows the cost
+#SBATCH --time=72:00:00          # 120 h after t*: ~1.6 h per run, per iteration ~3 rounds ≈ 5 h; resubmit to continue
 #SBATCH --mem=200G               # smoke test: max. 0.85 GB per run, 128 at once
 #SBATCH --output=./slurmOut/sa_cal-%j.out
 #SBATCH --error=./slurmErr/sa_cal-%j.err

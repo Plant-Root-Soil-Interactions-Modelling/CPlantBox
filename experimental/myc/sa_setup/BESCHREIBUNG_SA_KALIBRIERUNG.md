@@ -11,9 +11,18 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 > Das Nominalmodell hat sich geändert (abgeleitete Mindestpfadlänge der Anastomose, `ana` = 0.7, t* über die Runner-Länge,
 > Ringe um den Eintrittspunkt bis 32 mm, gemeinsame Parameterliste). Alle bisherigen Läufe sind damit nicht mehr
 > vergleichbar: **Phase 0, Langzeittest, Morris, Inokulum-Morris und Kalibrierung müssen neu laufen.** Neue Designs haben
-> neue Lauf-IDs (`p0v2_*`, `m2_*`, `inoc_*`) und die Spalte `factor_set = v2`, damit alte Läufe mit gleicher ID nicht
+> neue Lauf-IDs (`p0v3_*`, `m2_*`, `inoc3_*`) und die Spalte `factor_set = v2`, damit alte Läufe mit gleicher ID nicht
 > stillschweigend wiederverwendet werden. Die erste Morris-Runde bleibt mit ihrer alten Faktorliste (`FACTORS_V1`)
 > auswertbar.
+
+> [!important] Simulierte Zeit 120 h nach t*
+> Der Langzeittest aus Phase 0 hat gezeigt, dass K1 und K2 erst nach etwa 120 h die Werte des Experiments erreichen
+> (nominal K1 763 → 1422 µm mm⁻², K2 0.071 → 0.151 mm⁻² zwischen 60 und 120 h; Ziele 1400 bzw. 0.15). Deshalb gilt
+> jetzt `HOURS_HYPHAE = 120`: Die Wellengrößen (alpha, beta, K1, K2, Wellen- und Spitzengeschwindigkeit) werden über
+> 0–120 h gefittet und bei 120 h gespeichert, Snapshots bei 10, 20, 30, 40, 60, 90, 120 h. Die Zeitverläufe des Bildgraphen
+> bleiben bei 20/40/60 h (Zeitpunkte der Abbildungen). Der Langzeittest läuft jetzt 180 h (`LONG_HOURS`, Bildgraph
+> zusätzlich bei 150/180 h) und prüft, ob die Wellengrößen bei 120 h konvergiert sind. Ein Lauf dauert nominal ~1.6 h
+> (vorher ~0.4 h): `sim.sbatch` 8 h, Langzeittest 24 h. **Phase 0 muss mit 120 h neu laufen** (Lauf-IDs `p0v3_*`).
 
 ---
 
@@ -32,7 +41,8 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 - [ ] `wave_width` stabil definiert? Dann als Ziel aufnehmen (≈ 15 h ± 30 %).
 
 ### Nach dem Langzeittest
-- [ ] Zufluss neuer Hyphen mit Wurzeln an vs. aus (`long_influx.png`, `long_roots_compare.csv`): Unterscheiden sich die Outputs innerhalb der 60 h? Wenn ja: Wurzeln weiterwachsen lassen.
+- [ ] Zufluss neuer Hyphen mit Wurzeln an vs. aus (`long_influx.png`, `long_roots_compare.csv`): Unterscheiden sich die Outputs innerhalb der 120 h? Wenn ja: Wurzeln weiterwachsen lassen.
+- [ ] Wellengrößen bei 120 h vs. 150/180 h (`long_summary.csv`): konvergiert? Sonst `HOURS_HYPHAE` weiter erhöhen.
 
 ### Nach der Morris-Runde
 - [ ] Vorschlagstabelle (`morris_calibration_suggestion.csv`) lesen und in `config.PARAMETERS` von Hand `calibrate=True/False` setzen.
@@ -59,19 +69,22 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 ### A1 Wurzelwachstum wird bei t* abgeschaltet
 **Problem:** Ab t* wachsen die Wurzeln nicht mehr, Kolonisierung und Hyphenentstehung laufen weiter. Neue Hyphen kommen nur
 noch von den vorhandenen Wurzeln; im Experiment wachsen die Wurzeln weiter. Die Vermutung: irgendwann kommen im Modell keine
-neuen Hyphen mehr über die Barriere. Ob das innerhalb der ausgewerteten 60 h eine Rolle spielt, war unbekannt.
+neuen Hyphen mehr über die Barriere. Ob das innerhalb der ausgewerteten Zeit eine Rolle spielt, war unbekannt.
 
 **Lösung:**
 - Diagnose des Zuflusses (`model_hook.influx_diagnostics`), pro Stunde über die ganze Simulation aus der fertigen Pflanze:
   neue Hyphen aus Wurzeln, Segmente, die die Barriere nach innen bzw. außen überqueren (gesamt, Runner, BAS), neue Wurzellänge.
-- Outputs `influx_tstar` (Kreuzungen pro Stunde in den 6 h vor t*), `influx_window` (Mittel 0–60 h), `influx_decay`
+- Outputs `influx_tstar` (Kreuzungen pro Stunde in den 6 h vor t*), `influx_window` (Mittel 0–120 h), `influx_decay`
   (letzte 10 h / bei t*: 1 = gleichbleibender Zufluss, 0 = versiegt).
-- Langzeittest (`design.py long`): 120 h nach t*, 10 Seeds mit Wurzeln aus und dieselben Seeds mit weiterwachsenden Wurzeln
+- Langzeittest (`design.py long`): 180 h nach t* (`LONG_HOURS`), 10 Seeds mit Wurzeln aus und dieselben Seeds mit weiterwachsenden Wurzeln
   (`roots_on`). `analyze_long.py` vergleicht die Outputs gepaart über die Seeds bei 60/90/120 h und plottet den Zufluss
   (`plots/long_influx.png`); es gibt aus, ab wann der Zufluss unter 10 % seines Maximums fällt.
 
-**Lesen:** Unterscheiden sich die Outputs innerhalb von 60 h nicht, ist die Annahme für SA und Kalibrierung unkritisch,
-unabhängig davon, was danach passiert.
+**Lesen:** Unterscheiden sich die Outputs innerhalb des ausgewerteten Fensters nicht, ist die Annahme für SA und
+Kalibrierung unkritisch, unabhängig davon, was danach passiert.
+
+**Ergebnis (Phase 0, Lauf über 120 h):** Wurzeln an vs. aus ohne signifikanten Unterschied – Annahme bleibt. Dabei hat
+sich gezeigt, dass K1 und K2 erst nach ~120 h die Zielwerte erreichen → `HOURS_HYPHAE = 120`, Langzeittest 180 h.
 
 ### A2 Wurzelphase, Inokulum, Wurzelarchitektur
 **Problem:** Dauer der Wurzelphase, Lage des Samens und die Wurzelarchitektur sind nicht belegt. Die Wurzelarchitektur ist
@@ -329,7 +342,7 @@ unabhängigen Seeds; `phase0_crn.csv` gibt sd(Differenz, gleiche Seeds) / sd(Dif
 ---
 
 ## E – Auswertungen ohne Neusimulation
-- **E1** gepoolte Ziele pro Morris-Punkt ✓ (B11) · **E2** wait_days ✓ (D23) · **E4** Snapshot-Zeiten 10, 20, 30, 40, 60 h ✓ ·
+- **E1** gepoolte Ziele pro Morris-Punkt ✓ (B11) · **E2** wait_days ✓ (D23) · **E4** Snapshot-Zeiten 10, 20, 30, 40, 60, 90, 120 h ✓ ·
   **E8** Langzeittest ✓ (A1)
 - **E6** `morris_target_correlation.csv` und `plots/target_correlation.png`: Spearman-Korrelation der Kalibrierziele über die
   Design-Punkte (Mittel der Replikate bzw. gepoolter Wert), Paare mit |ρ| ≥ 0.9 werden aufgelistet.
@@ -363,7 +376,7 @@ unabhängigen Seeds; `phase0_crn.csv` gibt sd(Differenz, gleiche Seeds) / sd(Dif
   einer 1 mm dicken Schicht an der Oberfläche.
 - Wurzelorgankultur von *D. carota* durch eine modifizierte Tomatenarchitektur ersetzt; Wurzelphase 5 d, danach Kolonisierung
   und Hyphenentstehung nach Schnepf et al.; Wurzelwachstum ab t* aus.
-- t*: 10 cm Runner-Länge hinter der Barriere (wie L_RH = 10² mm); danach 60 h, dt = 1 h.
+- t*: 10 cm Runner-Länge hinter der Barriere (wie L_RH = 10² mm); danach 120 h, dt = 1 h (Wellenfits über 0–120 h, Zeitverläufe bei 20/40/60 h).
 - Auswertung wie im Experiment:
   - radiale Dichten in 15 Ringen gleicher Fläche bis 32 mm um den Barriere-Eintrittspunkt des jeweiligen Laufs
   - Spitzendichte aus wachsenden Runner-Spitzen
@@ -376,7 +389,7 @@ unabhängigen Seeds; `phase0_crn.csv` gibt sd(Differenz, gleiche Seeds) / sd(Dif
 - Strukturannahmen: Schichtdicke 0.1/0.05/0.02 cm, Mindestpfadlänge der Anastomose ×0.5/1/2/3.17
 - Common Random Numbers: gepaarte Differenzen mit gleichen vs. unabhängigen Seeds
 - 20 Zufallspunkte im Faktorraum: Abbruchrate und Laufzeit
-- Langzeittest 120 h mit Wurzeln an vs. aus: Zufluss neuer Hyphen, Einfluss auf die Outputs
+- Langzeittest 180 h mit Wurzeln an vs. aus (Konvergenz bei 120 h): Zufluss neuer Hyphen, Einfluss auf die Outputs
 - Ringauflösung 15 vs. 5 Ringe
 
 ### Sensitivitätsanalyse

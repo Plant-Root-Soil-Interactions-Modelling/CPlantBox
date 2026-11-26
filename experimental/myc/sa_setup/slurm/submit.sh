@@ -6,7 +6,7 @@
 #   bash submit_sa.sh results/design_phase0.csv
 #   bash submit_sa.sh results/design_morris.csv
 #   bash submit_sa.sh results/design_morris.csv --eval-only   # only re-evaluate (e.g. new outputs)
-#   SIMTIME=12:00:00 bash submit_sa.sh results/design_long.csv  # 120 h test, longer time limit
+#   SIMTIME=24:00:00 bash submit_sa.sh results/design_long.csv  # long test (180 h), longer time limit
 #   SIMTIME=24:00:00 SIMMEM=16G bash submit_sa.sh results/design_phase0.csv   # missing runs with more time/memory
 #
 # Catch up on aborted runs by simply resubmitting: finished ones are skipped.
@@ -39,7 +39,7 @@ submit_arrays() {
 if [[ "$MODE" == "--eval-only" ]]; then
   EVAL=$(FORCE_EXPORT=",FORCE=--force" submit_arrays eval.sbatch)
 else
-  # SIMTIME=12:00:00 bash submit_sa.sh ... overrides --time of sim.sbatch (e.g. for the 120 h test)
+  # SIMTIME=12:00:00 bash submit_sa.sh ... overrides --time of sim.sbatch (e.g. for the long test)
   # SIMMEM=16G overrides --mem (e.g. for fine dx in Phase 0)
   SIM=$(submit_arrays sim.sbatch ${SIMTIME:+--time=$SIMTIME} ${SIMMEM:+--mem=$SIMMEM})
   echo "Simulation: job(s) $SIM"

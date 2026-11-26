@@ -205,11 +205,12 @@ def main():
     keys = [("bas_share", "by sub type, 3D length"), ("bas_share_subtype_image", "by sub type, image graph (2D)"),
             ("bas_share_image", "image criteria as the experiment (≈ 0.40 at 60 h)")]
     rows = []
+    t_bas = max(config.IMAGE_HOURS)   # time of the experimental value
     for k, label in keys:
-        v = noise[(noise.output == k) & (noise.time == t_end)].set_index("seed").value
+        v = noise[(noise.output == k) & (noise.time == t_bas)].set_index("seed").value
         rows.append((label, v))
     if any(len(v.dropna()) for _, v in rows):
-        print(f"\nBAS share at the nominal point ({t_end} h after t*), mean ± sd over the seeds:")
+        print(f"\nBAS share at the nominal point ({t_bas} h after t*), mean ± sd over the seeds:")
         for label, v in rows:
             print(f"  {label:48s} {v.mean():.3f} ± {v.std():.3f}  (n = {v.notna().sum()})")
         a, b = rows[0][1], rows[2][1]

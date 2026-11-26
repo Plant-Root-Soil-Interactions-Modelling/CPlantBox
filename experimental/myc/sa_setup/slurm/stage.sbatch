@@ -25,7 +25,7 @@ echo "Stage $STAGE on $(hostname), $(date)"
 
 case "$STAGE" in
     phase0) DESIGN=results/design_phase0.csv ;;
-    long)   DESIGN=results/design_long.csv; export SIMTIME="${SIMTIME_LONG:-12:00:00}" ;;
+    long)   DESIGN=results/design_long.csv; export SIMTIME="${SIMTIME_LONG:-24:00:00}" ;;
     morris) DESIGN=results/design_morris.csv ;;
     *) echo "unknown stage $STAGE" >&2; exit 1 ;;
 esac

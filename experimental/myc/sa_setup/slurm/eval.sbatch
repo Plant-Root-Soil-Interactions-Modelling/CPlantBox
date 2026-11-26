@@ -7,7 +7,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=cpu256
-#SBATCH --time=0:30:00
+#SBATCH --time=1:00:00
 #SBATCH --mem=4G
 #SBATCH --output=./slurmOut/sa_eval-%A_%a.out
 #SBATCH --error=./slurmErr/sa_eval-%A_%a.err

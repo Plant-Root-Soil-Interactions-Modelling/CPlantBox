@@ -2,7 +2,7 @@
 Creates the design tables (one row = one simulation run).
 
     python design.py phase0     -> results/design_phase0.csv (noise, dx, sample of the factor space)
-    python design.py long       -> results/design_long.csv (nominal point over 120 h, test of the wave fits)
+    python design.py long       -> results/design_long.csv (nominal point over LONG_HOURS = 180 h, convergence of the wave fits)
     python design.py morris     -> results/design_morris.csv (+ morris_X.npy)
     python design.py inoculum   -> results/design_inoculum.csv (+ inoculum_X.npy), root/inoculum factors
 
@@ -20,7 +20,7 @@ from xml_tools import nominal_values
 
 # Prefix of the run_ids of new designs: the nominal model changed (anaMinDist derived, A11; parameter list v2, B13),
 # runs of the first round (p0_*, m_*) must not be reused under the same run_id
-P0 = "p0v2"
+P0 = "p0v3"   # v3: HOURS_HYPHAE = 120 (the v2 runs were simulated over 60 h)
 
 
 def factors_of(tag, design_path=None):
@@ -165,7 +165,8 @@ def phase1_morris():
 
 def inoculum_morris():
     """Root phase, root architecture, placement and emergence density, hyphal parameters nominal (config.INOCULUM_FACTORS)."""
-    morris_design("inoculum", config.INOCULUM_TRAJECTORIES, config.INOCULUM_REPLICATES, 400_000, "inoc")
+    # "inoc3": HOURS_HYPHAE = 120 (the "inoc" runs were simulated over 60 h)
+    morris_design("inoculum", config.INOCULUM_TRAJECTORIES, config.INOCULUM_REPLICATES, 400_000, "inoc3")
 
 
 if __name__ == "__main__":
