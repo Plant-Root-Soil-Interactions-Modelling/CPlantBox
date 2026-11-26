@@ -111,6 +111,10 @@ def write_warnings(noise, t_end):
     n_cross = noise[noise.output == "n_crossings_tstar"].value
     outside = noise[(noise.output == "frac_tips_outside_rings") & (noise.time == t_end)].value
     L = ring_warnings(n_cross, outside, " (Phase 0 noise runs, nominal point)")
+    if n_cross.empty or outside.empty:
+        # runs without the ring diagnostics (simulated with an older version): no statement possible
+        L.insert(0, "ATTENTION no ring diagnostics in the runs (n_crossings_tstar / frac_tips_outside_rings missing) -> "
+                    "simulated with an older version of model_hook? The checks for the rings could not be made")
     path = config.RESULTS_DIR / "phase0_warnings.txt"
     path.write_text("\n".join(L) + "\n" if L else "no warnings\n", encoding="utf-8")
     print("\n" + ("\n".join(L) if L else "No warnings for the rings.") + f"\n-> {path}")
