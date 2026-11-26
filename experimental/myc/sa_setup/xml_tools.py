@@ -86,7 +86,7 @@ def write_xml(values: dict, out_path: Path, dx: float | None = None, template=No
     first Morris round: config.FACTORS_V1). Factors not given stay nominal. Factors with target "sim" are not written
     (they go to model_hook.simulate). Special params: "successor" (share of the first successor), "v_cv" (dev of v),
     "ana_L_scale" (anaMinDist = scale × (distTH / sin(theta) + 2 dx), after distTH, theta; without it the template's
-    anaMinDist = -1 lets the model derive it), "cv_scale" (all dev but v, last). `also`: further parameters with the same value.
+    anaMinDist stays: 3 × derived at the nominal distTH, theta, dx), "cv_scale" (all dev but v, last). `also`: further parameters with the same value.
     ana_L_scale argument: Phase 0 test of the minimal path length."""
     tree = _parse(template or config.TEMPLATE_XML)
     root = tree.getroot()

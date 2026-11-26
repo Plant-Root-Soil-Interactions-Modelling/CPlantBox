@@ -226,8 +226,8 @@
         <!--Probability of branching to occur by tip splitting rather than lateral branching [1]-->
         <parameter name="distTH" value="0.01" dev="0.001"/>
         <!--Distance for tip-hyphae anastomosis [cm]: larger than the hyphal diameter, tips appear to sense other hyphae; ~100 um plausible, possibly more (Richter et al. 2024)-->
-        <parameter name="anaMinDist" value="-1"/>
-        <!--Minimal path length along the mycelium for anastomosis [cm]; -1: derived, distTH / sin(theta) + 2 dx (about 0.03 cm), instead of the default 0.1 cm-->
+        <parameter name="anaMinDist" value="0.09464"/>
+        <!--Minimal path length along the mycelium for anastomosis [cm]: 3 x the derived distTH / sin(theta) + 2 dx (0.0315 cm at the nominal values); with x1 young laterals fuse with their own parent near the branching point (dt test, sa_setup). -1 lets the model derive x1-->
         <parameter name="dx" value="0.01"/>
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1e-06"/>
@@ -268,8 +268,8 @@
         <!--Probability of branching to occur by tip splitting rather than lateral branching [1]-->
         <parameter name="distTH" value="0.01" dev="0.001"/>
         <!--Distance for tip-hyphae anastomosis [cm]: larger than the hyphal diameter, tips appear to sense other hyphae; ~100 um plausible, possibly more (Richter et al. 2024)-->
-        <parameter name="anaMinDist" value="-1"/>
-        <!--Minimal path length along the mycelium for anastomosis [cm]; -1: derived, distTH / sin(theta) + 2 dx (about 0.03 cm), instead of the default 0.1 cm-->
+        <parameter name="anaMinDist" value="0.09464"/>
+        <!--Minimal path length along the mycelium for anastomosis [cm]: 3 x the derived distTH / sin(theta) + 2 dx (0.0315 cm at the nominal values); with x1 young laterals fuse with their own parent near the branching point (dt test, sa_setup). -1 lets the model derive x1-->
 
         <parameter name="dx" value="0.01"/>
         <!--Axial resolution [cm] (maximal segment size)-->

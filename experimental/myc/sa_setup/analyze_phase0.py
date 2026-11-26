@@ -7,7 +7,7 @@ Phase 0: seed noise and dx convergence at the nominal point.
       -> results/phase0_dx.csv      relative difference per dx vs. the finest dx
       -> results/phase0_dt.csv      relative difference per time step dt vs. the finest dt
       -> results/phase0_layer.csv   relative difference per thickness of the hyphal layer vs. the thinnest
-      -> results/phase0_anaL.csv    relative difference per factor on the derived anaMinDist vs. the derived value
+      -> results/phase0_anaL.csv    relative difference per factor on the derived anaMinDist vs. the nominal factor 3
       -> results/phase0_status.csv  share of runs with t* and runtime per group (range: sample of the factor space)
 """
 import numpy as np
@@ -176,8 +176,8 @@ def main():
     # layer thickness: reference is the thinnest layer (closest to the 2D cellophane of the experiment)
     lyt = convergence(out, "layer")
     lyt.to_csv(config.RESULTS_DIR / "phase0_layer.csv", index=False)
-    # minimal path length for anastomosis: factor on the derived value, reference = derived (scale 1)
-    alt = convergence(out, "anaL", ref=1.0)
+    # minimal path length for anastomosis: factor on the derived value, reference = the nominal scale
+    alt = convergence(out, "anaL", ref=config.ANA_L_SCALE_NOMINAL)
     alt.to_csv(config.RESULTS_DIR / "phase0_anaL.csv", index=False)
 
     # ---------- sample of the factor space: aborts and runtime ----------
@@ -198,7 +198,7 @@ def main():
     print_convergence(dxt, "dx", max(config.PHASE0_DX_VALUES), "", t_end)
     print_convergence(dtt, "dt", 24 / config.STEPS_PER_DAY, " h", t_end)
     print_convergence(lyt, "layer", config.HYPHAE_LAYER, " cm", t_end)
-    for s in [s for s in config.PHASE0_ANAL_SCALES if s != 1.0]:
+    for s in [s for s in config.PHASE0_ANAL_SCALES if s != config.ANA_L_SCALE_NOMINAL]:
         print_convergence(alt, "anaL", s, " × derived", t_end)
     # BAS share: by sub type (3D length, the snapshot output), by sub type in the image graph, and as the experiment
     # classifies the edges of the image graph (calibration target, Oyarte Galvez et al. 2025: 0.3)

@@ -124,15 +124,15 @@ geometry: set `SAVE_VTP = True` for that.
 |---|---|---|
 | Runner (subType 1) | `R_v`, `R_hlt`, `R_lmax`, `R_ln` (lb = ln), `R_theta`, `R_tropismN`, `R_succ_BAS`, `R_a` | v 0.432–0.72 cm/d, hlt 4–10 d, lmax 1.5–5 cm, ln 0.05–0.6 cm (log), θ 50–80°, tropismN 1–8, BAS share of the laterals 0.5–0.95, radius 10–100 µm (log) |
 | BAS (subType 2) | `B_v`, `B_b`, `B_hlt`, `B_theta`, `B_tropismN`, `B_a`, `B_lmax` | v as runner, b 0.3–2 /d (log), hlt 3–12 d, θ 50–80°, tropismN 0.5–4, radius 0.5–50 µm (log), lmax 0.01–0.1 cm (log) |
-| shared | `ana`, `distTH`, `ana_L_scale` | 0.5–1, 0.005–0.03 cm (log), anaMinDist factor 0.5–2 on the derived value (log) |
+| shared | `ana`, `distTH`, `ana_L_scale` | 0.5–1, 0.005–0.03 cm (log), anaMinDist factor 1.5–6 on the derived value (log, nominal 3) |
 | SA only | `v_cv`, `cv_scale`, `R_b_ctrl` | CV of v 0.15–0.40, all other dev × 0.5–2 (log), control (b of the runners, no effect with b_prob = 0) |
 
 21 factors: 20 trajectories × 22 points × 5 replicates = 2200 runs. Fixed: la, lb of the BAS, tropismT, tropismS, dx, b_prob.
 
 **First Morris round:** its 13 factors are kept as `config.FACTORS_V1`. Designs without the column `factor_set` (first
 round) are run and evaluated with them, so its runs stay usable (e.g. `--eval-only` for the pooled targets). New designs
-store `factor_set = v2` and have new run_ids (`p0v3_*`, `m2_*`, `inoc3_*`): the nominal model changed (anaMinDist
-derived; 120 h after t*).
+store `factor_set = v2` and have new run_ids (`p0v4_*`, `m3_*`, `inoc4_*`): the nominal model changed (anaMinDist
+3 × derived; 120 h after t*).
 
 **Order (B14):** Phase 0 (noise, dx, dt, layer, anaMinDist) and the long test -> fix the numerics; Morris (and the
 inoculum Morris) -> `analyze_morris.py` writes `morris_calibration_suggestion.csv` (parameters with μ* above noise for
@@ -180,7 +180,7 @@ automatically in `collect.sbatch`; noise level from a bootstrap over the replica
 **Simulated time (`HOURS_HYPHAE` = 120 h after t*):** the Phase 0 long test showed that K1 and K2 only reach the
 experimental values at about 120 h (nominal K1 763 -> 1422 µm mm⁻², K2 0.071 -> 0.151 mm⁻² between 60 and 120 h), so the
 wave fits run over 0–120 h. The image graph targets stay at 20/40/60 h (time course of the figures). The long test runs
-`LONG_HOURS` = 180 h (image graph additionally at 150/180 h). Run ids changed to `p0v3_*` and `inoc3_*`; Phase 0 has to
+`LONG_HOURS` = 180 h (image graph additionally at 150/180 h). Run ids changed to `p0v4_*`, `m3_*` and `inoc4_*` (with anaMinDist 3 × derived); Phase 0 has to
 be rerun with 120 h, the runtime per run is about 1.6 h (nominal median of the long test). Per run the wave quantities are still in `outputs.csv` as diagnostics, with the number of rings
 behind the fits (`n_wave_rings`, `n_K1_rings`, `n_tip_rings`) and `wait_days`.
 
@@ -217,16 +217,20 @@ behind the fits (`n_wave_rings`, `n_K1_rings`, `n_tip_rings`) and `wait_days`.
 - `phase0_dx.csv`: if the nominal `dx` deviates significantly (> 2 %) from the finest, `dx`
   is too coarse. Check especially for anastomoses (distTH = dx) and BAS (lmax ≈ 3 × dx).
   A small dx costs a lot of runtime: increase `--time` in `sim.sbatch` for it.
-- `phase0_dt.csv`: the same for the time step (1 h, 0.5 h, 0.25 h; `config.PHASE0_DT_STEPS_PER_DAY`). The 1 h comes
-  from the image interval of the experiment, which only fixes the evaluation interval (stays hourly). Anastomosis is
-  checked once per step at the tip, `ana` and the BAS tip splitting act per step: check `alpha`, `anastomoses`,
-  `encounter_C` and `bas_share`. Small dt costs runtime roughly ∝ steps: increase `--time` in `sim.sbatch`.
+- `phase0_dt.csv`: the same for the time step (1 h, 0.5 h, 0.25 h; `config.PHASE0_DT_STEPS_PER_DAY`). **dt = 1 h is
+  fixed as part of the model** (image interval of the experiment); the calibrated parameters hold for dt = 1 h.
+  Isolated tests (8 seeds, identical state at dt = 1 h, then 2 d at 1 / 0.5 / 0.25 h): branching per tip and the root
+  phase do not depend on dt; with anaMinDist = 1 × derived young laterals fuse with their own parent/child near the
+  branching point (38 % of the anastomoses at 1 h, 91 % at 0.25 h, rate per tip ×8) -> nominal `ana_L_scale` = 3,
+  from which the anastomosis rate per tip agrees at all dt. Remaining: the network after 2 d is ~15 % smaller at
+  0.25 h without anastomosis (tip growth per time −6 %) and ~25 % with it. `phase0_dt.csv` documents this at the
+  nominal point. Small dt costs runtime roughly ∝ steps: increase `--time` in `sim.sbatch`.
 - `phase0_layer.csv`: thickness of the hyphal layer on the fungal side (0.1 / 0.05 / 0.02 cm,
   `config.PHASE0_LAYER_VALUES`) vs. the thinnest, closest to the quasi-2D cellophane. Check `alpha`, `anastomoses`,
   `encounter_C`; aborts in thin layers show up in `phase0_status.csv`.
-- `phase0_anaL.csv`: minimal path length along the mycelium for anastomosis (`anaMinDist`). Nominal now derived by the
-  model (`-1` in the template: distTH / sin θ + 2 dx ≈ 0.03 cm instead of the former default 0.1 cm), tested as a factor
-  0.5 / 2 / 3.17 (≈ 0.1 cm) on the derived value. For the next Morris round a factor with param `ana_L_scale` is supported.
+- `phase0_anaL.csv`: minimal path length along the mycelium for anastomosis (`anaMinDist`) as a factor on the derived
+  value distTH / sin θ + 2 dx (≈ 0.032 cm). Nominal 3 (≈ 0.095 cm, explicit in the template; `-1` would derive ×1),
+  compared with ×1 (fusions with the own parent), 1.5 and 6 (ends of the factor range `ana_L_scale`).
 - `frozen_share` (all designs, from the diagnostics): share of the tips on the fungal side that are frozen because an
   ancestor reached its lifetime `hlt` (`Hyphae::simulate` simulates the children of a hypha only while it is alive).
   Grows with the waiting time until t*.
@@ -280,7 +284,7 @@ Because 7 targets do not determine 18 parameters uniquely, every parameter has a
 additional residual z = (x − centre)/σ (log for log parameters). Literature priors (`Factor.prior`, range
 = ±2σ) exist for R_v, B_v, R_hlt, R_ln, R_theta, B_theta, B_hlt, B_a (BAS diameter 2–10 µm, Bago 1998) and R_a
 (radius 50 µm, Schnepf 2017, prior 25–100 µm; lower bound of the search range 10 µm, Bago 1998), and an assumed one for
-`ana_L_scale` (0.5–2 around the derived anaMinDist). All others have a weak
+`ana_L_scale` (1.5–6, nominal 3 × the derived anaMinDist). All others have a weak
 prior around the nominal value (σ = `WEAK_PRIOR_SIGMA` × search range). Parameters that no target acts on
 thus stay at the nominal value. The report flags literature priors from which the solution deviates by more than 2σ.
 All evaluations use the same seeds (CRN), the outputs are pooled over the seeds, the

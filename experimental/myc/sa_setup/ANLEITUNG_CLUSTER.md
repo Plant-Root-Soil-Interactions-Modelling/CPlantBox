@@ -97,9 +97,10 @@ sbatch $S/sa_run.sbatch analyze_rings.py            # Ringauflösung 15 vs. 5 au
 | `phase0_warnings.txt` | „ATTENTION …“? Wenige Kreuzungen bis t*, Spitzen jenseits 32 mm | Eintrittspunkt länger mitteln bzw. `RING_RADIUS` vergrößern |
 | `phase0_noise.csv` | CV pro Output | > ~0.3: mehr Replikate (`MORRIS_REPLICATES`) |
 | Ausgabe „Spread between seeds …“ | CV der Ziele aus einer Kolonie | als `between_cv` bei K1, K2, front_velocity, front_tip_speed, alpha, beta in `calibrate.py` eintragen |
-| `phase0_dx.csv`, `phase0_dt.csv` | Abweichung zur feinsten Stufe > 2 %? | dx bzw. dt (`STEPS_PER_DAY`) verkleinern |
+| `phase0_dx.csv` | Abweichung zur feinsten Stufe > 2 %? | dx verkleinern |
+| `phase0_dt.csv` | Rest-Abhängigkeit von dt (dt = 1 h ist festgelegt) | nur dokumentieren; Anastomosen pro Spitze sollten gleich sein |
 | `phase0_layer.csv` | Wie stark reagieren alpha, Anastomosen auf die Schichtdicke? | Annahme halten oder `HYPHAE_LAYER` ändern |
-| `phase0_anaL.csv` | Wirkung der Mindestpfadlänge | `ana_L_scale` in der Kalibrierung lassen oder fixieren |
+| `phase0_anaL.csv` | Wirkung der Mindestpfadlänge (×1 / 1.5 / 6 gegen nominal ×3) | `ana_L_scale` in der Kalibrierung lassen oder fixieren |
 | `phase0_crn.csv` | Verhältnis gleiche/unabhängige Seeds deutlich < 1? | sonst mehr Seeds in Kalibrierung und Morris |
 | `phase0_bas_share.csv` | BAS-Anteil Subtyp vs. Bildkriterien | Einordnung C15 |
 | `phase0_status.csv` | Abbrüche an den Rändern des Faktorraums (Gruppe range) | viele: Bereiche prüfen, `MAX_WAIT_DAYS` |

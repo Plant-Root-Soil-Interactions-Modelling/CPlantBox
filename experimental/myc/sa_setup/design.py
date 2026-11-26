@@ -20,7 +20,7 @@ from xml_tools import nominal_values
 
 # Prefix of the run_ids of new designs: the nominal model changed (anaMinDist derived, A11; parameter list v2, B13),
 # runs of the first round (p0_*, m_*) must not be reused under the same run_id
-P0 = "p0v3"   # v3: HOURS_HYPHAE = 120 (the v2 runs were simulated over 60 h)
+P0 = "p0v4"   # v4: ana_L_scale nominal 3 (v3: HOURS_HYPHAE = 120, v2: 60 h)
 
 
 def factors_of(tag, design_path=None):
@@ -92,7 +92,7 @@ def phase0():
     # minimal path length for anastomosis as a factor on the derived value (A11)
     for s in config.PHASE0_ANAL_SCALES:
         for i in range(config.PHASE0_ANAL_SEEDS):
-            # nom also contains the factor ana_L_scale (= 1): it must come first, otherwise it overwrites s
+            # nom also contains the factor ana_L_scale (nominal): it must come first, otherwise it overwrites s
             rows.append({**nom, "run_id": f"{P0}_anaLs{s:g}_{i:03d}", "group": f"anaL={s:g}",
                          "seed": config.BASE_SEED + i, "dx": np.nan, "ana_L_scale": s})
     # common random numbers (C19): the point moved in one factor, with the seeds of the noise runs and with independent seeds
@@ -159,14 +159,14 @@ def morris_design(tag, trajectories, R, seed_offset, prefix):
 
 
 def phase1_morris():
-    # second round (parameter list v2): own run_ids and seeds, the first round used "m" and 100_000
-    morris_design("morris", config.MORRIS_TRAJECTORIES, config.MORRIS_REPLICATES, 500_000, "m2")
+    # parameter list v2: own run_ids and seeds, the first round used "m" and 100_000; "m3": 120 h, ana_L_scale nominal 3
+    morris_design("morris", config.MORRIS_TRAJECTORIES, config.MORRIS_REPLICATES, 500_000, "m3")
 
 
 def inoculum_morris():
     """Root phase, root architecture, placement and emergence density, hyphal parameters nominal (config.INOCULUM_FACTORS)."""
-    # "inoc3": HOURS_HYPHAE = 120 (the "inoc" runs were simulated over 60 h)
-    morris_design("inoculum", config.INOCULUM_TRAJECTORIES, config.INOCULUM_REPLICATES, 400_000, "inoc3")
+    # "inoc4": ana_L_scale nominal 3 ("inoc3": HOURS_HYPHAE = 120, "inoc": 60 h)
+    morris_design("inoculum", config.INOCULUM_TRAJECTORIES, config.INOCULUM_REPLICATES, 400_000, "inoc4")
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 > Das Nominalmodell hat sich geändert (abgeleitete Mindestpfadlänge der Anastomose, `ana` = 0.7, t* über die Runner-Länge,
 > Ringe um den Eintrittspunkt bis 32 mm, gemeinsame Parameterliste). Alle bisherigen Läufe sind damit nicht mehr
 > vergleichbar: **Phase 0, Langzeittest, Morris, Inokulum-Morris und Kalibrierung müssen neu laufen.** Neue Designs haben
-> neue Lauf-IDs (`p0v3_*`, `m2_*`, `inoc3_*`) und die Spalte `factor_set = v2`, damit alte Läufe mit gleicher ID nicht
+> neue Lauf-IDs (`p0v4_*`, `m3_*`, `inoc4_*`) und die Spalte `factor_set = v2`, damit alte Läufe mit gleicher ID nicht
 > stillschweigend wiederverwendet werden. Die erste Morris-Runde bleibt mit ihrer alten Faktorliste (`FACTORS_V1`)
 > auswertbar.
 
@@ -22,7 +22,7 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 > 0–120 h gefittet und bei 120 h gespeichert, Snapshots bei 10, 20, 30, 40, 60, 90, 120 h. Die Zeitverläufe des Bildgraphen
 > bleiben bei 20/40/60 h (Zeitpunkte der Abbildungen). Der Langzeittest läuft jetzt 180 h (`LONG_HOURS`, Bildgraph
 > zusätzlich bei 150/180 h) und prüft, ob die Wellengrößen bei 120 h konvergiert sind. Ein Lauf dauert nominal ~1.6 h
-> (vorher ~0.4 h): `sim.sbatch` 8 h, Langzeittest 24 h. **Phase 0 muss mit 120 h neu laufen** (Lauf-IDs `p0v3_*`).
+> (vorher ~0.4 h): `sim.sbatch` 8 h, Langzeittest 24 h. **Phase 0 muss mit 120 h neu laufen** (Lauf-IDs `p0v4_*`, seit `ana_L_scale` = 3, siehe A5/A11).
 
 ---
 
@@ -30,7 +30,8 @@ Methodenteil schreiben lässt. Die technische Bedienung steht in `README.md` (en
 
 ### Nach Phase 0
 - [ ] `results/phase0_warnings.txt` lesen: Zeilen „ATTENTION …“ zu wenigen Barriere-Kreuzungen bis t* (unsicherer Eintrittspunkt) und zu wachsenden Spitzen jenseits von 32 mm (Ringe zu klein).
-- [ ] Konvergenz dx und dt (`phase0_dx.csv`, `phase0_dt.csv`): Weichen die Ziele bei 1 h bzw. 0.01 cm um mehr als ~2 % von der feinsten Stufe ab? Dann dt bzw. dx verkleinern.
+- [ ] Konvergenz dx (`phase0_dx.csv`): Weichen die Ziele bei 0.01 cm um mehr als ~2 % von der feinsten Stufe ab? Dann dx verkleinern.
+- [ ] dt (`phase0_dt.csv`): dt = 1 h ist festgelegt (A5). Rest-Abhängigkeit am Nominalpunkt mit `ana_L_scale` = 3 dokumentieren (erwartet: Netz bei 0.25 h ~25 % kleiner, Anastomosen pro Spitze gleich).
 - [ ] Schichtdicke (`phase0_layer.csv`) und Mindestpfadlänge der Anastomose (`phase0_anaL.csv`): Wie stark reagieren `alpha`, Anastomosen, `encounter_C`? Entscheidung, ob die Annahmen tragbar sind.
 - [ ] Common Random Numbers (`phase0_crn.csv`): Verhältnis deutlich unter 1? Sonst brauchen Kalibrierung und Morris mehr Seeds.
 - [ ] Streuung zwischen Seeds für die Ziele aus einer Kolonie (Ausgabe „Spread between seeds …“) als `between_cv` bei K1, K2, `front_velocity`, `front_tip_speed`, `alpha`, `beta` in `calibrate.TARGETS` eintragen.
@@ -131,12 +132,30 @@ zu früh kam). Bleibender Unterschied: Modell 3D-Länge, Experiment projizierte 
 **Problem:** 1 h ist das Bildintervall des Experiments, also das Auswerteintervall, nicht zwingend der numerische Schritt.
 Die Anastomose wird einmal pro Schritt am Spitzenknoten geprüft (`MycorrhizalPlant.cpp:304`); bei 240 µm/h springt die
 Spitze pro Schritt 240 µm > `distTH`. Auch `ana` (pro Schritt) und die BAS-Teilung (b·dt pro Schritt) hängen an dt.
+Phase 0 (v2) zeigte: Bei 0.25 h ist das Netz 6–7× kleiner.
 
 **Lösung:**
 - Konvergenztest in Phase 0: 24 / 48 / 96 Schritte pro Tag (1 / 0.5 / 0.25 h), Auswertung weiter stündlich (`phase0_dt.csv`).
 - Fehler behoben: Die Hyphenphase lief über `hours_hyphae` *Schritte*; jetzt über Stunden (`round(hours / (dt · 24))`).
 
-**Lesen:** Konvergiert 1 h nicht, schlucken `distTH` und `ana` den dt-Effekt, die kalibrierten Werte gelten dann nur für 1 h.
+**Isolierte Tests (November 2026, 8 Seeds):** Gleicher Zustand bei dt = 1 h (Wurzelphase + 2 d Hyphen), dann Wurzeln und
+Kolonisierung aus und 2 d Hyphen bei 1 / 0.5 / 0.25 h; gemessen pro aktiver Spitze und Tag.
+- Verzweigung (Runner-Seitenäste im Abstand ln, BAS-Spitzenteilung) und Wurzelphase hängen nicht von dt ab.
+- Anastomose: Mit der abgeleiteten Mindestpfadlänge (×1) verschmelzen junge Seitenäste (~1 h alt, ~190 µm lang) mit der
+  eigenen Eltern- bzw. Kindhyphe nahe dem Verzweigungspunkt: Sie biegen durch den Tropismus parallel zur Elternhyphe
+  zurück (wirksamer Winkel ~6° statt θ) und bleiben innerhalb von distTH, sobald der Pfad länger als L ist. Anteil an
+  allen Anastomosen 38 % bei 1 h, 91 % bei 0.25 h; Rate pro Spitze 0.32 → 2.67 /d. Bei 1 h überspringt die Spitze den
+  Bereich meist (240 µm pro Schritt, SDF einen Schritt alt), daher wirkte dt = 1 h wie ein längeres L.
+- Ab 3 × L ist die Anastomose-Rate pro Spitze unabhängig von dt (0.25 / 0.23 / 0.22 /d), Verwandte nur noch ~0.05 /d
+  (echte Schleifen im eigenen Baum).
+- Rest: Ohne Anastomose ist das Netz nach 2 d bei 0.25 h ~15 % kleiner (Wachstum pro Spitze −6 %, signifikant; die
+  Seitenäste folgen dem Wachstum), mit Anastomose ~25 % (vermutlich Weiterwachsen nach dem Kontakt bis Schrittende und
+  ~15 % übersprungene Kontakte bei 1 h).
+
+**Entscheidung:** dt = 1 h gehört zur Modelldefinition (Bildintervall des Experiments); die kalibrierten Parameter gelten
+für dt = 1 h. Das Artefakt der Selbst-Anastomose ist über `ana_L_scale` = 3 behoben (A11). Die Rest-Abhängigkeit des
+Wachstums von dt ist dokumentiert, nicht korrigiert (Ursache vermutlich Zuwachs pro Schritt < dx oder Geometrie der
+dünnen Schicht). Eine C++-Korrektur (Anastomose einmal pro Begegnung, ganzer Weg geprüft) bleibt möglich.
 
 ### A6 Artefakt beim Absterben
 **Problem:** `Hyphae.cpp:108` simuliert die Kinder einer Hyphe nur, solange sie lebt. Stirbt sie nach `hlt`, friert der
@@ -177,10 +196,12 @@ Schätzungen sind unkritisch.
 
 ### A11 Mindestpfadlänge der Anastomose (`anaMinDist`)
 **Problem:** Nicht im XML gesetzt, also galt der Default 0.1 cm aus `hyphaeparameter.h`; gedacht war die abgeleitete Formel.
+Die abgeleitete Formel distTH / sin θ + 2·dx (≈ 0.032 cm) nimmt an, dass ein Seitenast gerade unter θ wegwächst. Das tut
+er nicht (A5): Er biegt parallel zur Elternhyphe zurück und verschmilzt mit ihr.
 
-**Lösung:** Im XML `anaMinDist = -1` → abgeleitet: distTH / sin θ + 2·dx ≈ 0.03 cm. Faktor `ana_L_scale` (0.5–2, log, Prior
-um 1) auf den abgeleiteten Wert in SA und Kalibrierung; Phase-0-Gruppe ×0.5 / 1 / 2 / 3.17 (3.17 ≈ alter Default),
-`phase0_anaL.csv`.
+**Lösung:** Faktor `ana_L_scale` auf den abgeleiteten Wert in SA und Kalibrierung, **nominal 3** (≈ 0.095 cm, fast der alte
+Default), Bereich und Prior 1.5–6 (log, ×/÷ 2). Im Template-XML steht der Wert explizit (0.09464 cm), `write_xml` setzt
+ihn aus dem Faktor neu (skaliert mit distTH, θ, dx). Phase-0-Gruppe ×3 (Referenz) / 1 / 1.5 / 6, `phase0_anaL.csv`.
 
 ### Ringe (aus F6)
 **Problem:** Oyarte Galvez berechnen die radialen Dichten über den Abstand r vom **Barriere-Eintrittspunkt**, pro Replikat.
@@ -237,7 +258,7 @@ Im Dummy-Test an 265 von 280 Punkten definiert.
 | B_lmax | 0.01–0.1 cm, log | schwach |
 | ana | 0.3–1 (nominal 0.7) | schwach |
 | distTH | 30–500 µm, log | 50–300 µm (Richter et al. 2024) |
-| ana_L_scale | 0.5–2, log | 0.5–2 |
+| ana_L_scale | 1.5–6, log (nominal 3) | 1.5–6 |
 | v_cv | 0.15–0.40 | 0.2–0.4 (gemessener CV ≈ 0.29) |
 | cv_scale (nur SA) | 0.5–2, log | – |
 | R_b_ctrl (nur SA, Kontrolle) | – | soll μ* = 0 geben |
@@ -388,7 +409,7 @@ unabhängigen Seeds; `phase0_crn.csv` gibt sd(Differenz, gleiche Seeds) / sd(Dif
 ### Vorprüfungen (Phase 0)
 - Seed-Rauschen: 50 Seeds am Nominalpunkt (CV pro Output, Streuung zwischen Seeds als Ersatz für die Streuung zwischen Platten)
 - Numerische Konvergenz: dx 0.01/0.005/0.0025 cm, dt 1/0.5/0.25 h (je 10 gepaarte Seeds)
-- Strukturannahmen: Schichtdicke 0.1/0.05/0.02 cm, Mindestpfadlänge der Anastomose ×0.5/1/2/3.17
+- Strukturannahmen: Schichtdicke 0.1/0.05/0.02 cm, Mindestpfadlänge der Anastomose ×3/1/1.5/6
 - Common Random Numbers: gepaarte Differenzen mit gleichen vs. unabhängigen Seeds
 - 20 Zufallspunkte im Faktorraum: Abbruchrate und Laufzeit
 - Langzeittest 180 h mit Wurzeln an vs. aus (Konvergenz bei 120 h): Zufluss neuer Hyphen, Einfluss auf die Outputs

@@ -113,9 +113,12 @@ PARAMETERS: list[Factor] = [
     # possibly more (Richter et al. 2024). Prior 50–300 µm as ±2σ (log, centre ≈ 120 µm)
     Factor("distTH", (RUNNER, BAS), "distTH", 0.003, 0.05, log=True, prior=(0.005, 0.03), calibrate=True,
            source="tips sense other hyphae beyond contact; ~100 µm plausible, possibly more (Richter et al. 2024)"),
-    # minimal path length for anastomosis: factor on the derived value distTH / sin(theta) + 2 dx (A11), prior around 1
-    Factor("ana_L_scale", (RUNNER, BAS), "ana_L_scale", 0.5, 2.0, log=True, nominal=1.0, prior=(0.5, 2.0),
-           calibrate=True, source="assumption: derived value of the model (anaMinDist = -1), ×/÷ 2"),
+    # minimal path length for anastomosis: factor on the derived value distTH / sin(theta) + 2 dx (A11). Nominal 3
+    # (ANA_L_SCALE_NOMINAL): with the derived value (×1) young laterals fuse with their own parent/child near the branching
+    # point (they bend back parallel to it, effective angle ~6° instead of theta) - 38 % of the anastomoses at dt = 1 h,
+    # 91 % at 0.25 h. From ×3 (≈ 0.095 cm nominal) the anastomosis rate per tip no longer depends on dt (test 2026-11, 8 seeds)
+    Factor("ana_L_scale", (RUNNER, BAS), "ana_L_scale", 1.5, 6.0, log=True, nominal=3.0, prior=(1.5, 6.0),
+           calibrate=True, source="dt test: ×3 the derived value suppresses fusions with the own parent/child; ×/÷ 2"),
     # CV of the tip speed (dev of v = CV × v, both sub types): the front is carried by the fast tips, so v_cv together with
     # v sets the speed at the front (≈ 300 µm/h, target front_tip_speed) and the wave speed (≈ 280 µm/h) above the mean 240
     Factor("v_cv", (RUNNER, BAS), "v_cv", 0.15, 0.40, prior=(0.2, 0.4), calibrate=True,
@@ -215,7 +218,10 @@ WARN_MIN_CROSSINGS = 5          # fewer barrier crossings until t* (median over 
 WARN_MAX_OUTSIDE_RINGS = 0.10   # larger share of the growing tips beyond RING_RADIUS at the end: the rings miss the front
 HYPHAE_LAYER = 0.1          # hyphae grow on the cellophane, thin layer on top [cm]
 ROOT_DAYS = 5               # root phase [d]: assumption without source (the roots should grow a bit before the hyphae), see INOCULUM_FACTORS
-STEPS_PER_DAY = 24          # dt = 1 h
+# dt = 1 h (image interval of the experiment) is part of the model definition: the parameters hold for dt = 1 h.
+# Isolated dt tests (2026-11, 8 seeds, ana_L_scale 3): anastomoses per tip independent of dt, but the network after 2 d is
+# ~15 % smaller at dt = 0.25 h without anastomosis (tip growth per time −6 %, branching follows) and ~25 % with it
+STEPS_PER_DAY = 24
 # simulation after t* [h]: the wave fits need the longer window. Long test (Phase 0): at 60 h K1 763 / K2 0.071, at 120 h
 # K1 1422 / K2 0.151 (targets 1400 / 0.15); Fig. 2 of the paper spans about 3 days. Wave quantities over 0..120 h
 HOURS_HYPHAE = 120
@@ -289,9 +295,8 @@ ENCOUNTER_MIN_TIPS = 5
 PHASE0_NOISE_SEEDS = 50
 PHASE0_DX_VALUES = [0.01, 0.005, 0.0025]   # nominal, half, quarter (runtime grows roughly with 1/dx!)
 PHASE0_DX_SEEDS = 10
-# dt convergence: time steps per day (24 = 1 h as the image interval of the experiment, which only fixes the evaluation
-# interval). Anastomosis is checked once per step at the tip node, ana and the BAS tip splitting (b dt) are per step,
-# so these outputs may depend on dt. Runtime grows roughly with the number of steps
+# dt convergence: time steps per day (24 = 1 h, fixed as part of the model, see STEPS_PER_DAY). Documents the remaining
+# dt dependence at the nominal point. Runtime grows roughly with the number of steps
 PHASE0_DT_STEPS_PER_DAY = [24, 48, 96]   # dt = 1 h, 0.5 h, 0.25 h
 PHASE0_DT_SEEDS = 10
 # Thickness of the hyphal layer on the fungal side: the cellophane of the experiment is quasi 2D, the model uses a 1 mm
@@ -299,11 +304,11 @@ PHASE0_DT_SEEDS = 10
 # Compared with the thinnest layer (closest to 2D), same seeds. Thin layers: tips hit the boundary more often
 PHASE0_LAYER_VALUES = [0.1, 0.05, 0.02]   # [cm], nominal HYPHAE_LAYER first
 PHASE0_LAYER_SEEDS = 10
-# Minimal path length along the mycelium for anastomosis (anaMinDist): nominal derived by the model (anaMinDist = -1 in the
-# template: distTH / sin(theta) + 2 dx ≈ 0.03 cm), tested as a factor on the derived value. 3.17 ≈ 0.1 cm, the former
-# default of hyphaeparameter.h. Compared with the nominal scale 1, same seeds. For the next Morris round: a factor with
-# param "ana_L_scale" (subtypes RUNNER, BAS), e.g. 0.5–2 log, is supported by xml_tools.write_xml
-PHASE0_ANAL_SCALES = [1.0, 0.5, 2.0, 3.17]
+# Minimal path length along the mycelium for anastomosis (anaMinDist) as a factor on the derived value
+# distTH / sin(theta) + 2 dx (≈ 0.032 cm nominal). Nominal ANA_L_SCALE_NOMINAL = 3 (≈ 0.095 cm), compared with it, same
+# seeds: 1 = the derived value (fusions with the own parent/child), 1.5 and 6 = the ends of the factor range
+ANA_L_SCALE_NOMINAL = 3.0
+PHASE0_ANAL_SCALES = [ANA_L_SCALE_NOMINAL, 1.0, 1.5, 6.0]
 PHASE0_ANAL_SEEDS = 10
 # Common random numbers (C19): how much of the seed noise cancels in the difference between two nearby points with the
 # SAME seeds (as the calibration differences and the Morris steps) compared with INDEPENDENT seeds? One factor is moved
