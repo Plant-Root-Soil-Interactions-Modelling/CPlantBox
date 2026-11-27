@@ -80,6 +80,15 @@ class AnimateRoots:
     min, max, res : array-like
         Bounding-box minimum / maximum and cell resolution for the soil grid.
         Only used when :attr:`soil_data` is *True*.
+    camera_settings : dict, optional
+        Fixed camera (keys ``position``, ``focal_point``, ``view_up``,
+        ``view_angle``, ``parallel_scale``, all optional), applied at every
+        :meth:`update` instead of the automatic zoom-to-fit.  Press ``?`` in the
+        window to print the current camera as such a dict.
+    fix_camera : bool
+        If *True* (and :attr:`camera_settings` is not set) the camera is fitted
+        at the first :meth:`update` only and then kept, so the view does not
+        change while the plant grows.  Default *False*.
     avi_name : str, optional
         Base name for JPEG frame export.  When set, each call to
         :meth:`update` creates a subdirectory named *avi_name* (if it does
@@ -116,6 +125,15 @@ class AnimateRoots:
         # Current simulation time [days]; set this before each update() call
         # so that derived parameters such as "age" are computed correctly.
         self.simtime = 0.0
+
+        # Optional fixed camera. By default the camera is reset (zoom to fit) at every update().
+        # camera_settings: dict with optional keys position, focal_point, view_up, view_angle, parallel_scale;
+        #                  it is applied at every update(), no automatic reset (press '?' in the window to print one).
+        # fix_camera:      if True (and no camera_settings), the camera is fitted at the first update() only,
+        #                  afterwards the camera is kept (including mouse interaction in the window).
+        self.camera_settings = None
+        self.fix_camera = False
+        self._camera_fitted = False
 
         # Optional JPEG frame export
         self.avi_name = None
@@ -276,7 +294,14 @@ class AnimateRoots:
         for a in self.actors:
             ren.AddActor(a)
 
-        ren.ResetCamera()
+        if self.camera_settings:
+            self._apply_camera_settings(ren.GetActiveCamera())
+            ren.ResetCameraClippingRange()
+        elif self.fix_camera and self._camera_fitted:
+            ren.ResetCameraClippingRange()
+        else:
+            ren.ResetCamera()
+            self._camera_fitted = True
         self.iren.Render()
 
         if self.avi_name:
@@ -383,6 +408,22 @@ class AnimateRoots:
             camera.SetViewUp(0, 0, 1)
             camera.Azimuth(30)
             camera.Elevation(30)
+
+    def _apply_camera_settings(self, camera):
+        """Apply :attr:`camera_settings` (keys: position, focal_point, view_up, view_angle, parallel_scale) to *camera*."""
+        s = self.camera_settings
+        if s.get("position") is not None:
+            camera.SetPosition(*s["position"])
+        if s.get("focal_point") is not None:
+            camera.SetFocalPoint(*s["focal_point"])
+        if s.get("view_up") is not None:
+            camera.SetViewUp(*s["view_up"])
+        if s.get("view_angle") is not None:
+            camera.SetViewAngle(s["view_angle"])
+        if s.get("parallel_scale") is not None:
+            camera.ParallelProjectionOn()
+            camera.SetParallelScale(s["parallel_scale"])
+        camera.OrthogonalizeViewUp()
 
     def _save_frame(self, renWin):
         """Write the current render window to a JPEG file.

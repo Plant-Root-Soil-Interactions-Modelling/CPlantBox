@@ -3,6 +3,7 @@ values from
 Vidal et al. (2021), He et al. (2021), Fournier & Andrieu (2000, 2010, 2014), dos Santos et al. (2022)
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 import plantbox as pb
@@ -108,6 +109,15 @@ def get_leaf_emergence_days():
     # return leaf_emergence_days
 
 
+def get_leaf_emergence_days_internodes():
+    lmax = 197  # total stem length [cm]
+    r = lmax / 110  # assuming lmax is reached after 110 days
+    ln = [0.0]
+    ln = ln + list(np.cumsum(get_internode_lenght2()))
+    dt = np.array(ln) / r  # arrival times
+    return dt
+
+
 #
 # Stem geometry
 #
@@ -159,5 +169,32 @@ def get_crown_root_number():
 
 
 def get_crown_root_angles():
-    crown_root_angles = np.array([25, 25, 30, 30, 35, 40])  # degrees below horizontal
+    crown_root_angles = np.array([25, 30, 35, 40, 45, 50])  # degrees below horizontal
     return crown_root_angles
+
+
+def get_crown_root_radii():
+    basal_radius_min = np.array([0.40, 0.55, 0.75, 0.95, 1.20, 1.60])
+    basal_radius_max = np.array([0.65, 0.85, 1.10, 1.35, 1.65, 2.50])
+    basal_radius_mean = (basal_radius_min + basal_radius_max) / 2.0
+    return basal_radius_mean / 10.0  # mm -> cm
+
+
+if __name__ == "__main__":
+
+    ln = get_internode_lenght()
+    ln2 = get_internode_lenght2()
+    plt.ylim(0, max(ln) * 1.1)
+    plt.plot(ln, "*", label="parametrisation 1")
+    plt.plot(ln2, "*", label="parametrisation 2")
+    plt.xlabel("Internode number")
+    plt.ylabel("Internode length [cm]")
+    plt.legend()
+    plt.show()
+
+    bl = get_leaf_blade_lenght()
+    sln = np.cumsum(ln)
+    plt.plot(bl[1:], sln, "g*")
+    plt.xlabel("Blade length [cm]")
+    plt.ylabel("Cumulative internode length [cm]")
+    plt.show()

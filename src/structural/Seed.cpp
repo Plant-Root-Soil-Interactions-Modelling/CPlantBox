@@ -94,8 +94,10 @@ void Seed::initialize(bool verbose) {
         double theta_bu = rrp1->theta;
         rrp1->theta = 0;
         std::shared_ptr<Organ> taproot = createRoot(plant.lock(), tapType, 0); // tap root has root type 1
-        taproot->addNode(getNode(0), getNodeId(0), 0);
-        this->addChild(taproot);
+        if (taproot) { // a custom createRoot may return nullptr to disable roots
+            taproot->addNode(getNode(0), getNodeId(0), 0);
+            this->addChild(taproot);
+        }
         rrp1->theta = theta_bu; // in case we copy parameter set for basal or shootborne
     } catch (...) {
         std::cout << "Seed::initialize: Parameter set for tap root of subType " << tapType << " not found \n" << std::flush;
@@ -125,8 +127,10 @@ void Seed::initialize(bool verbose) {
         double delay = sp->firstB;
         for (int i = 0; i < maxB; i++) {
             std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType, delay);
-            basalroot->addNode(getNode(0), getNodeId(0), delay);
-            this->addChild(basalroot);
+            if (basalroot) {
+                basalroot->addNode(getNode(0), getNodeId(0), delay);
+                this->addChild(basalroot);
+            }
             delay += sp->delayB;
         }
     }
@@ -156,14 +160,18 @@ void Seed::initialize(bool verbose) {
             std::shared_ptr<Organ> shootborne0 = createRoot(plant.lock(), shootborneType, delay);
             // TODO fix the initial radial heading
             // shootborne0->addNode(sbpos,delay); // (old model)
-            shootborne0->addNode(getNode(0), getNodeId(0), delay);
-            this->addChild(shootborne0);
+            if (shootborne0) {
+                shootborne0->addNode(getNode(0), getNodeId(0), delay);
+                this->addChild(shootborne0);
+            }
             delay += sp->delaySB;
             for (int j = 1; j < sp->nC; j++) {
                 std::shared_ptr<Organ> shootborne = createRoot(plant.lock(), shootborneType, delay);
                 // TODO fix the initial radial heading
-                shootborne->addNode(getNode(0), getNodeId(0), delay);
-                this->addChild(shootborne);
+                if (shootborne) {
+                    shootborne->addNode(getNode(0), getNodeId(0), delay);
+                    this->addChild(shootborne);
+                }
                 delay += sp->delaySB;
             }
             //	sbpos.z+=sp->nz;  // (old model) move up, for next root crown
@@ -177,8 +185,10 @@ void Seed::initialize(bool verbose) {
     if (plantBox) { // i.e. if a stem is defined
         std::shared_ptr<Organ> mainstem;
         mainstem = createStem(plant.lock(), mainStemType, 0.); // main stem has subtype 1
-        mainstem->addNode(Vector3d(0., 0., 0.), getNodeId(0), 0);
-        children.push_back(mainstem);
+        if (mainstem) { // a custom createStem may return nullptr to disable the stem
+            mainstem->addNode(Vector3d(0., 0., 0.), getNodeId(0), 0);
+            children.push_back(mainstem);
+        }
         if (tillers()) { // Optional tillers
             try {
                 p->getOrganRandomParameter(Organism::ot_stem, tillerType);
@@ -197,8 +207,10 @@ void Seed::initialize(bool verbose) {
             double delay = sp->firstTil;
             for (int i = 0; i < maxTi; i++) {
                 std::shared_ptr<Organ> tiller = createStem(plant.lock(), tillerType, delay);
-                tiller->addNode(Vector3d(0., 0., 0.), getNodeId(0), 0);
-                children.push_back(tiller);
+                if (tiller) {
+                    tiller->addNode(Vector3d(0., 0., 0.), getNodeId(0), 0);
+                    children.push_back(tiller);
+                }
                 delay += sp->delayTil;
             }
         }

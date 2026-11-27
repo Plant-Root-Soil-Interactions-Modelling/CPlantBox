@@ -522,7 +522,9 @@ void StaticRoot::initializeLaterals() {
         int lni = lateralNodeIndices.at(i); // rename
         std::shared_ptr<Organ> lateral = plant.lock()->createRoot(lateralTypes.at(i), lateralDelays.at(i), shared_from_this(), lni);
         // lateral->addNode(getNode(lni), getNodeId(lni), lateralDelays.at(i));
-        this->addChild(lateral);
+        if (lateral) {
+            this->addChild(lateral);
+        }
     }
 }
 

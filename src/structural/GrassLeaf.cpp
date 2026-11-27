@@ -192,7 +192,7 @@ double GrassLeaf::getParameter(std::string name, std::map<std::string, double> a
                 double p = cumLen / param()->sheathLength;
                 double a0 = parent.lock()->param()->a;                                     // parent radius
                 double a1 = 1.01 * (a0 + tan(initialSheathAngle) * param()->sheathLength); // parent radius + sheath vertical displacement add 1%
-                return a0 * (1. - p) + a1 * p;                                             // linaerly interpolate
+                return a0 * (1. - p) + a1 * p;                                             // linearly interpolate
             } else {
                 return param()->a; // represents leaf vein
             }
@@ -314,14 +314,17 @@ double GrassLeaf::getBladeWidth(int i) const {
     if (p <= 0) {
         return a;
     }
-    double halfWidth = param()->bladeWidth / 2.;
-    double halfWidth_ = std::min(length / 2., halfWidth); // avoid unrealistic width at the very base of the blade
+    double age_ = this->calcAge(this->getLength());
+    double dt = param()->leafGrowthDuration / 4; // blade growth phase duration
+    double t_age = std::min(age_ / dt, 1.);
+    double bw = param()->bladeWidth * t_age + (1. - t_age) * a;
+    double halfWidth = bw / 2.;
     if (p < 0.25) {
-        return (halfWidth_ - a) * (p / 0.25) + a;
+        return (halfWidth - a) * (p / 0.25) + a;
     } else if (p < 0.6) {
-        return halfWidth_;
+        return halfWidth;
     } else {
-        return halfWidth_ * (1. - (p - 0.6) / 0.4);
+        return halfWidth * (1. - (p - 0.6) / 0.4);
     }
 }
 

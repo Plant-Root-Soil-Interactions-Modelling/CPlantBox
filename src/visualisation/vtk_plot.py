@@ -47,10 +47,8 @@ def plot_plant(plant, p_name, render=True, interactiveImage=True):
     # plant as tube plot
     if isinstance(plant, pb.MappedSegments):
         ana = pb.SegmentAnalyser(plant.mappedSegments())  # for MappedPlant and MappedRootSystem
-        setLeafColor = False
     elif isinstance(plant, pb.Organism):
         ana = pb.SegmentAnalyser(plant)  # for Organism like Plant or RootSystem
-        setLeafColor = True
     else:
         ana = plant
     pd = segs_to_polydata(ana, 1.0, ["radius", "organType", "creationTime", p_name])  # poly data
@@ -65,6 +63,12 @@ def plot_plant(plant, p_name, render=True, interactiveImage=True):
     for l in leaves:
         globalIdx_y = globalIdx_y + create_leaf_(l, leaf_points, leaf_polys)
     globalIdx_y = np.array(globalIdx_y)
+
+    # fruits = plant.getOrgans(ot=pb.fruit)
+    # for f in fruits:
+    #     # get base node
+    #     # get direction
+    #     # create ellipsoid, based on age, maxVolume
 
     polyData = vtk.vtkPolyData()
     polyData.SetPoints(leaf_points)
@@ -81,13 +85,11 @@ def plot_plant(plant, p_name, render=True, interactiveImage=True):
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(polyData)
     mapper.ScalarVisibilityOn()
-    mapper.SetScalarModeToUseCellFieldData()  # maybe because radius is active scalar in point data?
+    mapper.SetScalarModeToUseCellFieldData()
     mapper.UseLookupTableScalarRangeOn()
 
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
-
-    # lut = create_lookup_table()  # 24
     mapper.SetLookupTable(lut)
     colors = vtk.vtkNamedColors()
     actor.GetProperty().SetColor(colors.GetColor3d("Green"))
@@ -232,7 +234,8 @@ def segs_to_polydata(rs, zoom_factor=1.0, param_names=["age", "radius", "type", 
     c2p.SetPassCellData(True)
     c2p.SetInputData(pd)
     c2p.Update()
-    return c2p.GetPolyDataOutput()
+    # return c2p.GetPolyDataOutput()
+    return pd
 
 
 def uniform_grid(min_, max_, res):
@@ -364,7 +367,8 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage=True):
 
 def keypress_callback_(obj, ev, bounds):
     """adds the functionality to make a screenshot by pressing 'g',
-    and to change view to axis aligned plots (by 'x', 'y', 'z', 'v')"""
+    to change view to axis aligned plots (by 'x', 'y', 'z', 'v'),
+    and to print the camera settings to the console (by '?')"""
     key = obj.GetKeySym()
     if key == "g":
         renWin = obj.GetRenderWindow()
@@ -376,6 +380,20 @@ def keypress_callback_(obj, ev, bounds):
         file_name = renWin.GetWindowName()
         write_jpg(renWin, file_name, magnification=1)
         print("saved", file_name + ".jpg")
+    if key == "question":  # '?' prints the camera settings
+        camera = obj.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera()
+        print("Camera settings:")
+        print("  position       ", list(camera.GetPosition()))
+        print("  focal point    ", list(camera.GetFocalPoint()))
+        print("  view up        ", list(camera.GetViewUp()))
+        print("  view angle     ", camera.GetViewAngle())
+        print("  parallel proj. ", bool(camera.GetParallelProjection()), ", parallel scale", camera.GetParallelScale())
+        print("  clipping range ", list(camera.GetClippingRange()))
+        print("  distance       ", camera.GetDistance())
+        print("Copy into AnimateRoots:")
+        print(
+            f"anim.camera_settings = {dict(position=list(camera.GetPosition()), focal_point=list(camera.GetFocalPoint()), view_up=list(camera.GetViewUp()), view_angle=camera.GetViewAngle(), parallel_scale=camera.GetParallelScale() if camera.GetParallelProjection() else None)}"
+        )
     if key == "x" or key == "y" or key == "z" or key == "v":
         renWin = obj.GetRenderWindow()
         ren = renWin.GetRenderers().GetItemAsObject(0)
@@ -504,6 +522,46 @@ def plot_segments(pd, p_name: str, win_title: str = " ", render: bool = True, in
     return plot_roots(pd, p_name, win_title, render, interactiveImage)
 
 
+def _tube_input_with_cell_radii(pd):
+    """Duplicate line points so each segment can use its own cell radius."""
+    cell_radii = pd.GetCellData().GetArray("radius")
+    if cell_radii is None:
+        raise ValueError("Root polydata must have a cell-data array named 'radius'")
+
+    tube_input = vtk.vtkPolyData()
+    points = vtk.vtkPoints()
+    lines = vtk.vtkCellArray()
+    point_radii = vtk.vtkDoubleArray()
+    point_radii.SetName("radius")
+    tube_input.GetPointData().CopyAllocate(pd.GetPointData())
+    tube_input.GetCellData().CopyAllocate(pd.GetCellData())
+
+    source_point_ids = vtk.vtkIdList()
+    output_cell_id = 0
+    for cell_id in range(pd.GetNumberOfCells()):
+        if pd.GetCellType(cell_id) not in (vtk.VTK_LINE, vtk.VTK_POLY_LINE):
+            continue
+
+        pd.GetCellPoints(cell_id, source_point_ids)
+        lines.InsertNextCell(source_point_ids.GetNumberOfIds())
+        radius = cell_radii.GetTuple1(cell_id)
+        for i in range(source_point_ids.GetNumberOfIds()):
+            source_point_id = source_point_ids.GetId(i)
+            point_id = points.InsertNextPoint(pd.GetPoint(source_point_id))
+            lines.InsertCellPoint(point_id)
+            tube_input.GetPointData().CopyData(pd.GetPointData(), source_point_id, point_id)
+            point_radii.InsertNextValue(radius)
+        tube_input.GetCellData().CopyData(pd.GetCellData(), cell_id, output_cell_id)
+        output_cell_id += 1
+
+    tube_input.SetPoints(points)
+    tube_input.SetLines(lines)
+    tube_input.GetPointData().RemoveArray("radius")
+    tube_input.GetPointData().AddArray(point_radii)
+    tube_input.GetPointData().SetActiveScalars("radius")
+    return tube_input
+
+
 def plot_roots(pd, p_name: str, win_title: str = "", render: bool = True, interactiveImage: bool = True, returnLut: bool = False):
     """plots the root system
     @param pd                       RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
@@ -525,9 +583,10 @@ def plot_roots(pd, p_name: str, win_title: str = "", render: bool = True, intera
     if win_title == "":
         win_title = p_name
 
-    pd.GetPointData().SetActiveScalars("radius")  # for the the filter
+    tube_input = _tube_input_with_cell_radii(pd)
     tubeFilter = vtk.vtkTubeFilter()
-    tubeFilter.SetInputData(pd)
+    tubeFilter.SetInputData(tube_input)
+    tubeFilter.SetInputArrayToProcess(0, 0, 0, vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, "radius")
     tubeFilter.SetNumberOfSides(9)  #
     tubeFilter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
     tubeFilter.Update()

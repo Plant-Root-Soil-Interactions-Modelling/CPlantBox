@@ -865,6 +865,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
         .def("simulate", [](Root &self, double dt, bool verbose) { self.Root::simulate(dt, verbose); }, py::arg("dt"), py::arg("verbose") = false) // non-virtual call, so super().simulate() works in Python subclasses
+        .def("getParameter", [](const Root &self, std::string name, std::map<std::string, double> addParams) { return self.Root::getParameter(name, addParams); }, py::arg("name"), py::arg("addParams") = std::map<std::string, double>())
         .def("calcLength", &Root::calcLength)
         .def("calcAge", &Root::calcAge)
         .def("getRootRandomParameter", &Root::getRootRandomParameter)
@@ -936,11 +937,13 @@ PYBIND11_MODULE(plantbox, m) {
     struct PyLeaf : Leaf {
         using Leaf::Leaf;
         void simulate(double dt, bool verbose = false) override { PYBIND11_OVERRIDE(void, Leaf, simulate, dt, verbose); }
+        double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override { PYBIND11_OVERRIDE(double, Leaf, getParameter, name, addParams); }
     };
     py::class_<Leaf, Organ, PyLeaf, std::shared_ptr<Leaf>>(m, "Leaf")
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
         .def("simulate", [](Leaf &self, double dt, bool verbose) { self.Leaf::simulate(dt, verbose); }, py::arg("dt"), py::arg("verbose") = false)
+        .def("getParameter", [](const Leaf &self, std::string name, std::map<std::string, double> addParams) { return self.Leaf::getParameter(name, addParams); }, py::arg("name"), py::arg("addParams") = std::map<std::string, double>())
         .def("getLeafVis", &Leaf::getLeafVis)
         .def("getLeafVisX", &Leaf::getLeafVisX)
         .def("calcLength", &Leaf::calcLength)
@@ -958,11 +961,13 @@ PYBIND11_MODULE(plantbox, m) {
     struct PyGrassLeaf : GrassLeaf {
         using GrassLeaf::GrassLeaf;
         void simulate(double dt, bool verbose = false) override { PYBIND11_OVERRIDE(void, GrassLeaf, simulate, dt, verbose); }
+        double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override { PYBIND11_OVERRIDE(double, GrassLeaf, getParameter, name, addParams); }
     };
     py::class_<GrassLeaf, Organ, PyGrassLeaf, std::shared_ptr<GrassLeaf>>(m, "GrassLeaf")
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
         .def("simulate", [](GrassLeaf &self, double dt, bool verbose) { self.GrassLeaf::simulate(dt, verbose); }, py::arg("dt"), py::arg("verbose") = false)
+        .def("getParameter", [](const GrassLeaf &self, std::string name, std::map<std::string, double> addParams) { return self.GrassLeaf::getParameter(name, addParams); }, py::arg("name"), py::arg("addParams") = std::map<std::string, double>())
         .def("calcLength", &GrassLeaf::calcLength)
         .def("calcAge", &GrassLeaf::calcAge)
         .def("getGrassLeafRandomParameter", &GrassLeaf::getGrassLeafRandomParameter)
@@ -977,11 +982,13 @@ PYBIND11_MODULE(plantbox, m) {
     struct PyStem : Stem {
         using Stem::Stem;
         void simulate(double dt, bool verbose = false) override { PYBIND11_OVERRIDE(void, Stem, simulate, dt, verbose); }
+        double getParameter(std::string name, std::map<std::string, double> addParams = {}) const override { PYBIND11_OVERRIDE(double, Stem, getParameter, name, addParams); }
     };
     py::class_<Stem, Organ, PyStem, std::shared_ptr<Stem>>(m, "Stem")
         .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
         .def("simulate", [](Stem &self, double dt, bool verbose) { self.Stem::simulate(dt, verbose); }, py::arg("dt"), py::arg("verbose") = false)
+        .def("getParameter", [](const Stem &self, std::string name, std::map<std::string, double> addParams) { return self.Stem::getParameter(name, addParams); }, py::arg("name"), py::arg("addParams") = std::map<std::string, double>())
         .def("calcLength", &Stem::calcLength)
         .def("calcAge", &Stem::calcAge)
         .def("getStemRandomParameter", &Stem::getStemRandomParameter)

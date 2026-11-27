@@ -751,8 +751,8 @@ void Organ::createLateral(double dt, bool verbose) {
                 int p_id = rp->getLateralType(pos, i); // if probabilistic branching
 
                 if (p_id >= 0) {
-                    int ot;
 
+                    int ot;
                     if ((rp->successorOT.size() > i) && (rp->successorOT.at(i).size() > p_id)) {
                         ot = rp->successorOT.at(i).at(p_id);
                     } else {
@@ -764,31 +764,34 @@ void Organ::createLateral(double dt, bool verbose) {
                     double delay = getLatGrowthDelay(ot, st, dt);
                     double growth_dt = getLatInitialGrowth(dt);
 
+                    std::shared_ptr<CPlantBox::Organ> lateral = nullptr;
                     switch (ot) {
                     case Organism::ot_root: {
-                        auto lateral = plant.lock()->createRoot(st, delay, shared_from_this(), nodes.size() - 1);
-                        // if (organType() == Organism::ot_stem)
-                        //     lateral->nodeCTs.at(0) = getNodeCT(0) + age - growth_dt + delay; // why minus growth_dt (?)
-                        children.push_back(lateral);
-                        lateral->simulate(growth_dt, verbose);
+                        lateral = plant.lock()->createRoot(st, delay, shared_from_this(), nodes.size() - 1);
+                        //  if (organType() == Organism::ot_stem)
+                        //      lateral->nodeCTs.at(0) = getNodeCT(0) + age - growth_dt + delay; // why minus growth_dt (?)
                         break;
                     }
                     case Organism::ot_stem: {
-                        auto lateral = plant.lock()->createStem(st, delay, shared_from_this(), nodes.size() - 1);
+                        lateral = plant.lock()->createStem(st, delay, shared_from_this(), nodes.size() - 1);
                         // if (organType() == Organism::ot_stem)
                         //     lateral->nodeCTs.at(0) = getNodeCT(0) + age - growth_dt + delay;
-                        children.push_back(lateral);
-                        lateral->simulate(growth_dt, verbose);
                         break;
                     }
                     case Organism::ot_leaf: {
-                        auto lateral = plant.lock()->createLeaf(st, delay, shared_from_this(), nodes.size() - 1);
+                        lateral = plant.lock()->createLeaf(st, delay, shared_from_this(), nodes.size() - 1);
                         // if (organType() == Organism::ot_stem)
                         //     lateral->nodeCTs.at(0) = getNodeCT(0) + age - growth_dt + delay;
-                        children.push_back(lateral);
-                        lateral->simulate(growth_dt, verbose); // age-ageLN,verbose);
                         break;
                     }
+                    case Organism::ot_fruit: {
+                        lateral = plant.lock()->createFruit(st, delay, shared_from_this(), nodes.size() - 1);
+                        break;
+                    }
+                    }
+                    if (lateral) { // only if the lateral was successfully created
+                        children.push_back(lateral);
+                        lateral->simulate(growth_dt, verbose);
                     }
                 }
             }

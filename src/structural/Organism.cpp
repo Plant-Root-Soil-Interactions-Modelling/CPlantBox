@@ -957,6 +957,11 @@ std::shared_ptr<Organ> Organism::createStem(int subType, double delay, std::shar
  */
 std::shared_ptr<Organ> Organism::createLeaf(int subType, double delay, std::shared_ptr<Organ> parent, int pni) { return std::make_shared<Leaf>(shared_from_this(), subType, delay, parent, pni); }
 
+/**
+ * @brief Creates a new Fruit organ.
+ */
+std::shared_ptr<Organ> Organism::createFruit(int subType, double delay, std::shared_ptr<Organ> parent, int pni) { return std::make_shared<Organ>(shared_from_this(), parent, Organism::ot_fruit, subType, delay, pni); }
+
 namespace {
 template <class T> std::vector<double> streamToNumbers(const T &obj) {
     std::stringstream ss;
